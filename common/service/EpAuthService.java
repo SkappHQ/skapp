@@ -1,0 +1,41 @@
+package com.skapp.enterprise.common.service;
+
+import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
+import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
+import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
+import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
+import com.skapp.enterprise.common.payload.request.EpSignInGoogleDataDto;
+import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
+import jakarta.validation.Valid;
+
+public interface EpAuthService {
+
+	ResponseEntityDto superAdminSignUp(@Valid SuperAdminSignUpRequestDto superAdminSignUpRequestDto);
+
+	ResponseEntityDto generateAndSendOTP();
+
+	ResponseEntityDto verifyOTP(String otp);
+
+	ResponseEntityDto resendOTP();
+
+	ResponseEntityDto verifySubDomain(String subDomainName);
+
+	ResponseEntityDto validateCaptcha(EpCaptchaVerificationDto epCaptchaVerificationDto);
+
+	ResponseEntityDto ssoGoogleSignUp(@Valid EpSignUpGoogleDataDto superAdminSignUpRequestDto);
+
+	ResponseEntityDto ssoGoogleSignIn(@Valid EpSignInGoogleDataDto epSignUpGoogleDataDto);
+
+	ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto);
+
+	ResponseEntityDto verifyPasswordResetOTP(EpPasswordResetOtpVerifyDto epPasswordResetOtpVerifyDto);
+
+	ResponseEntityDto resetPassword(EpPasswordResetNewPasswordDto epPasswordResetNewPasswordDto);
+
+	ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto);
+
+	ResponseEntityDto verifyTenantAvailability(String subDomainName);
+
+}

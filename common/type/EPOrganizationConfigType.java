@@ -1,0 +1,8 @@
+package com.skapp.enterprise.common.type;
+
+public enum EPOrganizationConfigType {
+
+	COMPANY_NAME, COMPANY_WEBSITE, COUNTRY, ACCOUNT_URL, COMPANY_LOGO, BRAND_COLOR, HOURS_PER_DAY, LOGIN_METHOD, MFA,
+	SSO_TYPE, TENANT_CREATION_DATE
+
+}

@@ -1,0 +1,107 @@
+package com.skapp.enterprise.common.config;
+
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class TenantFilter extends OncePerRequestFilter {
+
+	private static final String TENANT_HEADER = "X-Tenant-ID";
+
+	private static final List<String> EXCLUDED_PATHS = List.of("/v1/health", "/v3/api-docs", "/v3/api-docs/**",
+			"/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/robots.txt",
+			"/favicon.ico", "/error", "/v1/ep/tenant/create", "/v1/ep/organization", "/v1/ep/auth/signup/super-admin",
+			"/v1/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/otp/generate", "/v1/ep/auth/otp/verify",
+			"/v1/ep/auth/otp/resend", "/v1/ep/auth/domain/verify", "/v1/ep/auth/recaptcha", "/health",
+			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
+			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp",
+			"/v1/ep/auth/tenant/availability");
+
+	@Override
+	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+		String requestURI = request.getRequestURI();
+		return EXCLUDED_PATHS.stream().anyMatch(path -> requestURI.startsWith(path.replace("/**", "")));
+	}
+
+	@Override
+	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+			@NonNull FilterChain filterChain) {
+
+		String tenantId = request.getHeader(TENANT_HEADER);
+
+		logRequestDetails(request, Objects.requireNonNullElse(tenantId, "Not Provided"));
+
+		if (tenantId == null || tenantId.isBlank()) {
+			log.error("Tenant header missing in the request.");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_PRESENT);
+		}
+
+		try {
+			TenantContext.setCurrentTenant(tenantId);
+			filterChain.doFilter(request, response);
+		}
+		catch (ServletException e) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SERVLET_EXCEPTION,
+					new String[] { e.getMessage() });
+		}
+		catch (IOException e) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION, new String[] { e.getMessage() });
+		}
+		finally {
+			TenantContext.clearCurrentTenant();
+		}
+	}
+
+	private void logRequestDetails(HttpServletRequest request, String tenantId) {
+		String remoteAddr = request.getHeader("X-Forwarded-For");
+		String userAgent = request.getHeader("User-Agent");
+		String method = request.getMethod();
+		String contentType = request.getContentType();
+		String acceptHeader = request.getHeader("Accept");
+		String referer = request.getHeader("Referer");
+
+		String originAddress;
+		if (remoteAddr == null) {
+			originAddress = "N/A";
+		}
+		else {
+			originAddress = remoteAddr.contains(",") ? remoteAddr.split(",")[0] : remoteAddr;
+		}
+
+		String greenColor = "\u001B[32m";
+		String resetColor = "\u001B[0m";
+
+		String requestLog = "\n" + greenColor + "==================== Request Details ====================\n"
+				+ String.format("Remote Address:      %s%n", request.getRemoteAddr())
+				+ String.format("Origin Address:      %s%n", originAddress)
+				+ String.format("Host:               %s%n", request.getRemoteHost())
+				+ String.format("Method:             %s%n", method)
+				+ String.format("URI:                %s%n", request.getRequestURI())
+				+ String.format("Protocol:           %s%n", request.getProtocol())
+				+ String.format("Content Type:       %s%n", contentType != null ? contentType : "N/A")
+				+ String.format("Accept Types:       %s%n", acceptHeader != null ? acceptHeader : "N/A")
+				+ String.format("User Agent:         %s%n", userAgent != null ? userAgent : "N/A")
+				+ String.format("Referer:            %s%n", referer != null ? referer : "N/A")
+				+ String.format("Tenant ID:          %s%n", tenantId)
+				+ "=========================================================" + resetColor;
+
+		log.info(requestLog);
+	}
+
+}

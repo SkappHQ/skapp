@@ -1,0 +1,8 @@
+package com.skapp.enterprise.esignature.type;
+
+public enum EnvelopeStatus {
+
+	CREATED, IN_PROGRESS, COMPLETED, CANCELED, NEED_TO_SIGN, EXPIRING_SOON, WAITING_FOR_OTHERS, COMPLETE, PENDING,
+	DRAFT, DECLINED, EXPIRED, VOIDED
+
+}

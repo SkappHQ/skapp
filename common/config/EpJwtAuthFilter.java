@@ -1,0 +1,139 @@
+package com.skapp.enterprise.common.config;
+
+import com.skapp.community.common.constant.AuthConstants;
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.AuthenticationException;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
+@AllArgsConstructor
+@Component
+@Primary
+public class EpJwtAuthFilter extends OncePerRequestFilter {
+
+	@NonNull
+	private final JwtService jwtService;
+
+	@NonNull
+	private final UserService userService;
+
+	@NonNull
+	private final SuperAdminDao superAdminDao;
+
+	private static final List<String> PUBLIC_URLS = Arrays.asList("/v1/auth", "/v3/api-docs", "/v3/api-docs.yaml",
+			"/swagger-ui.html", "/swagger-ui", "/swagger-resources", "/webjars", "/favicon.ico", "/error",
+			"/v1/app-setup-status", "/robots.txt", "/ws", "/v1/ep/auth/signup/super-admin", "/v1/ep/auth/domain/verify",
+			"/v1/ep/auth/signup/super-admin/sso/google", "/v1/auth/sign-in", "/v1/ep/auth/signin/sso/google",
+			"/v1/ep/tenant/create", "/v1/ep/reset-database", "/robots.txt", "/v1/ep/auth/recaptcha", "/health",
+			"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
+			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp",
+			"/v1/ep/auth/tenant/availability");
+
+	@Override
+	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return PUBLIC_URLS.stream().anyMatch(path::equals);
+	}
+
+	@Override
+	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+			@NonNull FilterChain filterChain) throws ServletException, IOException {
+		log.info("EpDoFilterInternal: execution started");
+
+		final String authHeader = request.getHeader(AuthConstants.AUTHORIZATION);
+
+		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, AuthConstants.BEARER)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		try {
+			final String accessToken = authHeader.substring(7);
+
+			if (jwtService.isTokenExpired(accessToken)) {
+				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
+			}
+
+			if (jwtService.isRefreshToken(accessToken)) {
+				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_REFRESH_TOKEN_NOT_ALLOWED);
+			}
+
+			String userEmail = jwtService.extractUserEmail(accessToken);
+			Long userId = jwtService.extractUserId(accessToken);
+			String tenantId = jwtService.extractClaim(accessToken,
+					claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
+
+			if (tenantId == null && TenantContext.getCurrentTenant() == null) {
+				log.error("Token does not contain tenant ID");
+				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+			}
+
+			if (StringUtils.isNotEmpty(userEmail) && userId != null
+					&& SecurityContextHolder.getContext().getAuthentication() == null) {
+				authenticateUser(request, accessToken, userEmail, userId, tenantId);
+			}
+
+			filterChain.doFilter(request, response);
+			log.info("EpDoFilterInternal: execution completed");
+		}
+		catch (ExpiredJwtException e) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
+		}
+		catch (JwtException e) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+	}
+
+	private void authenticateUser(HttpServletRequest request, String accessToken, String userEmail, Long userId,
+			String tenantId) {
+		UserDetails userDetails;
+
+		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			userDetails = superAdminDao.findById(userId)
+				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+		}
+		else {
+			userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+		}
+
+		if (!jwtService.isTokenValid(accessToken, userDetails)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
+				userDetails.getAuthorities());
+		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+		context.setAuthentication(authToken);
+		SecurityContextHolder.setContext(context);
+	}
+
+}
