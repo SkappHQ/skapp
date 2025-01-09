@@ -5,7 +5,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -25,6 +24,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -43,7 +43,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	private final JwtService jwtService;
 
 	@NonNull
-	private final UserService userService;
+	private final UserDetailsService userDetailsService;
 
 	@NonNull
 	private final SuperAdminDao superAdminDao;
@@ -121,7 +121,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 		}
 		else {
-			userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+			userDetails = userDetailsService.loadUserByUsername(userEmail);
 		}
 
 		if (!jwtService.isTokenValid(accessToken, userDetails)) {

@@ -58,6 +58,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +84,8 @@ public class EpAuthServiceImpl implements EpAuthService {
 	private final PasswordEncoder passwordEncoder;
 
 	private final SuperAdminDao superAdminDao;
+
+	private final UserDetailsService userDetailsService;
 
 	private final JwtService jwtService;
 
@@ -376,8 +379,9 @@ public class EpAuthServiceImpl implements EpAuthService {
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(userEmployee);
 
-		String accessToken = jwtService.generateAccessToken(user, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(user);
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);

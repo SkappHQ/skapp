@@ -35,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
@@ -70,6 +72,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	private final UserDao userDao;
 
 	private final JwtService jwtService;
+
+	private final UserDetailsService userDetailsService;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -192,8 +196,9 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
 
-		String accessToken = jwtService.generateAccessToken(user, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(user);
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 		responseDto.setAccessToken(accessToken);
 		responseDto.setRefreshToken(refreshToken);
