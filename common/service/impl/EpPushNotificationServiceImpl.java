@@ -31,14 +31,20 @@ public class EpPushNotificationServiceImpl implements PushNotificationService {
 	@Override
 	public void sendNotification(Long userId, Notification notification) {
 		List<DeviceToken> deviceTokens = deviceTokenDao.findAllByUserId(userId);
+		log.info("sendNotification: Device tokens fetched successfully, {}", deviceTokens);
 		com.google.firebase.messaging.Notification firebaseNotification = com.google.firebase.messaging.Notification
 			.builder()
 			.setBody(notification.getBody())
 			.build();
+
+		log.info("sendNotification: Sending push notification to all devices {}", firebaseNotification);
+
 		for (DeviceToken deviceToken : deviceTokens) {
 			boolean response = sendNotification(firebaseNotification, deviceToken.getToken());
+			log.error("sendNotification: Response: {}", response);
 			if (!response) {
 				deviceTokenDao.delete(deviceToken);
+				log.error("sendNotification: Device token deleted successfully");
 			}
 		}
 
@@ -47,7 +53,9 @@ public class EpPushNotificationServiceImpl implements PushNotificationService {
 	private boolean sendNotification(com.google.firebase.messaging.Notification notification, String token) {
 		try {
 			Message message = Message.builder().setNotification(notification).setToken(token).build();
-			firebaseMessaging.send(message);
+			log.info("sendNotification: Sending push notification to device message: {}", message);
+			String receivedResponse = firebaseMessaging.send(message);
+			log.info("sendNotification: Push notification sent successfully to device: {}", receivedResponse);
 		}
 		catch (FirebaseMessagingException e) {
 			log.error("sendNotification: An exception occurred while sending a push notification:" + " {}",
@@ -58,6 +66,11 @@ public class EpPushNotificationServiceImpl implements PushNotificationService {
 				return false;
 			}
 		}
+		catch (Exception e) {
+			log.error("sendNotification: Generic Exception:" + " {}", e.getMessage());
+			return false;
+		}
+
 		return true;
 	}
 
