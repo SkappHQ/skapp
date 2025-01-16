@@ -1,0 +1,113 @@
+package com.skapp.enterprise.common.service.impl;
+
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.type.ModuleType;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.model.Module;
+import com.skapp.enterprise.common.payload.request.SaveOrUpdateModuleRequestDto;
+import com.skapp.enterprise.common.repository.ModuleDao;
+import com.skapp.enterprise.common.service.ModuleService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class ModuleServiceImpl implements ModuleService {
+
+	private final ModuleDao moduleDao;
+
+	@Override
+	@Transactional
+	public ResponseEntityDto saveOrUpdateModules(SaveOrUpdateModuleRequestDto saveOrUpdateModuleRequestDto) {
+		log.info("Received request to save/update modules: {}", saveOrUpdateModuleRequestDto);
+
+		validateRequest(saveOrUpdateModuleRequestDto);
+
+		Set<ModuleType> modulesToSave = new HashSet<>(saveOrUpdateModuleRequestDto.getSelectedModules());
+		modulesToSave.add(ModuleType.PEOPLE);
+
+		List<Module> existingModules = moduleDao.findAll();
+		Set<ModuleType> existingModuleTypes = existingModules.stream()
+			.map(Module::getModuleName)
+			.collect(Collectors.toSet());
+
+		Set<ModuleType> modulesToRemove = existingModuleTypes.stream()
+			.filter(type -> !modulesToSave.contains(type))
+			.collect(Collectors.toSet());
+
+		if (!modulesToRemove.isEmpty()) {
+			log.info("Removing modules: {}", modulesToRemove);
+			modulesToRemove.forEach(moduleDao::deleteById);
+		}
+
+		Set<Module> modulesToAdd = modulesToSave.stream()
+			.filter(type -> !existingModuleTypes.contains(type))
+			.map(this::createModule)
+			.collect(Collectors.toSet());
+
+		if (!modulesToAdd.isEmpty()) {
+			log.info("Adding new modules: {}",
+					modulesToAdd.stream().map(Module::getModuleName).collect(Collectors.toSet()));
+
+			moduleDao.saveAll(modulesToAdd);
+		}
+
+		List<String> activeModules = moduleDao.findAll()
+			.stream()
+			.map(module -> module.getModuleName().name())
+			.sorted()
+			.toList();
+
+		log.info("Successfully saved/updated modules. Active modules: {}", activeModules);
+		return new ResponseEntityDto(true, activeModules);
+	}
+
+	@Override
+	public ResponseEntityDto getActiveModules() {
+		log.info("Fetching active modules");
+
+		List<String> activeModules = moduleDao.findAll()
+			.stream()
+			.map(module -> module.getModuleName().name())
+			.sorted()
+			.toList();
+
+		log.info("Found active modules: {}", activeModules);
+		return new ResponseEntityDto(true, activeModules);
+	}
+
+	private void validateRequest(SaveOrUpdateModuleRequestDto request) {
+		if (request == null || request.getSelectedModules() == null || request.getSelectedModules().isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SELECTED_MODULES_CANNOT_BE_NULL);
+		}
+
+		request.setSelectedModules(request.getSelectedModules()
+			.stream()
+			.filter(module -> module != ModuleType.COMMON && module != ModuleType.PEOPLE)
+			.collect(Collectors.toSet()));
+
+		boolean hasInvalidModules = !new HashSet<>(Arrays.asList(ModuleType.values()))
+			.containsAll(request.getSelectedModules());
+
+		if (hasInvalidModules) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_TYPE);
+		}
+	}
+
+	private Module createModule(ModuleType moduleType) {
+		Module module = new Module();
+		module.setModuleName(moduleType);
+		return module;
+	}
+
+}

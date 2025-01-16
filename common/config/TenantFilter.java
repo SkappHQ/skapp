@@ -49,7 +49,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
 		if (tenantId == null || tenantId.isBlank()) {
 			log.error("Tenant header missing in the request.");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_PRESENT);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_HEADER_MISSING);
 		}
 
 		try {
