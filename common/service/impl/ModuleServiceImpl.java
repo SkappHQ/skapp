@@ -86,6 +86,18 @@ public class ModuleServiceImpl implements ModuleService {
 		return new ResponseEntityDto(true, activeModules);
 	}
 
+	@Override
+	public ResponseEntityDto hasSelectedModules() {
+		log.info("Checking if any modules are selected");
+
+		List<Module> modules = moduleDao.findAll();
+		boolean hasSelectedModules = modules.stream()
+			.map(Module::getModuleName)
+			.anyMatch(module -> module != ModuleType.PEOPLE && module != ModuleType.COMMON);
+
+		return new ResponseEntityDto(true, hasSelectedModules);
+	}
+
 	private void validateRequest(SaveOrUpdateModuleRequestDto request) {
 		if (request == null || request.getSelectedModules() == null || request.getSelectedModules().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SELECTED_MODULES_CANNOT_BE_NULL);

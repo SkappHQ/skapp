@@ -36,4 +36,11 @@ public class ModuleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/has-selected")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> hasSelectedModules() {
+		ResponseEntityDto response = moduleService.hasSelectedModules();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

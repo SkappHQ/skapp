@@ -9,4 +9,6 @@ public interface ModuleService {
 
 	ResponseEntityDto getActiveModules();
 
+	ResponseEntityDto hasSelectedModules();
+
 }
