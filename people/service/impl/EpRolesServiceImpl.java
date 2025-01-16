@@ -23,6 +23,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -63,12 +65,21 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 		if (module == ModuleType.ESIGN) {
 			return switch (roleLevel) {
 				case ADMIN -> Role.ESIGN_ADMIN;
-				case MANAGER -> Role.ESIGN_SENDER;
+				case SENDER -> Role.ESIGN_SENDER;
 				case EMPLOYEE -> Role.ESIGN_EMPLOYEE;
 				default -> null;
 			};
 		}
 		return role;
+	}
+
+	@Override
+	protected Map<ModuleType, List<RoleLevel>> initializeRolesForModule() {
+		Map<ModuleType, List<RoleLevel>> roles = super.initializeRolesForModule();
+
+		roles.put(ModuleType.ESIGN, List.of(RoleLevel.ADMIN, RoleLevel.SENDER, RoleLevel.EMPLOYEE));
+
+		return roles;
 	}
 
 }
