@@ -40,26 +40,26 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 	}
 
 	@Override
-	public EmployeeRole createEmployeeRole(RoleRequestDto roleRequestDto, @NotNull Employee employee) {
+	protected EmployeeRole createEmployeeRole(RoleRequestDto roleRequestDto, @NotNull Employee employee) {
 		EmployeeRole employeeRole = super.createEmployeeRole(roleRequestDto, employee);
 
-		employeeRole.setESignRole(roleRequestDto.getESignRole());
+		employeeRole.setEsignRole(roleRequestDto.getEsignRole());
 
 		return employeeRole;
 	}
 
 	@Override
-	public EmployeeRole updateEmployeeRolesSafely(EmployeeRole employeeRole, RoleRequestDto roleRequestDto,
+	protected EmployeeRole updateEmployeeRolesSafely(EmployeeRole employeeRole, RoleRequestDto roleRequestDto,
 			LocalDate currentDate, User currentUser) {
 		employeeRole = super.updateEmployeeRolesSafely(employeeRole, roleRequestDto, currentDate, currentUser);
 
-		employeeRole.setESignRole(roleRequestDto.getESignRole());
+		employeeRole.setEsignRole(roleRequestDto.getEsignRole());
 
 		return employeeRole;
 	}
 
 	@Override
-	public Role getRoleForModuleAndLevel(ModuleType module, RoleLevel roleLevel) {
+	protected Role getRoleForModuleAndLevel(ModuleType module, RoleLevel roleLevel) {
 		Role role = super.getRoleForModuleAndLevel(module, roleLevel);
 
 		if (module == ModuleType.ESIGN) {

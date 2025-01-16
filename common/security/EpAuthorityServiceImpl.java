@@ -27,7 +27,7 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 		List<GrantedAuthority> authorities = super.getAuthorities(user);
 		EmployeeRole employeeRole = user.getEmployee().getEmployeeRole();
 
-		Optional.ofNullable(employeeRole.getESignRole())
+		Optional.ofNullable(employeeRole.getEsignRole())
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.ESIGN_ADMIN, Role.ESIGN_SENDER,
 					Role.ESIGN_EMPLOYEE));
 

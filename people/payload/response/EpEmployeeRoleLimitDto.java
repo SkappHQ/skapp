@@ -13,6 +13,8 @@ public class EpEmployeeRoleLimitDto {
 
 	boolean peopleAdminLimitExceeded;
 
+	boolean esignAdminLimitExceeded;
+
 	boolean leaveManagerLimitExceeded;
 
 	boolean attendanceManagerLimitExceeded;
@@ -20,5 +22,7 @@ public class EpEmployeeRoleLimitDto {
 	boolean peopleManagerLimitExceeded;
 
 	boolean superAdminLimitExceeded;
+
+	boolean esignSenderLimitExceeded;
 
 }
