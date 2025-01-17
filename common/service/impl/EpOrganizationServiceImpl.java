@@ -8,6 +8,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -34,6 +35,7 @@ import com.skapp.enterprise.common.service.TenantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -75,6 +77,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final UserDetailsService userDetailsService;
 
+	private final ApplicationEventPublisher applicationEventPublisher;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -108,6 +112,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 			User savedUser = createSuperAdminUser(superAdmin);
 			log.info("Super admin user created for: {}", companyDomain);
+			applicationEventPublisher.publishEvent(new UserCreatedEvent(this, savedUser));
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			superAdminDao.delete(superAdmin);
