@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class SaveOrUpdateModuleRequestDto {
+public class SaveModulesRequestDto {
 
 	private Set<ModuleType> selectedModules;
 

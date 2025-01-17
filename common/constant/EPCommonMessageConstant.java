@@ -62,7 +62,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TENANT_ID_NOT_FOUND("ep.common.error.tenant-id-not-found"),
 	EP_COMMON_ERROR_TENANT_HEADER_MISSING("ep.common.error.tenant-header-missing"),
 	EP_COMMON_ERROR_SELECTED_MODULES_CANNOT_BE_NULL("ep.common.error.selected-modules-cannot-be-null"),
-	EP_COMMON_ERROR_INVALID_MODULE_TYPE("ep.common.error.invalid-module-type");
+	EP_COMMON_ERROR_INVALID_MODULE_TYPE("ep.common.error.invalid-module-type"),
+	EP_COMMON_ERROR_MODULES_ALREADY_EXIST("ep.common.error.modules-already-exist"),;
 
 	private final String messageKey;
 
