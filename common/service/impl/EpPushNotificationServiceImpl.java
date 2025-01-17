@@ -60,6 +60,11 @@ public class EpPushNotificationServiceImpl implements PushNotificationService {
 				return false;
 			}
 		}
+		catch (Exception e) {
+			log.error("sendNotification: Generic Exception:" + " {}", e.getMessage());
+			return false;
+		}
+
 		return true;
 	}
 
