@@ -179,6 +179,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		superAdminRoles.setPeopleRole(Role.PEOPLE_ADMIN);
 		superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
 		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
+		superAdminRoles.setAttendanceRole(Role.ESIGN_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
 		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
 
