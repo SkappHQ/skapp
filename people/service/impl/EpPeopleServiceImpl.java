@@ -58,12 +58,12 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
 		if (tenantValidator.isCurrentTenantPro()) {
-			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false);
+			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false);
 		}
 
 		return new EpEmployeeRoleLimitDto(checkLeaveAdminLimit(), checkAttendanceAdminLimit(), checkPeopleAdminLimit(),
-				checkLeaveManagerLimit(), checkAttendanceManagerLimit(), checkPeopleManagerLimit(),
-				checkSuperAdminLimit());
+				checkESignAdminLimit(), checkLeaveManagerLimit(), checkAttendanceManagerLimit(),
+				checkPeopleManagerLimit(), checkSuperAdminLimit(), checkEsignSenderLimit());
 	}
 
 	private boolean checkLeaveAdminLimit() {
@@ -79,6 +79,11 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 	private boolean checkPeopleAdminLimit() {
 		return employeeRoleDao.countByPeopleRoleAndIsSuperAdmin(Role.PEOPLE_ADMIN,
 				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
+	}
+
+	private boolean checkESignAdminLimit() {
+		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_ADMIN,
+				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_ADMIN_COUNT;
 	}
 
 	private boolean checkLeaveManagerLimit() {
@@ -98,6 +103,11 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 
 	private boolean checkSuperAdminLimit() {
 		return employeeRoleDao.countByIsSuperAdminTrue() >= EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
+	}
+
+	private boolean checkEsignSenderLimit() {
+		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_SENDER,
+				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT;
 	}
 
 }
