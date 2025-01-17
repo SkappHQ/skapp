@@ -47,7 +47,7 @@ public class ModuleServiceImpl implements ModuleService {
 
 		List<String> activeModules = getActiveModuleNames();
 		log.info("Successfully saved new modules. Active modules: {}", activeModules);
-		return new ResponseEntityDto(true, activeModules);
+		return new ResponseEntityDto(false, activeModules);
 	}
 
 	@Override
