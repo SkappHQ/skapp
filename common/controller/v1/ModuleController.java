@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.SaveModulesRequestDto;
 import com.skapp.enterprise.common.service.ModuleService;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/ep/module")
 public class ModuleController {
 
-	@NonNull
 	private final ModuleService moduleService;
 
 	@PostMapping
