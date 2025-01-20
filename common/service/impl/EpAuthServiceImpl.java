@@ -134,7 +134,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
-		Validation.isValidEmail(superAdminSignUpRequestDto.getEmail());
+		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
 		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
 
 		SuperAdmin superAdmin = epCommonMapper.createSuperAdminRequestDtoToSuperAdmin(superAdminSignUpRequestDto);
@@ -285,7 +285,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
 		Validation.isValidFirstName(epSignUpGoogleDataDto.getFirstName());
 		Validation.isValidLastName(epSignUpGoogleDataDto.getLastName());
-		Validation.isValidEmail(epSignUpGoogleDataDto.getEmail());
+		Validation.validateEmail(epSignUpGoogleDataDto.getEmail());
 
 		DecodedJWT decodedJWT = validateAndGetDecodedJWT(epSignUpGoogleDataDto.getToken());
 		if (decodedJWT == null) {
@@ -332,7 +332,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 	public ResponseEntityDto ssoGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto) {
 		log.info("ssoGoogleSignIn: execution started");
 
-		Validation.isValidEmail(epSignUpGoogleDataDto.getEmail());
+		Validation.validateEmail(epSignUpGoogleDataDto.getEmail());
 
 		DecodedJWT decodedJWT = validateAndGetDecodedJWT(epSignUpGoogleDataDto.getToken());
 		if (decodedJWT == null) {
