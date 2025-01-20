@@ -29,4 +29,8 @@ public class EpCommonConstants {
 
 	public static final int ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT = 1;
 
+	public static final int ENTERPRISE_FREE_MAX_ESIGN_ADMIN_COUNT = 1;
+
+	public static final int ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT = 1;
+
 }
