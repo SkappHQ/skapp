@@ -1,7 +1,7 @@
 package com.skapp.enterprise.common.component.event.handler;
 
-import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.repository.AddressBookRepository;
 import com.skapp.enterprise.esignature.type.UserType;
