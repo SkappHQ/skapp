@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -24,19 +24,21 @@ public class TenantFilter extends OncePerRequestFilter {
 
 	private static final String TENANT_HEADER = "X-Tenant-ID";
 
-	private static final List<String> EXCLUDED_PATHS = List.of("/v1/health", "/v3/api-docs", "/v3/api-docs/**",
-			"/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/robots.txt",
-			"/favicon.ico", "/error", "/v1/ep/tenant/create", "/v1/ep/organization", "/v1/ep/auth/signup/super-admin",
-			"/v1/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/otp/generate", "/v1/ep/auth/otp/verify",
-			"/v1/ep/auth/otp/resend", "/v1/ep/auth/domain/verify", "/v1/ep/auth/recaptcha", "/health",
-			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
+	private static final Set<String> EXCLUDED_PATHS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
+			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
+			"/swagger-ui/swagger-ui-standalone-preset.js", "/swagger-ui/swagger-ui.css", "/v3/api-docs/swagger-config",
+			"/swagger-ui/swagger-ui-bundle.js", "/swagger-ui/swagger-initializer.js", "/swagger-ui/favicon-16x16.png",
+			"/swagger-ui/favicon-32x32.png", "/robots.txt", "/favicon.ico", "/error", "/v1/ep/tenant/create",
+			"/v1/ep/organization", "/v1/ep/auth/signup/super-admin", "/v1/ep/auth/signup/super-admin/sso/google",
+			"/v1/ep/auth/otp/generate", "/v1/ep/auth/otp/verify", "/v1/ep/auth/otp/resend", "/v1/ep/auth/domain/verify",
+			"/v1/ep/auth/recaptcha", "/health", "/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp",
-			"/v1/ep/auth/tenant/availability");
+			"/v1/ep/organization/login-method", "/v1/ep/auth/tenant/availability");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
-		return EXCLUDED_PATHS.stream().anyMatch(path -> requestURI.startsWith(path.replace("/**", "")));
+		return EXCLUDED_PATHS.stream().anyMatch(requestURI::equals);
 	}
 
 	@Override

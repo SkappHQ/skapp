@@ -30,8 +30,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @AllArgsConstructor
@@ -39,21 +38,21 @@ import java.util.List;
 @Primary
 public class EpJwtAuthFilter extends OncePerRequestFilter {
 
-	@NonNull
 	private final JwtService jwtService;
 
-	@NonNull
 	private final UserDetailsService userDetailsService;
 
-	@NonNull
 	private final SuperAdminDao superAdminDao;
 
-	private static final List<String> PUBLIC_URLS = Arrays.asList("/v1/auth", "/v3/api-docs", "/v3/api-docs.yaml",
-			"/swagger-ui.html", "/swagger-ui", "/swagger-resources", "/webjars", "/favicon.ico", "/error",
-			"/v1/app-setup-status", "/robots.txt", "/ws", "/v1/ep/auth/signup/super-admin", "/v1/ep/auth/domain/verify",
-			"/v1/ep/auth/signup/super-admin/sso/google", "/v1/auth/sign-in", "/v1/ep/auth/signin/sso/google",
-			"/v1/ep/tenant/create", "/v1/ep/reset-database", "/robots.txt", "/v1/ep/auth/recaptcha", "/health",
-			"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
+	private static final Set<String> PUBLIC_URLS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
+			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
+			"/swagger-ui/swagger-ui-standalone-preset.js", "/swagger-ui/swagger-ui.css", "/v3/api-docs/swagger-config",
+			"/swagger-ui/swagger-ui-bundle.js", "/swagger-ui/swagger-initializer.js", "/swagger-ui/favicon-16x16.png",
+			"/swagger-ui/favicon-32x32.png", "/v1/auth", "/v1/app-setup-status", "/ws",
+			"/v1/ep/auth/signup/super-admin", "/v1/ep/auth/domain/verify", "/v1/ep/auth/signup/super-admin/sso/google",
+			"/v1/auth/sign-in", "/v1/ep/auth/signin/sso/google", "/v1/ep/tenant/create", "/v1/ep/reset-database",
+			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/v1/ep/organization/login-method",
+			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp",
 			"/v1/ep/auth/tenant/availability");
 
@@ -71,8 +70,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		final String authHeader = request.getHeader(AuthConstants.AUTHORIZATION);
 
 		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, AuthConstants.BEARER)) {
-			filterChain.doFilter(request, response);
-			return;
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
 		try {

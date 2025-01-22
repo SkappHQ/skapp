@@ -91,8 +91,8 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 
 		super.validateRoles(userRoles);
 
-		if (hasOnlyAdminPermissions(currentUser) && userRoles.getEsignRole() != null
-				&& validateEpRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN)) {
+		if (hasOnlyAdminPermissions(currentUser) && userRoles.getEsignRole() != null && Boolean.TRUE
+			.equals(validateEpRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN))) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_RESTRICTED_ASSIGNING_ROLE_ACCESS);
 		}
 
@@ -101,7 +101,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 		}
 	}
 
-	// New Ep Module Role restriction can be validate here
+	// New Ep Module Role restriction can be validated here
 	private Boolean validateEpRestrictedRoleAssignment(Role role, ModuleType moduleType) {
 		ModuleRoleRestrictionResponseDto restrictedRole = getRestrictedRoleByModule(moduleType);
 		return switch (role) {

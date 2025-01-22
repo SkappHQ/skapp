@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.validator;
 
 import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.JWT;
@@ -35,7 +36,7 @@ public class GoogleTokenValidator {
 		}
 	}
 
-	public DecodedJWT validateToken(String token) throws Exception {
+	public DecodedJWT validateToken(String token) throws JwkException {
 		DecodedJWT jwt = JWT.decode(token);
 		Jwk jwk = jwkProvider.get(jwt.getKeyId());
 		RSAPublicKey publicKey = (RSAPublicKey) jwk.getPublicKey();

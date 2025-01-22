@@ -73,16 +73,6 @@ public class SuperAdmin implements UserDetails {
 		List<GrantedAuthority> authorities = new ArrayList<>();
 
 		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.PEOPLE_MANAGER.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.PEOPLE_EMPLOYEE.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.LEAVE_MANAGER.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.LEAVE_EMPLOYEE.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_ADMIN.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_MANAGER.name()));
-		authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_EMPLOYEE.name()));
-
 		return authorities;
 	}
 

@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.route53.Route53Client;
-import software.amazon.awssdk.services.route53.model.AliasTarget;
 import software.amazon.awssdk.services.route53.model.Change;
 import software.amazon.awssdk.services.route53.model.ChangeAction;
-import software.amazon.awssdk.services.route53.model.ChangeBatch;
 import software.amazon.awssdk.services.route53.model.ChangeResourceRecordSetsRequest;
 import software.amazon.awssdk.services.route53.model.HostedZone;
 import software.amazon.awssdk.services.route53.model.ListHostedZonesByNameResponse;
@@ -22,8 +20,6 @@ import software.amazon.awssdk.services.route53.model.ListResourceRecordSetsRespo
 import software.amazon.awssdk.services.route53.model.RRType;
 import software.amazon.awssdk.services.route53.model.ResourceRecordSet;
 import software.amazon.awssdk.services.route53.model.Route53Exception;
-
-import java.util.Collections;
 
 @Service
 @Slf4j
@@ -90,23 +86,18 @@ public class Route53ServiceImpl implements Route53Service {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBDOMAIN_ALREADY_EXISTS);
 			}
 
-			ResourceRecordSet recordSet = ResourceRecordSet.builder()
-				.name(fullDomainName)
-				.type(RRType.A)
-				.aliasTarget(AliasTarget.builder()
-					.hostedZoneId(loadBalancerHostedZone)
-					.dnsName(aliasDnsName)
-					.evaluateTargetHealth(false)
-					.build())
+			Change change = Change.builder()
+				.action(ChangeAction.CREATE)
+				.resourceRecordSet(recordBuilder -> recordBuilder.name(fullDomainName)
+					.type(RRType.A)
+					.aliasTarget(aliasBuilder -> aliasBuilder.hostedZoneId(loadBalancerHostedZone)
+						.dnsName(aliasDnsName)
+						.evaluateTargetHealth(false)))
 				.build();
-
-			Change change = Change.builder().action(ChangeAction.CREATE).resourceRecordSet(recordSet).build();
-
-			ChangeBatch changeBatch = ChangeBatch.builder().changes(Collections.singletonList(change)).build();
 
 			ChangeResourceRecordSetsRequest request = ChangeResourceRecordSetsRequest.builder()
 				.hostedZoneId(hostedZoneId)
-				.changeBatch(changeBatch)
+				.changeBatch(builder -> builder.changes(change))
 				.build();
 
 			route53Client.changeResourceRecordSets(request);
@@ -140,14 +131,11 @@ public class Route53ServiceImpl implements Route53Service {
 			}
 
 			ResourceRecordSet existingRecord = getSubdomainRecordSet(hostedZoneId, fullDomainName);
-
 			Change change = Change.builder().action(ChangeAction.DELETE).resourceRecordSet(existingRecord).build();
-
-			ChangeBatch changeBatch = ChangeBatch.builder().changes(Collections.singletonList(change)).build();
 
 			ChangeResourceRecordSetsRequest request = ChangeResourceRecordSetsRequest.builder()
 				.hostedZoneId(hostedZoneId)
-				.changeBatch(changeBatch)
+				.changeBatch(builder -> builder.changes(change))
 				.build();
 
 			route53Client.changeResourceRecordSets(request);

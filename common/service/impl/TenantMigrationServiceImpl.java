@@ -55,10 +55,9 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		TenantContext.setCurrentTenant(tenantId);
 		DataSource dataSource = multiTenantDataSourceConfig.dataSource();
 
+		Database database;
+		Liquibase liquibase = null;
 		try (Connection connection = dataSource.getConnection()) {
-			Database database;
-			Liquibase liquibase = null;
-
 			try {
 				database = DatabaseFactory.getInstance()
 					.findCorrectDatabaseImplementation(new JdbcConnection(connection));
@@ -122,21 +121,21 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 			Map<String, String> failureReasons) {
 		long duration = System.currentTimeMillis() - startTime;
 		StringBuilder summary = new StringBuilder();
-		summary.append("\n========== Migration Summary ==========\n");
-		summary.append(String.format("Total Execution Time: %d seconds\n", duration / 1000));
-		summary.append(String.format("Total Tenants: %d\n", successfulTenants.size() + failedTenants.size()));
-		summary.append(String.format("Successful Migrations: %d\n", successfulTenants.size()));
-		summary.append(String.format("Failed Migrations: %d\n", failedTenants.size()));
+		summary.append(String.format("%n========== Migration Summary ==========%n"));
+		summary.append(String.format("Total Execution Time: %d seconds%n", duration / 1000));
+		summary.append(String.format("Total Tenants: %d%n", successfulTenants.size() + failedTenants.size()));
+		summary.append(String.format("Successful Migrations: %d%n", successfulTenants.size()));
+		summary.append(String.format("Failed Migrations: %d%n", failedTenants.size()));
 
 		if (!successfulTenants.isEmpty()) {
-			summary.append("\nSuccessfully Migrated Tenants:\n");
-			successfulTenants.forEach(tenant -> summary.append(String.format("- %s\n", tenant)));
+			summary.append(String.format("%nSuccessfully Migrated Tenants:%n"));
+			successfulTenants.forEach(tenant -> summary.append(String.format("- %s%n", tenant)));
 		}
 
 		if (!failedTenants.isEmpty()) {
-			summary.append("\nFailed Migrations:\n");
+			summary.append(String.format("%nFailed Migrations:%n"));
 			failedTenants
-				.forEach(tenant -> summary.append(String.format("- %s: %s\n", tenant, failureReasons.get(tenant))));
+				.forEach(tenant -> summary.append(String.format("- %s: %s%n", tenant, failureReasons.get(tenant))));
 		}
 
 		summary.append("=====================================");

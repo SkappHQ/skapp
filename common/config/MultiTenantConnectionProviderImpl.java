@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,10 @@ import java.sql.SQLException;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionProvider<String> {
 
-	private final DataSource dataSource;
-
-	public MultiTenantConnectionProviderImpl(DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
+	private final transient DataSource dataSource;
 
 	@Override
 	public Connection getAnyConnection() throws SQLException {

@@ -1,15 +1,21 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.model.Module;
 import com.skapp.enterprise.common.payload.request.SaveModulesRequestDto;
+import com.skapp.enterprise.common.payload.response.SaveModulesResponseDto;
 import com.skapp.enterprise.common.repository.ModuleDao;
 import com.skapp.enterprise.common.service.ModuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,12 @@ import java.util.stream.Collectors;
 public class ModuleServiceImpl implements ModuleService {
 
 	private final ModuleDao moduleDao;
+
+	private final JwtService jwtService;
+
+	private final UserDetailsService userDetailsService;
+
+	private final UserService userService;
 
 	@Override
 	@Transactional
@@ -45,9 +57,20 @@ public class ModuleServiceImpl implements ModuleService {
 
 		moduleDao.saveAll(newModules);
 
+		User currentUser = userService.getCurrentUser();
 		List<String> activeModules = getActiveModuleNames();
-		log.info("Successfully saved new modules. Active modules: {}", activeModules);
-		return new ResponseEntityDto(false, activeModules);
+		SaveModulesResponseDto response = new SaveModulesResponseDto();
+		response.setActiveModules(activeModules);
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(currentUser.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, currentUser.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		response.setAccessToken(accessToken);
+		response.setRefreshToken(refreshToken);
+
+		log.info("Successfully saved new modules. Active modules: {}", response);
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override
@@ -61,7 +84,7 @@ public class ModuleServiceImpl implements ModuleService {
 			.toList();
 
 		log.info("Found active modules: {}", activeModules);
-		return new ResponseEntityDto(true, activeModules);
+		return new ResponseEntityDto(false, activeModules);
 	}
 
 	@Override
@@ -73,7 +96,7 @@ public class ModuleServiceImpl implements ModuleService {
 			.map(Module::getModuleName)
 			.anyMatch(module -> module != ModuleType.PEOPLE && module != ModuleType.COMMON);
 
-		return new ResponseEntityDto(true, hasSelectedModules);
+		return new ResponseEntityDto(false, hasSelectedModules);
 	}
 
 	private List<String> getActiveModuleNames() {
