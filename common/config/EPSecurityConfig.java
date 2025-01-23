@@ -3,8 +3,8 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
 import com.skapp.community.common.component.ResetDatabaseApiKeyFilter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,7 +28,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -38,23 +37,20 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Primary
 public class EPSecurityConfig {
 
-	@NonNull
 	private final EpJwtAuthFilter epJwtAuthFilter;
 
-	@NonNull
 	private final TenantFilter tenantFilter;
 
-	@NonNull
 	private final UserDetailsService userDetailsService;
 
-	@NonNull
 	private final AuthEntryPoint authEntryPoint;
 
-	@NonNull
 	private final ResetDatabaseApiKeyFilter resetDatabaseApiKeyFilter;
 
-	@NonNull
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
+
+	@Value("${cors.allowed-origins}")
+	private String allowedOrigins;
 
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
@@ -117,9 +113,11 @@ public class EPSecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("*"));
+		String[] origins = allowedOrigins.split(",");
+
+		configuration.setAllowedOriginPatterns(Arrays.asList(origins));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "X-Tenant-ID"));
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
