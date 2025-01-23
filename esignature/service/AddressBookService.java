@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.type.UserType;
 
@@ -13,5 +14,7 @@ public interface AddressBookService {
 	 * @return The AddressBook entry.
 	 */
 	ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUser, UserType type);
+
+	ResponseEntityDto getAddressBookContacts(AddressBookFilterDto addressBookFilterDto);
 
 }

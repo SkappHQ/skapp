@@ -1,12 +1,12 @@
 package com.skapp.enterprise.esignature.repository;
 
-import com.skapp.enterprise.esignature.model.AddressBook;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AddressBookRepository extends JpaRepository<AddressBook, Long> {
+public interface AddressBookRepository {
 
-	void deleteByInternalUserUserId(Long internalUserId);
+	PageDto fetchAddressBookWithPaginationAndSorting(AddressBookFilterDto addressBookFilterDto);
 
 }
