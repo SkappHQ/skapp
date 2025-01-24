@@ -9,6 +9,7 @@ import com.skapp.community.common.type.ModuleType;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.model.Module;
 import com.skapp.enterprise.common.payload.request.SaveModulesRequestDto;
+import com.skapp.enterprise.common.payload.request.UpdateModulesRequestDto;
 import com.skapp.enterprise.common.payload.response.SaveModulesResponseDto;
 import com.skapp.enterprise.common.repository.ModuleDao;
 import com.skapp.enterprise.common.service.ModuleService;
@@ -99,6 +100,35 @@ public class ModuleServiceImpl implements ModuleService {
 		return new ResponseEntityDto(false, hasSelectedModules);
 	}
 
+	@Override
+	@Transactional
+	public ResponseEntityDto updateModules(UpdateModulesRequestDto updateModulesRequestDto) {
+		log.info("Received request to update module: {}", updateModulesRequestDto);
+
+		validateUpdateRequest(updateModulesRequestDto);
+		ModuleType moduleType;
+
+		moduleType = ModuleType.fromDisplayName(updateModulesRequestDto.getModuleName());
+
+		List<String> activeModules = getActiveModuleNames();
+		boolean isModuleActive = activeModules.contains(moduleType.name());
+
+		if (updateModulesRequestDto.getIsToggled() && !isModuleActive) {
+			log.info("Enabling module: {}", moduleType.name());
+			Module newModule = createModule(moduleType);
+			moduleDao.save(newModule);
+		}
+		else if (!updateModulesRequestDto.getIsToggled() && isModuleActive) {
+			log.info("Disabling module: {}", moduleType.name());
+			moduleDao.deleteById(moduleType);
+		}
+
+		activeModules = getActiveModuleNames();
+		log.info("Successfully updated module. Active modules: {}", activeModules);
+
+		return new ResponseEntityDto(false, activeModules);
+	}
+
 	private List<String> getActiveModuleNames() {
 		return moduleDao.findAll().stream().map(module -> module.getModuleName().name()).sorted().toList();
 	}
@@ -118,6 +148,32 @@ public class ModuleServiceImpl implements ModuleService {
 
 		if (hasInvalidModules) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_TYPE);
+		}
+	}
+
+	private void validateUpdateRequest(UpdateModulesRequestDto request) {
+		if (request == null || request.getModuleName() == null || request.getModuleName().trim().isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SELECTED_MODULES_CANNOT_BE_NULL);
+		}
+
+		ModuleType moduleType = Arrays.stream(ModuleType.values())
+			.filter(type -> type.getDisplayName().equalsIgnoreCase(request.getModuleName()))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_TYPE));
+
+		boolean isModuleInDb = moduleDao.existsById(moduleType);
+
+		Boolean toggled = request.getIsToggled();
+		if (toggled == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_STATUS);
+		}
+
+		if (toggled && isModuleInDb) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MODULE_ALREADY_SELECTED);
+		}
+
+		if (!toggled && !isModuleInDb) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MODULE_ALREADY_DESELECTED);
 		}
 	}
 
