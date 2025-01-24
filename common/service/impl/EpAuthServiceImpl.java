@@ -113,8 +113,11 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 	private final EpPeopleService epPeopleService;
 
-	@Value("${jwt.refresh-token.expiration-time}")
-	private Long jwtRefreshTokenExpirationMs;
+	@Value("${jwt.refresh-token.long-duration.expiration-time}")
+	private Long jwtLongDurationRefreshTokenExpirationMs;
+
+	@Value("${jwt.refresh-token.short-duration.expiration-time}")
+	private Long jwtShortDurationRefreshTokenExpirationMs;
 
 	@Value("${jwt.access-token.expiration-time}")
 	private Long jwtAccessTokenExpirationMs;
@@ -522,6 +525,15 @@ public class EpAuthServiceImpl implements EpAuthService {
 		claims.put(AuthConstants.TOKEN_TYPE, TokenType.REFRESH);
 		claims.put(AuthConstants.USER_ID, userId);
 		claims.put(EpAuthConstants.TENANT_ID, EpCommonConstants.MASTER_DATABASE);
+
+		long jwtRefreshTokenExpirationMs;
+
+		if (userDetails.getAuthorities().contains("ROLE_SUPER_ADMIN")) {
+			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;
+		}
+		else {
+			jwtRefreshTokenExpirationMs = jwtShortDurationRefreshTokenExpirationMs;
+		}
 		return generateToken(claims, userDetails, jwtRefreshTokenExpirationMs);
 	}
 
