@@ -51,7 +51,7 @@ public class TenantServiceImpl implements TenantService {
 	public void deleteTenant(String companyDomain) {
 		Tenant tenant = tenantDao.findByTenantName(companyDomain);
 		if (tenant == null) {
-			log.error("Tenant not found: {}", companyDomain);
+			log.error("deleteTenant: Tenant not found: {}", companyDomain);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
 					new String[] { companyDomain });
 		}
@@ -62,7 +62,16 @@ public class TenantServiceImpl implements TenantService {
 
 	@Override
 	public ResponseEntityDto getTenant(String tenantName) {
+		if (tenantName == null || tenantName.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NAME_REQUIRED);
+		}
+
 		Tenant tenant = tenantDao.findByTenantName(tenantName);
+		if (tenant == null) {
+			log.error("getTenant: Tenant not found: {}", tenantName);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
+					new String[] { tenantName });
+		}
 
 		return switch (tenant.getLoginMethod().name()) {
 			case "CREDENTIALS" -> new ResponseEntityDto(false, LoginMethod.CREDENTIALS);

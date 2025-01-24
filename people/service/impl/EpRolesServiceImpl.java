@@ -111,7 +111,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 	}
 
 	@Override
-	protected EmployeeRole setupBulkEmployeeRoles(Employee employee) {
+	public EmployeeRole setupBulkEmployeeRoles(Employee employee) {
 		EmployeeRole employeeRole = super.setupBulkEmployeeRoles(employee);
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
 		return employeeRole;
