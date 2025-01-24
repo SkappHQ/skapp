@@ -1,7 +1,7 @@
 package com.skapp.enterprise.common.component.event.handler;
 
-import com.skapp.community.common.util.event.UserDeactivatedEvent;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.util.event.UserDeactivatedEvent;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
