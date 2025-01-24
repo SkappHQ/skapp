@@ -30,6 +30,7 @@ import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
+import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.service.TenantService;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +79,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	private final UserDetailsService userDetailsService;
 
 	private final ApplicationEventPublisher applicationEventPublisher;
+
+	private final ModuleService moduleService;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -285,6 +288,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		timeService.getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		moduleService.saveDefaultModules();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

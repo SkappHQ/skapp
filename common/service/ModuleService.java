@@ -8,6 +8,8 @@ public interface ModuleService {
 
 	ResponseEntityDto saveModules(SaveModulesRequestDto saveModulesRequestDto);
 
+	void saveDefaultModules();
+
 	ResponseEntityDto getActiveModules();
 
 	ResponseEntityDto hasSelectedModules();

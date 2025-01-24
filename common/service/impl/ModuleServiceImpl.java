@@ -75,6 +75,13 @@ public class ModuleServiceImpl implements ModuleService {
 	}
 
 	@Override
+	public void saveDefaultModules() {
+		Set<Module> defaultModules = Set.of(createModule(ModuleType.PEOPLE), createModule(ModuleType.ATTENDANCE),
+				createModule(ModuleType.LEAVE));
+		moduleDao.saveAll(defaultModules);
+	}
+
+	@Override
 	public ResponseEntityDto getActiveModules() {
 		log.info("Fetching active modules");
 
