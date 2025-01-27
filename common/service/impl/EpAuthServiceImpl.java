@@ -12,6 +12,7 @@ import com.skapp.community.common.payload.response.SignInResponseDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.LoginMethod;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -68,11 +69,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -526,14 +523,25 @@ public class EpAuthServiceImpl implements EpAuthService {
 		claims.put(AuthConstants.USER_ID, userId);
 		claims.put(EpAuthConstants.TENANT_ID, EpCommonConstants.MASTER_DATABASE);
 
+		Set<String> shortDurationRoles = new HashSet<>();
+		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN);
+		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_ADMIN);
+		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
+		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
+
+		boolean hasShortDurationRole = userDetails.getAuthorities()
+			.stream()
+			.anyMatch(authority -> shortDurationRoles.contains(authority.getAuthority()));
+
 		long jwtRefreshTokenExpirationMs;
 
-		if (userDetails.getAuthorities().contains("ROLE_SUPER_ADMIN")) {
-			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;
-		}
-		else {
+		if (hasShortDurationRole) {
 			jwtRefreshTokenExpirationMs = jwtShortDurationRefreshTokenExpirationMs;
 		}
+		else {
+			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;
+		}
+
 		return generateToken(claims, userDetails, jwtRefreshTokenExpirationMs);
 	}
 
