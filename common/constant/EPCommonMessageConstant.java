@@ -67,7 +67,9 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_MODULE_STATUS("ep.common.error.invalid-module-status"),
 	EP_COMMON_ERROR_MODULE_ALREADY_SELECTED("ep.common.error.module-already-selected"),
 	EP_COMMON_ERROR_MODULE_ALREADY_DESELECTED("ep.common.error.module-already-deselected"),
-	EP_COMMON_ERROR_TENANT_NAME_REQUIRED("ep.common.error.tenant-name-required"),;
+	EP_COMMON_ERROR_TENANT_NAME_REQUIRED("ep.common.error.tenant-name-required"),
+	EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND("ep.common.error.calendar-config-not-found"),
+	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),;
 
 	private final String messageKey;
 

@@ -33,4 +33,12 @@ public class EpCommonConstants {
 
 	public static final int ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT = 1;
 
+	public static final String ENTERPRISE_CALENDER_TYPE_GOOGLE = "GOOGLE";
+
+	public static final String ENTERPRISE_CALENDER_TYPE_OUTLOOK = "OUTLOOK";
+
+	public static final String ENTERPRISE_CALENDER_TYPE = "type";
+
+	public static final String ENTERPRISE_CALENDER_IS_ENABLED = "is_enabled";
+
 }

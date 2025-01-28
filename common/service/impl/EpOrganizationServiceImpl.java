@@ -1,11 +1,17 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.event.UserCreatedEvent;
@@ -25,9 +31,12 @@ import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
+import com.skapp.enterprise.common.payload.request.EpCalendarConfigRequestDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
+import com.skapp.enterprise.common.payload.response.EpCalenderConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.service.EpCalenderService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.ModuleService;
@@ -41,6 +50,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
@@ -81,6 +93,10 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	private final ModuleService moduleService;
+
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final ObjectMapper objectMapper;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -166,6 +182,71 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	public ResponseEntityDto getTenantLoginType(String tenantName) {
 		log.info("getTenantLoginType executed by: {}", tenantName);
 		return tenantService.getTenant(tenantName);
+	}
+
+	@Override
+	public ResponseEntityDto saveCalendarConfigs(List<EpCalendarConfigRequestDto> epCalendarConfigRequestDtos) {
+		log.info("saveCalendarConfigs: execution started");
+
+		Optional<OrganizationConfig> existingConfigOptional = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.CALENDAR_CONFIGS);
+
+		try {
+			String updatedJsonCalendarConfigs = objectMapper.writeValueAsString(epCalendarConfigRequestDtos);
+			OrganizationConfig organizationConfig = existingConfigOptional.orElseGet(
+					() -> new OrganizationConfig(OrganizationConfigType.CALENDAR_CONFIGS, updatedJsonCalendarConfigs));
+
+			organizationConfig.setOrganizationConfigValue(updatedJsonCalendarConfigs);
+			organizationConfigDao.save(organizationConfig);
+
+			log.info("saveCalendarConfigs: execution ended successfully");
+
+			List<EpCalenderConfigResponseDto> responseDtos = objectMapper.convertValue(epCalendarConfigRequestDtos,
+					new TypeReference<>() {
+					});
+
+			return new ResponseEntityDto(false, responseDtos);
+
+		}
+		catch (JsonProcessingException e) {
+			log.error("Error converting email server configuration to JSON: {}", e.getMessage());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
+		}
+	}
+
+	@Override
+	public ResponseEntityDto getCalendarConfigs() {
+		log.info("getCalendarConfigs: execution started");
+
+		Optional<OrganizationConfig> existingConfigOptional = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.CALENDAR_CONFIGS);
+
+		if (existingConfigOptional.isPresent()) {
+			OrganizationConfig existingConfig = existingConfigOptional.get();
+
+			try {
+				String calendarConfigJson = existingConfig.getOrganizationConfigValue();
+
+				List<EpCalenderConfigResponseDto> responseDtos = objectMapper.readValue(calendarConfigJson,
+						new TypeReference<>() {
+						});
+
+				log.info("getCalendarConfigs: execution ended successfully");
+
+				return new ResponseEntityDto(false, responseDtos);
+
+			}
+			catch (JsonProcessingException e) {
+				log.error("Error processing calendar configuration JSON: {}", e.getMessage());
+				throw new ModuleException(
+						EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
+			}
+
+		}
+		else {
+			log.error("No calendar configuration found");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
 	}
 
 	private User createSuperAdminUser(SuperAdmin superAdmin) {

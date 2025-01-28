@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.request.EpCalendarConfigRequestDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import jakarta.validation.Valid;
@@ -8,12 +9,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,6 +37,21 @@ public class EpOrganizationController {
 	@GetMapping(value = "/login-method", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getTenantLoginMethod(@RequestParam String tenantName) {
 		return new ResponseEntity<>(epOrganizationService.getTenantLoginType(tenantName), HttpStatus.OK);
+	}
+
+	@PatchMapping("/configs/calendar")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> saveCalendarConfigs(
+			@Valid @RequestBody List<EpCalendarConfigRequestDto> epCalendarConfigRequestDtos) {
+		ResponseEntityDto response = epOrganizationService.saveCalendarConfigs(epCalendarConfigRequestDtos);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/configs/calendar")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getCalendarConfigs() {
+		ResponseEntityDto response = epOrganizationService.getCalendarConfigs();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
