@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.model.Module;
 import com.skapp.enterprise.common.payload.request.SaveModulesRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateModulesRequestDto;
 import com.skapp.enterprise.common.payload.response.SaveModulesResponseDto;
+import com.skapp.enterprise.common.payload.response.UpdateModulesResponseDto;
 import com.skapp.enterprise.common.repository.ModuleDao;
 import com.skapp.enterprise.common.service.ModuleService;
 import lombok.RequiredArgsConstructor;
@@ -130,10 +131,19 @@ public class ModuleServiceImpl implements ModuleService {
 			moduleDao.deleteById(moduleType);
 		}
 
+		UpdateModulesResponseDto response = new UpdateModulesResponseDto();
 		activeModules = getActiveModuleNames();
-		log.info("Successfully updated module. Active modules: {}", activeModules);
+		User currentUser = userService.getCurrentUser();
 
-		return new ResponseEntityDto(false, activeModules);
+		UserDetails userDetails = userDetailsService.loadUserByUsername(currentUser.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, currentUser.getUserId());
+
+		response.setActiveModules(activeModules);
+		response.setAccessToken(accessToken);
+
+		log.info("Successfully updated module. Active modules: {}", response);
+
+		return new ResponseEntityDto(false, response);
 	}
 
 	private List<String> getActiveModuleNames() {
