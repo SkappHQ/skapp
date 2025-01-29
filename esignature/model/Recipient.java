@@ -13,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +37,7 @@ public class Recipient {
 	private String email;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "member_role")
 	private MemberRole memberRole;
 
 	@Enumerated(EnumType.STRING)
@@ -53,7 +53,7 @@ public class Recipient {
 	@OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Field> fields;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "address_book_id")
 	private AddressBook addressBook;
 
