@@ -19,10 +19,14 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class AddressBookRepositoryImpl implements AddressBookRepository {
@@ -48,11 +52,9 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 		String keyword = addressBookFilterDto.getSearchKeyword();
 		if (keyword != null && !keyword.trim().isEmpty()) {
-			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)),
-					"%" + keyword.toLowerCase() + "%");
-			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)),
-					"%" + keyword.toLowerCase() + "%");
-			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), "%" + keyword.toLowerCase() + "%");
+			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 
 			query.where(cb.or(firstNameLike, lastNameLike, emailLike));
 
@@ -85,6 +87,43 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		pageDto.setItems(typedQuery.getResultList());
 
 		return pageDto;
+	}
+
+	@Override
+	public List<AddressBookUserData> fetchAddressBookContactsByEmailPriority(String keyword) {
+		if (keyword != null && !keyword.trim().isEmpty()) {
+			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+			CriteriaQuery<AddressBookUserData> query = cb.createQuery(AddressBookUserData.class);
+			Root<AddressBook> addressBookRoot = query.from(AddressBook.class);
+
+			Join<AddressBook, User> internalUserJoin = addressBookRoot.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
+			Join<AddressBook, ExternalUser> externalUserJoin = addressBookRoot.join(AddressBook_.EXTERNAL_USER,
+					JoinType.LEFT);
+			Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+
+			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
+
+			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
+					user.userType(), user.firstName(), user.lastName(), user.authPic()));
+
+			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
+
+			query.where(cb.or(emailLike, firstNameLike, lastNameLike));
+
+			Order sortingOrder = cb.asc(cb.selectCase()
+				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)
+				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 2)
+				.when(cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%"), 3)
+				.otherwise(4));
+
+			query.orderBy(sortingOrder);
+			TypedQuery<AddressBookUserData> typedQuery = entityManager.createQuery(query);
+			return typedQuery.getResultList();
+		}
+
+		return new ArrayList<>();
 	}
 
 	private AddressBookUserView getAddressBookUserView(CriteriaBuilder cb, Join<AddressBook, User> internalUserJoin,

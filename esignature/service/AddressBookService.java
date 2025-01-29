@@ -17,4 +17,6 @@ public interface AddressBookService {
 
 	ResponseEntityDto getAddressBookContacts(AddressBookFilterDto addressBookFilterDto);
 
+	ResponseEntityDto fetchAddressBookContactsByEmailPriority(String keyWord);
+
 }

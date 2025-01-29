@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,6 +45,18 @@ public class AddressBookController {
 	public ResponseEntity<ResponseEntityDto> getAddressBookContacts(@Valid AddressBookFilterDto addressBookFilterDto) {
 
 		ResponseEntityDto response = addressBookService.getAddressBookContacts(addressBookFilterDto);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "get recipients by search keyword",
+			description = "This endpoint retrieves all address book contacts that match the provided keyword. "
+					+ "The search results are prioritized based on email,firstname,lastname.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
+	@GetMapping(value = "/recipients/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> searchRecipientsByEmailPriority(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.fetchAddressBookContactsByEmailPriority(keyWord);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
