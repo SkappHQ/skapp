@@ -13,5 +13,4 @@ public class UpdateModulesResponseDto {
 
 	private String accessToken;
 
-
 }
