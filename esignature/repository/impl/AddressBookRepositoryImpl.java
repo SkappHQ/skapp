@@ -58,7 +58,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 			query.where(cb.or(firstNameLike, lastNameLike, emailLike));
 
-			query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()), cb.asc(user.email()));
+			Order sortingOrder = cb.asc(cb.selectCase()
+				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 1)
+				.when(cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%"), 2)
+				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 3)
+				.otherwise(4));
+			query.orderBy(sortingOrder);
 		}
 		else {
 			if (addressBookFilterDto.getSortOrder().isAscending()) {
