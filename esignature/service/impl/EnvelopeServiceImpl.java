@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
@@ -16,6 +17,7 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
@@ -228,6 +230,21 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (envelope.getExpireAt() == null || envelope.getExpireAt().isBefore(LocalDateTime.now())) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VALIDATION_ENTER_ENVELOPE_EXPIRES_AT);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getEmployeeNeedToSignEnvelopeCount(Long id) {
+		User currentUser = userService.getCurrentUser();
+		log.info("getEmployeeNeedToSignEnvelopeCount: execution started by user: {}", currentUser.getUserId());
+
+		long countNeedToSignEnvelopes = envelopeDao.countNeedToSignEnvelopes(id);
+
+		EmployeeKPIResponseDto employeeKPIResponseDto = new EmployeeKPIResponseDto();
+		employeeKPIResponseDto.setNeedToSignCount(countNeedToSignEnvelopes);
+
+		log.info("getEmployeeNeedToSignEnvelopeCount: execution ended");
+
+		return new ResponseEntityDto(false, employeeKPIResponseDto);
 	}
 
 }

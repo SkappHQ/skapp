@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,16 @@ public class EnvelopeController {
 			@PathVariable @Schema(description = "ID of the employee to update", example = "1") Long id,
 			@Valid @RequestBody EnvelopeUpdateDto envelopeUpdateDto) {
 		ResponseEntityDto response = envelopeService.updateEnvelope(id, envelopeUpdateDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Esignature Employee Need To Sign KPI",
+			description = "This endpoint returns the count of envelopes that need to be signed by a specific employee.")
+	@GetMapping(value = "need-to-sign/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getEmployeeNeedToSignEnvelopeCount(
+			@PathVariable @Schema(description = "ID of the employee to get count") Long id) {
+		ResponseEntityDto response = envelopeService.getEmployeeNeedToSignEnvelopeCount(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
