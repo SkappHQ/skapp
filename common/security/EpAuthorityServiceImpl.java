@@ -1,12 +1,11 @@
 package com.skapp.enterprise.common.security;
 
-import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityServiceImpl;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.enterprise.common.model.Module;
+import com.skapp.enterprise.common.model.ModuleConfig;
 import com.skapp.enterprise.common.repository.ModuleDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -37,12 +36,23 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.ESIGN_ADMIN, Role.ESIGN_SENDER,
 					Role.ESIGN_EMPLOYEE));
 
-		List<ModuleType> activeModuleTypes = moduleDao.findAll().stream().map(Module::getModuleName).toList();
-
+		ModuleConfig moduleConfig = moduleDao.findAll().getFirst();
 		return authorities.stream().filter(authority -> {
 			String auth = authority.getAuthority();
-			return auth.equals(AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN)
-					|| activeModuleTypes.stream().anyMatch(moduleType -> auth.contains(String.valueOf(moduleType)));
+
+			if (auth.contains(Role.SUPER_ADMIN.name()) || auth.contains(ModuleType.PEOPLE.name())) {
+				return true;
+			}
+			if (auth.contains(ModuleType.LEAVE.name())) {
+				return moduleConfig.isLeaveModule();
+			}
+			if (auth.contains(ModuleType.ATTENDANCE.name())) {
+				return moduleConfig.isAttendanceModule();
+			}
+			if (auth.contains(ModuleType.ESIGN.name())) {
+				return moduleConfig.isEsignModule();
+			}
+			return false;
 		}).toList();
 	}
 

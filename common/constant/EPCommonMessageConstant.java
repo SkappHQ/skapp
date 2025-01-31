@@ -79,7 +79,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_UNABLE_TO_DISCONNECT_FROM_GOOGLE_CALENDAR("ep.common.error.unable-to-disconnect-from-calendar"),
 	EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR("ep.common.error.unable-to-revoke-permission"),
 	EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL("ep.common.error.unable-to-fetch-organization-url"),
-	EP_COMMON_INVALID_ORGANIZATION_URL("ep.common.error.invalid-organization-url"),;
+	EP_COMMON_INVALID_ORGANIZATION_URL("ep.common.error.invalid-organization-url"),
+	EP_COMMON_ERROR_MODULE_CONFIG_NOT_FOUND("ep.common.error.module-config-not-found");
 
 	private final String messageKey;
 
