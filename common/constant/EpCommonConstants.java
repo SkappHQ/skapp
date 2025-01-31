@@ -2,6 +2,9 @@ package com.skapp.enterprise.common.constant;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Arrays;
+import java.util.List;
+
 @UtilityClass
 public class EpCommonConstants {
 
@@ -12,6 +15,11 @@ public class EpCommonConstants {
 	public static final String JWT_ISSUER = "https://accounts.google.com";
 
 	public static final String JWK_PROVIDER = "https://www.googleapis.com/oauth2/v3/certs";
+
+	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
+
+	public final List<String> ENTERPRISE_GOOGLE_SCOPES = Arrays
+		.asList("https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar");
 
 	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 50;
 
@@ -33,12 +41,8 @@ public class EpCommonConstants {
 
 	public static final int ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT = 1;
 
-	public static final String ENTERPRISE_CALENDER_TYPE_GOOGLE = "GOOGLE";
+	public static final String ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE = ":::---:::";
 
-	public static final String ENTERPRISE_CALENDER_TYPE_OUTLOOK = "OUTLOOK";
-
-	public static final String ENTERPRISE_CALENDER_TYPE = "type";
-
-	public static final String ENTERPRISE_CALENDER_IS_ENABLED = "is_enabled";
+	public static final String ENTERPRISE_GOOGLE_ACCESS_TYPE = "offline";
 
 }

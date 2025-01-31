@@ -2,6 +2,6 @@ package com.skapp.enterprise.common.type;
 
 public enum EpCalendarType {
 
-	GOOGLE, OUTLOOK
+	NONE, GOOGLE, OUTLOOK
 
 }

@@ -1,17 +1,15 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.event.UserCreatedEvent;
@@ -30,13 +28,14 @@ import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.model.EpOrganization;
+import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.payload.request.EpCalendarConfigRequestDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
-import com.skapp.enterprise.common.payload.response.EpCalenderConfigResponseDto;
+import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
+import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
-import com.skapp.enterprise.common.service.EpCalenderService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.ModuleService;
@@ -52,7 +51,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
@@ -94,7 +93,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final ModuleService moduleService;
 
-	private final OrganizationConfigDao organizationConfigDao;
+	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
 	private final ObjectMapper objectMapper;
 
@@ -185,68 +184,47 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	}
 
 	@Override
-	public ResponseEntityDto saveCalendarConfigs(List<EpCalendarConfigRequestDto> epCalendarConfigRequestDtos) {
-		log.info("saveCalendarConfigs: execution started");
+	public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
+		log.info("editCalendarConfigs: execution started");
 
-		Optional<OrganizationConfig> existingConfigOptional = organizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.CALENDAR_CONFIGS);
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
-		try {
-			String updatedJsonCalendarConfigs = objectMapper.writeValueAsString(epCalendarConfigRequestDtos);
-			OrganizationConfig organizationConfig = existingConfigOptional.orElseGet(
-					() -> new OrganizationConfig(OrganizationConfigType.CALENDAR_CONFIGS, updatedJsonCalendarConfigs));
-
-			organizationConfig.setOrganizationConfigValue(updatedJsonCalendarConfigs);
-			organizationConfigDao.save(organizationConfig);
-
-			log.info("saveCalendarConfigs: execution ended successfully");
-
-			List<EpCalenderConfigResponseDto> responseDtos = objectMapper.convertValue(epCalendarConfigRequestDtos,
-					new TypeReference<>() {
-					});
-
-			return new ResponseEntityDto(false, responseDtos);
-
+		if (organizationCalendars.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
-		catch (JsonProcessingException e) {
-			log.error("Error converting email server configuration to JSON: {}", e.getMessage());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
+
+		OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
+
+		if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
+				epCalendarConfigRequestDto.getIsGoogleCalenderEnabled())) {
+
+			epOrganizationCalenderDao.delete(existingOrganizationCalendar);
+
+			OrganizationCalendar newCalendar = new OrganizationCalendar();
+			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalenderEnabled());
+			epOrganizationCalenderDao.save(newCalendar);
+
+			log.info("editCalendarConfigs: execution ended successfully");
+			return new ResponseEntityDto(false, newCalendar);
 		}
+
+		return new ResponseEntityDto(false, existingOrganizationCalendar);
 	}
 
 	@Override
 	public ResponseEntityDto getCalendarConfigs() {
 		log.info("getCalendarConfigs: execution started");
 
-		Optional<OrganizationConfig> existingConfigOptional = organizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.CALENDAR_CONFIGS);
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
-		if (existingConfigOptional.isPresent()) {
-			OrganizationConfig existingConfig = existingConfigOptional.get();
-
-			try {
-				String calendarConfigJson = existingConfig.getOrganizationConfigValue();
-
-				List<EpCalenderConfigResponseDto> responseDtos = objectMapper.readValue(calendarConfigJson,
-						new TypeReference<>() {
-						});
-
-				log.info("getCalendarConfigs: execution ended successfully");
-
-				return new ResponseEntityDto(false, responseDtos);
-
-			}
-			catch (JsonProcessingException e) {
-				log.error("Error processing calendar configuration JSON: {}", e.getMessage());
-				throw new ModuleException(
-						EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-			}
-
-		}
-		else {
-			log.error("No calendar configuration found");
+		if (organizationCalendars.isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
+
+		EpCalendarConfigResponseDto epCalendarConfigResponseDto = epCommonMapper
+			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
+
+		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
 	}
 
 	private User createSuperAdminUser(SuperAdmin superAdmin) {
@@ -278,7 +256,32 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		superAdminRoles.setEmployee(employee);
 		superAdminRoles.setRoleChangedBy(employee);
 
+		UserSettings userSettings = createNotificationSettings(user);
+		user.setSettings(userSettings);
+
 		return userDao.save(user);
+	}
+
+	private UserSettings createNotificationSettings(User user) {
+		log.info("createNotificationSettings: execution started");
+		UserSettings userSettings = new UserSettings();
+
+		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
+
+		boolean isLeaveRequestNotificationsEnabled = true;
+		boolean isTimeEntryNotificationsEnabled = true;
+		boolean isNudgeNotificationsEnabled = true;
+
+		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST.getKey(),
+				isLeaveRequestNotificationsEnabled);
+		notificationsObjectNode.put(NotificationSettingsType.TIME_ENTRY.getKey(), isTimeEntryNotificationsEnabled);
+		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST_NUDGE.getKey(), isNudgeNotificationsEnabled);
+
+		userSettings.setNotifications(notificationsObjectNode);
+		userSettings.setUser(user);
+
+		log.info("createNotificationSettings: execution ended");
+		return userSettings;
 	}
 
 	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,

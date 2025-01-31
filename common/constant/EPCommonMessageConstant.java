@@ -69,7 +69,17 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_MODULE_ALREADY_DESELECTED("ep.common.error.module-already-deselected"),
 	EP_COMMON_ERROR_TENANT_NAME_REQUIRED("ep.common.error.tenant-name-required"),
 	EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND("ep.common.error.calendar-config-not-found"),
-	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),;
+	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
+	EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH("ep.common.error.calendar-state-mismatch"),
+	EP_COMMON_ERROR_USER_ID_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-id-mismatch-with-current-user"),
+	EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR("ep.common.error.unable-to-connect-to-calendar"),
+	EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR(
+			"ep.common.error.unable-to-generate-access-token-to-calendar"),
+	EP_COMMON_UNABLE_TO_GET_AUTH_URL_CALENDAR("ep.common.error.unable-to-get-auth-url-calendar"),
+	EP_COMMON_UNABLE_TO_DISCONNECT_FROM_GOOGLE_CALENDAR("ep.common.error.unable-to-disconnect-from-calendar"),
+	EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR("ep.common.error.unable-to-revoke-permission"),
+	EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL("ep.common.error.unable-to-fetch-organization-url"),
+	EP_COMMON_INVALID_ORGANIZATION_URL("ep.common.error.invalid-organization-url"),;
 
 	private final String messageKey;
 

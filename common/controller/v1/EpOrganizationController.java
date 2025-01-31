@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/ep/organization")
@@ -39,15 +37,15 @@ public class EpOrganizationController {
 		return new ResponseEntity<>(epOrganizationService.getTenantLoginType(tenantName), HttpStatus.OK);
 	}
 
-	@PatchMapping("/configs/calendar")
+	@PatchMapping("/calendar")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> saveCalendarConfigs(
-			@Valid @RequestBody List<EpCalendarConfigRequestDto> epCalendarConfigRequestDtos) {
-		ResponseEntityDto response = epOrganizationService.saveCalendarConfigs(epCalendarConfigRequestDtos);
+	public ResponseEntity<ResponseEntityDto> editCalendarConfigs(
+			@Valid @RequestBody EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
+		ResponseEntityDto response = epOrganizationService.editCalendarConfigs(epCalendarConfigRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/configs/calendar")
+	@GetMapping("/calendar")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getCalendarConfigs() {
 		ResponseEntityDto response = epOrganizationService.getCalendarConfigs();
