@@ -3,10 +3,12 @@ package com.skapp.enterprise.common.mapper;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.model.EpOrganization;
+import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.DeviceTokenResponseDto;
+import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import org.mapstruct.Mapper;
 
@@ -22,5 +24,8 @@ public interface EpCommonMapper {
 	SuperAdmin createEpGoogleDataDtoToSuperAdmin(EpSignUpGoogleDataDto epSignUpGoogleDataDto);
 
 	DeviceTokenResponseDto deviceTokenToDeviceTokenResponse(DeviceToken deviceToken);
+
+	EpCalendarConfigResponseDto organizationCalendarToEpCalendarConfigResponseDto(
+			OrganizationCalendar organizationCalendar);
 
 }

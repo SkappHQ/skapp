@@ -85,7 +85,8 @@ public class EPSecurityConfig {
 						"/v1/ep/auth/domain/verify", "/v1/ep/tenant/create", "/v1/ep/auth/recaptcha", "/health",
 						"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
 						"/v1/ep/auth/password-reset/verify-otp", "/v1/ep/auth/password-reset/send-otp",
-						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability")
+						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
+						"/v1/google-calendar/redirect")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()

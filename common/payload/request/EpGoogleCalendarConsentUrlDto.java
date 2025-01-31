@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EpCalendarConfigRequestDto {
+public class EpGoogleCalendarConsentUrlDto {
 
-	private Boolean isGoogleCalenderEnabled;
+	private String frontendRedirectUrl;
 
 }
