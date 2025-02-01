@@ -195,7 +195,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
 			epOrganizationCalenderDao.save(newCalendar);
 			return new ResponseEntityDto(false, newCalendar);
-		} else {
+		}
+		else {
 			OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
 
 			if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
@@ -211,7 +212,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 				return new ResponseEntityDto(false, newCalendar);
 			}
 
-			else{
+			else {
 				return new ResponseEntityDto(false, existingOrganizationCalendar);
 			}
 		}
