@@ -184,28 +184,37 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
 		log.info("editCalendarConfigs: execution started");
 
+		if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY);
+		}
+
 		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
 		if (organizationCalendars.isEmpty()) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
-		}
-
-		OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
-
-		if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
-				epCalendarConfigRequestDto.getIsGoogleCalenderEnabled())) {
-
-			epOrganizationCalenderDao.delete(existingOrganizationCalendar);
-
 			OrganizationCalendar newCalendar = new OrganizationCalendar();
-			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalenderEnabled());
+			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
 			epOrganizationCalenderDao.save(newCalendar);
-
-			log.info("editCalendarConfigs: execution ended successfully");
 			return new ResponseEntityDto(false, newCalendar);
-		}
+		} else {
+			OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
 
-		return new ResponseEntityDto(false, existingOrganizationCalendar);
+			if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
+					epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())) {
+
+				epOrganizationCalenderDao.delete(existingOrganizationCalendar);
+
+				OrganizationCalendar newCalendar = new OrganizationCalendar();
+				newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+				epOrganizationCalenderDao.save(newCalendar);
+
+				log.info("editCalendarConfigs: execution ended successfully");
+				return new ResponseEntityDto(false, newCalendar);
+			}
+
+			else{
+				return new ResponseEntityDto(false, existingOrganizationCalendar);
+			}
+		}
 	}
 
 	@Override
