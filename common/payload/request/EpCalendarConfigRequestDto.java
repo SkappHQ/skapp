@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class EpCalendarConfigRequestDto {
 
-	private Boolean isGoogleCalenderEnabled;
+	private Boolean isGoogleCalendarEnabled;
 
 }
