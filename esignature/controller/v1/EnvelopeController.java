@@ -47,10 +47,10 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Esignature Employee Need To Sign KPI",
+	@Operation(summary = "Get Employee Need To Sign KPI Values",
 			description = "This endpoint returns the count of envelopes that need to be signed by a specific employee.")
 	@GetMapping(value = "need-to-sign/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeNeedToSignEnvelopeCount(
 			@PathVariable @Schema(description = "ID of the employee to get count") Long id) {
 		ResponseEntityDto response = envelopeService.getEmployeeNeedToSignEnvelopeCount(id);
