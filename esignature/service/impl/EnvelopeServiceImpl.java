@@ -23,14 +23,13 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,26 +51,33 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto createNewEnvelope(EnvelopeDetailDto envelopeDetailDto) {
-		log.info("createNewEnvelope: execution started");
+	public ResponseEntityDto createNewEnvelope(@Valid EnvelopeDetailDto envelopeDetailDto) {
+		log.info("createNewEnvelope: execution started {}", userService.getCurrentUser().getUserId());
 
-		final Envelope envelope = eSignMapper.envelopeDetailDtoToEnvelope(envelopeDetailDto);
-
-		Map<Long, Document> documentMap = processEnvelopeDocuments(envelopeDetailDto, envelope);
-		processEnvelopeRecipients(envelopeDetailDto, envelope, documentMap);
-		processEnvelopeSettings(envelopeDetailDto, envelope);
-
-		updateEnvelopeMetadata(envelope);
-
-		envelopeDao.save(envelope);
-
-		// envelope status can be either created or draft
-		if (envelope.getStatus() == EnvelopeStatus.CREATED) {
-			shareEnvelope(envelope);
+		if (envelopeDetailDto.getExpireAt().isBefore(LocalDateTime.now())) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VALIDATION_ENTER_ENVELOPE_EXPIRES_AT);
 		}
 
-		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
-		log.info("addNewEmployee: execution ended");
+		Envelope envelope = initializeEnvelope(envelopeDetailDto);
+
+		List<Long> ids = envelopeDetailDto.getDocumentIds().stream().filter(Objects::nonNull).distinct().toList();
+
+		if (ids.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_WITH_NO_DOCUMENT);
+		}
+
+		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), envelope);
+		envelope.setDocuments(documents);
+
+		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
+		envelope.setRecipients(recipients);
+		// setup envelop settings
+
+		Envelope savedEnvelope = envelopeDao.save(envelope);
+		// Send Envelopes to recipient - async
+
+		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
+		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -125,9 +131,71 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
-	private void updateEnvelopeMetadata(final Envelope envelope) {
-		envelope.setCreatedBy(userService.getCurrentUser().getEmail());
-		envelope.setCreatedDate(LocalDateTime.now());
+	private Envelope initializeEnvelope(EnvelopeDetailDto dto) {
+		Envelope envelope = new Envelope();
+		envelope.setName(dto.getName());
+		envelope.setStatus(EnvelopeStatus.CREATED);
+		envelope.setMessage(dto.getMessage());
+		envelope.setSubject(dto.getSubject());
+		envelope.setExpireAt(dto.getExpireAt());
+		envelope.setSentAt(LocalDateTime.now());
+		return envelope;
+	}
+
+	private List<Document> assignDocumentsToEnvelope(List<Long> documentIds, Envelope envelope) {
+		List<Document> documents = documentDao.findAllById(documentIds);
+		if (documents.size() != documentIds.size()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
+		}
+
+		// Check if any of the documents already have an envelope
+		List<Document> alreadyAssignedDocuments = documents.stream()
+			.filter(doc -> doc.getEnvelope() != null) // Check if the document already has
+			// an envelope
+			.collect(Collectors.toList());
+
+		if (!alreadyAssignedDocuments.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSIGNED);
+		}
+		documents.forEach(doc -> doc.setEnvelope(envelope));
+		return documents;
+	}
+
+	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
+		return recipientDtos.stream().map(recipientDto -> {
+			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND));
+
+			Recipient recipient = new Recipient();
+			recipient.setAddressBook(addressBook);
+			recipient.setMemberRole(recipientDto.getMemberRole());
+			recipient.setStatus(recipientDto.getStatus());
+			recipient.setSigningOrder(recipientDto.getSigningOrder());
+			recipient.setEnvelope(envelope);
+
+			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
+			recipient.setFields(fields);
+
+			return recipient;
+		}).toList();
+	}
+
+	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
+		return fieldDtos.stream().map(fieldDto -> {
+			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+
+			Field field = new Field();
+			field.setType(fieldDto.getType());
+			field.setStatus(fieldDto.getStatus());
+			field.setPageNumber(fieldDto.getPageNumber());
+			field.setXPosition(fieldDto.getXPosition());
+			field.setYPosition(fieldDto.getYPosition());
+			field.setDocument(fieldDocument);
+			field.setRecipient(recipient);
+
+			return field;
+		}).toList();
 	}
 
 	private void processVoidRequest(Envelope envelope) {
@@ -143,81 +211,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelope.setStatus(EnvelopeStatus.VOIDED);
 			notifyVoid(envelope);
 		}
-	}
-
-	private Map<Long, Document> processEnvelopeDocuments(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
-		List<Long> ids = envelopeDetailDto.getDocumentIds().stream().filter(Objects::nonNull).distinct().toList();
-
-		if (ids.isEmpty()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_WITH_NO_DOCUMENT);
-		}
-
-		envelope.setDocuments(new ArrayList<>());
-		Map<Long, Document> documentMap = documentDao.findAllById(ids)
-			.stream()
-			.collect(Collectors.toMap(Document::getId, document -> document));
-
-		for (Long documentId : envelopeDetailDto.getDocumentIds()) {
-			Document document = documentMap.getOrDefault(documentId, null);
-			if (document == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
-			}
-			envelope.getDocuments().add(document);
-			documentMap.put(documentId, document);
-		}
-
-		return documentMap;
-	}
-
-	private void processEnvelopeRecipients(EnvelopeDetailDto envelopeDetailDto, Envelope envelope,
-			Map<Long, Document> documentMap) {
-		List<RecipientDto> recipientDtos = envelopeDetailDto.getRecipients();
-		List<Recipient> recipients = new ArrayList<>();
-
-		List<Long> addressBookIds = envelopeDetailDto.getRecipients()
-			.stream()
-			.map(RecipientDto::getAddressBookId)
-			.toList();
-		Map<Long, AddressBook> addressBookMap = addressBookDao.findAllById(addressBookIds)
-			.stream()
-			.collect(Collectors.toMap(AddressBook::getId, addressBook -> addressBook));
-
-		for (RecipientDto recipientDto : recipientDtos) {
-			Recipient recipient = eSignMapper.recipientDtoToRecipient(recipientDto);
-			recipient.setEnvelope(envelope);
-
-			AddressBook addressBook = addressBookMap.getOrDefault(recipientDto.getAddressBookId(), null);
-			if (addressBook == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNER_ID_NOT_FOUND);
-			}
-
-			recipient.setName(addressBook.getName());
-			recipient.setEmail(addressBook.getEmail());
-
-			List<Field> fields = new ArrayList<>();
-
-			for (FieldDto fieldDto : recipientDto.getFields()) {
-				Field field = eSignMapper.fieldDtoToField(fieldDto);
-				field.setRecipient(recipient);
-				Document document = documentMap.getOrDefault(fieldDto.getDocumentId(), null);
-				if (document == null) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND);
-				}
-				field.setDocument(document);
-				fields.add(field);
-			}
-			recipient.setFields(fields);
-			recipients.add(recipient);
-		}
-		envelope.setRecipients(recipients);
-	}
-
-	private void processEnvelopeSettings(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
-
-	}
-
-	private void shareEnvelope(Envelope envelope) {
-
 	}
 
 	private void notifyVoid(Envelope envelope) {
