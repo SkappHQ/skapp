@@ -149,9 +149,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		// Check if any of the documents already have an envelope
-		List<Document> alreadyAssignedDocuments = documents.stream()
-			.filter(doc -> doc.getEnvelope() != null)
-			.collect(Collectors.toList());
+		List<Document> alreadyAssignedDocuments = documents.stream().filter(doc -> doc.getEnvelope() != null).toList();
 
 		if (!alreadyAssignedDocuments.isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSIGNED);
