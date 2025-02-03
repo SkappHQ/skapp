@@ -305,6 +305,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	}
 
 	@Override
+	@Transactional
 	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
 			String autoDeclineMode, String declineMessage) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");

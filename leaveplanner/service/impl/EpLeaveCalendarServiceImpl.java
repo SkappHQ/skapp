@@ -2,6 +2,7 @@ package com.skapp.enterprise.leaveplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -32,11 +33,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -56,6 +63,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final CalendarEventDao calendarEventDao;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
+	private final BulkContextService bulkContextService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -79,6 +87,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto addOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
 		log.info("addOutOfOfficeEventsForLeave: execution started");
 
@@ -144,13 +153,14 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)) {
 				startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
 				hoursToAdd /= 2;
-			}
-			else if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
+			} else if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
 				hoursToAdd /= 2;
 			}
 
 			LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
-			saveEventId(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+
+			final LocalDateTime finalStartDateTime = startDateTime;
+			saveEvent(leaveRequest, finalStartDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
 			return;
 		}
 
@@ -177,7 +187,17 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 				}
 
 				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
-				saveEventId(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+//				final LocalDateTime finalStartDateTime = startDateTime;
+//				saveEvent(leaveRequest, finalStartDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+
+				CalendarEvent calendarEvent = new CalendarEvent();
+				calendarEvent.setLeaveRequest(leaveRequest);
+				String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
+						startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
+				if(eventId != null && !eventId.isEmpty()) {
+					calendarEvent.setEventId(eventId);
+					calendarEventDao.save(calendarEvent);
+				}
 			}
 			currentDate = currentDate.plusDays(1);
 		}
@@ -215,14 +235,16 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		return new EpWorkingHoursDto(startTime, endTime);
 	}
 
-	private void saveEventId(LeaveRequest leaveRequest, LocalDateTime startDateTime, LocalDateTime endDateTime,
+	private void saveEvent(LeaveRequest leaveRequest, LocalDateTime startDateTime, LocalDateTime endDateTime,
 			String accessToken, String autoDeclineMode, String declineMessage) {
 		CalendarEvent calendarEvent = new CalendarEvent();
 		calendarEvent.setLeaveRequest(leaveRequest);
 		String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
 						startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
-		calendarEvent.setEventId(eventId);
-		calendarEventDao.save(calendarEvent);
+		if(eventId != null && !eventId.isEmpty()) {
+			calendarEvent.setEventId(eventId);
+			calendarEventDao.save(calendarEvent);
+		}
 	}
 
 }

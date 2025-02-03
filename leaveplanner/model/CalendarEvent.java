@@ -22,16 +22,12 @@ import lombok.Setter;
 public class CalendarEvent {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "calendar_event_id", nullable = false, updatable = false)
-	private Long calendarEventId;
+	@Column(name = "event_id")
+	private String eventId;
 
 	@OneToOne
 	@MapsId
 	@JoinColumn(name = "leave_req_id")
 	private LeaveRequest leaveRequest;
-
-	@Column(name = "event_id")
-	private String eventId;
 
 }
