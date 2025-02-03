@@ -29,10 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Configuration
-@EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
-		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
-		"com.skapp.community.peopleplanner.repository", "com.skapp.community.leaveplanner.repository",
-		"com.skapp.community.timeplanner.repository", "com.skapp.enterprise.esignature.repository" })
+@EnableJpaRepositories(
+		basePackages = { "com.skapp.enterprise.common.masterrepository", "com.skapp.enterprise.common.repository",
+				"com.skapp.community.common.repository", "com.skapp.community.peopleplanner.repository",
+				"com.skapp.community.leaveplanner.repository", "com.skapp.community.timeplanner.repository",
+				"com.skapp.enterprise.esignature.repository", "com.skapp.enterprise.leaveplanner.repository" })
 public class MultiTenantDataSourceConfig {
 
 	@Value("${spring.datasource.url}")
@@ -177,7 +178,8 @@ public class MultiTenantDataSourceConfig {
 		entityManagerFactoryBean.setPackagesToScan("com.skapp.enterprise.common.model",
 				"com.skapp.enterprise.common.model.master", "com.skapp.community.common.model",
 				"com.skapp.community.peopleplanner.model", "com.skapp.community.leaveplanner.model",
-				"com.skapp.community.timeplanner.model", "com.skapp.enterprise.esignature.model");
+				"com.skapp.community.timeplanner.model", "com.skapp.enterprise.esignature.model",
+				"com.skapp.enterprise.leaveplanner.model");
 
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		entityManagerFactoryBean.setJpaVendorAdapter(vendorAdapter);

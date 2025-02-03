@@ -73,7 +73,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
 	EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH("ep.common.error.calendar-state-mismatch"),
 	EP_COMMON_ERROR_USER_ID_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-id-mismatch-with-current-user"),
-	EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR("ep.common.error.unable-to-connect-to-calendar"),
+	EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR("ep.common.error.unable-to-connect-google-calendar"),
+	EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR("ep.common.error.unable-to-delete-google-calendar"),
 	EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR(
 			"ep.common.error.unable-to-generate-access-token-to-calendar"),
 	EP_COMMON_UNABLE_TO_GET_AUTH_URL_CALENDAR("ep.common.error.unable-to-get-auth-url-calendar"),
