@@ -23,26 +23,19 @@ import com.skapp.enterprise.leaveplanner.payload.response.EpLeaveDurationAndWork
 import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
 import com.skapp.enterprise.leaveplanner.util.Validation;
-
-import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getHolidayAvailabilityOnGivenDateRange;
-import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ALL_CONFLICTING_INVITATION;
-import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getHolidayAvailabilityOnGivenDateRange;
+import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ALL_CONFLICTING_INVITATION;
+import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
 
 @Service
 @Slf4j
@@ -62,8 +55,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final CalendarEventDao calendarEventDao;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
-
-	private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -87,7 +78,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	}
 
 	@Override
-	@Transactional
 	public ResponseEntityDto addOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
 		log.info("addOutOfOfficeEventsForLeave: execution started");
 
@@ -104,7 +94,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
 
 		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null) {
-			addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, timeConfigDao.findAll(), holidayObjects,
+			addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, holidayObjects,
 					epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled(),
 					epOutOfOfficeEventRequestDto.getDeclineMessage());
 		}
@@ -135,10 +125,10 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	}
 
 	private void addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
-			List<TimeConfig> timeConfigs, List<Holiday> holidayObjects,
-			Boolean isAutoDeclineExistingEventsOnLeaveEnabled, String declineMessage) {
+			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled, String declineMessage) {
 		LocalDate startDate = leaveRequest.getStartDate();
 		LocalDate endDate = leaveRequest.getEndDate();
+		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 
 		TimeConfig firstTimeConfig = timeConfigs.getFirst();
 		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
@@ -154,17 +144,17 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			long hoursToAdd = totalHoursAsLong;
 
 			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)) {
-				startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
 				hoursToAdd /= 2;
 			}
 			else if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
+				startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
 				hoursToAdd /= 2;
 			}
 
 			LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
 
-			final LocalDateTime finalStartDateTime = startDateTime;
-			saveEvent(leaveRequest, finalStartDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+			saveEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+
 			return;
 		}
 
@@ -173,8 +163,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			startDate = endDate;
 			endDate = temp;
 		}
-
-		List<CompletableFuture<Void>> tasks = new ArrayList<>();
 
 		LocalDate currentDate = startDate;
 		while (!currentDate.isAfter(endDate)) {
@@ -192,21 +180,12 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 					hoursToAdd /= 2;
 				}
 
-				LocalDateTime finalStartDateTime = startDateTime;
-				LocalDateTime finalEndDateTime = finalStartDateTime.plusHours(hoursToAdd);
-
-				CompletableFuture<Void> task = CompletableFuture.runAsync(() -> saveEvent(leaveRequest,
-						finalStartDateTime, finalEndDateTime, accessToken, autoDeclineMode, declineMessage),
-						executorService);
-				tasks.add(task);
+				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+				saveEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
 
 			}
 			currentDate = currentDate.plusDays(1);
 		}
-
-		CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
-
-		executorService.shutdown();
 	}
 
 	private EpLeaveDurationAndWorkingHoursResponseDto getEpLeaveDurationAndWorkingHoursResponseDto(
@@ -256,18 +235,17 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private void saveEvent(LeaveRequest leaveRequest, LocalDateTime startDateTime, LocalDateTime endDateTime,
 			String accessToken, String autoDeclineMode, String declineMessage) {
 		CalendarEvent calendarEvent = new CalendarEvent();
+
+		String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
+				startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
+
+		if (eventId != null) {
+			calendarEvent.setEventId(eventId);
+		}
+
 		calendarEvent.setLeaveRequest(leaveRequest);
-		try {
-			String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
-					startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
-			if (eventId != null && !eventId.isEmpty()) {
-				calendarEvent.setEventId(eventId);
-				calendarEventDao.save(calendarEvent);
-			}
-		}
-		catch (Exception e) {
-			log.info("Failed to save event ", e);
-		}
+
+		calendarEventDao.save(calendarEvent);
 	}
 
 }

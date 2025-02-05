@@ -8,6 +8,7 @@ import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.payload.LeaveRequestManagerUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.LeavePatchRequestDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
@@ -29,6 +30,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -61,6 +63,14 @@ public class EpLeaveServiceImpl extends LeaveServiceImpl {
 	public ResponseEntityDto updateLeaveRequestByManager(Long id, @NonNull LeaveRequestManagerUpdateDto updateDto,
 			boolean isInvokedByManager) {
 		ResponseEntityDto responseEntityDto = super.updateLeaveRequestByManager(id, updateDto, isInvokedByManager);
+		deleteOutOfOfficeEvent(id);
+		return responseEntityDto;
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateLeaveRequestByEmployee(@NonNull LeavePatchRequestDto leavePatchRequestDto, Long id) {
+		ResponseEntityDto responseEntityDto = super.updateLeaveRequestByEmployee(leavePatchRequestDto, id);
 		deleteOutOfOfficeEvent(id);
 		return responseEntityDto;
 	}

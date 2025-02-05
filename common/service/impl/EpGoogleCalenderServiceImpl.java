@@ -135,6 +135,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		if (employeeCalendar == null) {
 			employeeCalendar = new EmployeeCalendar();
 			employeeCalendar.setUser(currentUser);
+			employeeCalendar.setCalendarType(EpCalendarType.GOOGLE);
 			employeeCalendar = employeeCalendarDao.save(employeeCalendar);
 		}
 
@@ -161,7 +162,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 				}
 				tokenGenerated = employeeCalendar.getCalendarToken();
 			}
-			employeeCalendar.setCalendarType(EpCalendarType.GOOGLE);
 			employeeCalendar.setIsEnabled(true);
 			employeeCalendarDao.save(employeeCalendar);
 		}
@@ -305,7 +305,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	}
 
 	@Override
-	@Transactional
 	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
 			String autoDeclineMode, String declineMessage) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
