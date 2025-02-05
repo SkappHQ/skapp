@@ -7,6 +7,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeReque
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -15,6 +17,11 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventOutOfOfficeProperties;
+import com.google.api.services.people.v1.PeopleService;
+import com.google.api.services.people.v1.model.Person;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -53,6 +60,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -84,6 +92,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private final UserDao userDao;
 
 	private final CalendarEventDao calendarEventDao;
+
+	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+
+	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -147,6 +159,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(), jsonFactory,
 					clientId, clientSecret, authorizationCode, backendRedirectURI)
 				.execute();
+			String accessToken = response.getAccessToken();
+			if (accessToken != null) {
+				verifyConnectedEmailWithUserEmail(accessToken, currentUser);
+			}
 			if (response.getRefreshToken() != null) {
 				tokenGenerated = response.getRefreshToken();
 				String encryptedToken = encryptionDecryptionService.encrypt(tokenGenerated, encryptSecret);
@@ -168,16 +184,42 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		catch (Exception exception) {
 			log.error("connectGoogleCalendar: {}", exception.getMessage(), exception);
 			rollbackCalendarConnect(currentUser, tokenGenerated);
-			String paramName = "error";
-			String paramValue = exception.getMessage();
-			UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-				.scheme("http")
-				.host(frontendRedirectUri)
-				.queryParam(paramName, paramValue);
-			return builder.toUriString();
+
+			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
+			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
+
+			return UriComponentsBuilder.fromUriString(frontendRedirectUri)
+				.queryParam("error", encodedErrorMessage)
+				.toUriString();
 		}
+
 		log.info("connectGoogleCalendar: execution ended");
 		return frontendRedirectUri;
+	}
+
+	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) throws IOException {
+		GoogleCredentials credentials = GoogleCredentials.create(new AccessToken(accessToken, null));
+
+		HttpRequestInitializer httpRequestInitializer = new HttpCredentialsAdapter(credentials);
+
+		PeopleService peopleService = new PeopleService.Builder(HTTP_TRANSPORT, JSON_FACTORY,
+				httpRequestInitializer)
+				.setApplicationName("Your App Name")
+				.build();
+
+		Person profile = peopleService.people().get("people/me").setPersonFields("emailAddresses").execute();
+
+		if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
+			String userEmail = profile.getEmailAddresses().getFirst().getValue();
+			if(!currentUser.getEmail().equals(userEmail)) {
+				throw new ModuleException(
+						EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
+			}
+		}
+		else {
+			throw new ModuleException(
+					EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
+		}
 	}
 
 	@Override

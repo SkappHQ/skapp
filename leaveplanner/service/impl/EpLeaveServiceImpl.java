@@ -79,7 +79,8 @@ public class EpLeaveServiceImpl extends LeaveServiceImpl {
 		LeaveRequest leaveRequest = leaveRequestDao.findById(id).orElse(null);
 
 		if (leaveRequest != null && (leaveRequest.getStatus().equals(LeaveRequestStatus.DENIED)
-				|| leaveRequest.getStatus().equals(LeaveRequestStatus.REVOKED))) {
+				|| leaveRequest.getStatus().equals(LeaveRequestStatus.REVOKED)
+				|| leaveRequest.getStatus().equals(LeaveRequestStatus.CANCELLED))) {
 
 			epLeaveCalendarService.deleteOutOfOfficeEventsForLeave(leaveRequest);
 		}
