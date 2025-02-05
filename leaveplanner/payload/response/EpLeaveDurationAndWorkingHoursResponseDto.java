@@ -20,6 +20,8 @@ public class EpLeaveDurationAndWorkingHoursResponseDto {
 
 	private Boolean isSingleDay;
 
+	private Boolean isMultiDayAndIncludeHalfDayLeave;
+
 	private Boolean isHalfDay;
 
 }
