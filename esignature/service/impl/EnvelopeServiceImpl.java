@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
@@ -235,6 +236,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Override
 	public ResponseEntityDto getEmployeeNeedToSignEnvelopeCount(Long id) {
 		User currentUser = userService.getCurrentUser();
+
+		if (!Objects.equals(currentUser.getUserId(), id)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
 		log.info("getEmployeeNeedToSignEnvelopeCount: execution started by user: {}", currentUser.getUserId());
 
 		long countNeedToSignEnvelopes = envelopeDao.countNeedToSignEnvelopes(id);
