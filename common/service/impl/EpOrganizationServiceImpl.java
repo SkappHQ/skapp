@@ -1,11 +1,15 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.event.UserCreatedEvent;
@@ -24,13 +28,16 @@ import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.model.EpOrganization;
+import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
+import com.skapp.enterprise.common.payload.request.EpCalendarConfigRequestDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
+import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
+import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
-import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.service.TenantService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +48,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
@@ -80,7 +90,9 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 
-	private final ModuleService moduleService;
+	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
+
+	private final ObjectMapper objectMapper;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -168,6 +180,60 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		return tenantService.getTenant(tenantName);
 	}
 
+	@Override
+	public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
+		log.info("editCalendarConfigs: execution started");
+
+		if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY);
+		}
+
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+		if (organizationCalendars.isEmpty()) {
+			OrganizationCalendar newCalendar = new OrganizationCalendar();
+			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+			epOrganizationCalenderDao.save(newCalendar);
+			return new ResponseEntityDto(false, newCalendar);
+		}
+		else {
+			OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
+
+			if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
+					epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())) {
+
+				epOrganizationCalenderDao.delete(existingOrganizationCalendar);
+
+				OrganizationCalendar newCalendar = new OrganizationCalendar();
+				newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+				epOrganizationCalenderDao.save(newCalendar);
+
+				log.info("editCalendarConfigs: execution ended successfully");
+				return new ResponseEntityDto(false, newCalendar);
+			}
+
+			else {
+				return new ResponseEntityDto(false, existingOrganizationCalendar);
+			}
+		}
+	}
+
+	@Override
+	public ResponseEntityDto getCalendarConfigs() {
+		log.info("getCalendarConfigs: execution started");
+
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+		if (organizationCalendars.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
+
+		EpCalendarConfigResponseDto epCalendarConfigResponseDto = epCommonMapper
+			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
+
+		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
+	}
+
 	private User createSuperAdminUser(SuperAdmin superAdmin) {
 		User user = new User();
 		user.setEmail(superAdmin.getEmail());
@@ -197,7 +263,32 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		superAdminRoles.setEmployee(employee);
 		superAdminRoles.setRoleChangedBy(employee);
 
+		UserSettings userSettings = createNotificationSettings(user);
+		user.setSettings(userSettings);
+
 		return userDao.save(user);
+	}
+
+	private UserSettings createNotificationSettings(User user) {
+		log.info("createNotificationSettings: execution started");
+		UserSettings userSettings = new UserSettings();
+
+		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
+
+		boolean isLeaveRequestNotificationsEnabled = true;
+		boolean isTimeEntryNotificationsEnabled = true;
+		boolean isNudgeNotificationsEnabled = true;
+
+		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST.getKey(),
+				isLeaveRequestNotificationsEnabled);
+		notificationsObjectNode.put(NotificationSettingsType.TIME_ENTRY.getKey(), isTimeEntryNotificationsEnabled);
+		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST_NUDGE.getKey(), isNudgeNotificationsEnabled);
+
+		userSettings.setNotifications(notificationsObjectNode);
+		userSettings.setUser(user);
+
+		log.info("createNotificationSettings: execution ended");
+		return userSettings;
 	}
 
 	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,
@@ -288,7 +379,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		timeService.getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
-		moduleService.saveDefaultModules();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

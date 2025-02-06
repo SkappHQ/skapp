@@ -37,4 +37,20 @@ public class AddressBook {
 	@Enumerated(EnumType.STRING)
 	private UserType type;
 
+	public String getName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getFirstName() + " " + externalUser.getLastName();
+		}
+
+		return internalUser.getEmployee().getFirstName() + " " + internalUser.getEmployee().getLastName();
+	}
+
+	public String getEmail() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getEmail();
+		}
+
+		return internalUser.getEmail();
+	}
+
 }
