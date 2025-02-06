@@ -204,23 +204,21 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 		HttpRequestInitializer httpRequestInitializer = new HttpCredentialsAdapter(credentials);
 
-		PeopleService peopleService = new PeopleService.Builder(HTTP_TRANSPORT, JSON_FACTORY,
-				httpRequestInitializer)
-				.setApplicationName("Your App Name")
-				.build();
+		PeopleService peopleService = new PeopleService.Builder(HTTP_TRANSPORT, JSON_FACTORY, httpRequestInitializer)
+			.setApplicationName("Your App Name")
+			.build();
 
 		Person profile = peopleService.people().get("people/me").setPersonFields("emailAddresses").execute();
 
 		if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 			String userEmail = profile.getEmailAddresses().getFirst().getValue();
-			if(!currentUser.getEmail().equals(userEmail)) {
+			if (!currentUser.getEmail().equals(userEmail)) {
 				throw new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
 			}
 		}
 		else {
-			throw new ModuleException(
-					EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
 		}
 	}
 

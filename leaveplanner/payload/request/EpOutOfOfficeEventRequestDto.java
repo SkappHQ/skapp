@@ -9,6 +9,8 @@ public class EpOutOfOfficeEventRequestDto {
 
 	private Long leaveId;
 
+	private Boolean isAutoDeclineEnabled;
+
 	private Boolean isAutoDeclineExistingEventsOnLeaveEnabled;
 
 	private String declineMessage;

@@ -35,6 +35,7 @@ import java.util.List;
 
 import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getHolidayAvailabilityOnGivenDateRange;
 import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ALL_CONFLICTING_INVITATION;
+import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_NONE;
 import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
 
 @Service
@@ -93,9 +94,11 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
 
-		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null) {
+		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null
+				&& epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled() != null) {
 			addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, holidayObjects,
 					epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled(),
+					epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled(),
 					epOutOfOfficeEventRequestDto.getDeclineMessage());
 		}
 		else {
@@ -125,7 +128,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	}
 
 	private void addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
-			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled, String declineMessage) {
+			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled,
+			Boolean isAutoDeclineEnabled, String declineMessage) {
 		LocalDate startDate = leaveRequest.getStartDate();
 		LocalDate endDate = leaveRequest.getEndDate();
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
@@ -134,8 +138,12 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
 		long totalHoursAsLong = firstTimeConfig.getTotalHours().longValue();
 
-		String autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
-				? DECLINE_ALL_CONFLICTING_INVITATION : DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
+		String autoDeclineMode = DECLINE_NONE;
+
+		if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
+			autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
+					? DECLINE_ALL_CONFLICTING_INVITATION : DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
+		}
 
 		String accessToken = epGoogleCalenderService.generateAccessToken(userService.getCurrentUser());
 
@@ -143,7 +151,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
 			long hoursToAdd = totalHoursAsLong;
 
-			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING) || leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
+			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)
+					|| leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
 				hoursToAdd /= 2;
 			}
 
@@ -192,10 +201,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		responseDto.setWorkingHours(getWorkStartAndEndTimes(leaveRequest, timeConfigDao.findAll().getFirst()));
 		responseDto.setIsSingleDay(leaveRequest.getStartDate().equals(leaveRequest.getEndDate()));
 		responseDto.setIsMultiDayAndIncludeHalfDayLeave(false);
-		responseDto.setIsHalfDay(leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)
-				|| leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING));
 
-		if (Boolean.TRUE.equals(responseDto.getIsHalfDay())) {
+		if (Boolean.FALSE.equals(responseDto.getIsSingleDay())) {
 			List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
 			HolidayDuration holidayDuration = getHolidayAvailabilityOnGivenDateRange(leaveRequest.getStartDate(),
 					leaveRequest.getEndDate(), holidayObjects);
