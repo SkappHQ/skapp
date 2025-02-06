@@ -188,6 +188,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
+			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
+
 			return UriComponentsBuilder.fromUriString(frontendRedirectUri)
 				.queryParam("error", encodedErrorMessage)
 				.toUriString();

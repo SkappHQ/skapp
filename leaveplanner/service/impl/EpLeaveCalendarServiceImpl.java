@@ -143,11 +143,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
 			long hoursToAdd = totalHoursAsLong;
 
-			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)) {
-				hoursToAdd /= 2;
-			}
-			else if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
-				startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
+			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING) || leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
 				hoursToAdd /= 2;
 			}
 
