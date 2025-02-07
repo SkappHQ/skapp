@@ -12,7 +12,6 @@ public class ExternalUserDto {
 	@NotNull(message = "firstName is required")
 	private String firstName;
 
-	@NotNull(message = "lastName is required")
 	private String lastName;
 
 	@NotNull(message = "email is required")

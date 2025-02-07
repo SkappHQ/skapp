@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.model.ExternalUser_;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.repository.AddressBookRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -50,13 +51,22 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
 				user.userType(), user.firstName(), user.lastName(), user.authPic()));
 
+		List<Predicate> predicates = new ArrayList<>();
+
+		List<UserType> userTypes = addressBookFilterDto.getUserType();
+
+		if (userTypes != null && userTypes.size() == 1) {
+			predicates.add(cb.equal(addressBookRoot.get(AddressBook_.TYPE), userTypes.getFirst()));
+		}
+
 		String keyword = addressBookFilterDto.getSearchKeyword();
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 
-			query.where(cb.or(firstNameLike, lastNameLike, emailLike));
+			Predicate searchPredicate = cb.or(firstNameLike, lastNameLike, emailLike);
+			predicates.add(searchPredicate);
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 1)
@@ -73,6 +83,10 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()));
 			}
 		}
+
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		query.where(predArray);
 
 		int page = addressBookFilterDto.getPage();
 		int size = addressBookFilterDto.getSize();
