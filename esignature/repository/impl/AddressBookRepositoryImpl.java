@@ -49,7 +49,7 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
 
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-				user.userType(), user.firstName(), user.lastName(), user.authPic()));
+				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
 
 		List<Predicate> predicates = new ArrayList<>();
 
@@ -155,6 +155,10 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
 			.otherwise(externalUserJoin.get(ExternalUser_.LAST_NAME));
 
+		Expression<Object> phone = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
+			.otherwise(externalUserJoin.get(ExternalUser_.PHONE));
+
 		Expression<Object> userId = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
 			.otherwise(externalUserJoin.get(ExternalUser_.ID));
@@ -171,12 +175,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
 					cb.isNotNull(employeeJoin.get(Employee_.authPic))), employeeJoin.get(Employee_.authPic))
 			.otherwise(cb.nullLiteral(Object.class));
-		return new AddressBookUserView(firstName, lastName, userId, email, userType, authPic);
+		return new AddressBookUserView(firstName, lastName, userId, email, userType, authPic, phone);
 	}
 
 	private record AddressBookUserView(Expression<Object> firstName, Expression<Object> lastName,
 			Expression<Object> userId, Expression<Object> email, Expression<Object> userType,
-			Expression<Object> authPic) {
+			Expression<Object> authPic, Expression<Object> phone) {
 	}
 
 }
