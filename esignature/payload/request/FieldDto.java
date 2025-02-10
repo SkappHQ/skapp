@@ -1,7 +1,10 @@
 package com.skapp.enterprise.esignature.payload.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
+import com.skapp.enterprise.esignature.utill.deserializer.DocumentFieldStatusDeserializer;
+import com.skapp.enterprise.esignature.utill.deserializer.DocumentFieldTypeDeserializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -11,24 +14,27 @@ import lombok.Setter;
 @Setter
 public class FieldDto {
 
-	@NotNull(message = "{notnull.field.type}")
+	@NotNull(message = "{validation.field.type.notnull}")
+	@JsonDeserialize(using = DocumentFieldTypeDeserializer.class)
 	private FieldType type;
 
+	@NotNull(message = "{validation.field.status.notnull}")
+	@JsonDeserialize(using = DocumentFieldStatusDeserializer.class)
 	private FieldStatus status;
 
-	@NotNull(message = "{notnull.field.pageNumber}")
-	@Min(value = 1, message = "{min.pageNumber}")
+	@NotNull(message = "{validation.field.pageNumber.notnull}")
+	@Min(value = 1, message = "{validation.field.pageNumber.min}")
 	private Integer pageNumber;
 
-	@NotNull(message = "{notnull.field.xPosition}")
-	@Min(value = 0, message = "{min.xPosition}")
+	@NotNull(message = "{validation.field.xPosition.notnull}")
+	@Min(value = 0, message = "{validation.field.xPosition.min}")
 	private Float xPosition;
 
-	@NotNull(message = "{notnull.field.yPosition}")
-	@Min(value = 0, message = "{min.yPosition}")
+	@NotNull(message = "{validation.field.yPosition.notnull}")
+	@Min(value = 0, message = "{validation.field.yPosition.min}")
 	private Float yPosition;
 
-	@NotNull(message = "{notnull.field.documentId}")
+	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;
 
 }

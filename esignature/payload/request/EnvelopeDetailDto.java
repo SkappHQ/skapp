@@ -1,6 +1,8 @@
 package com.skapp.enterprise.esignature.payload.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.utill.deserializer.EnvelopeStatusDeserializer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -14,24 +16,25 @@ import java.util.List;
 @Setter
 public class EnvelopeDetailDto {
 
-	@NotBlank(message = "{not_blank.envelope.name}")
+	@NotBlank(message = "{validation.envelope.name.not_blank}")
 	private String name;
 
+	@NotNull(message = "{validation.envelope.status.invalid}")
+	@JsonDeserialize(using = EnvelopeStatusDeserializer.class)
 	private EnvelopeStatus status;
 
-	@NotBlank(message = "{not_blank.envelope.message}")
 	private String message;
 
-	@NotBlank(message = "{not_blank.envelope.subject}")
+	@NotBlank(message = "{validation.envelope.subject.not_blank}")
 	private String subject;
 
-	@NotNull(message = "{notnull.envelope.expireAt}")
+	@NotNull(message = "{validation.envelope.expireAt.not_null}")
 	private LocalDateTime expireAt;
 
-	@NotEmpty(message = "{not_empty.envelope.documentIds}")
+	@NotEmpty(message = "{validation.envelope.documentIds.not_empty}")
 	private List<Long> documentIds;
 
-	@NotEmpty(message = "{not_empty.envelope.recipients}")
+	@NotEmpty(message = "{validation.envelope.recipients.not_empty}")
 	private List<RecipientDto> recipients;
 
 }

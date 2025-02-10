@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.model.ExternalUser_;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.repository.AddressBookRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -48,7 +49,15 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
 
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-				user.userType(), user.firstName(), user.lastName(), user.authPic()));
+				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		List<UserType> userTypes = addressBookFilterDto.getUserType();
+
+		if (userTypes != null && userTypes.size() == 1) {
+			predicates.add(cb.equal(addressBookRoot.get(AddressBook_.TYPE), userTypes.getFirst()));
+		}
 
 		String keyword = addressBookFilterDto.getSearchKeyword();
 		if (keyword != null && !keyword.trim().isEmpty()) {
@@ -56,7 +65,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 
-			query.where(cb.or(firstNameLike, lastNameLike, emailLike));
+			Predicate searchPredicate = cb.or(firstNameLike, lastNameLike, emailLike);
+			predicates.add(searchPredicate);
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 1)
@@ -73,6 +83,10 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()));
 			}
 		}
+
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		query.where(predArray);
 
 		int page = addressBookFilterDto.getPage();
 		int size = addressBookFilterDto.getSize();
@@ -141,6 +155,10 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
 			.otherwise(externalUserJoin.get(ExternalUser_.LAST_NAME));
 
+		Expression<Object> phone = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
+			.otherwise(externalUserJoin.get(ExternalUser_.PHONE));
+
 		Expression<Object> userId = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
 			.otherwise(externalUserJoin.get(ExternalUser_.ID));
@@ -157,12 +175,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
 					cb.isNotNull(employeeJoin.get(Employee_.authPic))), employeeJoin.get(Employee_.authPic))
 			.otherwise(cb.nullLiteral(Object.class));
-		return new AddressBookUserView(firstName, lastName, userId, email, userType, authPic);
+		return new AddressBookUserView(firstName, lastName, userId, email, userType, authPic, phone);
 	}
 
 	private record AddressBookUserView(Expression<Object> firstName, Expression<Object> lastName,
 			Expression<Object> userId, Expression<Object> email, Expression<Object> userType,
-			Expression<Object> authPic) {
+			Expression<Object> authPic, Expression<Object> phone) {
 	}
 
 }
