@@ -83,7 +83,7 @@ public class RecipientServiceImpl implements RecipientService {
 		// List derive based on the member role. If next in line recipient is a CC role,
 		// then pick the recipient list up until the next Signer to send simultaneously.
         for (Recipient currentRecipient : tempRecipientList) {
-            if (MemberRole.SINGER.equals(currentRecipient.getMemberRole())) {
+            if (MemberRole.SIGNER.equals(currentRecipient.getMemberRole())) {
                 nextRecipientList.add(currentRecipient);
 
                 break;
