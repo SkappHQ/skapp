@@ -205,7 +205,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		HttpRequestInitializer httpRequestInitializer = new HttpCredentialsAdapter(credentials);
 
 		PeopleService peopleService = new PeopleService.Builder(HTTP_TRANSPORT, JSON_FACTORY, httpRequestInitializer)
-			.setApplicationName("Your App Name")
+			.setApplicationName("skapp")
 			.build();
 
 		Person profile = peopleService.people().get("people/me").setPersonFields("emailAddresses").execute();
