@@ -33,4 +33,6 @@ public class EnvelopeDetailedResponseDto {
 
 	private List<RecipientDetailResponseDto> recipients;
 
+	private List<Object> emailResponse;
+
 }

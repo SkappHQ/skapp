@@ -24,7 +24,10 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_RECIPIENT_MEMBER_ROLE_STATUS_INVALID("validation.recipient.member.role.status.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_TYPE_INVALID("validation.document.field.type.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_STATUS_INVALID("validation.document.field.status.invalid"),
-	ESIGN_VALIDATION_PHONE_NUMBER_INVALID("validation.phone.invalid");
+	ESIGN_VALIDATION_PHONE_NUMBER_INVALID("validation.phone.invalid"),
+
+	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.not-found"),
+	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid");
 
 	private final String messageKey;
 

@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/ep/esign/recipients")
@@ -22,17 +20,14 @@ public class RecipientController {
 
 	private final RecipientService recipientService;
 
-	@Operation(summary = "get next recipient based on the defined signing order",
-			description = "This endpoint retrieves the next recipient details based on the defined signing order, when the sequential signing/receiving is enabled. "
-					+ "Along with the envelope & document details to be include in the email subject & body. When recipientId is not provided, the very first recipients for "
-					+ "the requested envelope id will be returned.")
+	@Operation(summary = "Find and send the email to the next recipient based on the defined signing order.",
+			description = "This endpoint finds and send the email to the next available recipients up until the next Signer Role, in the defined signing order.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
 	@GetMapping(value = "/next-recipient", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> retrieveNextDocumentRecipientAndSendEmail(@RequestParam Long recipientId,
 			@RequestParam Long envelopeId) {
 
-		ResponseEntityDto response = recipientService.findNextRecipientAndSendEmail(Optional.ofNullable(recipientId),
-				envelopeId);
+		ResponseEntityDto response = recipientService.sendEmailToRecipient(recipientId, envelopeId);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

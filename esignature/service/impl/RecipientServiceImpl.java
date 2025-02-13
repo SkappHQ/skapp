@@ -1,23 +1,25 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
-import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
+import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
-import com.skapp.enterprise.esignature.service.EnvelopRecipientEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -26,23 +28,29 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final RecipientRepository recipientRepository;
 
-	private final EnvelopRecipientEmailService envelopRecipientEmailService;
-
 	private final EsignMapper eSignMapper;
 
+	private final EmailService emailService;
+
+	private final UserService userService;
+
 	@Override
-	public ResponseEntityDto findNextRecipientAndSendEmail(Optional<Long> recipientId, Long envelopeId) {
+	public ResponseEntityDto sendEmailToRecipient(Long recipientId, Long envelopeId) {
+
+		return findNextRecipientAndSendEmail(Optional.ofNullable(recipientId), envelopeId);
+
+	}
+
+	private ResponseEntityDto findNextRecipientAndSendEmail(Optional<Long> recipientId, Long envelopeId) {
 
 		log.info("findNextRecipient: execution started");
-
-		EnvelopeDetailedResponseDto responseDto = null;
 
 		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
 
 		// If no recipients found for the given Document Id, return an empty response
 		if (recipientListOptional.isEmpty()) {
 			log.info("findNextRecipient: next recipient for envelop ID {} not found", envelopeId);
-			return new ResponseEntityDto(false, responseDto);
+			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE);
 		}
 
 		List<Recipient> recipientList = recipientListOptional.get();
@@ -54,10 +62,15 @@ public class RecipientServiceImpl implements RecipientService {
 		// order the recipient list first from the id and then from the signingOrder and
 		// add to the sortedRecipientList list
 		if (recipientId.isPresent()) {
+			// validate if the recipientId is a valid recipient for the given envelopeId
+			if (recipientList.stream().noneMatch(recipient -> recipient.getId().equals(recipientId.get()))) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE);
+			}
+
 			int currentSigningOrderId = recipientList.stream()
-				.filter(rec -> rec.getId().compareTo(recipientId.get()) == 0)
-				.toList()
-				.getFirst()
+				.filter(recipient -> recipient.getId().compareTo(recipientId.get()) == 0)
+				.findFirst()
+				.get()
 				.getSigningOrder();
 
 			sortedRecipientList.addAll(recipientList.stream()
@@ -74,7 +87,7 @@ public class RecipientServiceImpl implements RecipientService {
 		// If no next available recipient available, return an empty response
 		if (sortedRecipientList.isEmpty()) {
 			log.info("findNextRecipient: next recipient for envelop ID {} not found", envelopeId);
-			return new ResponseEntityDto(false, responseDto);
+			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE);
 		}
 
 		List<Recipient> tempRecipientList = new ArrayList<>(sortedRecipientList);
@@ -82,50 +95,72 @@ public class RecipientServiceImpl implements RecipientService {
 
 		// List derive based on the member role. If next in line recipient is a CC role,
 		// then pick the recipient list up until the next Signer to send simultaneously.
-        for (Recipient currentRecipient : tempRecipientList) {
-            if (MemberRole.SIGNER.equals(currentRecipient.getMemberRole())) {
-                nextRecipientList.add(currentRecipient);
+		for (Recipient currentRecipient : tempRecipientList) {
+			if (MemberRole.SIGNER.equals(currentRecipient.getMemberRole())) {
+				nextRecipientList.add(currentRecipient);
 
-                break;
+				break;
 
-            } else if (MemberRole.CC.equals(currentRecipient.getMemberRole())) {
-                nextRecipientList.add(currentRecipient);
-            }
-        }
+			}
+			else if (MemberRole.CC.equals(currentRecipient.getMemberRole())) {
+				nextRecipientList.add(currentRecipient);
+			}
+		}
 
-		List<RecipientDetailResponseDto> recipientDetailResponseDtoList = new ArrayList<>();
-		List<DocumentDetailResponseDto> documentDetailResponseDtoList = new ArrayList<>();
+		Envelope envelopeData = nextRecipientList.getFirst().getEnvelope();
 
-		nextRecipientList.forEach(nxtRecpt -> {
-			RecipientDetailResponseDto recipientDetailResponseDto = eSignMapper.recipientToRecipientDetailDto(nxtRecpt);
-			recipientDetailResponseDtoList.add(recipientDetailResponseDto);
-		});
+		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = eSignMapper
+			.envelopeToEpEsignEmailEnvelopeDataDto(envelopeData);
 
-		nextRecipientList.getFirst().getEnvelope().getDocuments().forEach(document -> {
-			DocumentDetailResponseDto documentDetailResponseDto = eSignMapper.documentToDocumentDetailDto(document);
-			documentDetailResponseDtoList.add(documentDetailResponseDto);
-		});
+		String documentName = null;
 
-		EnvelopeDetailedResponseDto envelopeDetailedResponseDto = eSignMapper
-			.envelopeToEnvelopeDetailedResponseDto(nextRecipientList.getFirst().getEnvelope());
-		envelopeDetailedResponseDto.setRecipients(recipientDetailResponseDtoList);
-		envelopeDetailedResponseDto.setDocuments(documentDetailResponseDtoList);
+		for (Document document : envelopeData.getDocuments()) {
+			if (documentName == null) {
+				documentName = document.getName();
+			}
+			else {
+				documentName = documentName.concat(" & ").concat(document.getName());
+			}
+		}
 
-		log.info("findNextRecipient: execution ended");
+		epEsignEmailDataDto.setDocumentNames(documentName);
 
 		// After obtaining the next in line recipient, implement the email sender
 		log.info("sendEnvelopToRecipientEmail: process started");
 
-		envelopeDetailedResponseDto.getRecipients().forEach(recipient -> {
-			envelopRecipientEmailService.sendEnvelopToRecipientEmail(recipient.getName(), recipient.getEmail(),
-					recipient.getMemberRole().toString(), envelopeDetailedResponseDto);
-		});
+		List<Long> recipientIdList = new ArrayList<>();
 
+		nextRecipientList.forEach(recipient -> {
+			recipientIdList.add(recipient.getId());
+			sendEnvelopToRecipientEmail(recipient.getAddressBook().getName(), recipient.getAddressBook().getEmail(),
+					recipient.getMemberRole().toString(), epEsignEmailDataDto);
+		});
 		log.info("sendEnvelopToRecipientEmail: process ended");
 
-		// change the response
-		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
+		return new ResponseEntityDto(false, recipientIdList);
+	}
 
+	private void sendEnvelopToRecipientEmail(String userName, String userEmail, String memberRole,
+			EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
+
+		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = new EpEsignEnvelopeRecipientEmailDynamicFields();
+		epEsignEnvelopeRecipientEmailDynamicFields.setRecipientName(userName);
+		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopId(epEsignEmailDataDto.getEnvelopeId());
+		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopeSubject(epEsignEmailDataDto.getEnvelopeSubject());
+		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopeMessage(epEsignEmailDataDto.getEnvelopeMessage());
+		epEsignEnvelopeRecipientEmailDynamicFields.setSender(userService.getCurrentUser().getEmployee().getFirstName()
+				+ " " + userService.getCurrentUser().getEmployee().getLastName());
+		epEsignEnvelopeRecipientEmailDynamicFields.setSenderEmail(userService.getCurrentUser().getEmail());
+		epEsignEnvelopeRecipientEmailDynamicFields.setDocumentNames(epEsignEmailDataDto.getDocumentNames());
+
+		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
+			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
+					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
+		}
+		else {
+			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
+					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
+		}
 	}
 
 }

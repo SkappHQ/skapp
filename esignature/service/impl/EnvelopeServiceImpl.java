@@ -80,11 +80,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 		// Send Envelopes to recipient - async
-		System.out.println("ENVELOPE: " + savedEnvelope.getId());
-		System.out.println("ENVELOPE: " + savedEnvelope.getRecipients().size());
-		recipientService.findNextRecipientAndSendEmail(Optional.empty(), savedEnvelope.getId());
+		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
+		responseDto.setEmailResponse(emailResponse.getResults());
+
 		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -177,8 +177,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setEnvelope(envelope);
-			recipient.setName(addressBook.getName());
-			recipient.setEmail(addressBook.getEmail());
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
 			recipient.setFields(fields);

@@ -94,7 +94,7 @@ public enum EpEmailBodyTemplates {
 
 	// E-Signature Module Templates
 	ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL("d-c85a4b02d8ed45cf8abf12b91f94d64a"),
-	ESIGNATURE_MODULE_ENVELOPE_RECIEVER_EMAIL("d-c4df568ce7bc42a392f9eb8e831fdbe0");
+	ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL("d-c4df568ce7bc42a392f9eb8e831fdbe0");
 
 	private final String templateId;
 
