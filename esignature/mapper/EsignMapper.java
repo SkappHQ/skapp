@@ -4,6 +4,7 @@ import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
@@ -74,5 +75,7 @@ public interface EsignMapper {
 	@Mapping(target = "documentId", source = "document.id")
 	@Mapping(target = "recipientMail", source = "recipient.email")
 	FieldDetailResponseDto fieldToFieldDetailDto(Field field);
+
+	Document documentDtoToDocument(DocumentDto documentDto);
 
 }
