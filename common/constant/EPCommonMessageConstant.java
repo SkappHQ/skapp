@@ -81,7 +81,13 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR("ep.common.error.unable-to-revoke-permission"),
 	EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL("ep.common.error.unable-to-fetch-organization-url"),
 	EP_COMMON_INVALID_ORGANIZATION_URL("ep.common.error.invalid-organization-url"),
-	EP_COMMON_ERROR_MODULE_CONFIG_NOT_FOUND("ep.common.error.module-config-not-found");
+	EP_COMMON_ERROR_MODULE_CONFIG_NOT_FOUND("ep.common.error.module-config-not-found"),
+	EP_COMMON_ERROR_INVALID_BUSINESS_EMAIL("ep.common.error.invalid-business-email"),
+	EP_COMMON_ERROR_EMPTY_EMAIL("ep.common.error.empty-email"),
+	EP_COMMON_ERROR_INVALID_EMAIL_FORMAT("ep.common.error.invalid-email-format"),
+	EP_COMMON_ERROR_PERSONAL_EMAIL("ep.common.error.personal-email"),
+	EP_COMMON_ERROR_TEMP_EMAIL("ep.common.error.temp-email"),
+	EP_COMMON_ERROR_DISPOSABLE_EMAIL("ep.common.error.disposable-email");
 
 	private final String messageKey;
 
