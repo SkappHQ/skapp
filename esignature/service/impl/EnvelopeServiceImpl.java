@@ -24,6 +24,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
+import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -35,7 +36,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -51,6 +51,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentDao documentDao;
 
 	private final AddressBookDao addressBookDao;
+
+	private final RecipientService recipientService;
 
 	@Override
 	@Transactional
@@ -78,8 +80,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 		// Send Envelopes to recipient - async
+		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
+		responseDto.setEmailResponse(emailResponse.getResults());
+
 		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
 		return new ResponseEntityDto(false, responseDto);
 	}
