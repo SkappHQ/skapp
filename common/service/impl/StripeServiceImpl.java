@@ -1,7 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -37,8 +36,6 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantDao tenantDao;
 
 	private final UserService userService;
-
-	private final CommonMapper commonMapper;
 
 	private final StripeSubscriptionDao stripeSubscriptionDao;
 
@@ -88,7 +85,9 @@ public class StripeServiceImpl implements StripeService {
 		tenant.setStripeSubscription(stripeSubscription);
 		tenantDao.save(tenant);
 
-		CreateSubscriptionResponseDto responseDto = commonMapper.tenantToCreateSubscriptionResponseDto(tenant);
+		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
+		responseDto.setCustomerId(subscriptionRequestDto.getCustomerId());
+		responseDto.setSubscriptionId(subscriptionRequestDto.getSubscriptionId());
 
 		log.info("Subscription created successfully {}", subscriptionRequestDto.getCustomerId());
 		return new ResponseEntityDto(false, responseDto);
