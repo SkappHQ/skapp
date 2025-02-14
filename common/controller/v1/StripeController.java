@@ -28,7 +28,7 @@ public class StripeController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping
+	@PostMapping("/subscription")
 	public ResponseEntity<ResponseEntityDto> createSubscription(
 			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) {
 		ResponseEntityDto response = stripeService.createSubscription(subscriptionRequestDto);
