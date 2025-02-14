@@ -75,13 +75,9 @@ public class StripeServiceImpl implements StripeService {
 		tenant.setLastModifiedDate(Instant.now());
 		tenant.setSubscriptionQuantity(subscriptionRequestDto.getSubscriptionQuantity());
 
-		StripeSubscription stripeSubscription;
-		if (tenant.getStripeSubscription() == null) {
-			stripeSubscription = new StripeSubscription();
-			stripeSubscription.setTenantName(currentTenant);
-		}
+		StripeSubscription stripeSubscription = new StripeSubscription();
 
-		stripeSubscription = tenant.getStripeSubscription();
+		stripeSubscription.setTenantName(currentTenant);
 		stripeSubscription.setCustomerId(subscriptionRequestDto.getCustomerId());
 		stripeSubscription.setSubscriptionId(subscriptionRequestDto.getSubscriptionId());
 		stripeSubscription.setSubscriptionStartDate(Instant.now());
