@@ -64,7 +64,7 @@ public class StripeServiceImpl implements StripeService {
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 		Tenant tenant = tenantDao.findByTenantName(currentTenant);
-		if (tenant.getStripeSubscription().getSubscriptionId() != null) {
+		if (tenant.getStripeSubscription() != null && tenant.getStripeSubscription().getSubscriptionId() != null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS);
 		}
 
