@@ -54,7 +54,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/v1/ep/organization/login-method",
 			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp", "/v1/auth/refresh-token",
-			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email", "/v1/stripe/webhook");
+			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email",
+			"/v1/stripe/webhook");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {

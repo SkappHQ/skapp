@@ -1,6 +1,20 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.mapper.CommonMapper;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.master.StripeSubscription;
+import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
+import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.Subscription;
@@ -10,10 +24,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class StripeServiceImpl implements StripeService {
+
+	private final TenantContext tenantContext;
+
+	private final TenantDao tenantDao;
+
+	private final UserService userService;
+
+	private final CommonMapper commonMapper;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -29,6 +53,42 @@ public class StripeServiceImpl implements StripeService {
 		if (event.getType().equals("customer.subscription.created")) {
 			handleSubscriptionCreated(event);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto) {
+		log.info("Creating subscription for customer: {}", subscriptionRequestDto.getCustomerId());
+
+		String currentTenant = TenantContext.getCurrentTenant();
+		User currentUser = userService.getCurrentUser();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		if (tenant.getStripeSubscription().getSubscriptionId() != null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS);
+		}
+
+		tenant.setBillingEmail(subscriptionRequestDto.getBillingEmail());
+		tenant.setSubscriptionPlan(subscriptionRequestDto.getSubscriptionPlan());
+		tenant.setTier(Tier.PRO);
+		tenant.setLastModifiedByEmail(currentUser.getEmail());
+		tenant.setLastModifiedDate(Instant.now());
+		tenant.setSubscriptionQuantity(subscriptionRequestDto.getSubscriptionQuantity());
+
+		StripeSubscription stripeSubscription = tenant.getStripeSubscription();
+		stripeSubscription.setCustomerId(subscriptionRequestDto.getCustomerId());
+		stripeSubscription.setSubscriptionId(subscriptionRequestDto.getSubscriptionId());
+		stripeSubscription.setSubscriptionStartDate(Instant.now());
+		stripeSubscription.setCreatedByEmail(currentUser.getEmail());
+		stripeSubscription.setCreatedDate(Instant.now());
+
+		tenant.setStripeSubscription(stripeSubscription);
+		tenantDao.save(tenant);
+
+		CreateSubscriptionResponseDto responseDto = commonMapper.tenantToCreateSubscriptionResponseDto(tenant);
+
+		log.info("Subscription created successfully {}", subscriptionRequestDto.getCustomerId());
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private void handleSubscriptionCreated(Event event) {

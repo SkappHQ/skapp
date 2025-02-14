@@ -7,6 +7,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.common.service.TenantService;
@@ -29,7 +30,7 @@ public class TenantServiceImpl implements TenantService {
 	private final TenantContext tenantContext;
 
 	@Transactional
-	public void createTenant(String tenantName, LoginMethod loginMethod) {
+	public void createTenant(String tenantName, LoginMethod loginMethod, String email) {
 
 		List<String> tenants = tenantMigrationService.getAllTenantIds();
 		if (tenants.contains(tenantName)) {
@@ -42,6 +43,14 @@ public class TenantServiceImpl implements TenantService {
 		tenant.setTenantName(tenantName);
 		tenant.setActive(true);
 		tenant.setLoginMethod(loginMethod);
+		tenant.setCreatedByEmail(email);
+
+		StripeSubscription stripeSubscription = new StripeSubscription();
+		stripeSubscription.setTenantName(tenantName);
+		stripeSubscription.setTenant(tenant);
+
+		tenant.setStripeSubscription(stripeSubscription);
+
 		tenantDao.save(tenant);
 
 		tenantMigrationService.runMigration(tenantName);
