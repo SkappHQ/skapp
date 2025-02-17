@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.SignatureVerificationException;
@@ -51,7 +52,7 @@ public class StripeServiceImpl implements StripeService {
 
 		log.info("Processing Stripe event type: {}", event.getType());
 
-		if (event.getType().equals("customer.subscription.created")) {
+		if (event.getType().equals(StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_CREATED.getEventType())) {
 			handleSubscriptionCreated(event);
 		}
 	}
