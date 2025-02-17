@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
@@ -74,6 +75,7 @@ public class StripeServiceImpl implements StripeService {
 		tenant.setLastModifiedByEmail(currentUser.getEmail());
 		tenant.setLastModifiedDate(Instant.now());
 		tenant.setSubscriptionQuantity(subscriptionRequestDto.getSubscriptionQuantity());
+		tenant.setSubscriptionStatus(SubscriptionStatus.FREE_TRIAL);
 
 		StripeSubscription stripeSubscription = new StripeSubscription();
 
