@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -42,12 +44,12 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 
 	@Override
 	public ResponseEntityDto getEmployeesCount() {
-		long count = countActiveEmployees();
+		long count = countActiveAndPendingEmployees();
 		return new ResponseEntityDto(false, count);
 	}
 
-	private long countActiveEmployees() {
-		return employeeDao.countByAccountStatus(AccountStatus.ACTIVE);
+	private long countActiveAndPendingEmployees() {
+		return employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 	}
 
 	@Override

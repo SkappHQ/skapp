@@ -5,7 +5,7 @@ import com.skapp.community.common.type.LoginMethod;
 
 public interface TenantService {
 
-	void createTenant(String tenantName, LoginMethod loginMethod);
+	void createTenant(String tenantName, LoginMethod loginMethod, String email);
 
 	void deleteTenant(String companyDomain);
 

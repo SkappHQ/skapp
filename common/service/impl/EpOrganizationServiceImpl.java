@@ -113,7 +113,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			subdomainCreated = true;
 			log.info("Subdomain created for: {}", companyDomain);
 
-			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod());
+			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
 			log.info("Tenant created for: {}", companyDomain);
 
@@ -270,7 +270,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	}
 
 	private UserSettings createNotificationSettings(User user) {
-		log.info("createNotificationSettings: execution started");
+		log.info("createNotificationSettings: execution started {}", user.getUserId());
 		UserSettings userSettings = new UserSettings();
 
 		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
