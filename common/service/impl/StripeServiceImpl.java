@@ -7,7 +7,6 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
@@ -18,6 +17,8 @@ import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import com.stripe.model.Event;
 import com.stripe.model.Subscription;
 import com.stripe.net.Webhook;
@@ -38,8 +39,6 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantDao tenantDao;
 
 	private final UserService userService;
-
-	private final StripeSubscriptionDao stripeSubscriptionDao;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -104,16 +103,27 @@ public class StripeServiceImpl implements StripeService {
 	private void handleSubscriptionCreated(Event event) {
 		log.info("Handling subscription created event");
 
-		Subscription subscription = (Subscription) event.getDataObjectDeserializer()
-			.getObject()
-			.filter(obj -> obj instanceof Subscription)
-			.orElse(null);
+		try {
+			Subscription subscription = (Subscription) event.getDataObjectDeserializer()
+				.getObject()
+				.filter(obj -> obj instanceof Subscription)
+				.orElse(null);
 
-		if (subscription != null) {
-			StripeSubscription stripeSubscription = stripeSubscriptionDao.findBySubscriptionId(subscription.getId());
-			if (stripeSubscription != null) {
-				log.info("Subscription already exists in the system");
+			if (subscription != null) {
+				String customerId = subscription.getCustomer();
+
+				Customer customer = Customer.retrieve(customerId);
+				String customerName = customer.getName();
+
+				Tenant tenant = tenantDao.findByTenantName(customerName);
+				if (tenant != null) {
+					log.info("Tenant found for customer: {}", customerName);
+				}
 			}
+		}
+		catch (StripeException e) {
+			log.error("stripe: event: {} error: {}", StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_CREATED,
+					e.getMessage());
 		}
 	}
 
