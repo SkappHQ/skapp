@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
@@ -81,5 +82,7 @@ public interface EsignMapper {
 	@Mapping(target = "envelopeMessage", source = "message")
 	@Mapping(target = "envelopeSubject", source = "subject")
 	EpEsignEmailEnvelopeDataDto envelopeToEpEsignEmailEnvelopeDataDto(Envelope envelope);
+
+	Document documentDtoToDocument(DocumentDto documentDto);
 
 }
