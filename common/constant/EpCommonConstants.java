@@ -18,8 +18,9 @@ public class EpCommonConstants {
 
 	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
 
-	public final List<String> ENTERPRISE_GOOGLE_SCOPES = Arrays
-		.asList("https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar");
+	public final List<String> ENTERPRISE_GOOGLE_SCOPES = Arrays.asList(
+			"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar",
+			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
 
 	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 50;
 
