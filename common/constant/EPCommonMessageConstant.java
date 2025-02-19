@@ -95,7 +95,14 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	STRIPE_ERROR_TENANT_NOT_FOUND("ep.common.error.stripe.tenant-not-found"),
 	STRIPE_ERROR_SUBSCRIPTION_NOT_FOUND("ep.common.error.stripe.subscription-not-found"),
 	STRIPE_ERROR_SUBSCRIPTION_MISMATCH("ep.common.error.stripe.subscription-mismatch"),
-	STRIPE_ERROR_VERIFICATION_FAILED("ep.common.error.stripe.verification-failed"),;
+	STRIPE_ERROR_VERIFICATION_FAILED("ep.common.error.stripe.verification-failed"),
+	COMMON_ERROR_STRIPE_EXCEPTION("ep.common.error.stripe.exception"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_PLAN("ep.common.error.stripe.invalid-subscription-plan"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_QUANTITY("ep.common.error.stripe.invalid-subscription-quantity"),
+	EP_COMMON_ERROR_SUBSCRIPTION_BILLING_EMAIL_EMPTY("ep.common.error.subscription.billing-email-empty"),
+	EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND("ep.common.error.subscription-not-found"),
+	EP_COMMON_ERROR_INACTIVE_PROMO_CODE("ep.common.error.inactive-promo-code"),
+	EP_COMMON_ERROR_INVALID_PROMO_CODE("ep.common.error.invalid-promo-code"),;
 
 	private final String messageKey;
 

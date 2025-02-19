@@ -4,9 +4,11 @@ import com.skapp.community.common.exception.GlobalExceptionHandler;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.StripeLogDao;
 import com.skapp.enterprise.common.model.master.StripeLog;
 import com.skapp.enterprise.common.type.StripeLogStatus;
+import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
@@ -53,6 +55,19 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
+	}
+
+	@ExceptionHandler(StripeException.class)
+	public ResponseEntity<ResponseEntityDto> handleStripeException(StripeException e) {
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		String message = e.getMessage();
+
+		logDetailedException(e, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION.name(), message, status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION)),
+				status);
 	}
 
 }
