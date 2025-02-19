@@ -7,6 +7,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.repository.EpEmployeeRoleRepository;
 import com.skapp.enterprise.people.payload.response.EpEmployeeRoleLimitDto;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,8 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 	private final EmployeeRoleDao employeeRoleDao;
 
 	private final TenantValidator tenantValidator;
+
+	private final EpEmployeeRoleRepository epEmployeeRoleRepository;
 
 	@Override
 	public ResponseEntityDto getEmployeesLimit() {
@@ -69,18 +72,18 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 	}
 
 	private boolean checkLeaveAdminLimit() {
-		return employeeRoleDao.countByLeaveRoleAndIsSuperAdmin(Role.LEAVE_ADMIN,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.LEAVE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT;
 	}
 
 	private boolean checkAttendanceAdminLimit() {
-		return employeeRoleDao.countByAttendanceRoleAndIsSuperAdmin(Role.ATTENDANCE_ADMIN,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.ATTENDANCE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT;
 	}
 
 	private boolean checkPeopleAdminLimit() {
-		return employeeRoleDao.countByPeopleRoleAndIsSuperAdmin(Role.PEOPLE_ADMIN,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.PEOPLE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
 	}
 
 	private boolean checkESignAdminLimit() {
@@ -89,22 +92,23 @@ public class EpPeopleServiceImpl implements EpPeopleService {
 	}
 
 	private boolean checkLeaveManagerLimit() {
-		return employeeRoleDao.countByLeaveRoleAndIsSuperAdmin(Role.LEAVE_MANAGER,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.LEAVE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT;
 	}
 
 	private boolean checkAttendanceManagerLimit() {
-		return employeeRoleDao.countByAttendanceRoleAndIsSuperAdmin(Role.ATTENDANCE_MANAGER,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.ATTENDANCE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT;
 	}
 
 	private boolean checkPeopleManagerLimit() {
-		return employeeRoleDao.countByPeopleRoleAndIsSuperAdmin(Role.PEOPLE_MANAGER,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.PEOPLE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT;
 	}
 
 	private boolean checkSuperAdminLimit() {
-		return employeeRoleDao.countByIsSuperAdminTrue() >= EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
+		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+				Role.SUPER_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
 	}
 
 	private boolean checkEsignSenderLimit() {
