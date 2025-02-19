@@ -89,7 +89,13 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_PERSONAL_EMAIL("ep.common.error.personal-email"),
 	EP_COMMON_ERROR_TEMP_EMAIL("ep.common.error.temp-email"),
 	EP_COMMON_ERROR_DISPOSABLE_EMAIL("ep.common.error.disposable-email"),
-	EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS("ep.common.error.subscription-already-exists");
+	EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS("ep.common.error.subscription-already-exists"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_DATA("ep.common.error.stripe.invalid-subscription-data"),
+	STRIPE_ERROR_CUSTOMER_RETRIEVAL_FAILED("ep.common.error.stripe.customer-retrieval-failed"),
+	STRIPE_ERROR_TENANT_NOT_FOUND("ep.common.error.stripe.tenant-not-found"),
+	STRIPE_ERROR_SUBSCRIPTION_NOT_FOUND("ep.common.error.stripe.subscription-not-found"),
+	STRIPE_ERROR_SUBSCRIPTION_MISMATCH("ep.common.error.stripe.subscription-mismatch"),
+	STRIPE_ERROR_VERIFICATION_FAILED("ep.common.error.stripe.verification-failed"),;
 
 	private final String messageKey;
 

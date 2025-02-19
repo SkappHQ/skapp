@@ -10,4 +10,6 @@ public interface StripeService {
 
 	ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto);
 
+	ResponseEntityDto getSubscriptionDetails();
+
 }
