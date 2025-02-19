@@ -5,6 +5,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.type.LeaveState;
@@ -14,7 +15,9 @@ import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
+import com.skapp.enterprise.common.service.impl.EpGoogleCalenderServiceImpl;
 import com.skapp.enterprise.leaveplanner.constant.EpLeaveMessageConstant;
 import com.skapp.enterprise.leaveplanner.model.CalendarEvent;
 import com.skapp.enterprise.leaveplanner.payload.EpWorkingHoursDto;
@@ -22,6 +25,7 @@ import com.skapp.enterprise.leaveplanner.payload.request.EpOutOfOfficeEventReque
 import com.skapp.enterprise.leaveplanner.payload.response.EpLeaveDurationAndWorkingHoursResponseDto;
 import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
+import com.skapp.enterprise.leaveplanner.type.EpGoogleCalendarAutoDeclineMode;
 import com.skapp.enterprise.leaveplanner.util.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +38,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getHolidayAvailabilityOnGivenDateRange;
-import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ALL_CONFLICTING_INVITATION;
-import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_NONE;
-import static com.skapp.enterprise.leaveplanner.constant.EpLeaveConstant.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
 
 @Service
 @Slf4j
@@ -57,11 +58,15 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
+	private final MessageUtil messageUtil;
+
+	private final EpGoogleCalenderServiceImpl epGoogleCalenderServiceImpl;
+
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
 
 	@Override
-	public ResponseEntityDto getDateRangeAndWorkingHoursForALeave(Long id) {
+	public ResponseEntityDto getDateRangeAndWorkingHoursForLeave(Long id) {
 		log.info("getDateRangeAndWorkingHoursForALeave: execution started");
 
 		LeaveRequest leaveRequest = leaveRequestDao.findById(id).orElse(null);
@@ -81,6 +86,10 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	@Override
 	public ResponseEntityDto addOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
 		log.info("addOutOfOfficeEventsForLeave: execution started");
+
+		if (Boolean.FALSE.equals(epGoogleCalenderServiceImpl.getIsGoogleCalenderConnected())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
 
 		LeaveRequest leaveRequest = leaveRequestDao.findById(epOutOfOfficeEventRequestDto.getLeaveId()).orElse(null);
 
@@ -107,7 +116,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 		log.info("addOutOfOfficeEventsForLeave: execution ended");
 
-		return new ResponseEntityDto(false, "Creating out of office event success");
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_SUCCESS_CREATED_OUT_OF_OFFICE_EVENTS));
 	}
 
 	@Override
@@ -117,7 +127,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
 
 		if (calendarEvents != null && !calendarEvents.isEmpty()) {
-			String accessToken = epGoogleCalenderService.generateAccessToken(leaveRequest.getEmployee().getUser());
+			String accessToken = epGoogleCalenderService
+				.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
 			for (CalendarEvent calendarEvent : calendarEvents) {
 				epGoogleCalenderService.deleteOutOfOfficeEvent(
 						encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret), accessToken);
@@ -138,14 +149,15 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
 		long totalHoursAsLong = firstTimeConfig.getTotalHours().longValue();
 
-		String autoDeclineMode = DECLINE_NONE;
+		String autoDeclineMode = EpGoogleCalendarAutoDeclineMode.DECLINE_NONE.getAutoDeclineMode();
 
 		if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
 			autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
-					? DECLINE_ALL_CONFLICTING_INVITATION : DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS;
+					? EpGoogleCalendarAutoDeclineMode.DECLINE_ALL_CONFLICTING_INVITATION.getAutoDeclineMode()
+					: EpGoogleCalendarAutoDeclineMode.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS.getAutoDeclineMode();
 		}
 
-		String accessToken = epGoogleCalenderService.generateAccessToken(userService.getCurrentUser());
+		String accessToken = epGoogleCalenderService.generateGoogleAccessToken(userService.getCurrentUser());
 
 		if (startDate.equals(endDate)) {
 			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
