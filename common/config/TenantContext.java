@@ -2,9 +2,6 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.Tenant;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +18,6 @@ public class TenantContext {
 	private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
 
 	private final MultiTenantDataSourceConfig multiTenantDataSourceConfig;
-
-	private final TenantDao tenantDao;
-
-	private final TenantContext selfTenantContext;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -58,15 +51,6 @@ public class TenantContext {
 						new String[] { tenant, e.getMessage() });
 			}
 		}
-	}
-
-	@Transactional
-	public Tenant getCurrentTenantFromSwitchingSchemas() {
-		String currentTenantId = TenantContext.getCurrentTenant();
-		selfTenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
-		selfTenantContext.setTenantAndSwitchSchema(currentTenantId);
-		return tenant;
 	}
 
 	private void switchDatabaseSchema(String tenant) {

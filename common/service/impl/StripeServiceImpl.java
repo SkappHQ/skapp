@@ -129,7 +129,7 @@ public class StripeServiceImpl implements StripeService {
 	public ResponseEntityDto getSubscriptionDetails() {
 		SubscriptionDetailsResponseDto responseDto = new SubscriptionDetailsResponseDto();
 
-		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
 
 		responseDto.setTier(tenant.getTier() != null ? tenant.getTier() : Tier.FREE);
 		if (tenant.getStripeSubscription() != null) {
@@ -187,7 +187,7 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto verifyPromotionCode(PromotionCodeRequestDto promotionCodeRequestDto)
 			throws StripeException {
-		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
 
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
@@ -456,7 +456,7 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	private String getStripeCustomerId() {
-		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 		}
@@ -478,6 +478,14 @@ public class StripeServiceImpl implements StripeService {
 			throw new ValidationException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER);
 		}
+	}
+
+	public Tenant getCurrentTenantFromSwitchingSchemas() {
+		String currentTenantId = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
+		tenantContext.setTenantAndSwitchSchema(currentTenantId);
+		return tenant;
 	}
 
 }
