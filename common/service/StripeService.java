@@ -4,21 +4,22 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 
 public interface StripeService {
 
 	void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException;
 
-	ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto);
+	ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException;
 
 	ResponseEntityDto getSubscriptionDetails();
 
-	ResponseEntityDto getPricingPlans();
+	ResponseEntityDto getPricingPlans() throws StripeException;
 
-	ResponseEntityDto getBillingDetails();
+	ResponseEntityDto getBillingDetails() throws StripeException;
 
-	ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto);
+	ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto) throws StripeException;
 
-	ResponseEntityDto verifyPromotionCode(String promoCode);
+	ResponseEntityDto verifyPromotionCode(String promoCode) throws StripeException;
 
 }

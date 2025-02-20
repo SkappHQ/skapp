@@ -75,46 +75,42 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto) {
-		try {
-			String currentTenant = TenantContext.getCurrentTenant();
-			User currentUser = userService.getCurrentUser();
+	public ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto)
+			throws StripeException {
 
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		String currentTenant = TenantContext.getCurrentTenant();
+		User currentUser = userService.getCurrentUser();
 
-			validateSubscriptionRequest(tenant, subscriptionRequestDto);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
 
-			Customer customer = createStripeCustomer(subscriptionRequestDto);
+		validateSubscriptionRequest(tenant, subscriptionRequestDto);
 
-			PaymentMethod paymentMethod = PaymentMethod.retrieve(subscriptionRequestDto.getPaymentMethodId());
-			PaymentMethodAttachParams attachParams = PaymentMethodAttachParams.builder()
-				.setCustomer(customer.getId())
-				.build();
-			paymentMethod.attach(attachParams);
+		Customer customer = createStripeCustomer(subscriptionRequestDto);
 
-			CustomerUpdateParams.InvoiceSettings invoiceSettings = CustomerUpdateParams.InvoiceSettings.builder()
-				.setDefaultPaymentMethod(paymentMethod.getId())
-				.build();
+		PaymentMethod paymentMethod = PaymentMethod.retrieve(subscriptionRequestDto.getPaymentMethodId());
+		PaymentMethodAttachParams attachParams = PaymentMethodAttachParams.builder()
+			.setCustomer(customer.getId())
+			.build();
+		paymentMethod.attach(attachParams);
 
-			CustomerUpdateParams customerUpdateParams = CustomerUpdateParams.builder()
-				.setInvoiceSettings(invoiceSettings)
-				.build();
-			customer.update(customerUpdateParams);
+		CustomerUpdateParams.InvoiceSettings invoiceSettings = CustomerUpdateParams.InvoiceSettings.builder()
+			.setDefaultPaymentMethod(paymentMethod.getId())
+			.build();
 
-			Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
-			Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
+		CustomerUpdateParams customerUpdateParams = CustomerUpdateParams.builder()
+			.setInvoiceSettings(invoiceSettings)
+			.build();
+		customer.update(customerUpdateParams);
 
-			CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
-			responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
-			responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
+		Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
+		Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
 
-			return new ResponseEntityDto(false, responseDto);
-		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
+		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
+		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
@@ -138,110 +134,92 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto getPricingPlans() {
+	public ResponseEntityDto getPricingPlans() throws StripeException {
+
 		Map<SubscriptionPlan, String> priceMap = getPriceMap();
 		return new ResponseEntityDto(false, priceMap);
+
 	}
 
 	@Override
-	public ResponseEntityDto getBillingDetails() {
-		try {
-			Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+	public ResponseEntityDto getBillingDetails() throws StripeException {
+		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
 
-			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-			}
-
-			Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
-			BillingDetailsResponseDto billingDetails = getBillingDetailsResponseDto(customer);
-
-			return new ResponseEntityDto(false, billingDetails);
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+
+		Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
+		BillingDetailsResponseDto billingDetails = getBillingDetailsResponseDto(customer);
+
+		return new ResponseEntityDto(false, billingDetails);
 	}
 
 	@Override
-	public ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto) {
-		try {
-			Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+	public ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto)
+			throws StripeException {
+		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
 
-			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-			}
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+		}
 
-			Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
+		Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
 
-			CustomerUpdateParams.Address address = CustomerUpdateParams.Address.builder()
-				.setCity(billingDetailsRequestDto.getBillingCity())
-				.setCountry(billingDetailsRequestDto.getBillingCountry())
+		CustomerUpdateParams updateParams = CustomerUpdateParams.builder()
+			.setEmail(billingDetailsRequestDto.getBillingEmail())
+			.setName(billingDetailsRequestDto.getBillingName())
+			.setAddress(CustomerUpdateParams.Address.builder()
 				.setLine1(billingDetailsRequestDto.getBillingAddressLineOne())
 				.setLine2(billingDetailsRequestDto.getBillingAddressLineTwo())
-				.setPostalCode(billingDetailsRequestDto.getBillingPostalCode())
+				.setCity(billingDetailsRequestDto.getBillingCity())
 				.setState(billingDetailsRequestDto.getBillingState())
-				.build();
+				.setCountry(billingDetailsRequestDto.getBillingCountry())
+				.setPostalCode(billingDetailsRequestDto.getBillingPostalCode())
+				.build())
+			.build();
 
-			CustomerUpdateParams customerParams = CustomerUpdateParams.builder()
-				.setEmail(billingDetailsRequestDto.getBillingEmail())
-				.setName(billingDetailsRequestDto.getBillingName())
-				.setAddress(address)
-				.build();
+		Customer updatedCustomer = customer.update(updateParams);
 
-			customer.update(customerParams);
-
-			BillingDetailsResponseDto billingDetails = getBillingDetailsResponseDto(customer);
-
-			return new ResponseEntityDto(false, billingDetails);
-		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+		BillingDetailsResponseDto billingDetails = getBillingDetailsResponseDto(updatedCustomer);
+		return new ResponseEntityDto(false, billingDetails);
 	}
 
 	@Override
-	public ResponseEntityDto verifyPromotionCode(String promotionCode) {
-		try {
-			Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+	public ResponseEntityDto verifyPromotionCode(String promotionCode) throws StripeException {
+		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
 
-			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
-				throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-			}
-
-			PromotionCodeListParams params = PromotionCodeListParams.builder().setActive(true).build();
-
-			PromotionCodeCollection promotionCodes = PromotionCode.list(params);
-
-			PromotionCode matchingCode = promotionCodes.getData()
-				.stream()
-				.filter(code -> code.getCode().equalsIgnoreCase(promotionCode))
-				.findFirst()
-				.orElse(null);
-
-			if (matchingCode == null) {
-				throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_PROMO_CODE);
-			}
-
-			PromotionCode stripePromotionCode = PromotionCode.retrieve(matchingCode.getId());
-
-			if (!stripePromotionCode.getActive()) {
-				throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INACTIVE_PROMO_CODE);
-			}
-
-			PromotionCodeResponseDto promoCodeResponse = new PromotionCodeResponseDto();
-			promoCodeResponse.setPromotionCodeId(stripePromotionCode.getId());
-			promoCodeResponse.setIsValid(stripePromotionCode.getActive());
-			promoCodeResponse.setDiscountAmountOff(stripePromotionCode.getCoupon().getAmountOff());
-			promoCodeResponse.setDiscountPercentageOff(stripePromotionCode.getCoupon().getPercentOff());
-
-			return new ResponseEntityDto(false, promoCodeResponse);
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
+
+		PromotionCodeListParams params = PromotionCodeListParams.builder().setActive(true).build();
+
+		PromotionCodeCollection promotionCodes = PromotionCode.list(params);
+
+		PromotionCode matchingCode = promotionCodes.getData()
+			.stream()
+			.filter(code -> code.getCode().equalsIgnoreCase(promotionCode))
+			.findFirst()
+			.orElse(null);
+
+		if (matchingCode == null) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_PROMO_CODE);
 		}
+
+		PromotionCode stripePromotionCode = PromotionCode.retrieve(matchingCode.getId());
+
+		if (!stripePromotionCode.getActive()) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INACTIVE_PROMO_CODE);
+		}
+
+		PromotionCodeResponseDto promoCodeResponse = new PromotionCodeResponseDto();
+		promoCodeResponse.setPromotionCodeId(stripePromotionCode.getId());
+		promoCodeResponse.setIsValid(stripePromotionCode.getActive());
+		promoCodeResponse.setDiscountAmountOff(stripePromotionCode.getCoupon().getAmountOff());
+		promoCodeResponse.setDiscountPercentageOff(stripePromotionCode.getCoupon().getPercentOff());
+
+		return new ResponseEntityDto(false, promoCodeResponse);
 	}
 
 	private BillingDetailsResponseDto getBillingDetailsResponseDto(Customer customer) {
@@ -308,78 +286,59 @@ public class StripeServiceImpl implements StripeService {
 		return tenantDao.save(tenant);
 	}
 
-	private Customer createStripeCustomer(CreateSubscriptionRequestDto subscriptionRequestDto) {
-		try {
-			CustomerCreateParams.Address address = CustomerCreateParams.Address.builder()
-				.setCity(subscriptionRequestDto.getBillingCity())
-				.setCountry(subscriptionRequestDto.getBillingCountry())
-				.setLine1(subscriptionRequestDto.getBillingAddressLineOne())
-				.setLine2(subscriptionRequestDto.getBillingAddressLineTwo())
-				.setPostalCode(subscriptionRequestDto.getBillingPostalCode())
-				.setState(subscriptionRequestDto.getBillingState())
-				.build();
+	private Customer createStripeCustomer(CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		CustomerCreateParams.Address address = CustomerCreateParams.Address.builder()
+			.setCity(subscriptionRequestDto.getBillingCity())
+			.setCountry(subscriptionRequestDto.getBillingCountry())
+			.setLine1(subscriptionRequestDto.getBillingAddressLineOne())
+			.setLine2(subscriptionRequestDto.getBillingAddressLineTwo())
+			.setPostalCode(subscriptionRequestDto.getBillingPostalCode())
+			.setState(subscriptionRequestDto.getBillingState())
+			.build();
 
-			CustomerCreateParams customerParams = CustomerCreateParams.builder()
-				.setEmail(subscriptionRequestDto.getBillingEmail())
-				.setName(subscriptionRequestDto.getBillingName())
-				.setAddress(address)
-				.build();
+		CustomerCreateParams customerParams = CustomerCreateParams.builder()
+			.setEmail(subscriptionRequestDto.getBillingEmail())
+			.setName(subscriptionRequestDto.getBillingName())
+			.setAddress(address)
+			.build();
 
-			return Customer.create(customerParams);
-		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+		return Customer.create(customerParams);
 	}
 
 	private Subscription createStripeSubscription(Customer customer,
-			CreateSubscriptionRequestDto subscriptionRequestDto) {
-		try {
-			Map<SubscriptionPlan, String> priceMap = getPriceMap();
-			SubscriptionCreateParams.Item item = SubscriptionCreateParams.Item.builder()
-				.setPrice(subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
-						? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR))
-				.setQuantity(subscriptionRequestDto.getSubscriptionQuantity())
-				.build();
+			CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		Map<SubscriptionPlan, String> priceMap = getPriceMap();
+		SubscriptionCreateParams.Item item = SubscriptionCreateParams.Item.builder()
+			.setPrice(subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
+					? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR))
+			.setQuantity(subscriptionRequestDto.getSubscriptionQuantity())
+			.build();
 
-			SubscriptionCreateParams.PaymentSettings paymentSettings = SubscriptionCreateParams.PaymentSettings
-				.builder()
-				.setSaveDefaultPaymentMethod(
-						SubscriptionCreateParams.PaymentSettings.SaveDefaultPaymentMethod.ON_SUBSCRIPTION)
-				.build();
+		SubscriptionCreateParams.PaymentSettings paymentSettings = SubscriptionCreateParams.PaymentSettings.builder()
+			.setSaveDefaultPaymentMethod(
+					SubscriptionCreateParams.PaymentSettings.SaveDefaultPaymentMethod.ON_SUBSCRIPTION)
+			.build();
 
-			SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
-				.setCustomer(customer.getId())
-				.addItem(item)
-				.setPaymentSettings(paymentSettings)
-				.build();
+		SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
+			.setCustomer(customer.getId())
+			.addItem(item)
+			.setPaymentSettings(paymentSettings)
+			.build();
 
-			return Subscription.create(subParams);
-		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+		return Subscription.create(subParams);
 	}
 
-	private Map<SubscriptionPlan, String> getPriceMap() {
-		try {
-			PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
-			PriceCollection prices = Price.list(params);
-			Map<SubscriptionPlan, String> priceMap = new HashMap<>();
-			for (Price price : prices.getData()) {
-				if (price.getRecurring() != null) {
-					SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
-					priceMap.put(plan, price.getId());
-				}
+	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {
+		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
+		PriceCollection prices = Price.list(params);
+		Map<SubscriptionPlan, String> priceMap = new HashMap<>();
+		for (Price price : prices.getData()) {
+			if (price.getRecurring() != null) {
+				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
+				priceMap.put(plan, price.getId());
 			}
-			return priceMap;
 		}
-		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION,
-					new String[] { e.getMessage() });
-		}
+		return priceMap;
 	}
 
 }
