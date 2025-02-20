@@ -65,9 +65,10 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/promo-code/verify")
-	public ResponseEntity<ResponseEntityDto> verifyPromoCode(@RequestParam String promoCode) throws StripeException {
-		ResponseEntityDto response = stripeService.verifyPromoCode(promoCode);
+	@GetMapping("/promotion-code/verify")
+	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(@RequestParam String promotionCode)
+			throws StripeException {
+		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCode);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

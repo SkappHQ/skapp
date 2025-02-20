@@ -17,7 +17,7 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
-import com.skapp.enterprise.common.payload.response.PromoCodeResponseDto;
+import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
@@ -182,7 +182,7 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto verifyPromoCode(String promoCode) throws StripeException {
+	public ResponseEntityDto verifyPromotionCode(String promotionCode) throws StripeException {
 		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
 
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
@@ -195,7 +195,7 @@ public class StripeServiceImpl implements StripeService {
 
 		PromotionCode matchingCode = promotionCodes.getData()
 			.stream()
-			.filter(code -> code.getCode().equalsIgnoreCase(promoCode))
+			.filter(code -> code.getCode().equalsIgnoreCase(promotionCode))
 			.findFirst()
 			.orElse(null);
 
@@ -203,17 +203,17 @@ public class StripeServiceImpl implements StripeService {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_PROMO_CODE);
 		}
 
-		PromotionCode promotionCode = PromotionCode.retrieve(matchingCode.getId());
+		PromotionCode stripePromotionCode = PromotionCode.retrieve(matchingCode.getId());
 
-		if (!promotionCode.getActive()) {
+		if (!stripePromotionCode.getActive()) {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INACTIVE_PROMO_CODE);
 		}
 
-		PromoCodeResponseDto promoCodeResponse = new PromoCodeResponseDto();
-		promoCodeResponse.setPromoCode(promotionCode.getCode());
-		promoCodeResponse.setIsValid(promotionCode.getActive());
-		promoCodeResponse.setDiscountAmountOff(promotionCode.getCoupon().getAmountOff());
-		promoCodeResponse.setDiscountPercentageOff(promotionCode.getCoupon().getPercentOff());
+		PromotionCodeResponseDto promoCodeResponse = new PromotionCodeResponseDto();
+		promoCodeResponse.setPromotionCodeId(stripePromotionCode.getId());
+		promoCodeResponse.setIsValid(stripePromotionCode.getActive());
+		promoCodeResponse.setDiscountAmountOff(stripePromotionCode.getCoupon().getAmountOff());
+		promoCodeResponse.setDiscountPercentageOff(stripePromotionCode.getCoupon().getPercentOff());
 
 		return new ResponseEntityDto(false, promoCodeResponse);
 	}

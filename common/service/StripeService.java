@@ -20,6 +20,6 @@ public interface StripeService {
 
 	ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto) throws StripeException;
 
-	ResponseEntityDto verifyPromoCode(String promoCode) throws StripeException;
+	ResponseEntityDto verifyPromotionCode(String promoCode) throws StripeException;
 
 }
