@@ -1,7 +1,14 @@
 package com.skapp.enterprise.common.type;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum SubscriptionPlan {
 
-	MONTHLY, YEARLY
+	YEAR("year"), MONTH("month");
+
+	private final String interval;
 
 }

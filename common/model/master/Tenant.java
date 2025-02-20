@@ -45,7 +45,7 @@ public class Tenant {
 	private String billingEmail;
 
 	@Column(name = "subscription_quantity")
-	private Integer subscriptionQuantity;
+	private Long subscriptionQuantity;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "subscription_status", columnDefinition = "varchar(255)")
