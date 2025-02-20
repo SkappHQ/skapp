@@ -40,7 +40,6 @@ import com.skapp.enterprise.common.model.EmployeeCalendar;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.payload.request.EpGoogleCalendarAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleCalendarConsentUrlDto;
-import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpCalendarGetAuthResponseDto;
 import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;

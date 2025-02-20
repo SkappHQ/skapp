@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -209,7 +209,7 @@ public class StripeServiceImpl implements StripeService {
 
 		PromotionCode stripePromotionCode = PromotionCode.retrieve(matchingCode.getId());
 
-		if (!stripePromotionCode.getActive()) {
+		if (Boolean.FALSE.equals(stripePromotionCode.getActive())) {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INACTIVE_PROMO_CODE);
 		}
 
@@ -244,7 +244,6 @@ public class StripeServiceImpl implements StripeService {
 	public ResponseEntityDto attachPaymentMethodToCustomer(PaymentMethodRequestDto paymentMethodRequestDto)
 			throws StripeException {
 		Customer customer = getStripeCustomer();
-		validatePaymentMethodId(paymentMethodRequestDto.getPaymentMethodId(), customer);
 
 		PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodRequestDto.getPaymentMethodId());
 		PaymentMethodAttachParams attachParams = PaymentMethodAttachParams.builder()
@@ -407,7 +406,7 @@ public class StripeServiceImpl implements StripeService {
 	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {
 		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
 		PriceCollection prices = Price.list(params);
-		Map<SubscriptionPlan, String> priceMap = new HashMap<>();
+		Map<SubscriptionPlan, String> priceMap = new EnumMap<>(SubscriptionPlan.class);
 		for (Price price : prices.getData()) {
 			if (price.getRecurring() != null) {
 				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
@@ -420,7 +419,7 @@ public class StripeServiceImpl implements StripeService {
 	private Map<SubscriptionPlan, Double> getPriceValueMap() throws StripeException {
 		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
 		PriceCollection prices = Price.list(params);
-		Map<SubscriptionPlan, Double> priceMap = new HashMap<>();
+		Map<SubscriptionPlan, Double> priceMap = new EnumMap<>(SubscriptionPlan.class);
 		for (Price price : prices.getData()) {
 			if (price.getRecurring() != null) {
 				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
