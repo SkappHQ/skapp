@@ -35,14 +35,8 @@ public class StripeController {
 
 	@PostMapping("/subscription")
 	public ResponseEntity<ResponseEntityDto> createSubscription(
-			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) {
-		ResponseEntityDto response = null;
-		try {
-			response = stripeService.createSubscription(subscriptionRequestDto);
-		}
-		catch (StripeException e) {
-			throw new RuntimeException(e);
-		}
+			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.createSubscription(subscriptionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

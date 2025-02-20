@@ -65,6 +65,9 @@ public class StripeServiceImpl implements StripeService {
 	@Value("${stripe.product.product-id}")
 	private String stripeProductId;
 
+	@Value("${stripe.trial.days}")
+	private Long trialPeriodDays;
+
 	@Override
 	public void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException {
 		log.info("Received Stripe webhook event");
@@ -323,6 +326,7 @@ public class StripeServiceImpl implements StripeService {
 			.setCustomer(customer.getId())
 			.addItem(item)
 			.setPaymentSettings(paymentSettings)
+			.setTrialPeriodDays(trialPeriodDays)
 			.build();
 
 		return Subscription.create(subParams);
