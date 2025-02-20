@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
@@ -16,8 +17,10 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
+import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
+import com.skapp.enterprise.common.payload.response.PaymentMethodResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
@@ -28,6 +31,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentMethod;
+import com.stripe.model.PaymentMethodCollection;
 import com.stripe.model.Price;
 import com.stripe.model.PriceCollection;
 import com.stripe.model.PromotionCode;
@@ -37,6 +41,7 @@ import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentMethodAttachParams;
+import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
@@ -47,6 +52,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -59,6 +65,8 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantDao tenantDao;
 
 	private final UserService userService;
+
+	private final MessageUtil messageUtil;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -146,13 +154,7 @@ public class StripeServiceImpl implements StripeService {
 
 	@Override
 	public ResponseEntityDto getBillingDetails() throws StripeException {
-		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
-
-		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-		}
-
-		Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
+		Customer customer = getStripeCustomer();
 		BillingDetailsResponseDto billingDetails = getBillingDetailsResponseDto(customer);
 
 		return new ResponseEntityDto(false, billingDetails);
@@ -161,13 +163,7 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto updateBillingDetails(BillingDetailsRequestDto billingDetailsRequestDto)
 			throws StripeException {
-		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
-
-		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-		}
-
-		Customer customer = Customer.retrieve(tenant.getStripeSubscription().getCustomerId());
+		Customer customer = getStripeCustomer();
 
 		CustomerUpdateParams updateParams = CustomerUpdateParams.builder()
 			.setEmail(billingDetailsRequestDto.getBillingEmail())
@@ -224,6 +220,81 @@ public class StripeServiceImpl implements StripeService {
 		promoCodeResponse.setDiscountPercentageOff(stripePromotionCode.getCoupon().getPercentOff());
 
 		return new ResponseEntityDto(false, promoCodeResponse);
+	}
+
+	@Override
+	public ResponseEntityDto getPaymentMethods() throws StripeException {
+		Customer customer = getStripeCustomer();
+		PaymentMethodListParams params = PaymentMethodListParams.builder()
+			.setCustomer(customer.getId())
+			.setType(PaymentMethodListParams.Type.CARD)
+			.build();
+
+		PaymentMethodCollection paymentMethods = PaymentMethod.list(params);
+
+		List<PaymentMethodResponseDto> paymentMethodDtos = paymentMethods.getData()
+			.stream()
+			.map(paymentMethod -> mapToPaymentMethodDto(paymentMethod, customer))
+			.toList();
+
+		return new ResponseEntityDto(false, paymentMethodDtos);
+	}
+
+	@Override
+	public ResponseEntityDto attachPaymentMethodToCustomer(PaymentMethodRequestDto paymentMethodRequestDto)
+			throws StripeException {
+		Customer customer = getStripeCustomer();
+		validatePaymentMethodId(paymentMethodRequestDto.getPaymentMethodId(), customer);
+
+		PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodRequestDto.getPaymentMethodId());
+		PaymentMethodAttachParams attachParams = PaymentMethodAttachParams.builder()
+			.setCustomer(customer.getId())
+			.build();
+		paymentMethod.attach(attachParams);
+
+		PaymentMethodResponseDto responseDto = mapToPaymentMethodDto(paymentMethod, customer);
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto setDefaultPaymentMethod(PaymentMethodRequestDto paymentMethodRequestDto)
+			throws StripeException {
+		Customer customer = getStripeCustomer();
+		validatePaymentMethodId(paymentMethodRequestDto.getPaymentMethodId(), customer);
+
+		CustomerUpdateParams.InvoiceSettings invoiceSettings = CustomerUpdateParams.InvoiceSettings.builder()
+			.setDefaultPaymentMethod(paymentMethodRequestDto.getPaymentMethodId())
+			.build();
+
+		CustomerUpdateParams customerUpdateParams = CustomerUpdateParams.builder()
+			.setInvoiceSettings(invoiceSettings)
+			.build();
+
+		Customer updatedCustomer = customer.update(customerUpdateParams);
+
+		PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodRequestDto.getPaymentMethodId());
+		PaymentMethodResponseDto paymentMethodResponseDto = mapToPaymentMethodDto(paymentMethod, updatedCustomer);
+
+		return new ResponseEntityDto(false, paymentMethodResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto removePaymentMethod(PaymentMethodRequestDto paymentMethodRequestDto)
+			throws StripeException {
+		Customer customer = getStripeCustomer();
+		validatePaymentMethodId(paymentMethodRequestDto.getPaymentMethodId(), customer);
+
+		PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodRequestDto.getPaymentMethodId());
+
+		if (isDefaultPaymentMethod(paymentMethod, customer)) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_DEFAULT_PAYMENT_METHOD);
+		}
+
+		paymentMethod.detach();
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_PAYMENT_METHOD_REMOVED));
 	}
 
 	private BillingDetailsResponseDto getBillingDetailsResponseDto(Customer customer) {
@@ -358,6 +429,56 @@ public class StripeServiceImpl implements StripeService {
 			}
 		}
 		return priceMap;
+	}
+
+	private PaymentMethodResponseDto mapToPaymentMethodDto(PaymentMethod paymentMethod, Customer customer) {
+		PaymentMethodResponseDto paymentMethodResponseDto = new PaymentMethodResponseDto();
+		paymentMethodResponseDto.setPaymentMethodId(paymentMethod.getId());
+
+		PaymentMethod.Card card = paymentMethod.getCard();
+		if (card != null) {
+			paymentMethodResponseDto.setBrand(card.getBrand());
+			paymentMethodResponseDto.setLast4(card.getLast4());
+			paymentMethodResponseDto.setExpMonth(card.getExpMonth());
+			paymentMethodResponseDto.setExpYear(card.getExpYear());
+			paymentMethodResponseDto.setFunding(card.getFunding());
+		}
+
+		paymentMethodResponseDto.setIsDefault(isDefaultPaymentMethod(paymentMethod, customer));
+
+		return paymentMethodResponseDto;
+	}
+
+	private boolean isDefaultPaymentMethod(PaymentMethod paymentMethod, Customer customer) {
+		String defaultPaymentMethodId = customer.getInvoiceSettings() != null
+				? customer.getInvoiceSettings().getDefaultPaymentMethod() : null;
+
+		return defaultPaymentMethodId != null && paymentMethod.getId().equals(defaultPaymentMethodId);
+	}
+
+	private String getStripeCustomerId() {
+		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+		}
+		return tenant.getStripeSubscription().getCustomerId();
+	}
+
+	private Customer getStripeCustomer() throws StripeException {
+		return Customer.retrieve(getStripeCustomerId());
+	}
+
+	private void validatePaymentMethodId(String paymentMethodId, Customer customer) throws StripeException {
+		if (paymentMethodId == null || paymentMethodId.isBlank()) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_PAYMENT_METHOD);
+		}
+
+		PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodId);
+
+		if (!customer.getId().equals(paymentMethod.getCustomer())) {
+			throw new ValidationException(
+					EPCommonMessageConstant.EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER);
+		}
 	}
 
 }
