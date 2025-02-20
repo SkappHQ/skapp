@@ -24,6 +24,8 @@ public class TenantContext {
 
 	private final TenantDao tenantDao;
 
+	private final TenantContext selfTenantContext;
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -60,10 +62,10 @@ public class TenantContext {
 
 	@Transactional
 	public Tenant getCurrentTenantFromSwitchingSchemas() {
-		String currentTenant = TenantContext.getCurrentTenant();
-		setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenant);
-		setTenantAndSwitchSchema(currentTenant);
+		String currentTenantId = TenantContext.getCurrentTenant();
+		selfTenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
+		selfTenantContext.setTenantAndSwitchSchema(currentTenantId);
 		return tenant;
 	}
 
