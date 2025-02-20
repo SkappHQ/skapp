@@ -17,7 +17,7 @@ public interface EpGoogleCalenderService {
 
 	ResponseEntityDto disconnectGoogleCalendar();
 
-	String generateAccessToken(User user);
+	String generateGoogleAccessToken(User user);
 
 	String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
 			String autoDeclineMode, String declineMessage);

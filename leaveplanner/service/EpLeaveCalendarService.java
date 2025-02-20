@@ -6,7 +6,7 @@ import com.skapp.enterprise.leaveplanner.payload.request.EpOutOfOfficeEventReque
 
 public interface EpLeaveCalendarService {
 
-	ResponseEntityDto getDateRangeAndWorkingHoursForALeave(Long id);
+	ResponseEntityDto getDateRangeAndWorkingHoursForLeave(Long id);
 
 	ResponseEntityDto addOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto);
 

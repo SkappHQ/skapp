@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum EpLeaveMessageConstant implements MessageConstant {
 
+	EP_LEAVE_CALENDAR_SUCCESS_CREATED_OUT_OF_OFFICE_EVENTS("ep.leave.calendar.success.created-out-of-office-events"),
+
 	EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND("ep.leave.calendar.error.leave-request-not-found"),
 	EP_LEAVE_CALENDAR_ERROR_TIME_CONFIG_NOT_FOUND("ep.leave.calendar.error.time-config-not-found"),
 	EP_LEAVE_CALENDAR_ERROR_AUTO_DECLINE_MODE_NOT_FOUND("ep.leave.calendar.error.auto-decline-mode-not-found"),;

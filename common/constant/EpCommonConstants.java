@@ -10,17 +10,41 @@ public class EpCommonConstants {
 
 	public static final String MASTER_DATABASE = "master";
 
+	public static final String APPLICATION_NAME = "Skapp";
+
+	public static final String CALENDAR_ID = "primary";
+
+	public static final String GOOGLE_PERMISSION_PEOPLE_ME = "people/me";
+
+	public static final String HTTP_POST_HEADER_CONTENT_TYPE = "Content-Type";
+
+	public static final String GOOGLE_CALENDAR_EVENT_SUMMARY = "Out of Office";
+
+	public static final String GOOGLE_CALENDAR_EVENT_TRANSPARENCY = "opaque";
+
+	public static final String GOOGLE_CALENDAR_EVENT_VISIBILITY = "default";
+
+	public static final String GOOGLE_CALENDAR_EVENT_TYPE = "outOfOffice";
+
+	public static final String TOKEN = "token=";
+
+	public static final String HTTP_POST_HEADER_VALUE = "application/x-www-form-urlencoded";
+
+	public static final String GOOGLE_PERMISSION_EMAIL_ADDRESS = "emailAddresses";
+
+	public static final String ENTERPRISE_GOOGLE_ACCESS_TYPE = "offline";
+
+	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
+
+	public final List<String> ENTERPRISE_GOOGLE_CALENDAR_SCOPES = Arrays.asList(
+			"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar",
+			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
+
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 
 	public static final String JWT_ISSUER = "https://accounts.google.com";
 
 	public static final String JWK_PROVIDER = "https://www.googleapis.com/oauth2/v3/certs";
-
-	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
-
-	public final List<String> ENTERPRISE_GOOGLE_SCOPES = Arrays.asList(
-			"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar",
-			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
 
 	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 50;
 
@@ -43,7 +67,5 @@ public class EpCommonConstants {
 	public static final int ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT = 1;
 
 	public static final String ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE = ":::---:::";
-
-	public static final String ENTERPRISE_GOOGLE_ACCESS_TYPE = "offline";
 
 }

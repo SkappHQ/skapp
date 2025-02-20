@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum EPCommonMessageConstant implements MessageConstant {
 
+	EP_COMMON_SUCCESS_DISCONNECT_GOOGLE_CALENDAR("ep.common.success.disconnect.google.calendar"),
+
 	EP_COMMON_ERROR_INVALID_LOGIN_METHOD("ep.common.error.invalid-login-method"),
 	EP_COMMON_ERROR_TENANT_NOT_PRESENT("ep.common.error.tenant-not-present"),
 	EP_COMMON_ERROR_TENANT_CONTEXT_ERROR("ep.common.error.tenant-context-error"),

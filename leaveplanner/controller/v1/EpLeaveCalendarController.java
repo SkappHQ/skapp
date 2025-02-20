@@ -22,8 +22,8 @@ public class EpLeaveCalendarController {
 	private final EpLeaveCalendarService epLeaveCalendarService;
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getDateRangeAndWorkingHoursForALeave(@PathVariable Long id) {
-		ResponseEntityDto response = epLeaveCalendarService.getDateRangeAndWorkingHoursForALeave(id);
+	public ResponseEntity<ResponseEntityDto> getDateRangeAndWorkingHoursForLeave(@PathVariable Long id) {
+		ResponseEntityDto response = epLeaveCalendarService.getDateRangeAndWorkingHoursForLeave(id);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
