@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
+import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -65,10 +65,10 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/promotion-code/verify")
-	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(@RequestParam String promotionCode)
-			throws StripeException {
-		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCode);
+	@PostMapping("/promotion-code/verify")
+	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(
+			@RequestBody PromotionCodeRequestDto promotionCodeRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCodeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

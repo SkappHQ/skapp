@@ -16,6 +16,7 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto;
+import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
@@ -188,7 +189,8 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto verifyPromotionCode(String promotionCode) throws StripeException {
+	public ResponseEntityDto verifyPromotionCode(PromotionCodeRequestDto promotionCodeRequestDto)
+			throws StripeException {
 		Tenant tenant = tenantContext.getCurrentTenantFromSwitchingSchemas();
 
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
@@ -201,7 +203,7 @@ public class StripeServiceImpl implements StripeService {
 
 		PromotionCode matchingCode = promotionCodes.getData()
 			.stream()
-			.filter(code -> code.getCode().equalsIgnoreCase(promotionCode))
+			.filter(code -> code.getCode().equalsIgnoreCase(promotionCodeRequestDto.getPromotionCode()))
 			.findFirst()
 			.orElse(null);
 
@@ -275,7 +277,7 @@ public class StripeServiceImpl implements StripeService {
 
 		StripeSubscription stripeSubscription = new StripeSubscription();
 		stripeSubscription.setTenantName(tenant.getTenantName());
-		stripeSubscription.setSubscriptionStartDate(Instant.now());
+		stripeSubscription.setSubscriptionStartDate(Instant.ofEpochSecond(subscription.getStartDate()));
 		stripeSubscription.setCreatedByEmail(currentUser.getEmail());
 		stripeSubscription.setCreatedDate(Instant.now());
 		stripeSubscription.setSubscriptionId(subscription.getId());
