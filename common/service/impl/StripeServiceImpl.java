@@ -138,8 +138,7 @@ public class StripeServiceImpl implements StripeService {
 
 	@Override
 	public ResponseEntityDto getPricingPlans() throws StripeException {
-
-		Map<SubscriptionPlan, String> priceMap = getPriceMap();
+		Map<SubscriptionPlan, Double> priceMap = getPriceValueMap();
 		return new ResponseEntityDto(false, priceMap);
 
 	}
@@ -340,6 +339,20 @@ public class StripeServiceImpl implements StripeService {
 			if (price.getRecurring() != null) {
 				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
 				priceMap.put(plan, price.getId());
+			}
+		}
+		return priceMap;
+	}
+
+	private Map<SubscriptionPlan, Double> getPriceValueMap() throws StripeException {
+		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
+		PriceCollection prices = Price.list(params);
+		Map<SubscriptionPlan, Double> priceMap = new HashMap<>();
+		for (Price price : prices.getData()) {
+			if (price.getRecurring() != null) {
+				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
+				Double unitAmount = price.getUnitAmount() / 100.0;
+				priceMap.put(plan, unitAmount);
 			}
 		}
 		return priceMap;
