@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum EpPeopleMessageConstant implements MessageConstant {
 
-    EP_PEOPLE_ERROR_ALLOWED_USER_LIMIT_EXCEEDED("ep.people.error.allowed.user.limit.exceeded");
+	EP_PEOPLE_ERROR_ALLOWED_USER_LIMIT_EXCEEDED("ep.people.error.allowed.user.limit.exceeded");
 
-    private final String messageKey;
+	private final String messageKey;
 
 }
