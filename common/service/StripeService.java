@@ -14,7 +14,7 @@ public interface StripeService {
 
 	ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException;
 
-	ResponseEntityDto getSubscriptionDetails();
+	ResponseEntityDto getSubscriptionDetails() throws StripeException;
 
 	ResponseEntityDto getPricingPlans() throws StripeException;
 

@@ -43,7 +43,7 @@ public class StripeController {
 	}
 
 	@GetMapping("/subscription")
-	public ResponseEntity<ResponseEntityDto> getSubscriptionDetails() {
+	public ResponseEntity<ResponseEntityDto> getSubscriptionDetails() throws StripeException {
 		ResponseEntityDto response = stripeService.getSubscriptionDetails();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

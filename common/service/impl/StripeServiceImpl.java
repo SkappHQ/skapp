@@ -51,6 +51,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -126,20 +129,39 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto getSubscriptionDetails() {
+	public ResponseEntityDto getSubscriptionDetails() throws StripeException {
+		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
 		SubscriptionDetailsResponseDto responseDto = new SubscriptionDetailsResponseDto();
 
-		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
-
 		responseDto.setTier(tenant.getTier() != null ? tenant.getTier() : Tier.FREE);
-		if (tenant.getStripeSubscription() != null) {
-			responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
-			responseDto.setSubscriptionId(tenant.getStripeSubscription().getSubscriptionId());
-			responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
 
-			if (tenant.getSubscriptionQuantity() != null) {
-				responseDto.setSubscriptionQuantity(tenant.getSubscriptionQuantity());
-			}
+		if (tenant.getStripeSubscription() == null) {
+			return new ResponseEntityDto(false, responseDto);
+		}
+
+		Subscription subscription = Subscription.retrieve(tenant.getStripeSubscription().getSubscriptionId());
+		Long subscriptionQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0;
+
+		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
+		responseDto.setSubscriptionId(subscription.getId());
+		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
+		responseDto.setSubscriptionQuantity(subscriptionQuantity);
+
+		responseDto.setTotalCost(subscription.getItems()
+			.getData()
+			.stream()
+			.mapToDouble(item -> (item.getPrice().getUnitAmount() / 100.0)
+					* (item.getQuantity() != null ? item.getQuantity() : 1))
+			.sum());
+
+		responseDto.setNextBillingDate(subscription.getCurrentPeriodEnd() != null
+				? Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()) : null);
+
+		if (subscription.getTrialEnd() != null) {
+			long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
+					Instant.ofEpochSecond(subscription.getTrialEnd()).atOffset(ZoneOffset.UTC).toLocalDate());
+			responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
+			responseDto.setTrialEndDate(Instant.ofEpochSecond(subscription.getTrialEnd()));
 		}
 
 		return new ResponseEntityDto(false, responseDto);
