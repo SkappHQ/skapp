@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
@@ -89,6 +90,15 @@ public class TenantServiceImpl implements TenantService {
 			case "GOOGLE" -> new ResponseEntityDto(false, LoginMethod.GOOGLE);
 			default -> throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENTITY_NOT_FOUND);
 		};
+	}
+
+	@Override
+	public Tenant getCurrentTenantFromSwitchingSchemas() {
+		String currentTenantId = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
+		tenantContext.setTenantAndSwitchSchema(currentTenantId);
+		return tenant;
 	}
 
 }

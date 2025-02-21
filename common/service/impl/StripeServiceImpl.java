@@ -23,6 +23,7 @@ import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDt
 import com.skapp.enterprise.common.payload.response.PaymentMethodResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
@@ -70,6 +71,8 @@ public class StripeServiceImpl implements StripeService {
 	private final UserService userService;
 
 	private final MessageUtil messageUtil;
+
+	private final TenantService tenantService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -130,7 +133,7 @@ public class StripeServiceImpl implements StripeService {
 
 	@Override
 	public ResponseEntityDto getSubscriptionDetails() throws StripeException {
-		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
 		SubscriptionDetailsResponseDto responseDto = new SubscriptionDetailsResponseDto();
 
 		responseDto.setTier(tenant.getTier() != null ? tenant.getTier() : Tier.FREE);
@@ -209,7 +212,7 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto verifyPromotionCode(PromotionCodeRequestDto promotionCodeRequestDto)
 			throws StripeException {
-		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
 
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
@@ -478,7 +481,7 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	private String getStripeCustomerId() {
-		Tenant tenant = getCurrentTenantFromSwitchingSchemas();
+		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
 		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getCustomerId() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 		}
@@ -500,14 +503,6 @@ public class StripeServiceImpl implements StripeService {
 			throw new ValidationException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER);
 		}
-	}
-
-	public Tenant getCurrentTenantFromSwitchingSchemas() {
-		String currentTenantId = TenantContext.getCurrentTenant();
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
-		tenantContext.setTenantAndSwitchSchema(currentTenantId);
-		return tenant;
 	}
 
 }
