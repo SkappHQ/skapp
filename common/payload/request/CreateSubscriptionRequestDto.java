@@ -30,6 +30,6 @@ public class CreateSubscriptionRequestDto {
 
 	private SubscriptionPlan subscriptionPlan;
 
-	private String promoCodeId;
+	private String promotionCodeId;
 
 }
