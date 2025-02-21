@@ -16,7 +16,7 @@ public class StripeVerificationException extends RuntimeException {
 
 	private final transient MessageConstant messageKey;
 
-	private final Event event;
+	private final transient Event event;
 
 	private final String tenantName;
 

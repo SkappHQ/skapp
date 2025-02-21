@@ -3,6 +3,8 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
+import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
+import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -10,13 +12,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,19 +37,13 @@ public class StripeController {
 
 	@PostMapping("/subscription")
 	public ResponseEntity<ResponseEntityDto> createSubscription(
-			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) {
-		ResponseEntityDto response = null;
-		try {
-			response = stripeService.createSubscription(subscriptionRequestDto);
-		}
-		catch (StripeException e) {
-			throw new RuntimeException(e);
-		}
+			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.createSubscription(subscriptionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/subscription")
-	public ResponseEntity<ResponseEntityDto> getSubscriptionDetails() {
+	public ResponseEntity<ResponseEntityDto> getSubscriptionDetails() throws StripeException {
 		ResponseEntityDto response = stripeService.getSubscriptionDetails();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -71,10 +67,37 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/promotion-code/verify")
-	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(@RequestParam String promotionCode)
-			throws StripeException {
-		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCode);
+	@PostMapping("/promotion-code/verify")
+	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(
+			@RequestBody PromotionCodeRequestDto promotionCodeRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCodeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/payment-methods")
+	public ResponseEntity<ResponseEntityDto> getPaymentMethods() throws StripeException {
+		ResponseEntityDto response = stripeService.getPaymentMethods();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/payment-method")
+	public ResponseEntity<ResponseEntityDto> attachPaymentMethodToCustomer(
+			@RequestBody PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.attachPaymentMethodToCustomer(paymentMethodRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/payment-method/default")
+	public ResponseEntity<ResponseEntityDto> setDefaultPaymentMethod(
+			@RequestBody PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.setDefaultPaymentMethod(paymentMethodRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/payment-method")
+	public ResponseEntity<ResponseEntityDto> removePaymentMethod(
+			@RequestBody PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.removePaymentMethod(paymentMethodRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -5,6 +5,8 @@ import com.skapp.enterprise.common.type.Tier;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 public class SubscriptionDetailsResponseDto {
@@ -18,5 +20,13 @@ public class SubscriptionDetailsResponseDto {
 	private Long subscriptionQuantity;
 
 	private SubscriptionPlan subscriptionPlan;
+
+	private double totalCost;
+
+	private Instant nextBillingDate;
+
+	private Long trialExpiredRemainingDays;
+
+	private Instant trialEndDate;
 
 }
