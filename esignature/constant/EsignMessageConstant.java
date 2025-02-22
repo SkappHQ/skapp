@@ -27,7 +27,29 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_PHONE_NUMBER_INVALID("validation.phone.invalid"),
 
 	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.not-found"),
-	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid");
+	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
+	ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT("ep.esign.error.failed.sign.document"),
+	ESIGN_ERROR_FAILED_TO_LOAD_KEY_PAIR("ep.esign.error.failed.load.key-pair"),
+	ESIGN_ERROR_FAILED_TO_PROCESS_CURRENT_DOCUMENT_VERSION("ep.esign.error.failed.process.current.document-version"),
+	ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND("ep.esign.error.document-version.not.found"),
+	ESIGN_ERROR_FAILED_TO_HASH_DOCUMENT("ep.esign.error.failed.hash.document"),
+	ESIGN_ERROR_FAILED_TO_VERIFY_SIGNATURE("ep.esign.error.failed.verify.signature"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PRIVATE_KEY("ep.esign.error.failed.convert.private-key"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PUBLIC_KEY("ep.esign.error.failed.convert.public-key"),
+	ESIGN_ERROR_MISSING_DOCUMENT_VERSION_ID("ep.esign.error.missing.document.version.id"),
+	ESIGN_ERROR_MISSING_ADDRESS_BOOK_ID("ep.esign.error.missing.address.book.id"),
+	ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST("ep.esign.error.empty.field.sign.list"),
+	ESIGN_ERROR_USER_KEY_PAIR_NOT_FOUND("ep.esign.error.user.key.pair.not-found"),
+	ESIGN_ERROR_USER_KEY_GENERATE("ep.esign.error.user.key.generate"),
+	ESIGN_ERROR_FAILED_TO_LOAD_IMAGE("ep.esign.error.failed.load.image"),
+	ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT("ep.esign.error.failed.process.pdf-document"),
+	ESIGN_ERROR_FAILED_DOWNLOAD_FILE("ep.esign.error.failed.download.file"),
+	ESIGN_ERROR_FAILED_TO_UPLOAD_FILE("ep.esign.error.failed.upload.file"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE("ep.esign.error.failed.convert.file.to.byte"),
+	ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION("ep.esign.error.failed.convert.file.private-key.encryption"),
+	ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION("ep.esign.error.failed.convert.file.private-key.decryption"),
+	ESIGN_ERROR_AES_KEY_NOT_FOUND("ep.esign.error.ase-key.not-found"),
+	ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE("ep.esign.error.failed.generate.certificate");
 
 	private final String messageKey;
 

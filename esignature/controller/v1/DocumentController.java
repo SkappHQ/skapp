@@ -5,12 +5,14 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +32,26 @@ public class DocumentController {
 		ResponseEntityDto responseEntityDto = documentService.saveDocument(documentDto);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Sign Document",
+			description = "This endpoint generates a digital signature corresponding to a specific document version, "
+					+ "ensuring integrity and authenticity")
+	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
+		ResponseEntityDto response = documentService.signDocument(documentSignDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Sign Document",
+			description = "This endpoint generates a digital signature corresponding to a specific document version, "
+					+ "ensuring integrity and authenticity")
+	@PostMapping(value = "/merge", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> mergeDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
+		ResponseEntityDto response = documentService.mergeDocument(documentSignDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }
