@@ -1,13 +1,27 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.EventOutOfOfficeProperties;
+import com.google.api.services.people.v1.PeopleService;
+import com.google.api.services.people.v1.model.Person;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -16,6 +30,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -30,6 +45,8 @@ import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
 import com.skapp.enterprise.common.type.EpCalendarType;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
+import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,10 +61,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,6 +90,14 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
 	private final UserDao userDao;
+
+	private final CalendarEventDao calendarEventDao;
+
+	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+
+	private static final JsonFactory JSON_FACTORY = new GsonFactory();
+
+	private final MessageUtil messageUtil;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -120,6 +149,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		if (employeeCalendar == null) {
 			employeeCalendar = new EmployeeCalendar();
 			employeeCalendar.setUser(currentUser);
+			employeeCalendar.setCalendarType(EpCalendarType.GOOGLE);
 			employeeCalendar = employeeCalendarDao.save(employeeCalendar);
 		}
 
@@ -131,6 +161,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(), jsonFactory,
 					clientId, clientSecret, authorizationCode, backendRedirectURI)
 				.execute();
+			String accessToken = response.getAccessToken();
+			if (accessToken != null) {
+				verifyConnectedEmailWithUserEmail(accessToken, currentUser);
+			}
 			if (response.getRefreshToken() != null) {
 				tokenGenerated = response.getRefreshToken();
 				String encryptedToken = encryptionDecryptionService.encrypt(tokenGenerated, encryptSecret);
@@ -141,48 +175,85 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			}
 			else {
 				if (employeeCalendar.getCalendarToken() == null) {
-					throw new EntityNotFoundException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR);
+					throw new EntityNotFoundException(
+							EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
 				}
-				generateAccessToken(currentUser);
 				tokenGenerated = employeeCalendar.getCalendarToken();
 			}
-			employeeCalendar.setCalendarType(EpCalendarType.GOOGLE);
 			employeeCalendar.setIsEnabled(true);
 			employeeCalendarDao.save(employeeCalendar);
 		}
 		catch (Exception exception) {
 			log.error("connectGoogleCalendar: {}", exception.getMessage(), exception);
 			rollbackCalendarConnect(currentUser, tokenGenerated);
-			String paramName = "error";
-			String paramValue = exception.getMessage();
-			UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-				.scheme("http")
-				.host(frontendRedirectUri)
-				.queryParam(paramName, paramValue);
-			return builder.toUriString();
+
+			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
+			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
+
+			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
+
+			return UriComponentsBuilder.fromUriString(frontendRedirectUri)
+				.queryParam("error", encodedErrorMessage)
+				.toUriString();
 		}
+
 		log.info("connectGoogleCalendar: execution ended");
 		return frontendRedirectUri;
 	}
 
+	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) throws IOException {
+		GoogleCredentials credentials = GoogleCredentials.create(new AccessToken(accessToken, null));
+
+		HttpRequestInitializer httpRequestInitializer = new HttpCredentialsAdapter(credentials);
+
+		PeopleService googlePeopleService = new PeopleService.Builder(HTTP_TRANSPORT, JSON_FACTORY,
+				httpRequestInitializer)
+			.setApplicationName(EpCommonConstants.APPLICATION_NAME)
+			.build();
+
+		Person profile = googlePeopleService.people()
+			.get(EpCommonConstants.GOOGLE_PERMISSION_PEOPLE_ME)
+			.setPersonFields(EpCommonConstants.GOOGLE_PERMISSION_EMAIL_ADDRESS)
+			.execute();
+
+		if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
+			String userEmail = profile.getEmailAddresses().getFirst().getValue();
+			if (!currentUser.getEmail().equals(userEmail)) {
+				throw new ModuleException(
+						EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
+			}
+		}
+		else {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
+		}
+	}
+
 	@Override
 	public ResponseEntityDto isGoogleCalendarConnected() {
-		log.info("isGoogleCalendarConnected: execution started");
+		return new ResponseEntityDto(false, getIsGoogleCalenderConnected());
+	}
+
+	public Boolean getIsGoogleCalenderConnected() {
 		User currentUser = userService.getCurrentUser();
 		boolean isConnected = false;
 
 		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
 				EpCalendarType.GOOGLE);
 
-		if (employeeCalendar != null && employeeCalendar.getCalendarType() == EpCalendarType.GOOGLE
-				&& employeeCalendar.getCalendarToken() != null && !employeeCalendar.getCalendarToken().isEmpty()
+		if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
+				&& !employeeCalendar.getCalendarToken().isEmpty()
 				&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
 			isConnected = true;
 		}
 
-		log.info("isGoogleCalendarConnected: execution ended");
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
-		return new ResponseEntityDto(false, isConnected);
+		if (organizationCalendars.isEmpty()
+				|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsGoogleCalendarEnabled())) {
+			isConnected = false;
+		}
+
+		return isConnected;
 	}
 
 	@Override
@@ -218,7 +289,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 		try {
 			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(clientId,
-					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_SCOPES)
+					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_CALENDAR_SCOPES)
 				.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
 				.setState(encodedState);
 			String authUrl = authorizationUrl.build();
@@ -248,7 +319,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		}
 
 		try {
-			String accessToken = generateAccessToken(currentUser);
+			String accessToken = generateGoogleAccessToken(currentUser);
 			HttpResponse response = revokeToken(accessToken);
 			if (response.getStatusLine().getStatusCode() == 200) {
 				disconnectCalendarFromDatabase(currentUser);
@@ -263,7 +334,99 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR);
 		}
 
-		return new ResponseEntityDto("Successfully disconnected from Google Calendar", false);
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_DISCONNECT_GOOGLE_CALENDAR), false);
+	}
+
+	@Override
+	public String generateGoogleAccessToken(@NonNull User user) {
+		log.info("GoogleCalendar: generateAccessToken: execution started for {}", user.getUserId());
+		Employee employee = user.getEmployee();
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(user, EpCalendarType.GOOGLE);
+
+		if (employeeCalendar == null || employeeCalendar.getCalendarToken() == null
+				|| employeeCalendar.getCalendarToken().isEmpty()
+				|| Boolean.FALSE.equals(employeeCalendar.getIsEnabled())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
+
+		String refreshToken = employeeCalendar.getCalendarToken();
+		JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
+
+		try {
+			String decryptedAccessToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
+			TokenResponse response = new GoogleRefreshTokenRequest(new NetHttpTransport(), jsonFactory,
+					decryptedAccessToken, clientId, clientSecret)
+				.execute();
+			return response.getAccessToken();
+		}
+		catch (IOException exception) {
+			log.error("GoogleCalendar: generateAccessToken: {}", exception.getMessage(), exception);
+			employeeCalendar.setCalendarType(EpCalendarType.NONE);
+			employeeDao.save(employee);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
+		}
+	}
+
+	@Override
+	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
+			String autoDeclineMode, String declineMessage) {
+
+		ZonedDateTime startUtc = startDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
+		ZonedDateTime endUtc = endDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
+
+		String startFormatted = EpDateTimeUtils.formatUtcDateTime(startUtc);
+		String endFormatted = EpDateTimeUtils.formatUtcDateTime(endUtc);
+
+		log.info("startDateTime: {}, endDateTime: {}", startFormatted, endFormatted);
+
+		Event event = new Event().setSummary(EpCommonConstants.GOOGLE_CALENDAR_EVENT_SUMMARY)
+			.setStart(new EventDateTime().setDateTime(new DateTime(startFormatted)))
+			.setEnd(new EventDateTime().setDateTime(new DateTime(endFormatted)))
+			.setTransparency(EpCommonConstants.GOOGLE_CALENDAR_EVENT_TRANSPARENCY)
+			.setVisibility(EpCommonConstants.GOOGLE_CALENDAR_EVENT_VISIBILITY)
+			.setEventType(EpCommonConstants.GOOGLE_CALENDAR_EVENT_TYPE);
+
+		EventOutOfOfficeProperties outOfOfficeProperties = new EventOutOfOfficeProperties()
+			.setAutoDeclineMode(autoDeclineMode)
+			.setDeclineMessage(declineMessage);
+
+		event.setOutOfOfficeProperties(outOfOfficeProperties);
+		Calendar service = createCalendarInstance(accessToken);
+
+		try {
+			event = service.events().insert(EpCommonConstants.CALENDAR_ID, event).execute();
+			log.info("GoogleCalendar: create Event: {}", event.getId());
+			return event.getId();
+		}
+		catch (Exception exception) {
+			log.error("GoogleCalendar: create Event: {}", exception.getMessage(), exception);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
+		}
+	}
+
+	@Override
+	public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
+		Calendar service = createCalendarInstance(accessToken);
+		try {
+			service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
+			log.info("GoogleCalendar: delete Event: {}", eventId);
+
+			calendarEventDao.deleteByEventId(eventId);
+		}
+		catch (Exception exception) {
+			log.error("GoogleCalendar: delete Event: {}", exception.getMessage(), exception);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR);
+		}
+	}
+
+	public Calendar createCalendarInstance(String accessToken) {
+		JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
+		Credential credential = new Credential(BearerToken.authorizationHeaderAccessMethod())
+			.setAccessToken(accessToken);
+		return new Calendar.Builder(new NetHttpTransport(), jsonFactory, credential)
+			.setApplicationName(EpCommonConstants.APPLICATION_NAME)
+			.build();
 	}
 
 	private User getUser(Long userId) {
@@ -295,8 +458,9 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
 			HttpPost httpPost = new HttpPost(EpCommonConstants.ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL);
-			httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			StringEntity entity = new StringEntity("token=" + accessToken);
+			httpPost.setHeader(EpCommonConstants.HTTP_POST_HEADER_CONTENT_TYPE,
+					EpCommonConstants.HTTP_POST_HEADER_VALUE);
+			StringEntity entity = new StringEntity(EpCommonConstants.TOKEN + accessToken);
 			httpPost.setEntity(entity);
 			return httpClient.execute(httpPost);
 		}
@@ -324,37 +488,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 	private void validateGoogleCalendarAuthRedirectDto(
 			EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
-		if (epGoogleCalendarAuthRedirectDto.getError() != null
-				&& !epGoogleCalendarAuthRedirectDto.getError().isEmpty()) {
+		if (epGoogleCalendarAuthRedirectDto.getError() != null && !epGoogleCalendarAuthRedirectDto.getError().isEmpty()
+				|| epGoogleCalendarAuthRedirectDto.getCode().isEmpty()) {
 			log.error("connectGoogleCalendar: Error: {}", epGoogleCalendarAuthRedirectDto.getError());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR);
-		}
-		else if (epGoogleCalendarAuthRedirectDto.getCode().isEmpty()) {
-			log.error("connectGoogleCalendar: Authorization code is empty");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR);
-		}
-	}
-
-	@Override
-	public String generateAccessToken(@NonNull User user) {
-		log.info("GoogleCalendar: generateAccessToken: execution started for {}", user.getUserId());
-		Employee employee = user.getEmployee();
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(user, EpCalendarType.GOOGLE);
-		String refreshToken = employeeCalendar.getCalendarToken();
-		JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-
-		try {
-			String decryptedAccessToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
-			TokenResponse response = new GoogleRefreshTokenRequest(new NetHttpTransport(), jsonFactory,
-					decryptedAccessToken, clientId, clientSecret)
-				.execute();
-			return response.getAccessToken();
-		}
-		catch (Exception exception) {
-			log.error("GoogleCalendar: generateAccessToken: {}", exception.getMessage(), exception);
-			employeeCalendar.setCalendarType(EpCalendarType.NONE);
-			employeeDao.save(employee);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
 		}
 	}
 
