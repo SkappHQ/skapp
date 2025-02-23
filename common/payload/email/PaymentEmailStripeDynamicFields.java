@@ -8,14 +8,12 @@ import lombok.Setter;
 @Setter
 public class PaymentEmailStripeDynamicFields extends CommonEmailDynamicFields {
 
-    private String trialEndDate;
+	private String trialEndDate;
 
-    private String billingDate;
+	private String billingDate;
 
-    private String retriedDate;
+	private String retriedDate;
 
-    private String  moveToFreeDate;
+	private String moveToFreeDate;
 
-    private String endingDate;
 }
-

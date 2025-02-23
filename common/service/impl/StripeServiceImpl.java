@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.google.type.DateTime;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -7,6 +8,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -84,7 +86,7 @@ public class StripeServiceImpl implements StripeService {
 
 	private final StripeEmailService stripeEmailService;
 
-	private  final StripeSubscriptionDao stripeSubscriptionDao;
+	private final StripeSubscriptionDao stripeSubscriptionDao;
 
 	private final OrganizationDao organizationDao;
 
@@ -151,10 +153,13 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
 		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
 
+		String customerId = subscription.getCustomer();
+		Customer customerDetails = Customer.retrieve(customerId);
+		String customerEmail = customerDetails.getEmail();
+		String trialEndDate = DateTimeUtils.epochMillisToUtcLocalDate(subscription.getTrialEnd()).toString();
 
-		processTenantSchema(currentTenant,() ->
-		stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(subscriptionRequestDto.getBillingEmail(),"1323/23/23")
-		);
+		processTenantSchema(currentTenant,
+				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -538,25 +543,26 @@ public class StripeServiceImpl implements StripeService {
 		log.info("handleSubscriptionPaymentSucceeded started");
 
 		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
-				.getObject()
-				.filter(obj -> obj instanceof Invoice)
-				.orElse(null);
-
+			.getObject()
+			.filter(obj -> obj instanceof Invoice)
+			.orElse(null);
 
 		if (invoice != null) {
 
 			String customerId = invoice.getCustomer();
 			String userEmail = invoice.getCustomerEmail();
+			String billingDate = DateTimeUtils.epochMillisToUtcLocalDate(invoice.getCreated()).toString();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
 				log.info("company domain not available");
 				return;
 			}
-			if(currentTenant.getTenant().getSubscriptionStatus()== SubscriptionStatus.FREE_TRIAL && invoice.getBillingReason().equals("subscription_cycle")) {
+			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
+					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () -> {
 
-					stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail,"1234/12/21");
+					stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, billingDate);
 
 				});
 
@@ -566,22 +572,17 @@ public class StripeServiceImpl implements StripeService {
 
 	}
 
-
-
 	private void handleSubscriptionPaymentFail(Event event) {
 		log.info("Handling subscription payment fail event");
 
 		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
-				.getObject()
-				.filter(obj -> obj instanceof Invoice)
-				.orElse(null);
-
+			.getObject()
+			.filter(obj -> obj instanceof Invoice)
+			.orElse(null);
 
 		if (invoice != null) {
 
 			String customerId = invoice.getCustomer();
-
-
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
@@ -592,29 +593,29 @@ public class StripeServiceImpl implements StripeService {
 				int attemptCount = invoice.getAttemptCount().intValue();
 				if (attemptCount == 1) {
 					stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
-				} else if (attemptCount == 2) {
+				}
+				else if (attemptCount == 2) {
 					stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
-				} else if (attemptCount == 3) {
+				}
+				else if (attemptCount == 3) {
 					stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
-				} else if (attemptCount == 4) {
+				}
+				else if (attemptCount == 4) {
 					stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
 				}
 			});
 
-
-
 		}
 	}
-
 
 	private void handleTrialEndSoon(Event event) {
 		log.info("Handling trial end soon event");
 
 		try {
 			Subscription subscription = (Subscription) event.getDataObjectDeserializer()
-					.getObject()
-					.filter(Subscription.class::isInstance)
-					.orElse(null);
+				.getObject()
+				.filter(Subscription.class::isInstance)
+				.orElse(null);
 
 			if (subscription == null) {
 				log.error("Subscription data not found in event");
@@ -624,17 +625,18 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = subscription.getCustomer();
 			Customer customer = Customer.retrieve(customerId);
 			String customerEmail = customer.getEmail();
-
+			String trialEndDate = DateTimeUtils.epochMillisToUtcLocalDate(subscription.getTrialEnd()).toString();
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
 				log.info("company domain not available");
 				return;
 			}
-			processTenantSchema(currentTenant.getTenantName(), () ->
-					stripeEmailService.sendTrialEndSoonEmail(customerEmail, "1323/23/23")
-			);
-		} catch (StripeException | ModuleException e) {
-			log.error("Error processing event {}: {}", StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END, e.getMessage(), e);
+			processTenantSchema(currentTenant.getTenantName(),
+					() -> stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate));
+		}
+		catch (StripeException | ModuleException e) {
+			log.error("Error processing event {}: {}", StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END,
+					e.getMessage(), e);
 		}
 	}
 
@@ -642,7 +644,8 @@ public class StripeServiceImpl implements StripeService {
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 		try {
 			action.run();
-		} finally {
+		}
+		finally {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 		}
 	}
