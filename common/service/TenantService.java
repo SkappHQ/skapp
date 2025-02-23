@@ -14,4 +14,5 @@ public interface TenantService {
 
 	Tenant getCurrentTenantFromSwitchingSchemas();
 
+	boolean validateTenantExist(String tenantId);
 }
