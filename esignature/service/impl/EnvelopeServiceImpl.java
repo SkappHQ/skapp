@@ -142,7 +142,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private Envelope initializeEnvelope(EnvelopeDetailDto dto) {
 		Envelope envelope = new Envelope();
 		envelope.setName(dto.getName());
-		envelope.setStatus(EnvelopeStatus.CREATED);
+		envelope.setStatus(EnvelopeStatus.NEED_TO_SIGN);
 		envelope.setMessage(dto.getMessage());
 		envelope.setSubject(dto.getSubject());
 		envelope.setExpireAt(dto.getExpireAt());

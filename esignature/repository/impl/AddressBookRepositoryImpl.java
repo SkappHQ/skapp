@@ -123,7 +123,7 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
 
 			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-					user.userType(), user.firstName(), user.lastName(), user.authPic()));
+					user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
 
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
