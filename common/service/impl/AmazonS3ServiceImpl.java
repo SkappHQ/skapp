@@ -25,6 +25,8 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	private static final int BUFFER_SIZE = 8192;
 
+	private static final String CONTENT_TYPE = "application/pdf";
+
 	@Override
 	public InputStream downloadFile(String bucketName, String objectKey) {
 		try {
@@ -50,7 +52,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 			byte[] pdfBytes = toByteArray(inputStream);
 
 			s3Client.putObject(
-					PutObjectRequest.builder().bucket(bucketName).key(objectKey).contentType("application/pdf").build(),
+					PutObjectRequest.builder().bucket(bucketName).key(objectKey).contentType(CONTENT_TYPE).build(),
 					RequestBody.fromBytes(pdfBytes));
 			log.info("File uploaded successfully to S3 as: {}", objectKey);
 		}
@@ -71,7 +73,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		}
 		catch (IOException e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE,
-					new String[]{e.getMessage()});
+					new String[] { e.getMessage() });
 		}
 	}
 

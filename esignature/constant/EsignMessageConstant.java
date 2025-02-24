@@ -25,6 +25,15 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_DOCUMENT_FIELD_TYPE_INVALID("validation.document.field.type.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_STATUS_INVALID("validation.document.field.status.invalid"),
 	ESIGN_VALIDATION_PHONE_NUMBER_INVALID("validation.phone.invalid"),
+	ESIGN_VALIDATION_DOCUMENT_CONTENT_CHANGED("validation.document.content.changed"),
+	ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL("validation.input-stream.null"),
+	ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY("validation.field-list.empty"),
+	ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL("validation.field.null"),
+	ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE("validation.page-number.positive"),
+	ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY("validation.field-value.empty"),
+	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
+	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
+			"validation.page-number.exceed.document.page.number.count"),
 
 	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
@@ -49,7 +58,10 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION("ep.esign.error.failed.convert.file.private-key.encryption"),
 	ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION("ep.esign.error.failed.convert.file.private-key.decryption"),
 	ESIGN_ERROR_AES_KEY_NOT_FOUND("ep.esign.error.ase-key.not-found"),
-	ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE("ep.esign.error.failed.generate.certificate");
+	ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE("ep.esign.error.failed.generate.certificate"),
+	ESIGN_ERROR_MERGE_TEXT_FILED("ep.esign.error.merge.text-field"),
+	ESIGN_ERROR_MERGE_IMAGE_FILED("ep.esign.error.merge.image-field"),
+	ESIGN_ERROR_CREATE_NEW_DOCUMENT_VERSION("ep.esign.error.create.new.document-version");
 
 	private final String messageKey;
 

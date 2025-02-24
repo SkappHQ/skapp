@@ -44,14 +44,4 @@ public class DocumentController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Sign Document",
-			description = "This endpoint generates a digital signature corresponding to a specific document version, "
-					+ "ensuring integrity and authenticity")
-	@PostMapping(value = "/merge", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> mergeDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
-		ResponseEntityDto response = documentService.mergeDocument(documentSignDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
 }

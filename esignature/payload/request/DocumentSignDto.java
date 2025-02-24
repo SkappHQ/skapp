@@ -12,7 +12,7 @@ public class DocumentSignDto {
 
 	private Long documentId;
 
-	private Long documentVersionId;
+	private Integer currentDocumentVersionId;
 
 	private List<FieldSignDto> fieldSignDtoList;
 

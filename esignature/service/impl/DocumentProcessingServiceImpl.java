@@ -1,10 +1,10 @@
 package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
-import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +19,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -30,15 +32,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float DEFAULT_FONT_SIZE = 12f;
 
-	private static final String FILE_PREFIX = "processed_";
-
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
 	private final AmazonS3Service amazonS3Service;
 
+	private final MessageUtil messageUtil;
+
 	@Override
-	public ProcessedDocumentResult mergeFields(List<FieldSignDto> fieldSignDtoList, InputStream inputStream) {
+	public InputStream mergeFields(List<FieldSignDto> fieldSignDtoList, InputStream inputStream) {
 		validateInput(fieldSignDtoList, inputStream);
 
 		try {
@@ -78,10 +80,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				// Save the modified document
 				document.save(outputStream);
 
-				// Generate unique filename for S3 reference
-				String fileUrl = generateFileUrl();
-
-				return new ProcessedDocumentResult(new ByteArrayInputStream(outputStream.toByteArray()), fileUrl);
+				return new ByteArrayInputStream(outputStream.toByteArray());
 			}
 		}
 		catch (IOException e) {
@@ -93,78 +92,83 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private void validateInput(List<FieldSignDto> fields, InputStream inputStream) {
 		if (inputStream == null) {
-			throw new IllegalArgumentException("Input stream cannot be null");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
 		}
 		if (fields == null || fields.isEmpty()) {
-			throw new IllegalArgumentException("Field list cannot be null or empty");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
 		}
 	}
 
 	private void validateField(FieldSignDto field) {
 		if (field == null) {
-			throw new IllegalArgumentException("Field cannot be null");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL));
 		}
 		if (field.getPageNumber() < 1) {
-			throw new IllegalArgumentException("Page number must be positive");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
 		}
 		if (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty()) {
-			throw new IllegalArgumentException("Field value cannot be null or empty");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
 		validateCoordinates(field);
 	}
 
 	private void validateCoordinates(FieldSignDto field) {
 		if (field.getXposition() < 0 || field.getYposition() < 0) {
-			throw new IllegalArgumentException("Coordinates must be non-negative");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
 		}
 	}
 
 	private PDPage getPage(PDDocument document, int pageNumber) {
 		if (pageNumber > document.getNumberOfPages()) {
-			throw new IllegalArgumentException("Page number " + pageNumber + " exceeds document length of "
-					+ document.getNumberOfPages() + " pages");
+			throw new IllegalArgumentException(messageUtil.getMessage(
+					EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT,
+					new Object[] { pageNumber, document.getNumberOfPages() }));
 		}
 		return document.getPage(pageNumber - 1);
 	}
 
-	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight)
-			throws IOException {
+	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight) {
 		// Relative to the co-ordinates taken from UI -top left
-		float adjustedY = pageHeight - field.getYposition();
-		contentStream.beginText();
-		PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-		contentStream.setFont(font, DEFAULT_FONT_SIZE);
+		try {
+			float adjustedY = pageHeight - field.getYposition();
+			contentStream.beginText();
+			PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+			contentStream.setFont(font, DEFAULT_FONT_SIZE);
 
-		// take co-ordinated from bottom-left
-		contentStream.newLineAtOffset(field.getXposition(), adjustedY);
-		contentStream.showText(field.getFieldValue());
-		contentStream.endText();
+			// take co-ordinated from bottom-left
+			contentStream.newLineAtOffset(field.getXposition(), adjustedY);
+			contentStream.showText(field.getFieldValue());
+			contentStream.endText();
+		}
+		catch (Exception e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
+
 	}
 
 	private void addImageField(FieldSignDto field, PDPageContentStream contentStream, PDDocument document,
-			float pageHeight) throws IOException {
+			float pageHeight) {
 		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, field.getFieldValue())) {
 
-			try {
-				PDImageXObject image = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(),
-						"image");
+			PDImageXObject image = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(), "image");
+			// Relative to the co-ordinates taken from UI -top left
+			float adjustedY = pageHeight - field.getYposition() - field.getHeight();
 
-				// Relative to the co-ordinates taken from UI -top left
-				float adjustedY = pageHeight - field.getYposition() - field.getHeight();
+			// take co-ordinated from bottom-left
+			contentStream.drawImage(image, field.getXposition(), adjustedY, field.getWidth(), field.getHeight());
 
-				// take co-ordinated from bottom-left
-				contentStream.drawImage(image, field.getXposition(), adjustedY, field.getWidth(), field.getHeight());
-			}
-			catch (IOException e) {
-				log.error("Failed to load image: {}", field.getFieldValue(), e);
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
-						new String[] { field.getFieldValue() });
-			}
 		}
-	}
-
-	private String generateFileUrl() {
-		return FILE_PREFIX + UUID.randomUUID().toString() + ".pdf";
+		catch (Exception e) {
+			log.error("Failed to load image: {}", field.getFieldValue(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
+					new String[] { field.getFieldValue() });
+		}
 	}
 
 }

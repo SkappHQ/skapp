@@ -5,17 +5,27 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.*;
-import com.skapp.enterprise.esignature.payload.request.*;
+import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentSignature;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
+import com.skapp.enterprise.esignature.model.DocumentVersionField;
+import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.UserKey;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
-import com.skapp.enterprise.esignature.service.*;
+import com.skapp.enterprise.esignature.service.DocumentProcessingService;
+import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.UserKeyService;
+import com.skapp.enterprise.esignature.utill.EsignUtil;
 import com.skapp.enterprise.esignature.utill.decryptor.AESDecrypt;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +35,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.MessageDigest;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
@@ -90,7 +107,7 @@ public class DocumentServiceImpl implements DocumentService {
 			if (documentSignDto.getDocumentId() == null) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
 			}
-			// Load and validate keys
+
 			KeyPair keyPair = loadKeyPair(documentSignDto.getAddressBookId());
 
 			Document document = documentRepository.findById(documentSignDto.getDocumentId())
@@ -101,7 +118,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 			DocumentVersion currentVersion = getDocumentVersionObj(document, addressBook);
 
-			// Create new version with signature
 			return createNewDocumentVersion(documentSignDto, currentVersion, keyPair.getPrivate(), true);
 		}
 		catch (Exception e) {
@@ -119,7 +135,8 @@ public class DocumentServiceImpl implements DocumentService {
 			// Load and validate keys
 			KeyPair keyPair = loadKeyPair(documentSignDto.getAddressBookId());
 
-			DocumentVersion currentVersion = getDocumentVersion(documentSignDto.getDocumentVersionId());
+			DocumentVersion currentVersion = getDocumentVersion(documentSignDto.getCurrentDocumentVersionId(),
+					documentSignDto.getDocumentId());
 			// Process document version and verify existing signature
 			processAndVerifyCurrentVersion(currentVersion, keyPair.getPublic());
 
@@ -148,32 +165,15 @@ public class DocumentServiceImpl implements DocumentService {
 				}).toList();
 
 				documentVersionFieldRepository.saveAll(versionFields);
+
 			}
 
-			return new ResponseEntityDto(false, newVersion);
-		}
-		catch (Exception e) {
-			log.error("Error signing document", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
-					new String[] { e.getMessage() });
-		}
-	}
+			// save document on current version
+			Document document = currentVersion.getDocument();
+			document.setCurrentVersion(newVersion.getVersionNumber());
+			documentRepository.save(document);
 
-	@Override
-	public ResponseEntityDto mergeDocument(DocumentSignDto signDto) {
-		try {
-			String path = "original/ticket.pdf";
-			try (InputStream documentStream = amazonS3Service.downloadFile(bucketName, path)) {
-
-				ProcessedDocumentResult processedDoc = documentProcessingService
-					.mergeFields(signDto.getFieldSignDtoList(), documentStream);
-				InputStream finalDocumentStream = processedDoc.getProcessedDocument();
-				String fileUrl = processedDoc.getFileUrl();
-
-				amazonS3Service.uploadFile(bucketName, fileUrl, finalDocumentStream);
-
-				return new ResponseEntityDto(false, "success");
-			}
+			return new ResponseEntityDto(false, "newVersion");
 		}
 		catch (Exception e) {
 			log.error("Error signing document", e);
@@ -184,7 +184,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private void validateDocumentSignRequest(@NotNull DocumentSignDto request) {
 
-		if (request.getDocumentVersionId() == null) {
+		if (request.getCurrentDocumentVersionId() == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MISSING_DOCUMENT_VERSION_ID);
 		}
 		if (request.getAddressBookId() == null) {
@@ -210,8 +210,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private DocumentVersion getDocumentVersion(Long versionId) {
-		return documentVersionRepository.findById(versionId)
+	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
+		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 	}
 
@@ -222,7 +222,7 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] decodedHash = Base64.getDecoder().decode(currentHash);
 
 			if (!verifySignature(decodedHash, currentVersion.getSignatures().getSignature(), publicKey)) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_DOCUMENT_FIELD_TYPE_INVALID);
+				throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_DOCUMENT_CONTENT_CHANGED);
 			}
 
 		}
@@ -233,32 +233,49 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersion createNewDocumentVersion(DocumentSignDto signDto, DocumentVersion currentVersion,
-			PrivateKey privateKey, Boolean isVersionFirst) throws IOException {
+			PrivateKey privateKey, Boolean isVersionFirst) {
 
 		try (InputStream documentStream = amazonS3Service.downloadFile(bucketName, currentVersion.getFilePath())) {
-
-			InputStream finalDocumentStream = documentStream;
 			String fileUrl = currentVersion.getFilePath();
+			byte[] documentBytes;
 
 			if (Boolean.FALSE.equals(isVersionFirst)) {
-				ProcessedDocumentResult processedDoc = documentProcessingService
-					.mergeFields(signDto.getFieldSignDtoList(), documentStream);
-				finalDocumentStream = processedDoc.getProcessedDocument();
-				fileUrl = processedDoc.getFileUrl();
+				try (InputStream processedStream = documentProcessingService.mergeFields(signDto.getFieldSignDtoList(),
+						documentStream); ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
-				amazonS3Service.uploadFile(bucketName, fileUrl, finalDocumentStream);
+					processedStream.transferTo(byteArrayOutputStream);
+					documentBytes = byteArrayOutputStream.toByteArray();
+				}
+
+				fileUrl = EsignUtil.generateFileUrl();
+
+				try (InputStream uploadStream = new ByteArrayInputStream(documentBytes)) {
+					amazonS3Service.uploadFile(bucketName, fileUrl, uploadStream);
+				}
+			}
+			else {
+				try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+					documentStream.transferTo(byteArrayOutputStream);
+					documentBytes = byteArrayOutputStream.toByteArray();
+				}
 			}
 
-			// Hash and sign new document
-			String newHash = hashDocument(finalDocumentStream);
+			String newHash;
+			try (InputStream hashStream = new ByteArrayInputStream(documentBytes)) {
+				newHash = hashDocument(hashStream);
+			}
+
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
 
-			// Create new version entity
 			if (signDto.getFieldSignDtoList() == null) {
 				signDto.setFieldSignDtoList(new ArrayList<>());
 			}
 
 			return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature);
+		}
+		catch (IOException e) {
+			log.error("Error creating new Document version", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CREATE_NEW_DOCUMENT_VERSION);
 		}
 	}
 

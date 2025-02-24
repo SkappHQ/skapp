@@ -93,6 +93,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		documentVersionRepository.saveAll(documentVersionList);
 
+		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
+			Document document = documentVersion.getDocument();
+			document.setCurrentVersion(documentVersion.getVersionNumber());
+			return document;
+		}).toList();
+
+		documentDao.saveAll(updatedDocuments);
+
 		// Send Envelopes to recipient - async
 		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
 
@@ -208,8 +216,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setType(fieldDto.getType());
 			field.setStatus(fieldDto.getStatus());
 			field.setPageNumber(fieldDto.getPageNumber());
-			field.setXPosition(fieldDto.getXPosition());
-			field.setYPosition(fieldDto.getYPosition());
+			field.setXPosition(fieldDto.getXposition());
+			field.setYPosition(fieldDto.getYposition());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 

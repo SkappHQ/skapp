@@ -15,6 +15,4 @@ public interface DocumentService {
 
 	ResponseEntityDto signDocument(DocumentSignDto documentSignDto);
 
-	ResponseEntityDto mergeDocument(DocumentSignDto signDto);
-
 }

@@ -7,7 +7,8 @@ import java.security.NoSuchProviderException;
 
 public class ECDSAKeyGenerator {
 
-	private ECDSAKeyGenerator(){}
+	private ECDSAKeyGenerator() {
+	}
 
 	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC", "BC");

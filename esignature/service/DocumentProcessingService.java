@@ -1,13 +1,12 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
-import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 
 import java.io.InputStream;
 import java.util.List;
 
 public interface DocumentProcessingService {
 
-	ProcessedDocumentResult mergeFields(List<FieldSignDto> fieldSignDtoList, InputStream inputStream);
+	InputStream mergeFields(List<FieldSignDto> fieldSignDtoList, InputStream inputStream);
 
 }
