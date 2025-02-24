@@ -156,7 +156,7 @@ public class StripeServiceImpl implements StripeService {
 		String customerId = subscription.getCustomer();
 		Customer customerDetails = Customer.retrieve(customerId);
 		String customerEmail = customerDetails.getEmail();
-		String trialEndDate = DateTimeUtils.epochMillisToUtcLocalDate(subscription.getTrialEnd()).toString();
+		String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 
 		processTenantSchema(currentTenant,
 				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
@@ -551,7 +551,6 @@ public class StripeServiceImpl implements StripeService {
 
 			String customerId = invoice.getCustomer();
 			String userEmail = invoice.getCustomerEmail();
-			String billingDate = DateTimeUtils.epochMillisToUtcLocalDate(invoice.getCreated()).toString();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
@@ -562,7 +561,7 @@ public class StripeServiceImpl implements StripeService {
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () -> {
 
-					stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, billingDate);
+					stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, DateTimeUtils.getCurrentUtcDate().toString());
 
 				});
 
@@ -625,7 +624,7 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = subscription.getCustomer();
 			Customer customer = Customer.retrieve(customerId);
 			String customerEmail = customer.getEmail();
-			String trialEndDate = DateTimeUtils.epochMillisToUtcLocalDate(subscription.getTrialEnd()).toString();
+			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
 				log.info("company domain not available");

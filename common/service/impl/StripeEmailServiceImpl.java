@@ -54,10 +54,9 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	public void sendStripePaymentFailEmailCountTwo(Invoice invoice) {
 
 		String userEmail = invoice.getCustomerEmail();
-		String retriedDate = DateTimeUtils.epochMillisToUtcLocalDate(invoice.getCreated()).toString();
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setRetriedDate(retriedDate);
+		paymentEmailStripeDynamicFields.setRetriedDate(DateTimeUtils.getCurrentUtcDate().toString());
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS,
 				paymentEmailStripeDynamicFields, userEmail);
 
@@ -67,10 +66,9 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	@Override
 	public void sendStripePaymentFailEmailCountThree(Invoice invoice) {
 		String userEmail = invoice.getCustomerEmail();
-		String retriedDate = DateTimeUtils.epochMillisToUtcLocalDate(invoice.getCreated()).toString();
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setRetriedDate(retriedDate);
+		paymentEmailStripeDynamicFields.setRetriedDate(DateTimeUtils.getCurrentUtcDate().toString());
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS,
 				paymentEmailStripeDynamicFields, userEmail);
 
@@ -80,10 +78,9 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	@Override
 	public void sendStripePaymentFailEmailCountFour(Invoice invoice) {
 		String userEmail = invoice.getCustomerEmail();
-		String moveToFreeDate = DateTimeUtils.epochMillisToUtcLocalDate(invoice.getCreated()).toString();
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setMoveToFreeDate(moveToFreeDate);
+		paymentEmailStripeDynamicFields.setMoveToFreeDate(DateTimeUtils.getCurrentUtcDate().toString());
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_7DAYS,
 				paymentEmailStripeDynamicFields, userEmail);
 
