@@ -1,22 +1,24 @@
 package com.skapp.enterprise.esignature.mapper;
 
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
-import com.skapp.enterprise.esignature.payload.request.FieldDto;
-import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.ExternalUser;
+import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
+import com.skapp.enterprise.esignature.payload.request.FieldDto;
+import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
-import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
-import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -74,5 +76,13 @@ public interface EsignMapper {
 	@Mapping(target = "documentId", source = "document.id")
 	@Mapping(target = "recipientMail", source = "recipient.email")
 	FieldDetailResponseDto fieldToFieldDetailDto(Field field);
+
+	@Mapping(target = "envelopeId", source = "id")
+	@Mapping(target = "envelopeName", source = "name")
+	@Mapping(target = "envelopeMessage", source = "message")
+	@Mapping(target = "envelopeSubject", source = "subject")
+	EpEsignEmailEnvelopeDataDto envelopeToEpEsignEmailEnvelopeDataDto(Envelope envelope);
+
+	Document documentDtoToDocument(DocumentDto documentDto);
 
 }
