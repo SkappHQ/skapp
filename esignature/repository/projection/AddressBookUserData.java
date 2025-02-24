@@ -21,8 +21,10 @@ public class AddressBookUserData {
 
 	private String authPic;
 
+	private String phone;
+
 	public AddressBookUserData(Long addressBookId, Long userId, String email, String userType, String firstName,
-			String lastName, String authPic) {
+			String lastName, String authPic, String phone) {
 		this.addressBookId = addressBookId;
 		this.userId = userId;
 		this.email = email;
@@ -30,6 +32,7 @@ public class AddressBookUserData {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.authPic = authPic;
+		this.phone = phone;
 	}
 
 }

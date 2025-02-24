@@ -1,0 +1,35 @@
+package com.skapp.enterprise.esignature.controller.v1;
+
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.service.RecipientService;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("v1/ep/esign/recipients")
+public class RecipientController {
+
+	private final RecipientService recipientService;
+
+	@Operation(summary = "Find and send the email to the next recipient based on the defined signing order.",
+			description = "This endpoint finds and send the email to the next available recipients up until the next Signer Role, in the defined signing order.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
+	@GetMapping(value = "/next-recipient", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> retrieveNextDocumentRecipientAndSendEmail(@RequestParam Long recipientId,
+			@RequestParam Long envelopeId) {
+
+		ResponseEntityDto response = recipientService.sendEmailToRecipient(recipientId, envelopeId);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+}

@@ -10,4 +10,6 @@ public interface EnvelopeService {
 
 	ResponseEntityDto updateEnvelope(Long id, EnvelopeUpdateDto envelopeUpdateDto);
 
+	ResponseEntityDto getEmployeeNeedToSignEnvelopeCount(Long id);
+
 }

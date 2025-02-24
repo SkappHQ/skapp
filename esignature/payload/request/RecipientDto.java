@@ -1,7 +1,9 @@
 package com.skapp.enterprise.esignature.payload.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
+import com.skapp.enterprise.esignature.utill.deserializer.RecipientMemberRoleDeserializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -14,20 +16,21 @@ import java.util.List;
 @Setter
 public class RecipientDto {
 
-	@NotNull(message = "{notnull.recipient.addressBookId}")
+	@NotNull(message = "{validation.recipient.addressBookId.notnull}")
 	private Long addressBookId;
 
-	@NotNull(message = "{notnull.recipient.memberRole}")
+	@NotNull(message = "{validation.recipient.memberRole.notnull}")
+	@JsonDeserialize(using = RecipientMemberRoleDeserializer.class)
 	private MemberRole memberRole;
 
-	@NotNull(message = "{notnull.recipient.status}")
+	@NotNull(message = "{validation.recipient.status.notnull}")
 	private RecipientStatus status;
 
-	@NotNull(message = "{notnull.recipient.signingOrder}")
-	@Min(value = 1, message = "{min.signingOrder}")
+	@NotNull(message = "{validation.recipient.signingOrder.notnull}")
+	@Min(value = 1, message = "{validation.recipient.signingOrder.min}")
 	private Integer signingOrder;
 
-	@NotEmpty(message = "{not_empty.recipient.fields}")
+	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
 	private List<FieldDto> fields;
 
 }
