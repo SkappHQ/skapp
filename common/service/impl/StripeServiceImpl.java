@@ -553,17 +553,17 @@ public class StripeServiceImpl implements StripeService {
 			String userEmail = invoice.getCustomerEmail();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
-				log.info("company domain not available");
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
 			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
-				processTenantSchema(currentTenant.getTenantName(), () -> {
+				processTenantSchema(currentTenant.getTenantName(), () ->
 
-					stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, DateTimeUtils.getCurrentUtcDate().toString());
+				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail,
+						DateTimeUtils.getCurrentUtcDate().toString())
 
-				});
+				);
 
 			}
 
@@ -584,8 +584,7 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
-				log.info("company domain not available");
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
 			processTenantSchema(currentTenant.getTenantName(), () -> {
@@ -626,8 +625,7 @@ public class StripeServiceImpl implements StripeService {
 			String customerEmail = customer.getEmail();
 			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if (currentTenant == null || !tenantService.validateTenantExist(currentTenant.getTenantName())) {
-				log.info("company domain not available");
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
 			processTenantSchema(currentTenant.getTenantName(),
@@ -647,6 +645,15 @@ public class StripeServiceImpl implements StripeService {
 		finally {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 		}
+
+	}
+
+	private boolean isTenantInvalid(String tenantName) {
+		if (tenantName == null || !tenantService.validateTenantExist(tenantName)) {
+			log.info("Company domain not available");
+			return true;
+		}
+		return false;
 	}
 
 }
