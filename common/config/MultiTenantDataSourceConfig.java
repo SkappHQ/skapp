@@ -7,7 +7,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.cfg.JdbcSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -188,7 +187,6 @@ public class MultiTenantDataSourceConfig {
 		properties.put("hibernate.multiTenancy", "DATABASE");
 		properties.put("hibernate.tenant_identifier_resolver", currentTenantIdentifierResolver);
 		properties.put("hibernate.multi_tenant_connection_provider", multiTenantConnectionProvider);
-		properties.put(JdbcSettings.DIALECT, "org.hibernate.dialect.MySQLDialect");
 
 		entityManagerFactoryBean.setJpaPropertyMap(properties);
 		return entityManagerFactoryBean;
