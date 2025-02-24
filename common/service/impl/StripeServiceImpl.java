@@ -422,6 +422,7 @@ public class StripeServiceImpl implements StripeService {
 			.setCustomer(customer.getId())
 			.addItem(item)
 			.setPaymentSettings(paymentSettings)
+			.setPromotionCode(subscriptionRequestDto.getPromotionCodeId())
 			.setTrialPeriodDays(trialPeriodDays)
 			.build();
 
