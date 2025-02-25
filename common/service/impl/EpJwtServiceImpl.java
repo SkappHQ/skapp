@@ -7,6 +7,7 @@ import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
@@ -86,6 +87,16 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		catch (Exception e) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_JWT_SIGNIN_KEY_GENERATION_ISSUE);
 		}
+	}
+
+	@Override
+	public void checkVersionMismatch(Long userId, String accessToken) {
+		String tenantId = extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
+		if (tenantId == null || EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			return;
+		}
+
+		super.checkVersionMismatch(userId, accessToken);
 	}
 
 }

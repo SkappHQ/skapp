@@ -5,8 +5,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.service.SystemVersionService;
-import com.skapp.community.common.service.UserVersionService;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -45,10 +43,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	private final UserDetailsService userDetailsService;
 
 	private final SuperAdminDao superAdminDao;
-
-	private final SystemVersionService systemVersionService;
-
-	private final UserVersionService userVersionService;
 
 	private static final Set<String> PUBLIC_URLS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
 			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
@@ -94,29 +88,13 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			Long userId = jwtService.extractUserId(accessToken);
 			String tenantId = jwtService.extractClaim(accessToken,
 					claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
-			String systemVersion = jwtService.extractClaim(accessToken,
-					claims -> claims.get(AuthConstants.SYSTEM_VERSION, String.class));
 
 			if (tenantId == null && TenantContext.getCurrentTenant() == null) {
 				log.error("Token does not contain tenant ID");
 				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 			}
 
-			if (systemVersion != null) {
-				String latestVersion = systemVersionService.getLatestVersion();
-				if (!systemVersion.equals(latestVersion)) {
-					throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_SYSTEM_VERSION_MISMATCH);
-				}
-			}
-
-			if (userId != null) {
-				String userVersion = jwtService.extractClaim(accessToken,
-						claims -> claims.get(AuthConstants.USER_VERSION, String.class));
-				String latestUserVersion = userVersionService.getUserVersion(userId);
-				if (!userVersion.equals(latestUserVersion)) {
-					throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_USER_VERSION_MISMATCH);
-				}
-			}
+			jwtService.checkVersionMismatch(userId, accessToken);
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
