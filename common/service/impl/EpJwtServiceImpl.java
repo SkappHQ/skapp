@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.type.Tier;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	private final TenantDao tenantDao;
 
 	private final TenantContext tenantContext;
+
+	@Value("${jwt.access-token.signing-key}")
+	private String jwtSigningKey;
 
 	public EpJwtServiceImpl(SystemVersionDao systemVersionDao, UserVersionDao userVersionDao, TenantDao tenantDao,
 			TenantContext tenantContext) {
@@ -60,26 +64,28 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		return claims;
 	}
 
-    @Override
-    public Key getSigningKey() {
+	@Override
+	public Key getSigningKey() {
+		String tenant = TenantContext.getCurrentTenant();
+		if (tenant == null) {
+			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
+		}
 
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
+		byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
+		byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
+		return Keys.hmacShaKeyFor(derivedKeyBytes);
+	}
 
-        // String tenant = TenantContext.getCurrentTenant();
-        // byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
-        // byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
-        // return Keys.hmacShaKeyFor(derivedKeyBytes);
-    }
-
-    private byte[] deriveTenantKey(byte[] masterKey, String tenantId) {
-        try {
-            Mac hmacSha256 = Mac.getInstance("HmacSHA256");
-            SecretKeySpec keySpec = new SecretKeySpec(masterKey, "HmacSHA256");
-            hmacSha256.init(keySpec);
-            return hmacSha256.doFinal(tenantId.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_JWT_SIGNIN_KEY_GENERATION_ISSUE);
-        }
-    }
+	private byte[] deriveTenantKey(byte[] masterKey, String tenantId) {
+		try {
+			Mac hmacSha256 = Mac.getInstance("HmacSHA256");
+			SecretKeySpec keySpec = new SecretKeySpec(masterKey, "HmacSHA256");
+			hmacSha256.init(keySpec);
+			return hmacSha256.doFinal(tenantId.getBytes(StandardCharsets.UTF_8));
+		}
+		catch (Exception e) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_JWT_SIGNIN_KEY_GENERATION_ISSUE);
+		}
+	}
 
 }
