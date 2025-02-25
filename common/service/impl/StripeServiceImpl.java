@@ -64,6 +64,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
@@ -553,6 +555,9 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 			String userEmail = invoice.getCustomerEmail();
 
+			String nextBillDate = ZonedDateTime.now(ZoneOffset.UTC)
+				.plusMonths(1)
+				.format(DateTimeFormatter.ISO_LOCAL_DATE);
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
@@ -561,8 +566,7 @@ public class StripeServiceImpl implements StripeService {
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () ->
 
-				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail,
-						DateTimeUtils.getCurrentUtcDate().toString())
+				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate)
 
 				);
 
@@ -588,21 +592,25 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			processTenantSchema(currentTenant.getTenantName(), () -> {
-				int attemptCount = invoice.getAttemptCount().intValue();
-				if (attemptCount == 1) {
-					stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
-				}
-				else if (attemptCount == 2) {
-					stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
-				}
-				else if (attemptCount == 3) {
-					stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
-				}
-				else if (attemptCount == 4) {
-					stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
-				}
-			});
+			processTenantSchema(currentTenant.getTenantName(),
+					() -> stripeEmailService.sendStripePaymentFailEmail(invoice));
+
+			// processTenantSchema(currentTenant.getTenantName(), () -> {
+			// int attemptCount = invoice.getAttemptCount().intValue();
+			// if (attemptCount == 1) {
+			// stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
+			// }
+			// else if (attemptCount == 2) {
+			// stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
+			// }
+			// else if (attemptCount == 3) {
+			// stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
+			// }
+			// else if (attemptCount == 4) {
+			// stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
+			// }
+			// }
+			// );
 
 		}
 	}
