@@ -3,8 +3,8 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
-import com.skapp.community.common.repository.SystemVersionDao;
-import com.skapp.community.common.repository.UserVersionDao;
+import com.skapp.community.common.service.SystemVersionService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -38,9 +38,9 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	@Value("${jwt.access-token.signing-key}")
 	private String jwtSigningKey;
 
-	public EpJwtServiceImpl(SystemVersionDao systemVersionDao, UserVersionDao userVersionDao, TenantDao tenantDao,
-			TenantContext tenantContext) {
-		super(systemVersionDao, userVersionDao);
+	public EpJwtServiceImpl(SystemVersionService systemVersionService, UserVersionService userVersionService,
+			TenantDao tenantDao, TenantContext tenantContext) {
+		super(systemVersionService, userVersionService);
 		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
 	}
