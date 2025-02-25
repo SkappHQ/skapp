@@ -46,7 +46,6 @@ public class EpOrganizationController {
 	}
 
 	@GetMapping("/calendar")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getCalendarConfigs() {
 		ResponseEntityDto response = epOrganizationService.getCalendarConfigs();
 		return new ResponseEntity<>(response, HttpStatus.OK);

@@ -69,7 +69,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -150,6 +156,14 @@ public class EpAuthServiceImpl implements EpAuthService {
 		String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 		String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
+		SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
+
+		log.info("superAdminSignUp: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	private SignInResponseDto getSignInResponseDto(String accessToken, String refreshToken,
+			SuperAdmin savedSuperAdmin) {
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
 		signInResponseDto.setRefreshToken(refreshToken);
@@ -161,9 +175,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(true);
-
-		log.info("superAdminSignUp: execution ended");
-		return new ResponseEntityDto(false, signInResponseDto);
+		return signInResponseDto;
 	}
 
 	@Override
@@ -212,7 +224,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 		}
 
 		try {
-			if (!validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
+			if (validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
 				log.warn("verifyOTP: Invalid or expired OTP provided");
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 			}
@@ -308,17 +320,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 			String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 			String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
-			SignInResponseDto signInResponseDto = new SignInResponseDto();
-			signInResponseDto.setAccessToken(accessToken);
-			signInResponseDto.setRefreshToken(refreshToken);
-
-			EmployeeSignInResponseDto employeeSignInResponseDto = new EmployeeSignInResponseDto();
-			employeeSignInResponseDto.setEmployeeId(savedSuperAdmin.getId());
-			employeeSignInResponseDto.setFirstName(savedSuperAdmin.getFirstName());
-			employeeSignInResponseDto.setLastName(savedSuperAdmin.getLastName());
-
-			signInResponseDto.setEmployee(employeeSignInResponseDto);
-			signInResponseDto.setIsPasswordChangedForTheFirstTime(true);
+			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
 			log.info("ssoGoogleSignUp: execution ended");
 			return new ResponseEntityDto(false, signInResponseDto);
@@ -449,6 +451,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 		Tenant tenant = tenantDao.findByTenantName(subDomainName);
 		if (tenant != null) {
 			responseDto.setIsTenantAvailable(true);
+			responseDto.setTier(tenant.getTier());
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -466,7 +469,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 			}
 
-			if (!validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
+			if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 					epPasswordResetOtpVerifyDto.getOtp())) {
 				log.warn("verifyPasswordResetOTP: Invalid or expired OTP provided");
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
@@ -569,14 +572,14 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 	private boolean validateOTP(String storedOTP, Instant expiryTime, String providedOTP) {
 		if (storedOTP == null || expiryTime == null) {
-			return false;
+			return true;
 		}
 
 		if (Instant.now().isAfter(expiryTime)) {
-			return false;
+			return true;
 		}
 
-		return storedOTP.equals(providedOTP);
+		return !storedOTP.equals(providedOTP);
 	}
 
 	@Override

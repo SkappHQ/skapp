@@ -56,6 +56,7 @@ public class ModuleServiceImpl implements ModuleService {
 			case LEAVE -> moduleConfig.setLeaveModule(isToggled);
 			case ATTENDANCE -> moduleConfig.setAttendanceModule(isToggled);
 			case ESIGN -> moduleConfig.setEsignModule(isToggled);
+			default -> throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_NAME);
 		}
 	}
 
@@ -80,11 +81,11 @@ public class ModuleServiceImpl implements ModuleService {
 
 		boolean currentState = getCurrentModuleState(moduleConfig, request.getModuleName());
 
-		if (request.getIsToggled() && currentState) {
+		if (Boolean.TRUE.equals(request.getIsToggled()) && currentState) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MODULE_ALREADY_SELECTED);
 		}
 
-		if (!request.getIsToggled() && !currentState) {
+		if (Boolean.FALSE.equals(request.getIsToggled()) && !currentState) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MODULE_ALREADY_DESELECTED);
 		}
 	}
