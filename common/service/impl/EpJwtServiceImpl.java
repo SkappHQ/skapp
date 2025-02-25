@@ -1,13 +1,14 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.constant.AuthConstants;
+import com.skapp.community.common.repository.SystemVersionDao;
+import com.skapp.community.common.repository.UserVersionDao;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,13 +19,19 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Primary
 public class EpJwtServiceImpl extends JwtServiceImpl {
 
 	private final TenantDao tenantDao;
 
 	private final TenantContext tenantContext;
+
+	public EpJwtServiceImpl(SystemVersionDao systemVersionDao, UserVersionDao userVersionDao, TenantDao tenantDao,
+			TenantContext tenantContext) {
+		super(systemVersionDao, userVersionDao);
+		this.tenantDao = tenantDao;
+		this.tenantContext = tenantContext;
+	}
 
 	@Override
 	protected Map<String, Object> createAccessTokenClaims(UserDetails userDetails, Long userId) {

@@ -3,6 +3,7 @@ package com.skapp.enterprise.people.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
@@ -20,7 +21,6 @@ import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -34,12 +34,12 @@ import java.util.Map;
 @Primary
 public class EpRolesServiceImpl extends RolesServiceImpl {
 
-	public EpRolesServiceImpl(@NonNull EmployeeRoleDao employeeRoleDao, @NonNull UserService userService,
-			@NonNull EmployeeDao employeeDao, @NonNull TeamDao teamDao,
-			@NonNull EmployeeTimelineDao employeeTimelineDao, @NonNull PeopleMapper peopleMapper,
-			@NonNull ModuleRoleRestrictionDao moduleRoleRestrictionDao, @NonNull MessageUtil messageUtil) {
+	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
+			TeamDao teamDao, EmployeeTimelineDao employeeTimelineDao, PeopleMapper peopleMapper,
+			ModuleRoleRestrictionDao moduleRoleRestrictionDao, MessageUtil messageUtil,
+			UserVersionService userVersionService) {
 		super(employeeRoleDao, userService, employeeDao, teamDao, employeeTimelineDao, peopleMapper,
-				moduleRoleRestrictionDao, messageUtil);
+				moduleRoleRestrictionDao, messageUtil, userVersionService);
 	}
 
 	@Override
