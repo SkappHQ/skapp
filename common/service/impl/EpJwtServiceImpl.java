@@ -59,15 +59,13 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 
 	@Override
 	public Key getSigningKey() {
-		String tenant = TenantContext.getCurrentTenant();
-		if (tenant == null) {
-			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
-		}
 
-		byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
+		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
 
-		byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
-		return Keys.hmacShaKeyFor(derivedKeyBytes);
+		// String tenant = TenantContext.getCurrentTenant();
+		// byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
+		// byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
+		// return Keys.hmacShaKeyFor(derivedKeyBytes);
 	}
 
 	private byte[] deriveTenantKey(byte[] masterKey, String tenantId) {
