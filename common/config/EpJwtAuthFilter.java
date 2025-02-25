@@ -66,7 +66,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
-		log.info("EpDoFilterInternal: execution started");
 
 		final String authHeader = request.getHeader(AuthConstants.AUTHORIZATION);
 
@@ -101,7 +100,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			}
 
 			filterChain.doFilter(request, response);
-			log.info("EpDoFilterInternal: execution completed");
 		}
 		catch (ExpiredJwtException e) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
