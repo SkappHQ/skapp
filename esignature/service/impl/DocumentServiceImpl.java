@@ -173,7 +173,7 @@ public class DocumentServiceImpl implements DocumentService {
 			document.setCurrentVersion(newVersion.getVersionNumber());
 			documentRepository.save(document);
 
-			return new ResponseEntityDto(false, "newVersion");
+			return new ResponseEntityDto(false, "New Document version successfully created");
 		}
 		catch (Exception e) {
 			log.error("Error signing document", e);
