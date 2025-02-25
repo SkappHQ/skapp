@@ -1,13 +1,11 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.google.type.DateTime;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -18,7 +16,6 @@ import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
@@ -35,7 +32,6 @@ import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -50,12 +46,12 @@ import com.stripe.model.Subscription;
 import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
+import com.stripe.param.InvoiceUpcomingParams;
 import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,8 +60,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
@@ -102,7 +96,7 @@ public class StripeServiceImpl implements StripeService {
 	private Long trialPeriodDays;
 
 	@Override
-	public void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException {
+	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
 		log.info("Received Stripe webhook event");
 
 		Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
@@ -541,7 +535,7 @@ public class StripeServiceImpl implements StripeService {
 		}
 	}
 
-	private void handleSubscriptionPaymentSucceeded(Event event) {
+	private void handleSubscriptionPaymentSucceeded(Event event) throws StripeException {
 
 		log.info("handleSubscriptionPaymentSucceeded started");
 
@@ -555,10 +549,15 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 			String userEmail = invoice.getCustomerEmail();
 
-			String nextBillDate = ZonedDateTime.now(ZoneOffset.UTC)
-				.plusMonths(1)
-				.format(DateTimeFormatter.ISO_LOCAL_DATE);
+			InvoiceUpcomingParams params = InvoiceUpcomingParams.builder()
+				.setSubscription(invoice.getSubscription())
+				.build();
+
+			Invoice upcomingInvoice = Invoice.upcoming(params);
+
+			String nextBillDate = DateTimeUtils.epochSecondToUtcLocalDate(upcomingInvoice.getCreated()).toString();
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
@@ -594,23 +593,6 @@ public class StripeServiceImpl implements StripeService {
 			}
 			processTenantSchema(currentTenant.getTenantName(),
 					() -> stripeEmailService.sendStripePaymentFailEmail(invoice));
-
-			// processTenantSchema(currentTenant.getTenantName(), () -> {
-			// int attemptCount = invoice.getAttemptCount().intValue();
-			// if (attemptCount == 1) {
-			// stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
-			// }
-			// else if (attemptCount == 2) {
-			// stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
-			// }
-			// else if (attemptCount == 3) {
-			// stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
-			// }
-			// else if (attemptCount == 4) {
-			// stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
-			// }
-			// }
-			// );
 
 		}
 	}
