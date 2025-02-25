@@ -92,7 +92,7 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	@Override
 	public void checkVersionMismatch(Long userId, String accessToken) {
 		String tenantId = extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
-		if (tenantId == null || EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
 			return;
 		}
 
