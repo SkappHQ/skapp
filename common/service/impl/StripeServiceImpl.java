@@ -1,20 +1,26 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.google.type.DateTime;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
@@ -24,8 +30,10 @@ import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.response.PaymentMethodResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
+import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
@@ -34,6 +42,7 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
+import com.stripe.model.Invoice;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.PaymentMethodCollection;
 import com.stripe.model.Price;
@@ -49,6 +58,7 @@ import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,6 +87,12 @@ public class StripeServiceImpl implements StripeService {
 
 	private final TenantService tenantService;
 
+	private final StripeEmailService stripeEmailService;
+
+	private final StripeSubscriptionDao stripeSubscriptionDao;
+
+	private final OrganizationDao organizationDao;
+
 	private final SystemVersionService systemVersionService;
 
 	@Value("${stripe.webhook-secret}")
@@ -95,6 +111,15 @@ public class StripeServiceImpl implements StripeService {
 		Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
 
 		log.info("Processing Stripe event type: {}", event.getType());
+		if (event.getType().equals(StripeWebhookEventTypes.INVOICE_PAYMENT_FAIL.getEventType())) {
+			handleSubscriptionPaymentFail(event);
+		}
+		if (event.getType().equals(StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END.getEventType())) {
+			handleTrialEndSoon(event);
+		}
+		if (event.getType().equals(StripeWebhookEventTypes.INVOICE_PAYMENT_SUCCEEDED.getEventType())) {
+			handleSubscriptionPaymentSucceeded(event);
+		}
 	}
 
 	@Override
@@ -133,6 +158,14 @@ public class StripeServiceImpl implements StripeService {
 		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
 		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
 		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
+
+		String customerId = subscription.getCustomer();
+		Customer customerDetails = Customer.retrieve(customerId);
+		String customerEmail = customerDetails.getEmail();
+		String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
+
+		processTenantSchema(currentTenant,
+				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
 
 		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
@@ -512,6 +545,124 @@ public class StripeServiceImpl implements StripeService {
 			throw new ValidationException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER);
 		}
+	}
+
+	private void handleSubscriptionPaymentSucceeded(Event event) {
+
+		log.info("handleSubscriptionPaymentSucceeded started");
+
+		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
+			.getObject()
+			.filter(obj -> obj instanceof Invoice)
+			.orElse(null);
+
+		if (invoice != null) {
+
+			String customerId = invoice.getCustomer();
+			String userEmail = invoice.getCustomerEmail();
+
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
+				return;
+			}
+			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
+					&& invoice.getBillingReason().equals("subscription_cycle")) {
+				processTenantSchema(currentTenant.getTenantName(), () ->
+
+				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail,
+						DateTimeUtils.getCurrentUtcDate().toString())
+
+				);
+
+			}
+
+		}
+
+	}
+
+	private void handleSubscriptionPaymentFail(Event event) {
+		log.info("Handling subscription payment fail event");
+
+		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
+			.getObject()
+			.filter(obj -> obj instanceof Invoice)
+			.orElse(null);
+
+		if (invoice != null) {
+
+			String customerId = invoice.getCustomer();
+
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
+				return;
+			}
+			processTenantSchema(currentTenant.getTenantName(), () -> {
+				int attemptCount = invoice.getAttemptCount().intValue();
+				if (attemptCount == 1) {
+					stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
+				}
+				else if (attemptCount == 2) {
+					stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
+				}
+				else if (attemptCount == 3) {
+					stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
+				}
+				else if (attemptCount == 4) {
+					stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
+				}
+			});
+
+		}
+	}
+
+	private void handleTrialEndSoon(Event event) {
+		log.info("Handling trial end soon event");
+
+		try {
+			Subscription subscription = (Subscription) event.getDataObjectDeserializer()
+				.getObject()
+				.filter(Subscription.class::isInstance)
+				.orElse(null);
+
+			if (subscription == null) {
+				log.error("Subscription data not found in event");
+				return;
+			}
+
+			String customerId = subscription.getCustomer();
+			Customer customer = Customer.retrieve(customerId);
+			String customerEmail = customer.getEmail();
+			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
+				return;
+			}
+			processTenantSchema(currentTenant.getTenantName(),
+					() -> stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate));
+		}
+		catch (StripeException | ModuleException e) {
+			log.error("Error processing event {}: {}", StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END,
+					e.getMessage(), e);
+		}
+	}
+
+	private void processTenantSchema(String tenantName, Runnable action) {
+		tenantContext.setTenantAndSwitchSchema(tenantName);
+		try {
+			action.run();
+		}
+		finally {
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		}
+
+	}
+
+	private boolean isTenantInvalid(String tenantName) {
+		if (tenantName == null || !tenantService.validateTenantExist(tenantName)) {
+			log.info("Company domain not available");
+			return true;
+		}
+		return false;
 	}
 
 }

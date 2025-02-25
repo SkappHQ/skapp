@@ -26,7 +26,7 @@ public class EpDateTimeUtils {
 	 */
 	public static String formatUtcDateTime(ZonedDateTime dateTime) {
 		if (dateTime == null) {
-			throw new ModuleException(CommonMessageConstant.ERROR_DATE_TIME_CANNOT_BE_NULL);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
 		}
 		return dateTime.format(GOOGLE_CALENDAR_DATE_TIME_FORMATTER);
 	}

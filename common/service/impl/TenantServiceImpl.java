@@ -101,4 +101,12 @@ public class TenantServiceImpl implements TenantService {
 		return tenant;
 	}
 
+	@Override
+	public boolean validateTenantExist(String tenantId) {
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findById(tenantId).orElse(null);
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+		return tenant != null;
+	}
+
 }
