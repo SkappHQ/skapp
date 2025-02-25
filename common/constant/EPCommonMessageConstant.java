@@ -110,7 +110,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_PAYMENT_METHOD("ep.common.error.invalid-payment-method"),
 	EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER("ep.common.error.payment-method-not-belong-to-customer"),
 	EP_COMMON_ERROR_YAML_READ_FAILED("ep.common.error.yaml-read-failed"),
-	EP_COMMON_ERROR_INVALID_MODULE_NAME("ep.common.error.invalid-module-name"),;
+	EP_COMMON_ERROR_INVALID_MODULE_NAME("ep.common.error.invalid-module-name"),
+	EP_COMMON_ERROR_INVALID_TIER("ep.common.error.invalid-tier"),;
 
 	private final String messageKey;
 

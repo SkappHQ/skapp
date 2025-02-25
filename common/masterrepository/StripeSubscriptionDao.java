@@ -9,4 +9,6 @@ public interface StripeSubscriptionDao extends JpaRepository<StripeSubscription,
 
 	StripeSubscription findBySubscriptionId(String id);
 
+	StripeSubscription findByCustomerId(String customerId);
+
 }
