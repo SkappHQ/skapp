@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +22,6 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class TenantFilter extends OncePerRequestFilter {
-
-	private static final String TENANT_HEADER = "X-Tenant-ID";
 
 	private static final Set<String> EXCLUDED_PATHS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
 			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
@@ -46,7 +45,7 @@ public class TenantFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) {
 
-		String tenantId = request.getHeader(TENANT_HEADER);
+		String tenantId = request.getHeader(EpAuthConstants.TENANT_HEADER);
 
 		logRequestDetails(request, Objects.requireNonNullElse(tenantId, "Not Provided"));
 
