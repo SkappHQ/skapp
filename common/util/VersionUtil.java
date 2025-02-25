@@ -1,6 +1,6 @@
 package com.skapp.enterprise.common.util;
 
-import com.skapp.enterprise.common.type.VersionType;
+import com.skapp.community.common.type.VersionType;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
