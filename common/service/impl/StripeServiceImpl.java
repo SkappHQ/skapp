@@ -1,13 +1,13 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.google.type.DateTime;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -18,7 +18,6 @@ import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.BillingDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
@@ -55,7 +54,6 @@ import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,7 +86,7 @@ public class StripeServiceImpl implements StripeService {
 
 	private final StripeSubscriptionDao stripeSubscriptionDao;
 
-	private final OrganizationDao organizationDao;
+	private final SystemVersionService systemVersionService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -149,6 +147,7 @@ public class StripeServiceImpl implements StripeService {
 		Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
 		Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
 
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
 		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
 		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
@@ -160,6 +159,8 @@ public class StripeServiceImpl implements StripeService {
 
 		processTenantSchema(currentTenant,
 				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
+
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
