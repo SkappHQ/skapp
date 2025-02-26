@@ -246,12 +246,6 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto verifyPromotionCode(PromotionCodeRequestDto promotionCodeRequestDto)
 			throws StripeException {
-		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
-
-		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
-			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-		}
-
 		PromotionCodeListParams params = PromotionCodeListParams.builder().setActive(true).build();
 
 		PromotionCodeCollection promotionCodes = PromotionCode.list(params);
