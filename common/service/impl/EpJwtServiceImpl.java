@@ -3,15 +3,17 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
+import com.skapp.community.common.service.SystemVersionService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -27,7 +29,6 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Primary
 public class EpJwtServiceImpl extends JwtServiceImpl {
 
@@ -37,6 +38,13 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 
 	@Value("${jwt.access-token.signing-key}")
 	private String jwtSigningKey;
+
+	public EpJwtServiceImpl(SystemVersionService systemVersionService, UserVersionService userVersionService,
+			TenantDao tenantDao, TenantContext tenantContext) {
+		super(systemVersionService, userVersionService);
+		this.tenantDao = tenantDao;
+		this.tenantContext = tenantContext;
+	}
 
 	@Override
 	protected Map<String, Object> createAccessTokenClaims(UserDetails userDetails, Long userId) {
@@ -59,13 +67,14 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 
 	@Override
 	public Key getSigningKey() {
+		String tenant = TenantContext.getCurrentTenant();
+		if (tenant == null) {
+			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
+		}
 
-		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));
-
-		// String tenant = TenantContext.getCurrentTenant();
-		// byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
-		// byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
-		// return Keys.hmacShaKeyFor(derivedKeyBytes);
+		byte[] masterKeyBytes = Decoders.BASE64.decode(jwtSigningKey);
+		byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
+		return Keys.hmacShaKeyFor(derivedKeyBytes);
 	}
 
 	private byte[] deriveTenantKey(byte[] masterKey, String tenantId) {
@@ -78,6 +87,16 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		catch (Exception e) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_JWT_SIGNIN_KEY_GENERATION_ISSUE);
 		}
+	}
+
+	@Override
+	public void checkVersionMismatch(Long userId, String accessToken) {
+		String tenantId = extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
+		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			return;
+		}
+
+		super.checkVersionMismatch(userId, accessToken);
 	}
 
 }

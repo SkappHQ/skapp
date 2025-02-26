@@ -4,8 +4,10 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -84,7 +86,7 @@ public class StripeServiceImpl implements StripeService {
 
 	private final StripeSubscriptionDao stripeSubscriptionDao;
 
-	private final OrganizationDao organizationDao;
+	private final SystemVersionService systemVersionService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -145,6 +147,7 @@ public class StripeServiceImpl implements StripeService {
 		Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
 		Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
 
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
 		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
 		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
@@ -156,6 +159,8 @@ public class StripeServiceImpl implements StripeService {
 
 		processTenantSchema(currentTenant,
 				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
+
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
