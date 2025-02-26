@@ -157,8 +157,7 @@ public class StripeServiceImpl implements StripeService {
 		String customerEmail = customerDetails.getEmail();
 		String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 
-		processTenantSchema(currentTenant,
-				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
+		stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate, currentTenant);
 
 		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
@@ -544,9 +543,10 @@ public class StripeServiceImpl implements StripeService {
 
 		log.info("handleSubscriptionPaymentSucceeded started");
 
-		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
+		Invoice invoice = event.getDataObjectDeserializer()
 			.getObject()
-			.filter(obj -> obj instanceof Invoice)
+			.filter(Invoice.class::isInstance)
+			.map(Invoice.class::cast)
 			.orElse(null);
 
 		if (invoice != null) {
@@ -568,11 +568,9 @@ public class StripeServiceImpl implements StripeService {
 			}
 			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
-				processTenantSchema(currentTenant.getTenantName(), () ->
 
-				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate)
-
-				);
+				stripeEmailService.sendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate,
+						currentTenant.getTenantName());
 
 			}
 
@@ -585,7 +583,7 @@ public class StripeServiceImpl implements StripeService {
 
 		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
 			.getObject()
-			.filter(obj -> obj instanceof Invoice)
+			.filter(Invoice.class::isInstance)
 			.orElse(null);
 
 		if (invoice != null) {
@@ -596,8 +594,8 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			processTenantSchema(currentTenant.getTenantName(),
-					() -> stripeEmailService.sendStripePaymentFailEmail(invoice));
+
+			stripeEmailService.sendStripePaymentFailEmail(invoice, currentTenant.getTenantName());
 
 		}
 	}
@@ -624,24 +622,13 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			processTenantSchema(currentTenant.getTenantName(),
-					() -> stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate));
+
+			stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate, currentTenant.getTenantName());
 		}
 		catch (StripeException | ModuleException e) {
 			log.error("Error processing event {}: {}", StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END,
 					e.getMessage(), e);
 		}
-	}
-
-	private void processTenantSchema(String tenantName, Runnable action) {
-		tenantContext.setTenantAndSwitchSchema(tenantName);
-		try {
-			action.run();
-		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		}
-
 	}
 
 	private boolean isTenantInvalid(String tenantName) {

@@ -5,6 +5,8 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.stripe.model.Invoice;
@@ -23,28 +25,31 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 
 	private final OrganizationDao organizationDao;
 
+	private final TenantContext tenantContext;
+
 	@Override
-	public void sendTrialEndSoonEmail(String userEmail, String trialEndDate) {
+	public void sendTrialEndSoonEmail(String userEmail, String trialEndDate, String tenantName) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setOrganizationName(getOrganizationName());
 		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
 
+		tenantContext.setTenantAndSwitchSchema(tenantName);
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_FREE_TRIAL_EXPIRES_IN_3DAYS,
 				paymentEmailStripeDynamicFields, userEmail);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}
 
 	@Override
-	public void sendStripePaymentFailEmail(Invoice invoice) {
+	public void sendStripePaymentFailEmail(Invoice invoice, String tenantName) {
 
 		String userEmail = invoice.getCustomerEmail();
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setOrganizationName(getOrganizationName());
 
 		int attemptCount = invoice.getAttemptCount().intValue();
 
+		tenantContext.setTenantAndSwitchSchema(tenantName);
 		switch (attemptCount) {
 			case 1 -> {
 				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_TRIAL_END_DATE,
@@ -78,40 +83,35 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 				log.info("send payment fail eMail end of trial defailt or if manulally triggered" + userEmail);
 			}
 		}
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}
 
 	@Override
-	public void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate) {
+	public void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate, String tenantName) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setOrganizationName(getOrganizationName());
 		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
 
+		tenantContext.setTenantAndSwitchSchema(tenantName);
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL,
 				paymentEmailStripeDynamicFields, userEmail);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}
 
 	@Override
-	public void SendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate) {
+	public void sendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate, String tenantName) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setOrganizationName(getOrganizationName());
 		paymentEmailStripeDynamicFields.setBillingDate(billingDate);
 
+		tenantContext.setTenantAndSwitchSchema(tenantName);
 		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO,
 				paymentEmailStripeDynamicFields, userEmail);
 
-	}
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-	private String getOrganizationName() {
-		Optional<Organization> optionalOrganization = organizationDao.findTopByOrderByOrganizationIdDesc();
-		log.info("organization name" + optionalOrganization.get().getOrganizationName());
-		if (optionalOrganization.isEmpty()) {
-			return "";
-		}
-		return optionalOrganization.get().getOrganizationName();
 	}
 
 }

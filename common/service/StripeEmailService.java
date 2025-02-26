@@ -4,12 +4,12 @@ import com.stripe.model.Invoice;
 
 public interface StripeEmailService {
 
-	void sendTrialEndSoonEmail(String userEmail, String trialEndDate);
+	void sendTrialEndSoonEmail(String userEmail, String trialEndDate, String tenantName);
 
-	void sendStripePaymentFailEmail(Invoice invoice);
+	void sendStripePaymentFailEmail(Invoice invoice, String tenantName);
 
-	void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate);
+	void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate, String tenantName);
 
-	void SendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate);
+	void sendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate, String tenantName);
 
 }
