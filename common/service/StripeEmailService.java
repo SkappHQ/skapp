@@ -6,13 +6,7 @@ public interface StripeEmailService {
 
 	void sendTrialEndSoonEmail(String userEmail, String trialEndDate);
 
-	void sendStripePaymentFailEmailCountOne(Invoice invoice);
-
-	void sendStripePaymentFailEmailCountTwo(Invoice invoice);
-
-	void sendStripePaymentFailEmailCountThree(Invoice invoice);
-
-	void sendStripePaymentFailEmailCountFour(Invoice invoice);
+	void sendStripePaymentFailEmail(Invoice invoice);
 
 	void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate);
 

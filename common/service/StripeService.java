@@ -5,12 +5,11 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 
 public interface StripeService {
 
-	void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException;
+	void handleStripeEvent(String payload, String sigHeader) throws StripeException;
 
 	ResponseEntityDto createSubscription(CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException;
 
