@@ -18,6 +18,8 @@ public class EmployeeTeamDetailsResponseDto {
 
 	private String email;
 
+	private String authPic;
+
 	private List<TeamBasicDetailsResponseDto> teams;
 
 }

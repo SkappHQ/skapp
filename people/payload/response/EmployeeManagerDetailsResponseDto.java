@@ -20,6 +20,8 @@ public class EmployeeManagerDetailsResponseDto {
 
 	private String email;
 
+	private String authPic;
+
 	private List<EmployeeBasicDetailsResponseDto> supervisedEmployees;
 
 }
