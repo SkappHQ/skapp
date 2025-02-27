@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +40,13 @@ public class EpPeopleController {
 	@GetMapping(value = "/employees/role-limit")
 	public ResponseEntity<ResponseEntityDto> getEmployeeRoleLimit() {
 		ResponseEntityDto response = epPeopleService.getEmployeeRoleLimit();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@GetMapping(value = "/employees")
+	public ResponseEntity<ResponseEntityDto> getEmployeesByIdList(@RequestParam List<Long> employeeIds) {
+		ResponseEntityDto response = epPeopleService.getEmployeesByIdList(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

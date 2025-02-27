@@ -28,11 +28,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Configuration
-@EnableJpaRepositories(
-		basePackages = { "com.skapp.enterprise.common.masterrepository", "com.skapp.enterprise.common.repository",
-				"com.skapp.community.common.repository", "com.skapp.community.peopleplanner.repository",
-				"com.skapp.community.leaveplanner.repository", "com.skapp.community.timeplanner.repository",
-				"com.skapp.enterprise.esignature.repository", "com.skapp.enterprise.leaveplanner.repository" })
+@EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
+		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
+		"com.skapp.community.leaveplanner.repository", "com.skapp.community.peopleplanner.repository",
+		"com.skapp.community.timeplanner.repository", "com.skapp.enterprise.esignature.repository",
+		"com.skapp.enterprise.leaveplanner.repository", "com.skapp.enterprise.people.repository" })
 public class MultiTenantDataSourceConfig {
 
 	@Value("${spring.datasource.url}")

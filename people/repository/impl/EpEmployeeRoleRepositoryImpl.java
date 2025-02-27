@@ -1,4 +1,4 @@
-package com.skapp.enterprise.common.repository.impl;
+package com.skapp.enterprise.people.repository.impl;
 
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -6,7 +6,7 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import com.skapp.enterprise.common.repository.EpEmployeeRoleRepository;
+import com.skapp.enterprise.people.repository.EpEmployeeRoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -14,19 +14,17 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class EpEmployeeRoleRepositoryImpl implements EpEmployeeRoleRepository {
 
-	@NonNull
-	private EntityManager entityManager;
+	private final EntityManager entityManager;
 
 	@Override
 	public long countByEmployeeRoleIsSuperAdminAndAccountStatus(Role roleName) {

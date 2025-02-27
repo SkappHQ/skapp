@@ -11,7 +11,13 @@ import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
+import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeTeam;
+import com.skapp.community.peopleplanner.model.Team;
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -37,10 +43,17 @@ import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.repository.EpEmployeeRoleRepository;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
+import com.skapp.enterprise.people.mapper.EpPeopleMapper;
+import com.skapp.enterprise.people.payload.response.EmployeeDetailsResponseDto;
+import com.skapp.enterprise.people.payload.response.EmployeeManagerDetailsResponseDto;
+import com.skapp.enterprise.people.payload.response.EmployeeTeamDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EpEmployeeRoleLimitDto;
+import com.skapp.enterprise.people.repository.EpEmployeeDao;
+import com.skapp.enterprise.people.repository.EpEmployeeManagerDao;
+import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
+import com.skapp.enterprise.people.repository.EpEmployeeTeamDao;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,7 +62,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -63,13 +80,21 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final TenantValidator tenantValidator;
 
-	private final EpEmployeeRoleRepository epEmployeeRoleRepository;
-
 	private final TenantDao tenantDao;
 
 	private final TenantContext tenantContext;
 
 	private final MessageUtil messageUtil;
+
+	private final EpEmployeeManagerDao epEmployeeManagerDao;
+
+	private final EpEmployeeDao epEmployeeDao;
+
+	private final EpEmployeeTeamDao epEmployeeTeamDao;
+
+	private final EpPeopleMapper epPeopleMapper;
+
+	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
@@ -82,9 +107,10 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			PeopleEmailService peopleEmailService, ObjectMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
-			EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleRepository epEmployeeRoleRepository, TenantDao tenantDao, TenantContext tenantContext,
-			UserVersionService userVersionService) {
+			UserVersionService userVersionService, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
+			TenantDao tenantDao, TenantContext tenantContext, EpEmployeeManagerDao epEmployeeManagerDao,
+			EpEmployeeDao epEmployeeDao, EpEmployeeTeamDao epEmployeeTeamDao, EpPeopleMapper epPeopleMapper,
+			EpEmployeeRoleDao epEmployeeRoleDao) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeTimelineDao, employeeManagerDao, employeeTimelineService,
@@ -94,10 +120,14 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.employeeDao = employeeDao;
 		this.employeeRoleDao = employeeRoleDao;
 		this.tenantValidator = tenantValidator;
-		this.epEmployeeRoleRepository = epEmployeeRoleRepository;
 		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
 		this.messageUtil = messageUtil;
+		this.epEmployeeManagerDao = epEmployeeManagerDao;
+		this.epEmployeeDao = epEmployeeDao;
+		this.epEmployeeTeamDao = epEmployeeTeamDao;
+		this.epPeopleMapper = epPeopleMapper;
+		this.epEmployeeRoleDao = epEmployeeRoleDao;
 	}
 
 	@Override
@@ -120,6 +150,78 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	public ResponseEntityDto getEmployeesCount() {
 		long count = countActiveAndPendingEmployees();
 		return new ResponseEntityDto(false, count);
+	}
+
+	@Override
+	public ResponseEntityDto getEmployeesByIdList(List<Long> employeeIds) {
+		List<Employee> employees = epEmployeeDao.findAllById(employeeIds);
+
+		List<EmployeeTeamDetailsResponseDto> teamSupervisors = getTeamSupervisors(employees);
+		List<EmployeeManagerDetailsResponseDto> primaryManagers = getPrimaryManagersWithSupervisedEmployees(employees);
+
+		return new ResponseEntityDto(false, new EmployeeDetailsResponseDto(teamSupervisors, primaryManagers));
+	}
+
+	private List<EmployeeTeamDetailsResponseDto> getTeamSupervisors(List<Employee> employees) {
+		List<EmployeeTeam> employeeTeams = epEmployeeTeamDao.findByEmployeeInAndIsSupervisorTrue(employees);
+
+		Map<Long, Employee> supervisorIdMap = new HashMap<>();
+		Map<Long, List<Team>> supervisorToTeams = new HashMap<>();
+
+		for (EmployeeTeam employeeTeam : employeeTeams) {
+			Employee supervisor = employeeTeam.getEmployee();
+			Team team = employeeTeam.getTeam();
+			Long supervisorId = supervisor.getEmployeeId();
+
+			supervisorIdMap.putIfAbsent(supervisorId, supervisor);
+			supervisorToTeams.computeIfAbsent(supervisorId, id -> new ArrayList<>()).add(team);
+		}
+
+		return supervisorIdMap.entrySet().stream().map(entry -> {
+			Long supervisorId = entry.getKey();
+			Employee supervisor = entry.getValue();
+
+			EmployeeTeamDetailsResponseDto dto = epPeopleMapper.employeeToEmployeeTeamDetailsResponseDto(supervisor);
+
+			List<Team> supervisedTeams = supervisorToTeams.get(supervisorId);
+			dto.setTeams(supervisedTeams.stream().map(epPeopleMapper::teamToTeamBasicDetailsResponseDto).toList());
+
+			return dto;
+		}).toList();
+	}
+
+	private List<EmployeeManagerDetailsResponseDto> getPrimaryManagersWithSupervisedEmployees(
+			List<Employee> employees) {
+		List<EmployeeManager> primaryEmployeeManagers = epEmployeeManagerDao.findByManagerInAndManagerType(employees,
+				ManagerType.PRIMARY);
+
+		Map<Long, Employee> managerIdMap = new HashMap<>();
+		Map<Long, List<Employee>> managerToEmployees = new HashMap<>();
+
+		for (EmployeeManager employeeManager : primaryEmployeeManagers) {
+			Employee manager = employeeManager.getManager();
+			Employee employee = employeeManager.getEmployee();
+			Long managerId = manager.getEmployeeId();
+
+			managerIdMap.putIfAbsent(managerId, manager);
+			managerToEmployees.computeIfAbsent(managerId, id -> new ArrayList<>()).add(employee);
+		}
+
+		return managerIdMap.entrySet().stream().map(entry -> {
+			Long managerId = entry.getKey();
+			Employee manager = entry.getValue();
+
+			EmployeeManagerDetailsResponseDto dto = epPeopleMapper
+				.employeeToEmployeeSupervisorDetailsResponseDto(manager);
+
+			List<Employee> supervisedEmployees = managerToEmployees.get(managerId);
+			dto.setSupervisedEmployees(supervisedEmployees.stream()
+				.map(epPeopleMapper::employeeToEmployeeBasicDetailsResponseDto)
+				.sorted(Comparator.comparing(EmployeeBasicDetailsResponseDto::getEmployeeId))
+				.toList());
+
+			return dto;
+		}).toList();
 	}
 
 	private long countActiveAndPendingEmployees() {
@@ -175,17 +277,17 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	private boolean checkLeaveAdminLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.LEAVE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT;
 	}
 
 	private boolean checkAttendanceAdminLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.ATTENDANCE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT;
 	}
 
 	private boolean checkPeopleAdminLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.PEOPLE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
 	}
 
@@ -195,22 +297,22 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	private boolean checkLeaveManagerLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.LEAVE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT;
 	}
 
 	private boolean checkAttendanceManagerLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.ATTENDANCE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT;
 	}
 
 	private boolean checkPeopleManagerLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.PEOPLE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT;
 	}
 
 	private boolean checkSuperAdminLimit() {
-		return epEmployeeRoleRepository.countByEmployeeRoleIsSuperAdminAndAccountStatus(
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
 				Role.SUPER_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
 	}
 
