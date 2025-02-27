@@ -9,6 +9,8 @@ import com.skapp.enterprise.people.payload.response.EmployeeTeamDetailsResponseD
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface EpPeopleMapper {
 
@@ -21,5 +23,7 @@ public interface EpPeopleMapper {
 	EmployeeBasicDetailsResponseDto employeeToEmployeeBasicDetailsResponseDto(Employee employee);
 
 	TeamBasicDetailsResponseDto teamToTeamBasicDetailsResponseDto(Team team);
+
+	List<EmployeeBasicDetailsResponseDto> employeesToEmployeeBasicDetailsResponseDtos(List<Employee> employees);
 
 }

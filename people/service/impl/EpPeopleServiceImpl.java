@@ -188,6 +188,13 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_MANAGERS_AND_SUPERVISORS_TRANSFER));
 	}
 
+	@Override
+	public ResponseEntityDto getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds) {
+		List<Employee> employees = epEmployeeDao.getManagerRoleEmployeesExcludingEmployeeIds(employeeIds);
+
+		return new ResponseEntityDto(false, epPeopleMapper.employeesToEmployeeBasicDetailsResponseDtos(employees));
+	}
+
 	private void deactivateEmployees(List<Employee> employees) {
 		for (Employee employee : employees) {
 			employee.setAccountStatus(AccountStatus.INACTIVE);

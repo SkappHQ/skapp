@@ -20,4 +20,6 @@ public interface EpPeopleService {
 	ResponseEntityDto transferSupervisorsAndManagers(
 			TransferManagersAndSupervisorsRequestDto transferManagersAndSupervisorsRequestDto);
 
+	ResponseEntityDto getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds);
+
 }
