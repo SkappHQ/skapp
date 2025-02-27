@@ -1,6 +1,7 @@
 package com.skapp.enterprise.people.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
@@ -46,6 +47,9 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
+import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
+import com.skapp.enterprise.people.payload.request.TransferManagersRequestDto;
+import com.skapp.enterprise.people.payload.request.TransferSupervisorsRequestDto;
 import com.skapp.enterprise.people.payload.response.EmployeeDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EmployeeManagerDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EmployeeTeamDetailsResponseDto;
@@ -153,13 +157,78 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	public ResponseEntityDto getEmployeesByIdList(List<Long> employeeIds) {
+	public ResponseEntityDto getManagersAndSupervisorsFromEmployeeIds(List<Long> employeeIds) {
 		List<Employee> employees = epEmployeeDao.findAllById(employeeIds);
 
 		List<EmployeeTeamDetailsResponseDto> teamSupervisors = getTeamSupervisors(employees);
 		List<EmployeeManagerDetailsResponseDto> primaryManagers = getPrimaryManagersWithSupervisedEmployees(employees);
 
 		return new ResponseEntityDto(false, new EmployeeDetailsResponseDto(teamSupervisors, primaryManagers));
+	}
+
+	@Override
+	public ResponseEntityDto transferSupervisorsAndManagers(TransferManagersAndSupervisorsRequestDto transferRequest) {
+		if (transferRequest.getSupervisors() != null && !transferRequest.getSupervisors().isEmpty()) {
+			transferTeamSupervisors(transferRequest.getSupervisors());
+		}
+
+		if (transferRequest.getManagers() != null && !transferRequest.getManagers().isEmpty()) {
+			transferPrimaryManagers(transferRequest.getManagers());
+		}
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_MANAGERS_AND_SUPERVISORS_TRANSFER));
+	}
+
+	private void transferTeamSupervisors(List<TransferSupervisorsRequestDto> supervisorsTransfer) {
+		for (TransferSupervisorsRequestDto transfer : supervisorsTransfer) {
+			Long currentSupervisorId = transfer.getSupervisorId();
+			Long newSupervisorId = transfer.getTransferredSupervisorId();
+
+			Employee currentSupervisor = epEmployeeDao.findById(currentSupervisorId)
+				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_SUPERVISOR_NOT_FOUND));
+
+			List<EmployeeTeam> supervisorTeams = epEmployeeTeamDao.findByEmployeeAndIsSupervisorTrue(currentSupervisor);
+
+			Employee newSupervisor = epEmployeeDao.findById(newSupervisorId)
+				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_SUPERVISOR_NOT_FOUND));
+
+			for (EmployeeTeam supervisorTeam : supervisorTeams) {
+				Team team = supervisorTeam.getTeam();
+				supervisorTeam.setIsSupervisor(false);
+
+				EmployeeTeam newSupervisorTeam = epEmployeeTeamDao.findByEmployeeAndTeam(newSupervisor, team)
+					.orElseGet(() -> {
+						EmployeeTeam newMembership = new EmployeeTeam();
+						newMembership.setEmployee(newSupervisor);
+						newMembership.setTeam(team);
+						return newMembership;
+					});
+
+				newSupervisorTeam.setIsSupervisor(true);
+
+				epEmployeeTeamDao.saveAll(List.of(supervisorTeam, newSupervisorTeam));
+			}
+		}
+	}
+
+	private void transferPrimaryManagers(List<TransferManagersRequestDto> managersTransfer) {
+		for (TransferManagersRequestDto transfer : managersTransfer) {
+			Long currentManagerId = transfer.getManagerId();
+			Long newManagerId = transfer.getTransferredManagerId();
+
+			Employee currentManager = epEmployeeDao.findById(currentManagerId)
+				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_MANAGER_NOT_FOUND));
+
+			List<EmployeeManager> managedEmployees = epEmployeeManagerDao.findByManagerAndManagerType(currentManager,
+					ManagerType.PRIMARY);
+
+			Employee newManager = epEmployeeDao.findById(newManagerId)
+				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_MANAGER_NOT_FOUND));
+
+			managedEmployees.forEach(employeeManager -> employeeManager.setManager(newManager));
+			epEmployeeManagerDao.saveAll(managedEmployees);
+		}
 	}
 
 	private List<EmployeeTeamDetailsResponseDto> getTeamSupervisors(List<Employee> employees) {

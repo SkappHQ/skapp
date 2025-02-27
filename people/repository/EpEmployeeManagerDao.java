@@ -13,4 +13,6 @@ public interface EpEmployeeManagerDao extends JpaRepository<EmployeeManager, Lon
 
 	List<EmployeeManager> findByManagerInAndManagerType(List<Employee> employees, ManagerType managerType);
 
+	List<EmployeeManager> findByManagerAndManagerType(Employee currentManager, ManagerType managerType);
+
 }
