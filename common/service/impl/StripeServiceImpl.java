@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -561,6 +562,7 @@ public class StripeServiceImpl implements StripeService {
 			Invoice upcomingInvoice = Invoice.upcoming(params);
 
 			String nextBillDate = DateTimeUtils.epochSecondToUtcLocalDate(upcomingInvoice.getCreated()).toString();
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
@@ -589,7 +591,7 @@ public class StripeServiceImpl implements StripeService {
 		if (invoice != null) {
 
 			String customerId = invoice.getCustomer();
-
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
@@ -618,6 +620,7 @@ public class StripeServiceImpl implements StripeService {
 			Customer customer = Customer.retrieve(customerId);
 			String customerEmail = customer.getEmail();
 			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
