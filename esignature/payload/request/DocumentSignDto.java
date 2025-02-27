@@ -12,12 +12,8 @@ public class DocumentSignDto {
 
 	private Long documentId;
 
-	private Integer currentDocumentVersionId;
-
 	private List<FieldSignDto> fieldSignDtoList;
 
 	private Long recipientId;
-
-	private Long addressBookId;
 
 }

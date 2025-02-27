@@ -7,13 +7,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -27,7 +26,7 @@ public class EnvelopeSetting {
 	private Long id;
 
 	@Column(name = "expiration_date")
-	private LocalDateTime expirationDate;
+	private LocalDate expirationDate;
 
 	@Column(name = "reminder_days")
 	private Integer reminderDays;
@@ -54,7 +53,6 @@ public class EnvelopeSetting {
 	private Boolean digitalSignatureRequired;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@MapsId
 	@JoinColumn(name = "envelope_id")
 	private Envelope envelope;
 

@@ -13,6 +13,6 @@ public interface DocumentService {
 	@Transactional
 	DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto);
 
-	ResponseEntityDto signDocument(DocumentSignDto documentSignDto);
+	ResponseEntityDto signDocumentInOrder(DocumentSignDto documentSignDto);
 
 }

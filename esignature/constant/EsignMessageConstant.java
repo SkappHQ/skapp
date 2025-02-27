@@ -61,7 +61,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE("ep.esign.error.failed.generate.certificate"),
 	ESIGN_ERROR_MERGE_TEXT_FILED("ep.esign.error.merge.text-field"),
 	ESIGN_ERROR_MERGE_IMAGE_FILED("ep.esign.error.merge.image-field"),
-	ESIGN_ERROR_CREATE_NEW_DOCUMENT_VERSION("ep.esign.error.create.new.document-version");
+	ESIGN_ERROR_CREATE_NEW_DOCUMENT_VERSION("ep.esign.error.create.new.document-version"),
+	ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND("ep.esign.error.addressbook-id.not-found"),
+	ESIGN_ERROR_CONFIG_NOT_FOUND("ep.esign.error.config.not-found"),
+	ESIGN_ERROR_RECIPIENT_NOT_FOUND("ep.esign.error.recipient.not-found"),
+	ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH("ep.esign.error.recipient.current-user.not.match");
 
 	private final String messageKey;
 

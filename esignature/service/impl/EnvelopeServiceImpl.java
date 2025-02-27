@@ -13,6 +13,7 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
@@ -86,6 +87,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
+		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
+		envelopeSetting.setEnvelope(envelope);
+
+		envelope.setSetting(envelopeSetting);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
@@ -109,6 +114,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	private EnvelopeSetting getEnvelopeSetting(EnvelopeDetailDto envelopeDetailDto) {
+		EnvelopeSetting envelopeSetting = new EnvelopeSetting();
+		envelopeSetting.setExpirationDate(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate());
+		envelopeSetting.setReminderDays(envelopeDetailDto.getEnvelopeSettingDto().getReminderDays());
+		return envelopeSetting;
 	}
 
 	@Override
@@ -277,7 +289,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentSignDto documentSignDto = new DocumentSignDto();
 			documentSignDto.setDocumentId(doc);
 			documentSignDto.setEnvelopeId(envelope.getId());
-			documentSignDto.setAddressBookId(envelopeDetailDto.getSenderAddressBookId());
 			DocumentVersion documentVersion = documentService.signFirstVersionDocument(documentSignDto);
 			documentVersionList.add(documentVersion);
 		});

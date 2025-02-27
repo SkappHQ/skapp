@@ -35,4 +35,6 @@ public class EnvelopeDetailedResponseDto {
 
 	private List<Object> emailResponse;
 
+	private EnvelopeSettingResponseDto setting;
+
 }

@@ -40,7 +40,7 @@ public class DocumentController {
 	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
-		ResponseEntityDto response = documentService.signDocument(documentSignDto);
+		ResponseEntityDto response = documentService.signDocumentInOrder(documentSignDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

@@ -1,7 +1,9 @@
 package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -11,6 +13,7 @@ import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
@@ -21,6 +24,7 @@ import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
+import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
@@ -50,6 +54,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -74,6 +79,10 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentVersionRepository documentVersionRepository;
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
+
+	private final RecipientRepository recipientRepository;
+
+	private final UserService userService;
 
 	private final UserKeyService userKeyService;
 
@@ -100,25 +109,23 @@ public class DocumentServiceImpl implements DocumentService {
 	public DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto) {
 		try {
 
-			if (documentSignDto.getAddressBookId() == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MISSING_ADDRESS_BOOK_ID);
-			}
+			User currentUser = userService.getCurrentUser();
 
 			if (documentSignDto.getDocumentId() == null) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
 			}
 
-			KeyPair keyPair = loadKeyPair(documentSignDto.getAddressBookId());
+			AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
+
+			KeyPair keyPair = loadKeyPair(currentAddressBookUser.getId());
 
 			Document document = documentRepository.findById(documentSignDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND));
 
-			AddressBook addressBook = addressBookDao.findById(documentSignDto.getAddressBookId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_MISSING_ADDRESS_BOOK_ID));
+			DocumentVersion currentVersion = getDocumentVersionObj(document);
 
-			DocumentVersion currentVersion = getDocumentVersionObj(document, addressBook);
-
-			return createNewDocumentVersion(documentSignDto, currentVersion, keyPair.getPrivate(), true);
+			return createNewDocumentVersion(documentSignDto, currentVersion, keyPair.getPrivate(), true,
+					currentAddressBookUser);
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
@@ -128,70 +135,85 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto signDocument(DocumentSignDto documentSignDto) {
-		try {
-			validateDocumentSignRequest(documentSignDto);
+	public ResponseEntityDto signDocumentInOrder(DocumentSignDto documentSignDto) {
 
-			// Load and validate keys
-			KeyPair keyPair = loadKeyPair(documentSignDto.getAddressBookId());
+		User currentUser = userService.getCurrentUser();
 
-			DocumentVersion currentVersion = getDocumentVersion(documentSignDto.getCurrentDocumentVersionId(),
-					documentSignDto.getDocumentId());
-			// Process document version and verify existing signature
-			processAndVerifyCurrentVersion(currentVersion, keyPair.getPublic());
+		AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
 
-			// Create new version with signature
-			DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, keyPair.getPrivate(),
-					false);
+		validateDocumentSignRequest(documentSignDto);
 
-			newVersion = documentVersionRepository.save(newVersion);
+		// TODO:signing order id validation
 
-			List<FieldSignDto> fieldSignDtoList = documentSignDto.getFieldSignDtoList();
+		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
-			if (fieldSignDtoList != null) {
-				List<Field> fields = getFieldsFromFieldSignDtoList(fieldSignDtoList);
-				DocumentVersion finalNewVersion = newVersion;
-				List<DocumentVersionField> versionFields = fields.stream().map(field -> {
-					DocumentVersionField versionField = new DocumentVersionField();
-					versionField.setField(field);
-					versionField.setDocumentVersion(finalNewVersion);
-
-					fieldSignDtoList.stream()
-						.filter(dto -> dto.getFieldId().equals(field.getId()))
-						.findFirst()
-						.ifPresent(fieldSignDto -> versionField.setValue(fieldSignDto.getFieldValue()));
-
-					return versionField;
-				}).toList();
-
-				documentVersionFieldRepository.saveAll(versionFields);
-
-			}
-
-			// save document on current version
-			Document document = currentVersion.getDocument();
-			document.setCurrentVersion(newVersion.getVersionNumber());
-			documentRepository.save(document);
-
-			return new ResponseEntityDto(false, "New Document version successfully created");
+		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
 		}
-		catch (Exception e) {
-			log.error("Error signing document", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
-					new String[] { e.getMessage() });
+
+		Document document = documentRepository.findById(documentSignDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND));
+
+		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(),
+				documentSignDto.getDocumentId());
+
+		// Load and validate keys-load previous user keys
+		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
+
+		// Process document version and verify existing signature
+		processAndVerifyCurrentVersion(currentVersion, keyPairVerify.getPublic());
+
+		// current user key pair for sign document
+		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
+
+		// Create new version with signature
+		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, keyPairSign.getPrivate(),
+				false, currentAddressBookUser);
+
+		newVersion = documentVersionRepository.save(newVersion);
+
+		List<FieldSignDto> fieldSignDtoList = documentSignDto.getFieldSignDtoList();
+
+		if (fieldSignDtoList != null) {
+			List<Field> fields = getFieldsFromFieldSignDtoList(fieldSignDtoList);
+			DocumentVersion finalNewVersion = newVersion;
+			List<DocumentVersionField> versionFields = fields.stream().map(field -> {
+				DocumentVersionField versionField = new DocumentVersionField();
+				versionField.setField(field);
+				versionField.setDocumentVersion(finalNewVersion);
+
+				fieldSignDtoList.stream()
+					.filter(dto -> dto.getFieldId().equals(field.getId()))
+					.findFirst()
+					.ifPresent(fieldSignDto -> versionField.setValue(fieldSignDto.getFieldValue()));
+
+				return versionField;
+			}).toList();
+
+			documentVersionFieldRepository.saveAll(versionFields);
+
 		}
+
+		// save document on current version
+		document.setCurrentVersion(newVersion.getVersionNumber());
+		documentRepository.save(document);
+
+		return new ResponseEntityDto(false, "New Document version successfully created");
+
 	}
 
 	private void validateDocumentSignRequest(@NotNull DocumentSignDto request) {
 
-		if (request.getCurrentDocumentVersionId() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MISSING_DOCUMENT_VERSION_ID);
+		if (request.getDocumentId() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
 		}
-		if (request.getAddressBookId() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MISSING_ADDRESS_BOOK_ID);
-		}
+
 		if (request.getFieldSignDtoList() == null || request.getFieldSignDtoList().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST);
+		}
+
+		if (request.getRecipientId() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND);
 		}
 	}
 
@@ -233,7 +255,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersion createNewDocumentVersion(DocumentSignDto signDto, DocumentVersion currentVersion,
-			PrivateKey privateKey, Boolean isVersionFirst) {
+			PrivateKey privateKey, Boolean isVersionFirst, AddressBook addressBook) {
 
 		try (InputStream documentStream = amazonS3Service.downloadFile(bucketName, currentVersion.getFilePath())) {
 			String fileUrl = currentVersion.getFilePath();
@@ -271,7 +293,7 @@ public class DocumentServiceImpl implements DocumentService {
 				signDto.setFieldSignDtoList(new ArrayList<>());
 			}
 
-			return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature);
+			return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature, addressBook);
 		}
 		catch (IOException e) {
 			log.error("Error creating new Document version", e);
@@ -280,12 +302,12 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
-			String signature) {
+			String signature, AddressBook addressBook) {
 
 		DocumentVersion newVersion = new DocumentVersion();
 		newVersion.setDocument(currentVersion.getDocument());
 		newVersion.setVersionNumber(currentVersion.getVersionNumber() + 1);
-		newVersion.setAddressBook(currentVersion.getAddressBook());
+		newVersion.setAddressBook(addressBook);
 		newVersion.setFilePath(filePath);
 		newVersion.setDocumentHash(hash);
 
@@ -368,13 +390,25 @@ public class DocumentServiceImpl implements DocumentService {
 		return fieldRepository.findByIdIn(fieldIds);
 	}
 
-	private DocumentVersion getDocumentVersionObj(Document document, AddressBook addressBook) {
+	private DocumentVersion getDocumentVersionObj(Document document) {
 		DocumentVersion currentVersion = new DocumentVersion();
 		currentVersion.setFilePath(document.getFilePath());
 		currentVersion.setVersionNumber(0);
 		currentVersion.setDocument(document);
-		currentVersion.setAddressBook(addressBook);
 		return currentVersion;
+	}
+
+	private AddressBook getAddressBookIdByInternalUserId(@NotNull User currentUser) {
+
+		return addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND,
+					new String[] { currentUser.getUserId().toString() }));
+	}
+
+	private Recipient getRecipientById(@NotNull Long id) {
+
+		return recipientRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 	}
 
 }
