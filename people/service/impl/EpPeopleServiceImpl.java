@@ -100,6 +100,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
+	private final UserDao userDao;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -132,6 +134,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epEmployeeTeamDao = epEmployeeTeamDao;
 		this.epPeopleMapper = epPeopleMapper;
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
+		this.userDao = userDao;
 	}
 
 	@Override
@@ -158,7 +161,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public ResponseEntityDto getManagersAndSupervisorsFromEmployeeIds(List<Long> employeeIds) {
-		List<Employee> employees = epEmployeeDao.findAllById(employeeIds);
+		List<Employee> employees = epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(employeeIds,
+				Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		List<EmployeeTeamDetailsResponseDto> teamSupervisors = getTeamSupervisors(employees);
 		List<EmployeeManagerDetailsResponseDto> primaryManagers = getPrimaryManagersWithSupervisedEmployees(employees);
@@ -168,25 +172,45 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public ResponseEntityDto transferSupervisorsAndManagers(TransferManagersAndSupervisorsRequestDto transferRequest) {
+		List<Employee> employeesToDeactivate = new ArrayList<>();
+
 		if (transferRequest.getSupervisors() != null && !transferRequest.getSupervisors().isEmpty()) {
-			transferTeamSupervisors(transferRequest.getSupervisors());
+			employeesToDeactivate.addAll(transferTeamSupervisors(transferRequest.getSupervisors()));
 		}
 
 		if (transferRequest.getManagers() != null && !transferRequest.getManagers().isEmpty()) {
-			transferPrimaryManagers(transferRequest.getManagers());
+			employeesToDeactivate.addAll(transferPrimaryManagers(transferRequest.getManagers()));
 		}
+
+		deactivateEmployees(employeesToDeactivate);
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_MANAGERS_AND_SUPERVISORS_TRANSFER));
 	}
 
-	private void transferTeamSupervisors(List<TransferSupervisorsRequestDto> supervisorsTransfer) {
+	private void deactivateEmployees(List<Employee> employees) {
+		for (Employee employee : employees) {
+			employee.setAccountStatus(AccountStatus.INACTIVE);
+			epEmployeeDao.save(employee);
+
+			if (employee.getUser() != null) {
+				employee.getUser().setIsActive(false);
+				userDao.save(employee.getUser());
+			}
+		}
+	}
+
+	private List<Employee> transferTeamSupervisors(List<TransferSupervisorsRequestDto> supervisorsTransfer) {
+		List<Employee> supervisorsToDeactivate = new ArrayList<>();
+
 		for (TransferSupervisorsRequestDto transfer : supervisorsTransfer) {
 			Long currentSupervisorId = transfer.getSupervisorId();
 			Long newSupervisorId = transfer.getTransferredSupervisorId();
 
 			Employee currentSupervisor = epEmployeeDao.findById(currentSupervisorId)
 				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_SUPERVISOR_NOT_FOUND));
+
+			supervisorsToDeactivate.add(currentSupervisor);
 
 			List<EmployeeTeam> supervisorTeams = epEmployeeTeamDao.findByEmployeeAndIsSupervisorTrue(currentSupervisor);
 
@@ -210,15 +234,21 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 				epEmployeeTeamDao.saveAll(List.of(supervisorTeam, newSupervisorTeam));
 			}
 		}
+
+		return supervisorsToDeactivate;
 	}
 
-	private void transferPrimaryManagers(List<TransferManagersRequestDto> managersTransfer) {
+	private List<Employee> transferPrimaryManagers(List<TransferManagersRequestDto> managersTransfer) {
+		List<Employee> managersToDeactivate = new ArrayList<>();
+
 		for (TransferManagersRequestDto transfer : managersTransfer) {
 			Long currentManagerId = transfer.getManagerId();
 			Long newManagerId = transfer.getTransferredManagerId();
 
 			Employee currentManager = epEmployeeDao.findById(currentManagerId)
 				.orElseThrow(() -> new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_MANAGER_NOT_FOUND));
+
+			managersToDeactivate.add(currentManager);
 
 			List<EmployeeManager> managedEmployees = epEmployeeManagerDao.findByManagerAndManagerType(currentManager,
 					ManagerType.PRIMARY);
@@ -229,6 +259,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			managedEmployees.forEach(employeeManager -> employeeManager.setManager(newManager));
 			epEmployeeManagerDao.saveAll(managedEmployees);
 		}
+
+		return managersToDeactivate;
 	}
 
 	private List<EmployeeTeamDetailsResponseDto> getTeamSupervisors(List<Employee> employees) {
