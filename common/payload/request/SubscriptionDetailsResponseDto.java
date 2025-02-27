@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.payload.request;
 
 import com.skapp.enterprise.common.type.SubscriptionPlan;
+import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,5 +29,7 @@ public class SubscriptionDetailsResponseDto {
 	private Long trialExpiredRemainingDays;
 
 	private Instant trialEndDate;
+
+	private SubscriptionStatus subscriptionStatus;
 
 }

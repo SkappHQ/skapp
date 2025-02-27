@@ -25,6 +25,7 @@ import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
+import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.response.PaymentMethodResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.service.StripeEmailService;
@@ -54,6 +55,7 @@ import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
+import com.stripe.param.SubscriptionUpdateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -145,6 +147,10 @@ public class StripeServiceImpl implements StripeService {
 		customer.update(customerUpdateParams);
 
 		Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
+		if (!subscription.getStatus().equals(SubscriptionStatus.FREE_TRIAL.getStatus())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_CREATION_FAILED);
+		}
+
 		Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
 
 		tenantContext.setTenantAndSwitchSchema(currentTenant);
@@ -157,10 +163,10 @@ public class StripeServiceImpl implements StripeService {
 		String customerEmail = customerDetails.getEmail();
 		String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
+
 		processTenantSchema(currentTenant,
 				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
-
-		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -183,6 +189,7 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setSubscriptionId(subscription.getId());
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
 		responseDto.setSubscriptionQuantity(subscriptionQuantity);
+		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
 		responseDto.setTotalCost(subscription.getItems()
 			.getData()
@@ -347,6 +354,144 @@ public class StripeServiceImpl implements StripeService {
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_PAYMENT_METHOD_REMOVED));
+	}
+
+	@Override
+	public ResponseEntityDto cancelSubscription() throws StripeException {
+		String currentTenant = TenantContext.getCurrentTenant();
+		User currentUser = userService.getCurrentUser();
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+
+		if (tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_CANCELED);
+		}
+
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null
+				|| tenant.getTier() == Tier.FREE) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+		}
+
+		String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+		Subscription subscription = Subscription.retrieve(subscriptionId);
+
+		Subscription canceledSubscription = subscription.cancel();
+		if (!canceledSubscription.getStatus().equals(SubscriptionStatus.CANCELED.getStatus())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_CANCEL_FAILED);
+		}
+
+		tenant.setTier(Tier.FREE);
+		tenant.setSubscriptionStatus(SubscriptionStatus.CANCELED);
+		tenant.setLastModifiedDate(Instant.now());
+		tenant.setLastModifiedByEmail(currentUser.getEmail());
+
+		StripeSubscription stripeSubscription = tenant.getStripeSubscription();
+		stripeSubscription.setLastModifiedByEmail(currentUser.getEmail());
+		stripeSubscription.setLastModifiedDate(Instant.now());
+
+		tenant.setStripeSubscription(stripeSubscription);
+		tenantDao.save(tenant);
+
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE);
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_SUBSCRIPTION_CANCELED));
+	}
+
+	@Override
+	public ResponseEntityDto updateSubscription(UpdateSubscriptionRequestDto updateSubscriptionRequestDto)
+			throws StripeException {
+		String currentTenant = TenantContext.getCurrentTenant();
+		User currentUser = userService.getCurrentUser();
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+		}
+
+		String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+		Subscription subscription = Subscription.retrieve(subscriptionId);
+
+		if (SubscriptionStatus.CANCELED.getStatus().equals(subscription.getStatus())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_CANCELED);
+		}
+
+		Map<SubscriptionPlan, String> priceMap = getPriceMap();
+		String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
+
+		SubscriptionUpdateParams.Item item;
+		if (updateSubscriptionRequestDto.getSubscriptionPlan() != null
+				&& !updateSubscriptionRequestDto.getSubscriptionPlan().equals(tenant.getSubscriptionPlan())) {
+
+			String newPriceId = updateSubscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
+					? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
+
+			item = SubscriptionUpdateParams.Item.builder()
+				.setId(subscriptionItemId)
+				.setQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity())
+				.setPrice(newPriceId)
+				.build();
+		}
+		else {
+			item = SubscriptionUpdateParams.Item.builder()
+				.setId(subscriptionItemId)
+				.setQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity())
+				.build();
+		}
+
+		SubscriptionUpdateParams params = SubscriptionUpdateParams.builder()
+			.addItem(item)
+			.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.ALWAYS_INVOICE)
+			.build();
+
+		Subscription updatedSubscription = subscription.update(params);
+
+		tenant.setSubscriptionQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity());
+		if (updateSubscriptionRequestDto.getSubscriptionPlan() != null) {
+			tenant.setSubscriptionPlan(updateSubscriptionRequestDto.getSubscriptionPlan());
+		}
+		tenant.setLastModifiedDate(Instant.now());
+		tenant.setLastModifiedByEmail(currentUser.getEmail());
+
+		StripeSubscription stripeSubscription = tenant.getStripeSubscription();
+		stripeSubscription.setLastModifiedByEmail(currentUser.getEmail());
+		stripeSubscription.setLastModifiedDate(Instant.now());
+
+		tenant.setStripeSubscription(stripeSubscription);
+		tenantDao.save(tenant);
+
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		SubscriptionDetailsResponseDto responseDto = new SubscriptionDetailsResponseDto();
+		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
+		responseDto.setSubscriptionId(updatedSubscription.getId());
+		responseDto.setTier(tenant.getTier());
+		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
+		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
+		responseDto.setSubscriptionQuantity(updatedSubscription.getItems().getData().getFirst().getQuantity());
+
+		responseDto.setTotalCost(updatedSubscription.getItems()
+			.getData()
+			.stream()
+			.mapToDouble(item1 -> (item1.getPrice().getUnitAmount() / 100.0)
+					* (item1.getQuantity() != null ? item1.getQuantity() : 1))
+			.sum());
+
+		responseDto.setNextBillingDate(updatedSubscription.getCurrentPeriodEnd() != null
+				? Instant.ofEpochSecond(updatedSubscription.getCurrentPeriodEnd()) : null);
+
+		if (subscription.getTrialEnd() != null) {
+			long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
+					Instant.ofEpochSecond(subscription.getTrialEnd()).atOffset(ZoneOffset.UTC).toLocalDate());
+			responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
+			responseDto.setTrialEndDate(Instant.ofEpochSecond(subscription.getTrialEnd()));
+		}
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private BillingDetailsResponseDto getBillingDetailsResponseDto(Customer customer) {

@@ -5,6 +5,7 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
+import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 
@@ -32,5 +33,10 @@ public interface StripeService {
 	ResponseEntityDto setDefaultPaymentMethod(PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException;
 
 	ResponseEntityDto removePaymentMethod(PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException;
+
+	ResponseEntityDto cancelSubscription() throws StripeException;
+
+	ResponseEntityDto updateSubscription(UpdateSubscriptionRequestDto updateSubscriptionRequestDto)
+			throws StripeException;
 
 }

@@ -5,6 +5,7 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
+import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +42,19 @@ public class StripeController {
 			@Valid @RequestBody CreateSubscriptionRequestDto subscriptionRequestDto) throws StripeException {
 		ResponseEntityDto response = stripeService.createSubscription(subscriptionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@DeleteMapping("/subscription/cancel")
+	public ResponseEntity<ResponseEntityDto> cancelSubscription() throws StripeException {
+		ResponseEntityDto response = stripeService.cancelSubscription();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PutMapping("/subscription")
+	public ResponseEntity<ResponseEntityDto> updateSubscription(
+			@RequestBody UpdateSubscriptionRequestDto updateSubscriptionRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.updateSubscription(updateSubscriptionRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/subscription")
