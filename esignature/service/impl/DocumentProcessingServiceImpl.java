@@ -40,58 +40,48 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private final MessageUtil messageUtil;
 
 	@Override
-	public InputStream mergeFields(List<FieldSignDto> fieldSignDtoList, InputStream inputStream) {
-		validateInput(fieldSignDtoList, inputStream);
+	public byte[] mergeFields(List<FieldSignDto> fieldSignDtoList, byte[] inputBytes) {
+		validateInput(fieldSignDtoList, inputBytes);
 
-		try {
-			// Convert InputStream to byte array
-			byte[] inputBytes = inputStream.readAllBytes();
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
+			 PDDocument document = Loader.loadPDF(randomAccessRead);
+			 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
-			// Create RandomAccessRead from byte array
-			try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
-					PDDocument document = Loader.loadPDF(randomAccessRead);
-					ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+			for (FieldSignDto field : fieldSignDtoList) {
+				validateField(field);
+				PDPage page = getPage(document, field.getPageNumber());
+				float pageHeight = page.getMediaBox().getHeight();
 
-				for (FieldSignDto field : fieldSignDtoList) {
-					validateField(field);
+				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
+						PDPageContentStream.AppendMode.APPEND, true, true)) {
 
-					PDPage page = getPage(document, field.getPageNumber());
-					float pageHeight = page.getMediaBox().getHeight(); // Get page height
-
-					try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
-							PDPageContentStream.AppendMode.APPEND, true, true)) {
-
-						switch (field.getType()) {
-							case DATE:
-								addTextField(field, contentStream, pageHeight);
-								break;
-							case SIGNATURE, INITIAL, STAMP:
-								addImageField(field, contentStream, document, pageHeight);
-								break;
-							case APPROVE, DECLINE:
-								// Do nothing
-								break;
-							default:
-								throw new IllegalArgumentException("Unsupported field type: " + field.getType());
-						}
+					switch (field.getType()) {
+						case DATE:
+							addTextField(field, contentStream, pageHeight);
+							break;
+						case SIGNATURE, INITIAL, STAMP:
+							addImageField(field, contentStream, document, pageHeight);
+							break;
+						case APPROVE, DECLINE:
+							// Do nothing
+							break;
+						default:
+							throw new IllegalArgumentException("Unsupported field type: " + field.getType());
 					}
 				}
-
-				// Save the modified document
-				document.save(outputStream);
-
-				return new ByteArrayInputStream(outputStream.toByteArray());
 			}
-		}
-		catch (IOException e) {
-			log.error("Error processing PDF document", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT,
-					new String[] { e.getMessage() });
+
+			document.save(outputStream);
+			return outputStream.toByteArray();
+
+		} catch (IOException e) {
+			log.error("Error processing PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
 
-	private void validateInput(List<FieldSignDto> fields, InputStream inputStream) {
-		if (inputStream == null) {
+	private void validateInput(List<FieldSignDto> fields, byte[] inputBytes) {
+		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
 		}
@@ -114,10 +104,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
-		validateCoordinates(field);
-	}
 
-	private void validateCoordinates(FieldSignDto field) {
 		if (field.getXposition() < 0 || field.getYposition() < 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));

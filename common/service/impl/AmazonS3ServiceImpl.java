@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -61,6 +63,30 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 					new String[] { e.getMessage() });
 		}
 	}
+
+	@Override
+	public byte[] downloadFileAsBytes(String bucketName, String objectKey) {
+		try {
+			log.info("Downloading file from S3...");
+
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+					.bucket(bucketName)
+					.key(objectKey)
+					.build();
+
+			try (ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(getObjectRequest);
+				 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+				inputStream.transferTo(outputStream);
+
+				return outputStream.toByteArray();
+			}
+		} catch (IOException e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_DOWNLOAD_FILE,
+					new String[]{e.getMessage()});
+		}
+	}
+
 
 	private byte[] toByteArray(InputStream inputStream) {
 		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {

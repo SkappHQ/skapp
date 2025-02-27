@@ -6,6 +6,8 @@ public interface AmazonS3Service {
 
 	InputStream downloadFile(String bucketName, String objectKey);
 
+	byte[] downloadFileAsBytes(String bucketName, String objectKey);
+
 	void uploadFile(String bucketName, String objectKey, InputStream inputStream);
 
 }
