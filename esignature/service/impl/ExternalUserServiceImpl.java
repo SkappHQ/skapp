@@ -34,7 +34,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_EXITS);
 		}
 
-		if (externalUserDto.getPhone() != null || !externalUserDto.getPhone().isEmpty()) {
+		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {
 			boolean isValidPhoneNumber = Validations.isValidPhoneNumber(externalUserDto.getPhone());
 			if (!isValidPhoneNumber) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_PHONE_NUMBER_INVALID);
