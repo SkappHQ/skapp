@@ -1,4 +1,4 @@
-package com.skapp.enterprise.people.service;
+package com.skapp.enterprise.peopleplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 

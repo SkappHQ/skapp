@@ -1,4 +1,4 @@
-package com.skapp.enterprise.people.service.impl;
+package com.skapp.enterprise.peopleplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
@@ -16,11 +16,9 @@ import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
 import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
-import com.skapp.community.peopleplanner.repository.EmployeeTimelineDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -35,15 +33,14 @@ import java.util.Map;
 public class EpRolesServiceImpl extends RolesServiceImpl {
 
 	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
-			TeamDao teamDao, EmployeeTimelineDao employeeTimelineDao, PeopleMapper peopleMapper,
-			ModuleRoleRestrictionDao moduleRoleRestrictionDao, MessageUtil messageUtil,
-			UserVersionService userVersionService) {
-		super(employeeRoleDao, userService, employeeDao, teamDao, employeeTimelineDao, peopleMapper,
-				moduleRoleRestrictionDao, messageUtil, userVersionService);
+			TeamDao teamDao, PeopleMapper peopleMapper, ModuleRoleRestrictionDao moduleRoleRestrictionDao,
+			MessageUtil messageUtil, UserVersionService userVersionService) {
+		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil,
+				userVersionService);
 	}
 
 	@Override
-	protected EmployeeRole createEmployeeRole(RoleRequestDto roleRequestDto, @NotNull Employee employee) {
+	protected EmployeeRole createEmployeeRole(RoleRequestDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = super.createEmployeeRole(roleRequestDto, employee);
 
 		employeeRole.setEsignRole(roleRequestDto.getEsignRole());
