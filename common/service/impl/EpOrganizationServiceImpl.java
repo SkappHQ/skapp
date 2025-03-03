@@ -99,7 +99,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
-		validateOrganizationInput(organizationDto);
+		// validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
 		boolean subdomainCreated = false;
 		boolean tenantCreated = false;
@@ -109,8 +109,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 
-			route53Service.createSubdomainForTenant(companyDomain);
-			subdomainCreated = true;
+			// route53Service.createSubdomainForTenant(companyDomain);
+			// subdomainCreated = true;
 			log.info("Subdomain created for: {}", companyDomain);
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
