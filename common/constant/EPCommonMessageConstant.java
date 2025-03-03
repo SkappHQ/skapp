@@ -72,6 +72,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TENANT_NAME_REQUIRED("ep.common.error.tenant-name-required"),
 	EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY("ep.common.error.calendar-config-can-not-empty"),
 	EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND("ep.common.error.calendar-config-not-found"),
+	EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED("ep.common.error.quick-setup-already-completed"),
 	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
 	EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH("ep.common.error.calendar-state-mismatch"),
 	EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-email-mismatch-with-current-user"),

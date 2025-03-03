@@ -7,7 +7,9 @@ import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.enterprise.common.payload.response.EpQuickSetupProgressResponseDto;
+import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.service.EpQuickSetupService;
+import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.common.type.QuickSetupType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,8 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 
 	private final LeaveTypeDao leaveTypeDao;
 
+	private final EpOrganizationConfigDao epOrganizationConfigDao;
+
 	@Override
 	public ResponseEntityDto getQuickSetupProgress() {
 		Map<QuickSetupType, Boolean> setupStatus = new EnumMap<>(QuickSetupType.class);
@@ -44,7 +48,7 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 		setupStatus.put(QuickSetupType.SETUP_LEAVE_TYPES, isProgressCompleted(leaveTypeDao::findAll, 2));
 
 		return new ResponseEntityDto(false,
-				new EpQuickSetupProgressResponseDto(calculateProgress(setupStatus), setupStatus));
+				new EpQuickSetupProgressResponseDto(calculateProgress(setupStatus), setupStatus, isSetupCompleted()));
 	}
 
 	private <T> boolean isProgressCompleted(Supplier<List<T>> supplier, int minSize) {
@@ -58,6 +62,11 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 		}
 		long completedCount = setupStatus.values().stream().filter(Boolean::booleanValue).count();
 		return ((double) completedCount / setupStatus.size()) * 100;
+	}
+
+	private boolean isSetupCompleted() {
+		return epOrganizationConfigDao
+				.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name()).isPresent();
 	}
 
 }
