@@ -66,7 +66,8 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 
 	private boolean isSetupCompleted() {
 		return epOrganizationConfigDao
-				.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name()).isPresent();
+			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name())
+			.isPresent();
 	}
 
 }
