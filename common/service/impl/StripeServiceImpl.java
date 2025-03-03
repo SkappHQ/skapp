@@ -4,8 +4,10 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -32,6 +34,7 @@ import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -46,7 +49,6 @@ import com.stripe.model.Subscription;
 import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
-import com.stripe.param.InvoiceUpcomingParams;
 import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
@@ -84,7 +86,7 @@ public class StripeServiceImpl implements StripeService {
 
 	private final StripeSubscriptionDao stripeSubscriptionDao;
 
-	private final OrganizationDao organizationDao;
+	private final SystemVersionService systemVersionService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -96,7 +98,7 @@ public class StripeServiceImpl implements StripeService {
 	private Long trialPeriodDays;
 
 	@Override
-	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
+	public void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException {
 		log.info("Received Stripe webhook event");
 
 		Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
@@ -145,6 +147,7 @@ public class StripeServiceImpl implements StripeService {
 		Subscription subscription = createStripeSubscription(customer, subscriptionRequestDto);
 		Tenant tenantDetails = saveSubscription(tenant, currentUser, subscription, subscriptionRequestDto);
 
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		CreateSubscriptionResponseDto responseDto = new CreateSubscriptionResponseDto();
 		responseDto.setCustomerId(tenantDetails.getStripeSubscription().getCustomerId());
 		responseDto.setSubscriptionId(tenantDetails.getStripeSubscription().getSubscriptionId());
@@ -156,6 +159,8 @@ public class StripeServiceImpl implements StripeService {
 
 		processTenantSchema(currentTenant,
 				() -> stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(customerEmail, trialEndDate));
+
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -529,7 +534,7 @@ public class StripeServiceImpl implements StripeService {
 		}
 	}
 
-	private void handleSubscriptionPaymentSucceeded(Event event) throws StripeException {
+	private void handleSubscriptionPaymentSucceeded(Event event) {
 
 		log.info("handleSubscriptionPaymentSucceeded started");
 
@@ -543,15 +548,7 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 			String userEmail = invoice.getCustomerEmail();
 
-			InvoiceUpcomingParams params = InvoiceUpcomingParams.builder()
-				.setSubscription(invoice.getSubscription())
-				.build();
-
-			Invoice upcomingInvoice = Invoice.upcoming(params);
-
-			String nextBillDate = DateTimeUtils.epochSecondToUtcLocalDate(upcomingInvoice.getCreated()).toString();
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
@@ -559,7 +556,8 @@ public class StripeServiceImpl implements StripeService {
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () ->
 
-				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate)
+				stripeEmailService.SendCongratulationsOnUpgradingToSkappProMail(userEmail,
+						DateTimeUtils.getCurrentUtcDate().toString())
 
 				);
 
@@ -585,8 +583,21 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			processTenantSchema(currentTenant.getTenantName(),
-					() -> stripeEmailService.sendStripePaymentFailEmail(invoice));
+			processTenantSchema(currentTenant.getTenantName(), () -> {
+				int attemptCount = invoice.getAttemptCount().intValue();
+				if (attemptCount == 1) {
+					stripeEmailService.sendStripePaymentFailEmailCountOne(invoice);
+				}
+				else if (attemptCount == 2) {
+					stripeEmailService.sendStripePaymentFailEmailCountTwo(invoice);
+				}
+				else if (attemptCount == 3) {
+					stripeEmailService.sendStripePaymentFailEmailCountThree(invoice);
+				}
+				else if (attemptCount == 4) {
+					stripeEmailService.sendStripePaymentFailEmailCountFour(invoice);
+				}
+			});
 
 		}
 	}

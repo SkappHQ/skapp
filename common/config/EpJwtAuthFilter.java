@@ -94,6 +94,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 			}
 
+			jwtService.checkVersionMismatch(userId, accessToken);
+
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
 				authenticateUser(request, accessToken, userEmail, userId, tenantId);

@@ -2,7 +2,10 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.type.ModuleType;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.model.ModuleConfig;
 import com.skapp.enterprise.common.payload.request.UpdateModulesRequestDto;
@@ -23,6 +26,8 @@ public class ModuleServiceImpl implements ModuleService {
 
 	private final ModuleDao moduleDao;
 
+	private final SystemVersionService systemVersionService;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto updateModules(UpdateModulesRequestDto updateModulesRequestDto) {
@@ -38,8 +43,10 @@ public class ModuleServiceImpl implements ModuleService {
 		moduleDao.save(moduleConfig);
 
 		List<String> activeModules = getActiveModuleNames(moduleConfig);
-		log.info("Successfully updated module. Active modules: {}", activeModules);
 
+		systemVersionService.upgradeSystemVersion(VersionType.MINOR, SystemVersionTypes.MODULE_CHANGE);
+
+		log.info("Successfully updated module. Active modules: {}", activeModules);
 		return new ResponseEntityDto(false, activeModules);
 	}
 

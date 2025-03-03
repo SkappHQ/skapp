@@ -6,6 +6,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
@@ -82,12 +83,14 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
 			EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleRepository epEmployeeRoleRepository, TenantDao tenantDao, TenantContext tenantContext) {
+			EpEmployeeRoleRepository epEmployeeRoleRepository, TenantDao tenantDao, TenantContext tenantContext,
+			UserVersionService userVersionService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeTimelineDao, employeeManagerDao, employeeTimelineService,
 				passwordEncoder, rolesService, pageTransformer, transactionManager, peopleEmailService, mapper,
-				encryptionDecryptionService, bulkContextService, asyncEmailServiceImpl, applicationEventPublisher);
+				encryptionDecryptionService, bulkContextService, asyncEmailServiceImpl, applicationEventPublisher,
+				userVersionService);
 		this.employeeDao = employeeDao;
 		this.employeeRoleDao = employeeRoleDao;
 		this.tenantValidator = tenantValidator;
