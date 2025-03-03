@@ -1,6 +1,7 @@
 package com.skapp.enterprise.people.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
 
 import java.util.List;
@@ -21,5 +22,7 @@ public interface EpPeopleService {
 			TransferManagersAndSupervisorsRequestDto transferManagersAndSupervisorsRequestDto);
 
 	ResponseEntityDto getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds);
+
+	ResponseEntityDto deactivateUsers(DeactivateUsersRequestDto employeeIds);
 
 }

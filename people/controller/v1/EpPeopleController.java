@@ -1,6 +1,7 @@
 package com.skapp.enterprise.people.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +69,13 @@ public class EpPeopleController {
 	@GetMapping(value = "/managers")
 	public ResponseEntity<ResponseEntityDto> getManagersFromEmployeeIds(@RequestParam List<Long> employeeIds) {
 		ResponseEntityDto response = epPeopleService.getManagerRoleEmployeesExcludingEmployeeIds(employeeIds);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@PostMapping(value = "/deactivate-users")
+	public ResponseEntity<ResponseEntityDto> deactivateUsers(@RequestBody DeactivateUsersRequestDto employeeIds) {
+		ResponseEntityDto response = epPeopleService.deactivateUsers(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
