@@ -5,6 +5,7 @@ import com.skapp.enterprise.common.payload.request.BillingDetailsRequestDto;
 import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
+import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.stripe.exception.SignatureVerificationException;
@@ -113,6 +114,13 @@ public class StripeController {
 	public ResponseEntity<ResponseEntityDto> removePaymentMethod(
 			@RequestBody PaymentMethodRequestDto paymentMethodRequestDto) throws StripeException {
 		ResponseEntityDto response = stripeService.removePaymentMethod(paymentMethodRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/create-checkout-session")
+	public ResponseEntity<ResponseEntityDto> createCheckoutSession(
+			@RequestBody SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.createCheckoutSession(subscriptionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

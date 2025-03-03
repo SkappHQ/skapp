@@ -13,6 +13,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
@@ -25,9 +26,11 @@ import com.skapp.enterprise.common.payload.request.CreateSubscriptionResponseDto
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
+import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.response.PaymentMethodResponseDto;
 import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
+import com.skapp.enterprise.common.payload.response.SubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
@@ -47,6 +50,7 @@ import com.stripe.model.PriceCollection;
 import com.stripe.model.PromotionCode;
 import com.stripe.model.PromotionCodeCollection;
 import com.stripe.model.Subscription;
+import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
@@ -55,6 +59,7 @@ import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
+import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.SubscriptionUpdateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +73,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -98,6 +104,9 @@ public class StripeServiceImpl implements StripeService {
 
 	@Value("${stripe.trial.days}")
 	private Long trialPeriodDays;
+
+	@Value("${aws.route53.parent-domain}")
+	private String parentDomain;
 
 	@Override
 	public void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException {
@@ -354,6 +363,40 @@ public class StripeServiceImpl implements StripeService {
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_PAYMENT_METHOD_REMOVED));
+	}
+
+	@Override
+	public ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		String tenantId = TenantContext.getCurrentTenant();
+
+		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
+				.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+				.setSuccessUrl("https://" + tenantId + "." + parentDomain + "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
+				.setClientReferenceId(UUID.randomUUID().toString())
+				.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO)
+				.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
+				.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO);
+
+		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
+
+		Map<SubscriptionPlan, String> priceMap = getPriceMap();
+		builder.addLineItem(
+				SessionCreateParams.LineItem.builder()
+						.setQuantity(subscriptionRequestDto.getQuantity())
+						.setPrice(subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
+								? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR))
+						.build()
+		);
+
+		builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
+		builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.US_BANK_ACCOUNT);
+		SessionCreateParams params = builder.build();
+		Session session = Session.create(params);
+
+		SubscriptionResponseDto subscriptionResponseDto = new SubscriptionResponseDto();
+		subscriptionResponseDto.setSessionUrl(session.getUrl());
+
+		return new ResponseEntityDto(false, subscriptionResponseDto);
 	}
 
 	@Override
@@ -697,7 +740,7 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
+			if (currentTenant != null && currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () ->
 
@@ -725,7 +768,12 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
+			if(currentTenant == null) {
+				log.error("Tenant not found for customer id: {}", customerId);
+				return;
+			}
+
+			if (isTenantInvalid(currentTenant.getTenantName())) {
 				return;
 			}
 			processTenantSchema(currentTenant.getTenantName(), () -> {
