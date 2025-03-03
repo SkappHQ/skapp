@@ -45,7 +45,7 @@ public final class CertificateGenerator {
 
 	private static final String PROVIDER = "BC";
 
-	private static final String ORGANIZATION = "Rootocde";
+	private static final String ORGANIZATION = "Skapp";
 
 	private static final String COUNTRY_CODE = "LK";
 

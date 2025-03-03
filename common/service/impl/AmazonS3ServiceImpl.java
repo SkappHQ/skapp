@@ -25,8 +25,6 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	private final S3Client s3Client;
 
-	private static final int BUFFER_SIZE = 8192;
-
 	private static final String CONTENT_TYPE = "application/pdf";
 
 	@Override
@@ -50,17 +48,21 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	@Override
 	public void uploadFile(String bucketName, String objectKey, InputStream inputStream) {
 		try {
-
-			byte[] pdfBytes = toByteArray(inputStream);
+			log.info("Uploading file to S3: {}", objectKey);
 
 			s3Client.putObject(
-					PutObjectRequest.builder().bucket(bucketName).key(objectKey).contentType(CONTENT_TYPE).build(),
-					RequestBody.fromBytes(pdfBytes));
+					PutObjectRequest.builder()
+							.bucket(bucketName)
+							.key(objectKey)
+							.contentType(CONTENT_TYPE)
+							.build(),
+					RequestBody.fromInputStream(inputStream, inputStream.available() > 0 ? inputStream.available() : -1)
+			);
+
 			log.info("File uploaded successfully to S3 as: {}", objectKey);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE,
-					new String[] { e.getMessage() });
+					new String[]{e.getMessage()});
 		}
 	}
 
@@ -84,20 +86,4 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 					new String[] { e.getMessage() });
 		}
 	}
-
-	private byte[] toByteArray(InputStream inputStream) {
-		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-			byte[] data = new byte[BUFFER_SIZE];
-			int bytesRead;
-			while ((bytesRead = inputStream.read(data)) != -1) {
-				buffer.write(data, 0, bytesRead);
-			}
-			return buffer.toByteArray();
-		}
-		catch (IOException e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE,
-					new String[] { e.getMessage() });
-		}
-	}
-
 }

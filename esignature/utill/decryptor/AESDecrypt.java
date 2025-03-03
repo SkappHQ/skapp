@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.utill.decryptor;
 
+import com.skapp.community.common.constant.EncryptionDecryptionAlgorithmConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 
@@ -10,8 +11,6 @@ import java.util.Base64;
 
 public class AESDecrypt {
 
-	private static final String AES_ALGORITHM = "AES/GCM/NoPadding";
-
 	private static final int TAG_LENGTH = 128;
 
 	private AESDecrypt() {
@@ -21,7 +20,7 @@ public class AESDecrypt {
 		try {
 			byte[] encryptedPrivateKey = Base64.getDecoder().decode(encryptedPrivateKeyBase64);
 
-			Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+			Cipher cipher = Cipher.getInstance(EncryptionDecryptionAlgorithmConstants.TRANSFORMATION);
 			GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH, iv);
 			cipher.init(Cipher.DECRYPT_MODE, aesKey, gcmSpec);
 
