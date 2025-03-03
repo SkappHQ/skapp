@@ -69,24 +69,21 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		try {
 			log.info("Downloading file from S3...");
 
-			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-					.bucket(bucketName)
-					.key(objectKey)
-					.build();
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
 			try (ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(getObjectRequest);
-				 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 				inputStream.transferTo(outputStream);
 
 				return outputStream.toByteArray();
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_DOWNLOAD_FILE,
-					new String[]{e.getMessage()});
+					new String[] { e.getMessage() });
 		}
 	}
-
 
 	private byte[] toByteArray(InputStream inputStream) {
 		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {

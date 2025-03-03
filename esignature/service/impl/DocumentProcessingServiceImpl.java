@@ -44,8 +44,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		validateInput(fieldSignDtoList, inputBytes);
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
-			 PDDocument document = Loader.loadPDF(randomAccessRead);
-			 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+				PDDocument document = Loader.loadPDF(randomAccessRead);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 			for (FieldSignDto field : fieldSignDtoList) {
 				validateField(field);
@@ -74,7 +74,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			document.save(outputStream);
 			return outputStream.toByteArray();
 
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Error processing PDF document: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}

@@ -125,7 +125,7 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 			return createNewDocumentVersion(documentSignDto, currentVersion, keyPair.getPrivate(), true,
-					currentAddressBookUser,documentBytes);
+					currentAddressBookUser, documentBytes);
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
@@ -163,7 +163,7 @@ public class DocumentServiceImpl implements DocumentService {
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		// Process document version and verify existing signature
-		verifyDocumentSignature(documentBytes,currentVersion, keyPairVerify.getPublic());
+		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
 		// current user key pair for sign document
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
@@ -190,7 +190,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	}
 
-	private List<DocumentVersionField> getDocumentVersionFields(List<FieldSignDto> fieldSignDtoList, DocumentVersion newVersion) {
+	private List<DocumentVersionField> getDocumentVersionFields(List<FieldSignDto> fieldSignDtoList,
+			DocumentVersion newVersion) {
 		List<Field> fields = getFieldsFromFieldSignDtoList(fieldSignDtoList);
 		DocumentVersion finalNewVersion = newVersion;
 		List<DocumentVersionField> versionFields = fields.stream().map(field -> {
@@ -255,31 +256,31 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersion createNewDocumentVersion(DocumentSignDto signDto, DocumentVersion currentVersion,
 			PrivateKey privateKey, Boolean isVersionFirst, AddressBook addressBook, byte[] documentBytes) {
 
-			String fileUrl = currentVersion.getFilePath();
-			byte[] updatedDocumentBytes = documentBytes;
+		String fileUrl = currentVersion.getFilePath();
+		byte[] updatedDocumentBytes = documentBytes;
 
-			if (Boolean.FALSE.equals(isVersionFirst)) {
-				updatedDocumentBytes =	documentProcessingService.mergeFields(signDto.getFieldSignDtoList(),
-						documentBytes);
+		if (Boolean.FALSE.equals(isVersionFirst)) {
+			updatedDocumentBytes = documentProcessingService.mergeFields(signDto.getFieldSignDtoList(), documentBytes);
 
-				fileUrl = EsignUtil.generateFileUrl();
+			fileUrl = EsignUtil.generateFileUrl();
 
-				try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
-					amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
-				} catch (IOException e) {
-                    throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
-                }
-            }
-
-			String newHash = hashDocument(new ByteArrayInputStream(updatedDocumentBytes));
-
-			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
-
-			if (signDto.getFieldSignDtoList() == null) {
-				signDto.setFieldSignDtoList(new ArrayList<>());
+			try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
+				amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
 			}
+			catch (IOException e) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
+			}
+		}
 
-			return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature, addressBook);
+		String newHash = hashDocument(new ByteArrayInputStream(updatedDocumentBytes));
+
+		String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
+
+		if (signDto.getFieldSignDtoList() == null) {
+			signDto.setFieldSignDtoList(new ArrayList<>());
+		}
+
+		return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature, addressBook);
 	}
 
 	private DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
