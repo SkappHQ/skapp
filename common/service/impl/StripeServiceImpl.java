@@ -59,8 +59,8 @@ import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionCreateParams;
-import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.SubscriptionUpdateParams;
+import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -366,27 +366,27 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+	public ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto)
+			throws StripeException {
 		String tenantId = TenantContext.getCurrentTenant();
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
-				.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-				.setSuccessUrl("https://" + tenantId + "." + parentDomain + "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
-				.setClientReferenceId(UUID.randomUUID().toString())
-				.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO)
-				.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
-				.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO);
+			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+			.setSuccessUrl("https://" + tenantId + "." + parentDomain
+					+ "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
+			.setClientReferenceId(UUID.randomUUID().toString())
+			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO)
+			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
+			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO);
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
 		Map<SubscriptionPlan, String> priceMap = getPriceMap();
-		builder.addLineItem(
-				SessionCreateParams.LineItem.builder()
-						.setQuantity(subscriptionRequestDto.getQuantity())
-						.setPrice(subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
-								? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR))
-						.build()
-		);
+		builder.addLineItem(SessionCreateParams.LineItem.builder()
+			.setQuantity(subscriptionRequestDto.getQuantity())
+			.setPrice(subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
+					? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR))
+			.build());
 
 		builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
 		builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.US_BANK_ACCOUNT);
@@ -740,7 +740,8 @@ public class StripeServiceImpl implements StripeService {
 			if (isTenantInvalid((currentTenant != null) ? currentTenant.getTenantName() : null)) {
 				return;
 			}
-			if (currentTenant != null && currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
+			if (currentTenant != null
+					&& currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					&& invoice.getBillingReason().equals("subscription_cycle")) {
 				processTenantSchema(currentTenant.getTenantName(), () ->
 
@@ -768,7 +769,7 @@ public class StripeServiceImpl implements StripeService {
 			String customerId = invoice.getCustomer();
 
 			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if(currentTenant == null) {
+			if (currentTenant == null) {
 				log.error("Tenant not found for customer id: {}", customerId);
 				return;
 			}

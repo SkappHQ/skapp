@@ -7,7 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubscriptionRequestDto {
-    private SubscriptionPlan subscriptionPlan;
 
-    private Long quantity;
+	private SubscriptionPlan subscriptionPlan;
+
+	private Long quantity;
+
 }

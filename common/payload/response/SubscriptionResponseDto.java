@@ -6,5 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubscriptionResponseDto {
-    private String sessionUrl;
+
+	private String sessionUrl;
+
 }
