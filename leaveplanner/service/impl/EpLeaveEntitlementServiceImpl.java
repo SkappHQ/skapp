@@ -76,6 +76,14 @@ public class EpLeaveEntitlementServiceImpl extends LeaveEntitlementServiceImpl {
 	}
 
 	@Override
+	protected void addDeletedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord) {
+		Tenant currentTenant = getCurrentTenantDetails();
+		if (currentTenant.getTier() == Tier.PRO) {
+			epEmployeeTimelineServiceImpl.addDeletedLeaveEntitlementsTimeLineRecords(employee, oldHistoryRecord);
+		}
+	}
+
+	@Override
 	protected void addUpdatedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord,
 			String newHistoryRecord, boolean isCustom) {
 		Tenant currentTenant = getCurrentTenantDetails();

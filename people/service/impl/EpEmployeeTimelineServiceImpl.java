@@ -177,6 +177,13 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		epEmployeeTimelineDao.save(employeeTimeline);
 	}
 
+	@Override
+	public void addDeletedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord) {
+		EmployeeTimeline employeeTimeline = createEmployeeTimeline(employee,
+				EpEmployeeTimelineType.CUSTOM_ALLOCATION_REMOVED, oldHistoryRecord, null);
+		epEmployeeTimelineDao.save(employeeTimeline);
+	}
+
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,
 			String previousValue, String newValue) {
 		EmployeeTimeline employeeTimeline = new EmployeeTimeline();

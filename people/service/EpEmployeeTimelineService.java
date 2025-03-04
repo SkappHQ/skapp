@@ -28,4 +28,6 @@ public interface EpEmployeeTimelineService {
 	void addUpdatedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord, String newHistoryRecord,
 			boolean isCustom);
 
+	void addDeletedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord);
+
 }
