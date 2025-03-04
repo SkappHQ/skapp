@@ -51,18 +51,15 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 			log.info("Uploading file to S3: {}", objectKey);
 
 			s3Client.putObject(
-					PutObjectRequest.builder()
-							.bucket(bucketName)
-							.key(objectKey)
-							.contentType(CONTENT_TYPE)
-							.build(),
-					RequestBody.fromInputStream(inputStream, inputStream.available() > 0 ? inputStream.available() : -1)
-			);
+					PutObjectRequest.builder().bucket(bucketName).key(objectKey).contentType(CONTENT_TYPE).build(),
+					RequestBody.fromInputStream(inputStream,
+							inputStream.available() > 0 ? inputStream.available() : -1));
 
 			log.info("File uploaded successfully to S3 as: {}", objectKey);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE,
-					new String[]{e.getMessage()});
+					new String[] { e.getMessage() });
 		}
 	}
 
@@ -86,4 +83,5 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 					new String[] { e.getMessage() });
 		}
 	}
+
 }
