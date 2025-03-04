@@ -1,8 +1,8 @@
-package com.skapp.enterprise.peopleplanner.controller.v1;
+package com.skapp.enterprise.people.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.peopleplanner.service.EpEmployeeTimelineService;
-import com.skapp.enterprise.peopleplanner.service.EpPeopleService;
+import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
+import com.skapp.enterprise.people.service.EpPeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

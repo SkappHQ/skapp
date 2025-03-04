@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.service.impl;
+package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
@@ -19,6 +19,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
@@ -28,14 +29,14 @@ import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
-import com.skapp.enterprise.peopleplanner.constant.EpEmployeeTimelineConstant;
-import com.skapp.enterprise.peopleplanner.mapper.EpPeopleMapper;
-import com.skapp.enterprise.peopleplanner.model.EmployeeTimeline;
-import com.skapp.enterprise.peopleplanner.payload.response.EpEmployeeTimelineResponseDto;
-import com.skapp.enterprise.peopleplanner.payload.response.EpEmployeeTimelineResponseListDto;
-import com.skapp.enterprise.peopleplanner.repository.EpEmployeeTimelineDao;
-import com.skapp.enterprise.peopleplanner.service.EpEmployeeTimelineService;
-import com.skapp.enterprise.peopleplanner.type.EpEmployeeTimelineType;
+import com.skapp.enterprise.people.constant.EpEmployeeTimelineConstant;
+import com.skapp.enterprise.people.mapper.EpPeopleMapper;
+import com.skapp.enterprise.people.model.EmployeeTimeline;
+import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseDto;
+import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseListDto;
+import com.skapp.enterprise.people.repository.EpEmployeeTimelineDao;
+import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
+import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -98,7 +99,17 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		addTeamTimeline(savedEmployee, employeeTimelines);
 		addManagerTimeline(savedEmployee, employeeTimelines);
 		addEmploymentAllocationTimeline(savedEmployee, employeeTimelines);
-		addSystemPermissionTimeline(savedEmployee, employeeDetailsDto, employeeTimelines);
+		addSystemPermissionTimeline(savedEmployee, employeeDetailsDto.getUserRoles(), employeeTimelines);
+
+		epEmployeeTimelineDao.saveAll(employeeTimelines);
+	}
+
+	@Override
+	public void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
+			EmployeeQuickAddDto employeeQuickAddDto) {
+		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
+
+		addSystemPermissionTimeline(savedEmployee, employeeQuickAddDto.getUserRoles(), employeeTimelines);
 
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
@@ -476,9 +487,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 	}
 
-	private void addSystemPermissionTimeline(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto,
+	private void addSystemPermissionTimeline(Employee savedEmployee, RoleRequestDto employeeRole,
 			List<EmployeeTimeline> employeeTimelines) {
-		RoleRequestDto employeeRole = employeeDetailsDto.getUserRoles();
 
 		if (employeeRole == null) {
 			return;

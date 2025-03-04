@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.constant;
+package com.skapp.enterprise.people.constant;
 
 public class EpEmployeeTimelineConstant {
 

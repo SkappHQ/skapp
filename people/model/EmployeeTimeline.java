@@ -1,8 +1,8 @@
-package com.skapp.enterprise.peopleplanner.model;
+package com.skapp.enterprise.people.model;
 
 import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.enterprise.peopleplanner.type.EpEmployeeTimelineType;
+import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

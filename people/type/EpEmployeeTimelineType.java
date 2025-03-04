@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.type;
+package com.skapp.enterprise.people.type;
 
 public enum EpEmployeeTimelineType {
 

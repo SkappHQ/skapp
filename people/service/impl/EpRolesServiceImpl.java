@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.service.impl;
+package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;

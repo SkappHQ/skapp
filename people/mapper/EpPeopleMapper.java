@@ -1,9 +1,9 @@
-package com.skapp.enterprise.peopleplanner.mapper;
+package com.skapp.enterprise.people.mapper;
 
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
-import com.skapp.enterprise.peopleplanner.model.EmployeeTimeline;
-import com.skapp.enterprise.peopleplanner.payload.response.EpEmployeeTimelineResponseDto;
+import com.skapp.enterprise.people.model.EmployeeTimeline;
+import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

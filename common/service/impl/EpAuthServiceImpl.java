@@ -45,7 +45,7 @@ import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
-import com.skapp.enterprise.peopleplanner.service.EpPeopleService;
+import com.skapp.enterprise.people.service.EpPeopleService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;

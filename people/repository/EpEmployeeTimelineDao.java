@@ -1,8 +1,8 @@
-package com.skapp.enterprise.peopleplanner.repository;
+package com.skapp.enterprise.people.repository;
 
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.enterprise.peopleplanner.model.EmployeeTimeline;
-import com.skapp.enterprise.peopleplanner.type.EpEmployeeTimelineType;
+import com.skapp.enterprise.people.model.EmployeeTimeline;
+import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

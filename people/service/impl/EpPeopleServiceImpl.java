@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.service.impl;
+package com.skapp.enterprise.people.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -20,6 +20,7 @@ import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -45,11 +46,10 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.repository.EpEmployeeRoleRepository;
 import com.skapp.enterprise.common.type.Tier;
-import com.skapp.enterprise.peopleplanner.constant.EpPeopleMessageConstant;
-import com.skapp.enterprise.peopleplanner.payload.response.EpEmployeeRoleLimitDto;
-import com.skapp.enterprise.peopleplanner.service.EpEmployeeTimelineService;
-import com.skapp.enterprise.peopleplanner.service.EpPeopleService;
-import jakarta.persistence.EntityManager;
+import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
+import com.skapp.enterprise.people.payload.response.EpEmployeeRoleLimitDto;
+import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
+import com.skapp.enterprise.people.service.EpPeopleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
@@ -86,7 +86,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	private final EmployeePeriodDao employeePeriodDao;
 
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
-			TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
+			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
 			EmployeeVisaDao employeeVisaDao, EmployeeEducationDao employeeEducationDao,
 			EmployeeFamilyDao employeeFamilyDao, EmployeeTeamDao employeeTeamDao, EmployeeManagerDao employeeManagerDao,
@@ -94,24 +94,24 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			PlatformTransactionManager transactionManager, PeopleEmailService peopleEmailService, ObjectMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
-			EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleRepository epEmployeeRoleRepository, TenantDao tenantDao, TenantContext tenantContext,
-			UserVersionService userVersionService, EpEmployeeTimelineService epEmployeeTimelineService, UserDao userDao,
-			EntityManager entityManager) {
+			UserVersionService userVersionService, EmployeeDao employeeDao1, EmployeeRoleDao employeeRoleDao,
+			TenantValidator tenantValidator, EpEmployeeRoleRepository epEmployeeRoleRepository, TenantDao tenantDao,
+			TenantContext tenantContext, MessageUtil messageUtil1, EpEmployeeTimelineService epEmployeeTimelineService,
+			EmployeePeriodDao employeePeriodDao1) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, entityManager);
-		this.employeeDao = employeeDao;
+				asyncEmailServiceImpl, applicationEventPublisher, userVersionService);
+		this.employeeDao = employeeDao1;
 		this.employeeRoleDao = employeeRoleDao;
 		this.tenantValidator = tenantValidator;
 		this.epEmployeeRoleRepository = epEmployeeRoleRepository;
 		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
-		this.messageUtil = messageUtil;
+		this.messageUtil = messageUtil1;
 		this.epEmployeeTimelineService = epEmployeeTimelineService;
-		this.employeePeriodDao = employeePeriodDao;
+		this.employeePeriodDao = employeePeriodDao1;
 	}
 
 	@Override
@@ -181,6 +181,15 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		Tenant currentTenant = getCurrentTenantDetails();
 		if (currentTenant.getTier() == Tier.PRO) {
 			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
+		}
+	}
+
+	@Override
+	public void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
+			EmployeeQuickAddDto employeeQuickAddDto) {
+		Tenant currentTenant = getCurrentTenantDetails();
+		if (currentTenant.getTier() == Tier.PRO) {
+			epEmployeeTimelineService.addNewQuickUploadedEmployeeTimeLineRecords(savedEmployee, employeeQuickAddDto);
 		}
 	}
 

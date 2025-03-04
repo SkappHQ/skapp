@@ -1,6 +1,6 @@
-package com.skapp.enterprise.peopleplanner.payload.response;
+package com.skapp.enterprise.people.payload.response;
 
-import com.skapp.enterprise.peopleplanner.type.EpEmployeeTimelineType;
+import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import lombok.Getter;
 import lombok.Setter;
 

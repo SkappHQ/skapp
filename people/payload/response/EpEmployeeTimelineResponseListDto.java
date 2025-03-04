@@ -1,4 +1,4 @@
-package com.skapp.enterprise.peopleplanner.payload.response;
+package com.skapp.enterprise.people.payload.response;
 
 import lombok.Getter;
 import lombok.Setter;
