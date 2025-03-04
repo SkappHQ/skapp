@@ -1,7 +1,6 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
@@ -51,13 +50,6 @@ public class StripeController {
 	@GetMapping("/pricing-plans")
 	public ResponseEntity<ResponseEntityDto> getPricingPlans() throws StripeException {
 		ResponseEntityDto response = stripeService.getPricingPlans();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@PostMapping("/promotion-code/verify")
-	public ResponseEntity<ResponseEntityDto> verifyPromotionCode(
-			@RequestBody PromotionCodeRequestDto promotionCodeRequestDto) throws StripeException {
-		ResponseEntityDto response = stripeService.verifyPromotionCode(promotionCodeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
