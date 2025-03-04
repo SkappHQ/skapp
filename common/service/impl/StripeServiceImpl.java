@@ -1,7 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -12,11 +11,9 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
-import com.skapp.enterprise.common.payload.response.PromotionCodeResponseDto;
 import com.skapp.enterprise.common.payload.response.SubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
@@ -26,12 +23,9 @@ import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
 import com.stripe.model.PriceCollection;
-import com.stripe.model.PromotionCode;
-import com.stripe.model.PromotionCodeCollection;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.PriceListParams;
-import com.stripe.param.PromotionCodeListParams;
 import com.stripe.param.SubscriptionUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
@@ -89,10 +83,10 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
-		return getResponseEntityDto(responseDto, subscription, subscription.getTrialEnd());
+		return getSubscriptionDetailsResponseEntityDto(responseDto, subscription, subscription.getTrialEnd());
 	}
 
-	private ResponseEntityDto getResponseEntityDto(SubscriptionDetailsResponseDto responseDto,
+	private ResponseEntityDto getSubscriptionDetailsResponseEntityDto(SubscriptionDetailsResponseDto responseDto,
 			Subscription subscription, Long trialEnd) {
 		responseDto.setTotalCost(subscription.getItems()
 			.getData()
@@ -122,41 +116,16 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Override
-	public ResponseEntityDto verifyPromotionCode(PromotionCodeRequestDto promotionCodeRequestDto)
-			throws StripeException {
-		PromotionCodeListParams params = PromotionCodeListParams.builder().setActive(true).build();
-
-		PromotionCodeCollection promotionCodes = PromotionCode.list(params);
-
-		PromotionCode matchingCode = promotionCodes.getData()
-			.stream()
-			.filter(code -> code.getCode().equalsIgnoreCase(promotionCodeRequestDto.getPromotionCode()))
-			.findFirst()
-			.orElse(null);
-
-		if (matchingCode == null) {
-			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_PROMO_CODE);
-		}
-
-		PromotionCode stripePromotionCode = PromotionCode.retrieve(matchingCode.getId());
-
-		if (Boolean.FALSE.equals(stripePromotionCode.getActive())) {
-			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INACTIVE_PROMO_CODE);
-		}
-
-		PromotionCodeResponseDto promoCodeResponse = new PromotionCodeResponseDto();
-		promoCodeResponse.setPromotionCodeId(stripePromotionCode.getId());
-		promoCodeResponse.setIsValid(stripePromotionCode.getActive());
-		promoCodeResponse.setDiscountAmountOff(stripePromotionCode.getCoupon().getAmountOff());
-		promoCodeResponse.setDiscountPercentageOff(stripePromotionCode.getCoupon().getPercentOff());
-
-		return new ResponseEntityDto(false, promoCodeResponse);
-	}
-
-	@Override
 	public ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto)
 			throws StripeException {
 		String tenantId = TenantContext.getCurrentTenant();
+
+		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
+
+		if (tenant.getStripeSubscription() != null && tenant.getStripeSubscription().getCustomerId() != null
+				&& tenant.getTier() != Tier.FREE) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS);
+		}
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
@@ -291,7 +260,7 @@ public class StripeServiceImpl implements StripeService {
 
 		SubscriptionDetailsResponseDto responseDto = getSubscriptionDetailsResponseDto(tenant, updatedSubscription);
 
-		return getResponseEntityDto(responseDto, updatedSubscription, subscription.getTrialEnd());
+		return getSubscriptionDetailsResponseEntityDto(responseDto, updatedSubscription, subscription.getTrialEnd());
 	}
 
 	private SubscriptionDetailsResponseDto getSubscriptionDetailsResponseDto(Tenant tenant,
