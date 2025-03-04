@@ -6,6 +6,7 @@ import com.skapp.enterprise.common.payload.request.CreateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.PaymentMethodRequestDto;
 import com.skapp.enterprise.common.payload.request.PromotionCodeRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class StripeController {
 
 	@PostMapping("/webhook")
 	public ResponseEntity<Void> handleStripeWebhook(@RequestBody String payload,
-			@RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
+			@RequestHeader("Stripe-Signature") String sigHeader) throws SignatureVerificationException {
 		stripeService.handleStripeEvent(payload, sigHeader);
 		return ResponseEntity.ok().build();
 	}
