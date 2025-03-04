@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.ExternalUser;
@@ -30,6 +31,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
+		validateRequest(externalUserDto);
 		ExternalUser externalUser = externalUserService.createExternalUser(externalUserDto);
 		AddressBook addressBook = new AddressBook();
 		addressBook.setExternalUser(externalUser);
@@ -50,6 +52,19 @@ public class AddressBookServiceImpl implements AddressBookService {
 		List<AddressBookUserData> addressBookUserDataList = addressBookDao
 			.fetchAddressBookContactsByEmailPriority(keyWord);
 		return new ResponseEntityDto(false, addressBookUserDataList);
+	}
+
+	private void validateRequest(ExternalUserDto externalUserDto) {
+		Validations.validateEmail(externalUserDto.getEmail());
+		Validations.validateName(externalUserDto.getFirstName());
+
+		if (externalUserDto.getLastName() != null && !externalUserDto.getLastName().isEmpty()) {
+			Validations.validateName(externalUserDto.getLastName());
+		}
+
+		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {
+			Validations.validatePhone(externalUserDto.getPhone());
+		}
 	}
 
 }
