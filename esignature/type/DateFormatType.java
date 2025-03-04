@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.type;
 
 public enum DateFormatType {
 
-	DD_MM_YYYY("dd/MM/yyyy"), YYYY_MM_DD("yyyy/MM/dd"), MM_DD_YYYY("MM/dd/yyyy");
+	DD_MM_YYYY("DD/MM/YYYY"), YYYY_MM_DD("YYYY/MM/DD"), MM_DD_YYYY("MM/DD/YYYY");
 
 	private String value;
 
