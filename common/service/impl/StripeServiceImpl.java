@@ -145,7 +145,7 @@ public class StripeServiceImpl implements StripeService {
 				? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
 
 		SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
-			.setQuantity(subscriptionRequestDto.getQuantity())
+			.setQuantity(subscriptionRequestDto.getSubscriptionQuantity())
 			.setPrice(priceId)
 			.build();
 
