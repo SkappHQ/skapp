@@ -13,6 +13,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ import java.util.List;
 public class AddressBookServiceImpl implements AddressBookService {
 
 	private final ExternalUserService externalUserService;
+
+	private final UserKeyService userKeyService;
 
 	private final AddressBookDao addressBookDao;
 
@@ -37,6 +40,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 		addressBook.setExternalUser(externalUser);
 		addressBook.setType(type);
 		addressBook = addressBookDao.save(addressBook);
+		userKeyService.generateAndStoreKeys(addressBook);
 		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
 		return new ResponseEntityDto(false, addressBookResponseDto);
 	}

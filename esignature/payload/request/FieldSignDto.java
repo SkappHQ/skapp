@@ -12,7 +12,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FieldDto {
+public class FieldSignDto {
+
+	private Long fieldId;
 
 	@NotNull(message = "{validation.field.type.notnull}")
 	@JsonDeserialize(using = DocumentFieldTypeDeserializer.class)
@@ -28,13 +30,16 @@ public class FieldDto {
 
 	@NotNull(message = "{validation.field.xPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.xPosition.min}")
-	private Float xposition;
+	private float xposition;
 
 	@NotNull(message = "{validation.field.yPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
-	private Float yposition;
+	private float yposition;
 
-	@NotNull(message = "{validation.field.documentId.notnull}")
-	private Long documentId;
+	private float width;
+
+	private float height;
+
+	private String fieldValue;
 
 }
