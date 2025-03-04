@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -128,6 +129,52 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		updateSystemPermissionTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
 
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
+	}
+
+	@Override
+	public void addCustomLeaveEntitlementsTimeLineRecords(Employee employee, LeaveEntitlement leaveEntitlement) {
+		EmployeeTimeline employeeTimeline = createEmployeeTimeline(employee,
+				EpEmployeeTimelineType.CUSTOM_ALLOCATION_ADDED, null,
+				leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated());
+
+		epEmployeeTimelineDao.save(employeeTimeline);
+	}
+
+	@Override
+	public void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> leaveEntitlements,
+			boolean isCustom) {
+		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
+		EpEmployeeTimelineType epEmployeeTimelineType;
+
+		if (isCustom) {
+			epEmployeeTimelineType = EpEmployeeTimelineType.CUSTOM_ALLOCATION_ADDED;
+		}
+		else {
+			epEmployeeTimelineType = EpEmployeeTimelineType.ENTITLEMENT_ADDED;
+		}
+
+		leaveEntitlements
+			.forEach(leaveEntitlement -> employeeTimelines.add(createEmployeeTimeline(employee, epEmployeeTimelineType,
+					null, leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated())));
+		epEmployeeTimelineDao.saveAll(employeeTimelines);
+	}
+
+	@Override
+	public void addUpdatedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord,
+			String newHistoryRecord, boolean isCustom) {
+		EpEmployeeTimelineType epEmployeeTimelineType;
+
+		if (isCustom) {
+			epEmployeeTimelineType = EpEmployeeTimelineType.CUSTOM_ALLOCATION_UPDATED;
+		}
+		else {
+			epEmployeeTimelineType = EpEmployeeTimelineType.ENTITLEMENT_UPDATED;
+		}
+
+		EmployeeTimeline employeeTimeline = createEmployeeTimeline(employee, epEmployeeTimelineType, oldHistoryRecord,
+				newHistoryRecord);
+
+		epEmployeeTimelineDao.save(employeeTimeline);
 	}
 
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,

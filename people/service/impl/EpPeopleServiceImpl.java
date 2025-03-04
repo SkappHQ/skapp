@@ -177,7 +177,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	public void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
+	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
 		Tenant currentTenant = getCurrentTenantDetails();
 		if (currentTenant.getTier() == Tier.PRO) {
 			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
@@ -185,7 +185,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	public void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
+	protected void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
 			EmployeeQuickAddDto employeeQuickAddDto) {
 		Tenant currentTenant = getCurrentTenantDetails();
 		if (currentTenant.getTier() == Tier.PRO) {
@@ -194,7 +194,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	public void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
+	protected void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
 			EmployeeUpdateDto employeeUpdateDto) {
 		Tenant currentTenant = getCurrentTenantDetails();
 		if (currentTenant.getTier() == Tier.PRO) {
