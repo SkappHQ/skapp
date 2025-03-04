@@ -31,7 +31,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	public InputStream downloadFile(String bucketName, String objectKey) {
 		try {
 
-			log.info("Downloading file from S3...");
+			log.info("Downloading file from S3... : downloadFile");
 
 			GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
@@ -69,7 +69,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	@Override
 	public byte[] downloadFileAsBytes(String bucketName, String objectKey) {
 		try {
-			log.info("Downloading file from S3...");
+			log.info("Downloading file from S3... : downloadFileAsBytes");
 
 			GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
