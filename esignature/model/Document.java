@@ -39,4 +39,10 @@ public class Document {
 	@OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
 	private List<Field> fields;
 
+	@Column(name = "current_version")
+	private int currentVersion;
+
+	@OneToMany(mappedBy = "document")
+	private List<DocumentVersion> versions;
+
 }

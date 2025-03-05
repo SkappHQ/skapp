@@ -4,6 +4,8 @@ import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
+import com.skapp.enterprise.esignature.model.EsignConfig;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
@@ -16,6 +18,8 @@ import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
@@ -84,5 +88,9 @@ public interface EsignMapper {
 	EpEsignEmailEnvelopeDataDto envelopeToEpEsignEmailEnvelopeDataDto(Envelope envelope);
 
 	Document documentDtoToDocument(DocumentDto documentDto);
+
+	EsignConfigResponseDto esignConfigToEsignConfigResponseDto(EsignConfig esignConfig);
+
+	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
 
 }

@@ -40,6 +40,7 @@ import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,6 +94,8 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
 	private final ObjectMapper objectMapper;
+
+	private final EsignConfigService esignConfigService;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -379,6 +382,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		timeService.getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}
