@@ -1,6 +1,7 @@
 package com.skapp.enterprise.people.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
@@ -46,6 +47,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.repository.EpEmployeeRoleRepository;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.people.constant.EpPeopleConstants;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.payload.response.EpEmployeeRoleLimitDto;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
@@ -151,9 +153,13 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 		Tenant currentTenant = getCurrentTenantDetails();
 
-		if (currentTenant.getTier() == Tier.PRO) {
+		if (currentTenant.getTier() == Tier.FREE) {
 			long employeeCount = countActiveAndPendingEmployees();
-			long maxAllowedCount = currentTenant.getSubscriptionQuantity() - employeeCount;
+			long maxAllowedCount = EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT - employeeCount;
+
+			if (maxAllowedCount <= 0) {
+				throw new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_ALLOWED_USER_LIMIT_EXCEEDED);
+			}
 
 			if (maxAllowedCount < employeeBulkDtoList.size()) {
 				return employeeBulkDtoList.subList(0, (int) Math.min(maxAllowedCount, employeeBulkDtoList.size()));
