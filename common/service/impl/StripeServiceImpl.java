@@ -124,8 +124,8 @@ public class StripeServiceImpl implements StripeService {
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
 			.setSuccessUrl("https://" + tenantId + "." + parentDomain
-					+ "/settings/account-settings?session_id={CHECKOUT_SESSION_ID}&status=success")
-			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings&status=cancel")
+					+ "/settings/account?session_id={CHECKOUT_SESSION_ID}&status=success")
+			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account&status=cancel")
 			.setClientReferenceId(UUID.randomUUID().toString())
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
@@ -184,7 +184,7 @@ public class StripeServiceImpl implements StripeService {
 		com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams
 			.builder()
 			.setCustomer(customerId)
-			.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
+			.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings/account")
 			.build();
 
 		com.stripe.model.billingportal.Session portalSession = com.stripe.model.billingportal.Session.create(params);
