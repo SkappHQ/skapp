@@ -27,4 +27,12 @@ public class EpEsignEnvelopeRecipientEmailDynamicFields {
 
 	private String appUrl;
 
+	private Long sendAt;
+
+	private String batchId;
+
+	private String voidDeclineReason;
+
+	private String declinedBy;
+
 }

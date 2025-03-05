@@ -12,4 +12,6 @@ public interface RecipientRepository extends JpaRepository<Recipient, Long> {
 
 	Optional<List<Recipient>> findByEnvelopeId(Long envelopId);
 
+	Optional<Recipient> findByIdAndEnvelopeId(Long id, Long envelopeId);
+
 }

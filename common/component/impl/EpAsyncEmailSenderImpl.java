@@ -1,5 +1,7 @@
 package com.skapp.enterprise.common.component.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
@@ -28,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.skapp.enterprise.common.constant.EpApiUriConstants.SENDGRID_POST_API;
+import static com.skapp.enterprise.common.constant.EpApiUriConstants.*;
 
 @Component
 @RequiredArgsConstructor
@@ -81,6 +83,12 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender {
 					placeholders.put("appUrl", "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin");
 				}
 
+				// set up send_At parameter to schedule email sending time
+				if (placeholders.containsKey("sendAt") && !placeholders.get("sendAt").equalsIgnoreCase("null")) {
+					mail.setSendAt(Long.parseLong(placeholders.get("sendAt")));
+					mail.setBatchId(placeholders.get("batchId"));
+				}
+
 				placeholders.forEach(personalization::addDynamicTemplateData);
 			}
 
@@ -103,6 +111,50 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender {
 		}
 		catch (IOException e) {
 			log.error("Error sending email: {}", e.getMessage());
+		}
+	}
+
+	@Override
+	public String getSendGridEmailBatchId() {
+		String batchId = null;
+		try {
+			SendGrid sendGrid = new SendGrid(sendGridApiKey);
+			Request request = new Request();
+			request.setMethod(Method.POST);
+			request.setEndpoint(SENDGRID_CREATE_BACTH_ID_API);
+
+			Response response = sendGrid.api(request);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(response.getBody());
+
+			batchId = jsonNode.has("batch_id") ? jsonNode.get("batch_id").asText() : null;
+			return batchId;
+
+		}
+		catch (IOException e) {
+			log.error("Error obtaining batch id: {}", e.getMessage());
+		}
+
+		return batchId;
+	}
+
+	@Override
+	public void cancelScheduledEmails(String batchId, String status) {
+
+		try {
+
+			SendGrid sendGrid = new SendGrid(sendGridApiKey);
+			Request request = new Request();
+			request.setMethod(Method.POST);
+			request.setEndpoint(SENDGRID_CANCEL_SCHEDULED_EMAIL);
+			String requestBody = String.format("{\"batch_id\": \"%s\", \"status\": \"%s\"}", batchId, status);
+			request.setBody(requestBody);
+
+			Response response = sendGrid.api(request);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
