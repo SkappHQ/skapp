@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.payload.response.SubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
+import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
@@ -113,16 +114,18 @@ public class StripeServiceImpl implements StripeService {
 
 		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
 
-		if (tenant.getStripeSubscription() != null && tenant.getStripeSubscription().getCustomerId() != null
-				&& tenant.getTier() != Tier.FREE) {
+		if (tenant.getTier() != Tier.FREE && tenant.getSubscriptionStatus() != SubscriptionStatus.CANCELED) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS);
 		}
+
+		boolean hadPreviousSubscription = tenant.getStripeSubscription() != null
+				&& (tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED);
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
 			.setSuccessUrl("https://" + tenantId + "." + parentDomain
-					+ "/settings/account-settings?session_id={CHECKOUT_SESSION_ID}")
-			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
+					+ "/settings/account-settings?session_id={CHECKOUT_SESSION_ID}&status=success")
+			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings&status=cancel")
 			.setClientReferenceId(UUID.randomUUID().toString())
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
@@ -130,6 +133,10 @@ public class StripeServiceImpl implements StripeService {
 			.setLocale(SessionCreateParams.Locale.AUTO);
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
+
+		if (hadPreviousSubscription) {
+			builder.setCustomer(tenant.getStripeSubscription().getCustomerId());
+		}
 
 		Map<SubscriptionPlan, String> priceMap = getPriceMap();
 		String priceId = subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
@@ -144,11 +151,14 @@ public class StripeServiceImpl implements StripeService {
 
 		builder.addLineItem(lineItem);
 
-		SessionCreateParams.SubscriptionData subscriptionData = SessionCreateParams.SubscriptionData.builder()
-			.setTrialPeriodDays(trialPeriodDays)
-			.build();
+		SessionCreateParams.SubscriptionData.Builder subscriptionDataBuilder = SessionCreateParams.SubscriptionData
+			.builder();
 
-		builder.setSubscriptionData(subscriptionData);
+		if (!hadPreviousSubscription) {
+			subscriptionDataBuilder.setTrialPeriodDays(trialPeriodDays);
+		}
+
+		builder.setSubscriptionData(subscriptionDataBuilder.build());
 
 		SessionCreateParams params = builder.build();
 		Session session = Session.create(params);

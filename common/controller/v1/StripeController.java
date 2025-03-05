@@ -50,7 +50,7 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/create-portal-session")
+	@GetMapping("/customer-portal-session")
 	public ResponseEntity<ResponseEntityDto> createPortalSession() throws StripeException {
 		ResponseEntityDto response = stripeService.createCustomerPortalSession();
 		return new ResponseEntity<>(response, HttpStatus.OK);

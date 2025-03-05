@@ -11,7 +11,8 @@ public enum SubscriptionStatus {
 	ACTIVE("active"), // after 14-day successful payment
 	PENDING("pending"), // after 14-days when payment fails during retry
 	CANCELED("canceled"), // user cancels subscription
-	PAST_DUE("past_due"); // payment fails after retry
+	PAST_DUE("past_due"), // payment fails after retry
+	UNPAID("unpaid"); // payment fails after retry
 
 	private final String status;
 
