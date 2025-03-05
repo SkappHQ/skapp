@@ -43,14 +43,14 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/create-checkout-session")
+	@PostMapping("/checkout-session")
 	public ResponseEntity<ResponseEntityDto> createCheckoutSession(
 			@RequestBody SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
 		ResponseEntityDto response = stripeService.createCheckoutSession(subscriptionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/customer-portal-session")
+	@PostMapping("/customer-portal-session")
 	public ResponseEntity<ResponseEntityDto> createPortalSession() throws StripeException {
 		ResponseEntityDto response = stripeService.createCustomerPortalSession();
 		return new ResponseEntity<>(response, HttpStatus.OK);
