@@ -119,15 +119,15 @@ public class StripeServiceImpl implements StripeService {
 		}
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
-				.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-				.setSuccessUrl("https://" + tenantId + "." + parentDomain
-						+ "/settings/account-settings?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
-				.setClientReferenceId(UUID.randomUUID().toString())
-				.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
-				.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
-				.setAllowPromotionCodes(true)
-				.setLocale(SessionCreateParams.Locale.AUTO);
+			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+			.setSuccessUrl("https://" + tenantId + "." + parentDomain
+					+ "/settings/account-settings?session_id={CHECKOUT_SESSION_ID}")
+			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
+			.setClientReferenceId(UUID.randomUUID().toString())
+			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
+			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
+			.setAllowPromotionCodes(true)
+			.setLocale(SessionCreateParams.Locale.AUTO);
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
@@ -138,15 +138,15 @@ public class StripeServiceImpl implements StripeService {
 		Long employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
-				.setQuantity(employeeCount)
-				.setPrice(priceId)
-				.build();
+			.setQuantity(employeeCount)
+			.setPrice(priceId)
+			.build();
 
 		builder.addLineItem(lineItem);
 
 		SessionCreateParams.SubscriptionData subscriptionData = SessionCreateParams.SubscriptionData.builder()
-				.setTrialPeriodDays(trialPeriodDays)
-				.build();
+			.setTrialPeriodDays(trialPeriodDays)
+			.build();
 
 		builder.setSubscriptionData(subscriptionData);
 
@@ -172,10 +172,10 @@ public class StripeServiceImpl implements StripeService {
 		String customerId = tenant.getStripeSubscription().getCustomerId();
 
 		com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams
-				.builder()
-				.setCustomer(customerId)
-				.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
-				.build();
+			.builder()
+			.setCustomer(customerId)
+			.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings/account-settings")
+			.build();
 
 		com.stripe.model.billingportal.Session portalSession = com.stripe.model.billingportal.Session.create(params);
 
