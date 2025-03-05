@@ -199,6 +199,17 @@ public class RecipientServiceImpl implements RecipientService {
 		return new ResponseEntityDto(false, eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope));
 	}
 
+	/**
+	 *
+	 * @param recipientId - This indicates the current active recipientID or rather the active recipient that the email already sent.
+	 * @param envelopeId - This indicates the envelopeID
+	 * @return
+	 * This method finds and sends the document emails to the recipients based on the signing order and role.
+	 * If the recipientID is not provided, the very first recipient in the signing order will be picked for the
+	 * provided envelopeID to send the email.
+	 * If the recipientID is provided, the next in line recipient in the signing order is picked for the envelopeID
+	 * to send the email.
+	 */
 	private ResponseEntityDto findNextRecipientAndSendEmail(Optional<Long> recipientId, Long envelopeId) {
 
 		log.info("findNextRecipient: execution started");
