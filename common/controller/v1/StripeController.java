@@ -2,7 +2,6 @@ package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
-import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
 import com.stripe.exception.StripeException;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,13 +29,6 @@ public class StripeController {
 			@RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
 		stripeWebhookService.handleStripeEvent(payload, sigHeader);
 		return ResponseEntity.ok().build();
-	}
-
-	@PutMapping("/subscription")
-	public ResponseEntity<ResponseEntityDto> updateSubscription(
-			@RequestBody UpdateSubscriptionRequestDto updateSubscriptionRequestDto) throws StripeException {
-		ResponseEntityDto response = stripeService.updateSubscription(updateSubscriptionRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/subscription")

@@ -10,6 +10,4 @@ public class SubscriptionRequestDto {
 
 	private SubscriptionPlan subscriptionPlan;
 
-	private Long subscriptionQuantity;
-
 }

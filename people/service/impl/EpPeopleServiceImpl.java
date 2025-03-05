@@ -156,7 +156,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public ResponseEntityDto getEmployeesCount() {
-		long count = countActiveAndPendingEmployees();
+		long count = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		return new ResponseEntityDto(false, count);
 	}
 
@@ -341,10 +341,6 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}).toList();
 	}
 
-	private long countActiveAndPendingEmployees() {
-		return employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
-	}
-
 	@Override
 	public ResponseEntityDto getEmployeeRoleLimit() {
 		EpEmployeeRoleLimitDto roleLimits = checkEmployeeRoleLimits();
@@ -359,7 +355,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		tenantContext.setTenantAndSwitchSchema(tenantId);
 
 		if (tenant.getTier() == Tier.PRO) {
-			long employeeCount = countActiveAndPendingEmployees();
+			long employeeCount = employeeDao
+				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 			long maxAllowedCount = tenant.getSubscriptionQuantity() - employeeCount;
 
 			if (maxAllowedCount < employeeBulkDtoList.size()) {

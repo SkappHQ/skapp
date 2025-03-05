@@ -1,24 +1,19 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.UserService;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
-import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.response.SubscriptionResponseDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
-import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
@@ -26,7 +21,6 @@ import com.stripe.model.PriceCollection;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.PriceListParams;
-import com.stripe.param.SubscriptionUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +33,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -46,13 +41,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StripeServiceImpl implements StripeService {
 
-	private final TenantContext tenantContext;
-
-	private final TenantDao tenantDao;
-
-	private final UserService userService;
-
 	private final TenantService tenantService;
+
+	private final EmployeeDao employeeDao;
 
 	@Value("${stripe.product.product-id}")
 	private String stripeProductId;
@@ -144,8 +135,10 @@ public class StripeServiceImpl implements StripeService {
 		String priceId = subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
 				? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
 
+		Long employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+
 		SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
-				.setQuantity(subscriptionRequestDto.getSubscriptionQuantity())
+				.setQuantity(employeeCount)
 				.setPrice(priceId)
 				.build();
 
@@ -190,88 +183,6 @@ public class StripeServiceImpl implements StripeService {
 		subscriptionResponseDto.setSessionUrl(portalSession.getUrl());
 
 		return new ResponseEntityDto(false, subscriptionResponseDto);
-	}
-
-	@Override
-	public ResponseEntityDto updateSubscription(UpdateSubscriptionRequestDto updateSubscriptionRequestDto)
-			throws StripeException {
-		String currentTenant = TenantContext.getCurrentTenant();
-		User currentUser = userService.getCurrentUser();
-
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenant);
-
-		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-		}
-
-		String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
-		Subscription subscription = Subscription.retrieve(subscriptionId);
-
-		if (SubscriptionStatus.CANCELED.getStatus().equals(subscription.getStatus())) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_CANCELED);
-		}
-
-		Map<SubscriptionPlan, String> priceMap = getPriceMap();
-		String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
-
-		SubscriptionUpdateParams.Item item;
-		if (updateSubscriptionRequestDto.getSubscriptionPlan() != null
-				&& !updateSubscriptionRequestDto.getSubscriptionPlan().equals(tenant.getSubscriptionPlan())) {
-
-			String newPriceId = updateSubscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
-					? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
-
-			item = SubscriptionUpdateParams.Item.builder()
-					.setId(subscriptionItemId)
-					.setQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity())
-					.setPrice(newPriceId)
-					.build();
-		} else {
-			item = SubscriptionUpdateParams.Item.builder()
-					.setId(subscriptionItemId)
-					.setQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity())
-					.build();
-		}
-
-		SubscriptionUpdateParams params = SubscriptionUpdateParams.builder()
-				.addItem(item)
-				.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.ALWAYS_INVOICE)
-				.build();
-
-		Subscription updatedSubscription = subscription.update(params);
-
-		tenant.setSubscriptionQuantity(updateSubscriptionRequestDto.getSubscriptionQuantity());
-		if (updateSubscriptionRequestDto.getSubscriptionPlan() != null) {
-			tenant.setSubscriptionPlan(updateSubscriptionRequestDto.getSubscriptionPlan());
-		}
-		tenant.setLastModifiedDate(Instant.now());
-		tenant.setLastModifiedByEmail(currentUser.getEmail());
-
-		StripeSubscription stripeSubscription = tenant.getStripeSubscription();
-		stripeSubscription.setLastModifiedByEmail(currentUser.getEmail());
-		stripeSubscription.setLastModifiedDate(Instant.now());
-
-		tenant.setStripeSubscription(stripeSubscription);
-		tenantDao.save(tenant);
-
-		tenantContext.setTenantAndSwitchSchema(currentTenant);
-
-		SubscriptionDetailsResponseDto responseDto = getSubscriptionDetailsResponseDto(tenant, updatedSubscription);
-
-		return getSubscriptionDetailsResponseEntityDto(responseDto, updatedSubscription, subscription.getTrialEnd());
-	}
-
-	private SubscriptionDetailsResponseDto getSubscriptionDetailsResponseDto(Tenant tenant,
-																			 Subscription updatedSubscription) {
-		SubscriptionDetailsResponseDto responseDto = new SubscriptionDetailsResponseDto();
-		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
-		responseDto.setSubscriptionId(updatedSubscription.getId());
-		responseDto.setTier(tenant.getTier());
-		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
-		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
-		responseDto.setSubscriptionQuantity(updatedSubscription.getItems().getData().getFirst().getQuantity());
-		return responseDto;
 	}
 
 	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {
