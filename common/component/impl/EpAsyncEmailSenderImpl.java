@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.skapp.enterprise.common.constant.EpApiUriConstants.*;
+import static com.skapp.enterprise.common.constant.EpApiUriConstants.SENDGRID_CREATE_BACTH_ID_API;
+import static com.skapp.enterprise.common.constant.EpApiUriConstants.SENDGRID_POST_API;
+import static com.skapp.enterprise.common.constant.EpApiUriConstants.SENDGRID_CANCEL_SCHEDULED_EMAIL;
 
 @Component
 @RequiredArgsConstructor
