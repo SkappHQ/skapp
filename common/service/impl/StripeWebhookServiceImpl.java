@@ -1,27 +1,31 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.constant.CommonConstants;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.exception.StripeVerificationException;
+import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
 import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
+import com.stripe.model.Invoice;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.InvoiceUpcomingParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +47,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 	private final StripeService stripeService;
 
+	private final StripeEmailService stripeEmailService;
+
+	private final StripeSubscriptionDao stripeSubscriptionDao;
+
 	@Override
-	public void handleStripeEvent(String payload, String sigHeader) throws SignatureVerificationException {
+	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
 		log.info("handleStripeEvent: Received Stripe webhook event");
 
 		Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
@@ -54,13 +62,13 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		if (eventType.equals(StripeWebhookEventTypes.CHECKOUT_SESSION_COMPLETED.getEventType())) {
 			handleCheckoutSessionCompleted(event);
 		}
-		if (eventType.equals(StripeWebhookEventTypes.INVOICE_PAYMENT_FAIL.getEventType())) {
+		if (event.getType().equals(StripeWebhookEventTypes.INVOICE_PAYMENT_FAIL.getEventType())) {
 			handleSubscriptionPaymentFail(event);
 		}
-		if (eventType.equals(StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END.getEventType())) {
+		if (event.getType().equals(StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END.getEventType())) {
 			handleTrialEndSoon(event);
 		}
-		if (eventType.equals(StripeWebhookEventTypes.INVOICE_PAYMENT_SUCCEEDED.getEventType())) {
+		if (event.getType().equals(StripeWebhookEventTypes.INVOICE_PAYMENT_SUCCEEDED.getEventType())) {
 			handleSubscriptionPaymentSucceeded(event);
 		}
 	}
@@ -153,19 +161,90 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		}
 	}
 
-	private void handleSubscriptionPaymentSucceeded(Event event) {
+	private void handleSubscriptionPaymentSucceeded(Event event) throws StripeException {
 		log.info("handleSubscriptionPaymentSucceeded started");
 
+		Invoice invoice = event.getDataObjectDeserializer()
+			.getObject()
+			.filter(Invoice.class::isInstance)
+			.map(Invoice.class::cast)
+			.orElse(null);
+
+		if (invoice != null) {
+			String customerId = invoice.getCustomer();
+			String userEmail = invoice.getCustomerEmail();
+
+			InvoiceUpcomingParams params = InvoiceUpcomingParams.builder()
+				.setSubscription(invoice.getSubscription())
+				.build();
+
+			Invoice upcomingInvoice = Invoice.upcoming(params);
+
+			String nextBillDate = DateTimeUtils.epochSecondToUtcLocalDate(upcomingInvoice.getCreated()).toString();
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			if (currentTenant == null) {
+				return;
+			}
+
+			if (currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
+					&& invoice.getBillingReason().equals("subscription_cycle")) {
+
+				stripeEmailService.sendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate,
+						currentTenant.getTenantName());
+
+			}
+		}
 	}
 
 	private void handleSubscriptionPaymentFail(Event event) {
-		log.info("Handling subscription payment fail event");
+		log.info("handleSubscriptionPaymentFail: Handling subscription payment fail event");
 
+		Invoice invoice = (Invoice) event.getDataObjectDeserializer()
+			.getObject()
+			.filter(Invoice.class::isInstance)
+			.orElse(null);
+
+		if (invoice != null) {
+			String customerId = invoice.getCustomer();
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			if (currentTenant == null) {
+				return;
+			}
+
+			stripeEmailService.sendStripePaymentFailEmail(invoice, currentTenant.getTenantName());
+		}
+
+		log.info("handleSubscriptionPaymentFail: Successfully sent subscription payment fail event");
 	}
 
-	private void handleTrialEndSoon(Event event) {
-		log.info("Handling trial end soon event");
+	private void handleTrialEndSoon(Event event) throws StripeException {
+		log.info("handleTrialEndSoon: Handling trial end soon event");
 
+		Subscription subscription = (Subscription) event.getDataObjectDeserializer()
+			.getObject()
+			.filter(Subscription.class::isInstance)
+			.orElse(null);
+
+		if (subscription == null) {
+			log.error("Subscription data not found in event");
+			return;
+		}
+
+		String customerId = subscription.getCustomer();
+		Customer customer = Customer.retrieve(customerId);
+		String customerEmail = customer.getEmail();
+		String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+		if (currentTenant == null) {
+			return;
+		}
+
+		stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate, currentTenant.getTenantName());
+
+		log.info("handleTrialEndSoon: Successfully sent trial end soon email");
 	}
 
 }

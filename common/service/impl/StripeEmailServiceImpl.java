@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -13,8 +12,6 @@ import com.stripe.model.Invoice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Slf4j

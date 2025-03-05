@@ -5,7 +5,6 @@ import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
 import com.skapp.enterprise.common.payload.request.UpdateSubscriptionRequestDto;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,7 @@ public class StripeController {
 
 	@PostMapping("/webhook")
 	public ResponseEntity<Void> handleStripeWebhook(@RequestBody String payload,
-			@RequestHeader("Stripe-Signature") String sigHeader) throws SignatureVerificationException {
+			@RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
 		stripeWebhookService.handleStripeEvent(payload, sigHeader);
 		return ResponseEntity.ok().build();
 	}
