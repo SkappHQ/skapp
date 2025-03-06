@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.NotificationSettingsType;
@@ -35,10 +37,12 @@ import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
+import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +55,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
@@ -91,6 +96,10 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
 	private final ObjectMapper objectMapper;
+
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
 	private final EsignConfigService esignConfigService;
 
@@ -215,6 +224,27 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
 
 		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto setQuickSetupCompleted() {
+		log.info("setQuickSetupCompleted: execution started");
+
+		Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
+
+		if (existingQuickSetupCompletion.isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
+		}
+
+		String quickSetupCompleted = String.valueOf(true);
+		OrganizationConfig organizationConfig = new OrganizationConfig(
+				EpOrganizationConfigType.QUICK_SETUP_STATUS.name(), quickSetupCompleted);
+		organizationConfigDao.save(organizationConfig);
+
+		log.info("setQuickSetupCompleted: execution ended successfully");
+
+		return new ResponseEntityDto(false, organizationConfig);
 	}
 
 	private User createSuperAdminUser(SuperAdmin superAdmin) {
