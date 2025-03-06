@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.response;
 
-import com.skapp.enterprise.esignature.type.DateFormatType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class EsignConfigResponseDto {
 
-	private DateFormatType dateFormat;
+	private String dateFormat;
 
 	private int defaultEnvelopeExpireDays;
 

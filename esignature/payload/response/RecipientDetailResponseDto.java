@@ -23,6 +23,8 @@ public class RecipientDetailResponseDto {
 
 	private int signingOrder;
 
+	private String color;
+
 	private List<FieldDetailResponseDto> fields;
 
 	private Long addressBookId;

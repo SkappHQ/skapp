@@ -46,6 +46,9 @@ public class Recipient {
 	@Column(name = "signing_order")
 	private int signingOrder;
 
+	@Column(name = "color")
+	private String color;
+
 	@ManyToOne
 	@JoinColumn(name = "envelope_id")
 	private Envelope envelope;

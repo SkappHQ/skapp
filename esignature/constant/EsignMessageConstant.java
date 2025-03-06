@@ -65,7 +65,17 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND("ep.esign.error.addressbook-id.not-found"),
 	ESIGN_ERROR_CONFIG_NOT_FOUND("ep.esign.error.config.not-found"),
 	ESIGN_ERROR_RECIPIENT_NOT_FOUND("ep.esign.error.recipient.not-found"),
-	ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH("ep.esign.error.recipient.current-user.not.match");
+	ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH("ep.esign.error.recipient.current-user.not.match"),
+	ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT("ep.esign.error.invalid.sign-order.recipient"),
+	ESIGN_ERROR_DOCUMENT_NOT_FOUND("ep.esign.error.document.not-found"),
+	ESIGN_ERROR_FIELD_CONTENT_CHANGED("ep.esign.error.field.content.changed"),
+	ESIGN_ERROR_ALL_FIELDS_NEED_SIGN("ep.esign.error.all.fields.need.sign"),
+	ESIGN_ERROR_IMAGE_VERIFY_FAIL("ep.esign.error.image.verify.fail"),
+	ESIGN_ERROR_FIELD_ID_NOT_FOUND("ep.esign.error.field-id.not-found"),
+	ESIGN_ERROR_ENVELOPE_DOCUMENT_MISMATCH("ep.esign.error.envelope.document.mis-match"),
+	ESIGN_ERROR_ENVELOPE_RECIPIENT_MISMATCH("ep.esign.error.envelope.recipient.mis-match"),
+	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
+	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id");
 
 	private final String messageKey;
 

@@ -41,6 +41,18 @@ public class Field {
 	@Column(name = "y_position")
 	private float yPosition;
 
+	@Column(name = "font_family")
+	private String fontFamily;
+
+	@Column(name = "font_color")
+	private String fontColor;
+
+	@Column(name = "width")
+	private float width;
+
+	@Column(name = "height")
+	private float height;
+
 	@ManyToOne
 	@JoinColumn(name = "document_id")
 	private Document document;
