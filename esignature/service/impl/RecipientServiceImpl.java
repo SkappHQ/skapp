@@ -101,26 +101,23 @@ public class RecipientServiceImpl implements RecipientService {
 
 		Optional<Recipient> recipientOptional = recipientRepository.findByIdAndEnvelopeId(recipientId, envelopeId);
 
-		if (recipientOptional.isEmpty()) {
-			log.info("cancelEmailReminders: recipient ID {} for envelop ID {} not found", recipientId, envelopeId);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
-		}
-
-		Recipient recipient = recipientOptional.get();
-
 		ResponseEntityDto responseEntityDto = new ResponseEntityDto(true,
-				eSignMapper.recipientToRecipientDetailDto(recipient));
+				eSignMapper.recipientToRecipientDetailDto(new Recipient()));
 
-		if (recipient.getReminderBatchId() != null && MemberRole.SIGNER == recipient.getMemberRole()) {
-			emailService.cancelScheduledEmail(recipient.getReminderBatchId(),
-					EpCommonConstants.SENDGRID_CANCEL_SCHEDULED_MAIL);
+		if (recipientOptional.isPresent()) {
 
-			RecipientUpdateDto recipientUpdateDto = initializerecipientDtoData(null, null,
-					EmailReminderStatus.CANCELLED, null);
+			Recipient recipient = recipientOptional.get();
 
-			responseEntityDto = updateRecipient(recipientId, recipientUpdateDto);
+			if (recipient.getReminderBatchId() != null && MemberRole.SIGNER == recipient.getMemberRole()) {
+				emailService.cancelScheduledEmail(recipient.getReminderBatchId(),
+						EpCommonConstants.SENDGRID_CANCEL_SCHEDULED_MAIL);
+
+				RecipientUpdateDto recipientUpdateDto = initializerecipientDtoData(null, null,
+						EmailReminderStatus.CANCELLED, null);
+
+				responseEntityDto = updateRecipient(recipientId, recipientUpdateDto);
+			}
 		}
-
 		log.info("cancelEmailReminders: execution ended");
 
 		return responseEntityDto;
@@ -136,9 +133,8 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEmailWhenDocumentIsVoidedOrDeclined: execution started");
 
-		Envelope envelope = new Envelope();
 		EnvelopeDetailedResponseDto envelopeDetailedResponseDto = eSignMapper
-			.envelopeToEnvelopeDetailedResponseDto(envelope);
+			.envelopeToEnvelopeDetailedResponseDto(new Envelope());
 
 		Optional<List<Recipient>> optionalRecipientList = recipientRepository.findByEnvelopeIdAndEmailStatus(envelopeId,
 				EmailStatus.SENT);
@@ -148,7 +144,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 			List<Recipient> recipientList = optionalRecipientList.get();
 
-			envelope = recipientList.getFirst().getEnvelope();
+			Envelope envelope = recipientList.getFirst().getEnvelope();
 
 			// if Declined find who declined the document
 			String declinedBy;
