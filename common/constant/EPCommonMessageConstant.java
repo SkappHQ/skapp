@@ -119,7 +119,12 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_SUBSCRIPTION_CREATION_FAILED("ep.common.error.subscription-creation-failed"),
 	EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_CANCELED("ep.common.error.subscription-already-canceled"),
 	EP_COMMON_ERROR_SUBSCRIPTION_CANCELED("ep.common.error.subscription-canceled"),
-	EP_COMMON_ERROR_HANDLE_CHECKOUT_SESSION_COMPLETED("ep.common.error.handle-checkout-session-completed"),;
+	EP_COMMON_ERROR_HANDLE_CHECKOUT_SESSION_COMPLETED("ep.common.error.handle-checkout-session-completed"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_PAYMENT_SUCCEEDED("ep.common.error.handle-subscription-payment-succeeded"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_PAYMENT_FAILED("ep.common.error.handle-subscription-payment-failed"),
+	EP_COMMON_ERROR_HANDLE_TRIAL_END_SOON("ep.common.error.handle-trial-end-soon"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_CANCELLED("ep.common.error.handle-subscription-cancelled"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_UPDATED("ep.common.error.handle-subscription-updated"),;
 
 	private final String messageKey;
 
