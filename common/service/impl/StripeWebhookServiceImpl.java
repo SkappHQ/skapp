@@ -162,6 +162,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setStripeSubscription(stripeSubscription);
 
 			tenantDao.save(tenant);
+
+			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+			systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
+					SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
 			log.info("handleCheckoutSessionCompleted: Successfully saved subscription details for tenant: {}",
 					tenantId);
 		}
