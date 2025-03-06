@@ -66,7 +66,7 @@ public class Envelope extends Auditable<String> {
 	@OneToOne(mappedBy = "envelope", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private EnvelopeSetting setting;
 
-	@Column(name = "void_decline_reason")
-	private String voidDeclineReason;
+	@Column(name = "void_reason")
+	private String voidReason;
 
 }

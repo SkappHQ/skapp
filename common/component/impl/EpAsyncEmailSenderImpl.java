@@ -131,11 +131,10 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender {
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
 			batchId = jsonNode.has("batch_id") ? jsonNode.get("batch_id").asText() : null;
-			return batchId;
 
 		}
 		catch (IOException e) {
-			log.error("Error obtaining batch id: {}", e.getMessage());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_EMAIL_BATCH_ID_NOT_OBTAINED);
 		}
 
 		return batchId;
@@ -143,6 +142,16 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender {
 
 	@Override
 	public void cancelScheduledEmails(String batchId, String status) {
+
+		if (batchId == null) {
+			throw new ModuleException(
+					EPCommonMessageConstant.EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT);
+		}
+
+		if (status == null) {
+			throw new ModuleException(
+					EPCommonMessageConstant.EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT);
+		}
 
 		try {
 
@@ -153,10 +162,10 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender {
 			String requestBody = String.format("{\"batch_id\": \"%s\", \"status\": \"%s\"}", batchId, status);
 			request.setBody(requestBody);
 
-			Response response = sendGrid.api(request);
+			sendGrid.api(request);
 		}
 		catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_FAILED);
 		}
 	}
 

@@ -55,7 +55,7 @@ public class RecipientController {
 	@GetMapping(value = "/void", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> sendEmailUpdate(@RequestParam Long envelopeId) {
 
-		ResponseEntityDto response = recipientService.sendEnvelopeInvalidEmail(envelopeId);
+		ResponseEntityDto response = recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelopeId);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

@@ -113,7 +113,13 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_MODULE_NAME("ep.common.error.invalid-module-name"),
 	EP_COMMON_ERROR_INVALID_TIER("ep.common.error.invalid-tier"),
 	EP_COMMON_ERROR_SYSTEM_VERSION_MISMATCH("ep.common.error.system-version-mismatch"),
-	EP_COMMON_ERROR_INVALID_CACHE_KEY("ep.common.error.invalid-cache-key");
+	EP_COMMON_ERROR_INVALID_CACHE_KEY("ep.common.error.invalid-cache-key"),
+	EP_COMMON_ERROR_EMAIL_BATCH_ID_NOT_OBTAINED("ep.common.error.email-batch-id-not-obtained"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_FAILED("ep.common.error.email-schedule-cancellation-failed"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-batch-id-cannot-be-null"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-status-cannot-be-null");
 
 	private final String messageKey;
 

@@ -13,10 +13,15 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.RecipientService;
-import com.skapp.enterprise.esignature.type.*;
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
+import com.skapp.enterprise.esignature.type.EmailStatus;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,44 +54,35 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public ResponseEntityDto updateRecipient(Long recipientId, Recipient recipient) {
+	public ResponseEntityDto updateRecipient(Long recipientId, RecipientUpdateDto recipientDto) {
 
 		log.info("updateRecipient: execution started");
 
-		Optional<Recipient> recipientOptional = recipientRepository.findByIdAndEnvelopeId(recipientId,
-				recipient.getEnvelope().getId());
+		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
 
-		if (recipientOptional.isEmpty()) {
-			log.info("updateRecipient: recipient ID {} for envelop ID {} not found", recipientId,
-					recipient.getEnvelope().getId());
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
+		if (optionalUpdatableRecipient.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENT_FOUND);
 		}
 
-		Recipient updatableRecipient = recipientOptional.get();
-		boolean isUpdatable = false;
+		Recipient updatableRecipient = optionalUpdatableRecipient.get();
 
-		if (recipient.getReminderBatchId() != null) {
-			updatableRecipient.setReminderBatchId(recipient.getReminderBatchId());
-			isUpdatable = true;
+		if (recipientDto.getReminderBatchId() != null) {
+			updatableRecipient.setReminderBatchId(recipientDto.getReminderBatchId());
 		}
 
-		if (recipient.getReminderStatus() != null) {
-			updatableRecipient.setReminderStatus(recipient.getReminderStatus());
-			isUpdatable = true;
+		if (recipientDto.getReminderStatus() != null) {
+			updatableRecipient.setReminderStatus(recipientDto.getReminderStatus());
 		}
 
-		if (recipient.getEmailStatus() != null) {
-			updatableRecipient.setEmailStatus(recipient.getEmailStatus());
-			isUpdatable = true;
+		if (recipientDto.getEmailStatus() != null) {
+			updatableRecipient.setEmailStatus(recipientDto.getEmailStatus());
 		}
 
-		if (isUpdatable) {
-			Recipient updatedRecipient = recipientRepository.save(updatableRecipient);
-			RecipientDetailResponseDto responseDto = eSignMapper.recipientToRecipientDetailDto(updatedRecipient);
-			return new ResponseEntityDto(false, responseDto);
-		}
+		Recipient updatedRecipient = recipientRepository.save(updatableRecipient);
+		RecipientDetailResponseDto responseDto = eSignMapper.recipientToRecipientDetailDto(updatedRecipient);
+
 		log.info("updateRecipient: execution ended");
-		return new ResponseEntityDto(true, recipient);
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	/**
@@ -106,25 +102,27 @@ public class RecipientServiceImpl implements RecipientService {
 
 		if (recipientOptional.isEmpty()) {
 			log.info("cancelEmailReminders: recipient ID {} for envelop ID {} not found", recipientId, envelopeId);
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
 		}
 
 		Recipient recipient = recipientOptional.get();
+
+		ResponseEntityDto responseEntityDto = new ResponseEntityDto(true,
+				eSignMapper.recipientToRecipientDetailDto(recipient));
 
 		if (recipient.getReminderBatchId() != null && MemberRole.SIGNER == recipient.getMemberRole()) {
 			emailService.cancelScheduledEmail(recipient.getReminderBatchId(),
 					EpCommonConstants.SENDGRID_CANCEL_SCHEDULED_MAIL);
 
-			recipient.setReminderStatus(EmailReminderStatus.CANCELLED);
+			RecipientUpdateDto recipientUpdateDto = initializerecipientDtoData(null, null,
+					EmailReminderStatus.CANCELLED, null);
 
-			ResponseEntityDto updatedRecipient = updateRecipient(recipientId, recipient);
-			return updatedRecipient;
-
+			responseEntityDto = updateRecipient(recipientId, recipientUpdateDto);
 		}
 
 		log.info("cancelEmailReminders: execution ended");
 
-		return new ResponseEntityDto(true, eSignMapper.recipientToRecipientDetailDto(recipient));
+		return responseEntityDto;
 	}
 
 	/**
@@ -133,18 +131,23 @@ public class RecipientServiceImpl implements RecipientService {
 	 * declined by any of the receivers.
 	 */
 	@Override
-	public ResponseEntityDto sendEnvelopeInvalidEmail(Long envelopeId) {
+	public ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId) {
 
-		log.info("sendEnvelopeInvalidEmail: execution started");
+		log.info("sendEmailWhenDocumentIsVoidedOrDeclined: execution started");
 
-		Optional<List<Recipient>> recipientOptional = recipientRepository.findByEnvelopeId(envelopeId);
+		// findByEnvelopeIdAndEmailStatus
 
-		if (recipientOptional.isEmpty()) {
-			log.info("sendEnvelopeInvalidEmail: recipients for envelop ID {} not found", envelopeId);
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE);
+		Optional<List<Recipient>> optionalRecipientList = recipientRepository.findByEnvelopeIdAndEmailStatus(envelopeId,
+				EmailStatus.SENT);
+
+		// If no recipients found for the given Document Id, return an empty response
+		if (optionalRecipientList.isEmpty()) {
+			log.info("sendEmailWhenDocumentIsVoidedOrDeclined: email sent recipients for envelop ID {} not found",
+					envelopeId);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_DOCUMENT_EMAIL_SENT_ENVELOPE);
 		}
 
-		List<Recipient> recipientList = recipientOptional.get();
+		List<Recipient> recipientList = optionalRecipientList.get();
 
 		Envelope envelope = recipientList.getFirst().getEnvelope();
 
@@ -153,11 +156,11 @@ public class RecipientServiceImpl implements RecipientService {
 		String voidOrDeclinedReason;
 		if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
 			declinedBy = obtainEnvelopeDeclinedBy(recipientList);
-			voidOrDeclinedReason = envelope.getVoidDeclineReason();
+			voidOrDeclinedReason = envelope.getVoidReason();
 		}
 		else if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
 			declinedBy = null;
-			voidOrDeclinedReason = envelope.getVoidDeclineReason();
+			voidOrDeclinedReason = envelope.getVoidReason();
 		}
 		else {
 			declinedBy = null;
@@ -200,15 +203,14 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	/**
-	 *
-	 * @param recipientId - This indicates the current active recipientID or rather the active recipient that the email already sent.
+	 * @param recipientId - This indicates the current active recipientID or rather the
+	 * active recipient that the email already sent.
 	 * @param envelopeId - This indicates the envelopeID
-	 * @return
-	 * This method finds and sends the document emails to the recipients based on the signing order and role.
-	 * If the recipientID is not provided, the very first recipient in the signing order will be picked for the
-	 * provided envelopeID to send the email.
-	 * If the recipientID is provided, the next in line recipient in the signing order is picked for the envelopeID
-	 * to send the email.
+	 * @return This method finds and sends the document emails to the recipients based on
+	 * the signing order and role. If the recipientID is not provided, the very first
+	 * recipient in the signing order will be picked for the provided envelopeID to send
+	 * the email. If the recipientID is provided, the next in line recipient in the
+	 * signing order is picked for the envelopeID to send the email.
 	 */
 	private ResponseEntityDto findNextRecipientAndSendEmail(Optional<Long> recipientId, Long envelopeId) {
 
@@ -219,7 +221,7 @@ public class RecipientServiceImpl implements RecipientService {
 		// If no recipients found for the given Document Id, return an empty response
 		if (recipientListOptional.isEmpty()) {
 			log.info("findNextRecipient: next recipient for envelop ID {} not found", envelopeId);
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH);
 		}
 
 		List<Recipient> recipientList = recipientListOptional.get();
@@ -312,15 +314,13 @@ public class RecipientServiceImpl implements RecipientService {
 		Envelope envelope = new Envelope();
 		envelope.setId(epEsignEmailDataDto.getEnvelopeId());
 
-		Recipient recipient = new Recipient();
-		recipient.setId(recipientId);
-		recipient.setEnvelope(envelope);
+		RecipientUpdateDto recipientUpdateDto = new RecipientUpdateDto();
 
 		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
 			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 
-			recipient.setEmailStatus(EmailStatus.SENT);
+			recipientUpdateDto = initializerecipientDtoData(null, null, null, EmailStatus.SENT);
 		}
 		else {
 			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
@@ -349,12 +349,10 @@ public class RecipientServiceImpl implements RecipientService {
 
 				while (reminderCount >= schdeuledEmailCount) {
 
-					 epEsignEnvelopeRecipientEmailDynamicFields.setSendAt(reminderCount
-					 != 1
-					 ? initialUnixTimestamp + ChronoUnit.DAYS.getDuration().getSeconds()
-					 * schdeuledEmailCount
-					 : initialUnixTimestamp + ChronoUnit.DAYS.getDuration().getSeconds()
-					 * epEsignEmailDataDto.getReminderDays());
+					epEsignEnvelopeRecipientEmailDynamicFields.setSendAt(reminderCount != 1
+							? initialUnixTimestamp + ChronoUnit.DAYS.getDuration().getSeconds() * schdeuledEmailCount
+							: initialUnixTimestamp + ChronoUnit.DAYS.getDuration().getSeconds()
+									* epEsignEmailDataDto.getReminderDays());
 
 					emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
 							epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
@@ -364,14 +362,14 @@ public class RecipientServiceImpl implements RecipientService {
 
 				// Save the scheduled email batch id for future references like cancelling
 				// the schedule
-				recipient.setReminderBatchId(obtainedBatchId);
-				recipient.setReminderStatus(EmailReminderStatus.SCHEDULED);
-				recipient.setEmailStatus(EmailStatus.SENT);
+				recipientUpdateDto = initializerecipientDtoData(null, obtainedBatchId, EmailReminderStatus.SCHEDULED,
+						EmailStatus.SENT);
 			}
 		}
 
+		updateRecipient(recipientId, recipientUpdateDto);
 		log.info("sendEnvelopToRecipientEmail: execution started");
-		updateRecipient(recipientId, recipient);
+
 	}
 
 	/**
@@ -478,6 +476,19 @@ public class RecipientServiceImpl implements RecipientService {
 			return declinedRecipient.get().getAddressBook().getName();
 		}
 		return null;
+	}
+
+	private RecipientUpdateDto initializerecipientDtoData(RecipientStatus recipientStatus, String reminderBatchId,
+			EmailReminderStatus reminderStatus, EmailStatus emailStatus) {
+
+		RecipientUpdateDto recipientUpdateDto = new RecipientUpdateDto();
+
+		recipientUpdateDto.setStatus(recipientStatus);
+		recipientUpdateDto.setReminderBatchId(reminderBatchId);
+		recipientUpdateDto.setReminderStatus(reminderStatus);
+		recipientUpdateDto.setEmailStatus(emailStatus);
+
+		return recipientUpdateDto;
 	}
 
 }
