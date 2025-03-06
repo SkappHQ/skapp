@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -30,7 +31,6 @@ import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
-import com.skapp.enterprise.people.constant.EpEmployeeTimelineConstant;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
 import com.skapp.enterprise.people.model.EmployeeTimeline;
 import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseDto;
@@ -38,6 +38,7 @@ import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseLi
 import com.skapp.enterprise.people.repository.EpEmployeeTimelineDao;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
 import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
+import com.skapp.enterprise.people.type.EpTimelineModuleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -549,10 +550,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 
 		Map<Role, String> roleMappings = Map.of(employeeRole.getPeopleRole(),
-				EpEmployeeTimelineConstant.PEOPLE_ROLE_PREFIX, employeeRole.getAttendanceRole(),
-				EpEmployeeTimelineConstant.ATTENDANCE_ROLE_PREFIX, employeeRole.getLeaveRole(),
-				EpEmployeeTimelineConstant.LEAVE_ROLE_PREFIX, employeeRole.getEsignRole(),
-				EpEmployeeTimelineConstant.ESIGN_ROLE_PREFIX);
+				EpTimelineModuleType.PEOPLE.getDisplayName(), employeeRole.getAttendanceRole(),
+				EpTimelineModuleType.ATTENDANCE.getDisplayName(), employeeRole.getLeaveRole(),
+				EpTimelineModuleType.LEAVE.getDisplayName(), employeeRole.getEsignRole(),
+				EpTimelineModuleType.ESIGN.getDisplayName());
 
 		roleMappings.forEach((role, prefix) -> {
 			if (role != null) {
@@ -579,33 +580,33 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		if (newEmployeeRole != null) {
 			if (!currentEmployeeRole.getPeopleRole().equals(newEmployeeRole.getPeopleRole())) {
 				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.PEOPLE_ROLE_PREFIX);
+						EpTimelineModuleType.PEOPLE.getDisplayName());
 				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.PEOPLE_ROLE_PREFIX);
+						EpTimelineModuleType.PEOPLE.getDisplayName());
 				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
 						previousRoleName, newRoleName));
 			}
 			if (!currentEmployeeRole.getLeaveRole().equals(newEmployeeRole.getLeaveRole())) {
 				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.LEAVE_ROLE_PREFIX);
+						EpTimelineModuleType.LEAVE.getDisplayName());
 				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.LEAVE_ROLE_PREFIX);
+						EpTimelineModuleType.LEAVE.getDisplayName());
 				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
 						previousRoleName, newRoleName));
 			}
 			if (!currentEmployeeRole.getAttendanceRole().equals(newEmployeeRole.getAttendanceRole())) {
 				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.ATTENDANCE_ROLE_PREFIX);
+						EpTimelineModuleType.ATTENDANCE.getDisplayName());
 				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.ATTENDANCE_ROLE_PREFIX);
+						EpTimelineModuleType.ATTENDANCE.getDisplayName());
 				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
 						previousRoleName, newRoleName));
 			}
 			if (!currentEmployeeRole.getEsignRole().equals(newEmployeeRole.getEsignRole())) {
 				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.ESIGN_ROLE_PREFIX);
+						EpTimelineModuleType.ESIGN.getDisplayName());
 				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpEmployeeTimelineConstant.ESIGN_ROLE_PREFIX);
+						EpTimelineModuleType.ESIGN.getDisplayName());
 				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
 						previousRoleName, newRoleName));
 			}
@@ -615,17 +616,17 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	private String getRoleNameWithModule(Role role, String rolePrefix) {
 		String roleStr = role.toString();
 
-		if (roleStr.contains(EpEmployeeTimelineConstant.EMPLOYEE)) {
-			return rolePrefix + EpEmployeeTimelineConstant.EMPLOYEE_ROLE;
+		if (roleStr.contains(RoleLevel.EMPLOYEE.name())) {
+			return rolePrefix + RoleLevel.EMPLOYEE.getDisplayName();
 		}
-		else if (roleStr.contains(EpEmployeeTimelineConstant.ADMIN)) {
-			return rolePrefix + EpEmployeeTimelineConstant.ADMIN_ROLE;
+		else if (roleStr.contains(RoleLevel.ADMIN.name())) {
+			return rolePrefix + RoleLevel.ADMIN.getDisplayName();
 		}
-		else if (roleStr.contains(EpEmployeeTimelineConstant.MANAGER)) {
-			return rolePrefix + EpEmployeeTimelineConstant.MANAGER_ROLE;
+		else if (roleStr.contains(RoleLevel.MANAGER.name())) {
+			return rolePrefix + RoleLevel.MANAGER.getDisplayName();
 		}
-		else if (roleStr.contains(EpEmployeeTimelineConstant.SIGNER)) {
-			return rolePrefix + EpEmployeeTimelineConstant.SIGNER_ROLE;
+		else if (roleStr.contains(RoleLevel.SENDER.name())) {
+			return rolePrefix + RoleLevel.SENDER.getDisplayName();
 		}
 		return null;
 	}

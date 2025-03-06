@@ -6,6 +6,6 @@ public class EpPeopleConstants {
 		throw new IllegalStateException("Illegal instantiate");
 	}
 
-	public static final int ENTERPRISE_FREE_MAX_USER_LIMIT = 10;
+	public static final int ENTERPRISE_FREE_MAX_USER_LIMIT = 50;
 
 }
