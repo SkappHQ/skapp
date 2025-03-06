@@ -38,7 +38,6 @@ import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
-import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.RequiredArgsConstructor;
@@ -75,8 +74,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final TenantService tenantService;
 
-	private final Route53Service route53Service;
-
 	private final TenantContext tenantContext;
 
 	private final EpCommonMapper epCommonMapper;
@@ -102,19 +99,14 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
-		// validateOrganizationInput(organizationDto);
+		validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
-		boolean subdomainCreated = false;
 		boolean tenantCreated = false;
 
 		try {
 			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
-
-			// route53Service.createSubdomainForTenant(companyDomain);
-			// subdomainCreated = true;
-			log.info("Subdomain created for: {}", companyDomain);
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
@@ -141,9 +133,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			// Wait for subdomain to be active before sending email
-			waitForSubdomainActive();
-
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
 			return new ResponseEntityDto(false, responseDto);
@@ -153,7 +142,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			log.error("Error creating organization: {}", e.getMessage(), e);
 
 			try {
-				cleanup(companyDomain, subdomainCreated, tenantCreated);
+				cleanup(companyDomain, tenantCreated);
 			}
 			catch (ModuleException cleanupException) {
 				log.error("Cleanup failed: {}", cleanupException.getMessage());
@@ -165,15 +154,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			}
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
-		}
-	}
-
-	private void waitForSubdomainActive() {
-		try {
-			Thread.sleep(10000); // 10-second delay
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -310,7 +290,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		return responseDto;
 	}
 
-	private void cleanup(String companyDomain, boolean subdomainCreated, boolean tenantCreated) {
+	private void cleanup(String companyDomain, boolean tenantCreated) {
 		ModuleException cleanupException = null;
 
 		if (tenantCreated) {
@@ -323,18 +303,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 				String error = "Failed to delete tenant during cleanup: " + companyDomain;
 				log.error(error, e);
 				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_TENANT);
-			}
-		}
-
-		if (subdomainCreated) {
-			try {
-				route53Service.deleteTenantSubdomain(companyDomain);
-				log.info("Subdomain deleted during cleanup: {}", companyDomain);
-			}
-			catch (Exception e) {
-				String error = "Failed to delete subdomain during cleanup: " + companyDomain;
-				log.error(error, e);
-				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_SUBDOMAIN);
 			}
 		}
 
@@ -368,10 +336,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
 			log.error("Attempted to create restricted subdomain: {}", organizationDto.getCompanyDomain());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN);
-		}
-
-		if (route53Service.isDomainNotAvailable(organizationDto.getCompanyDomain())) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_NOT_AVAILABLE);
 		}
 	}
 
