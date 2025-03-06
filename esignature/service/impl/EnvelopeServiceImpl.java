@@ -11,9 +11,12 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
@@ -22,7 +25,9 @@ import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
+import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
+import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -33,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,6 +59,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final AddressBookDao addressBookDao;
 
 	private final RecipientService recipientService;
+
+	private final DocumentService documentService;
+
+	private final DocumentVersionRepository documentVersionRepository;
 
 	@Override
 	@Transactional
@@ -77,8 +87,25 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
+		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
+		envelopeSetting.setEnvelope(envelope);
+
+		envelope.setSetting(envelopeSetting);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
+
+		List<DocumentVersion> documentVersionList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+
+		documentVersionRepository.saveAll(documentVersionList);
+
+		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
+			Document document = documentVersion.getDocument();
+			document.setCurrentVersion(documentVersion.getVersionNumber());
+			return document;
+		}).toList();
+
+		documentDao.saveAll(updatedDocuments);
+
 		// Send Envelopes to recipient - async
 		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
 
@@ -87,6 +114,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	private EnvelopeSetting getEnvelopeSetting(EnvelopeDetailDto envelopeDetailDto) {
+		EnvelopeSetting envelopeSetting = new EnvelopeSetting();
+		envelopeSetting.setExpirationDate(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate());
+		envelopeSetting.setReminderDays(envelopeDetailDto.getEnvelopeSettingDto().getReminderDays());
+		return envelopeSetting;
 	}
 
 	@Override
@@ -194,8 +228,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setType(fieldDto.getType());
 			field.setStatus(fieldDto.getStatus());
 			field.setPageNumber(fieldDto.getPageNumber());
-			field.setXPosition(fieldDto.getXPosition());
-			field.setYPosition(fieldDto.getYPosition());
+			field.setXPosition(fieldDto.getXposition());
+			field.setYPosition(fieldDto.getYposition());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
@@ -246,6 +280,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getEmployeeNeedToSignEnvelopeCount: execution ended");
 
 		return new ResponseEntityDto(false, employeeKPIResponseDto);
+	}
+
+	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
+		List<DocumentVersion> documentVersionList = new ArrayList<>();
+
+		envelopeDetailDto.getDocumentIds().forEach(doc -> {
+			DocumentSignDto documentSignDto = new DocumentSignDto();
+			documentSignDto.setDocumentId(doc);
+			documentSignDto.setEnvelopeId(envelope.getId());
+			DocumentVersion documentVersion = documentService.signFirstVersionDocument(documentSignDto);
+			documentVersionList.add(documentVersion);
+		});
+		return documentVersionList;
 	}
 
 }

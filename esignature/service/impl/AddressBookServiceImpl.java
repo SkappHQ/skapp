@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.ExternalUser;
@@ -12,6 +13,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,17 +26,21 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	private final ExternalUserService externalUserService;
 
+	private final UserKeyService userKeyService;
+
 	private final AddressBookDao addressBookDao;
 
 	private final EsignMapper esignMapper;
 
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
+		validateRequest(externalUserDto);
 		ExternalUser externalUser = externalUserService.createExternalUser(externalUserDto);
 		AddressBook addressBook = new AddressBook();
 		addressBook.setExternalUser(externalUser);
 		addressBook.setType(type);
 		addressBook = addressBookDao.save(addressBook);
+		userKeyService.generateAndStoreKeys(addressBook);
 		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
 		return new ResponseEntityDto(false, addressBookResponseDto);
 	}
@@ -50,6 +56,19 @@ public class AddressBookServiceImpl implements AddressBookService {
 		List<AddressBookUserData> addressBookUserDataList = addressBookDao
 			.fetchAddressBookContactsByEmailPriority(keyWord);
 		return new ResponseEntityDto(false, addressBookUserDataList);
+	}
+
+	private void validateRequest(ExternalUserDto externalUserDto) {
+		Validations.validateEmail(externalUserDto.getEmail());
+		Validations.validateName(externalUserDto.getFirstName());
+
+		if (externalUserDto.getLastName() != null && !externalUserDto.getLastName().isEmpty()) {
+			Validations.validateName(externalUserDto.getLastName());
+		}
+
+		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {
+			Validations.validatePhone(externalUserDto.getPhone());
+		}
 	}
 
 }
