@@ -7,7 +7,6 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
-import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementDto;
 import com.skapp.community.leaveplanner.repository.CarryForwardInfoDao;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
