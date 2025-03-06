@@ -61,8 +61,11 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 			return 0.0;
 		}
 		long completedCount = setupStatus.values().stream().filter(Boolean::booleanValue).count();
-		return ((double) completedCount / setupStatus.size()) * 100;
+		double progress = (100.0 * completedCount) / setupStatus.size();
+
+		return Math.max(0.0, Math.min(100.0, progress));
 	}
+
 
 	private boolean isSetupCompleted() {
 		return epOrganizationConfigDao
