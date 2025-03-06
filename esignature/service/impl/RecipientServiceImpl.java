@@ -14,6 +14,7 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.RecipientService;
@@ -135,71 +136,74 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEmailWhenDocumentIsVoidedOrDeclined: execution started");
 
-		// findByEnvelopeIdAndEmailStatus
+		Envelope envelope = new Envelope();
+		EnvelopeDetailedResponseDto envelopeDetailedResponseDto = eSignMapper
+			.envelopeToEnvelopeDetailedResponseDto(envelope);
 
 		Optional<List<Recipient>> optionalRecipientList = recipientRepository.findByEnvelopeIdAndEmailStatus(envelopeId,
 				EmailStatus.SENT);
 
 		// If no recipients found for the given Document Id, return an empty response
-		if (optionalRecipientList.isEmpty()) {
-			log.info("sendEmailWhenDocumentIsVoidedOrDeclined: email sent recipients for envelop ID {} not found",
-					envelopeId);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_DOCUMENT_EMAIL_SENT_ENVELOPE);
-		}
+		if (optionalRecipientList.isPresent()) {
 
-		List<Recipient> recipientList = optionalRecipientList.get();
+			List<Recipient> recipientList = optionalRecipientList.get();
 
-		Envelope envelope = recipientList.getFirst().getEnvelope();
+			envelope = recipientList.getFirst().getEnvelope();
 
-		// if Declined find who declined the document
-		String declinedBy;
-		String voidOrDeclinedReason;
-		if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
-			declinedBy = obtainEnvelopeDeclinedBy(recipientList);
-			voidOrDeclinedReason = envelope.getVoidReason();
-		}
-		else if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
-			declinedBy = null;
-			voidOrDeclinedReason = envelope.getVoidReason();
-		}
-		else {
-			declinedBy = null;
-			voidOrDeclinedReason = null;
-		}
-
-		// for each recipient that email has already been sent, send the status update
-		// email.
-		recipientList.stream().filter(recpt -> recpt.getEmailStatus() == EmailStatus.SENT).forEach(rcpt -> {
-
-			// If any Reminders are been scheduled about the initial state of the
-			// document, cancel them
-			if (rcpt.getReminderBatchId() != null && rcpt.getReminderStatus() == EmailReminderStatus.SCHEDULED) {
-				cancelEmailReminders(rcpt.getId(), envelope.getId());
+			// if Declined find who declined the document
+			String declinedBy;
+			String voidOrDeclinedReason;
+			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
+				declinedBy = obtainEnvelopeDeclinedBy(recipientList);
+				voidOrDeclinedReason = envelope.getVoidReason();
+			}
+			else if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
+				declinedBy = null;
+				voidOrDeclinedReason = envelope.getVoidReason();
+			}
+			else {
+				declinedBy = null;
+				voidOrDeclinedReason = null;
 			}
 
-			String documentName = concatDocumentNames(rcpt.getEnvelope().getDocuments());
+			// for each recipient that email has already been sent, send the status update
+			// email.
+			Envelope finalEnvelope = envelope;
+			recipientList.forEach(rcpt -> {
+
+				// If any Reminders are been scheduled about the initial state of the
+				// document, cancel them
+				if (rcpt.getReminderBatchId() != null && rcpt.getReminderStatus() == EmailReminderStatus.SCHEDULED) {
+					cancelEmailReminders(rcpt.getId(), finalEnvelope.getId());
+				}
+
+				String documentName = concatDocumentNames(rcpt.getEnvelope().getDocuments());
+
+				EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
+						rcpt.getAddressBook().getName(), rcpt.getEnvelope().getId(), finalEnvelope.getSubject(),
+						finalEnvelope.getMessage(), documentName, voidOrDeclinedReason, declinedBy);
+
+				sendEmailBasedOnRoleAndEnvelopeStatus(rcpt.getMemberRole(), finalEnvelope.getStatus(),
+						epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
+			});
+
+			// Send the mail to the Sender
+			String documentName = concatDocumentNames(envelope.getDocuments());
 
 			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					rcpt.getAddressBook().getName(), rcpt.getEnvelope().getId(), envelope.getSubject(),
-					envelope.getMessage(), documentName, voidOrDeclinedReason, declinedBy);
+					userService.getCurrentUser().getEmployee().getFirstName() + " "
+							+ userService.getCurrentUser().getEmployee().getLastName(),
+					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
+					declinedBy);
+			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
+					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
 
-			sendEmailBasedOnRoleAndEnvelopeStatus(rcpt.getMemberRole(), envelope.getStatus(),
-					epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
-		});
+			envelopeDetailedResponseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
 
-		// Send the mail to the Sender
-		String documentName = concatDocumentNames(envelope.getDocuments());
-
-		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-				userService.getCurrentUser().getEmployee().getFirstName() + " "
-						+ userService.getCurrentUser().getEmployee().getLastName(),
-				envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-				declinedBy);
-		sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(), epEsignEnvelopeRecipientEmailDynamicFields,
-				userService.getCurrentUser().getEmail());
+		}
 
 		log.info("sendEnvelopeInvalidEmail: execution ended");
-		return new ResponseEntityDto(false, eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope));
+		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
 	}
 
 	/**
@@ -228,12 +232,15 @@ public class RecipientServiceImpl implements RecipientService {
 
 		List<Recipient> sortedRecipientList = new ArrayList<>();
 
-		// When the very first recipient is not known the recipientId is optional. In that
+		// When the very first recipient is not known the recipientId is optional. In
+		// that
 		// case if the recipientId is not available
-		// order the recipient list first from the id and then from the signingOrder and
+		// order the recipient list first from the id and then from the signingOrder
+		// and
 		// add to the sortedRecipientList list
 		if (recipientId.isPresent()) {
-			// validate if the recipientId is a valid recipient for the given envelopeId
+			// validate if the recipientId is a valid recipient for the given
+			// envelopeId
 			if (recipientList.stream().noneMatch(recipient -> recipient.getId().equals(recipientId.get()))) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE);
 			}
@@ -264,8 +271,10 @@ public class RecipientServiceImpl implements RecipientService {
 		List<Recipient> tempRecipientList = new ArrayList<>(sortedRecipientList);
 		List<Recipient> nextRecipientList = new ArrayList<>();
 
-		// List derive based on the member role. If next in line recipient is a CC role,
-		// then pick the recipient list up until the next Signer to send simultaneously.
+		// List derive based on the member role. If next in line recipient is a CC
+		// role,
+		// then pick the recipient list up until the next Signer to send
+		// simultaneously.
 		for (Recipient currentRecipient : tempRecipientList) {
 			if (MemberRole.SIGNER.equals(currentRecipient.getMemberRole())) {
 				nextRecipientList.add(currentRecipient);
