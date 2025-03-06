@@ -178,7 +178,7 @@ public class MultiTenantDataSourceConfig {
 				"com.skapp.enterprise.common.model.master", "com.skapp.community.common.model",
 				"com.skapp.community.peopleplanner.model", "com.skapp.community.leaveplanner.model",
 				"com.skapp.community.timeplanner.model", "com.skapp.enterprise.esignature.model",
-				"com.skapp.enterprise.leaveplanner.model");
+				"com.skapp.enterprise.leaveplanner.model", "com.skapp.enterprise.people.model");
 
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		entityManagerFactoryBean.setJpaVendorAdapter(vendorAdapter);
