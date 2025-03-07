@@ -1,6 +1,8 @@
 package com.skapp.enterprise.people.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
+import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,8 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,6 +57,37 @@ public class EpPeopleController {
 	@GetMapping(value = "/employees/timeline/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getEmployeeTimelineRecords(@PathVariable Long id) {
 		ResponseEntityDto response = epEmployeeTimelineService.getEmployeeTimelineRecords(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@GetMapping(value = "/managers-and-supervisors")
+	public ResponseEntity<ResponseEntityDto> getManagersAndSupervisorsFromEmployeeIds(
+			@RequestParam List<Long> employeeIds) {
+		ResponseEntityDto response = epPeopleService.getManagersAndSupervisorsFromEmployeeIds(employeeIds);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@PutMapping(value = "/managers-and-supervisors/transfer")
+	public ResponseEntity<ResponseEntityDto> transferSupervisorsAndManagers(
+			@RequestBody TransferManagersAndSupervisorsRequestDto transferManagersAndSupervisorsRequestDto) {
+		ResponseEntityDto response = epPeopleService
+			.transferSupervisorsAndManagers(transferManagersAndSupervisorsRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@GetMapping(value = "/managers")
+	public ResponseEntity<ResponseEntityDto> getManagersFromEmployeeIds(@RequestParam List<Long> employeeIds) {
+		ResponseEntityDto response = epPeopleService.getManagerRoleEmployeesExcludingEmployeeIds(employeeIds);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@PostMapping(value = "/deactivate-users")
+	public ResponseEntity<ResponseEntityDto> deactivateUsers(@RequestBody DeactivateUsersRequestDto employeeIds) {
+		ResponseEntityDto response = epPeopleService.deactivateUsers(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
