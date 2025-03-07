@@ -16,4 +16,6 @@ public class EpQuickSetupProgressResponseDto {
 
 	private Map<QuickSetupType, Boolean> quickSetupStatus;
 
+	private Boolean isQuickSetupCompleted;
+
 }

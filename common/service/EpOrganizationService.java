@@ -14,4 +14,6 @@ public interface EpOrganizationService {
 
 	ResponseEntityDto getCalendarConfigs();
 
+	ResponseEntityDto setQuickSetupCompleted();
+
 }
