@@ -10,4 +10,8 @@ public class SubscriptionRequestDto {
 
 	private SubscriptionPlan subscriptionPlan;
 
+	private String successUrl;
+
+	private String cancelUrl;
+
 }

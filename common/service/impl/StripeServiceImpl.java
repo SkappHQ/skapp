@@ -123,9 +123,8 @@ public class StripeServiceImpl implements StripeService {
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-			.setSuccessUrl("https://" + tenantId + "." + parentDomain
-					+ "/settings/account?session_id={CHECKOUT_SESSION_ID}&status=success")
-			.setCancelUrl("https://" + tenantId + "." + parentDomain + "/settings/account&status=cancel")
+			.setSuccessUrl(subscriptionRequestDto.getSuccessUrl())
+			.setCancelUrl(subscriptionRequestDto.getCancelUrl())
 			.setClientReferenceId(UUID.randomUUID().toString())
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
