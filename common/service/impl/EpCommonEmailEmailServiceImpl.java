@@ -2,11 +2,12 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
-import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +24,8 @@ public class EpCommonEmailEmailServiceImpl implements EpCommonEmailService {
 		emailDynamicFields.setWorkEmail(superAdmin.getEmail());
 		emailDynamicFields.setOtp(otp);
 
-		emailService.sendEmail(EmailBodyTemplates.COMMON_MODULE_EMAIL_VERIFY, emailDynamicFields,
-				emailDynamicFields.getWorkEmail());
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+				EpEmailBodyTemplates.COMMON_MODULE_EMAIL_VERIFY, emailDynamicFields, emailDynamicFields.getWorkEmail());
 	}
 
 	@Override
@@ -39,11 +40,11 @@ public class EpCommonEmailEmailServiceImpl implements EpCommonEmailService {
 		LoginMethod loginMethod = superAdmin.getLoginMethod();
 
 		if (loginMethod == LoginMethod.GOOGLE) {
-			emailService.sendEmail(EmailBodyTemplates.COMMON_MODULE_SSO_CREATION_TENANT_URL, emailDynamicFields,
+			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_SSO_CREATION_TENANT_URL, emailDynamicFields,
 					emailDynamicFields.getWorkEmail());
 		}
 		else if (loginMethod == LoginMethod.CREDENTIALS) {
-			emailService.sendEmail(EmailBodyTemplates.COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL,
+			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL,
 					emailDynamicFields, emailDynamicFields.getWorkEmail());
 		}
 
@@ -57,7 +58,7 @@ public class EpCommonEmailEmailServiceImpl implements EpCommonEmailService {
 		emailDynamicFields.setWorkEmail(user.getEmail());
 		emailDynamicFields.setOtp(otp);
 
-		emailService.sendEmail(EmailBodyTemplates.COMMON_MODULE_PASSWORD_RESET_OTP, emailDynamicFields,
+		emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_PASSWORD_RESET_OTP, emailDynamicFields,
 				emailDynamicFields.getWorkEmail());
 	}
 

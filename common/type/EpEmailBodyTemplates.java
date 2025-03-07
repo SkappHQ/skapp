@@ -7,26 +7,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum EpEmailBodyTemplates implements EmailTemplates {
 
-	// People Module Templates
-	PEOPLE_MODULE_USER_INVITATION_SSO("d-4450f0896bef4f27a21362aac3c5c832"),
-
 	// Common Module Templates
-	COMMON_MODULE_EMAIL_VERIFY("d-86e7f2af4d194a1eac45c921f674d918"),
-	COMMON_MODULE_PASSWORD_RESET_OTP("d-271cae0ec5be43b28f19095a0d68be1c"),
-	COMMON_MODULE_SSO_CREATION_TENANT_URL("d-9056585ab61842f095f336bbf5af450d"),
-	COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL("d-313f76c83a2f4ec386882f848a6e2400"),
+	COMMON_MODULE_EMAIL_VERIFY("common-module-email-verify"),
+	COMMON_MODULE_PASSWORD_RESET_OTP("common-module-password-reset-otp"),
+	COMMON_MODULE_SSO_CREATION_TENANT_URL("common-module-sso-creation-tenant-url"),
+	COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL("common-module-credential-based-creation-tenant-url"),
 
-	// E-Signature Module Templates
-	ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL("d-c85a4b02d8ed45cf8abf12b91f94d64a"),
-	ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
+	// E-Signature Module Templates esignature-module-document-viewer-email
+	ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL("esignature-module-document-viewer-email"),
+	ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL("esignature-module-document-signer-email"),
 
 	// Payment Templates for stripe
-	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_TRIAL_END_DATE("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
-	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
-	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_7DAYS("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
-	PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
-	PAYMENT_STRIPE_FREE_TRIAL_EXPIRES_IN_3DAYS("d-c4df568ce7bc42a392f9eb8e831fdbe0"),
-	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO("d-c4df568ce7bc42a392f9eb8e831fdbe0");
+	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_TRIAL_END_DATE("payment-stripe-payment-was-unsuccessful-trial-end-date"),
+	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS(
+			"payment-stripe-payment-was-unsuccessful-after-3days-and-5days"),
+	PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_7DAYS("payment-stripe-payment-was-unsuccessful-after-7days"),
+	PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL("payment-stripe-welcome-to-skapp-pro-free-trial"),
+	PAYMENT_STRIPE_FREE_TRIAL_EXPIRES_IN_3DAYS("payment-stripe-free-trial-expires-in-3days"),
+	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO(
+			"payment-stripe-congratulations-on-upgrading-to-skapp-pro");
 
 	private final String templateId;
 

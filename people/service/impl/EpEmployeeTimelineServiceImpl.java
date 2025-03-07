@@ -48,10 +48,11 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -247,17 +248,21 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		EmployeeProgression currentEmployeeProgression = currentEmployee.getEmployeeProgressions()
-			.stream()
-			.filter(EmployeeProgression::getIsCurrent)
-			.findFirst()
-			.orElse(null);
+		EmployeeProgression currentEmployeeProgression = currentEmployee.getEmployeeProgressions() != null
+				? currentEmployee.getEmployeeProgressions()
+					.stream()
+					.filter(EmployeeProgression::getIsCurrent)
+					.findFirst()
+					.orElse(null)
+				: null;
 
-		EmployeeProgressionsDto newEmployeeProgression = employeeUpdateDto.getEmployeeProgressions()
-			.stream()
-			.filter(EmployeeProgressionsDto::getIsCurrent)
-			.findFirst()
-			.orElse(null);
+		EmployeeProgressionsDto newEmployeeProgression = employeeUpdateDto.getEmployeeProgressions() != null
+				? employeeUpdateDto.getEmployeeProgressions()
+					.stream()
+					.filter(EmployeeProgressionsDto::getIsCurrent)
+					.findFirst()
+					.orElse(null)
+				: null;
 
 		if (newEmployeeProgression == null) {
 			return;
@@ -379,6 +384,11 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		if (employeeOpt.isEmpty()) {
 			return;
 		}
+
+		if (employeeUpdateDto.getTeams() == null || (employeeUpdateDto.getTeams().isEmpty())) {
+			return;
+		}
+
 		Employee employee = employeeOpt.get();
 
 		List<Team> newTeams = teamDao.findAllById(employeeUpdateDto.getTeams());
@@ -549,15 +559,17 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		Map<Role, String> roleMappings = Map.of(employeeRole.getPeopleRole(),
-				EpTimelineModuleType.PEOPLE.getDisplayName(), employeeRole.getAttendanceRole(),
-				EpTimelineModuleType.ATTENDANCE.getDisplayName(), employeeRole.getLeaveRole(),
-				EpTimelineModuleType.LEAVE.getDisplayName(), employeeRole.getEsignRole(),
-				EpTimelineModuleType.ESIGN.getDisplayName());
+		EnumMap<EpTimelineModuleType, Function<RoleRequestDto, Role>> roleGetters = new EnumMap<>(
+				EpTimelineModuleType.class);
+		roleGetters.put(EpTimelineModuleType.PEOPLE, RoleRequestDto::getPeopleRole);
+		roleGetters.put(EpTimelineModuleType.ATTENDANCE, RoleRequestDto::getAttendanceRole);
+		roleGetters.put(EpTimelineModuleType.LEAVE, RoleRequestDto::getLeaveRole);
+		roleGetters.put(EpTimelineModuleType.ESIGN, RoleRequestDto::getEsignRole);
 
-		roleMappings.forEach((role, prefix) -> {
+		roleGetters.forEach((module, getter) -> {
+			Role role = getter.apply(employeeRole);
 			if (role != null) {
-				String roleName = getRoleNameWithModule(role, prefix);
+				String roleName = getRoleNameWithModule(role, module.getDisplayName());
 				if (roleName != null) {
 					employeeTimelines.add(createEmployeeTimeline(savedEmployee,
 							EpEmployeeTimelineType.SYSTEM_PERMISSION_GRANTED, null, roleName));

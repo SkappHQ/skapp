@@ -4,7 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.Document;
@@ -157,11 +157,11 @@ public class RecipientServiceImpl implements RecipientService {
 		epEsignEnvelopeRecipientEmailDynamicFields.setDocumentNames(epEsignEmailDataDto.getDocumentNames());
 
 		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
-			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
+			emailService.sendEmail(EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 		}
 		else {
-			emailService.sendEmail(EmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
+			emailService.sendEmail(EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 		}
 	}
