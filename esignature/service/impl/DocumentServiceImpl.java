@@ -223,14 +223,7 @@ public class DocumentServiceImpl implements DocumentService {
 					documentBytes);
 		}
 
-		String fileUrl = EsignUtil.generateFileUrl();
-
-		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
-			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
-		}
-		catch (IOException e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
-		}
+		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
 		// Create new version with signature
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
@@ -273,6 +266,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 
+	}
+
+	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
+		String fileUrl = EsignUtil.generateFileUrl();
+
+		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
+			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
+		}
+		catch (IOException e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
+		}
+		return fileUrl;
 	}
 
 	@Override
