@@ -48,7 +48,10 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 	@Override
 	public void releaseConnection(String tenantIdentifier, Connection connection) {
 		try {
-			connection.setCatalog(EpCommonConstants.MASTER_DATABASE);
+			if (connection != null && !connection.isClosed()) {
+				connection.setCatalog(EpCommonConstants.MASTER_DATABASE);
+				log.info("Reset catalog to default after releasing connection for tenant: {}", tenantIdentifier);
+			}
 		}
 		catch (SQLException e) {
 			log.error("Failed to reset catalog to master database for tenant: {}. Error: {}", tenantIdentifier,
