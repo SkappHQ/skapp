@@ -7,4 +7,5 @@ public interface StripeEmailService {
 	void sendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate, String tenantName);
 
 	void sendCancelSubscriptionEmail(String userEmail, String endDate, String tenantName);
+
 }

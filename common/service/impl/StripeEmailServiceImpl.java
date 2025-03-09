@@ -58,8 +58,8 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 		paymentEmailStripeDynamicFields.setEndDate(endDate);
 
 		tenantContext.setTenantAndSwitchSchema(tenantName);
-		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION,
-				paymentEmailStripeDynamicFields, userEmail);
+		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION, paymentEmailStripeDynamicFields,
+				userEmail);
 
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 	}

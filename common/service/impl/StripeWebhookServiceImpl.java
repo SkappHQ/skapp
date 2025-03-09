@@ -353,7 +353,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(),"13123/23/23", tenant.getTenantName());
+			stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), "13123/23/23", tenant.getTenantName());
 			log.info(
 					"handleSubscriptionCancelled: Successfully updated tenant subscription status to CANCELLED for tenant: {}",
 					tenant.getTenantName());
