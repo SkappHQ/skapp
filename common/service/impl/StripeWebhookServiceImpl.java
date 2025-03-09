@@ -75,9 +75,6 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		if (eventType.equals(StripeWebhookEventTypes.INVOICE_PAYMENT_FAIL.getEventType())) {
 			handleSubscriptionPaymentFail(event);
 		}
-		if (eventType.equals(StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END.getEventType())) {
-			handleTrialEndSoon(event);
-		}
 		if (eventType.equals(StripeWebhookEventTypes.INVOICE_PAYMENT_SUCCEEDED.getEventType())) {
 			handleSubscriptionPaymentSucceeded(event);
 		}
@@ -167,6 +164,10 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
 					SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
+			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
+
+			stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(billingEmail, trialEndDate, tenant.getTenantName());
 
 			log.info("handleCheckoutSessionCompleted: Successfully saved subscription details for tenant: {}",
 					tenantId);
@@ -295,49 +296,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 						currentTenant.getTenantName());
 			}
 
-			stripeEmailService.sendStripePaymentFailEmail(invoice, currentTenant.getTenantName());
-			log.info("handleSubscriptionPaymentFail: Successfully sent payment failure email");
 		}
 		catch (StripeException e) {
 			log.error("handleSubscriptionPaymentFail: StripeException occurred", e);
 			throw new StripeVerificationException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_PAYMENT_FAILED, event,
 					StripeWebhookEventTypes.INVOICE_PAYMENT_FAIL);
-		}
-	}
-
-	private void handleTrialEndSoon(Event event) {
-		log.info("handleTrialEndSoon: Handling trial end soon event");
-
-		try {
-			Subscription subscription = event.getDataObjectDeserializer()
-				.getObject()
-				.filter(Subscription.class::isInstance)
-				.map(Subscription.class::cast)
-				.orElse(null);
-
-			if (subscription == null) {
-				log.error("handleTrialEndSoon: Subscription data not found in event");
-				return;
-			}
-
-			String customerId = subscription.getCustomer();
-			Customer customer = Customer.retrieve(customerId);
-			String customerEmail = customer.getEmail();
-			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
-
-			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
-			if (currentTenant == null) {
-				return;
-			}
-
-			stripeEmailService.sendTrialEndSoonEmail(customerEmail, trialEndDate, currentTenant.getTenantName());
-			log.info("handleTrialEndSoon: Successfully sent trial end soon email");
-		}
-		catch (StripeException e) {
-			log.error("handleTrialEndSoon: StripeException occurred", e);
-			throw new StripeVerificationException(EPCommonMessageConstant.EP_COMMON_ERROR_HANDLE_TRIAL_END_SOON, event,
-					StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END);
 		}
 	}
 
@@ -389,6 +353,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
+			stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(),"13123/23/23", tenant.getTenantName());
 			log.info(
 					"handleSubscriptionCancelled: Successfully updated tenant subscription status to CANCELLED for tenant: {}",
 					tenant.getTenantName());

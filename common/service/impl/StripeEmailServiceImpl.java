@@ -25,66 +25,6 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	private final TenantContext tenantContext;
 
 	@Override
-	public void sendTrialEndSoonEmail(String userEmail, String trialEndDate, String tenantName) {
-
-		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
-
-		tenantContext.setTenantAndSwitchSchema(tenantName);
-		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_FREE_TRIAL_EXPIRES_IN_3DAYS,
-				paymentEmailStripeDynamicFields, userEmail);
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-
-	}
-
-	@Override
-	public void sendStripePaymentFailEmail(Invoice invoice, String tenantName) {
-
-		String userEmail = invoice.getCustomerEmail();
-
-		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
-
-		int attemptCount = invoice.getAttemptCount().intValue();
-
-		tenantContext.setTenantAndSwitchSchema(tenantName);
-		switch (attemptCount) {
-			case 1 -> {
-				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_TRIAL_END_DATE,
-						paymentEmailStripeDynamicFields, userEmail);
-				log.info("send payment fail eMail end of trial" + userEmail);
-			}
-			case 2 -> {
-				paymentEmailStripeDynamicFields.setRetriedDate(DateTimeUtils.getCurrentUtcDate().toString());
-				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS,
-						paymentEmailStripeDynamicFields, userEmail);
-
-				log.info("send payment fail eMail 3 days" + userEmail);
-			}
-			case 3 -> {
-				paymentEmailStripeDynamicFields.setRetriedDate(DateTimeUtils.getCurrentUtcDate().toString());
-				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_3DAYS_AND_5DAYS,
-						paymentEmailStripeDynamicFields, userEmail);
-
-				log.info("send payment fail eMail 5 days" + userEmail);
-			}
-			case 4 -> {
-				paymentEmailStripeDynamicFields.setMoveToFreeDate(DateTimeUtils.getCurrentUtcDate().toString());
-				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_AFTER_7DAYS,
-						paymentEmailStripeDynamicFields, userEmail);
-
-				log.info("send payment fail eMail 7 days" + userEmail);
-			}
-			default -> {
-				emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_PAYMENT_WAS_UNSUCCESSFUL_TRIAL_END_DATE,
-						paymentEmailStripeDynamicFields, userEmail);
-				log.info("send payment fail eMail end of trial defailt or if manulally triggered" + userEmail);
-			}
-		}
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-
-	}
-
-	@Override
 	public void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate, String tenantName) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
@@ -109,6 +49,19 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
+	}
+
+	@Override
+	public void sendCancelSubscriptionEmail(String userEmail, String endDate, String tenantName) {
+
+		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
+		paymentEmailStripeDynamicFields.setEndDate(endDate);
+
+		tenantContext.setTenantAndSwitchSchema(tenantName);
+		emailService.sendEmail(EmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION,
+				paymentEmailStripeDynamicFields, userEmail);
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 	}
 
 }
