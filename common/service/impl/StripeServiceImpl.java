@@ -76,7 +76,7 @@ public class StripeServiceImpl implements StripeService {
 		if (tenant.getStripeSubscription().getSubscriptionId() != null) {
 			Subscription subscription = Subscription.retrieve(tenant.getStripeSubscription().getSubscriptionId());
 			responseDto.setSubscriptionId(subscription.getId());
-			if (subscription.getCancelAt() != null && tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+			if (subscription.getCancelAt() != null) {
 				responseDto.setCancellationDate(Instant.ofEpochSecond(subscription.getCancelAt()));
 			}
 
