@@ -9,6 +9,8 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
+import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
+import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -25,6 +27,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -127,10 +130,18 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
+		String tier = jwtService.extractClaim(accessToken, claims -> claims.get(AuthConstants.TIER, String.class));
+		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier);
+
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
-		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+		WebAuthenticationDetails webDetails = new WebAuthenticationDetailsSource().buildDetails(request);
+		AuthenticationDetailsDto authenticationDetails = new AuthenticationDetailsDto(webDetails, additionalDetails);
+
+		authToken.setDetails(authenticationDetails);
+
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);
 	}

@@ -66,7 +66,6 @@ public class EpQuickSetupServiceImpl implements EpQuickSetupService {
 		return Math.max(0.0, Math.min(100.0, progress));
 	}
 
-
 	private boolean isSetupCompleted() {
 		return epOrganizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name())

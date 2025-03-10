@@ -43,11 +43,8 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleConstants;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
@@ -66,6 +63,7 @@ import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import com.skapp.enterprise.people.repository.EpEmployeeTeamDao;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
 import com.skapp.enterprise.people.service.EpPeopleService;
+import com.skapp.enterprise.people.service.EpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
@@ -97,10 +95,6 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
-	private final TenantDao tenantDao;
-
-	private final TenantContext tenantContext;
-
 	private final MessageUtil messageUtil;
 
 	private final EpEmployeeTimelineService epEmployeeTimelineService;
@@ -115,6 +109,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpEmployeeManagerDao epEmployeeManagerDao;
 
+	private final EpUserService epUserService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -125,10 +121,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
 			UserVersionService userVersionService, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleDao epEmployeeRoleDao, TenantDao tenantDao, TenantContext tenantContext,
-			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
-			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
-			EpEmployeeManagerDao epEmployeeManagerDao) {
+			EpEmployeeRoleDao epEmployeeRoleDao, EpEmployeeTimelineService epEmployeeTimelineService,
+			EpEmployeeDao epEmployeeDao, EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
+			EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
@@ -139,8 +134,6 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.employeeRoleDao = employeeRoleDao;
 		this.tenantValidator = tenantValidator;
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
-		this.tenantDao = tenantDao;
-		this.tenantContext = tenantContext;
 		this.messageUtil = messageUtil;
 		this.epEmployeeTimelineService = epEmployeeTimelineService;
 		this.employeePeriodDao = employeePeriodDao;
@@ -148,6 +141,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.userDao = userDao;
 		this.epEmployeeTeamDao = epEmployeeTeamDao;
 		this.epEmployeeManagerDao = epEmployeeManagerDao;
+		this.epUserService = epUserService;
 	}
 
 	@Override
@@ -366,9 +360,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	@Override
 	protected List<EmployeeBulkDto> getValidEmployeeBulkDtoList(List<EmployeeBulkDto> employeeBulkDtoList) {
 
-		Tenant currentTenant = getCurrentTenantDetails();
-
-		if (currentTenant.getTier() == Tier.FREE) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.FREE) {
 			long employeeCount = countActiveAndPendingEmployees();
 			long maxAllowedCount = EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT - employeeCount;
 
@@ -399,8 +392,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
 		}
 	}
@@ -408,8 +401,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	@Override
 	protected void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
 			EmployeeQuickAddDto employeeQuickAddDto) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addNewQuickUploadedEmployeeTimeLineRecords(savedEmployee, employeeQuickAddDto);
 		}
 	}
@@ -417,8 +410,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	@Override
 	protected void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
 			EmployeeUpdateDto employeeUpdateDto) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, employeeUpdateDto);
 		}
 	}
@@ -467,14 +460,6 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		employeePeriod.ifPresent(period -> deepCopiedDto.setEmployeePeriod(new EmployeePeriod(period)));
 
 		return deepCopiedDto;
-	}
-
-	private Tenant getCurrentTenantDetails() {
-		String tenantId = TenantContext.getCurrentTenant();
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(tenantId);
-		tenantContext.setTenantAndSwitchSchema(tenantId);
-		return tenant;
 	}
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
