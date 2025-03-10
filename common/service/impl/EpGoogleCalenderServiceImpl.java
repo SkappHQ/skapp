@@ -70,6 +70,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -410,7 +411,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		Calendar service = createCalendarInstance(accessToken);
 		try {
 			Event event = service.events().get(EpCommonConstants.CALENDAR_ID, eventId).execute();
-			if (event != null) {
+			if (!Objects.equals(event.getStatus(), EpCommonConstants.GOOGLE_CALENDAR_EVENT_CANCELLED)) {
 				service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
 				log.info("GoogleCalendar: deleted Event: {}", eventId);
 
