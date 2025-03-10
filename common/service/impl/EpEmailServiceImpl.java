@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.type.EmailTemplates;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @Primary
+@Slf4j
 public class EpEmailServiceImpl extends EmailServiceImpl {
 
 	private static final String EMAIL_LANGUAGE = "en";
@@ -39,6 +41,22 @@ public class EpEmailServiceImpl extends EmailServiceImpl {
 			addTemplatesFromPath("enterprise/templates/email/email-templates.yml");
 		}
 
+	}
+
+	@Override
+	protected void getEnumTranslationsStream() {
+		log.info("Initializing enum translations map");
+		if (enumTranslationsMap == null) {
+			enumTranslationsMap = new HashMap<>();
+
+			loadEnumTranslationsFromPath("community/templates/common/enum-translations.yml");
+			loadEnumTranslationsFromPath("enterprise/templates/common/enum-translations.yml");
+
+			log.info("Enum translations loaded. Map size: {}", enumTranslationsMap.size());
+			if (!enumTranslationsMap.isEmpty()) {
+				log.info("Sample enum translations: {}", enumTranslationsMap);
+			}
+		}
 	}
 
 	@Override
