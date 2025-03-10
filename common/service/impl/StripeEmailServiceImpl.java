@@ -1,13 +1,11 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.service.EmailService;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
-import com.stripe.model.Invoice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
