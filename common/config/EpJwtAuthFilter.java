@@ -130,8 +130,10 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		String tier = jwtService.extractClaim(accessToken, claims -> claims.get(AuthConstants.TIER, String.class));
-		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier);
+		String tier = jwtService.extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TIER, String.class));
+		String tenantStatus = jwtService.extractClaim(accessToken,
+				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));
+		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
 
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,

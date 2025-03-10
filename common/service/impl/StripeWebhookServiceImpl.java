@@ -282,6 +282,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				if (attemptCount == 1) {
 					tenant.setTenantStatus(TenantStatus.FREE_TRAIL_ENDED);
 				}
+
 				SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
 
 				if (employeeCount > CommonConstants.EP_FREE_USER_LIMIT) {

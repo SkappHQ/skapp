@@ -82,6 +82,10 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
+		if (subscription.getCancelAt() != null && tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+			responseDto.setCancellationDate(Instant.ofEpochSecond(subscription.getCancelAt()));
+		}
+
 		return getSubscriptionDetailsResponseEntityDto(responseDto, subscription, subscription.getTrialEnd());
 	}
 
@@ -237,7 +241,10 @@ public class StripeServiceImpl implements StripeService {
 
 			SubscriptionUpdateParams params = paramsBuilder.addItem(item).build();
 
-			subscription.update(params);
+			if (tenant.getSubscriptionStatus() == SubscriptionStatus.ACTIVE) {
+				subscription.update(params);
+			}
+
 			tenant.setSubscriptionQuantity(newQuantity);
 			tenantDao.save(tenant);
 
