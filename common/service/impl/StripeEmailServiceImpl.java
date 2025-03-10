@@ -6,6 +6,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,10 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
 
 		tenantContext.setTenantAndSwitchSchema(tenantName);
-		emailService.sendEmail(EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL,
-				paymentEmailStripeDynamicFields, userEmail);
+
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1,
+				EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL, paymentEmailStripeDynamicFields,
+				userEmail);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}
@@ -39,7 +42,8 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 		paymentEmailStripeDynamicFields.setBillingDate(billingDate);
 
 		tenantContext.setTenantAndSwitchSchema(tenantName);
-		emailService.sendEmail(EpEmailBodyTemplates.PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO,
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1,
+				EpEmailBodyTemplates.PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO,
 				paymentEmailStripeDynamicFields, userEmail);
 
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -53,8 +57,8 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 		paymentEmailStripeDynamicFields.setEndDate(endDate);
 
 		tenantContext.setTenantAndSwitchSchema(tenantName);
-		emailService.sendEmail(EpEmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION, paymentEmailStripeDynamicFields,
-				userEmail);
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1,
+				EpEmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION, paymentEmailStripeDynamicFields, userEmail);
 
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 	}

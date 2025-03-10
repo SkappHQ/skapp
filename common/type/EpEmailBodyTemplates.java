@@ -19,7 +19,8 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 
 	// Payment Templates for stripe
 	PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL("payment-stripe-welcome-to-skapp-pro-free-trial"),
-	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO("payment-stripe-congratulations-on-upgrading-to-skapp-pro"),
+	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO(
+			"payment-stripe-congratulations-on-upgrading-to-skapp-pro"),
 	PAYMENT_STRIPE_CANCEL_SUBSCRIPTION("payment-stripe-cancel-subscription");
 
 	private final String templateId;

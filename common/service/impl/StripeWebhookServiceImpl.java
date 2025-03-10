@@ -353,7 +353,6 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), "13123/23/23", tenant.getTenantName());
 			log.info(
 					"handleSubscriptionCancelled: Successfully updated tenant subscription status to CANCELLED for tenant: {}",
 					tenant.getTenantName());
@@ -401,6 +400,13 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			tenantDao.save(tenant);
+
+			Customer customer = Customer.retrieve(customerId);
+			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();
+			if (subscription.getCancellationDetails().getReason().equals("cancellation_requested")) {
+				stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), endDate, tenant.getTenantName());
+			}
+
 			log.info("handleSubscriptionUpdated: Successfully updated subscription details for tenant: {}",
 					tenant.getTenantName());
 		}
