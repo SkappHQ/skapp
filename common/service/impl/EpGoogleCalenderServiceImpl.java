@@ -100,6 +100,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final MessageUtil messageUtil;
+
 	private final OrganizationDao organizationDao;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
@@ -376,8 +377,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			String autoDeclineMode, String declineMessage) {
 
 		String organizationTimeZone = organizationDao.findTopByOrderByOrganizationIdDesc()
-				.map(Organization::getOrganizationTimeZone)
-				.orElse("UTC");
+			.map(Organization::getOrganizationTimeZone)
+			.orElse("UTC");
 
 		ZonedDateTime startInOrgTz = startDateTime.atZone(ZoneId.of(organizationTimeZone));
 		ZonedDateTime endInOrgTz = endDateTime.atZone(ZoneId.of(organizationTimeZone));
