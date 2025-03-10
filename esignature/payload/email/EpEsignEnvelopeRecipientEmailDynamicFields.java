@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.email;
 
+import com.skapp.enterprise.common.type.EpEmailButtonText;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,5 +27,7 @@ public class EpEsignEnvelopeRecipientEmailDynamicFields {
 	private String documentNames;
 
 	private String appUrl;
+
+	private String buttonText = EpEmailButtonText.ESIGN_EMAIL_BUTTON_TEXT.name();
 
 }

@@ -2,10 +2,10 @@ package com.skapp.enterprise.esignature.service;
 
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 
-import java.util.List;
-
 public interface DocumentProcessingService {
 
-	byte[] mergeFields(List<FieldSignDto> fieldSignDtoList, byte[] inputBytes);
+	byte[] mergeTextFieldToDocument(FieldSignDto fieldSignDto, byte[] inputBytes);
+
+	byte[] mergeImageFieldToDocument(FieldSignDto fieldSignDto, byte[] inputBytes, byte[] imageBytes);
 
 }
