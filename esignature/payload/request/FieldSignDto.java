@@ -14,6 +14,7 @@ import lombok.Setter;
 @Setter
 public class FieldSignDto {
 
+	@NotNull
 	private Long fieldId;
 
 	@NotNull(message = "{validation.field.type.notnull}")
@@ -36,10 +37,13 @@ public class FieldSignDto {
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
 	private float yposition;
 
+	@NotNull(message = "{validation.field.width.notnull}")
 	private float width;
 
+	@NotNull(message = "{validation.field.height.notnull}")
 	private float height;
 
+	@NotNull(message = "{validation.field.value.notnull}")
 	private String fieldValue;
 
 }

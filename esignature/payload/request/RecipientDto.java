@@ -30,6 +30,9 @@ public class RecipientDto {
 	@Min(value = 1, message = "{validation.recipient.signingOrder.min}")
 	private Integer signingOrder;
 
+	@NotNull(message = "{validation.recipient.color.notnull}")
+	private String color;
+
 	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
 	private List<FieldDto> fields;
 

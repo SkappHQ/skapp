@@ -42,6 +42,9 @@ public class Document {
 	@Column(name = "current_version")
 	private int currentVersion;
 
+	@Column(name = "current_sign_order_number")
+	private int currentSignOderNumber;
+
 	@OneToMany(mappedBy = "document")
 	private List<DocumentVersion> versions;
 
