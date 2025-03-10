@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.NotificationSettingsType;
@@ -35,11 +37,12 @@ import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
+import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
-import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +55,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
@@ -75,8 +79,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final TenantService tenantService;
 
-	private final Route53Service route53Service;
-
 	private final TenantContext tenantContext;
 
 	private final EpCommonMapper epCommonMapper;
@@ -95,6 +97,10 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final ObjectMapper objectMapper;
 
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final EpOrganizationConfigDao epOrganizationConfigDao;
+
 	private final EsignConfigService esignConfigService;
 
 	@Value("${aws.route53.parent-domain}")
@@ -104,17 +110,12 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
 		validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
-		boolean subdomainCreated = false;
 		boolean tenantCreated = false;
 
 		try {
 			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
-
-			route53Service.createSubdomainForTenant(companyDomain);
-			subdomainCreated = true;
-			log.info("Subdomain created for: {}", companyDomain);
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
@@ -141,9 +142,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			// Wait for subdomain to be active before sending email
-			waitForSubdomainActive();
-
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
 			return new ResponseEntityDto(false, responseDto);
@@ -153,7 +151,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			log.error("Error creating organization: {}", e.getMessage(), e);
 
 			try {
-				cleanup(companyDomain, subdomainCreated, tenantCreated);
+				cleanup(companyDomain, tenantCreated);
 			}
 			catch (ModuleException cleanupException) {
 				log.error("Cleanup failed: {}", cleanupException.getMessage());
@@ -165,15 +163,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			}
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
-		}
-	}
-
-	private void waitForSubdomainActive() {
-		try {
-			Thread.sleep(10000); // 10-second delay
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -235,6 +224,27 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
 
 		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto setQuickSetupCompleted() {
+		log.info("setQuickSetupCompleted: execution started");
+
+		Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
+
+		if (existingQuickSetupCompletion.isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
+		}
+
+		String quickSetupCompleted = String.valueOf(true);
+		OrganizationConfig organizationConfig = new OrganizationConfig(
+				EpOrganizationConfigType.QUICK_SETUP_STATUS.name(), quickSetupCompleted);
+		organizationConfigDao.save(organizationConfig);
+
+		log.info("setQuickSetupCompleted: execution ended successfully");
+
+		return new ResponseEntityDto(false, organizationConfig);
 	}
 
 	private User createSuperAdminUser(SuperAdmin superAdmin) {
@@ -310,7 +320,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		return responseDto;
 	}
 
-	private void cleanup(String companyDomain, boolean subdomainCreated, boolean tenantCreated) {
+	private void cleanup(String companyDomain, boolean tenantCreated) {
 		ModuleException cleanupException = null;
 
 		if (tenantCreated) {
@@ -323,18 +333,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 				String error = "Failed to delete tenant during cleanup: " + companyDomain;
 				log.error(error, e);
 				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_TENANT);
-			}
-		}
-
-		if (subdomainCreated) {
-			try {
-				route53Service.deleteTenantSubdomain(companyDomain);
-				log.info("Subdomain deleted during cleanup: {}", companyDomain);
-			}
-			catch (Exception e) {
-				String error = "Failed to delete subdomain during cleanup: " + companyDomain;
-				log.error(error, e);
-				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_SUBDOMAIN);
 			}
 		}
 
@@ -368,10 +366,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
 			log.error("Attempted to create restricted subdomain: {}", organizationDto.getCompanyDomain());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN);
-		}
-
-		if (route53Service.isDomainNotAvailable(organizationDto.getCompanyDomain())) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_NOT_AVAILABLE);
 		}
 	}
 

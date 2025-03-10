@@ -1,6 +1,10 @@
 package com.skapp.enterprise.people.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
+import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
+
+import java.util.List;
 
 public interface EpPeopleService {
 
@@ -11,5 +15,14 @@ public interface EpPeopleService {
 	ResponseEntityDto getEmployeeRoleLimit();
 
 	ResponseEntityDto getEmployeesCount();
+
+	ResponseEntityDto getManagersAndSupervisorsFromEmployeeIds(List<Long> employeeIds);
+
+	ResponseEntityDto transferSupervisorsAndManagers(
+			TransferManagersAndSupervisorsRequestDto transferManagersAndSupervisorsRequestDto);
+
+	ResponseEntityDto getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds);
+
+	ResponseEntityDto deactivateUsers(DeactivateUsersRequestDto employeeIds);
 
 }

@@ -1,19 +1,27 @@
 package com.skapp.enterprise.common.config;
 
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.type.Tier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class TenantValidator {
 
-	private final List<String> proTenants;
+	private final TenantContext tenantContext;
+
+	private final TenantDao tenantDao;
 
 	public boolean isCurrentTenantPro() {
 		String currentTenant = TenantContext.getCurrentTenant();
-		return currentTenant != null && proTenants.contains(currentTenant.trim());
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		return tenant.getTier() == Tier.PRO;
 	}
 
 }

@@ -51,4 +51,10 @@ public class EpOrganizationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/configs/quick-setup")
+	public ResponseEntity<ResponseEntityDto> setQuickSetupCompleted() {
+		ResponseEntityDto response = epOrganizationService.setQuickSetupCompleted();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
