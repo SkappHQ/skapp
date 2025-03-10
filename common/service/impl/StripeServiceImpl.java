@@ -73,40 +73,37 @@ public class StripeServiceImpl implements StripeService {
 			return new ResponseEntityDto(false, responseDto);
 		}
 
-		Subscription subscription = Subscription.retrieve(tenant.getStripeSubscription().getSubscriptionId());
-		Long subscriptionQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0;
+		if (tenant.getStripeSubscription().getSubscriptionId() != null) {
+			Subscription subscription = Subscription.retrieve(tenant.getStripeSubscription().getSubscriptionId());
+			responseDto.setSubscriptionId(subscription.getId());
+			if (subscription.getCancelAt() != null && tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+				responseDto.setCancellationDate(Instant.ofEpochSecond(subscription.getCancelAt()));
+			}
 
+			responseDto.setNextBillingDate(subscription.getCurrentPeriodEnd() != null
+					? Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()) : null);
+
+			responseDto.setTotalCost(subscription.getItems()
+				.getData()
+				.stream()
+				.mapToDouble(item -> (item.getPrice().getUnitAmount() / 100.0)
+						* (item.getQuantity() != null ? item.getQuantity() : 1))
+				.sum());
+
+			Long trialEnd = subscription.getTrialEnd();
+			if (trialEnd != null) {
+				long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
+						Instant.ofEpochSecond(trialEnd).atOffset(ZoneOffset.UTC).toLocalDate());
+				responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
+				responseDto.setTrialEndDate(Instant.ofEpochSecond(trialEnd));
+			}
+		}
+		Long subscriptionQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0;
 		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
-		responseDto.setSubscriptionId(subscription.getId());
+
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
 		responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
-
-		if (subscription.getCancelAt() != null && tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
-			responseDto.setCancellationDate(Instant.ofEpochSecond(subscription.getCancelAt()));
-		}
-
-		return getSubscriptionDetailsResponseEntityDto(responseDto, subscription, subscription.getTrialEnd());
-	}
-
-	private ResponseEntityDto getSubscriptionDetailsResponseEntityDto(SubscriptionDetailsResponseDto responseDto,
-			Subscription subscription, Long trialEnd) {
-		responseDto.setTotalCost(subscription.getItems()
-			.getData()
-			.stream()
-			.mapToDouble(item -> (item.getPrice().getUnitAmount() / 100.0)
-					* (item.getQuantity() != null ? item.getQuantity() : 1))
-			.sum());
-
-		responseDto.setNextBillingDate(subscription.getCurrentPeriodEnd() != null
-				? Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()) : null);
-
-		if (trialEnd != null) {
-			long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
-					Instant.ofEpochSecond(trialEnd).atOffset(ZoneOffset.UTC).toLocalDate());
-			responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
-			responseDto.setTrialEndDate(Instant.ofEpochSecond(trialEnd));
-		}
 
 		return new ResponseEntityDto(false, responseDto);
 	}
