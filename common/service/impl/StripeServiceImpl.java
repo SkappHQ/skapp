@@ -7,6 +7,8 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
@@ -22,6 +24,7 @@ import com.stripe.model.PriceCollection;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.PriceListParams;
+import com.stripe.param.SubscriptionUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,10 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantService tenantService;
 
 	private final EmployeeDao employeeDao;
+
+	private final TenantDao tenantDao;
+
+	private final TenantContext tenantContext;
 
 	@Value("${stripe.product.product-id}")
 	private String stripeProductId;
@@ -192,6 +199,54 @@ public class StripeServiceImpl implements StripeService {
 		subscriptionResponseDto.setSessionUrl(portalSession.getUrl());
 
 		return new ResponseEntityDto(false, subscriptionResponseDto);
+	}
+
+	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement) {
+		try {
+			String currentTenant = TenantContext.getCurrentTenant();
+
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			Tenant tenant = tenantDao.findByTenantName(currentTenant);
+			Long currentQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0L;
+
+			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+			}
+
+			String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+			Subscription subscription = Subscription.retrieve(subscriptionId);
+
+			String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
+			SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder();
+
+			long newQuantity;
+			if (isIncrement) {
+				newQuantity = currentQuantity + quantity;
+			}
+			else {
+				newQuantity = currentQuantity - quantity;
+				if (newQuantity < 0) {
+					newQuantity = 0L;
+				}
+			}
+
+			SubscriptionUpdateParams.Item item = SubscriptionUpdateParams.Item.builder()
+				.setId(subscriptionItemId)
+				.setQuantity(newQuantity)
+				.build();
+
+			SubscriptionUpdateParams params = paramsBuilder.addItem(item).build();
+
+			subscription.update(params);
+			tenant.setSubscriptionQuantity(newQuantity);
+			tenantDao.save(tenant);
+
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		}
+		catch (StripeException e) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE);
+		}
 	}
 
 	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {

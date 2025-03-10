@@ -17,4 +17,6 @@ public interface StripeService {
 
 	SubscriptionPlan getSubscriptionPlanFromPriceId(String priceId) throws StripeException;
 
+	void updateSubscriptionQuantity(Long quantity, boolean isIncrement);
+
 }

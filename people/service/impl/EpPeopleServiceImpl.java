@@ -50,6 +50,7 @@ import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleConstants;
@@ -119,6 +120,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final SystemVersionService systemVersionService;
 
+	private final StripeService stripeService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -129,9 +132,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
 			UserVersionService userVersionService, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleDao epEmployeeRoleDao, EpEmployeeTimelineService epEmployeeTimelineService,
-			EpEmployeeDao epEmployeeDao, EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
-			EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService) {
+			EpEmployeeRoleDao epEmployeeRoleDao, TenantDao tenantDao, TenantContext tenantContext,
+			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
+			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
+			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService,
+			StripeService stripeService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
@@ -151,6 +156,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epEmployeeManagerDao = epEmployeeManagerDao;
 		this.epUserService = epUserService;
 		this.systemVersionService = systemVersionService;
+		this.stripeService = stripeService;
 	}
 
 	@Override
@@ -483,6 +489,19 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		employeePeriod.ifPresent(period -> deepCopiedDto.setEmployeePeriod(new EmployeePeriod(period)));
 
 		return deepCopiedDto;
+	}
+
+	@Override
+	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement) {
+		stripeService.updateSubscriptionQuantity(quantity, isIncrement);
+	}
+
+	private Tenant getCurrentTenantDetails() {
+		String tenantId = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(tenantId);
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+		return tenant;
 	}
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
