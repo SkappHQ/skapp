@@ -3,16 +3,17 @@ package com.skapp.enterprise.esignature.service;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface DocumentService {
 
 	ResponseEntityDto saveDocument(DocumentDto document);
 
-	@Transactional
 	DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto);
 
-	ResponseEntityDto signDocumentInOrder(DocumentSignDto documentSignDto);
+	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto);
+
+	ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto);
 
 }

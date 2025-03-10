@@ -24,6 +24,7 @@ import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -90,7 +91,13 @@ public interface EsignMapper {
 
 	Document documentDtoToDocument(DocumentDto documentDto);
 
+	@Mapping(source = "dateFormat", target = "dateFormat", qualifiedByName = "mapDateFormat")
 	EsignConfigResponseDto esignConfigToEsignConfigResponseDto(EsignConfig esignConfig);
+
+	@Named("mapDateFormat")
+	default String mapDateFormat(DateFormatType dateFormat) {
+		return dateFormat != null ? dateFormat.getValue() : null;
+	}
 
 	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
 
