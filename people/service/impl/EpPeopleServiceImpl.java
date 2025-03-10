@@ -6,10 +6,13 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
+import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
@@ -48,6 +51,7 @@ import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleConstants;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
@@ -115,6 +119,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpEmployeeManagerDao epEmployeeManagerDao;
 
+	private final SystemVersionService systemVersionService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -128,7 +134,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EpEmployeeRoleDao epEmployeeRoleDao, TenantDao tenantDao, TenantContext tenantContext,
 			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
 			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
-			EpEmployeeManagerDao epEmployeeManagerDao) {
+			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
@@ -148,6 +154,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.userDao = userDao;
 		this.epEmployeeTeamDao = epEmployeeTeamDao;
 		this.epEmployeeManagerDao = epEmployeeManagerDao;
+		this.systemVersionService = systemVersionService;
 	}
 
 	@Override
@@ -221,6 +228,20 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		deactivateEmployees(employees);
+
+		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		if (userCount <= EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT) {
+			String currentTenant = TenantContext.getCurrentTenant();
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			Tenant tenant = tenantDao.findByTenantName(currentTenant);
+			tenant.setTier(Tier.FREE);
+			tenant.setTenantStatus(TenantStatus.ACTIVE);
+			tenantDao.save(tenant);
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+			systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
+					SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE_AND_SET_TENANT_STATUS_ACTIVE);
+		}
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED));
