@@ -2,6 +2,9 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.SystemVersionService;
+import com.skapp.community.common.type.SystemVersionTypes;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -17,6 +20,7 @@ import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
@@ -52,6 +56,8 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantDao tenantDao;
 
 	private final TenantContext tenantContext;
+
+	private final SystemVersionService systemVersionService;
 
 	@Value("${stripe.product.product-id}")
 	private String stripeProductId;
@@ -260,6 +266,27 @@ public class StripeServiceImpl implements StripeService {
 		catch (StripeException e) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto activateTenantAfterFreeTrial() {
+		String currentTenant = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+
+		if (tenant.getTenantStatus() != TenantStatus.FREE_TRAIL_ENDED) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_STATUS_NOT_FREE_TRIAL_ENDED);
+		}
+
+		tenant.setTenantStatus(TenantStatus.ACTIVE);
+		tenantDao.save(tenant);
+
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
+				SystemVersionTypes.TENANT_STATUS_UPDATE_TO_ACTIVE_AFTER_TRIAL);
+
+		return new ResponseEntityDto(false, "Free trial ended successfully");
 	}
 
 	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {
