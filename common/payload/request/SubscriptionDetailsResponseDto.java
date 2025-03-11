@@ -32,4 +32,6 @@ public class SubscriptionDetailsResponseDto {
 
 	private SubscriptionStatus subscriptionStatus;
 
+	private Instant cancellationDate;
+
 }

@@ -25,8 +25,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
@@ -70,6 +72,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -98,6 +101,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final MessageUtil messageUtil;
+
+	private final OrganizationDao organizationDao;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -372,8 +377,15 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
 			String autoDeclineMode, String declineMessage) {
 
-		ZonedDateTime startUtc = startDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
-		ZonedDateTime endUtc = endDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
+		String organizationTimeZone = organizationDao.findTopByOrderByOrganizationIdDesc()
+			.map(Organization::getOrganizationTimeZone)
+			.orElse("UTC");
+
+		ZonedDateTime startInOrgTz = startDateTime.atZone(ZoneId.of(organizationTimeZone));
+		ZonedDateTime endInOrgTz = endDateTime.atZone(ZoneId.of(organizationTimeZone));
+
+		ZonedDateTime startUtc = startInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
+		ZonedDateTime endUtc = endInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
 
 		String startFormatted = EpDateTimeUtils.formatUtcDateTime(startUtc);
 		String endFormatted = EpDateTimeUtils.formatUtcDateTime(endUtc);
@@ -409,13 +421,17 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
 		Calendar service = createCalendarInstance(accessToken);
 		try {
-			service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
-			log.info("GoogleCalendar: delete Event: {}", eventId);
+			Event event = service.events().get(EpCommonConstants.CALENDAR_ID, eventId).execute();
+			if (!Objects.equals(event.getStatus(), EpCommonConstants.GOOGLE_CALENDAR_EVENT_CANCELLED)) {
+				service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
+				log.info("GoogleCalendar: deleted Event: {}", eventId);
 
-			calendarEventDao.deleteByEventId(eventId);
-		}
-		catch (Exception exception) {
-			log.error("GoogleCalendar: delete Event: {}", exception.getMessage(), exception);
+				calendarEventDao.deleteByEventId(eventId);
+			} else {
+				log.warn("GoogleCalendar: Event {} not found, nothing to delete", eventId);
+			}
+		} catch (Exception exception) {
+			log.error("GoogleCalendar: Error deleting Event {}: {}", eventId, exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR);
 		}
 	}

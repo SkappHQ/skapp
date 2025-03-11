@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.model.master;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,6 +33,10 @@ public class Tenant {
 
 	@Column(name = "is_active")
 	private boolean isActive;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "tenant_status", columnDefinition = "varchar(255)")
+	private TenantStatus tenantStatus;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "tenant_login_method", columnDefinition = "varchar(255)")

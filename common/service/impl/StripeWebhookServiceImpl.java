@@ -23,6 +23,7 @@ import com.skapp.enterprise.common.type.StripeSubscriptionType;
 import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
@@ -258,19 +259,21 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			invoice = Invoice.retrieve(invoice.getId());
-			String customerId = invoice.getCustomer();
-			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(customerId);
+			StripeSubscription currentTenant = stripeSubscriptionDao.findByCustomerId(invoice.getCustomer());
+
 			if (currentTenant == null) {
-				log.error("handleSubscriptionPaymentFail: No subscription found for customer: {}", customerId);
+				log.error("handleSubscriptionPaymentFail: No subscription found for customer: {}",
+						invoice.getCustomer());
 				return;
 			}
 
-			int attemptCount = invoice.getAttemptCount().intValue();
 			Tenant tenant = currentTenant.getTenant();
 			String tenantId = tenant.getTenantName();
+			int attemptCount = invoice.getAttemptCount().intValue();
 
-			if ((attemptCount == 1 && (tenant.getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL))
+			if (attemptCount == 1 && tenant.getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					|| attemptCount == 4) {
+
 				tenant.setSubscriptionStatus(SubscriptionStatus.CANCELED);
 				tenantContext.setTenantAndSwitchSchema(tenantId);
 				long employeeCount = employeeDao
@@ -278,24 +281,31 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 				tenant.setTier(Tier.FREE);
+				if (attemptCount == 1) {
+					tenant.setTenantStatus(TenantStatus.FREE_TRAIL_ENDED);
+				}
+
 				SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
+
 				if (employeeCount > CommonConstants.EP_FREE_USER_LIMIT) {
-					tenant.setTier(Tier.SUSPENDED);
+					tenant.setTenantStatus(attemptCount == 1 ? TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+							: TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 					systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_UNPAID;
 				}
 
-				currentTenant.setLastModifiedByEmail(invoice.getCustomerEmail());
 				tenant.setLastModifiedDate(Instant.now());
+				currentTenant.setLastModifiedByEmail(invoice.getCustomerEmail());
 
 				tenantDao.save(tenant);
-
 				tenantContext.setTenantAndSwitchSchema(tenantId);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}",
-						currentTenant.getTenantName());
+				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantId);
 			}
+
+			stripeEmailService.sendStripePaymentFailEmail(invoice, tenantId);
+			log.info("handleSubscriptionPaymentFail: Successfully sent payment failure email");
 
 		}
 		catch (StripeException e) {
@@ -336,9 +346,13 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			tenant.setTier(Tier.FREE);
+			if (tenant.getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL) {
+				tenant.setTenantStatus(TenantStatus.FREE_TRAIL_ENDED);
+			}
+
 			SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
 			if (employeeCount > CommonConstants.EP_FREE_USER_LIMIT) {
-				tenant.setTier(Tier.SUSPENDED);
+				tenant.setTenantStatus(TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 				systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_CANCELLED;
 			}
 
