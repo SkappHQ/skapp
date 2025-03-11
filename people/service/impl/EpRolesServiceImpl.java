@@ -19,24 +19,35 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
+import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
+import com.skapp.enterprise.people.service.EpRolesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Service
 @Slf4j
 @Primary
-public class EpRolesServiceImpl extends RolesServiceImpl {
+public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesService {
+
+	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
 	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
 			TeamDao teamDao, PeopleMapper peopleMapper, ModuleRoleRestrictionDao moduleRoleRestrictionDao,
-			MessageUtil messageUtil, UserVersionService userVersionService) {
+			MessageUtil messageUtil, UserVersionService userVersionService, EpEmployeeRoleDao epEmployeeRoleDao) {
 		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil,
 				userVersionService);
+		this.epEmployeeRoleDao = epEmployeeRoleDao;
 	}
 
 	@Override
@@ -98,7 +109,6 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 		}
 	}
 
-	// New Ep Module Role restriction can be validated here
 	private Boolean validateEpRestrictedRoleAssignment(Role role, ModuleType moduleType) {
 		ModuleRoleRestrictionResponseDto restrictedRole = getRestrictedRoleByModule(moduleType);
 		return switch (role) {
@@ -112,6 +122,105 @@ public class EpRolesServiceImpl extends RolesServiceImpl {
 		EmployeeRole employeeRole = super.setupBulkEmployeeRoles(employee);
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
 		return employeeRole;
+	}
+
+	@Override
+	public void downgradeUserRolesToEmployeeRole() {
+		List<EmployeeRole> rolesToUpdate = new ArrayList<>();
+
+		processSuperAdmins(rolesToUpdate);
+		processRoleAdmins(rolesToUpdate);
+
+		if (!rolesToUpdate.isEmpty()) {
+			epEmployeeRoleDao.saveAll(rolesToUpdate);
+		}
+	}
+
+	private void processSuperAdmins(List<EmployeeRole> rolesToUpdate) {
+		List<AccountStatus> validStatuses = Arrays.asList(AccountStatus.PENDING, AccountStatus.ACTIVE);
+		List<EmployeeRole> superAdmins = epEmployeeRoleDao
+			.findEmployeeRoleByIsSuperAdminAndEmployeeAccountStatusIn(true, validStatuses);
+		superAdmins.sort(Comparator.comparing(role -> role.getEmployee().getCreatedDate()));
+
+		if (superAdmins.size() > EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT) {
+			List<EmployeeRole> excessSuperAdmins = superAdmins
+				.subList(EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT, superAdmins.size());
+
+			for (EmployeeRole role : excessSuperAdmins) {
+				role.setIsSuperAdmin(false);
+				role.setPeopleRole(Role.PEOPLE_EMPLOYEE);
+				role.setLeaveRole(Role.LEAVE_EMPLOYEE);
+				role.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
+				role.setEsignRole(Role.ESIGN_EMPLOYEE);
+				rolesToUpdate.add(role);
+			}
+		}
+	}
+
+	private void processRoleAdmins(List<EmployeeRole> rolesToUpdate) {
+		List<AccountStatus> validStatuses = Arrays.asList(AccountStatus.PENDING, AccountStatus.ACTIVE);
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByPeopleRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.PEOPLE_ADMIN, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT,
+				role -> role.setPeopleRole(Role.PEOPLE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByLeaveRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.LEAVE_ADMIN, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT,
+				role -> role.setLeaveRole(Role.LEAVE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByAttendanceRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.ATTENDANCE_ADMIN, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT,
+				role -> role.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByEsignRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.ESIGN_ADMIN, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_ADMIN_COUNT,
+				role -> role.setEsignRole(Role.ESIGN_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByPeopleRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.PEOPLE_MANAGER, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT,
+				role -> role.setPeopleRole(Role.PEOPLE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByLeaveRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.LEAVE_MANAGER, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT,
+				role -> role.setLeaveRole(Role.LEAVE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByAttendanceRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.ATTENDANCE_MANAGER, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT,
+				role -> role.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByEsignRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.ESIGN_SENDER, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT,
+				role -> role.setEsignRole(Role.ESIGN_EMPLOYEE));
+	}
+
+	private void processRoleType(List<EmployeeRole> rolesToUpdate, List<EmployeeRole> roles, int maxAllowedCount,
+			Consumer<EmployeeRole> roleDowngrader) {
+		roles.sort(Comparator.comparing(role -> role.getEmployee().getCreatedDate()));
+
+		if (roles.size() > maxAllowedCount) {
+			List<EmployeeRole> excessRoles = roles.subList(maxAllowedCount, roles.size());
+
+			for (EmployeeRole role : excessRoles) {
+				roleDowngrader.accept(role);
+				rolesToUpdate.add(role);
+			}
+		}
 	}
 
 }

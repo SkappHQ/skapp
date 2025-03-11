@@ -71,6 +71,7 @@ import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import com.skapp.enterprise.people.repository.EpEmployeeTeamDao;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
 import com.skapp.enterprise.people.service.EpPeopleService;
+import com.skapp.enterprise.people.service.EpRolesService;
 import com.skapp.enterprise.people.service.EpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -127,6 +128,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final TenantDao tenantDao;
 
+	private final EpRolesService epRolesService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -141,7 +144,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
 			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
 			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService,
-			StripeService stripeService, EpUserService epUserService) {
+			StripeService stripeService, EpUserService epUserService, EpRolesService epRolesService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
@@ -164,6 +167,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.stripeService = stripeService;
 		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
+		this.epRolesService = epRolesService;
 	}
 
 	@Override
@@ -237,6 +241,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		deactivateEmployees(employees);
+		epRolesService.downgradeUserRolesToEmployeeRole();
 
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		if (userCount <= EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT) {
