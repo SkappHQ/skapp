@@ -33,4 +33,22 @@ public class DocumentVersionField {
 	@Column(name = "field_value")
 	private String value;
 
+	@Column(name = "x_position")
+	private float xPosition;
+
+	@Column(name = "y_position")
+	private float yPosition;
+
+	@Column(name = "field_hash")
+	private String fieldHash;
+
+	@Column(name = "field_signature")
+	private String fieldSignature;
+
+	@Column(name = "width")
+	private float width;
+
+	@Column(name = "height")
+	private float height;
+
 }

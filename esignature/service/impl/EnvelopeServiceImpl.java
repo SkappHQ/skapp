@@ -67,7 +67,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createNewEnvelope(@Valid EnvelopeDetailDto envelopeDetailDto) {
-		log.info("createNewEnvelope: execution started {}", userService.getCurrentUser().getUserId());
+		User currentUser = userService.getCurrentUser();
+		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
+
+		Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
 
 		if (envelopeDetailDto.getExpireAt().isBefore(LocalDateTime.now())) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VALIDATION_ENTER_ENVELOPE_EXPIRES_AT);
@@ -84,6 +87,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), envelope);
 		envelope.setDocuments(documents);
 
+		boolean hasInvalidDocumentId = envelopeDetailDto.getRecipients()
+			.stream()
+			.flatMap(recipient -> recipient.getFields().stream())
+			.anyMatch(field -> !ids.contains(field.getDocumentId()));
+
+		if (hasInvalidDocumentId) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
+		}
+
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
@@ -91,6 +103,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeSetting.setEnvelope(envelope);
 
 		envelope.setSetting(envelopeSetting);
+		addressBookOptional.ifPresent(envelope::setOwner);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
@@ -101,6 +114,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
 			Document document = documentVersion.getDocument();
 			document.setCurrentVersion(documentVersion.getVersionNumber());
+			document.setCurrentSignOderNumber(1);
 			return document;
 		}).toList();
 
@@ -112,7 +126,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
 		responseDto.setEmailResponse(emailResponse.getResults());
 
-		log.info("createNewEnvelope: execution end {}", userService.getCurrentUser().getUserId());
+		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -210,6 +224,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setMemberRole(recipientDto.getMemberRole());
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
+			recipient.setColor(recipientDto.getColor());
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
@@ -230,6 +245,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setPageNumber(fieldDto.getPageNumber());
 			field.setXPosition(fieldDto.getXposition());
 			field.setYPosition(fieldDto.getYposition());
+			field.setFontFamily(fieldDto.getFontFamily());
+			field.setFontColor(fieldDto.getFontColor());
+			field.setWidth(fieldDto.getWidth());
+			field.setHeight(fieldDto.getHeight());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 

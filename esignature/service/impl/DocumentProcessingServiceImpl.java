@@ -39,35 +39,29 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private final MessageUtil messageUtil;
 
 	@Override
-	public byte[] mergeFields(List<FieldSignDto> fieldSignDtoList, byte[] inputBytes) {
-		validateInput(fieldSignDtoList, inputBytes);
+	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
+
+		if (inputBytes == null || inputBytes.length == 0) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
+		}
+
+		if (field == null) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
+		}
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
 				PDDocument document = Loader.loadPDF(randomAccessRead);
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
-			for (FieldSignDto field : fieldSignDtoList) {
-				validateField(field);
-				PDPage page = getPage(document, field.getPageNumber());
-				float pageHeight = page.getMediaBox().getHeight();
+			validateField(field);
+			PDPage page = getPage(document, field.getPageNumber());
+			float pageHeight = page.getMediaBox().getHeight();
 
-				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
-						PDPageContentStream.AppendMode.APPEND, true, true)) {
-
-					switch (field.getType()) {
-						case DATE:
-							addTextField(field, contentStream, pageHeight);
-							break;
-						case SIGNATURE, INITIAL, STAMP:
-							addImageField(field, contentStream, document, pageHeight);
-							break;
-						case APPROVE, DECLINE:
-							// Do nothing
-							break;
-						default:
-							throw new IllegalArgumentException("Unsupported field type: " + field.getType());
-					}
-				}
+			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
+					PDPageContentStream.AppendMode.APPEND, true, true)) {
+				addTextField(field, contentStream, pageHeight);
 			}
 
 			document.save(outputStream);
@@ -80,34 +74,44 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void validateInput(List<FieldSignDto> fields, byte[] inputBytes) {
+	@Override
+	public byte[] mergeImageFieldToDocument(FieldSignDto field, byte[] inputBytes, byte[] imageBytes) {
+
 		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
 		}
-		if (fields == null || fields.isEmpty()) {
+
+		if (imageBytes == null || imageBytes.length == 0) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
+		}
+
+		if (field == null) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
 		}
-	}
 
-	private void validateField(FieldSignDto field) {
-		if (field == null) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL));
-		}
-		if (field.getPageNumber() < 1) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
-		}
-		if (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty()) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
-		}
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
-		if (field.getXposition() < 0 || field.getYposition() < 0) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
+			validateField(field);
+			PDPage page = getPage(document, field.getPageNumber());
+			float pageHeight = page.getMediaBox().getHeight();
+
+			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
+					PDPageContentStream.AppendMode.APPEND, true, true)) {
+				addImageField(field, contentStream, document, pageHeight, imageBytes);
+			}
+
+			document.save(outputStream);
+			return outputStream.toByteArray();
+
+		}
+		catch (IOException e) {
+			log.error("Error processing PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
 
@@ -140,10 +144,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void addImageField(FieldSignDto field, PDPageContentStream contentStream, PDDocument document,
-			float pageHeight) {
-		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, field.getFieldValue())) {
+			float pageHeight, byte[] imageBytes) {
+		try {
 
-			PDImageXObject image = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(), "image");
+			PDImageXObject image = PDImageXObject.createFromByteArray(document, imageBytes, "image");
 			// Relative to the co-ordinates taken from UI -top left
 			float adjustedY = pageHeight - field.getYposition() - field.getHeight();
 
@@ -155,6 +159,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			log.error("Failed to load image: {}", field.getFieldValue(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
 					new String[] { field.getFieldValue() });
+		}
+	}
+
+	private void validateField(FieldSignDto field) {
+		if (field == null) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL));
+		}
+		if (field.getPageNumber() < 1) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
+		}
+		if (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty()) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
+		}
+
+		if (field.getXposition() < 0 || field.getYposition() < 0) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
 		}
 	}
 
