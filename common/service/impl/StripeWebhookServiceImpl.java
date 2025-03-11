@@ -287,6 +287,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				tenant.setTier(Tier.FREE);
 				if (attemptCount == 1) {
 					tenant.setTenantStatus(TenantStatus.FREE_TRAIL_ENDED);
+					Subscription subscription = Subscription.retrieve(currentTenant.getSubscriptionId());
+					subscription.cancel();
 				}
 
 				SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
