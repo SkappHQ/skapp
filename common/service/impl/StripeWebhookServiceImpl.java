@@ -304,7 +304,6 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantId);
 			}
 
-			stripeEmailService.sendStripePaymentFailEmail(invoice, tenantId);
 			log.info("handleSubscriptionPaymentFail: Successfully sent payment failure email");
 
 		}

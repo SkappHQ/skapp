@@ -427,10 +427,12 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 				log.info("GoogleCalendar: deleted Event: {}", eventId);
 
 				calendarEventDao.deleteByEventId(eventId);
-			} else {
+			}
+			else {
 				log.warn("GoogleCalendar: Event {} not found, nothing to delete", eventId);
 			}
-		} catch (Exception exception) {
+		}
+		catch (Exception exception) {
 			log.error("GoogleCalendar: Error deleting Event {}: {}", eventId, exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR);
 		}
