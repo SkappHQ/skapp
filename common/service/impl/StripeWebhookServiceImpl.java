@@ -19,6 +19,7 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
+import com.skapp.enterprise.common.type.StripeSubscriptionType;
 import com.skapp.enterprise.common.type.StripeWebhookEventTypes;
 import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
@@ -403,7 +404,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			Customer customer = Customer.retrieve(customerId);
 			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();
-			if (subscription.getCancellationDetails().getReason().equals("cancellation_requested")) {
+
+			if (subscription.getCancellationDetails() != null
+					&& subscription.getCancellationDetails().getReason() != null
+					&& StripeSubscriptionType.CANCELLATION_REQUESTED.getType()
+						.equals(subscription.getCancellationDetails().getReason())) {
+
 				stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), endDate, tenant.getTenantName());
 			}
 
