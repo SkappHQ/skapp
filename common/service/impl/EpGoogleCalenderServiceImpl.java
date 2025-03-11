@@ -72,6 +72,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -420,13 +421,17 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
 		Calendar service = createCalendarInstance(accessToken);
 		try {
-			service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
-			log.info("GoogleCalendar: delete Event: {}", eventId);
+			Event event = service.events().get(EpCommonConstants.CALENDAR_ID, eventId).execute();
+			if (!Objects.equals(event.getStatus(), EpCommonConstants.GOOGLE_CALENDAR_EVENT_CANCELLED)) {
+				service.events().delete(EpCommonConstants.CALENDAR_ID, eventId).execute();
+				log.info("GoogleCalendar: deleted Event: {}", eventId);
 
-			calendarEventDao.deleteByEventId(eventId);
-		}
-		catch (Exception exception) {
-			log.error("GoogleCalendar: delete Event: {}", exception.getMessage(), exception);
+				calendarEventDao.deleteByEventId(eventId);
+			} else {
+				log.warn("GoogleCalendar: Event {} not found, nothing to delete", eventId);
+			}
+		} catch (Exception exception) {
+			log.error("GoogleCalendar: Error deleting Event {}: {}", eventId, exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR);
 		}
 	}
