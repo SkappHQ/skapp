@@ -12,8 +12,6 @@ public class PaymentEmailStripeDynamicFields extends CommonEmailDynamicFields {
 
 	private String billingDate;
 
-	private String retriedDate;
-
-	private String moveToFreeDate;
+	private String endDate;
 
 }
