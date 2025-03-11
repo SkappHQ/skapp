@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.type;
 
+import com.skapp.community.common.type.EmailTemplates;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
