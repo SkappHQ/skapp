@@ -36,14 +36,20 @@ public class EpEmployeeRoleRepositoryImpl implements EpEmployeeRoleRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		if (roleName != null) {
-			if (roleName == Role.ATTENDANCE_ADMIN || roleName == Role.ATTENDANCE_MANAGER)
+			if (roleName == Role.ATTENDANCE_ADMIN || roleName == Role.ATTENDANCE_MANAGER) {
 				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.ATTENDANCE_ROLE), roleName));
-			else if (roleName == Role.LEAVE_ADMIN || roleName == Role.LEAVE_MANAGER)
+				predicates.add(criteriaBuilder.isFalse(root.get(EmployeeRole_.isSuperAdmin)));
+			}
+			else if (roleName == Role.LEAVE_ADMIN || roleName == Role.LEAVE_MANAGER) {
 				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.LEAVE_ROLE), roleName));
-			else if (roleName == Role.PEOPLE_ADMIN || roleName == Role.PEOPLE_MANAGER)
+				predicates.add(criteriaBuilder.isFalse(root.get(EmployeeRole_.isSuperAdmin)));
+			}
+			else if (roleName == Role.PEOPLE_ADMIN || roleName == Role.PEOPLE_MANAGER) {
 				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.PEOPLE_ROLE), roleName));
+				predicates.add(criteriaBuilder.isFalse(root.get(EmployeeRole_.isSuperAdmin)));
+			}
 			else if (roleName == Role.SUPER_ADMIN)
-				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.isSuperAdmin), true));
+				predicates.add(criteriaBuilder.isTrue(root.get(EmployeeRole_.isSuperAdmin)));
 		}
 		predicates.add(criteriaBuilder.notEqual(employee.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 
