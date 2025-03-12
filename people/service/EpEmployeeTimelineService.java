@@ -30,4 +30,6 @@ public interface EpEmployeeTimelineService {
 
 	void addDeletedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord);
 
+	void addNewEmployeeTimeLineRecordForBulk(Employee savedEmployee);
+
 }

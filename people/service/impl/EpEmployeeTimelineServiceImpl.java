@@ -186,6 +186,28 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		epEmployeeTimelineDao.save(employeeTimeline);
 	}
 
+	@Override
+	public void addNewEmployeeTimeLineRecordForBulk(Employee savedEmployee) {
+		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
+
+		addJobProgressionTimeline(savedEmployee, employeeTimelines);
+		addJoinDateTimeline(savedEmployee, employeeTimelines);
+		addProbationDateTimeline(savedEmployee, employeeTimelines);
+		addTeamTimeline(savedEmployee, employeeTimelines);
+		addManagerTimeline(savedEmployee, employeeTimelines);
+		addEmploymentAllocationTimeline(savedEmployee, employeeTimelines);
+
+		RoleRequestDto roleRequestDto = new RoleRequestDto();
+		roleRequestDto.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
+		roleRequestDto.setLeaveRole(Role.LEAVE_EMPLOYEE);
+		roleRequestDto.setPeopleRole(Role.PEOPLE_EMPLOYEE);
+		roleRequestDto.setEsignRole(Role.ESIGN_EMPLOYEE);
+
+		addSystemPermissionTimeline(savedEmployee, roleRequestDto, employeeTimelines);
+
+		epEmployeeTimelineDao.saveAll(employeeTimelines);
+	}
+
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,
 			String previousValue, String newValue) {
 		EmployeeTimeline employeeTimeline = new EmployeeTimeline();
