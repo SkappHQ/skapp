@@ -19,4 +19,6 @@ public interface StripeService {
 
 	void updateSubscriptionQuantity(Long quantity, boolean isIncrement);
 
+	ResponseEntityDto activateTenantAfterFreeTrial();
+
 }

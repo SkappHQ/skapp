@@ -56,4 +56,10 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/activate-tenant-after-trial")
+	public ResponseEntity<ResponseEntityDto> activateTenantAfterFreeTrial() {
+		ResponseEntityDto response = stripeService.activateTenantAfterFreeTrial();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

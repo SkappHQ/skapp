@@ -127,7 +127,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_CANCELLED("ep.common.error.handle-subscription-cancelled"),
 	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_UPDATED("ep.common.error.handle-subscription-updated"),
 	EP_COMMON_ERROR_SUBSCRIPTION_UPDATE("ep.common.error.subscription-update"),
-	EP_COMMON_ERROR_REQUIRED_SUCCESS_CANCEL_URL("ep.common.error.required-success-cancel-url");
+	EP_COMMON_ERROR_REQUIRED_SUCCESS_CANCEL_URL("ep.common.error.required-success-cancel-url"),
+	EP_COMMON_ERROR_TENANT_STATUS_NOT_FREE_TRIAL_ENDED("ep.common.error.tenant-status-not-free-trial-ended"),;
 
 	private final String messageKey;
 
