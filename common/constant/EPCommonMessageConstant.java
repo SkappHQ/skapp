@@ -128,7 +128,13 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_UPDATED("ep.common.error.handle-subscription-updated"),
 	EP_COMMON_ERROR_SUBSCRIPTION_UPDATE("ep.common.error.subscription-update"),
 	EP_COMMON_ERROR_REQUIRED_SUCCESS_CANCEL_URL("ep.common.error.required-success-cancel-url"),
-	EP_COMMON_ERROR_TENANT_STATUS_NOT_FREE_TRIAL_ENDED("ep.common.error.tenant-status-not-free-trial-ended"),;
+	EP_COMMON_ERROR_TENANT_STATUS_NOT_FREE_TRIAL_ENDED("ep.common.error.tenant-status-not-free-trial-ended"),
+	EP_COMMON_ERROR_EMAIL_BATCH_ID_NOT_OBTAINED("ep.common.error.email-batch-id-not-obtained"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_FAILED("ep.common.error.email-schedule-cancellation-failed"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-batch-id-cannot-be-null"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-status-cannot-be-null");
 
 	private final String messageKey;
 
