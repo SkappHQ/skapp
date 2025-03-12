@@ -130,6 +130,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpRolesService epRolesService;
 
+	private final EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
@@ -144,7 +146,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
 			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
 			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService,
-			StripeService stripeService, EpUserService epUserService, EpRolesService epRolesService) {
+			StripeService stripeService, EpUserService epUserService, EpRolesService epRolesService,
+			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
 				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
 				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
@@ -168,6 +171,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
 		this.epRolesService = epRolesService;
+		this.epAsyncEmployeeTimelineServiceImpl = epAsyncEmployeeTimelineServiceImpl;
 	}
 
 	@Override
@@ -446,6 +450,14 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addNewQuickUploadedEmployeeTimeLineRecords(savedEmployee, employeeQuickAddDto);
+		}
+	}
+
+	@Override
+	protected void addNewBulkUploadedEmployeeTimeLineRecords(List<EmployeeBulkResponseDto> results) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
+			epAsyncEmployeeTimelineServiceImpl.addNewBulkUploadedEmployeeTimeLineRecordsInBackground(results);
 		}
 	}
 
