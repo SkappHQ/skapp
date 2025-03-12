@@ -70,6 +70,6 @@ public class EpCommonConstants {
 
 	public static final String ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE = ":::---:::";
 
-	public static final String Subscription = "subscription";
+	public static final String SUBSCRIPTION = "subscription";
 
 }
