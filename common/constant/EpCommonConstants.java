@@ -26,6 +26,8 @@ public class EpCommonConstants {
 
 	public static final String GOOGLE_CALENDAR_EVENT_TYPE = "outOfOffice";
 
+	public static final String GOOGLE_CALENDAR_EVENT_CANCELLED = "cancelled";
+
 	public static final String TOKEN = "token=";
 
 	public static final String HTTP_POST_HEADER_VALUE = "application/x-www-form-urlencoded";

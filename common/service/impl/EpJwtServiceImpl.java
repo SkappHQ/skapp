@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.service.SystemVersionService;
@@ -11,6 +10,7 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -55,8 +55,10 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
 			Tier tier = Optional.ofNullable(tenant).map(Tenant::getTier).orElse(Tier.FREE);
+			TenantStatus status = Optional.ofNullable(tenant).map(Tenant::getTenantStatus).orElse(TenantStatus.ACTIVE);
 
-			claims.put(AuthConstants.TIER, tier.name());
+			claims.put(EpAuthConstants.TIER, tier.name());
+			claims.put(EpAuthConstants.TENANT_STATUS, status.name());
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);

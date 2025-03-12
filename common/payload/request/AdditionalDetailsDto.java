@@ -11,4 +11,6 @@ public class AdditionalDetailsDto {
 
 	private String tier;
 
+	private String tenantStatus;
+
 }

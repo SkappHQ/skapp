@@ -12,6 +12,7 @@ import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class TenantServiceImpl implements TenantService {
 
 		Tenant tenant = new Tenant();
 		tenant.setTenantName(tenantName);
-		tenant.setActive(true);
+		tenant.setTenantStatus(TenantStatus.ACTIVE);
 		tenant.setLoginMethod(loginMethod);
 		tenant.setCreatedByEmail(email);
 		tenant.setTier(Tier.FREE);
@@ -99,14 +100,6 @@ public class TenantServiceImpl implements TenantService {
 		Tenant tenant = tenantDao.findByTenantName(currentTenantId);
 		tenantContext.setTenantAndSwitchSchema(currentTenantId);
 		return tenant;
-	}
-
-	@Override
-	public boolean validateTenantExist(String tenantId) {
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findById(tenantId).orElse(null);
-		tenantContext.setTenantAndSwitchSchema(tenantId);
-		return tenant != null;
 	}
 
 }
