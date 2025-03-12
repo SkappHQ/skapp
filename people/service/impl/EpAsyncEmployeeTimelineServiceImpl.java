@@ -46,10 +46,9 @@ public class EpAsyncEmployeeTimelineServiceImpl {
 			try {
 				Employee employee = employeeDao.findEmployeeByEmail(result.getEmail());
 				epEmployeeTimelineService.addNewEmployeeTimeLineRecordForBulk(employee);
-				log.info("Email sent successfully to: {}", result.getEmail());
 			}
 			catch (Exception exception) {
-				log.error("Failed to send email to: {}", result.getEmail(), exception);
+				log.error("Failed to add timeline: {}", result.getEmail(), exception);
 			}
 		});
 	}
