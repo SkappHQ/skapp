@@ -21,9 +21,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Map;
 import java.util.Optional;
 
@@ -68,7 +68,7 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	}
 
 	@Override
-	public Key getSigningKey() {
+	public SecretKey getSigningKey() {
 		String tenant = TenantContext.getCurrentTenant();
 		if (tenant == null) {
 			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSigningKey));

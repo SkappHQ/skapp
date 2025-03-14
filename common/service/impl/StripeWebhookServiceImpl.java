@@ -99,7 +99,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				return;
 			}
 
-			if (!EpCommonConstants.Subscription.equals(session.getMode())) {
+			if (!EpCommonConstants.SUBSCRIPTION.equals(session.getMode())) {
 				log.info("handleCheckoutSessionCompleted: Not a subscription checkout session, ignoring");
 				return;
 			}
