@@ -78,4 +78,8 @@ public class EpCommonConstants {
 
 	public static final String SENDGRID_CANCEL_SCHEDULED_MAIL = "cancel";
 
+	public static final String TENANT_ID_KEY = "tenantId";
+
+	public static final String EMAIL_KEY = "email";
+
 }
