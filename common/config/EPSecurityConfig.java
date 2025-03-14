@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
 import com.skapp.community.common.component.ResetDatabaseApiKeyFilter;
+import com.skapp.enterprise.esignature.config.TemporaryLinkAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,8 @@ public class EPSecurityConfig {
 	private final EpJwtAuthFilter epJwtAuthFilter;
 
 	private final TenantFilter tenantFilter;
+
+	private final TemporaryLinkAuthFilter temporaryLinkAuthFilter;
 
 	private final UserDetailsService userDetailsService;
 
@@ -81,7 +84,8 @@ public class EPSecurityConfig {
 						"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
 						"/v1/ep/auth/password-reset/verify-otp", "/v1/ep/auth/password-reset/send-otp",
 						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
-						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook")
+						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook",
+						"/v1/ep/document/view", "/v1/ep/document/sign")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -98,6 +102,7 @@ public class EPSecurityConfig {
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(temporaryLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(resetDatabaseApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
 
