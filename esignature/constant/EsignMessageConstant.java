@@ -35,8 +35,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
 
-	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.not-found"),
+	ESIGN_ERROR_NO_RECIPIENT_FOUND("ep.esign.error.recipient.not-found"),
+	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
+	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.recipients.not-found"),
+	ESIGN_ERROR_NO_DOCUMENT_EMAIL_SENT_ENVELOPE("ep.esign.error.envelope.recipient.emails-sent-recipients.not-found"),
 	ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT("ep.esign.error.failed.sign.document"),
 	ESIGN_ERROR_FAILED_TO_LOAD_KEY_PAIR("ep.esign.error.failed.load.key-pair"),
 	ESIGN_ERROR_FAILED_TO_PROCESS_CURRENT_DOCUMENT_VERSION("ep.esign.error.failed.process.current.document-version"),

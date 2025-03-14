@@ -15,4 +15,8 @@ public enum EnvelopeStatus {
 		return List.of(COMPLETED, CANCELED).contains(envelopeStatus);
 	}
 
+	public static List<EnvelopeStatus> inactiveStatuses() {
+		return List.of(VOIDED, DECLINED, EXPIRED);
+	}
+
 }

@@ -208,7 +208,7 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 			});
 
-		updatedRecipient.setStatus(RecipientStatus.FILLED);
+		updatedRecipient.setStatus(RecipientStatus.APPROVED);
 		recipientRepository.save(updatedRecipient);
 
 		// load current version version-fields

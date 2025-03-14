@@ -72,4 +72,10 @@ public class EpCommonConstants {
 
 	public static final String SUBSCRIPTION = "subscription";
 
+	public static final int SENDGRID_EMAIL_SCHEDULE_MAX_HOURS = 72;
+
+	public static final int HOURS_A_DAY = 24;
+
+	public static final String SENDGRID_CANCEL_SCHEDULED_MAIL = "cancel";
+
 }

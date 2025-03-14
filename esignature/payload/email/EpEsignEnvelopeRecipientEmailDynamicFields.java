@@ -30,4 +30,14 @@ public class EpEsignEnvelopeRecipientEmailDynamicFields {
 
 	private String buttonText = EpEmailButtonText.ESIGN_EMAIL_BUTTON_TEXT.name();
 
+	private Long sendAt;
+
+	private String batchId;
+
+	private String voidReason;
+
+	private String declinedBy;
+
+	private String title;
+
 }
