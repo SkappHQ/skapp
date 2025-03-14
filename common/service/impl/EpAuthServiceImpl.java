@@ -46,7 +46,6 @@ import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -549,11 +548,11 @@ public class EpAuthServiceImpl implements EpAuthService {
 		}
 
 		return Jwts.builder()
-			.setClaims(claims)
-			.setSubject(userDetails.getUsername())
-			.setIssuedAt(new Date(System.currentTimeMillis()))
-			.setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-			.signWith(jwtService.getSigningKey(), SignatureAlgorithm.HS256)
+			.claims(claims)
+			.subject(userDetails.getUsername())
+			.issuedAt(new Date(System.currentTimeMillis()))
+			.expiration(new Date(System.currentTimeMillis() + expirationTime))
+			.signWith(jwtService.getSigningKey())
 			.compact();
 	}
 

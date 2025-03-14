@@ -124,6 +124,10 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto)
 			throws StripeException {
+		if (subscriptionRequestDto.getSubscriptionPlan() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_REQUIRED_SUBSCRIPTION_PLAN);
+		}
+
 		if (subscriptionRequestDto.getSuccessUrl() == null || subscriptionRequestDto.getCancelUrl() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_REQUIRED_SUCCESS_CANCEL_URL);
 		}
