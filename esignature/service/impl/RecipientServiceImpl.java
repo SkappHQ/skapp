@@ -21,7 +21,11 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponse
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.RecipientService;
-import com.skapp.enterprise.esignature.type.*;
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
+import com.skapp.enterprise.esignature.type.EmailStatus;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

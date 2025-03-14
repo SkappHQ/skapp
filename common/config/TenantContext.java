@@ -24,7 +24,7 @@ public class TenantContext {
 
 	public static void setCurrentTenant(String tenant) {
 		currentTenant.set(tenant);
-		log.info("Tenant set to: {}", tenant);
+		log.debug("Tenant set to: {}", tenant);
 	}
 
 	public static String getCurrentTenant() {
@@ -54,11 +54,11 @@ public class TenantContext {
 	}
 
 	private void switchDatabaseSchema(String tenant) {
-		log.info("Switching database schema to tenant: {}", tenant);
+		log.debug("Switching database schema to tenant: {}", tenant);
 		try {
 			entityManager.unwrap(Session.class).doWork(connection -> {
 				connection.setCatalog(tenant);
-				log.info("Successfully switched database to: {}", tenant);
+				log.debug("Successfully switched database to: {}", tenant);
 			});
 
 			entityManager.clear();
@@ -77,7 +77,7 @@ public class TenantContext {
 			if (tenant.equals(getCurrentTenant())) {
 				clearCurrentTenant();
 			}
-			log.info("Tenant {} removed successfully", tenant);
+			log.debug("Tenant {} removed successfully", tenant);
 		}
 		catch (Exception e) {
 			log.error("Error removing tenant {}: {}", tenant, e.getMessage());

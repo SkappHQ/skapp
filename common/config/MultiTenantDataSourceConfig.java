@@ -212,7 +212,7 @@ public class MultiTenantDataSourceConfig {
 
 	public void addTenant(String tenantId) {
 		validTenants.add(tenantId);
-		log.info("Tenant {} registered successfully", tenantId);
+		log.debug("Tenant {} registered successfully", tenantId);
 	}
 
 	public void removeTenant(String tenantId) {
@@ -221,7 +221,7 @@ public class MultiTenantDataSourceConfig {
 		if (dataSource instanceof HikariDataSource hikariDataSource) {
 			hikariDataSource.close();
 		}
-		log.info("Tenant {} unregistered and connections closed", tenantId);
+		log.debug("Tenant {} unregistered and connections closed", tenantId);
 	}
 
 }
