@@ -48,13 +48,13 @@ public class EpLeaveServiceImpl extends LeaveServiceImpl {
 			PeopleService peopleService, TeamDao teamDao, PeopleMapper peopleMapper, EmployeeTeamDao employeeTeamDao,
 			LeaveEmailService leaveEmailService, LeaveNotificationService leaveNotificationService,
 			NotificationDao notificationDao, OrganizationService organizationService,
-			EpLeaveCalendarService epLeaveCalendarService, LeaveRequestDao leaveRequestDao1) {
+			EpLeaveCalendarService epLeaveCalendarService) {
 		super(userService, leaveMapper, leaveRequestDao, leaveTypeDao, messageUtil, leaveEntitlementDao,
 				leaveRequestEntitlementDao, timeConfigDao, holidayDao, employeeDao, employeeManagerDao, pageTransformer,
 				peopleService, teamDao, peopleMapper, employeeTeamDao, leaveEmailService, leaveNotificationService,
 				notificationDao, organizationService);
 		this.epLeaveCalendarService = epLeaveCalendarService;
-		this.leaveRequestDao = leaveRequestDao1;
+		this.leaveRequestDao = leaveRequestDao;
 	}
 
 	@Override
