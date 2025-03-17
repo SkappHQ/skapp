@@ -96,7 +96,8 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 			});
 		}
 
-		if(emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1 || emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO){
+		if (emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1
+				|| emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO) {
 			placeholders.put("tenantId", TenantContext.getCurrentTenant());
 		}
 
