@@ -5,6 +5,7 @@ import com.skapp.community.common.payload.email.EmailTemplateMetadata;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.community.common.service.impl.EmailServiceImpl;
+import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.EmailTemplates;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -93,6 +94,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 				placeholders.put("appUrl", value.getAppUrl());
 				placeholders.put("organizationName", value.getOrganizationName());
 			});
+		}
+
+		if(emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1 || emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO){
+			placeholders.put("tenantId", TenantContext.getCurrentTenant());
 		}
 
 		if (TenantContext.getCurrentTenant() != null
