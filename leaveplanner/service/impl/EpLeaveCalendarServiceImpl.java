@@ -3,6 +3,7 @@ package com.skapp.enterprise.leaveplanner.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EncryptionDecryptionService;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -61,6 +62,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final MessageUtil messageUtil;
 
 	private final EpGoogleCalenderServiceImpl epGoogleCalenderServiceImpl;
+
+	private final OrganizationService organizationService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -183,7 +186,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 		LocalDate currentDate = startDate;
 		while (!currentDate.isAfter(endDate)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs)) {
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs,
+					organizationService.getOrganizationTimeZone())) {
 				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
 						holidayObjects);
 				LocalDateTime startDateTime = currentDate.atTime(workStartAndEndTimes.getStartTime());

@@ -2,6 +2,7 @@ package com.skapp.enterprise.leaveplanner.service.impl;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
@@ -40,20 +41,18 @@ public class EpLeaveServiceImpl extends LeaveServiceImpl {
 
 	private final LeaveRequestDao leaveRequestDao;
 
-	public EpLeaveServiceImpl(@NonNull UserService userService, @NonNull LeaveMapper leaveMapper,
-			@NonNull LeaveTypeDao leaveTypeDao, @NonNull MessageUtil messageUtil,
-			@NonNull LeaveEntitlementDao leaveEntitlementDao,
-			@NonNull LeaveRequestEntitlementDao leaveRequestEntitlementDao, @NonNull TimeConfigDao timeConfigDao,
-			@NonNull HolidayDao holidayDao, @NonNull EmployeeDao employeeDao,
-			@NonNull EmployeeManagerDao employeeManagerDao, @NonNull PageTransformer pageTransformer,
-			@NonNull PeopleService peopleService, @NonNull TeamDao teamDao, @NonNull PeopleMapper peopleMapper,
-			@NonNull EmployeeTeamDao employeeTeamDao, @NonNull LeaveEmailService leaveEmailService,
-			@NonNull LeaveNotificationService leaveNotificationService, @NonNull NotificationDao notificationDao,
-			EpLeaveCalendarService epLeaveCalendarService, LeaveRequestDao leaveRequestDao) {
+	public EpLeaveServiceImpl(UserService userService, LeaveMapper leaveMapper, LeaveRequestDao leaveRequestDao,
+			LeaveTypeDao leaveTypeDao, MessageUtil messageUtil, LeaveEntitlementDao leaveEntitlementDao,
+			LeaveRequestEntitlementDao leaveRequestEntitlementDao, TimeConfigDao timeConfigDao, HolidayDao holidayDao,
+			EmployeeDao employeeDao, EmployeeManagerDao employeeManagerDao, PageTransformer pageTransformer,
+			PeopleService peopleService, TeamDao teamDao, PeopleMapper peopleMapper, EmployeeTeamDao employeeTeamDao,
+			LeaveEmailService leaveEmailService, LeaveNotificationService leaveNotificationService,
+			NotificationDao notificationDao, OrganizationService organizationService,
+			EpLeaveCalendarService epLeaveCalendarService) {
 		super(userService, leaveMapper, leaveRequestDao, leaveTypeDao, messageUtil, leaveEntitlementDao,
 				leaveRequestEntitlementDao, timeConfigDao, holidayDao, employeeDao, employeeManagerDao, pageTransformer,
 				peopleService, teamDao, peopleMapper, employeeTeamDao, leaveEmailService, leaveNotificationService,
-				notificationDao);
+				notificationDao, organizationService);
 		this.epLeaveCalendarService = epLeaveCalendarService;
 		this.leaveRequestDao = leaveRequestDao;
 	}
