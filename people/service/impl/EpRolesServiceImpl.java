@@ -1,6 +1,7 @@
 package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
@@ -13,6 +14,7 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -31,6 +33,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -94,27 +97,42 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	}
 
 	@Override
-	public void validateRoles(RoleRequestDto userRoles) {
+	public void validateRoles(EmployeeSystemPermissionsDto userRoles) {
 		User currentUser = getUserService().getCurrentUser();
 
 		super.validateRoles(userRoles);
 
-		if (hasOnlyAdminPermissions(currentUser) && userRoles.getEsignRole() != null && Boolean.TRUE
-			.equals(validateEpRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN))) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_RESTRICTED_ASSIGNING_ROLE_ACCESS);
+		if (userRoles.getEsignRole() == null) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_ESIGN_ROLE_REQUIRED);
+		}
+
+		Role esignRole = userRoles.getEsignRole();
+		EnumSet<Role> validEsignRoles = EnumSet.of(Role.ESIGN_EMPLOYEE, Role.ESIGN_SENDER, Role.ESIGN_ADMIN);
+		if (!validEsignRoles.contains(esignRole)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_ESIGN_ROLE,
+					new String[] { esignRole.name() });
 		}
 
 		if (Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SHOULD_ASSIGN_PROPER_PERMISSIONS);
 		}
+
+		if (hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
+				&& validateRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS,
+					new String[] { userRoles.getEsignRole().name() });
+		}
 	}
 
-	private Boolean validateEpRestrictedRoleAssignment(Role role, ModuleType moduleType) {
+	@Override
+	protected Boolean validateRestrictedRoleAssignment(Role role, ModuleType moduleType) {
 		ModuleRoleRestrictionResponseDto restrictedRole = getRestrictedRoleByModule(moduleType);
-		return switch (role) {
-			case ESIGN_ADMIN -> Boolean.TRUE.equals(restrictedRole.getIsAdmin());
-			default -> false;
-		};
+
+		if (role == Role.ESIGN_ADMIN) {
+			return Boolean.TRUE.equals(restrictedRole.getIsAdmin());
+		}
+
+		return super.validateRestrictedRoleAssignment(role, moduleType);
 	}
 
 	@Override

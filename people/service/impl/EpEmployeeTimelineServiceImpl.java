@@ -334,11 +334,11 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void handleEmployeeTypeChange(Employee currentEmployee, EmployeeProgression currentProgression,
 			EmployeeProgressionsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
-		if (currentProgression.getEmployeeType() != null && newProgression.getEmployeeType() != null
-				&& !currentProgression.getEmployeeType().equals(newProgression.getEmployeeType())) {
-			employeeTimelines
-				.add(createEmployeeTimeline(currentEmployee, EpEmployeeTimelineType.EMPLOYMENT_TYPE_CHANGED,
-						currentProgression.getEmployeeType().toString(), newProgression.getEmployeeType().toString()));
+		if (currentProgression.getEmploymentType() != null && newProgression.getEmploymentType() != null
+				&& !currentProgression.getEmploymentType().equals(newProgression.getEmploymentType())) {
+			employeeTimelines.add(createEmployeeTimeline(currentEmployee,
+					EpEmployeeTimelineType.EMPLOYMENT_TYPE_CHANGED, currentProgression.getEmploymentType().toString(),
+					newProgression.getEmploymentType().toString()));
 		}
 	}
 
@@ -356,9 +356,9 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 						EpEmployeeTimelineType.JOB_FAMILY_ASSIGNED, null, family.getName())));
 		}
 
-		if (newProgression.getEmployeeType() != null) {
+		if (newProgression.getEmploymentType() != null) {
 			employeeTimelines.add(createEmployeeTimeline(currentEmployee, EpEmployeeTimelineType.EMPLOYMENT_TYPE_ADDED,
-					null, newProgression.getEmployeeType().toString()));
+					null, newProgression.getEmploymentType().toString()));
 		}
 	}
 
