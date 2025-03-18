@@ -17,11 +17,8 @@ import com.skapp.community.leaveplanner.service.impl.LeaveEntitlementServiceImpl
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.people.service.EpUserService;
 import com.skapp.enterprise.people.service.impl.EpEmployeeTimelineServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -37,9 +34,7 @@ public class EpLeaveEntitlementServiceImpl extends LeaveEntitlementServiceImpl {
 
 	private final EpEmployeeTimelineServiceImpl epEmployeeTimelineServiceImpl;
 
-	private final TenantContext tenantContext;
-
-	private final TenantDao tenantDao;
+	private final EpUserService epUserService;
 
 	public EpLeaveEntitlementServiceImpl(MessageUtil messageUtil, EmployeeDao employeeDao,
 			LeaveCycleService leaveCycleService, LeaveTypeDao leaveTypeDao, LeaveEntitlementDao leaveEntitlementDao,
@@ -47,37 +42,34 @@ public class EpLeaveEntitlementServiceImpl extends LeaveEntitlementServiceImpl {
 			PageTransformer pageTransformer, PlatformTransactionManager transactionManager, UserDao userDao,
 			UserService userService, LeaveEmailService leaveEmailService,
 			LeaveNotificationService leaveNotificationService, BulkContextService bulkContextService,
-			EpEmployeeTimelineServiceImpl epEmployeeTimelineServiceImpl, TenantContext tenantContext,
-			TenantDao tenantDao) {
+			EpEmployeeTimelineServiceImpl epEmployeeTimelineServiceImpl, EpUserService epUserService) {
 		super(messageUtil, employeeDao, leaveCycleService, leaveTypeDao, leaveEntitlementDao, leaveMapper, peopleMapper,
 				carryForwardInfoDao, pageTransformer, transactionManager, userDao, userService, leaveEmailService,
 				leaveNotificationService, bulkContextService);
 		this.epEmployeeTimelineServiceImpl = epEmployeeTimelineServiceImpl;
-		this.tenantContext = tenantContext;
-		this.tenantDao = tenantDao;
+		this.epUserService = epUserService;
 	}
 
 	@Override
 	protected void addCustomLeaveEntitlementsTimeLineRecords(Employee employee, LeaveEntitlement leaveEntitlement) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineServiceImpl.addCustomLeaveEntitlementsTimeLineRecords(employee, leaveEntitlement);
 		}
 	}
 
 	@Override
-	protected void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> entitlements,
-			boolean isCustom) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
-			epEmployeeTimelineServiceImpl.addBulkLeaveEntitlementsTimeLineRecords(employee, entitlements, isCustom);
+	protected void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> entitlements) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
+			epEmployeeTimelineServiceImpl.addBulkLeaveEntitlementsTimeLineRecords(employee, entitlements, false);
 		}
 	}
 
 	@Override
 	protected void addDeletedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineServiceImpl.addDeletedLeaveEntitlementsTimeLineRecords(employee, oldHistoryRecord);
 		}
 	}
@@ -85,19 +77,11 @@ public class EpLeaveEntitlementServiceImpl extends LeaveEntitlementServiceImpl {
 	@Override
 	protected void addUpdatedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord,
 			String newHistoryRecord, boolean isCustom) {
-		Tenant currentTenant = getCurrentTenantDetails();
-		if (currentTenant.getTier() == Tier.PRO) {
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineServiceImpl.addUpdatedLeaveEntitlementsTimeLineRecords(employee, oldHistoryRecord,
 					newHistoryRecord, isCustom);
 		}
-	}
-
-	private Tenant getCurrentTenantDetails() {
-		String tenantId = TenantContext.getCurrentTenant();
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(tenantId);
-		tenantContext.setTenantAndSwitchSchema(tenantId);
-		return tenant;
 	}
 
 }
