@@ -20,8 +20,10 @@ public class UserDeactivatedEventHandler {
 	@EventListener
 	public void handleUserDeactivation(UserDeactivatedEvent event) {
 		User user = event.getUser();
-		addressBookDao.deleteByInternalUserUserId(user.getUserId());
-
+		addressBookDao.findByInternalUser(user).ifPresent(addressBook -> {
+			addressBook.setIsActive(false);
+			addressBookDao.save(addressBook);
+		});
 	}
 
 }
