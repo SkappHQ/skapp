@@ -97,7 +97,8 @@ public class ModuleServiceImpl implements ModuleService {
 		}
 	}
 
-	private boolean getCurrentModuleState(ModuleConfig moduleConfig, ModuleType moduleType) {
+	@Override
+	public boolean getCurrentModuleState(ModuleConfig moduleConfig, ModuleType moduleType) {
 		return switch (moduleType) {
 			case LEAVE -> moduleConfig.isLeaveModule();
 			case ATTENDANCE -> moduleConfig.isAttendanceModule();
