@@ -86,6 +86,7 @@ public interface EsignMapper {
 	@Mapping(target = "envelopeName", source = "name")
 	@Mapping(target = "envelopeMessage", source = "message")
 	@Mapping(target = "envelopeSubject", source = "subject")
+	@Mapping(target = "reminderDays", source = "setting.reminderDays")
 	EpEsignEmailEnvelopeDataDto envelopeToEpEsignEmailEnvelopeDataDto(Envelope envelope);
 
 	Document documentDtoToDocument(DocumentDto documentDto);

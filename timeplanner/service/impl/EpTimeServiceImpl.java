@@ -2,6 +2,7 @@ package com.skapp.enterprise.timeplanner.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.mapper.CommonMapper;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
@@ -43,11 +44,11 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 			PageTransformer pageTransformer, EmployeeManagerDao employeeManagerDao,
 			AttendanceNotificationService attendanceNotificationService,
 			LeaveRequestEntitlementDao leaveRequestEntitlementDao, LeaveEntitlementDao leaveEntitlementDao,
-			EpLeaveCalendarService epLeaveCalendarService) {
+			OrganizationService organizationService, EpLeaveCalendarService epLeaveCalendarService) {
 		super(timeConfigDao, mapper, messageUtil, userService, timeRecordDao, timeSlotDao, attendanceConfigService,
 				leaveRequestDao, holidayDao, employeeDao, peopleMapper, leaveMapper, timeRequestDao, teamDao,
 				timeMapper, commonMapper, timeEmailService, pageTransformer, employeeManagerDao,
-				attendanceNotificationService, leaveRequestEntitlementDao, leaveEntitlementDao);
+				attendanceNotificationService, leaveRequestEntitlementDao, leaveEntitlementDao, organizationService);
 		this.epLeaveCalendarService = epLeaveCalendarService;
 	}
 

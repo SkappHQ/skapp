@@ -50,7 +50,7 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 		try {
 			if (connection != null && !connection.isClosed()) {
 				connection.setCatalog(EpCommonConstants.MASTER_DATABASE);
-				log.info("Reset catalog to default after releasing connection for tenant: {}", tenantIdentifier);
+				log.debug("Reset catalog to default after releasing connection for tenant: {}", tenantIdentifier);
 			}
 		}
 		catch (SQLException e) {

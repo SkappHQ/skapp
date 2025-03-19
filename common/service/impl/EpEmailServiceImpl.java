@@ -5,9 +5,12 @@ import com.skapp.community.common.payload.email.EmailTemplateMetadata;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.community.common.service.impl.EmailServiceImpl;
+import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.EmailTemplates;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.service.EpAsyncEmailSender;
+import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -21,15 +24,19 @@ import java.util.Optional;
 @Service
 @Primary
 @Slf4j
-public class EpEmailServiceImpl extends EmailServiceImpl {
+public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailService {
 
 	private static final String EMAIL_LANGUAGE = "en";
 
 	private final OrganizationDao organizationDao;
 
-	public EpEmailServiceImpl(AsyncEmailSender asyncEmailSender, OrganizationDao organizationDao) {
+	private final EpAsyncEmailSender epAsyncEmailSender;
+
+	public EpEmailServiceImpl(AsyncEmailSender asyncEmailSender, OrganizationDao organizationDao,
+			EpAsyncEmailSender epAsyncEmailSender) {
 		super(asyncEmailSender);
 		this.organizationDao = organizationDao;
+		this.epAsyncEmailSender = epAsyncEmailSender;
 	}
 
 	@Override
@@ -89,10 +96,25 @@ public class EpEmailServiceImpl extends EmailServiceImpl {
 			});
 		}
 
+		if (emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1
+				|| emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO) {
+			placeholders.put("tenantId", TenantContext.getCurrentTenant());
+		}
+
 		if (TenantContext.getCurrentTenant() != null
 				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)) {
 			placeholders.put("appUrl", "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin");
 		}
+	}
+
+	@Override
+	public String obtainSendGridBatchId() {
+		return epAsyncEmailSender.getSendGridEmailBatchId();
+	}
+
+	@Override
+	public void cancelScheduledEmail(String batchId, String status) {
+		epAsyncEmailSender.cancelScheduledEmails(batchId, status);
 	}
 
 }

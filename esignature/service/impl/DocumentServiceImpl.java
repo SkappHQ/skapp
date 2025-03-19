@@ -209,7 +209,7 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 			});
 
-		updatedRecipient.setStatus(RecipientStatus.FILLED);
+		updatedRecipient.setStatus(RecipientStatus.APPROVED);
 		recipientRepository.save(updatedRecipient);
 
 		// load current version version-fields
@@ -673,10 +673,16 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private AddressBook getAddressBookIdByInternalUserId(@NotNull User currentUser) {
-
-		return addressBookDao.findByInternalUser(currentUser)
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND,
 					new String[] { currentUser.getUserId().toString() }));
+
+		if (Boolean.FALSE.equals(addressBook.getIsActive())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND,
+					new String[] { currentUser.getUserId().toString() });
+		}
+
+		return addressBook;
 	}
 
 	private Recipient getRecipientById(@NotNull Long id) {

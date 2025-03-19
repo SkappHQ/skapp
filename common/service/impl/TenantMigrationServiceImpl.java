@@ -36,12 +36,12 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 
 	@Override
 	public void runMigration(String tenantId) {
-		log.info("Starting migration for tenant: {}", tenantId);
+		log.debug("Starting migration for tenant: {}", tenantId);
 
 		try {
 			multiTenantDataSourceConfig.addTenant(tenantId);
 			performLiquibaseMigration(tenantId);
-			log.info("Migration completed for tenant: {}", tenantId);
+			log.debug("Migration completed for tenant: {}", tenantId);
 		}
 		catch (Exception e) {
 			handleMigrationError(tenantId, e);
@@ -126,11 +126,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		summary.append(String.format("Total Tenants: %d%n", successfulTenants.size() + failedTenants.size()));
 		summary.append(String.format("Successful Migrations: %d%n", successfulTenants.size()));
 		summary.append(String.format("Failed Migrations: %d%n", failedTenants.size()));
-
-		if (!successfulTenants.isEmpty()) {
-			summary.append(String.format("%nSuccessfully Migrated Tenants:%n"));
-			successfulTenants.forEach(tenant -> summary.append(String.format("- %s%n", tenant)));
-		}
 
 		if (!failedTenants.isEmpty()) {
 			summary.append(String.format("%nFailed Migrations:%n"));

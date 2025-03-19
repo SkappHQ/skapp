@@ -54,7 +54,6 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
-import com.skapp.enterprise.people.constant.EpPeopleConstants;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
 import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
@@ -186,8 +185,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			return false;
 		}
 
-		return employeeDao
-			.countByAccountStatus(AccountStatus.ACTIVE) >= EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT;
+		return employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE,
+				AccountStatus.PENDING)) >= EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT;
 	}
 
 	@Override
@@ -248,7 +247,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		epRolesService.downgradeUserRolesToEmployeeRole();
 
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
-		if (userCount <= EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT) {
+		if (userCount <= EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT) {
 			String currentTenant = TenantContext.getCurrentTenant();
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
@@ -409,7 +408,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.FREE) {
 			long employeeCount = countActiveAndPendingEmployees();
-			long maxAllowedCount = EpPeopleConstants.ENTERPRISE_FREE_MAX_USER_LIMIT - employeeCount;
+			long maxAllowedCount = EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT - employeeCount;
 
 			if (maxAllowedCount <= 0) {
 				throw new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_ALLOWED_USER_LIMIT_EXCEEDED);
@@ -421,6 +420,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		return employeeBulkDtoList;
+	}
+
+	@Override
+	protected boolean checkUserCountExceeded() {
+		return checkEmployeesLimit();
 	}
 
 	@Override
