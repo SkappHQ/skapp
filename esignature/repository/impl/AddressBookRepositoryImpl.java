@@ -53,6 +53,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
+		predicates.add(cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE)));
+
 		List<UserType> userTypes = addressBookFilterDto.getUserType();
 
 		if (userTypes != null && userTypes.size() == 1) {
@@ -125,11 +127,15 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
 					user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
 
+			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
+
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
 
-			query.where(cb.or(emailLike, firstNameLike, lastNameLike));
+			Predicate keywordCondition = cb.or(emailLike, firstNameLike, lastNameLike);
+
+			query.where(cb.and(keywordCondition, isActivePredicate));
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)
