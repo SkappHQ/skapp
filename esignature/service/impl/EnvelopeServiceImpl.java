@@ -72,6 +72,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
 
+		AddressBook addressBook = addressBookOptional.filter(AddressBook::getIsActive)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
 		if (envelopeDetailDto.getExpireAt().isBefore(LocalDateTime.now())) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VALIDATION_ENTER_ENVELOPE_EXPIRES_AT);
 		}
@@ -103,7 +106,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeSetting.setEnvelope(envelope);
 
 		envelope.setSetting(envelopeSetting);
-		addressBookOptional.ifPresent(envelope::setOwner);
+		envelope.setOwner(addressBook);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
@@ -218,6 +221,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND));
+
+			if (Boolean.FALSE.equals(addressBook.getIsActive())) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+			}
 
 			Recipient recipient = new Recipient();
 			recipient.setAddressBook(addressBook);
