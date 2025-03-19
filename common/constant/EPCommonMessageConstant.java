@@ -135,8 +135,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT(
 			"ep.common.error.email-schedule-cancellation-batch-id-cannot-be-null"),
 	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
-			"ep.common.error.email-schedule-cancellation-status-cannot-be-null");
-	EP_COMMON_ERROR_REQUIRED_SUBSCRIPTION_PLAN("ep.common.error.required-subscription-plan"),
+			"ep.common.error.email-schedule-cancellation-status-cannot-be-null"),
 	EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK("ep.common.error.invalid.temp-link"),
 	EP_COMMON_ERROR_LINK_EXPIRED("ep.common.error.expire.temp-link");
 
