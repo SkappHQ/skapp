@@ -150,7 +150,8 @@ public class StripeServiceImpl implements StripeService {
 			.setClientReferenceId(UUID.randomUUID().toString())
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
-			.setLocale(SessionCreateParams.Locale.AUTO);
+			.setLocale(SessionCreateParams.Locale.AUTO)
+			.setAllowPromotionCodes(true);
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
