@@ -19,12 +19,13 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
@@ -93,7 +94,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	@Override
-	public void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
+	public void addNewEmployeeTimeLineRecords(Employee savedEmployee, CreateEmployeeRequestDto employeeDetailsDto) {
 		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
 
 		addJobProgressionTimeline(savedEmployee, employeeTimelines);
@@ -102,7 +103,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		addTeamTimeline(savedEmployee, employeeTimelines);
 		addManagerTimeline(savedEmployee, employeeTimelines);
 		addEmploymentAllocationTimeline(savedEmployee, employeeTimelines);
-		addSystemPermissionTimeline(savedEmployee, employeeDetailsDto.getUserRoles(), employeeTimelines);
+		addSystemPermissionTimeline(savedEmployee, employeeDetailsDto.getSystemPermissions(), employeeTimelines);
 
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
@@ -197,7 +198,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		addManagerTimeline(savedEmployee, employeeTimelines);
 		addEmploymentAllocationTimeline(savedEmployee, employeeTimelines);
 
-		RoleRequestDto roleRequestDto = new RoleRequestDto();
+		EmployeeSystemPermissionsDto roleRequestDto = new EmployeeSystemPermissionsDto();
 		roleRequestDto.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		roleRequestDto.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		roleRequestDto.setPeopleRole(Role.PEOPLE_EMPLOYEE);
@@ -391,10 +392,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void addTeamTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
-		if (savedEmployee.getTeams() == null || savedEmployee.getTeams().isEmpty()) {
+		if (savedEmployee.getEmployeeTeams() == null || savedEmployee.getEmployeeTeams().isEmpty()) {
 			return;
 		}
-		savedEmployee.getTeams()
+		savedEmployee.getEmployeeTeams()
 			.forEach(empTeam -> employeeTimelines.add(createEmployeeTimeline(savedEmployee,
 					EpEmployeeTimelineType.TEAM_ASSIGNED, null, empTeam.getTeam().getTeamName())));
 	}
@@ -428,8 +429,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void addManagerTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
-		if (savedEmployee.getManagers() != null && !savedEmployee.getManagers().isEmpty()) {
-			savedEmployee.getManagers().forEach(empManager -> {
+		if (savedEmployee.getEmployeeManagers() != null && !savedEmployee.getEmployeeManagers().isEmpty()) {
+			savedEmployee.getEmployeeManagers().forEach(empManager -> {
 				EpEmployeeTimelineType epEmployeeTimelineType = getManagerTypeTitle(empManager, false);
 				if (epEmployeeTimelineType != null) {
 					employeeTimelines.add(createEmployeeTimeline(savedEmployee, epEmployeeTimelineType, null,
@@ -574,19 +575,19 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 	}
 
-	private void addSystemPermissionTimeline(Employee savedEmployee, RoleRequestDto employeeRole,
+	private void addSystemPermissionTimeline(Employee savedEmployee, EmployeeSystemPermissionsDto employeeRole,
 			List<EmployeeTimeline> employeeTimelines) {
 
 		if (employeeRole == null) {
 			return;
 		}
 
-		EnumMap<EpTimelineModuleType, Function<RoleRequestDto, Role>> roleGetters = new EnumMap<>(
+		EnumMap<EpTimelineModuleType, Function<EmployeeSystemPermissionsDto, Role>> roleGetters = new EnumMap<>(
 				EpTimelineModuleType.class);
-		roleGetters.put(EpTimelineModuleType.PEOPLE, RoleRequestDto::getPeopleRole);
-		roleGetters.put(EpTimelineModuleType.ATTENDANCE, RoleRequestDto::getAttendanceRole);
-		roleGetters.put(EpTimelineModuleType.LEAVE, RoleRequestDto::getLeaveRole);
-		roleGetters.put(EpTimelineModuleType.ESIGN, RoleRequestDto::getEsignRole);
+		roleGetters.put(EpTimelineModuleType.PEOPLE, EmployeeSystemPermissionsDto::getPeopleRole);
+		roleGetters.put(EpTimelineModuleType.ATTENDANCE, EmployeeSystemPermissionsDto::getAttendanceRole);
+		roleGetters.put(EpTimelineModuleType.LEAVE, EmployeeSystemPermissionsDto::getLeaveRole);
+		roleGetters.put(EpTimelineModuleType.ESIGN, EmployeeSystemPermissionsDto::getEsignRole);
 
 		roleGetters.forEach((module, getter) -> {
 			Role role = getter.apply(employeeRole);

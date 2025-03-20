@@ -14,7 +14,10 @@ public enum EpPeopleMessageConstant implements MessageConstant {
 	EP_PEOPLE_ERROR_MANAGER_NOT_FOUND("ep.people.error.manager-not-found"),
 	EP_PEOPLE_ERROR_NO_EMPLOYEES_TO_DEACTIVATE("ep.people.error.no-employees-to-deactivate"),
 	EP_PEOPLE_ERROR_EMPLOYEES_NOT_FOUND("ep.people.error.employees-not-found"),
-	EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED("ep.people.success.employees-deactivated"),;
+	EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED("ep.people.success.employees-deactivated"),
+	PEOPLE_ERROR_INVALID_ESIGN_ROLE("ep.people.error.invalid-esign-role"),
+	PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS("ep.people.error.restricted-esign-role-access"),
+	PEOPLE_ERROR_ESIGN_ROLE_REQUIRED("ep.people.error.esign-role-required"),;
 
 	private final String messageKey;
 

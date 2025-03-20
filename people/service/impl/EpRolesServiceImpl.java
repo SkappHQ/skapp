@@ -23,6 +23,7 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import com.skapp.enterprise.people.service.EpRolesService;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	}
 
 	@Override
-	protected EmployeeRole createEmployeeRole(RoleRequestDto roleRequestDto, Employee employee) {
+	protected EmployeeRole createEmployeeRole(EmployeeSystemPermissionsDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = super.createEmployeeRole(roleRequestDto, employee);
 
 		employeeRole.setEsignRole(roleRequestDto.getEsignRole());
@@ -103,13 +104,13 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		super.validateRoles(userRoles);
 
 		if (userRoles.getEsignRole() == null) {
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_ESIGN_ROLE_REQUIRED);
+			throw new ValidationException(EpPeopleMessageConstant.PEOPLE_ERROR_ESIGN_ROLE_REQUIRED);
 		}
 
 		Role esignRole = userRoles.getEsignRole();
 		EnumSet<Role> validEsignRoles = EnumSet.of(Role.ESIGN_EMPLOYEE, Role.ESIGN_SENDER, Role.ESIGN_ADMIN);
 		if (!validEsignRoles.contains(esignRole)) {
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_ESIGN_ROLE,
+			throw new ValidationException(EpPeopleMessageConstant.PEOPLE_ERROR_INVALID_ESIGN_ROLE,
 					new String[] { esignRole.name() });
 		}
 
@@ -119,7 +120,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 		if (hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
 				&& validateRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN)) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS,
+			throw new ModuleException(EpPeopleMessageConstant.PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS,
 					new String[] { userRoles.getEsignRole().name() });
 		}
 	}
