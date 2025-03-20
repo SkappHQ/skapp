@@ -37,6 +37,9 @@ public class AddressBook {
 	@Enumerated(EnumType.STRING)
 	private UserType type;
 
+	@Column(name = "is_active")
+	private Boolean isActive = true;
+
 	public String getName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName() + " " + externalUser.getLastName();

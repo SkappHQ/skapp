@@ -26,6 +26,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
 import com.stripe.model.PriceCollection;
 import com.stripe.model.Subscription;
+import com.stripe.model.SubscriptionItem;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.SubscriptionUpdateParams;
@@ -103,12 +104,20 @@ public class StripeServiceImpl implements StripeService {
 				responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
 				responseDto.setTrialEndDate(Instant.ofEpochSecond(trialEnd));
 			}
+
+			Long subscriptionQuantity = subscription.getItems()
+				.getData()
+				.stream()
+				.map(SubscriptionItem::getQuantity)
+				.findFirst()
+				.orElse(1L);
+
+			responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		}
-		Long subscriptionQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0;
+
 		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
 
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
-		responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
 		return new ResponseEntityDto(false, responseDto);
@@ -150,7 +159,8 @@ public class StripeServiceImpl implements StripeService {
 			.setClientReferenceId(UUID.randomUUID().toString())
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
-			.setLocale(SessionCreateParams.Locale.AUTO);
+			.setLocale(SessionCreateParams.Locale.AUTO)
+			.setAllowPromotionCodes(true);
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
