@@ -35,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -225,55 +226,58 @@ public class StripeServiceImpl implements StripeService {
 		return new ResponseEntityDto(false, subscriptionResponseDto);
 	}
 
+	@Transactional
 	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement) {
+		String currentTenant = TenantContext.getCurrentTenant();
+		String subscriptionId;
+		long employeeCount;
+		long newQuantity;
+		Tenant tenant;
+
 		try {
-			String currentTenant = TenantContext.getCurrentTenant();
+			employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			Long currentQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0L;
+			tenant = tenantDao.findByTenantName(currentTenant);
 
 			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 			}
 
-			String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
-			Subscription subscription = Subscription.retrieve(subscriptionId);
+			subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
 
-			String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
-			SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder();
-
-			long newQuantity;
 			if (isIncrement) {
-				newQuantity = currentQuantity + quantity;
+				newQuantity = employeeCount + quantity;
 			}
 			else {
-				newQuantity = currentQuantity - quantity;
+				newQuantity = employeeCount - quantity;
 				if (newQuantity < 0) {
 					newQuantity = 0L;
 				}
 			}
 
-			SubscriptionUpdateParams.Item item = SubscriptionUpdateParams.Item.builder()
-				.setId(subscriptionItemId)
-				.setQuantity(newQuantity)
+			Subscription subscription = Subscription.retrieve(subscriptionId);
+			String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
+
+			SubscriptionUpdateParams params = SubscriptionUpdateParams.builder()
+				.addItem(SubscriptionUpdateParams.Item.builder()
+					.setId(subscriptionItemId)
+					.setQuantity(newQuantity)
+					.build())
 				.build();
 
-			SubscriptionUpdateParams params = paramsBuilder.addItem(item).build();
-
-			if (tenant.getSubscriptionStatus() == SubscriptionStatus.ACTIVE) {
-				subscription.update(params);
-			}
+			subscription.update(params);
 
 			tenant.setSubscriptionQuantity(newQuantity);
 			tenantDao.save(tenant);
-
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
 		}
 		catch (StripeException e) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,
 					new String[] { e.getMessage() });
+		}
+		finally {
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
 		}
 	}
 
