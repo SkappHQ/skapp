@@ -4,10 +4,10 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
@@ -48,9 +48,8 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
 			TeamDao teamDao, PeopleMapper peopleMapper, ModuleRoleRestrictionDao moduleRoleRestrictionDao,
-			MessageUtil messageUtil, UserVersionService userVersionService, EpEmployeeRoleDao epEmployeeRoleDao) {
-		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil,
-				userVersionService);
+			MessageUtil messageUtil, EpEmployeeRoleDao epEmployeeRoleDao) {
+		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil);
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
 	}
 
@@ -58,7 +57,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	protected EmployeeRole createEmployeeRole(EmployeeSystemPermissionsDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = super.createEmployeeRole(roleRequestDto, employee);
 
-		employeeRole.setEsignRole(roleRequestDto.getEsignRole());
+		CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
 
 		return employeeRole;
 	}
@@ -98,27 +97,31 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	}
 
 	@Override
-	public void validateRoles(EmployeeSystemPermissionsDto userRoles) {
+	public void validateRoles(EmployeeSystemPermissionsDto userRoles, User user) {
 		User currentUser = getUserService().getCurrentUser();
 
-		super.validateRoles(userRoles);
+		super.validateRoles(userRoles, user);
 
-		if (userRoles.getEsignRole() == null) {
+		if ((user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null)
+				&& userRoles.getEsignRole() == null) {
 			throw new ValidationException(EpPeopleMessageConstant.PEOPLE_ERROR_ESIGN_ROLE_REQUIRED);
 		}
 
-		Role esignRole = userRoles.getEsignRole();
-		EnumSet<Role> validEsignRoles = EnumSet.of(Role.ESIGN_EMPLOYEE, Role.ESIGN_SENDER, Role.ESIGN_ADMIN);
-		if (!validEsignRoles.contains(esignRole)) {
-			throw new ValidationException(EpPeopleMessageConstant.PEOPLE_ERROR_INVALID_ESIGN_ROLE,
-					new String[] { esignRole.name() });
+		if (userRoles != null && userRoles.getEsignRole() != null) {
+			Role esignRole = userRoles.getEsignRole();
+			EnumSet<Role> validEsignRoles = EnumSet.of(Role.ESIGN_EMPLOYEE, Role.ESIGN_SENDER, Role.ESIGN_ADMIN);
+			if (!validEsignRoles.contains(esignRole)) {
+				throw new ValidationException(EpPeopleMessageConstant.PEOPLE_ERROR_INVALID_ESIGN_ROLE,
+						new String[] { esignRole.name() });
+			}
 		}
 
-		if (Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
+		if (userRoles != null && Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
+				&& (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SHOULD_ASSIGN_PROPER_PERMISSIONS);
 		}
 
-		if (hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
+		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
 				&& validateRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN)) {
 			throw new ModuleException(EpPeopleMessageConstant.PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS,
 					new String[] { userRoles.getEsignRole().name() });

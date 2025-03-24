@@ -272,7 +272,8 @@ public class StripeServiceImpl implements StripeService {
 
 		}
 		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,
+					new String[] { e.getMessage() });
 		}
 	}
 

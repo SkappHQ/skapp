@@ -38,6 +38,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
@@ -135,17 +136,18 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			PeopleEmailService peopleEmailService, ObjectMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
-			UserVersionService userVersionService, EpEmployeeDao epEmployeeDao, EmployeeRoleDao employeeRoleDao,
-			TenantValidator tenantValidator, EpEmployeeRoleDao epEmployeeRoleDao,
-			EpEmployeeTimelineService epEmployeeTimelineService, EpPeopleMapper epPeopleMapper,
-			EpEmployeeTeamDao epEmployeeTeamDao, EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
+			UserVersionService userVersionService, EmployeeValidationService employeeValidationService,
+			EpEmployeeDao epEmployeeDao, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
+			EpEmployeeRoleDao epEmployeeRoleDao, EpEmployeeTimelineService epEmployeeTimelineService,
+			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
+			EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
 			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService);
+				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;
