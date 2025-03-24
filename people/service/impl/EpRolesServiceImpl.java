@@ -122,7 +122,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		}
 
 		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
-				&& validateRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN)) {
+				&& Boolean.TRUE.equals(validateRestrictedRoleAssignment(userRoles.getEsignRole(), ModuleType.ESIGN))) {
 			throw new ModuleException(EpPeopleMessageConstant.PEOPLE_ERROR_ESIGN_RESTRICTED_ROLE_ACCESS,
 					new String[] { userRoles.getEsignRole().name() });
 		}

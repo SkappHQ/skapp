@@ -1,5 +1,8 @@
 package com.skapp.enterprise.esignature.constant;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class EsignEmailTitleConstant {
 
 	public static final String ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE = "You have a document to review and sign.";
