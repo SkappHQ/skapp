@@ -18,14 +18,23 @@ public class EpUserServiceImpl implements EpUserService {
 	public Tier getCurrentUserTier() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		AuthenticationDetailsDto authenticationDetails = (AuthenticationDetailsDto) authentication.getDetails();
+		if (authentication == null || authentication.getDetails() == null)
+			return Tier.FREE;
+
+		if (!(authentication.getDetails() instanceof AuthenticationDetailsDto authenticationDetails))
+			return Tier.FREE;
+
 		AdditionalDetailsDto additionalDetails = authenticationDetails.getAdditionalDetails();
 
-		if (additionalDetails != null && additionalDetails.getTier() != null) {
+		if (additionalDetails == null || additionalDetails.getTier() == null)
+			return Tier.FREE;
+
+		try {
 			return Tier.valueOf(additionalDetails.getTier());
 		}
-
-		return Tier.FREE;
+		catch (IllegalArgumentException e) {
+			return Tier.FREE;
+		}
 	}
 
 	@Override
