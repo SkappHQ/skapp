@@ -33,6 +33,7 @@ public class TenantContext {
 
 	public static void clearCurrentTenant() {
 		currentTenant.remove();
+		MultiTenantDataSourceConfig.clearLookupKey();
 	}
 
 	@Transactional

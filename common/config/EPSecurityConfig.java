@@ -48,6 +48,8 @@ public class EPSecurityConfig {
 
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
 
+	private final RequestMethodFilter requestMethodFilter;
+
 	@Value("${cors.allowed-origins}")
 	private String allowedOrigins;
 
@@ -97,6 +99,7 @@ public class EPSecurityConfig {
 			.cacheControl(HeadersConfigurer.CacheControlConfig::disable));
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(resetDatabaseApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
