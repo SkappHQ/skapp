@@ -15,28 +15,27 @@ import java.io.IOException;
 @Slf4j
 public class RequestMethodFilter implements Filter {
 
-	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
-		if (!(request instanceof HttpServletRequest httpRequest)) {
-			chain.doFilter(request, response);
-			return;
-		}
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (!(request instanceof HttpServletRequest httpRequest)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-		try {
-			RequestMethodContext.determineReadOnly();
+        try {
+            RequestMethodContext.determineReadOnly();
 
-			if (log.isDebugEnabled()) {
-				log.debug("Processing {} request for {}, readOnly: {}", httpRequest.getMethod(),
-						httpRequest.getRequestURI(), RequestMethodContext.isReadOnly());
-			}
+            if (log.isDebugEnabled()) {
+                log.debug("Processing {} request for {}, readOnly: {}", httpRequest.getMethod(),
+                        httpRequest.getRequestURI(), RequestMethodContext.isReadOnly());
+            }
 
-			chain.doFilter(request, response);
-		}
-		finally {
-			RequestMethodContext.clear();
-			MultiTenantDataSourceConfig.clearLookupKey();
-		}
-	}
+            chain.doFilter(request, response);
+        }
+        finally {
+            RequestMethodContext.clear();
+        }
+    }
 
 }
