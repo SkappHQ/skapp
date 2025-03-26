@@ -67,6 +67,7 @@ public class TenantFilter extends OncePerRequestFilter {
 		}
 		finally {
 			TenantContext.clearCurrentTenant();
+			MultiTenantDataSourceConfig.clearLookupKey();
 		}
 	}
 

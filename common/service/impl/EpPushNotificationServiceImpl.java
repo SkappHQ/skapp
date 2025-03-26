@@ -27,18 +27,24 @@ public class EpPushNotificationServiceImpl implements PushNotificationService {
 
 	@Override
 	public void sendNotification(Long userId, Notification notification, String title) {
+		if (notification.getBody() == null || title == null) {
+			return;
+		}
+
 		List<DeviceToken> deviceTokens = deviceTokenDao.findAllByUserId(userId);
+
 		com.google.firebase.messaging.Notification firebaseNotification = com.google.firebase.messaging.Notification
 			.builder()
 			.setBody(notification.getBody())
+			.setTitle(title)
 			.build();
+
 		for (DeviceToken deviceToken : deviceTokens) {
 			boolean response = sendNotification(firebaseNotification, deviceToken.getToken());
 			if (!response) {
 				deviceTokenDao.delete(deviceToken);
 			}
 		}
-
 	}
 
 	private boolean sendNotification(com.google.firebase.messaging.Notification notification, String token) {
