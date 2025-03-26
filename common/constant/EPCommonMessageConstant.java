@@ -135,7 +135,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT(
 			"ep.common.error.email-schedule-cancellation-batch-id-cannot-be-null"),
 	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
-			"ep.common.error.email-schedule-cancellation-status-cannot-be-null");
+			"ep.common.error.email-schedule-cancellation-status-cannot-be-null"),
+	EP_COMMON_ERROR_LIQUIBASE_UPDATE_FAILED("ep.common.error.liquibase-update-failed"),;
 
 	private final String messageKey;
 

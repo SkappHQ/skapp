@@ -26,22 +26,19 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
+import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.repository.EmployeeEducationDao;
-import com.skapp.community.peopleplanner.repository.EmployeeFamilyDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
-import com.skapp.community.peopleplanner.repository.EmployeeProgressionDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
-import com.skapp.community.peopleplanner.repository.EmployeeVisaDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
@@ -133,25 +130,24 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
-			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
-			EmployeeVisaDao employeeVisaDao, EmployeeEducationDao employeeEducationDao,
-			EmployeeFamilyDao employeeFamilyDao, EmployeeTeamDao employeeTeamDao, EmployeeManagerDao employeeManagerDao,
-			PasswordEncoder passwordEncoder, RolesService rolesService, PageTransformer pageTransformer,
-			PlatformTransactionManager transactionManager, PeopleEmailService peopleEmailService, ObjectMapper mapper,
+			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
+			EmployeeManagerDao employeeManagerDao, PasswordEncoder passwordEncoder, RolesService rolesService,
+			PageTransformer pageTransformer, PlatformTransactionManager transactionManager,
+			PeopleEmailService peopleEmailService, ObjectMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
-			UserVersionService userVersionService, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleDao epEmployeeRoleDao, TenantDao tenantDao, TenantContext tenantContext,
-			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
+			UserVersionService userVersionService, EmployeeValidationService employeeValidationService,
+			EpEmployeeDao epEmployeeDao, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
+			EpEmployeeRoleDao epEmployeeRoleDao, EpEmployeeTimelineService epEmployeeTimelineService,
 			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
-			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService,
-			StripeService stripeService, EpUserService epUserService, EpRolesService epRolesService,
+			EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
+			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
+			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl) {
-		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
-				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
-				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
+		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
+				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService);
+				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;
@@ -167,8 +163,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epUserService = epUserService;
 		this.systemVersionService = systemVersionService;
 		this.stripeService = stripeService;
-		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
+		this.tenantDao = tenantDao;
 		this.epRolesService = epRolesService;
 		this.epAsyncEmployeeTimelineServiceImpl = epAsyncEmployeeTimelineServiceImpl;
 	}
@@ -441,7 +437,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
+	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, CreateEmployeeRequestDto employeeDetailsDto) {
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
@@ -489,16 +485,16 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			deepCopiedDto.setEmployeeProgressions(copiedProgressions);
 		}
 
-		if (currentEmployee.getTeams() != null) {
-			Set<EmployeeTeam> copiedTeams = currentEmployee.getTeams()
+		if (currentEmployee.getEmployeeTeams() != null) {
+			Set<EmployeeTeam> copiedTeams = currentEmployee.getEmployeeTeams()
 				.stream()
 				.map(EmployeeTeam::new)
 				.collect(Collectors.toSet());
 			deepCopiedDto.setTeams(copiedTeams);
 		}
 
-		if (currentEmployee.getEmployees() != null) {
-			Set<EmployeeManager> copiedManagers = currentEmployee.getEmployees()
+		if (currentEmployee.getEmployeeManagers() != null) {
+			Set<EmployeeManager> copiedManagers = currentEmployee.getEmployeeManagers()
 				.stream()
 				.map(EmployeeManager::new)
 				.collect(Collectors.toSet());
