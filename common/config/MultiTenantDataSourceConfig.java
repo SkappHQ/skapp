@@ -1,21 +1,18 @@
 package com.skapp.enterprise.common.config;
 
-import com.skapp.community.common.exception.ModuleException;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Role;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -27,12 +24,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Configuration
-@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+@RequiredArgsConstructor
 @EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
 		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
 		"com.skapp.community.leaveplanner.repository", "com.skapp.community.peopleplanner.repository",
@@ -101,10 +97,6 @@ public class MultiTenantDataSourceConfig {
 
 	private final Map<String, DataSource> readDataSources = new ConcurrentHashMap<>();
 
-	private final Set<String> validTenants = ConcurrentHashMap.newKeySet();
-
-	private static final ThreadLocal<String> CURRENT_LOOKUP_KEY = new ThreadLocal<>();
-
 	@Bean
 	@Primary
 	public DataSource dataSource() {
@@ -114,11 +106,8 @@ public class MultiTenantDataSourceConfig {
 				String tenantId = TenantContext.getCurrentTenant();
 				boolean isReadOnly = RequestMethodContext.isReadOnly();
 
-				String lookupKey = (tenantId != null ? tenantId : EpCommonConstants.MASTER_DATABASE)
+				return (tenantId != null ? tenantId : EpCommonConstants.MASTER_DATABASE)
 						+ (isReadOnly ? READ_SUFFIX : WRITE_SUFFIX);
-
-				CURRENT_LOOKUP_KEY.set(lookupKey);
-				return lookupKey;
 			}
 
 			@Override
@@ -140,12 +129,6 @@ public class MultiTenantDataSourceConfig {
 				else {
 					log.error("Invalid lookup key format: {}", lookupKey);
 					throw new IllegalStateException("Invalid lookup key format: " + lookupKey);
-				}
-
-				if (!EpCommonConstants.MASTER_DATABASE.equals(tenantId) && !validTenants.contains(tenantId)) {
-					log.error("Attempt to access invalid tenant: {}", tenantId);
-					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_TENANT,
-							new String[] { tenantId });
 				}
 
 				Map<String, DataSource> dsMap = isReadOnly ? readDataSources : writeDataSources;
@@ -172,7 +155,6 @@ public class MultiTenantDataSourceConfig {
 		multiTenantDataSource.setTargetDataSources(targetDataSources);
 		multiTenantDataSource.afterPropertiesSet();
 
-		validTenants.add(EpCommonConstants.MASTER_DATABASE);
 		writeDataSources.put(EpCommonConstants.MASTER_DATABASE, masterWriteDataSource);
 		readDataSources.put(EpCommonConstants.MASTER_DATABASE, masterReadDataSource);
 
@@ -242,7 +224,6 @@ public class MultiTenantDataSourceConfig {
 
 	@Bean
 	@Primary
-	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource,
 			MultiTenantConnectionProvider<String> multiTenantConnectionProvider,
 			CurrentTenantIdentifierResolver<String> currentTenantIdentifierResolver) {
@@ -285,15 +266,10 @@ public class MultiTenantDataSourceConfig {
 		return new TenantIdentifierResolver();
 	}
 
-	public void addTenant(String tenantId) {
-		validTenants.add(tenantId);
-		if (log.isDebugEnabled()) {
-			log.debug("Tenant {} registered successfully", tenantId);
-		}
-	}
-
 	public void removeTenant(String tenantId) {
-		validTenants.remove(tenantId);
+		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			return;
+		}
 
 		DataSource writeDataSource = writeDataSources.remove(tenantId);
 		if (writeDataSource instanceof HikariDataSource hikariDataSource) {
@@ -303,17 +279,6 @@ public class MultiTenantDataSourceConfig {
 		DataSource readDataSource = readDataSources.remove(tenantId);
 		if (readDataSource instanceof HikariDataSource hikariDataSource) {
 			hikariDataSource.close();
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Tenant {} unregistered and connections closed", tenantId);
-		}
-	}
-
-	public static void clearLookupKey() {
-		CURRENT_LOOKUP_KEY.remove();
-		if (log.isDebugEnabled()) {
-			log.debug("Lookup key ThreadLocal cleared");
 		}
 	}
 
