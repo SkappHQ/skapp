@@ -35,7 +35,6 @@ public class RequestMethodFilter implements Filter {
 		}
 		finally {
 			RequestMethodContext.clear();
-			MultiTenantDataSourceConfig.clearLookupKey();
 		}
 	}
 
