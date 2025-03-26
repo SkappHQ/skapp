@@ -57,7 +57,15 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	protected EmployeeRole createEmployeeRole(EmployeeSystemPermissionsDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = super.createEmployeeRole(roleRequestDto, employee);
 
-		CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
+		boolean isSuperAdmin = (employee.getEmployeeRole() != null && employee.getEmployeeRole().getIsSuperAdmin()
+				&& roleRequestDto.getIsSuperAdmin() != null && roleRequestDto.getIsSuperAdmin());
+
+		if (isSuperAdmin) {
+			employeeRole.setEsignRole(Role.ESIGN_ADMIN);
+		}
+		else {
+			CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
+		}
 
 		return employeeRole;
 	}
@@ -116,9 +124,16 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 			}
 		}
 
-		if (userRoles != null && Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
-				&& (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
+		if ((user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null)
+				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SHOULD_ASSIGN_PROPER_PERMISSIONS);
+		}
+
+		if (user.getEmployee() != null && user.getEmployee().getEmployeeRole() != null
+				&& user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
+				&& userRoles.getIsSuperAdmin() != null && userRoles.getIsSuperAdmin()
+				&& userRoles.getEsignRole() != Role.ESIGN_ADMIN) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_ROLES_CANNOT_BE_CHANGED);
 		}
 
 		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser) && userRoles.getEsignRole() != null
