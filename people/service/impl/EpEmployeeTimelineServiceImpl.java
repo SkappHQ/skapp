@@ -19,13 +19,11 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
-import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
@@ -47,6 +45,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -120,16 +119,16 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	@Override
 	public void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
-			EmployeeUpdateDto employeeUpdateDto) {
+			CreateEmployeeRequestDto createEmployeeRequestDto) {
 		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
 
-		updateJobProgressionTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateJoinDateTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateProbationDateTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateTeamTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateManagerTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateEmploymentAllocationTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
-		updateSystemPermissionTimeline(currentEmployee, employeeUpdateDto, employeeTimelines);
+		updateJobProgressionTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateJoinDateTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateProbationDateTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateTeamTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateManagerTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateEmploymentAllocationTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
+		updateSystemPermissionTimeline(currentEmployee, createEmployeeRequestDto, employeeTimelines);
 
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
@@ -256,15 +255,15 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 				.orElse(null);
 
 			if (savedCurrentEmployeeProgression != null) {
-				EmployeeProgressionsDto savedCurrentEmployeeProgressionDto = epPeopleMapper
+				EmployeeEmploymentCareerProgressionDetailsDto savedCurrentEmployeeProgressionDto = epPeopleMapper
 					.employeeProgressionToEmployeeProgressionDto(savedCurrentEmployeeProgression);
 				handleNewJobAssignment(savedEmployee, savedCurrentEmployeeProgressionDto, employeeTimelines);
 			}
 		}
 	}
 
-	private void updateJobProgressionTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void updateJobProgressionTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 
 		Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employee.isEmpty()) {
@@ -279,13 +278,15 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 					.orElse(null)
 				: null;
 
-		EmployeeProgressionsDto newEmployeeProgression = employeeUpdateDto.getEmployeeProgressions() != null
-				? employeeUpdateDto.getEmployeeProgressions()
-					.stream()
-					.filter(EmployeeProgressionsDto::getIsCurrent)
-					.findFirst()
-					.orElse(null)
-				: null;
+		EmployeeEmploymentCareerProgressionDetailsDto newEmployeeProgression = createEmployeeRequestDto.getEmployment()
+			.getCareerProgression() != null
+					? createEmployeeRequestDto.getEmployment()
+						.getCareerProgression()
+						.stream()
+						.filter(EmployeeEmploymentCareerProgressionDetailsDto::getIsCurrentEmployment)
+						.findFirst()
+						.orElse(null)
+					: null;
 
 		if (newEmployeeProgression == null) {
 			return;
@@ -304,7 +305,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void handleJobTitleChange(Employee currentEmployee, EmployeeProgression currentProgression,
-			EmployeeProgressionsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
+			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
 		if (currentProgression.getJobTitleId() != null && newProgression.getJobTitleId() != null
 				&& !currentProgression.getJobTitleId().equals(newProgression.getJobTitleId())) {
 
@@ -319,7 +320,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void handleJobFamilyChange(Employee currentEmployee, EmployeeProgression currentProgression,
-			EmployeeProgressionsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
+			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
 		if (currentProgression.getJobFamilyId() != null && newProgression.getJobFamilyId() != null
 				&& !currentProgression.getJobFamilyId().equals(newProgression.getJobFamilyId())) {
 
@@ -334,7 +335,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void handleEmployeeTypeChange(Employee currentEmployee, EmployeeProgression currentProgression,
-			EmployeeProgressionsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
+			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
 		if (currentProgression.getEmploymentType() != null && newProgression.getEmploymentType() != null
 				&& !currentProgression.getEmploymentType().equals(newProgression.getEmploymentType())) {
 			employeeTimelines.add(createEmployeeTimeline(currentEmployee,
@@ -343,8 +344,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 	}
 
-	private void handleNewJobAssignment(Employee currentEmployee, EmployeeProgressionsDto newProgression,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void handleNewJobAssignment(Employee currentEmployee,
+			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
 		if (newProgression.getJobTitleId() != null) {
 			jobTitleDao.findById(newProgression.getJobTitleId())
 				.ifPresent(title -> employeeTimelines.add(createEmployeeTimeline(currentEmployee,
@@ -370,23 +371,28 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 	}
 
-	private void updateJoinDateTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
-		if (employeeUpdateDto.getJoinDate() != null) {
+	private void updateJoinDateTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+		if (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate() != null) {
 			Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 			if (employee.isEmpty()) {
 				return;
 			}
 			if (currentEmployee.getJoinDate() != null) {
-				if (employeeUpdateDto.getJoinDate().equals(currentEmployee.getJoinDate())) {
+				if (createEmployeeRequestDto.getEmployment()
+					.getEmploymentDetails()
+					.getJoinedDate()
+					.equals(currentEmployee.getJoinDate())) {
 					return;
 				}
 				employeeTimelines.add(createEmployeeTimeline(employee.get(), EpEmployeeTimelineType.JOINED_DATE_CHANGED,
-						currentEmployee.getJoinDate().toString(), employeeUpdateDto.getJoinDate().toString()));
+						currentEmployee.getJoinDate().toString(),
+						createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate().toString()));
 			}
 			else {
 				employeeTimelines.add(createEmployeeTimeline(employee.get(), EpEmployeeTimelineType.JOINED_DATE_ADDED,
-						null, employeeUpdateDto.getJoinDate().toString()));
+						null,
+						createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate().toString()));
 			}
 		}
 	}
@@ -400,21 +406,23 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 					EpEmployeeTimelineType.TEAM_ASSIGNED, null, empTeam.getTeam().getTeamName())));
 	}
 
-	private void updateTeamTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void updateTeamTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
 		}
 
-		if (employeeUpdateDto.getTeams() == null || (employeeUpdateDto.getTeams().isEmpty())) {
+		if (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds() == null
+				|| (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds().length <= 0)) {
 			return;
 		}
 
 		Employee employee = employeeOpt.get();
 
-		List<Team> newTeams = teamDao.findAllById(employeeUpdateDto.getTeams());
+		Long[] teamIds = createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds();
+		List<Team> newTeams = teamDao.findAllById(Arrays.asList(teamIds));
 		Set<Team> currentTeams = currentEmployee.getTeams() == null ? Set.of()
 				: currentEmployee.getTeams().stream().map(EmployeeTeam::getTeam).collect(Collectors.toSet());
 
@@ -440,8 +448,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 	}
 
-	private void updateManagerTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void updateManagerTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 		Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employee.isEmpty()) {
 			return;
@@ -450,9 +458,12 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			currentEmployee.getManagers().forEach(empManager -> {
 				EpEmployeeTimelineType epEmployeeTimelineType = getManagerTypeTitle(empManager, true);
 
-				if (epEmployeeTimelineType != null && ((employeeUpdateDto.getPrimaryManager() != null
-						&& empManager.getManagerType().equals(ManagerType.PRIMARY))
-						|| (employeeUpdateDto.getSecondaryManager() != null
+				if (epEmployeeTimelineType != null && ((createEmployeeRequestDto.getEmployment()
+					.getEmploymentDetails()
+					.getPrimarySupervisor() != null && empManager.getManagerType().equals(ManagerType.PRIMARY))
+						|| (createEmployeeRequestDto.getEmployment()
+							.getEmploymentDetails()
+							.getSecondarySupervisor() != null
 								&& empManager.getManagerType().equals(ManagerType.SECONDARY)))) {
 					employeeTimelines.add(createEmployeeTimeline(employee.get(), epEmployeeTimelineType, null,
 							empManager.getManager().getFirstName() + " " + empManager.getManager().getLastName()));
@@ -493,8 +504,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			});
 	}
 
-	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
@@ -502,11 +513,11 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		Employee employee = employeeOpt.get();
 
 		EmployeePeriod currentEmployeePeriod = currentEmployee.getEmployeePeriod();
-		ProbationPeriodDto newEmployeePeriod = employeeUpdateDto.getEmployeePeriod();
-
-		if (newEmployeePeriod == null) {
-			return;
-		}
+		ProbationPeriodDto newEmployeePeriod = new ProbationPeriodDto();
+		newEmployeePeriod
+			.setStartDate(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationStartDate());
+		newEmployeePeriod
+			.setEndDate(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationEndDate());
 
 		if (currentEmployeePeriod != null) {
 			addProbationDateChangeTimelineEntry(employee, employeeTimelines,
@@ -549,7 +560,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void updateEmploymentAllocationTimeline(CurrentEmployeeDto currentEmployee,
-			EmployeeUpdateDto employeeUpdateDto, List<EmployeeTimeline> employeeTimelines) {
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
@@ -557,7 +568,9 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		Employee employee = employeeOpt.get();
 
 		EmploymentAllocation currentEmploymentAllocation = currentEmployee.getEmploymentAllocation();
-		EmploymentAllocation newEmploymentAllocation = employeeUpdateDto.getEmploymentAllocation();
+		EmploymentAllocation newEmploymentAllocation = createEmployeeRequestDto.getEmployment()
+			.getEmploymentDetails()
+			.getEmploymentAllocation();
 
 		if (newEmploymentAllocation != null) {
 			if (currentEmploymentAllocation != null) {
@@ -601,8 +614,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		});
 	}
 
-	private void updateSystemPermissionTimeline(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto,
-			List<EmployeeTimeline> employeeTimelines) {
+	private void updateSystemPermissionTimeline(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
@@ -610,7 +623,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		Employee employee = employeeOpt.get();
 
 		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		RoleRequestDto newEmployeeRole = employeeUpdateDto.getUserRoles();
+		EmployeeSystemPermissionsDto newEmployeeRole = createEmployeeRequestDto.getSystemPermissions();
 
 		if (newEmployeeRole != null) {
 			if (!currentEmployeeRole.getPeopleRole().equals(newEmployeeRole.getPeopleRole())) {

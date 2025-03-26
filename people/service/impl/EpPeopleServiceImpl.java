@@ -27,7 +27,6 @@ import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -249,7 +248,6 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
 			tenant.setTier(Tier.FREE);
 			tenant.setTenantStatus(TenantStatus.ACTIVE);
-			tenant.setSubscriptionQuantity(userCount);
 			tenantDao.save(tenant);
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
@@ -463,10 +461,10 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
-			EmployeeUpdateDto employeeUpdateDto) {
+			CreateEmployeeRequestDto createEmployeeRequestDto) {
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.PRO) {
-			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, employeeUpdateDto);
+			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, createEmployeeRequestDto);
 		}
 	}
 
@@ -517,11 +515,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement) {
+	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
 		Tier tier = epUserService.getCurrentUserTier();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 		if (tier == Tier.PRO && tenantStatus == TenantStatus.ACTIVE) {
-			stripeService.updateSubscriptionQuantity(quantity, isIncrement);
+			stripeService.updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 		}
 	}
 
