@@ -49,9 +49,6 @@ public class Tenant {
 	@Column(name = "billing_email")
 	private String billingEmail;
 
-	@Column(name = "subscription_quantity")
-	private Long subscriptionQuantity;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "subscription_status", columnDefinition = "varchar(255)")
 	private SubscriptionStatus subscriptionStatus;

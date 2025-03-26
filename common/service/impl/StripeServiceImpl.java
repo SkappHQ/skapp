@@ -227,15 +227,15 @@ public class StripeServiceImpl implements StripeService {
 	}
 
 	@Transactional
-	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement) {
+	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
 		String currentTenant = TenantContext.getCurrentTenant();
 		String subscriptionId;
-		long employeeCount;
 		long newQuantity;
 		Tenant tenant;
 
 		try {
-			employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			long employeeCount = employeeDao
+				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			tenant = tenantDao.findByTenantName(currentTenant);
@@ -246,14 +246,9 @@ public class StripeServiceImpl implements StripeService {
 
 			subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
 
-			if (isIncrement) {
-				newQuantity = employeeCount + quantity;
-			}
-			else {
-				newQuantity = employeeCount - quantity;
-				if (newQuantity < 0) {
-					newQuantity = 0L;
-				}
+			newQuantity = employeeCount;
+			if (isFromEmployeeBulk) {
+				newQuantity += isIncrement ? quantity : 0L;
 			}
 
 			Subscription subscription = Subscription.retrieve(subscriptionId);
@@ -267,10 +262,6 @@ public class StripeServiceImpl implements StripeService {
 				.build();
 
 			subscription.update(params);
-
-			tenant.setSubscriptionQuantity(newQuantity);
-			tenantDao.save(tenant);
-
 		}
 		catch (StripeException e) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,

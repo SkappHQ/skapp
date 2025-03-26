@@ -4,7 +4,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.enterprise.people.model.EmployeeTimeline;
 import com.skapp.enterprise.people.payload.response.EmployeeManagerDetailsResponseDto;
@@ -27,7 +27,8 @@ public interface EpPeopleMapper {
 	List<EpEmployeeTimelineResponseDto> employeeTimelinesToEmployeeTimelineResponseDtoList(
 			List<EmployeeTimeline> employeeTimelines);
 
-	EmployeeProgressionsDto employeeProgressionToEmployeeProgressionDto(EmployeeProgression employeeProgression);
+	EmployeeEmploymentCareerProgressionDetailsDto employeeProgressionToEmployeeProgressionDto(
+			EmployeeProgression employeeProgression);
 
 	TeamBasicDetailsResponseDto teamToTeamBasicDetailsResponseDto(Team team);
 

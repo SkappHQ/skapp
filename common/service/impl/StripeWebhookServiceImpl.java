@@ -157,7 +157,6 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				String priceId = subscription.getItems().getData().getFirst().getPrice().getId();
 				SubscriptionPlan plan = stripeService.getSubscriptionPlanFromPriceId(priceId);
 				tenant.setSubscriptionPlan(plan);
-				tenant.setSubscriptionQuantity(subscription.getItems().getData().getFirst().getQuantity());
 			}
 
 			tenant.setLastModifiedDate(Instant.now());

@@ -5,7 +5,6 @@ import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 
 import java.util.List;
@@ -18,7 +17,8 @@ public interface EpEmployeeTimelineService {
 
 	void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee, EmployeeQuickAddDto employeeQuickAddDto);
 
-	void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee, EmployeeUpdateDto employeeUpdateDto);
+	void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
+			CreateEmployeeRequestDto createEmployeeRequestDto);
 
 	void addCustomLeaveEntitlementsTimeLineRecords(Employee employee, LeaveEntitlement leaveEntitlement);
 
