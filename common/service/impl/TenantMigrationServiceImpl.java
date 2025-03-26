@@ -39,7 +39,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		log.debug("Starting migration for tenant: {}", tenantId);
 
 		try {
-			multiTenantDataSourceConfig.addTenant(tenantId);
 			performLiquibaseMigration(tenantId);
 			log.debug("Migration completed for tenant: {}", tenantId);
 		}
@@ -106,7 +105,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 			try {
 				runMigration(tenantId);
 				successfulTenants.add(tenantId);
-				multiTenantDataSourceConfig.addTenant(tenantId);
 			}
 			catch (Exception e) {
 				failedTenants.add(tenantId);

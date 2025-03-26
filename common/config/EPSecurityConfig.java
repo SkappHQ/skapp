@@ -2,7 +2,6 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
-import com.skapp.community.common.component.ResetDatabaseApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,8 +42,6 @@ public class EPSecurityConfig {
 	private final UserDetailsService userDetailsService;
 
 	private final AuthEntryPoint authEntryPoint;
-
-	private final ResetDatabaseApiKeyFilter resetDatabaseApiKeyFilter;
 
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
 
@@ -102,7 +99,6 @@ public class EPSecurityConfig {
 		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-		http.addFilterBefore(resetDatabaseApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
 
 		http.authenticationProvider(authProvider);
 
