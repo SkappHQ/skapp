@@ -82,7 +82,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		log.info("getEmployeeTimelineRecords: started by user: {}", currentUser.getUserId());
 
 		Employee employee = employeeDao.findById(id)
-			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESOURCE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
 
 		List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployee(employee);
 
@@ -211,10 +211,12 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,
 			String previousValue, String newValue) {
 		EmployeeTimeline employeeTimeline = new EmployeeTimeline();
+		User currentUser = userService.getCurrentUser();
 		employeeTimeline.setEmployee(employee);
 		employeeTimeline.setTimelineType(timelineType);
 		employeeTimeline.setPreviousValue(previousValue);
 		employeeTimeline.setNewValue(newValue);
+		employeeTimeline.setRecordedBy(currentUser.getEmployee());
 		return employeeTimeline;
 	}
 

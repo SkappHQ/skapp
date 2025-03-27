@@ -34,6 +34,10 @@ public class EmployeeTimeline extends Auditable<String> {
 	@JoinColumn(name = "employee_id")
 	private Employee employee;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recorded_by")
+	private Employee recordedBy;
+
 	@Column(name = "timeline_type", columnDefinition = "varchar(255)")
 	@Enumerated(EnumType.STRING)
 	private EpEmployeeTimelineType timelineType;

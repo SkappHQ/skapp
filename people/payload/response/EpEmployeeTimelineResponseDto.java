@@ -22,4 +22,6 @@ public class EpEmployeeTimelineResponseDto {
 
 	private String createdBy;
 
+	private String recordedBy;
+
 }
