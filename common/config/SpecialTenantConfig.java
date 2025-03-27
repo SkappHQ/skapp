@@ -2,18 +2,23 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix = "special-tenants")
 @Data
 public class SpecialTenantConfig {
 
-	private List<TenantInfo> tenants = new ArrayList<>();
+	@Value("${special.tenants}")
+	private String tenants;
+
+	@Value("${special.tenant-limits}")
+	private String tenantLimits;
+
+	private List<TenantInfo> tenantInfoList;
 
 	@Data
 	public static class TenantInfo {
@@ -22,6 +27,34 @@ public class SpecialTenantConfig {
 
 		private Integer userCount;
 
+	}
+
+	private void parseTenantInfo() {
+		tenantInfoList = new ArrayList<>();
+
+		if (tenants != null && tenantLimits != null) {
+			String[] tenantNames = tenants.split("\\s*,\\s*");
+			String[] limits = tenantLimits.split("\\s*,\\s*");
+
+			for (int i = 0; i < tenantNames.length && i < limits.length; i++) {
+				TenantInfo info = new TenantInfo();
+				info.setName(tenantNames[i].trim());
+				try {
+					info.setUserCount(Integer.parseInt(limits[i].trim()));
+				}
+				catch (NumberFormatException e) {
+					info.setUserCount(EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT);
+				}
+				tenantInfoList.add(info);
+			}
+		}
+	}
+
+	public List<TenantInfo> getTenantInfoList() {
+		if (tenantInfoList == null) {
+			parseTenantInfo();
+		}
+		return tenantInfoList;
 	}
 
 	public int getMaxEmployeeCountForTenant() {
@@ -36,16 +69,16 @@ public class SpecialTenantConfig {
 			return defaultMaxCount;
 		}
 
-		return getTenants().stream()
+		return getTenantInfoList().stream()
 			.filter(t -> tenantName.equals(t.getName()))
 			.findFirst()
-			.map(SpecialTenantConfig.TenantInfo::getUserCount)
+			.map(TenantInfo::getUserCount)
 			.orElse(defaultMaxCount);
 	}
 
 	public TenantInfo getCurrentTenantInfo() {
 		String currentTenant = TenantContext.getCurrentTenant();
-		return getTenants().stream().filter(t -> t.getName().equals(currentTenant)).findFirst().orElse(null);
+		return getTenantInfoList().stream().filter(t -> t.getName().equals(currentTenant)).findFirst().orElse(null);
 	}
 
 }
