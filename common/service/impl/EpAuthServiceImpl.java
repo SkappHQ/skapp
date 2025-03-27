@@ -43,7 +43,6 @@ import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDt
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
-import com.skapp.enterprise.common.service.Route53Service;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import io.jsonwebtoken.Jwts;
@@ -69,7 +68,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -89,8 +94,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 	private final EpCommonEmailService emailService;
 
 	private final MessageUtil messageUtil;
-
-	private final Route53Service route53Service;
 
 	private final RestTemplate restTemplate;
 
@@ -266,12 +269,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 			log.error("Attempted to create restricted subdomain: {}", subDomainName);
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN.getMessageKey()));
-			return new ResponseEntityDto(false, responseDto);
-		}
-
-		if (route53Service.isDomainNotAvailable(subDomainName)) {
-			responseDto.setErrorMessage(messageUtil
-				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_NOT_AVAILABLE.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
