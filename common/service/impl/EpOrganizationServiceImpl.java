@@ -71,349 +71,349 @@ import static com.skapp.community.common.util.Validation.isValidThemeColor;
 @Slf4j
 public class EpOrganizationServiceImpl extends OrganizationServiceImpl implements EpOrganizationService {
 
-	private final EpOrganizationDao epOrganizationDao;
+    private final EpOrganizationDao epOrganizationDao;
 
-	private final AttendanceConfigService attendanceConfigService;
+    private final AttendanceConfigService attendanceConfigService;
 
-	private final EpCommonEmailService emailService;
+    private final EpCommonEmailService emailService;
 
-	private final LeaveTypeService leaveTypeService;
+    private final LeaveTypeService leaveTypeService;
 
-	private final LeaveCycleService leaveCycleService;
+    private final LeaveCycleService leaveCycleService;
 
-	private final TenantService tenantService;
+    private final TenantService tenantService;
 
-	private final TenantContext tenantContext;
+    private final TenantContext tenantContext;
 
-	private final EpCommonMapper epCommonMapper;
+    private final EpCommonMapper epCommonMapper;
 
-	private final SuperAdminDao superAdminDao;
+    private final SuperAdminDao superAdminDao;
 
-	private final UserDao userDao;
+    private final UserDao userDao;
 
-	private final JwtService jwtService;
+    private final JwtService jwtService;
 
-	private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-	private final ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
+    private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
-	private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-	private final OrganizationConfigDao organizationConfigDao;
+    private final OrganizationConfigDao organizationConfigDao;
 
-	private final EpOrganizationConfigDao epOrganizationConfigDao;
+    private final EpOrganizationConfigDao epOrganizationConfigDao;
 
-	private final EsignConfigService esignConfigService;
+    private final EsignConfigService esignConfigService;
 
-	@Value("${aws.route53.parent-domain}")
-	private String parentDomain;
+    @Value("${aws.route53.parent-domain}")
+    private String parentDomain;
 
-	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
-			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
-			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
-			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
-			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
-			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
-			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService) {
-		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
-				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
-		this.epOrganizationDao = epOrganizationDao;
-		this.attendanceConfigService = attendanceConfigService;
-		this.emailService = emailService;
-		this.leaveTypeService = leaveTypeService;
-		this.leaveCycleService = leaveCycleService;
-		this.tenantService = tenantService;
-		this.tenantContext = tenantContext;
-		this.epCommonMapper = epCommonMapper;
-		this.superAdminDao = superAdminDao;
-		this.userDao = userDao;
-		this.jwtService = jwtService;
-		this.userDetailsService = userDetailsService;
-		this.applicationEventPublisher = applicationEventPublisher;
-		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
-		this.objectMapper = objectMapper;
-		this.organizationConfigDao = organizationConfigDao;
-		this.epOrganizationConfigDao = epOrganizationConfigDao;
-		this.esignConfigService = esignConfigService;
-	}
+    public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
+                                     MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
+                                     LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
+                                     ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
+                                     TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
+                                     TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
+                                     SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
+                                     ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+                                     EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService) {
+        super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
+                userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
+        this.epOrganizationDao = epOrganizationDao;
+        this.attendanceConfigService = attendanceConfigService;
+        this.emailService = emailService;
+        this.leaveTypeService = leaveTypeService;
+        this.leaveCycleService = leaveCycleService;
+        this.tenantService = tenantService;
+        this.tenantContext = tenantContext;
+        this.epCommonMapper = epCommonMapper;
+        this.superAdminDao = superAdminDao;
+        this.userDao = userDao;
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.epOrganizationCalenderDao = epOrganizationCalenderDao;
+        this.objectMapper = objectMapper;
+        this.organizationConfigDao = organizationConfigDao;
+        this.epOrganizationConfigDao = epOrganizationConfigDao;
+        this.esignConfigService = esignConfigService;
+    }
 
-	@Override
-	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
-		validateOrganizationInput(organizationDto);
-		String companyDomain = organizationDto.getCompanyDomain();
-		boolean tenantCreated = false;
+    @Override
+    public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
+        validateOrganizationInput(organizationDto);
+        String companyDomain = organizationDto.getCompanyDomain();
+        boolean tenantCreated = false;
 
-		try {
-			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-			SuperAdmin superAdmin = superAdminDao.findById(userId)
-				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+        try {
+            Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+            SuperAdmin superAdmin = superAdminDao.findById(userId)
+                    .orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 
-			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
-			tenantCreated = true;
-			log.info("Tenant created for: {}", companyDomain);
+            tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
+            tenantCreated = true;
+            log.info("Tenant created for: {}", companyDomain);
 
-			tenantContext.setTenantAndSwitchSchema(companyDomain);
-			epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
-			log.info("Organization saved for: {}", companyDomain);
+            tenantContext.setTenantAndSwitchSchema(companyDomain);
+            epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
+            log.info("Organization saved for: {}", companyDomain);
 
-			EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+            EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
-			setDefaultOrganizationConfigsForEp();
+            setDefaultOrganizationConfigsForEp();
 
-			User savedUser = createSuperAdminUser(superAdmin);
-			log.info("Super admin user created for: {}", companyDomain);
-			applicationEventPublisher.publishEvent(new UserCreatedEvent(this, savedUser));
+            User savedUser = createSuperAdminUser(superAdmin);
+            log.info("Super admin user created for: {}", companyDomain);
+            applicationEventPublisher.publishEvent(new UserCreatedEvent(this, savedUser));
 
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			superAdminDao.delete(superAdmin);
-			log.info("SuperAdmin deleted after successful organization creation.");
+            tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+            superAdminDao.delete(superAdmin);
+            log.info("SuperAdmin deleted after successful organization creation.");
 
-			tenantContext.setTenantAndSwitchSchema(companyDomain);
+            tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+            EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
+            tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
+            emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
-			return new ResponseEntityDto(false, responseDto);
+            return new ResponseEntityDto(false, responseDto);
 
-		}
-		catch (Exception e) {
-			log.error("Error creating organization: {}", e.getMessage(), e);
+        }
+        catch (Exception e) {
+            log.error("Error creating organization: {}", e.getMessage(), e);
 
-			try {
-				cleanup(companyDomain, tenantCreated);
-			}
-			catch (ModuleException cleanupException) {
-				log.error("Cleanup failed: {}", cleanupException.getMessage());
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CLEANUP_FAILED);
-			}
+            try {
+                cleanup(companyDomain, tenantCreated);
+            }
+            catch (ModuleException cleanupException) {
+                log.error("Cleanup failed: {}", cleanupException.getMessage());
+                throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CLEANUP_FAILED);
+            }
 
-			if (e instanceof ModuleException moduleException) {
-				throw moduleException;
-			}
-
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
-		}
-	}
-
-	@Override
-	public ResponseEntityDto getTenantLoginType(String tenantName) {
-		log.info("getTenantLoginType executed by: {}", tenantName);
-		return tenantService.getTenant(tenantName);
-	}
-
-	@Override
-	public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
-		log.info("editCalendarConfigs: execution started");
-
-		if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY);
-		}
-
-		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
-
-		if (organizationCalendars.isEmpty()) {
-			OrganizationCalendar newCalendar = new OrganizationCalendar();
-			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
-			epOrganizationCalenderDao.save(newCalendar);
-			return new ResponseEntityDto(false, newCalendar);
-		}
-		else {
-			OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
-
-			if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
-					epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())) {
-
-				epOrganizationCalenderDao.delete(existingOrganizationCalendar);
-
-				OrganizationCalendar newCalendar = new OrganizationCalendar();
-				newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
-				epOrganizationCalenderDao.save(newCalendar);
-
-				log.info("editCalendarConfigs: execution ended successfully");
-				return new ResponseEntityDto(false, newCalendar);
-			}
-
-			else {
-				return new ResponseEntityDto(false, existingOrganizationCalendar);
-			}
-		}
-	}
-
-	@Override
-	public ResponseEntityDto getCalendarConfigs() {
-		log.info("getCalendarConfigs: execution started");
-
-		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
-
-		if (organizationCalendars.isEmpty()) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
-		}
-
-		EpCalendarConfigResponseDto epCalendarConfigResponseDto = epCommonMapper
-			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
-
-		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
-	}
-
-	@Override
-	public ResponseEntityDto setQuickSetupCompleted() {
-		log.info("setQuickSetupCompleted: execution started");
-
-		Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
-
-		if (existingQuickSetupCompletion.isPresent()
-				&& existingQuickSetupCompletion.get().getOrganizationConfigValue().equals(Boolean.TRUE.toString()))
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
-
-		String quickSetupCompleted = String.valueOf(true);
-		OrganizationConfig organizationConfig = new OrganizationConfig(
-				EpOrganizationConfigType.QUICK_SETUP_STATUS.name(), quickSetupCompleted);
-		organizationConfigDao.save(organizationConfig);
-
-		log.info("setQuickSetupCompleted: execution ended successfully");
-
-		return new ResponseEntityDto(false, organizationConfig);
-	}
-
-	private User createSuperAdminUser(SuperAdmin superAdmin) {
-		User user = new User();
-		user.setEmail(superAdmin.getEmail());
-		user.setPassword(superAdmin.getPassword());
-		user.setIsActive(true);
-		user.setLoginMethod(superAdmin.getLoginMethod());
-		user.setIsPasswordChangedForTheFirstTime(true);
-
-		Employee employee = new Employee();
-		employee.setFirstName(superAdmin.getFirstName());
-		employee.setLastName(superAdmin.getLastName());
-		employee.setAccountStatus(AccountStatus.ACTIVE);
-		employee.setEmploymentAllocation(EmploymentAllocation.FULL_TIME);
-		employee.setAuthPic(superAdmin.getAuthPic());
-
-		EmployeeRole superAdminRoles = new EmployeeRole();
-		superAdminRoles.setPeopleRole(Role.PEOPLE_ADMIN);
-		superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
-		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
-		superAdminRoles.setEsignRole(Role.ESIGN_ADMIN);
-		superAdminRoles.setIsSuperAdmin(true);
-		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
-
-		user.setEmployee(employee);
-		employee.setUser(user);
-		employee.setEmployeeRole(superAdminRoles);
-		superAdminRoles.setEmployee(employee);
-		superAdminRoles.setRoleChangedBy(employee);
-
-		UserSettings userSettings = createNotificationSettings(user);
-		user.setSettings(userSettings);
-
-		return userDao.save(user);
-	}
-
-	private UserSettings createNotificationSettings(User user) {
-		log.info("createNotificationSettings: execution started {}", user.getUserId());
-		UserSettings userSettings = new UserSettings();
-
-		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
-
-		boolean isLeaveRequestNotificationsEnabled = true;
-		boolean isTimeEntryNotificationsEnabled = true;
-		boolean isNudgeNotificationsEnabled = true;
-
-		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST.getKey(),
-				isLeaveRequestNotificationsEnabled);
-		notificationsObjectNode.put(NotificationSettingsType.TIME_ENTRY.getKey(), isTimeEntryNotificationsEnabled);
-		notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST_NUDGE.getKey(), isNudgeNotificationsEnabled);
-
-		userSettings.setNotifications(notificationsObjectNode);
-		userSettings.setUser(user);
-
-		log.info("createNotificationSettings: execution ended");
-		return userSettings;
-	}
-
-	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,
-			String companyDomain) {
-		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
-		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
-
-		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-		responseDto.setAccessToken(accessToken);
-		responseDto.setRefreshToken(refreshToken);
-		responseDto.setTenantId(companyDomain);
-
-		return responseDto;
-	}
-
-	private void cleanup(String companyDomain, boolean tenantCreated) {
-		ModuleException cleanupException = null;
-
-		if (tenantCreated) {
-			try {
-				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-				tenantService.deleteTenant(companyDomain);
-				log.info("Tenant deleted during cleanup: {}", companyDomain);
-			}
-			catch (Exception e) {
-				String error = "Failed to delete tenant during cleanup: " + companyDomain;
-				log.error(error, e);
-				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_TENANT);
-			}
-		}
-
-		if (cleanupException != null) {
-			throw cleanupException;
-		}
-	}
-
-	private void validateOrganizationInput(EpOrganizationDto organizationDto) {
-		if (organizationDto.getOrganizationTimeZone() != null
-				&& !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
-		}
-
-		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
-		}
-
-		if (organizationDto.getCompanyDomain() == null || organizationDto.getCompanyDomain().isEmpty()) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_REQUIRED);
-		}
-
-		if (organizationDto.getCompanyDomain().length() > EpCommonConstants.MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_LENGTH_EXCEEDED);
-		}
-
-		if (!organizationDto.getCompanyDomain().matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
-		}
-
-		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
-			log.error("Attempted to create restricted subdomain: {}", organizationDto.getCompanyDomain());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN);
-		}
-	}
-
-	private void setDefaultOrganizationConfigsForEp() {
-		log.info("setDefaultOrganizationConfigs: execution started");
-
-		attendanceConfigService.setDefaultAttendanceConfig();
-		getDefaultTimeConfigs();
-		leaveTypeService.createDefaultLeaveType();
-		leaveCycleService.setLeaveCycleDefaultConfigs();
-		esignConfigService.setDefaultEsignConfigs();
-
-		log.info("setDefaultOrganizationConfigs: execution ended");
-	}
+            if (e instanceof ModuleException moduleException) {
+                throw moduleException;
+            }
+
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
+        }
+    }
+
+    @Override
+    public ResponseEntityDto getTenantLoginType(String tenantName) {
+        log.info("getTenantLoginType executed by: {}", tenantName);
+        return tenantService.getTenant(tenantName);
+    }
+
+    @Override
+    public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
+        log.info("editCalendarConfigs: execution started");
+
+        if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null) {
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY);
+        }
+
+        List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+        if (organizationCalendars.isEmpty()) {
+            OrganizationCalendar newCalendar = new OrganizationCalendar();
+            newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+            epOrganizationCalenderDao.save(newCalendar);
+            return new ResponseEntityDto(false, newCalendar);
+        }
+        else {
+            OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
+
+            if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
+                    epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())) {
+
+                epOrganizationCalenderDao.delete(existingOrganizationCalendar);
+
+                OrganizationCalendar newCalendar = new OrganizationCalendar();
+                newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+                epOrganizationCalenderDao.save(newCalendar);
+
+                log.info("editCalendarConfigs: execution ended successfully");
+                return new ResponseEntityDto(false, newCalendar);
+            }
+
+            else {
+                return new ResponseEntityDto(false, existingOrganizationCalendar);
+            }
+        }
+    }
+
+    @Override
+    public ResponseEntityDto getCalendarConfigs() {
+        log.info("getCalendarConfigs: execution started");
+
+        List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+        if (organizationCalendars.isEmpty()) {
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+        }
+
+        EpCalendarConfigResponseDto epCalendarConfigResponseDto = epCommonMapper
+                .organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
+
+        return new ResponseEntityDto(false, epCalendarConfigResponseDto);
+    }
+
+    @Override
+    public ResponseEntityDto setQuickSetupCompleted() {
+        log.info("setQuickSetupCompleted: execution started");
+
+        Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
+                .findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
+
+        if (existingQuickSetupCompletion.isPresent()
+                && existingQuickSetupCompletion.get().getOrganizationConfigValue().equals(Boolean.TRUE.toString()))
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
+
+        String quickSetupCompleted = String.valueOf(true);
+        OrganizationConfig organizationConfig = new OrganizationConfig(
+                EpOrganizationConfigType.QUICK_SETUP_STATUS.name(), quickSetupCompleted);
+        organizationConfigDao.save(organizationConfig);
+
+        log.info("setQuickSetupCompleted: execution ended successfully");
+
+        return new ResponseEntityDto(false, organizationConfig);
+    }
+
+    private User createSuperAdminUser(SuperAdmin superAdmin) {
+        User user = new User();
+        user.setEmail(superAdmin.getEmail());
+        user.setPassword(superAdmin.getPassword());
+        user.setIsActive(true);
+        user.setLoginMethod(superAdmin.getLoginMethod());
+        user.setIsPasswordChangedForTheFirstTime(true);
+
+        Employee employee = new Employee();
+        employee.setFirstName(superAdmin.getFirstName());
+        employee.setLastName(superAdmin.getLastName());
+        employee.setAccountStatus(AccountStatus.ACTIVE);
+        employee.setEmploymentAllocation(EmploymentAllocation.FULL_TIME);
+        employee.setAuthPic(superAdmin.getAuthPic());
+
+        EmployeeRole superAdminRoles = new EmployeeRole();
+        superAdminRoles.setPeopleRole(Role.PEOPLE_ADMIN);
+        superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
+        superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
+        superAdminRoles.setEsignRole(Role.ESIGN_ADMIN);
+        superAdminRoles.setIsSuperAdmin(true);
+        superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+
+        user.setEmployee(employee);
+        employee.setUser(user);
+        employee.setEmployeeRole(superAdminRoles);
+        superAdminRoles.setEmployee(employee);
+        superAdminRoles.setRoleChangedBy(employee);
+
+        UserSettings userSettings = createNotificationSettings(user);
+        user.setSettings(userSettings);
+
+        return userDao.save(user);
+    }
+
+    private UserSettings createNotificationSettings(User user) {
+        log.info("createNotificationSettings: execution started {}", user.getUserId());
+        UserSettings userSettings = new UserSettings();
+
+        ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
+
+        boolean isLeaveRequestNotificationsEnabled = true;
+        boolean isTimeEntryNotificationsEnabled = true;
+        boolean isNudgeNotificationsEnabled = true;
+
+        notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST.getKey(),
+                isLeaveRequestNotificationsEnabled);
+        notificationsObjectNode.put(NotificationSettingsType.TIME_ENTRY.getKey(), isTimeEntryNotificationsEnabled);
+        notificationsObjectNode.put(NotificationSettingsType.LEAVE_REQUEST_NUDGE.getKey(), isNudgeNotificationsEnabled);
+
+        userSettings.setNotifications(notificationsObjectNode);
+        userSettings.setUser(user);
+
+        log.info("createNotificationSettings: execution ended");
+        return userSettings;
+    }
+
+    private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,
+                                                                String companyDomain) {
+        EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
+        responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        responseDto.setAccessToken(accessToken);
+        responseDto.setRefreshToken(refreshToken);
+        responseDto.setTenantId(companyDomain);
+
+        return responseDto;
+    }
+
+    private void cleanup(String companyDomain, boolean tenantCreated) {
+        ModuleException cleanupException = null;
+
+        if (tenantCreated) {
+            try {
+                tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+                tenantService.deleteTenant(companyDomain);
+                log.info("Tenant deleted during cleanup: {}", companyDomain);
+            }
+            catch (Exception e) {
+                String error = "Failed to delete tenant during cleanup: " + companyDomain;
+                log.error(error, e);
+                cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_TENANT);
+            }
+        }
+
+        if (cleanupException != null) {
+            throw cleanupException;
+        }
+    }
+
+    private void validateOrganizationInput(EpOrganizationDto organizationDto) {
+        if (organizationDto.getOrganizationTimeZone() != null
+                && !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone())) {
+            throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
+        }
+
+        if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor())) {
+            throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
+        }
+
+        if (organizationDto.getCompanyDomain() == null || organizationDto.getCompanyDomain().isEmpty()) {
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_REQUIRED);
+        }
+
+        if (organizationDto.getCompanyDomain().length() > EpCommonConstants.MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH) {
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_LENGTH_EXCEEDED);
+        }
+
+        if (!organizationDto.getCompanyDomain().matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
+        }
+
+        if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
+            log.error("Attempted to create restricted subdomain: {}", organizationDto.getCompanyDomain());
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN);
+        }
+    }
+
+    private void setDefaultOrganizationConfigsForEp() {
+        log.info("setDefaultOrganizationConfigs: execution started");
+
+        attendanceConfigService.setDefaultAttendanceConfig();
+        getDefaultTimeConfigs();
+        leaveTypeService.createDefaultLeaveType();
+        leaveCycleService.setLeaveCycleDefaultConfigs();
+        esignConfigService.setDefaultEsignConfigs();
+
+        log.info("setDefaultOrganizationConfigs: execution ended");
+    }
 
 }

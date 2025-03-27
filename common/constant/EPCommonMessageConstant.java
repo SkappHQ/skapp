@@ -34,8 +34,6 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_SUBDOMAIN("ep.common.error.invalid-subdomain"),
 	EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN("ep.common.error.restricted-subdomain"),
 	EP_COMMON_ERROR_CHECKING_SUBDOMAIN("ep.common.error.checking-subdomain"),
-	EP_COMMON_ERROR_ROUTE53_CHANGE_FAILED("ep.common.error.route53-change-failed"),
-	EP_COMMON_ERROR_ROUTE53_CHANGE_INTERRUPTED("ep.common.error.route53-change-interrupted"),
 	EP_COMMON_ERROR_ORGANIZATION_CREATE("ep.common.error.organization-create-error"),
 	EP_COMMON_ERROR_DELETING_TENANT("ep.common.error.delete-tenant-error"),
 	EP_COMMON_ERROR_ORGANIZATION_CLEANUP_FAILED("ep.common.error.organization-cleanup-failed"),
