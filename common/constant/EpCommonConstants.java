@@ -48,7 +48,7 @@ public class EpCommonConstants {
 
 	public static final String JWK_PROVIDER = "https://www.googleapis.com/oauth2/v3/certs";
 
-	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 50;
+	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 10;
 
 	public static final int ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT = 3;
 

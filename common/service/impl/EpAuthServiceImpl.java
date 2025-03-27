@@ -44,7 +44,6 @@ import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
-import com.skapp.enterprise.people.service.EpPeopleService;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,8 +108,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 	private final PasswordResetOtpDao passwordResetOtpDao;
 
 	private final EpCommonEmailService epCommonEmailService;
-
-	private final EpPeopleService epPeopleService;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
@@ -350,10 +347,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
-			if (epPeopleService.checkEmployeesLimit()) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_FREE_USER_LIMIT_EXCEEDED);
-			}
-
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}

@@ -57,6 +57,8 @@ public class TenantContext {
 				connection.setCatalog(tenant);
 				log.info("Successfully switched database to: {}", tenant);
 			});
+
+			entityManager.clear();
 		}
 		catch (Exception e) {
 			log.error("Error switching database schema for tenant {}: {}", tenant, e.getMessage());
