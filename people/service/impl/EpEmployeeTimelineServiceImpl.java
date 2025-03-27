@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -46,7 +47,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
@@ -222,7 +222,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private List<EpEmployeeTimelineResponseListDto> mapToResponseListDto(List<EmployeeTimeline> employeeTimelines) {
 		if (employeeTimelines.isEmpty()) {
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 
 		return employeeTimelines.stream()
@@ -338,7 +338,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void handleEmployeeTypeChange(Employee currentEmployee, EmployeeProgression currentProgression,
 			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
-		if (currentProgression.getEmploymentType() != null && newProgression.getEmploymentType() != null
+		if (currentProgression != null && currentProgression.getEmploymentType() != null
+				&& newProgression.getEmploymentType() != null
 				&& !currentProgression.getEmploymentType().equals(newProgression.getEmploymentType())) {
 			employeeTimelines.add(createEmployeeTimeline(currentEmployee,
 					EpEmployeeTimelineType.EMPLOYMENT_TYPE_CHANGED, currentProgression.getEmploymentType().toString(),
@@ -348,19 +349,19 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void handleNewJobAssignment(Employee currentEmployee,
 			EmployeeEmploymentCareerProgressionDetailsDto newProgression, List<EmployeeTimeline> employeeTimelines) {
-		if (newProgression.getJobTitleId() != null) {
+		if (newProgression != null && newProgression.getJobTitleId() != null) {
 			jobTitleDao.findById(newProgression.getJobTitleId())
 				.ifPresent(title -> employeeTimelines.add(createEmployeeTimeline(currentEmployee,
 						EpEmployeeTimelineType.JOB_TITLE_ASSIGNED, null, title.getName())));
 		}
 
-		if (newProgression.getJobFamilyId() != null) {
+		if (newProgression != null && newProgression.getJobFamilyId() != null) {
 			jobFamilyDao.findById(newProgression.getJobFamilyId())
 				.ifPresent(family -> employeeTimelines.add(createEmployeeTimeline(currentEmployee,
 						EpEmployeeTimelineType.JOB_FAMILY_ASSIGNED, null, family.getName())));
 		}
 
-		if (newProgression.getEmploymentType() != null) {
+		if (newProgression != null && newProgression.getEmploymentType() != null) {
 			employeeTimelines.add(createEmployeeTimeline(currentEmployee, EpEmployeeTimelineType.EMPLOYMENT_TYPE_ADDED,
 					null, newProgression.getEmploymentType().toString()));
 		}
@@ -375,7 +376,9 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateJoinDateTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
-		if (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate() != null) {
+		if (createEmployeeRequestDto.getEmployment() != null
+				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails() != null
+				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate() != null) {
 			Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 			if (employee.isEmpty()) {
 				return;
@@ -416,8 +419,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		if (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds() == null
-				|| (createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds().length <= 0)) {
+		if (createEmployeeRequestDto.getEmployment() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails().getTeamIds().length == 0) {
 			return;
 		}
 
@@ -439,7 +444,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void addManagerTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
-		if (savedEmployee.getEmployeeManagers() != null && !savedEmployee.getEmployeeManagers().isEmpty()) {
+		if (savedEmployee != null && savedEmployee.getEmployeeManagers() != null
+				&& !savedEmployee.getEmployeeManagers().isEmpty()) {
 			savedEmployee.getEmployeeManagers().forEach(empManager -> {
 				EpEmployeeTimelineType epEmployeeTimelineType = getManagerTypeTitle(empManager, false);
 				if (epEmployeeTimelineType != null) {
@@ -476,6 +482,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private EpEmployeeTimelineType getManagerTypeTitle(EmployeeManager empManager, boolean updated) {
+		if (empManager == null || empManager.getManagerType() == null) {
+			return null;
+		}
+
 		if (updated) {
 			if (empManager.getManagerType() == ManagerType.PRIMARY) {
 				return EpEmployeeTimelineType.PRIMARY_SUPERVISOR_CHANGED;
@@ -496,6 +506,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	}
 
 	private void addProbationDateTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
+		if (savedEmployee == null || employeeTimelines == null) {
+			return;
+		}
+
 		employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(savedEmployee.getEmployeeId())
 			.ifPresent(employeePeriod -> {
 				addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
@@ -508,18 +522,32 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+		if (currentEmployee == null || createEmployeeRequestDto == null || employeeTimelines == null) {
+			return;
+		}
+
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
 		}
+
+		if (createEmployeeRequestDto.getEmployment() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails() == null) {
+			return;
+		}
+
 		Employee employee = employeeOpt.get();
 
 		EmployeePeriod currentEmployeePeriod = currentEmployee.getEmployeePeriod();
 		ProbationPeriodDto newEmployeePeriod = new ProbationPeriodDto();
-		newEmployeePeriod
-			.setStartDate(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationStartDate());
-		newEmployeePeriod
-			.setEndDate(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationEndDate());
+
+		CommonModuleUtils.setIfExists(
+				() -> createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationStartDate(),
+				newEmployeePeriod::setStartDate);
+
+		CommonModuleUtils.setIfExists(
+				() -> createEmployeeRequestDto.getEmployment().getEmploymentDetails().getProbationEndDate(),
+				newEmployeePeriod::setEndDate);
 
 		if (currentEmployeePeriod != null) {
 			addProbationDateChangeTimelineEntry(employee, employeeTimelines,
@@ -563,10 +591,21 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateEmploymentAllocationTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+		if (currentEmployee == null || employeeTimelines == null) {
+			return;
+		}
+
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
 		}
+
+		if (createEmployeeRequestDto == null || createEmployeeRequestDto.getEmployment() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmploymentAllocation() == null) {
+			return;
+		}
+
 		Employee employee = employeeOpt.get();
 
 		EmploymentAllocation currentEmploymentAllocation = currentEmployee.getEmploymentAllocation();
@@ -574,26 +613,22 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			.getEmploymentDetails()
 			.getEmploymentAllocation();
 
-		if (newEmploymentAllocation != null) {
-			if (currentEmploymentAllocation != null) {
-				if (newEmploymentAllocation.equals(currentEmploymentAllocation)) {
-					return;
-				}
+		if (currentEmploymentAllocation != null) {
+			if (!newEmploymentAllocation.equals(currentEmploymentAllocation)) {
 				employeeTimelines
 					.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.EMPLOYMENT_ALLOCATION_CHANGED,
 							currentEmploymentAllocation.toString(), newEmploymentAllocation.toString()));
 			}
-			else {
-				employeeTimelines.add(createEmployeeTimeline(employee,
-						EpEmployeeTimelineType.EMPLOYMENT_ALLOCATION_ADDED, null, newEmploymentAllocation.toString()));
-			}
+		}
+		else {
+			employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.EMPLOYMENT_ALLOCATION_ADDED,
+					null, newEmploymentAllocation.toString()));
 		}
 	}
 
 	private void addSystemPermissionTimeline(Employee savedEmployee, EmployeeSystemPermissionsDto employeeRole,
 			List<EmployeeTimeline> employeeTimelines) {
-
-		if (employeeRole == null) {
+		if (savedEmployee == null || employeeRole == null || employeeTimelines == null) {
 			return;
 		}
 
@@ -618,48 +653,65 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateSystemPermissionTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+		if (currentEmployee == null || createEmployeeRequestDto == null || employeeTimelines == null) {
+			return;
+		}
+
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			return;
 		}
-		Employee employee = employeeOpt.get();
 
 		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		EmployeeSystemPermissionsDto newEmployeeRole = createEmployeeRequestDto.getSystemPermissions();
+		if (currentEmployeeRole == null) {
+			return;
+		}
 
-		if (newEmployeeRole != null) {
-			if (!currentEmployeeRole.getPeopleRole().equals(newEmployeeRole.getPeopleRole())) {
-				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.PEOPLE.getDisplayName());
-				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.PEOPLE.getDisplayName());
-				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
-						previousRoleName, newRoleName));
-			}
-			if (!currentEmployeeRole.getLeaveRole().equals(newEmployeeRole.getLeaveRole())) {
-				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.LEAVE.getDisplayName());
-				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.LEAVE.getDisplayName());
-				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
-						previousRoleName, newRoleName));
-			}
-			if (!currentEmployeeRole.getAttendanceRole().equals(newEmployeeRole.getAttendanceRole())) {
-				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.ATTENDANCE.getDisplayName());
-				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.ATTENDANCE.getDisplayName());
-				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
-						previousRoleName, newRoleName));
-			}
-			if (!currentEmployeeRole.getEsignRole().equals(newEmployeeRole.getEsignRole())) {
-				String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.ESIGN.getDisplayName());
-				String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
-						EpTimelineModuleType.ESIGN.getDisplayName());
-				employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
-						previousRoleName, newRoleName));
-			}
+		EmployeeSystemPermissionsDto newEmployeeRole = createEmployeeRequestDto.getSystemPermissions();
+		if (newEmployeeRole == null) {
+			return;
+		}
+
+		Employee employee = employeeOpt.get();
+
+		if (newEmployeeRole.getPeopleRole() != null && currentEmployeeRole.getPeopleRole() != null
+				&& !currentEmployeeRole.getPeopleRole().equals(newEmployeeRole.getPeopleRole())) {
+			String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getPeopleRole(),
+					EpTimelineModuleType.PEOPLE.getDisplayName());
+			String newRoleName = getRoleNameWithModule(newEmployeeRole.getPeopleRole(),
+					EpTimelineModuleType.PEOPLE.getDisplayName());
+			employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
+					previousRoleName, newRoleName));
+		}
+
+		if (newEmployeeRole.getLeaveRole() != null && currentEmployeeRole.getLeaveRole() != null
+				&& !currentEmployeeRole.getLeaveRole().equals(newEmployeeRole.getLeaveRole())) {
+			String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getLeaveRole(),
+					EpTimelineModuleType.LEAVE.getDisplayName());
+			String newRoleName = getRoleNameWithModule(newEmployeeRole.getLeaveRole(),
+					EpTimelineModuleType.LEAVE.getDisplayName());
+			employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
+					previousRoleName, newRoleName));
+		}
+
+		if (newEmployeeRole.getAttendanceRole() != null && currentEmployeeRole.getAttendanceRole() != null
+				&& !currentEmployeeRole.getAttendanceRole().equals(newEmployeeRole.getAttendanceRole())) {
+			String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getAttendanceRole(),
+					EpTimelineModuleType.ATTENDANCE.getDisplayName());
+			String newRoleName = getRoleNameWithModule(newEmployeeRole.getAttendanceRole(),
+					EpTimelineModuleType.ATTENDANCE.getDisplayName());
+			employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
+					previousRoleName, newRoleName));
+		}
+
+		if (newEmployeeRole.getEsignRole() != null && currentEmployeeRole.getEsignRole() != null
+				&& !currentEmployeeRole.getEsignRole().equals(newEmployeeRole.getEsignRole())) {
+			String previousRoleName = getRoleNameWithModule(currentEmployeeRole.getEsignRole(),
+					EpTimelineModuleType.ESIGN.getDisplayName());
+			String newRoleName = getRoleNameWithModule(newEmployeeRole.getEsignRole(),
+					EpTimelineModuleType.ESIGN.getDisplayName());
+			employeeTimelines.add(createEmployeeTimeline(employee, EpEmployeeTimelineType.SYSTEM_PERMISSION_CHANGED,
+					previousRoleName, newRoleName));
 		}
 	}
 
