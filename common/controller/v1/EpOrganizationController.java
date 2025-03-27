@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.payload.request.EpCalendarConfigRequestDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.service.EpOrganizationService;
@@ -18,12 +19,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/ep/organization")
 public class EpOrganizationController {
 
 	private final EpOrganizationService epOrganizationService;
+
+	private final SpecialTenantConfig specialTenantConfig;
 
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> organizationSetup(
@@ -54,6 +59,13 @@ public class EpOrganizationController {
 	@PostMapping("/configs/quick-setup")
 	public ResponseEntity<ResponseEntityDto> setQuickSetupCompleted() {
 		ResponseEntityDto response = epOrganizationService.setQuickSetupCompleted();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/special-tenants")
+	public ResponseEntity<ResponseEntityDto> getAllTenants() {
+		List<SpecialTenantConfig.TenantInfo> tenants = specialTenantConfig.getTenants();
+		ResponseEntityDto response = new ResponseEntityDto(false, tenants);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -80,7 +80,8 @@ public class EPSecurityConfig {
 						"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
 						"/v1/ep/auth/password-reset/verify-otp", "/v1/ep/auth/password-reset/send-otp",
 						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
-						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook")
+						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook",
+						"/v1/ep/organization/special-tenants")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -112,8 +113,8 @@ public class EPSecurityConfig {
 
 		configuration.setAllowedOriginPatterns(Arrays.asList(origins));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		configuration
-			.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin"));
+		configuration.setAllowedHeaders(
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;

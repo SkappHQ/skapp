@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum AllowedOAuthFlows {
 
-	IMPLICIT("implicit"), CODE("code"), CLIENT_CREDENTIALS("client_credentials");
+	IMPLICIT("implicit"), CODE("name"), CLIENT_CREDENTIALS("client_credentials");
 
 	private final String flowName;
 
