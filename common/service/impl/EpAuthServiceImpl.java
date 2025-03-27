@@ -274,6 +274,12 @@ public class EpAuthServiceImpl implements EpAuthService {
 			return new ResponseEntityDto(false, responseDto);
 		}
 
+		if (tenantDao.findByTenantName(subDomainName) != null) {
+			responseDto.setErrorMessage(messageUtil
+				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_NOT_AVAILABLE.getMessageKey()));
+			return new ResponseEntityDto(false, responseDto);
+		}
+
 		responseDto.setIsDomainAvailable(true);
 		responseDto.setErrorMessage(null);
 
