@@ -102,7 +102,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 
 		if (!addressBook.getIsActive()) {
 			log.warn("deleteExternalUser: User ID {} is already marked as DELETED", id);
-			return new ResponseEntityDto(false, "User is already deleted");
+			return new ResponseEntityDto(true, "User is already deleted");
 		}
 
 		addressBook.setIsActive(false);
