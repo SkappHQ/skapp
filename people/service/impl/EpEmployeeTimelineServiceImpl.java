@@ -226,30 +226,31 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 
 		return employeeTimelines.stream()
-				.filter(e -> e.getLastModifiedDate() != null)
-				.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
-				.entrySet()
-				.stream()
-				.map(entry -> {
-					YearMonth yearMonth = entry.getKey();
+			.filter(e -> e.getLastModifiedDate() != null)
+			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
+			.entrySet()
+			.stream()
+			.map(entry -> {
+				YearMonth yearMonth = entry.getKey();
 
-					List<EmployeeTimeline> sortedTimelines = entry.getValue().stream()
-							.sorted(Comparator.comparing(EmployeeTimeline::getCreatedDate).reversed())
-							.toList();
+				List<EmployeeTimeline> sortedTimelines = entry.getValue()
+					.stream()
+					.sorted(Comparator.comparing(EmployeeTimeline::getCreatedDate).reversed())
+					.toList();
 
-					List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
-							.employeeTimelinesToEmployeeTimelineResponseDtoList(sortedTimelines);
+				List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
+					.employeeTimelinesToEmployeeTimelineResponseDtoList(sortedTimelines);
 
-					EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
-					responseDto.setYear((long) yearMonth.getYear());
-					responseDto.setMonth(String.valueOf(yearMonth.getMonthValue()));
-					responseDto.setEmployeeTimelineRecords(records);
+				EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
+				responseDto.setYear((long) yearMonth.getYear());
+				responseDto.setMonth(String.valueOf(yearMonth.getMonthValue()));
+				responseDto.setEmployeeTimelineRecords(records);
 
-					return responseDto;
-				})
-				.sorted(Comparator.comparing(EpEmployeeTimelineResponseListDto::getYear)
-						.thenComparing(e -> Integer.parseInt(e.getMonth())))
-				.toList();
+				return responseDto;
+			})
+			.sorted(Comparator.comparing(EpEmployeeTimelineResponseListDto::getYear)
+				.thenComparing(e -> Integer.parseInt(e.getMonth())))
+			.toList();
 	}
 
 	private void addJobProgressionTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
