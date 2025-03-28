@@ -226,25 +226,30 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 
 		return employeeTimelines.stream()
-			.filter(e -> e.getLastModifiedDate() != null)
-			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
-			.entrySet()
-			.stream()
-			.map(entry -> {
-				YearMonth yearMonth = entry.getKey();
-				List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
-					.employeeTimelinesToEmployeeTimelineResponseDtoList(entry.getValue());
+				.filter(e -> e.getLastModifiedDate() != null)
+				.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
+				.entrySet()
+				.stream()
+				.map(entry -> {
+					YearMonth yearMonth = entry.getKey();
 
-				EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
-				responseDto.setYear((long) yearMonth.getYear());
-				responseDto.setMonth(String.valueOf(yearMonth.getMonthValue()));
-				responseDto.setEmployeeTimelineRecords(records);
+					List<EmployeeTimeline> sortedTimelines = entry.getValue().stream()
+							.sorted(Comparator.comparing(EmployeeTimeline::getCreatedDate).reversed())
+							.toList();
 
-				return responseDto;
-			})
-			.sorted(Comparator.comparing(EpEmployeeTimelineResponseListDto::getYear)
-				.thenComparing(e -> Integer.parseInt(e.getMonth())))
-			.toList();
+					List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
+							.employeeTimelinesToEmployeeTimelineResponseDtoList(sortedTimelines);
+
+					EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
+					responseDto.setYear((long) yearMonth.getYear());
+					responseDto.setMonth(String.valueOf(yearMonth.getMonthValue()));
+					responseDto.setEmployeeTimelineRecords(records);
+
+					return responseDto;
+				})
+				.sorted(Comparator.comparing(EpEmployeeTimelineResponseListDto::getYear)
+						.thenComparing(e -> Integer.parseInt(e.getMonth())))
+				.toList();
 	}
 
 	private void addJobProgressionTimeline(Employee savedEmployee, List<EmployeeTimeline> employeeTimelines) {
