@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum EsignMessageConstant implements MessageConstant {
 
 	ESIGN_ERROR_EXTERNAL_USER_EXITS("ep.esign.error.external-user-exists"),
+	ESIGN_ERROR_EXTERNAL_USER_NOT_FOUND("ep.esign.error.external-user-not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSIGNED("ep.esign.error.envelope.document.already.assigned"),
 	ESIGN_ERROR_ENVELOPE_WITH_NO_DOCUMENT("ep.esign.error.envelope.document-list.empty"),
 	ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND("ep.esign.error.envelope.document-id.not-found"),
@@ -50,6 +51,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_TO_CONVERT_PUBLIC_KEY("ep.esign.error.failed.convert.public-key"),
 	ESIGN_ERROR_MISSING_DOCUMENT_VERSION_ID("ep.esign.error.missing.document.version.id"),
 	ESIGN_ERROR_MISSING_ADDRESS_BOOK_ID("ep.esign.error.missing.address.book.id"),
+	ESIGN_ERROR_MISSING_EXTERNAL_USER_ID_IN_ADDRESS_BOOK("ep.esign.error.missing.external.user.id.in.address.book"),
 	ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST("ep.esign.error.empty.field.sign.list"),
 	ESIGN_ERROR_USER_KEY_PAIR_NOT_FOUND("ep.esign.error.user.key.pair.not-found"),
 	ESIGN_ERROR_USER_KEY_GENERATE("ep.esign.error.user.key.generate"),
