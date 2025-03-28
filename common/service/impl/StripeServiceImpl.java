@@ -153,9 +153,11 @@ public class StripeServiceImpl implements StripeService {
 		boolean hadPreviousSubscription = tenant.getStripeSubscription() != null
 				&& (tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED);
 
-		SessionCreateParams.TaxIdCollection taxIdCollection = SessionCreateParams.TaxIdCollection.builder()
-			.setEnabled(true)
-			.build();
+		SessionCreateParams.TaxIdCollection taxIdCollection = null;
+
+		if (!hadPreviousSubscription) {
+			taxIdCollection = SessionCreateParams.TaxIdCollection.builder().setEnabled(true).build();
+		}
 
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
@@ -165,8 +167,11 @@ public class StripeServiceImpl implements StripeService {
 			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
 			.setLocale(SessionCreateParams.Locale.AUTO)
-			.setAllowPromotionCodes(true)
-			.setTaxIdCollection(taxIdCollection);
+			.setAllowPromotionCodes(true);
+
+		if (taxIdCollection != null) {
+			builder.setTaxIdCollection(taxIdCollection);
+		}
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
