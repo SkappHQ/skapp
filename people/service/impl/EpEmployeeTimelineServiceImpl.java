@@ -232,8 +232,14 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			.stream()
 			.map(entry -> {
 				YearMonth yearMonth = entry.getKey();
+
+				List<EmployeeTimeline> sortedTimelines = entry.getValue()
+					.stream()
+					.sorted(Comparator.comparing(EmployeeTimeline::getCreatedDate).reversed())
+					.toList();
+
 				List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
-					.employeeTimelinesToEmployeeTimelineResponseDtoList(entry.getValue());
+					.employeeTimelinesToEmployeeTimelineResponseDtoList(sortedTimelines);
 
 				EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
 				responseDto.setYear((long) yearMonth.getYear());
@@ -280,8 +286,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 					.orElse(null)
 				: null;
 
-		EmployeeEmploymentCareerProgressionDetailsDto newEmployeeProgression = createEmployeeRequestDto.getEmployment()
-			.getCareerProgression() != null
+		EmployeeEmploymentCareerProgressionDetailsDto newEmployeeProgression = null;
+
+		if (createEmployeeRequestDto.getEmployment() != null) {
+			newEmployeeProgression = createEmployeeRequestDto.getEmployment().getCareerProgression() != null
 					? createEmployeeRequestDto.getEmployment()
 						.getCareerProgression()
 						.stream()
@@ -289,6 +297,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 						.findFirst()
 						.orElse(null)
 					: null;
+		}
 
 		if (newEmployeeProgression == null) {
 			return;
@@ -376,8 +385,11 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateJoinDateTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
-		if (createEmployeeRequestDto.getEmployment() != null
-				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails() != null
+		if (createEmployeeRequestDto.getEmployment() == null) {
+			return;
+		}
+
+		if (createEmployeeRequestDto.getEmployment().getEmploymentDetails() != null
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails().getJoinedDate() != null) {
 			Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 			if (employee.isEmpty()) {
@@ -413,6 +425,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateTeamTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+
+		if (createEmployeeRequestDto.getEmployment() == null) {
+			return;
+		}
 
 		Optional<Employee> employeeOpt = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
@@ -458,6 +474,12 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateManagerTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+
+		if (createEmployeeRequestDto.getEmployment() == null
+				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails() == null) {
+			return;
+		}
+
 		Optional<Employee> employee = employeeDao.findById(currentEmployee.getEmployeeId());
 		if (employee.isEmpty()) {
 			return;
@@ -466,13 +488,14 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			currentEmployee.getManagers().forEach(empManager -> {
 				EpEmployeeTimelineType epEmployeeTimelineType = getManagerTypeTitle(empManager, true);
 
-				if (epEmployeeTimelineType != null && ((createEmployeeRequestDto.getEmployment()
-					.getEmploymentDetails()
-					.getPrimarySupervisor() != null && empManager.getManagerType().equals(ManagerType.PRIMARY))
-						|| (createEmployeeRequestDto.getEmployment()
+				if (epEmployeeTimelineType != null && createEmployeeRequestDto.getEmployment() != null
+						&& ((createEmployeeRequestDto.getEmployment()
 							.getEmploymentDetails()
-							.getSecondarySupervisor() != null
-								&& empManager.getManagerType().equals(ManagerType.SECONDARY)))) {
+							.getPrimarySupervisor() != null && empManager.getManagerType().equals(ManagerType.PRIMARY))
+								|| (createEmployeeRequestDto.getEmployment()
+									.getEmploymentDetails()
+									.getSecondarySupervisor() != null
+										&& empManager.getManagerType().equals(ManagerType.SECONDARY)))) {
 					employeeTimelines.add(createEmployeeTimeline(employee.get(), epEmployeeTimelineType, null,
 							empManager.getManager().getFirstName() + " " + empManager.getManager().getLastName()));
 				}
@@ -523,6 +546,10 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
 		if (currentEmployee == null || createEmployeeRequestDto == null || employeeTimelines == null) {
+			return;
+		}
+
+		if (createEmployeeRequestDto.getEmployment() == null) {
 			return;
 		}
 
@@ -591,6 +618,11 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private void updateEmploymentAllocationTimeline(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto, List<EmployeeTimeline> employeeTimelines) {
+
+		if (createEmployeeRequestDto.getEmployment() == null) {
+			return;
+		}
+
 		if (currentEmployee == null || employeeTimelines == null) {
 			return;
 		}
@@ -600,7 +632,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		if (createEmployeeRequestDto == null || createEmployeeRequestDto.getEmployment() == null
+		if (createEmployeeRequestDto.getEmployment() == null
 				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails() == null
 				|| createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmploymentAllocation() == null) {
 			return;
