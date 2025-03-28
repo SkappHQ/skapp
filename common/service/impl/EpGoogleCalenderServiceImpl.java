@@ -1,5 +1,7 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -58,9 +60,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -117,9 +124,41 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private String backendRedirectURI;
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	public String connectGoogleCalendar(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
 		log.info("connectGoogleCalendar: execution started");
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<EpGoogleCalendarAuthRedirectDto> request = new HttpEntity<>(epGoogleCalendarAuthRedirectDto,
+				headers);
+		ResponseEntity<String> response = restTemplate.postForEntity(backendRedirectURI, request, String.class);
+
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(response.getBody());
+
+			if (jsonNode.has(EpCommonConstants.RESULTS) && jsonNode.get(EpCommonConstants.RESULTS).isArray()
+					&& !jsonNode.get(EpCommonConstants.RESULTS).isEmpty()) {
+				String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asText();
+
+				log.info("connectGoogleCalendar: execution end");
+
+				return redirectUrl;
+			}
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+		}
+
+		log.info("connectGoogleCalendar: execution end");
+		return "/error";
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public ResponseEntityDto saveGoogleCalendarConfig(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
+		log.info("saveGoogleCalendarConfig: execution started");
 
 		String encodedState = epGoogleCalendarAuthRedirectDto.getState();
 		String authorizationCode = epGoogleCalendarAuthRedirectDto.getCode();
@@ -197,13 +236,14 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
 
-			return UriComponentsBuilder.fromUriString(frontendRedirectUri)
-				.queryParam("error", encodedErrorMessage)
-				.toUriString();
+			return new ResponseEntityDto(false,
+					UriComponentsBuilder.fromUriString(frontendRedirectUri)
+						.queryParam("error", encodedErrorMessage)
+						.toUriString());
 		}
 
-		log.info("connectGoogleCalendar: execution ended");
-		return frontendRedirectUri;
+		log.info("saveGoogleCalendarConfig: execution ended");
+		return new ResponseEntityDto(false, frontendRedirectUri);
 	}
 
 	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) throws IOException {

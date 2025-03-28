@@ -11,6 +11,8 @@ public interface EpGoogleCalenderService {
 
 	String connectGoogleCalendar(EpGoogleCalendarAuthRedirectDto epGoogleCalendarauthRedirectDto);
 
+	ResponseEntityDto saveGoogleCalendarConfig(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto);
+
 	ResponseEntityDto isGoogleCalendarConnected();
 
 	ResponseEntityDto getGoogleAuthUrl(EpGoogleCalendarConsentUrlDto epGoogleCalendarConsentUrlDto);
