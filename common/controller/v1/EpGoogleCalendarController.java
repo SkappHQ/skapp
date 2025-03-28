@@ -23,7 +23,7 @@ public class EpGoogleCalendarController {
 
 	private final EpGoogleCalenderService epGoogleCalenderService;
 
-	@GetMapping(value = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public RedirectView connectGoogleCalendar(@Valid EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
 		return new RedirectView(epGoogleCalenderService.connectGoogleCalendar(epGoogleCalendarAuthRedirectDto));
 	}
