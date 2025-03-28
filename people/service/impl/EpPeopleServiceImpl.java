@@ -21,6 +21,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeePeriod;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
@@ -519,7 +520,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		if (currentEmployee.getEmployeeRole() != null) {
-			deepCopiedDto.setEmployeeRole(currentEmployee.getEmployeeRole());
+			deepCopiedDto.setEmployeeRole(new EmployeeRole(currentEmployee.getEmployeeRole()));
 		}
 
 		Optional<EmployeePeriod> employeePeriod = employeePeriodDao
