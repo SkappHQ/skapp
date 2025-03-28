@@ -9,8 +9,6 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.model.TemporaryLink;
 import com.skapp.enterprise.esignature.repository.TemporaryLinkRepository;
 import com.skapp.enterprise.esignature.service.TemporaryLinkService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -149,14 +147,7 @@ public class TemporaryLinkServiceImpl implements TemporaryLinkService {
 
 		// 48 hours expiration
 		Date expirationDate = new Date(System.currentTimeMillis() + 48 * 60 * 60 * 1000);
-		jwtService.generateTemporaryAccessToken(userDetails, claims, expirationDate);
-
-		return Jwts.builder()
-			.setClaims(claims)
-			.setIssuedAt(new Date(System.currentTimeMillis()))
-			.setExpiration(expirationDate)
-			.signWith(jwtService.getSigningKey(), SignatureAlgorithm.HS256)
-			.compact();
+		return jwtService.generateTemporaryAccessToken(userDetails, claims, expirationDate);
 	}
 
 }
