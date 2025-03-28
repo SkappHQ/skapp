@@ -46,6 +46,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 
 		ExternalUser externalUser = esignMapper.externalUserDtoToExternalUser(externalUserDto);
+		
 		return externalUserRepository.save(externalUser);
 	}
 
