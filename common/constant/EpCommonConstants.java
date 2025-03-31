@@ -8,6 +8,8 @@ import java.util.List;
 @UtilityClass
 public class EpCommonConstants {
 
+	public static final String RESULTS = "results";
+
 	public static final String MASTER_DATABASE = "master";
 
 	public static final String APPLICATION_NAME = "Skapp";

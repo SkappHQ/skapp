@@ -28,6 +28,13 @@ public class EpGoogleCalendarController {
 		return new RedirectView(epGoogleCalenderService.connectGoogleCalendar(epGoogleCalendarAuthRedirectDto));
 	}
 
+	@PostMapping(value = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> saveGoogleCalendarConfig(
+			@Valid @RequestBody EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
+		ResponseEntityDto response = epGoogleCalenderService.saveGoogleCalendarConfig(epGoogleCalendarAuthRedirectDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 	@PostMapping(value = "/connect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getGoogleAuthUrl(
 			@Valid @RequestBody EpGoogleCalendarConsentUrlDto epGoogleCalendarConsentUrlDto) {
