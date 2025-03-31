@@ -1,12 +1,12 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
@@ -59,6 +59,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final StripeEmailService stripeEmailService;
 
 	private final StripeSubscriptionDao stripeSubscriptionDao;
+
+	private final SpecialTenantConfig specialTenantConfig;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -271,14 +273,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			Tenant tenant = currentTenant.getTenant();
-			String tenantId = tenant.getTenantName();
+			String tenantName = tenant.getTenantName();
 			int attemptCount = invoice.getAttemptCount().intValue();
 
 			if (attemptCount == 1 && tenant.getSubscriptionStatus() == SubscriptionStatus.FREE_TRIAL
 					|| attemptCount == 4) {
 
 				tenant.setSubscriptionStatus(SubscriptionStatus.CANCELED);
-				tenantContext.setTenantAndSwitchSchema(tenantId);
+				tenantContext.setTenantAndSwitchSchema(tenantName);
 				long employeeCount = employeeDao
 					.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -292,7 +294,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 				SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
 
-				if (employeeCount > CommonConstants.EP_FREE_USER_LIMIT) {
+				int maxUserLimit = specialTenantConfig.getMaxEmployeeCountForTenant(tenantName);
+				if (employeeCount > maxUserLimit) {
 					tenant.setTenantStatus(attemptCount == 1 ? TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED
 							: TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 					systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_UNPAID;
@@ -302,11 +305,11 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				currentTenant.setLastModifiedByEmail(invoice.getCustomerEmail());
 
 				tenantDao.save(tenant);
-				tenantContext.setTenantAndSwitchSchema(tenantId);
+				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantId);
+				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantName);
 			}
 
 			log.info("handleSubscriptionPaymentFail: Successfully sent payment failure email");
@@ -343,8 +346,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			Tenant tenant = stripeSubscription.getTenant();
-			String tenantId = tenant.getTenantName();
-			tenantContext.setTenantAndSwitchSchema(tenantId);
+			String tenantName = tenant.getTenantName();
+			tenantContext.setTenantAndSwitchSchema(tenantName);
 			long employeeCount = employeeDao
 				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -355,7 +358,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			SystemVersionTypes systemVersionTypes = SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
-			if (employeeCount > CommonConstants.EP_FREE_USER_LIMIT) {
+			int maxUserLimit = specialTenantConfig.getMaxEmployeeCountForTenant(tenantName);
+			if (employeeCount > maxUserLimit) {
 				tenant.setTenantStatus(TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 				systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_CANCELLED;
 			}
@@ -368,7 +372,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			tenantDao.save(tenant);
 
-			tenantContext.setTenantAndSwitchSchema(tenantId);
+			tenantContext.setTenantAndSwitchSchema(tenantName);
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
