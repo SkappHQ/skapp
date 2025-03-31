@@ -1,8 +1,8 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarAuthRedirectDto;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarConsentUrlDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,21 +24,21 @@ public class EpGoogleCalendarController {
 	private final EpGoogleCalenderService epGoogleCalenderService;
 
 	@GetMapping(value = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
-	public RedirectView connectGoogleCalendar(@Valid EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
-		return new RedirectView(epGoogleCalenderService.connectGoogleCalendar(epGoogleCalendarAuthRedirectDto));
+	public RedirectView connectGoogleCalendar(@Valid EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
+		return new RedirectView(epGoogleCalenderService.connectGoogleCalendar(epGoogleAuthRedirectDto));
 	}
 
 	@PostMapping(value = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> saveGoogleCalendarConfig(
-			@Valid @RequestBody EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
-		ResponseEntityDto response = epGoogleCalenderService.saveGoogleCalendarConfig(epGoogleCalendarAuthRedirectDto);
+			@Valid @RequestBody EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
+		ResponseEntityDto response = epGoogleCalenderService.saveGoogleCalendarConfig(epGoogleAuthRedirectDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PostMapping(value = "/connect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getGoogleAuthUrl(
-			@Valid @RequestBody EpGoogleCalendarConsentUrlDto epGoogleCalendarConsentUrlDto) {
-		ResponseEntityDto response = epGoogleCalenderService.getGoogleAuthUrl(epGoogleCalendarConsentUrlDto);
+			@Valid @RequestBody EpGoogleConsentUrlDto epGoogleConsentUrlDto) {
+		ResponseEntityDto response = epGoogleCalenderService.getGoogleAuthUrl(epGoogleConsentUrlDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

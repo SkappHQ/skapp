@@ -42,9 +42,9 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.model.EmployeeCalendar;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarAuthRedirectDto;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarConsentUrlDto;
-import com.skapp.enterprise.common.payload.response.EpCalendarGetAuthResponseDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
+import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
 import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
@@ -124,14 +124,13 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private String backendRedirectURI;
 
 	@Override
-	public String connectGoogleCalendar(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
+	public String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
 		log.info("connectGoogleCalendar: execution started");
 
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		HttpEntity<EpGoogleCalendarAuthRedirectDto> request = new HttpEntity<>(epGoogleCalendarAuthRedirectDto,
-				headers);
+		HttpEntity<EpGoogleAuthRedirectDto> request = new HttpEntity<>(epGoogleAuthRedirectDto, headers);
 		ResponseEntity<String> response = restTemplate.postForEntity(backendRedirectURI, request, String.class);
 
 		try {
@@ -157,15 +156,15 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public ResponseEntityDto saveGoogleCalendarConfig(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
+	public ResponseEntityDto saveGoogleCalendarConfig(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
 		log.info("saveGoogleCalendarConfig: execution started");
 
-		String encodedState = epGoogleCalendarAuthRedirectDto.getState();
-		String authorizationCode = epGoogleCalendarAuthRedirectDto.getCode();
+		String encodedState = epGoogleAuthRedirectDto.getState();
+		String authorizationCode = epGoogleAuthRedirectDto.getCode();
 
 		if (encodedState.isEmpty()) {
 			log.error("connectGoogleCalendar: State is empty");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
@@ -174,7 +173,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 		if (state.length != 3) {
 			log.error("connectGoogleCalendar: State is invalid");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
 		Long userId = Long.parseLong(state[0]);
@@ -201,7 +200,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
 		try {
-			validateGoogleCalendarAuthRedirectDto(epGoogleCalendarAuthRedirectDto);
+			validateGoogleCalendarAuthRedirectDto(epGoogleAuthRedirectDto);
 			GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(), jsonFactory,
 					clientId, clientSecret, authorizationCode, backendRedirectURI)
 				.execute();
@@ -302,7 +301,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	}
 
 	@Override
-	public ResponseEntityDto getGoogleAuthUrl(EpGoogleCalendarConsentUrlDto epGoogleCalendarConsentUrlDto) {
+	public ResponseEntityDto getGoogleAuthUrl(EpGoogleConsentUrlDto epGoogleConsentUrlDto) {
 
 		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
@@ -314,9 +313,9 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		User currentUser = userService.getCurrentUser();
 		log.info("getAuthUrlGoogleCalendar: execution started by user: {}", currentUser.getUserId());
 
-		EpCalendarGetAuthResponseDto responseDto = new EpCalendarGetAuthResponseDto();
+		EpGoogleAuthResponseDto responseDto = new EpGoogleAuthResponseDto();
 
-		String frontendRedirectUri = epGoogleCalendarConsentUrlDto.getFrontendRedirectUrl();
+		String frontendRedirectUri = epGoogleConsentUrlDto.getFrontendRedirectUrl();
 
 		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
 			log.error("getAuthUrlGoogleCalendar: unable to the organizational url");
@@ -342,7 +341,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		}
 		catch (Exception exception) {
 			log.error("getAuthUrlGoogleCalendar: {}", exception.getMessage(), exception);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_AUTH_URL_CALENDAR);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL);
 		}
 		log.info("getAuthUrlGoogleCalendar: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -491,7 +490,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		Optional<User> currentUser = userDao.findById(userId);
 		if (currentUser.isEmpty()) {
 			log.error("connectGoogleCalendar: User not found");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 		return currentUser.get();
 	}
@@ -544,11 +543,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		employeeCalendarDao.save(employeeCalendar);
 	}
 
-	private void validateGoogleCalendarAuthRedirectDto(
-			EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto) {
-		if (epGoogleCalendarAuthRedirectDto.getError() != null && !epGoogleCalendarAuthRedirectDto.getError().isEmpty()
-				|| epGoogleCalendarAuthRedirectDto.getCode().isEmpty()) {
-			log.error("connectGoogleCalendar: Error: {}", epGoogleCalendarAuthRedirectDto.getError());
+	private void validateGoogleCalendarAuthRedirectDto(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
+		if (epGoogleAuthRedirectDto.getError() != null && !epGoogleAuthRedirectDto.getError().isEmpty()
+				|| epGoogleAuthRedirectDto.getCode().isEmpty()) {
+			log.error("connectGoogleCalendar: Error: {}", epGoogleAuthRedirectDto.getError());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR);
 		}
 	}

@@ -2,20 +2,20 @@ package com.skapp.enterprise.common.service;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarAuthRedirectDto;
-import com.skapp.enterprise.common.payload.request.EpGoogleCalendarConsentUrlDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
+import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
 
 import java.time.LocalDateTime;
 
 public interface EpGoogleCalenderService {
 
-	String connectGoogleCalendar(EpGoogleCalendarAuthRedirectDto epGoogleCalendarauthRedirectDto);
+	String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleCalendarauthRedirectDto);
 
-	ResponseEntityDto saveGoogleCalendarConfig(EpGoogleCalendarAuthRedirectDto epGoogleCalendarAuthRedirectDto);
+	ResponseEntityDto saveGoogleCalendarConfig(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto);
 
 	ResponseEntityDto isGoogleCalendarConnected();
 
-	ResponseEntityDto getGoogleAuthUrl(EpGoogleCalendarConsentUrlDto epGoogleCalendarConsentUrlDto);
+	ResponseEntityDto getGoogleAuthUrl(EpGoogleConsentUrlDto epGoogleConsentUrlDto);
 
 	ResponseEntityDto disconnectGoogleCalendar();
 

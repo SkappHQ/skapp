@@ -44,6 +44,9 @@ public class EpCommonConstants {
 			"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar",
 			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
 
+	public final List<String> ENTERPRISE_GOOGLE_AUTH_SCOPES = Arrays
+		.asList("https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
+
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 
 	public static final String JWT_ISSUER = "https://accounts.google.com";
