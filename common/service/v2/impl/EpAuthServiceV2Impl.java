@@ -244,7 +244,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 				.setApplicationName(EpCommonConstants.APPLICATION_NAME)
 				.build();
 
-			Person profile = peopleService.people().get("people/me").setPersonFields("emailAddresses,photos").execute();
+			Person profile = peopleService.people().get("people/me").setPersonFields("names,emailAddresses,photos").execute();
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
@@ -268,7 +268,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String authPicUrl = (profile.getPhotos() != null && !profile.getPhotos().isEmpty())
 				? profile.getPhotos().getFirst().getUrl() : null;
 		String name = (profile.getNames() != null && !profile.getNames().isEmpty())
-				? String.valueOf(profile.getNames().getFirst()) : null;
+				? String.valueOf(profile.getNames().getFirst().getDisplayName()) : null;
 		GoogleUserDetailsDto googleUserDetailsDto = new GoogleUserDetailsDto();
 		googleUserDetailsDto.setEmail(userEmail);
 		googleUserDetailsDto.setAuthPicUrl(authPicUrl);
