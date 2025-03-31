@@ -244,7 +244,10 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 				.setApplicationName(EpCommonConstants.APPLICATION_NAME)
 				.build();
 
-			Person profile = peopleService.people().get("people/me").setPersonFields("names,emailAddresses,photos").execute();
+			Person profile = peopleService.people()
+				.get("people/me")
+				.setPersonFields("names,emailAddresses,photos")
+				.execute();
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
