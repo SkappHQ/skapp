@@ -47,10 +47,10 @@ public class AddressBookController {
 			description = "This endpoint allows updating only specific fields of an external user.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
 	@PatchMapping("/edit-external-user/{id}")
-	public ResponseEntity<ResponseEntityDto> editExternalUserinAddressBook(@PathVariable Long id,
+	public ResponseEntity<ResponseEntityDto> editExternalUser(@PathVariable Long id,
 			@Valid @RequestBody ExternalUserDto externalUserDto) {
 
-		ResponseEntityDto response = externalUserService.editExternalUserinAddressBook(id, externalUserDto);
+		ResponseEntityDto response = externalUserService.editExternalUser(id, externalUserDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

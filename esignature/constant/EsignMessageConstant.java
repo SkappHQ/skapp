@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum EsignMessageConstant implements MessageConstant {
 
 	ESIGN_ERROR_EXTERNAL_USER_EXITS("ep.esign.error.external-user-exists"),
+	ESIGN_ERROR_EXTERNAL_USER_EMAIL_ALREADY_EXITS("ep.esign.error.external-user-email-already-exists"),
 	ESIGN_ERROR_EXTERNAL_USER_NOT_FOUND("ep.esign.error.external-user-not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSIGNED("ep.esign.error.envelope.document.already.assigned"),
 	ESIGN_ERROR_ENVELOPE_WITH_NO_DOCUMENT("ep.esign.error.envelope.document-list.empty"),

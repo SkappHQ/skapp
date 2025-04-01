@@ -51,7 +51,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 	}
 
 	@Override
-	public ResponseEntityDto editExternalUserinAddressBook(Long id, ExternalUserDto externalUserDto) {
+	public ResponseEntityDto editExternalUser(Long id, ExternalUserDto externalUserDto) {
 		log.info("editExternalUser: execution started");
 		Optional<ExternalUser> optionalExternalUser = externalUserDao.findById(id);
 		if (optionalExternalUser.isEmpty()) {
@@ -59,8 +59,9 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 		Optional<ExternalUser> existingUser = externalUserRepository.findByEmail(externalUserDto.getEmail());
 		Optional<User> internalUser = userDao.findByEmail(externalUserDto.getEmail());
+
 		if (existingUser.isPresent() || internalUser.isPresent()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_EXITS);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_EMAIL_ALREADY_EXITS);
 		}
 
 		ExternalUser externalUser = optionalExternalUser.get();

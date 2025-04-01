@@ -13,7 +13,7 @@ public interface ExternalUserService {
 	 */
 	ExternalUser createExternalUser(ExternalUserDto externalUser);
 
-	ResponseEntityDto editExternalUserinAddressBook(Long id, ExternalUserDto externalUserDto);
+	ResponseEntityDto editExternalUser(Long id, ExternalUserDto externalUserDto);
 
 	ResponseEntityDto deleteExternalUser(Long id);
 
