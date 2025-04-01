@@ -288,7 +288,10 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
 				&& !employeeCalendar.getCalendarToken().isEmpty()
 				&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
-			isConnected = true;
+			String accessToken = generateGoogleAccessToken(currentUser);
+			if (accessToken != null) {
+				isConnected = true;
+			}
 		}
 
 		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
@@ -336,6 +339,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(clientId,
 					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_CALENDAR_SCOPES)
 				.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
+				.setApprovalPrompt(EpCommonConstants.ENTERPRISE_GOOGLE_APPROVAL_PROMPT)
 				.setState(encodedState);
 			String authUrl = authorizationUrl.build();
 			responseDto.setAuthUrl(authUrl);
