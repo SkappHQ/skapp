@@ -35,8 +35,6 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -54,7 +52,6 @@ import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -92,8 +89,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private final TenantContext tenantContext;
 
 	private final EmployeeCalendarDao employeeCalendarDao;
-
-	private final EmployeeDao employeeDao;
 
 	private final UserService userService;
 
@@ -363,21 +358,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DISCONNECT_FROM_GOOGLE_CALENDAR);
 		}
 
-		try {
-			String accessToken = generateGoogleAccessToken(currentUser);
-			HttpResponse response = revokeToken(accessToken);
-			if (response.getStatusLine().getStatusCode() == 200) {
-				disconnectCalendarFromDatabase(currentUser);
-			}
-			else {
-				log.error("disconnectGoogleCalendar: unable to disconnect for user {}", currentUser.getUserId());
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR);
-			}
-		}
-		catch (Exception exception) {
-			log.error("disconnectGoogleCalendar: {}", exception.getMessage(), exception);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR);
-		}
+		disconnectCalendarFromDatabase(currentUser);
 
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_DISCONNECT_GOOGLE_CALENDAR), false);
@@ -386,7 +367,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	@Override
 	public String generateGoogleAccessToken(@NonNull User user) {
 		log.info("GoogleCalendar: generateAccessToken: execution started for {}", user.getUserId());
-		Employee employee = user.getEmployee();
 		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(user, EpCalendarType.GOOGLE);
 
 		if (employeeCalendar == null || employeeCalendar.getCalendarToken() == null
@@ -408,7 +388,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		catch (IOException exception) {
 			log.error("GoogleCalendar: generateAccessToken: {}", exception.getMessage(), exception);
 			employeeCalendar.setCalendarType(EpCalendarType.NONE);
-			employeeDao.save(employee);
+			employeeCalendarDao.save(employeeCalendar);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
 		}
 	}
@@ -512,7 +492,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		}
 	}
 
-	private HttpResponse revokeToken(@NonNull String accessToken) {
+	private void revokeToken(@NonNull String accessToken) {
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
 			HttpPost httpPost = new HttpPost(EpCommonConstants.ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL);
@@ -520,7 +500,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 					EpCommonConstants.HTTP_POST_HEADER_VALUE);
 			StringEntity entity = new StringEntity(EpCommonConstants.TOKEN + accessToken);
 			httpPost.setEntity(entity);
-			return httpClient.execute(httpPost);
+			httpClient.execute(httpPost);
 		}
 		catch (Exception exception) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR);
