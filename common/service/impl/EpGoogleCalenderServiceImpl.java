@@ -282,23 +282,29 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		User currentUser = userService.getCurrentUser();
 		boolean isConnected = false;
 
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
-				EpCalendarType.GOOGLE);
+		try {
+			EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
+					EpCalendarType.GOOGLE);
 
-		if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
-				&& !employeeCalendar.getCalendarToken().isEmpty()
-				&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
-			String accessToken = generateGoogleAccessToken(currentUser);
-			if (accessToken != null) {
-				isConnected = true;
+			if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
+					&& !employeeCalendar.getCalendarToken().isEmpty()
+					&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
+				String accessToken = generateGoogleAccessToken(currentUser);
+				if (accessToken != null) {
+					isConnected = true;
+				}
+			}
+
+			List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+			if (organizationCalendars.isEmpty()
+					|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsGoogleCalendarEnabled())) {
+				isConnected = false;
 			}
 		}
-
-		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
-
-		if (organizationCalendars.isEmpty()
-				|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsGoogleCalendarEnabled())) {
-			isConnected = false;
+		catch (ModuleException e) {
+			log.error("Error checking Google Calendar connection: ", e);
+			return false;
 		}
 
 		return isConnected;
