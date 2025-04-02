@@ -2,7 +2,6 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
-import com.skapp.community.common.component.ResetDatabaseApiKeyFilter;
 import com.skapp.enterprise.esignature.config.TemporaryLinkAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,9 +46,9 @@ public class EPSecurityConfig {
 
 	private final AuthEntryPoint authEntryPoint;
 
-	private final ResetDatabaseApiKeyFilter resetDatabaseApiKeyFilter;
-
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
+
+	private final RequestMethodFilter requestMethodFilter;
 
 	@Value("${cors.allowed-origins}")
 	private String allowedOrigins;
@@ -101,10 +100,10 @@ public class EPSecurityConfig {
 			.cacheControl(HeadersConfigurer.CacheControlConfig::disable));
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(temporaryLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-		http.addFilterBefore(resetDatabaseApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
 
 		http.authenticationProvider(authProvider);
 
@@ -118,7 +117,8 @@ public class EPSecurityConfig {
 
 		configuration.setAllowedOriginPatterns(Arrays.asList(origins));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID"));
+		configuration.setAllowedHeaders(
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;

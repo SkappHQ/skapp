@@ -279,7 +279,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void notifyVoid(Envelope envelope) {
-
+		// Notify all recipients that the envelope has been voided
 	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {

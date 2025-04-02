@@ -3,7 +3,8 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.constant.EpAuthConstants;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.service.TenantRegistryService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class TenantFilter extends OncePerRequestFilter {
 
+	private static final String TENANT_HEADER = "X-Tenant-ID";
+
 	private static final Set<String> EXCLUDED_PATHS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
 			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
 			"/swagger-ui/swagger-ui-standalone-preset.js", "/swagger-ui/swagger-ui.css", "/v3/api-docs/swagger-config",
@@ -35,6 +38,8 @@ public class TenantFilter extends OncePerRequestFilter {
 			"/v1/ep/organization/login-method", "/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect",
 			"/v1/validate/email", "/v1/ep/stripe/webhook");
 
+	private final TenantRegistryService tenantRegistryService;
+
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
@@ -45,13 +50,19 @@ public class TenantFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) {
 
-		String tenantId = request.getHeader(EpAuthConstants.TENANT_HEADER);
+		String tenantId = request.getHeader(TENANT_HEADER);
 
 		logRequestDetails(request, Objects.requireNonNullElse(tenantId, "Not Provided"));
 
 		if (tenantId == null || tenantId.isBlank()) {
 			log.error("Tenant header missing in the request.");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_HEADER_MISSING);
+		}
+
+		if (!EpCommonConstants.MASTER_DATABASE.equals(tenantId) && !tenantRegistryService.isTenantActive(tenantId)) {
+			log.error("Invalid tenant ID provided: {}", tenantId);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_TENANT,
+					new String[] { tenantId });
 		}
 
 		try {

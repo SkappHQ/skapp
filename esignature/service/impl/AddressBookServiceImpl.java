@@ -67,7 +67,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 		}
 
 		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {
-			Validations.validatePhone(externalUserDto.getPhone());
+			Validations.validateContactNo(externalUserDto.getPhone());
 		}
 	}
 

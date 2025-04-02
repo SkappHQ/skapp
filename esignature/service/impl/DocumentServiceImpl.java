@@ -386,7 +386,7 @@ public class DocumentServiceImpl implements DocumentService {
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 
 			}
-			case SIGNATURE, INITIAL, STAMP -> {
+			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> {
 				try (InputStream imageStream = amazonS3Service.downloadFile(bucketName,
 						documentVersionField.getValue());
 						ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -454,7 +454,7 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey) {
 		return switch (fieldSignDto.getType()) {
 			case DATE, APPROVE, DECLINE -> signTextField(fieldSignDto, privateKey);
-			case SIGNATURE, INITIAL, STAMP -> signImageField(fieldSignDto, privateKey);
+			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> signImageField(fieldSignDto, privateKey);
 		};
 	}
 

@@ -1,11 +1,11 @@
 package com.skapp.enterprise.common.config;
 
-import com.skapp.community.common.exception.ModuleException;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
@@ -19,33 +19,41 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 @EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
 		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
 		"com.skapp.community.leaveplanner.repository", "com.skapp.community.peopleplanner.repository",
 		"com.skapp.community.timeplanner.repository", "com.skapp.enterprise.esignature.repository",
 		"com.skapp.enterprise.leaveplanner.repository", "com.skapp.enterprise.people.repository" })
+@EnableTransactionManagement
 public class MultiTenantDataSourceConfig {
 
-	@Value("${spring.datasource.url}")
-	private String masterUrl;
+	private static final String CREATE_DB_PARAM = "?createDatabaseIfNotExist=true";
+
+	private static final String READ_SUFFIX = "-read";
+
+	private static final String WRITE_SUFFIX = "-write";
+
+	@Value("${spring.datasource.master.write.url}")
+	private String masterWriteUrl;
+
+	@Value("${spring.datasource.master.read.url}")
+	private String masterReadUrl;
 
 	@Value("${spring.datasource.username}")
 	private String masterUsername;
 
 	@Value("${spring.datasource.password}")
 	private String masterPassword;
-
-	@Value("${spring.datasource.driver-class-name}")
-	private String driverClassName;
 
 	@Value("${spring.master.hikari.maximum-pool-size:30}")
 	private int masterMaxPoolSize;
@@ -83,9 +91,12 @@ public class MultiTenantDataSourceConfig {
 	@Value("${spring.tenant.hikari.validation-timeout:5000}")
 	private long tenantValidationTimeout;
 
-	private final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
+	@Value("${spring.datasource.driver-class-name}")
+	private String driverClassName;
 
-	private final Set<String> validTenants = ConcurrentHashMap.newKeySet();
+	private final Map<String, DataSource> writeDataSources = new ConcurrentHashMap<>();
+
+	private final Map<String, DataSource> readDataSources = new ConcurrentHashMap<>();
 
 	@Bean
 	@Primary
@@ -94,7 +105,10 @@ public class MultiTenantDataSourceConfig {
 			@Override
 			protected Object determineCurrentLookupKey() {
 				String tenantId = TenantContext.getCurrentTenant();
-				return tenantId != null ? tenantId : EpCommonConstants.MASTER_DATABASE;
+				boolean isReadOnly = RequestMethodContext.isReadOnly();
+
+				return (tenantId != null ? tenantId : EpCommonConstants.MASTER_DATABASE)
+						+ (isReadOnly ? READ_SUFFIX : WRITE_SUFFIX);
 			}
 
 			@Override
@@ -102,68 +116,111 @@ public class MultiTenantDataSourceConfig {
 			protected DataSource determineTargetDataSource() {
 				String lookupKey = (String) determineCurrentLookupKey();
 
-				if (!EpCommonConstants.MASTER_DATABASE.equals(lookupKey) && !validTenants.contains(lookupKey)) {
-					log.error("Attempt to access invalid tenant: {}", lookupKey);
-					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_TENANT,
-							new String[] { lookupKey });
+				boolean isReadOnly;
+				String tenantId;
+
+				if (lookupKey.endsWith(READ_SUFFIX)) {
+					isReadOnly = true;
+					tenantId = lookupKey.substring(0, lookupKey.length() - READ_SUFFIX.length());
+				}
+				else if (lookupKey.endsWith(WRITE_SUFFIX)) {
+					isReadOnly = false;
+					tenantId = lookupKey.substring(0, lookupKey.length() - WRITE_SUFFIX.length());
+				}
+				else {
+					log.error("Invalid lookup key format: {}", lookupKey);
+					throw new IllegalStateException("Invalid lookup key format: " + lookupKey);
 				}
 
-				return dataSources.computeIfAbsent(lookupKey,
-						key -> key != null && key.equals(EpCommonConstants.MASTER_DATABASE) ? createMasterDataSource()
-								: createTenantDataSource(key));
+				Map<String, DataSource> dsMap = isReadOnly ? readDataSources : writeDataSources;
+
+				return dsMap.computeIfAbsent(tenantId, key -> {
+					if (key.equals(EpCommonConstants.MASTER_DATABASE)) {
+						return isReadOnly ? createMasterReadDataSource() : createMasterWriteDataSource();
+					}
+					else {
+						return isReadOnly ? createTenantReadDataSource(key) : createTenantWriteDataSource(key);
+					}
+				});
 			}
 		};
 
-		DataSource masterDataSource = createMasterDataSource();
-		multiTenantDataSource.setDefaultTargetDataSource(masterDataSource);
-		multiTenantDataSource.setTargetDataSources(new HashMap<>());
+		DataSource masterWriteDataSource = createMasterWriteDataSource();
+		DataSource masterReadDataSource = createMasterReadDataSource();
+
+		Map<Object, Object> targetDataSources = new HashMap<>();
+		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + WRITE_SUFFIX, masterWriteDataSource);
+		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + READ_SUFFIX, masterReadDataSource);
+
+		multiTenantDataSource.setDefaultTargetDataSource(masterWriteDataSource);
+		multiTenantDataSource.setTargetDataSources(targetDataSources);
 		multiTenantDataSource.afterPropertiesSet();
 
-		validTenants.add(EpCommonConstants.MASTER_DATABASE);
-		dataSources.put(EpCommonConstants.MASTER_DATABASE, masterDataSource);
+		writeDataSources.put(EpCommonConstants.MASTER_DATABASE, masterWriteDataSource);
+		readDataSources.put(EpCommonConstants.MASTER_DATABASE, masterReadDataSource);
 
 		return multiTenantDataSource;
 	}
 
-	public DataSource createMasterDataSource() {
-		HikariDataSource dataSource = new HikariDataSource();
-		dataSource.setJdbcUrl(masterUrl + "?createDatabaseIfNotExist=true");
-		dataSource.setUsername(masterUsername);
-		dataSource.setPassword(masterPassword);
-		dataSource.setDriverClassName(driverClassName);
-
-		dataSource.setPoolName("Master-Pool");
-		dataSource.setMaximumPoolSize(masterMaxPoolSize);
-		dataSource.setMinimumIdle(masterMinIdle);
-		dataSource.setIdleTimeout(masterIdleTimeout);
-		dataSource.setMaxLifetime(masterMaxLifetime);
-		dataSource.setConnectionTimeout(masterConnectionTimeout);
-		dataSource.setValidationTimeout(masterValidationTimeout);
-
-		return dataSource;
+	public DataSource createMasterWriteDataSource() {
+		HikariConfig config = createBaseHikariConfig(masterWriteUrl + CREATE_DB_PARAM, masterUsername, masterPassword,
+				"Master-Write-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,
+				masterConnectionTimeout, masterValidationTimeout, false);
+		return new HikariDataSource(config);
 	}
 
-	private DataSource createTenantDataSource(String tenantId) {
-		String dbUrl = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1) + tenantId;
-		if (dbUrl.contains("?")) {
-			dbUrl = dbUrl.substring(0, dbUrl.indexOf("?"));
+	public DataSource createMasterReadDataSource() {
+		HikariConfig config = createBaseHikariConfig(masterReadUrl + CREATE_DB_PARAM, masterUsername, masterPassword,
+				"Master-Read-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,
+				masterConnectionTimeout, masterValidationTimeout, true);
+		return new HikariDataSource(config);
+	}
+
+	private DataSource createTenantWriteDataSource(String tenantId) {
+		String dbUrl = extractBaseDbUrl(masterWriteUrl) + tenantId;
+
+		HikariConfig config = createBaseHikariConfig(dbUrl + CREATE_DB_PARAM, masterUsername, masterPassword,
+				"Tenant-" + tenantId + "-Write-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
+				tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, false);
+		return new HikariDataSource(config);
+	}
+
+	private DataSource createTenantReadDataSource(String tenantId) {
+		String dbUrl = extractBaseDbUrl(masterReadUrl) + tenantId;
+
+		HikariConfig config = createBaseHikariConfig(dbUrl + CREATE_DB_PARAM, masterUsername, masterPassword,
+				"Tenant-" + tenantId + "-Read-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
+				tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, true);
+		return new HikariDataSource(config);
+	}
+
+	private HikariConfig createBaseHikariConfig(String jdbcUrl, String username, String password, String poolName,
+			int maxPoolSize, int minIdle, long idleTimeout, long maxLifetime, long connectionTimeout,
+			long validationTimeout, boolean readOnly) {
+
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl(jdbcUrl);
+		config.setUsername(username);
+		config.setPassword(password);
+		config.setDriverClassName(driverClassName);
+		config.setPoolName(poolName);
+		config.setMaximumPoolSize(maxPoolSize);
+		config.setMinimumIdle(minIdle);
+		config.setIdleTimeout(idleTimeout);
+		config.setMaxLifetime(maxLifetime);
+		config.setConnectionTimeout(connectionTimeout);
+		config.setValidationTimeout(validationTimeout);
+		config.setReadOnly(readOnly);
+
+		return config;
+	}
+
+	private String extractBaseDbUrl(String url) {
+		String baseUrl = url.substring(0, url.lastIndexOf("/") + 1);
+		if (baseUrl.contains("?")) {
+			baseUrl = baseUrl.substring(0, baseUrl.indexOf("?"));
 		}
-
-		HikariDataSource dataSource = new HikariDataSource();
-		dataSource.setJdbcUrl(dbUrl + "?createDatabaseIfNotExist=true");
-		dataSource.setUsername(masterUsername);
-		dataSource.setPassword(masterPassword);
-		dataSource.setDriverClassName(driverClassName);
-
-		dataSource.setPoolName("Tenant-" + tenantId + "-Pool");
-		dataSource.setMaximumPoolSize(tenantMaxPoolSize);
-		dataSource.setMinimumIdle(tenantMinIdle);
-		dataSource.setIdleTimeout(tenantIdleTimeout);
-		dataSource.setMaxLifetime(tenantMaxLifetime);
-		dataSource.setConnectionTimeout(tenantConnectionTimeout);
-		dataSource.setValidationTimeout(tenantValidationTimeout);
-
-		return dataSource;
+		return baseUrl;
 	}
 
 	@Bean
@@ -210,18 +267,20 @@ public class MultiTenantDataSourceConfig {
 		return new TenantIdentifierResolver();
 	}
 
-	public void addTenant(String tenantId) {
-		validTenants.add(tenantId);
-		log.debug("Tenant {} registered successfully", tenantId);
-	}
-
 	public void removeTenant(String tenantId) {
-		validTenants.remove(tenantId);
-		DataSource dataSource = dataSources.remove(tenantId);
-		if (dataSource instanceof HikariDataSource hikariDataSource) {
+		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			return;
+		}
+
+		DataSource writeDataSource = writeDataSources.remove(tenantId);
+		if (writeDataSource instanceof HikariDataSource hikariDataSource) {
 			hikariDataSource.close();
 		}
-		log.debug("Tenant {} unregistered and connections closed", tenantId);
+
+		DataSource readDataSource = readDataSources.remove(tenantId);
+		if (readDataSource instanceof HikariDataSource hikariDataSource) {
+			hikariDataSource.close();
+		}
 	}
 
 }

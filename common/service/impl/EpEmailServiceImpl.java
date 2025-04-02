@@ -52,7 +52,6 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 	@Override
 	protected void getEnumTranslationsStream() {
-		log.info("Initializing enum translations map");
 		if (enumTranslationsMap == null) {
 			enumTranslationsMap = new HashMap<>();
 

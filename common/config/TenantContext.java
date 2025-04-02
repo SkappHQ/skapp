@@ -24,7 +24,6 @@ public class TenantContext {
 
 	public static void setCurrentTenant(String tenant) {
 		currentTenant.set(tenant);
-		log.debug("Tenant set to: {}", tenant);
 	}
 
 	public static String getCurrentTenant() {
@@ -39,13 +38,12 @@ public class TenantContext {
 	public void setTenantAndSwitchSchema(String tenant) {
 		if (!tenant.equals(getCurrentTenant())) {
 			try {
-				multiTenantDataSourceConfig.addTenant(tenant);
 				setCurrentTenant(tenant);
 				switchDatabaseSchema(tenant);
 			}
 			catch (Exception e) {
 				clearCurrentTenant();
-				multiTenantDataSourceConfig.removeTenant(tenant);
+				removeTenant(tenant);
 				throw new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_COULD_NOT_ALTER_CONNECTION_TO_SPECIFIED_TENANT,
 						new String[] { tenant, e.getMessage() });
@@ -54,11 +52,10 @@ public class TenantContext {
 	}
 
 	private void switchDatabaseSchema(String tenant) {
-		log.debug("Switching database schema to tenant: {}", tenant);
 		try {
 			entityManager.unwrap(Session.class).doWork(connection -> {
 				connection.setCatalog(tenant);
-				log.debug("Successfully switched database to: {}", tenant);
+				log.info("Successfully switched database to: {}", tenant);
 			});
 
 			entityManager.clear();
@@ -77,7 +74,6 @@ public class TenantContext {
 			if (tenant.equals(getCurrentTenant())) {
 				clearCurrentTenant();
 			}
-			log.debug("Tenant {} removed successfully", tenant);
 		}
 		catch (Exception e) {
 			log.error("Error removing tenant {}: {}", tenant, e.getMessage());

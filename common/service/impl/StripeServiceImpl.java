@@ -26,6 +26,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
 import com.stripe.model.PriceCollection;
 import com.stripe.model.Subscription;
+import com.stripe.model.SubscriptionItem;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.PriceListParams;
 import com.stripe.param.SubscriptionUpdateParams;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -103,12 +105,20 @@ public class StripeServiceImpl implements StripeService {
 				responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
 				responseDto.setTrialEndDate(Instant.ofEpochSecond(trialEnd));
 			}
+
+			Long subscriptionQuantity = subscription.getItems()
+				.getData()
+				.stream()
+				.map(SubscriptionItem::getQuantity)
+				.findFirst()
+				.orElse(1L);
+
+			responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		}
-		Long subscriptionQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0;
+
 		responseDto.setCustomerId(tenant.getStripeSubscription().getCustomerId());
 
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
-		responseDto.setSubscriptionQuantity(subscriptionQuantity);
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
 		return new ResponseEntityDto(false, responseDto);
@@ -143,14 +153,25 @@ public class StripeServiceImpl implements StripeService {
 		boolean hadPreviousSubscription = tenant.getStripeSubscription() != null
 				&& (tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED);
 
+		SessionCreateParams.TaxIdCollection taxIdCollection = null;
+
+		if (!hadPreviousSubscription) {
+			taxIdCollection = SessionCreateParams.TaxIdCollection.builder().setEnabled(true).build();
+		}
+
 		SessionCreateParams.Builder builder = new SessionCreateParams.Builder()
 			.setMode(SessionCreateParams.Mode.SUBSCRIPTION)
 			.setSuccessUrl(subscriptionRequestDto.getSuccessUrl())
 			.setCancelUrl(subscriptionRequestDto.getCancelUrl())
 			.setClientReferenceId(UUID.randomUUID().toString())
-			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
+			.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.AUTO)
 			.setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
-			.setLocale(SessionCreateParams.Locale.AUTO);
+			.setLocale(SessionCreateParams.Locale.AUTO)
+			.setAllowPromotionCodes(true);
+
+		if (taxIdCollection != null) {
+			builder.setTaxIdCollection(taxIdCollection);
+		}
 
 		builder.putMetadata(EpAuthConstants.TENANT_ID, tenantId);
 
@@ -215,54 +236,49 @@ public class StripeServiceImpl implements StripeService {
 		return new ResponseEntityDto(false, subscriptionResponseDto);
 	}
 
-	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement) {
+	@Transactional
+	public void updateSubscriptionQuantity(Long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
+		String currentTenant = TenantContext.getCurrentTenant();
+		String subscriptionId;
+		long newQuantity;
+		Tenant tenant;
+
 		try {
-			String currentTenant = TenantContext.getCurrentTenant();
+			long employeeCount = employeeDao
+				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			Long currentQuantity = tenant.getSubscriptionQuantity() != null ? tenant.getSubscriptionQuantity() : 0L;
+			tenant = tenantDao.findByTenantName(currentTenant);
 
 			if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null) {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 			}
 
-			String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+			subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+
+			newQuantity = employeeCount;
+			if (isFromEmployeeBulk) {
+				newQuantity += isIncrement ? quantity : 0L;
+			}
+
 			Subscription subscription = Subscription.retrieve(subscriptionId);
-
 			String subscriptionItemId = subscription.getItems().getData().getFirst().getId();
-			SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder();
 
-			long newQuantity;
-			if (isIncrement) {
-				newQuantity = currentQuantity + quantity;
-			}
-			else {
-				newQuantity = currentQuantity - quantity;
-				if (newQuantity < 0) {
-					newQuantity = 0L;
-				}
-			}
-
-			SubscriptionUpdateParams.Item item = SubscriptionUpdateParams.Item.builder()
-				.setId(subscriptionItemId)
-				.setQuantity(newQuantity)
+			SubscriptionUpdateParams params = SubscriptionUpdateParams.builder()
+				.addItem(SubscriptionUpdateParams.Item.builder()
+					.setId(subscriptionItemId)
+					.setQuantity(newQuantity)
+					.build())
 				.build();
 
-			SubscriptionUpdateParams params = paramsBuilder.addItem(item).build();
-
-			if (tenant.getSubscriptionStatus() == SubscriptionStatus.ACTIVE) {
-				subscription.update(params);
-			}
-
-			tenant.setSubscriptionQuantity(newQuantity);
-			tenantDao.save(tenant);
-
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-
+			subscription.update(params);
 		}
 		catch (StripeException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,
+					new String[] { e.getMessage() });
+		}
+		finally {
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
 		}
 	}
 

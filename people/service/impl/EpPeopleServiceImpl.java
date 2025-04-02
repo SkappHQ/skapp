@@ -21,14 +21,14 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeePeriod;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
-import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
+import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeEducationDao;
@@ -42,10 +42,12 @@ import com.skapp.community.peopleplanner.repository.EmployeeVisaDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -131,27 +133,31 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl;
 
+	private final SpecialTenantConfig specialTenantConfig;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
-			EmployeeProgressionDao employeeProgressionDao, JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao,
-			EmployeeVisaDao employeeVisaDao, EmployeeEducationDao employeeEducationDao,
-			EmployeeFamilyDao employeeFamilyDao, EmployeeTeamDao employeeTeamDao, EmployeeManagerDao employeeManagerDao,
-			PasswordEncoder passwordEncoder, RolesService rolesService, PageTransformer pageTransformer,
-			PlatformTransactionManager transactionManager, PeopleEmailService peopleEmailService, ObjectMapper mapper,
+			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
+			EmployeeManagerDao employeeManagerDao, PasswordEncoder passwordEncoder, RolesService rolesService,
+			PageTransformer pageTransformer, PlatformTransactionManager transactionManager,
+			PeopleEmailService peopleEmailService, ObjectMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
-			UserVersionService userVersionService, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
-			EpEmployeeRoleDao epEmployeeRoleDao, TenantDao tenantDao, TenantContext tenantContext,
-			EpEmployeeTimelineService epEmployeeTimelineService, EpEmployeeDao epEmployeeDao,
-			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
-			EpEmployeeManagerDao epEmployeeManagerDao, SystemVersionService systemVersionService,
-			StripeService stripeService, EpUserService epUserService, EpRolesService epRolesService,
-			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl) {
-		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao,
-				employeeProgressionDao, jobTitleDao, employeePeriodDao, employeeVisaDao, employeeEducationDao,
-				employeeFamilyDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
+			UserVersionService userVersionService, EmployeeValidationService employeeValidationService,
+			EmployeeFamilyDao employeeFamilyDao, EmployeeEducationDao employeeEducationDao,
+			EmployeeProgressionDao employeeProgressionDao, EmployeeVisaDao employeeVisaDao, EpEmployeeDao epEmployeeDao,
+			EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator, EpEmployeeRoleDao epEmployeeRoleDao,
+			EpEmployeeTimelineService epEmployeeTimelineService, EpPeopleMapper epPeopleMapper,
+			EpEmployeeTeamDao epEmployeeTeamDao, EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
+			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
+			TenantDao tenantDao, EpRolesService epRolesService,
+			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
+			SpecialTenantConfig specialTenantConfig) {
+		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
+				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService);
+				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService,
+				employeeFamilyDao, employeeEducationDao, employeeProgressionDao, employeeVisaDao);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;
@@ -167,10 +173,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epUserService = epUserService;
 		this.systemVersionService = systemVersionService;
 		this.stripeService = stripeService;
-		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
+		this.tenantDao = tenantDao;
 		this.epRolesService = epRolesService;
 		this.epAsyncEmployeeTimelineServiceImpl = epAsyncEmployeeTimelineServiceImpl;
+		this.specialTenantConfig = specialTenantConfig;
 	}
 
 	@Override
@@ -185,8 +192,10 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			return false;
 		}
 
-		return employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE,
-				AccountStatus.PENDING)) >= EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT;
+		int maxEmployeeCount = specialTenantConfig.getMaxEmployeeCountForTenant();
+
+		return employeeDao
+			.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)) >= maxEmployeeCount;
 	}
 
 	@Override
@@ -247,13 +256,14 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		epRolesService.downgradeUserRolesToEmployeeRole();
 
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
-		if (userCount <= EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT) {
-			String currentTenant = TenantContext.getCurrentTenant();
+		String currentTenant = TenantContext.getCurrentTenant();
+		int maxCount = specialTenantConfig.getMaxEmployeeCountForTenant();
+
+		if (userCount <= maxCount) {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
 			tenant.setTier(Tier.FREE);
 			tenant.setTenantStatus(TenantStatus.ACTIVE);
-			tenant.setSubscriptionQuantity(userCount);
 			tenantDao.save(tenant);
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
@@ -441,7 +451,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, EmployeeDetailsDto employeeDetailsDto) {
+	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, CreateEmployeeRequestDto employeeDetailsDto) {
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.PRO) {
 			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
@@ -467,10 +477,10 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
-			EmployeeUpdateDto employeeUpdateDto) {
+			CreateEmployeeRequestDto createEmployeeRequestDto) {
 		Tier currentUserTier = epUserService.getCurrentUserTier();
 		if (currentUserTier == Tier.PRO) {
-			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, employeeUpdateDto);
+			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, createEmployeeRequestDto);
 		}
 	}
 
@@ -489,16 +499,16 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			deepCopiedDto.setEmployeeProgressions(copiedProgressions);
 		}
 
-		if (currentEmployee.getTeams() != null) {
-			Set<EmployeeTeam> copiedTeams = currentEmployee.getTeams()
+		if (currentEmployee.getEmployeeTeams() != null) {
+			Set<EmployeeTeam> copiedTeams = currentEmployee.getEmployeeTeams()
 				.stream()
 				.map(EmployeeTeam::new)
 				.collect(Collectors.toSet());
 			deepCopiedDto.setTeams(copiedTeams);
 		}
 
-		if (currentEmployee.getEmployees() != null) {
-			Set<EmployeeManager> copiedManagers = currentEmployee.getEmployees()
+		if (currentEmployee.getEmployeeManagers() != null) {
+			Set<EmployeeManager> copiedManagers = currentEmployee.getEmployeeManagers()
 				.stream()
 				.map(EmployeeManager::new)
 				.collect(Collectors.toSet());
@@ -510,7 +520,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		if (currentEmployee.getEmployeeRole() != null) {
-			deepCopiedDto.setEmployeeRole(currentEmployee.getEmployeeRole());
+			deepCopiedDto.setEmployeeRole(new EmployeeRole(currentEmployee.getEmployeeRole()));
 		}
 
 		Optional<EmployeePeriod> employeePeriod = employeePeriodDao
@@ -521,11 +531,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	@Override
-	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement) {
+	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
 		Tier tier = epUserService.getCurrentUserTier();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 		if (tier == Tier.PRO && tenantStatus == TenantStatus.ACTIVE) {
-			stripeService.updateSubscriptionQuantity(quantity, isIncrement);
+			stripeService.updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 		}
 	}
 
@@ -534,54 +544,66 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false);
 		}
 
-		return new EpEmployeeRoleLimitDto(checkLeaveAdminLimit(), checkAttendanceAdminLimit(), checkPeopleAdminLimit(),
-				checkESignAdminLimit(), checkLeaveManagerLimit(), checkAttendanceManagerLimit(),
-				checkPeopleManagerLimit(), checkSuperAdminLimit(), checkEsignSenderLimit());
+		SpecialTenantConfig.TenantInfo tenantInfo = specialTenantConfig.getCurrentTenantInfo();
+
+		return new EpEmployeeRoleLimitDto(checkLeaveAdminLimit(tenantInfo), checkAttendanceAdminLimit(tenantInfo),
+				checkPeopleAdminLimit(tenantInfo), checkESignAdminLimit(tenantInfo), checkLeaveManagerLimit(tenantInfo),
+				checkAttendanceManagerLimit(tenantInfo), checkPeopleManagerLimit(tenantInfo),
+				checkSuperAdminLimit(tenantInfo), checkEsignSenderLimit(tenantInfo));
 	}
 
-	private boolean checkLeaveAdminLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.LEAVE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT;
+	private boolean checkLeaveAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_ADMIN_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.LEAVE_ADMIN) >= maxCount;
 	}
 
-	private boolean checkAttendanceAdminLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.ATTENDANCE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT;
+	private boolean checkAttendanceAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_ADMIN_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.ATTENDANCE_ADMIN) >= maxCount;
 	}
 
-	private boolean checkPeopleAdminLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.PEOPLE_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
+	private boolean checkPeopleAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_ADMIN_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.PEOPLE_ADMIN) >= maxCount;
 	}
 
-	private boolean checkESignAdminLimit() {
-		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_ADMIN,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_ADMIN_COUNT;
+	private boolean checkESignAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_ADMIN_COUNT;
+		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_ADMIN, false) >= maxCount;
 	}
 
-	private boolean checkLeaveManagerLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.LEAVE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT;
+	private boolean checkLeaveManagerLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_LEAVE_MANAGER_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.LEAVE_MANAGER) >= maxCount;
 	}
 
-	private boolean checkAttendanceManagerLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.ATTENDANCE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT;
+	private boolean checkAttendanceManagerLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_ATTENDANCE_MANAGER_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.ATTENDANCE_MANAGER) >= maxCount;
 	}
 
-	private boolean checkPeopleManagerLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.PEOPLE_MANAGER) >= EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT;
+	private boolean checkPeopleManagerLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_PEOPLE_MANAGER_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.PEOPLE_MANAGER) >= maxCount;
 	}
 
-	private boolean checkSuperAdminLimit() {
-		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(
-				Role.SUPER_ADMIN) >= EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
+	private boolean checkSuperAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.SUPER_ADMIN) >= maxCount;
 	}
 
-	private boolean checkEsignSenderLimit() {
-		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_SENDER,
-				false) >= EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT;
+	private boolean checkEsignSenderLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT;
+		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_SENDER, false) >= maxCount;
 	}
 
 }

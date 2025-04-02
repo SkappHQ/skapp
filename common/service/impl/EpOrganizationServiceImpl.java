@@ -268,9 +268,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
 
-		if (existingQuickSetupCompletion.isPresent()) {
+		if (existingQuickSetupCompletion.isPresent()
+				&& existingQuickSetupCompletion.get().getOrganizationConfigValue().equals(Boolean.TRUE.toString()))
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
-		}
 
 		String quickSetupCompleted = String.valueOf(true);
 		OrganizationConfig organizationConfig = new OrganizationConfig(

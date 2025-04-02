@@ -8,6 +8,8 @@ import java.util.List;
 @UtilityClass
 public class EpCommonConstants {
 
+	public static final String RESULTS = "results";
+
 	public static final String MASTER_DATABASE = "master";
 
 	public static final String APPLICATION_NAME = "Skapp";
@@ -36,6 +38,8 @@ public class EpCommonConstants {
 
 	public static final String ENTERPRISE_GOOGLE_ACCESS_TYPE = "offline";
 
+	public static final String ENTERPRISE_GOOGLE_APPROVAL_PROMPT = "force";
+
 	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
 
 	public final List<String> ENTERPRISE_GOOGLE_CALENDAR_SCOPES = Arrays.asList(
@@ -48,7 +52,7 @@ public class EpCommonConstants {
 
 	public static final String JWK_PROVIDER = "https://www.googleapis.com/oauth2/v3/certs";
 
-	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 50;
+	public static final int ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT = 10;
 
 	public static final int ENTERPRISE_FREE_MAX_SUPER_ADMIN_COUNT = 3;
 
