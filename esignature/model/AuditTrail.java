@@ -54,6 +54,9 @@ public class AuditTrail {
 	@Column(name = "metadata", nullable = false, updatable = false)
 	private String metadata;
 
+	@Column(name = "is_authorized", nullable = false, updatable = false)
+	private Boolean isAuthorized;
+
 	@Column(name = "hash", nullable = false, updatable = false)
 	private String hash;
 

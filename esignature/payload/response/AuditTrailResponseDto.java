@@ -8,8 +8,10 @@ import lombok.Setter;
 @Setter
 public class AuditTrailResponseDto {
 
-    private AuditAction action;
-    private String actionDoneByName;
-    private String timestamp;
+	private AuditAction action;
+
+	private String actionDoneByName;
+
+	private String timestamp;
 
 }

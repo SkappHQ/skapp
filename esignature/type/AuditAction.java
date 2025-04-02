@@ -5,7 +5,7 @@ public enum AuditAction {
 	ENVELOPE_CREATED, // Envelope creation
 	ENVELOPE_SENT, // Envelope sent from sender's end
 	ENVELOPE_RECEIVED, // Each recipient receiving the envelope
-	ENVELOPE_VIEWED, //  viewing the envelope
+	ENVELOPE_VIEWED, // viewing the envelope
 	ENVELOPE_SIGNED, // Recipient signing the envelope
 	ENVELOPE_DECLINED, // Envelope declined from signer's end
 	ENVELOPE_VOIDED, // Envelope voided from sender's end

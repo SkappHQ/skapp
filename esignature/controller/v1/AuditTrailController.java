@@ -58,6 +58,4 @@ public class AuditTrailController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
-
 }

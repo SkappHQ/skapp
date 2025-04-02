@@ -31,7 +31,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-
 @Mapper(componentModel = "spring")
 public interface EsignMapper {
 
@@ -103,6 +102,5 @@ public interface EsignMapper {
 	}
 
 	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
-
 
 }

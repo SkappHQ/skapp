@@ -9,7 +9,6 @@ import java.security.MessageDigest;
 public class HashUtil {
 
 	private HashUtil() {
-		// Private constructor to prevent instantiation
 	}
 
 	public static String generateSHA256Hash(String input) {

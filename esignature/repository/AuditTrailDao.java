@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface AuditTrailDao extends JpaRepository<AuditTrail, Long> {
 
-    List<AuditTrail> findByEnvelopeId(Long envelopeId);
-    List<AuditTrail> findByEnvelopeIdOrderByTimestampAsc(Long envelopeId);
+	List<AuditTrail> findByEnvelopeId(Long envelopeId);
 
+	List<AuditTrail> findByEnvelopeIdOrderByTimestampAsc(Long envelopeId);
 
 }

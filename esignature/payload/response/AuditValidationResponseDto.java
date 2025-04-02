@@ -8,6 +8,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class AuditValidationResponseDto {
-    private Long auditTrailId;
-    private boolean valid;
+
+	private Long auditTrailId;
+
+	private boolean valid;
+
 }

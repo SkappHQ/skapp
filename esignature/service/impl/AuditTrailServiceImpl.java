@@ -1,9 +1,11 @@
 package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
@@ -21,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -29,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -45,27 +47,34 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final OrganizationService organizationService;
 
-
 	@Override
 	public ResponseEntityDto createAuditTrail(AuditTrailDTO auditTrailDTO) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDTO.getEnvelopeId());
 
 		Envelope envelope = envelopeDao.findById(auditTrailDTO.getEnvelopeId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
 
 		Recipient recipient = Optional.ofNullable(auditTrailDTO.getRecipientId())
-				.flatMap(recipientRepository::findById)
-				.orElse(null);
-
-
-
+			.flatMap(recipientRepository::findById)
+			.orElse(null);
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
 		AuditTrail auditTrail = new AuditTrail();
 
+		boolean isAuthorized = false;
+
 		if (recipient == null) {
-			auditTrail.setActionUser(userService.getCurrentUser());
+			User currentUser = userService.getCurrentUser();
+			auditTrail.setActionUser(currentUser);
+
+			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+			isAuthorized = Set.of(Role.ESIGN_ADMIN, Role.SUPER_ADMIN).contains(esignRole);
 		}
+		else if (recipient.getEnvelope().equals(envelope)) {
+			isAuthorized = true;
+		}
+
+		auditTrail.setIsAuthorized(isAuthorized);
 
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
@@ -87,11 +96,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Validating audit trail hash for auditTrailId: {}", auditTrailId);
 
 		AuditTrail auditTrail = auditTrailDao.findById(auditTrailId)
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND));
 
 		boolean isValid = generateHashToValidate(auditTrail).equals(auditTrail.getHash());
-		log.info("hashindb ----"+auditTrail.getHash());
-		log.info("datain db hashed"+generateHashToValidate(auditTrail));
 
 		log.info("Audit trail validation result for auditTrailId {}: {}", auditTrailId, isValid ? "Valid" : "Tampered");
 
@@ -110,9 +117,10 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		}
 
 		boolean allValid = auditTrails.stream()
-				.allMatch(auditTrail -> generateHashToValidate(auditTrail).equals(auditTrail.getHash()));
+			.allMatch(auditTrail -> generateHashToValidate(auditTrail).equals(auditTrail.getHash()));
 
-		log.info("Envelope audit trail validation result for envelopeId {}: {}", envelopeId, allValid ? "All Valid" : "Some Tampered");
+		log.info("Envelope audit trail validation result for envelopeId {}: {}", envelopeId,
+				allValid ? "All Valid" : "Some Tampered");
 
 		return new ResponseEntityDto(false, new AuditValidationResponseDto(envelopeId, allValid));
 	}
@@ -128,10 +136,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND);
 		}
 
-		// Fetch the organization time zone
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
-
-
 		List<AuditTrailResponseDto> responseDtoList = new ArrayList<>();
 
 		for (AuditTrail auditTrail : auditTrails) {
@@ -139,32 +143,21 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 			AuditTrailResponseDto responseDto = new AuditTrailResponseDto();
 
-			// Set the action
 			responseDto.setAction(auditTrail.getAction());
 
-			// Set the actionDoneByName
 			if (auditTrail.getRecipient() == null) {
-				// If recipient is null, use actionUser's employee first name and last name
-				String actionDoneByName = auditTrail.getActionUser().getEmployee().getFirstName() + " " + auditTrail.getActionUser().getEmployee().getLastName();
+				String actionDoneByName = auditTrail.getActionUser().getEmployee().getFirstName() + " "
+						+ auditTrail.getActionUser().getEmployee().getLastName();
 				responseDto.setActionDoneByName(actionDoneByName);
 				log.debug("Action done by: {}", actionDoneByName);
-			} else {
-				// If recipient is not null, use recipient's name
+			}
+			else {
 				responseDto.setActionDoneByName(auditTrail.getRecipient().getName());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getName());
 			}
 
-			// Convert the timestamp from UTC to organization time zone
-			LocalDateTime convertedTimestamp = DateTimeUtils.convertUTCToTimeZone(
-					auditTrail.getTimestamp().atZone(ZoneId.of("UTC")).toLocalDateTime(), organizationTimeZone);
+			responseDto.setTimestamp(auditTrail.getTimestamp().toString());
 
-
-			// Format the converted timestamp with the desired format and suffix
-			String formattedTimestamp = DateTimeUtils.formatTimestampWithSuffix(convertedTimestamp);
-			responseDto.setTimestamp(formattedTimestamp);  // Set the formatted timestamp
-
-
-			// Add to the response list
 			responseDtoList.add(responseDto);
 		}
 
@@ -173,18 +166,12 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		return new ResponseEntityDto(false, responseDtoList);
 	}
 
-
-
-
-
 	private String generateHashToValidate(AuditTrail auditTrail) {
-		String rawData = auditTrail.getEnvelope().getId() +
-				(auditTrail.getRecipient() != null ? auditTrail.getRecipient().getId().toString() : "") +
-				(auditTrail.getActionUser() != null ? auditTrail.getActionUser().getUserId().toString():"") +
-				auditTrail.getIpAddress() +
-				auditTrail.getAction().name() +
-				auditTrail.getTimestamp().truncatedTo(ChronoUnit.MICROS).toString() +
-				auditTrail.getMetadata().trim();
+		String rawData = auditTrail.getEnvelope().getId()
+				+ (auditTrail.getRecipient() != null ? auditTrail.getRecipient().getId().toString() : "")
+				+ (auditTrail.getActionUser() != null ? auditTrail.getActionUser().getUserId().toString() : "")
+				+ auditTrail.getIpAddress() + auditTrail.getAction().name() + auditTrail.getIsAuthorized()
+				+ auditTrail.getTimestamp().truncatedTo(ChronoUnit.MICROS).toString() + auditTrail.getMetadata().trim();
 
 		return HashUtil.generateSHA256Hash(rawData);
 	}
