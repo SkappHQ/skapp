@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,12 +30,16 @@ public class AuditTrail {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "envelope_id", nullable = false)
+	@JoinColumn(name = "envelope_id", nullable = false, updatable = false)
 	private Envelope envelope;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "recipient_id")
+	@JoinColumn(name = "recipient_id", updatable = false)
 	private Recipient recipient;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "action_user_id", updatable = false)
+	private User actionUser;
 
 	@Column(name = "ip_address", nullable = false, updatable = false)
 	private String ipAddress;

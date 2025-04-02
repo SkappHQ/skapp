@@ -80,7 +80,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
-	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash");
+	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash"),
+	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found");
 
 	private final String messageKey;
 
