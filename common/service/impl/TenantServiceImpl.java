@@ -10,6 +10,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.TenantDatabaseCreationService;
 import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.TenantStatus;
@@ -31,6 +32,8 @@ public class TenantServiceImpl implements TenantService {
 	private final TenantMigrationService tenantMigrationService;
 
 	private final TenantContext tenantContext;
+
+	private final TenantDatabaseCreationService tenantDatabaseCreationService;
 
 	@Transactional
 	public void createTenant(String tenantName, LoginMethod loginMethod, String email) {
@@ -57,6 +60,7 @@ public class TenantServiceImpl implements TenantService {
 
 		tenantDao.save(tenant);
 
+		tenantDatabaseCreationService.createTenantDatabase(tenantName);
 		tenantMigrationService.runMigration(tenantName);
 	}
 
@@ -70,7 +74,7 @@ public class TenantServiceImpl implements TenantService {
 		}
 
 		tenantDao.delete(tenant);
-		tenantContext.removeTenant(companyDomain);
+		TenantContext.clearCurrentTenant();
 	}
 
 	@Override

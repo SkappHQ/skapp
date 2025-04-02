@@ -7,18 +7,24 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@Component
+@Configuration
 @Slf4j
 @RequiredArgsConstructor
-public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionProvider<String> {
+public class MultiTenantConnectionProviderConfig implements MultiTenantConnectionProvider<String> {
 
-	private final transient DataSource dataSource;
+	private final DataSource dataSource;
+
+	@Bean
+	public MultiTenantConnectionProvider<String> multiTenantConnectionProvider() {
+		return this;
+	}
 
 	@Override
 	public Connection getAnyConnection() throws SQLException {
