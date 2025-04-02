@@ -151,7 +151,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setTier(Tier.PRO);
 			tenant.setSubscriptionStatus(mapStripeStatusToSubscriptionStatus(subscription));
 			if (tenant.getTenantStatus() == TenantStatus.FREE_TRAIL_ENDED
-					|| tenant.getTenantStatus() == TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED) {
+					|| tenant.getTenantStatus() == TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+					|| tenant.getTenantStatus() == TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED) {
 				tenant.setTenantStatus(TenantStatus.ACTIVE);
 			}
 
