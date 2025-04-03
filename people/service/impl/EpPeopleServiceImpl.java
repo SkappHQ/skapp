@@ -452,36 +452,24 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void addNewEmployeeTimeLineRecords(Employee savedEmployee, CreateEmployeeRequestDto employeeDetailsDto) {
-		Tier currentUserTier = epUserService.getCurrentUserTier();
-		if (currentUserTier == Tier.PRO) {
-			epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
-		}
+		epEmployeeTimelineService.addNewEmployeeTimeLineRecords(savedEmployee, employeeDetailsDto);
 	}
 
 	@Override
 	protected void addNewQuickUploadedEmployeeTimeLineRecords(Employee savedEmployee,
 			EmployeeQuickAddDto employeeQuickAddDto) {
-		Tier currentUserTier = epUserService.getCurrentUserTier();
-		if (currentUserTier == Tier.PRO) {
-			epEmployeeTimelineService.addNewQuickUploadedEmployeeTimeLineRecords(savedEmployee, employeeQuickAddDto);
-		}
+		epEmployeeTimelineService.addNewQuickUploadedEmployeeTimeLineRecords(savedEmployee, employeeQuickAddDto);
 	}
 
 	@Override
 	protected void addNewBulkUploadedEmployeeTimeLineRecords(List<EmployeeBulkResponseDto> results) {
-		Tier currentUserTier = epUserService.getCurrentUserTier();
-		if (currentUserTier == Tier.PRO) {
-			epAsyncEmployeeTimelineServiceImpl.addNewBulkUploadedEmployeeTimeLineRecordsInBackground(results);
-		}
+		epAsyncEmployeeTimelineServiceImpl.addNewBulkUploadedEmployeeTimeLineRecordsInBackground(results);
 	}
 
 	@Override
 	protected void addUpdatedEmployeeTimeLineRecords(CurrentEmployeeDto currentEmployee,
 			CreateEmployeeRequestDto createEmployeeRequestDto) {
-		Tier currentUserTier = epUserService.getCurrentUserTier();
-		if (currentUserTier == Tier.PRO) {
-			epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, createEmployeeRequestDto);
-		}
+		epEmployeeTimelineService.addUpdatedEmployeeTimeLineRecords(currentEmployee, createEmployeeRequestDto);
 	}
 
 	@Override
