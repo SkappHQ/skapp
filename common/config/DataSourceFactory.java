@@ -22,7 +22,7 @@ public class DataSourceFactory {
 	@Value("${spring.datasource.password}")
 	private String masterPassword;
 
-	@Value("${spring.master.hikari.maximum-pool-size:30}")
+	@Value("${spring.master.hikari.maximum-pool-size:20}")
 	private int masterMaxPoolSize;
 
 	@Value("${spring.master.hikari.minimum-idle:5}")
@@ -40,10 +40,10 @@ public class DataSourceFactory {
 	@Value("${spring.master.hikari.validation-timeout:5000}")
 	private long masterValidationTimeout;
 
-	@Value("${spring.tenant.hikari.maximum-pool-size:20}")
+	@Value("${spring.tenant.hikari.maximum-pool-size:30}")
 	private int tenantMaxPoolSize;
 
-	@Value("${spring.tenant.hikari.minimum-idle:3}")
+	@Value("${spring.tenant.hikari.minimum-idle:5}")
 	private int tenantMinIdle;
 
 	@Value("${spring.tenant.hikari.idle-timeout:300000}")

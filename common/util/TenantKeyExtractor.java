@@ -8,11 +8,13 @@ public class TenantKeyExtractor {
 
 	public static TenantDataSourceKey extractTenantKey(String lookupKey) {
 		if (lookupKey.endsWith("-read")) {
-			String tenantId = lookupKey.substring(0, lookupKey.length() - 5);
+			String tenantId = lookupKey.substring(0, lookupKey.length() - 5); // 5 for
+																				// "-read"
 			return new TenantDataSourceKey(tenantId, true);
 		}
 		else if (lookupKey.endsWith("-write")) {
-			String tenantId = lookupKey.substring(0, lookupKey.length() - 6);
+			String tenantId = lookupKey.substring(0, lookupKey.length() - 6); // 6 for
+																				// "-write"
 			return new TenantDataSourceKey(tenantId, false);
 		}
 
