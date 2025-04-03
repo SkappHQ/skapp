@@ -38,6 +38,8 @@ public class EpCommonConstants {
 
 	public static final String ENTERPRISE_GOOGLE_ACCESS_TYPE = "offline";
 
+	public static final String ENTERPRISE_GOOGLE_APPROVAL_PROMPT = "force";
+
 	public static final String ENTERPRISE_GOOGLE_TOKEN_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
 
 	public final List<String> ENTERPRISE_GOOGLE_CALENDAR_SCOPES = Arrays.asList(

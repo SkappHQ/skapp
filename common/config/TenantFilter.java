@@ -3,8 +3,6 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.service.TenantRegistryService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,8 +37,6 @@ public class TenantFilter extends OncePerRequestFilter {
 			"/v1/validate/email", "/v1/ep/stripe/webhook", "/v2/ep/auth/signin/sso/google/auth-url",
 			"/v2/ep/auth/signin/sso/google/redirect", "/v2/ep/auth/signup/super-admin/sso/google");
 
-	private final TenantRegistryService tenantRegistryService;
-
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
@@ -60,14 +56,8 @@ public class TenantFilter extends OncePerRequestFilter {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_HEADER_MISSING);
 		}
 
-		if (!EpCommonConstants.MASTER_DATABASE.equals(tenantId) && !tenantRegistryService.isTenantActive(tenantId)) {
-			log.error("Invalid tenant ID provided: {}", tenantId);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_TENANT,
-					new String[] { tenantId });
-		}
-
 		try {
-			TenantContext.setCurrentTenant(tenantId);
+			TenantContext.setCurrentTenant(tenantId.toLowerCase());
 			filterChain.doFilter(request, response);
 		}
 		catch (ServletException e) {
