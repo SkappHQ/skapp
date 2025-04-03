@@ -135,6 +135,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
 			"ep.common.error.email-schedule-cancellation-status-cannot-be-null"),
 	EP_COMMON_ERROR_LIQUIBASE_UPDATE_FAILED("ep.common.error.liquibase-update-failed"),
+	EP_COMMON_ERROR_CANNOT_DETERMINE_TARGET_DATASOURCE_FOR_LOOKUP_KEY(
+			"ep.common.error.cannot-determine-target-datasource-for-lookup-key"),
 	COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN(
 			"ep.common.error.tenant-status-not-active-contact-super-admin"),;
 
