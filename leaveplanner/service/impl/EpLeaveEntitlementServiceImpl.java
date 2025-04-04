@@ -1,5 +1,6 @@
 package com.skapp.enterprise.leaveplanner.service.impl;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
@@ -51,8 +52,10 @@ public class EpLeaveEntitlementServiceImpl extends LeaveEntitlementServiceImpl {
 	}
 
 	@Override
-	protected void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> entitlements) {
-		epEmployeeTimelineServiceImpl.addBulkLeaveEntitlementsTimeLineRecords(employee, entitlements, false);
+	protected void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> entitlements,
+			User currentUser) {
+		epEmployeeTimelineServiceImpl.addBulkLeaveEntitlementsTimeLineRecords(employee, entitlements, false,
+				currentUser);
 	}
 
 	@Override
