@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.ExternalUser;
+import com.skapp.enterprise.esignature.payload.request.ExternalPatchUserDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 
 public interface ExternalUserService {
@@ -13,7 +14,7 @@ public interface ExternalUserService {
 	 */
 	ExternalUser createExternalUser(ExternalUserDto externalUser);
 
-	ResponseEntityDto editExternalUser(Long id, ExternalUserDto externalUserDto);
+	ResponseEntityDto editExternalUser(Long id, ExternalPatchUserDto externalPatchUserDto);
 
 	ResponseEntityDto deleteExternalUser(Long id);
 
