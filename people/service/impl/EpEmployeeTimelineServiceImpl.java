@@ -153,7 +153,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	@Override
 	public void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> leaveEntitlements,
-			boolean isCustom) {
+			boolean isCustom, User currentUser) {
 		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
 		EpEmployeeTimelineType epEmployeeTimelineType;
 
@@ -164,9 +164,13 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			epEmployeeTimelineType = EpEmployeeTimelineType.ENTITLEMENT_ADDED;
 		}
 
-		leaveEntitlements
-			.forEach(leaveEntitlement -> employeeTimelines.add(createEmployeeTimeline(employee, epEmployeeTimelineType,
-					null, leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated())));
+		leaveEntitlements.forEach(leaveEntitlement -> {
+			EmployeeTimeline employeeTimeline = createEmployeeTimeline(employee, epEmployeeTimelineType, null,
+					leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated());
+			employeeTimeline.setRecordedBy(currentUser.getEmployee());
+			employeeTimelines.add(employeeTimeline);
+		});
+
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
 
@@ -220,12 +224,22 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,
 			String previousValue, String newValue) {
 		EmployeeTimeline employeeTimeline = new EmployeeTimeline();
-		User currentUser = userService.getCurrentUser();
+
+		Employee currentEmployee = null;
+
+		try {
+			User currentUser = userService.getCurrentUser();
+			currentEmployee = currentUser.getEmployee();
+		}
+		catch (Exception ignored) {
+			// currentUser remains null if an exception is thrown
+		}
+
 		employeeTimeline.setEmployee(employee);
 		employeeTimeline.setTimelineType(timelineType);
 		employeeTimeline.setPreviousValue(previousValue);
 		employeeTimeline.setNewValue(newValue);
-		employeeTimeline.setRecordedBy(currentUser.getEmployee());
+		employeeTimeline.setRecordedBy(currentEmployee);
 		return employeeTimeline;
 	}
 

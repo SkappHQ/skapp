@@ -1,5 +1,6 @@
 package com.skapp.enterprise.people.service;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -23,7 +24,7 @@ public interface EpEmployeeTimelineService {
 	void addCustomLeaveEntitlementsTimeLineRecords(Employee employee, LeaveEntitlement leaveEntitlement);
 
 	void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> entitlements,
-			boolean isCustom);
+			boolean isCustom, User currentUser);
 
 	void addUpdatedLeaveEntitlementsTimeLineRecords(Employee employee, String oldHistoryRecord, String newHistoryRecord,
 			boolean isCustom);
