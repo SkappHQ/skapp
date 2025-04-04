@@ -4,11 +4,11 @@ import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.TokenType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
-import com.skapp.enterprise.esignature.model.TemporaryLink;
-import com.skapp.enterprise.esignature.service.TemporaryLinkService;
+import com.skapp.enterprise.esignature.service.TemporarySignLinkService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -17,9 +17,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,13 +40,14 @@ import java.util.Set;
 @Slf4j
 @AllArgsConstructor
 @Component
+@Primary
 public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
 
-	private final TemporaryLinkService temporaryLinkService;
+	private final TemporarySignLinkService temporarySignLinkService;
 
-	private static final Set<String> TEMPORARY_LINK_URLS = Set.of("/v1/ep/document/sign", "/v1/ep/document/view");
+	private static final Set<String> TEMPORARY_LINK_URLS = Set.of("v1/ep/esign/sign-link/envelope");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -66,23 +71,15 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 		try {
 			final String token = StringUtils.isNotEmpty(tempLinkToken) ? tempLinkToken : authHeader.substring(7);
 
-			// Check if the token is a temporary link token
-			boolean isTempLinkToken = false;
-			try {
-				isTempLinkToken = jwtService.extractClaim(token, claims -> claims.get("tempLink", Boolean.class));
-			}
-			catch (Exception e) {
-				log.debug("Not a temporary link token, skipping", e);
+			TokenType tokenType = jwtService.extractClaim(token,
+					claims -> claims.get(AuthConstants.TOKEN_TYPE, TokenType.class));
+
+			if (!tokenType.equals(TokenType.TEMP_ACCESS)) {
 				filterChain.doFilter(request, response);
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 
-			if (!isTempLinkToken) {
-				filterChain.doFilter(request, response);
-				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-
-			if (jwtService.isTokenExpired(token)) {
+			if (temporarySignLinkService.isExpired(token)) {
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
 			}
 
@@ -103,9 +100,6 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK);
 			}
 
-			// Validate the temporary link in the database and increment click count
-			TemporaryLink temporaryLink = temporaryLinkService.validateAndGetLink(token);
-
 			// Authenticate the user
 			if (SecurityContextHolder.getContext().getAuthentication() == null) {
 				UserDetails userDetails = User.builder()
@@ -121,9 +115,6 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 				context.setAuthentication(authToken);
 				SecurityContextHolder.setContext(context);
 
-				// Add the document ID to the request attributes for later use
-				request.setAttribute("documentId", documentId);
-				request.setAttribute("tempLinkId", temporaryLink.getId());
 			}
 
 			filterChain.doFilter(request, response);
@@ -133,6 +124,11 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 		}
 		catch (JwtException e) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+		catch (Exception e) {
+			log.debug("Not a temporary link token, skipping", e);
+			filterChain.doFilter(request, response);
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 	}
 

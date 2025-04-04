@@ -139,8 +139,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 			"ep.common.error.cannot-determine-target-datasource-for-lookup-key"),
 	COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN(
 			"ep.common.error.tenant-status-not-active-contact-super-admin"),
-    EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK("ep.common.error.invalid.temp-link"),
-    EP_COMMON_ERROR_LINK_EXPIRED("ep.common.error.expire.temp-link");
+	EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK("ep.common.error.invalid.temp-link"),
+	EP_COMMON_ERROR_LINK_EXPIRED("ep.common.error.expire.temp-link");
 
 	private final String messageKey;
 
