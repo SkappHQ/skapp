@@ -7,11 +7,12 @@ import lombok.Setter;
 @Setter
 public class ExternalPatchUserDto {
 
-    private String firstName;
+	private String firstName;
 
-    private String lastName;
+	private String lastName;
 
-    private String email;
+	private String email;
 
-    private String phone;
+	private String phone;
+
 }
