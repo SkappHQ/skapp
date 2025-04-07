@@ -10,6 +10,7 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.ExternalUser;
+import com.skapp.enterprise.esignature.payload.request.ExternalPatchUserDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserDao;
@@ -51,7 +52,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 	}
 
 	@Override
-	public ResponseEntityDto editExternalUser(Long id, ExternalUserDto externalUserDto) {
+	public ResponseEntityDto editExternalUser(Long id, ExternalPatchUserDto externalUserDto) {
 		log.info("editExternalUser: execution started");
 		Optional<ExternalUser> optionalExternalUser = externalUserDao.findById(id);
 		if (optionalExternalUser.isEmpty()) {
