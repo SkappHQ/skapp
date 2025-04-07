@@ -143,8 +143,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_INVALID_DB_NAME("ep.common.error.invalid-db-name"),
 	COMMON_ERROR_DB_CREATION_FAILED("ep.common.error.db-creation-failed"),
 	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),
-    EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK("ep.common.error.invalid.temp-link"),
-    EP_COMMON_ERROR_LINK_EXPIRED("ep.common.error.expire.temp-link");
+	EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK("ep.common.error.invalid.temp-link"),
+	EP_COMMON_ERROR_LINK_EXPIRED("ep.common.error.expire.temp-link");
 
 	private final String messageKey;
 
