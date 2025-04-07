@@ -5,8 +5,10 @@ import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -18,6 +20,8 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
@@ -40,6 +44,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -306,6 +311,61 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getEmployeeNeedToSignEnvelopeCount: execution ended");
 
 		return new ResponseEntityDto(false, employeeKPIResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getAllUserEnvelopes(EnvelopeInboxFilterDto envelopeInboxFilterDto) {
+		log.info("getAllUserEnvelopes: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		PageDto currentUserReceivedEnvelopes = envelopeDao.getAllUserEnvelopes(currentUser.getUserId(),
+				envelopeInboxFilterDto);
+
+		log.info("getAllUserEnvelopes: execution ended");
+
+		return new ResponseEntityDto(false, currentUserReceivedEnvelopes);
+	}
+
+	@Override
+	public ResponseEntityDto getAllSentEnvelopes(EnvelopeSentFilterDto envelopeSentFilterDto) {
+		log.info("getAllSentEnvelopes: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
+
+		PageDto sentEnvelopes = envelopeDao.getAllSentEnvelopes(currentUser.getUserId(), envelopeSentFilterDto,
+				isAllSentEnvelopes);
+
+		// if we need to rearane envlope object we need to do
+
+		log.info("getAllSentEnvelopes: execution ended");
+
+		return new ResponseEntityDto(false, sentEnvelopes);
+	}
+
+	@Override
+	public ResponseEntityDto getSenderKPI() {
+		log.info("getSenderKPI: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Map<EnvelopeStatus, Long> envelopeStatusLongMap = envelopeDao.countEnvelopesByStatus(currentUser.getUserId());
+		log.info("getSenderKPI: execution ended");
+
+		return new ResponseEntityDto(false, envelopeStatusLongMap);
 	}
 
 	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
