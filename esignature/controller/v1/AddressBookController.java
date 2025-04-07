@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
+import com.skapp.enterprise.esignature.payload.request.ExternalPatchUserDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
@@ -48,9 +49,9 @@ public class AddressBookController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
 	@PatchMapping("/edit-external-user/{id}")
 	public ResponseEntity<ResponseEntityDto> editExternalUser(@PathVariable Long id,
-			@Valid @RequestBody ExternalUserDto externalUserDto) {
+			@Valid @RequestBody ExternalPatchUserDto externalPatchUserDto) {
 
-		ResponseEntityDto response = externalUserService.editExternalUser(id, externalUserDto);
+		ResponseEntityDto response = externalUserService.editExternalUser(id, externalPatchUserDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
