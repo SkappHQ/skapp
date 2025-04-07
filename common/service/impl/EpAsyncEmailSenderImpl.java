@@ -68,8 +68,6 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 			request.setEndpoint(EpApiUriConstants.SENDGRID_POST_API);
 			request.setBody(mail.build());
 
-			log.info("SendGrid Request Body: {}", request.getBody());
-
 			Response response = sendGrid.api(request);
 
 			if (response.getStatusCode() == 429) {

@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @Primary
-public class EpAsyncConfiguration {
+public class EpAsyncConfig {
 
 	@Bean(name = "taskExecutor")
 	public Executor taskExecutor() {

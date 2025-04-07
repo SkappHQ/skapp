@@ -31,12 +31,14 @@ import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
 import com.skapp.enterprise.people.model.EmployeeTimeline;
 import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseDto;
 import com.skapp.enterprise.people.payload.response.EpEmployeeTimelineResponseListDto;
 import com.skapp.enterprise.people.repository.EpEmployeeTimelineDao;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
+import com.skapp.enterprise.people.service.EpUserService;
 import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import com.skapp.enterprise.people.type.EpTimelineModuleType;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +78,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private final EmployeePeriodDao employeePeriodDao;
 
+	private final EpUserService epUserService;
+
 	@Override
 	public ResponseEntityDto getEmployeeTimelineRecords(Long id) {
 		User currentUser = userService.getCurrentUser();
@@ -84,9 +88,14 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		Employee employee = employeeDao.findById(id)
 			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
 
-		List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployee(employee);
+		List<EpEmployeeTimelineResponseListDto> responseList = new ArrayList<>();
 
-		List<EpEmployeeTimelineResponseListDto> responseList = mapToResponseListDto(employeeTimelines);
+		Tier currentUserTier = epUserService.getCurrentUserTier();
+		if (currentUserTier == Tier.PRO) {
+			List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployee(employee);
+
+			responseList = mapToResponseListDto(employeeTimelines);
+		}
 
 		log.info("getEmployeeTimelineRecords: completed by user: {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseList);
@@ -144,7 +153,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	@Override
 	public void addBulkLeaveEntitlementsTimeLineRecords(Employee employee, List<LeaveEntitlement> leaveEntitlements,
-			boolean isCustom) {
+			boolean isCustom, User currentUser) {
 		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
 		EpEmployeeTimelineType epEmployeeTimelineType;
 
@@ -155,9 +164,13 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			epEmployeeTimelineType = EpEmployeeTimelineType.ENTITLEMENT_ADDED;
 		}
 
-		leaveEntitlements
-			.forEach(leaveEntitlement -> employeeTimelines.add(createEmployeeTimeline(employee, epEmployeeTimelineType,
-					null, leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated())));
+		leaveEntitlements.forEach(leaveEntitlement -> {
+			EmployeeTimeline employeeTimeline = createEmployeeTimeline(employee, epEmployeeTimelineType, null,
+					leaveEntitlement.getLeaveType().getName() + " " + leaveEntitlement.getTotalDaysAllocated());
+			employeeTimeline.setRecordedBy(currentUser.getEmployee());
+			employeeTimelines.add(employeeTimeline);
+		});
+
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
 
@@ -211,12 +224,22 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 	private EmployeeTimeline createEmployeeTimeline(Employee employee, EpEmployeeTimelineType timelineType,
 			String previousValue, String newValue) {
 		EmployeeTimeline employeeTimeline = new EmployeeTimeline();
-		User currentUser = userService.getCurrentUser();
+
+		Employee currentEmployee = null;
+
+		try {
+			User currentUser = userService.getCurrentUser();
+			currentEmployee = currentUser.getEmployee();
+		}
+		catch (Exception ignored) {
+			// currentUser remains null if an exception is thrown
+		}
+
 		employeeTimeline.setEmployee(employee);
 		employeeTimeline.setTimelineType(timelineType);
 		employeeTimeline.setPreviousValue(previousValue);
 		employeeTimeline.setNewValue(newValue);
-		employeeTimeline.setRecordedBy(currentUser.getEmployee());
+		employeeTimeline.setRecordedBy(currentEmployee);
 		return employeeTimeline;
 	}
 
