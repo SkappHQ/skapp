@@ -82,7 +82,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_RECIPIENT_MISMATCH("ep.esign.error.envelope.recipient.mis-match"),
 	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
-	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found");
+	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP("ep.esign.error.recipient.already-declined-envelope"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED("ep.esign.error.recipient.already-approved"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED("ep.esign.error.envelope.already-declined"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED("ep.esign.error.envelope.already-completed");
 
 	private final String messageKey;
 

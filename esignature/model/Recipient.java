@@ -73,4 +73,7 @@ public class Recipient {
 	@Column(name = "email_status")
 	private EmailStatus emailStatus;
 
+	@Column(name = "decline_reason")
+	private String declineReason;
+
 }

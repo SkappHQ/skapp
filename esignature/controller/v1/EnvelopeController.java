@@ -1,8 +1,10 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
+import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,6 +56,27 @@ public class EnvelopeController {
 	public ResponseEntity<ResponseEntityDto> getEmployeeNeedToSignEnvelopeCount(
 			@PathVariable @Schema(description = "ID of the employee to get count") Long id) {
 		ResponseEntityDto response = envelopeService.getEmployeeNeedToSignEnvelopeCount(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Void an envelope", description = "This endpoint voids an existing envelope by its ID.")
+	@PatchMapping(value = "/void/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> voidEnvelope(
+			@PathVariable @Schema(description = "ID of the envelope to void", example = "1") Long id,
+			@Valid @RequestBody VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+		ResponseEntityDto response = envelopeService.voidEnvelope(id, voidEnvelopeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Decline an envelope",
+			description = "This endpoint allows a recipient to decline an envelope.")
+	@PatchMapping(value = "/decline/{recipientId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_ESIGN_ADMIN', 'ROLE_ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> declineEnvelope(
+			@PathVariable @Schema(description = "ID of the recipient", example = "1") Long recipientId,
+			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

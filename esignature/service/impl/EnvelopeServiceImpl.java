@@ -16,17 +16,20 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
+import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
@@ -63,6 +66,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentService documentService;
 
 	private final DocumentVersionRepository documentVersionRepository;
+
+	private final RecipientRepository recipientRepository;
 
 	@Override
 	@Transactional
@@ -177,6 +182,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				envelope.setStatus(EnvelopeStatus.CREATED);
 			}
 			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.VOIDED) {
+
 				processVoidRequest(envelope);
 			}
 			else {
@@ -274,12 +280,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
 			envelope.setStatus(EnvelopeStatus.VOIDED);
-			notifyVoid(envelope);
+
 		}
 	}
 
 	private void notifyVoid(Envelope envelope) {
-		// Notify all recipients that the envelope has been voided
+
+		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+
 	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
@@ -308,6 +316,23 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return new ResponseEntityDto(false, employeeKPIResponseDto);
 	}
 
+	@Transactional
+	@Override
+	public ResponseEntityDto voidEnvelope(Long id, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+		Envelope envelope = envelopeDao.findById(id)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+
+		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
+
+		processVoidRequest(envelope);
+
+		envelope = envelopeDao.save(envelope);
+
+		notifyVoid(envelope);
+		log.info("voidEnvelope: execution ended");
+		return new ResponseEntityDto(false, "Envelope voided successfully");
+	}
+
 	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
 		List<DocumentVersion> documentVersionList = new ArrayList<>();
 
@@ -319,6 +344,35 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			documentVersionList.add(documentVersion);
 		});
 		return documentVersionList;
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+
+		Recipient recipient = recipientRepository.findById(recipientId)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId())
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+
+		if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED);
+		}
+		if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_VOIDED);
+		}
+		if (envelope.getStatus() == EnvelopeStatus.COMPLETED) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED);
+		}
+
+		envelope.setStatus(EnvelopeStatus.DECLINED);
+		envelopeDao.save(envelope);
+
+		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
+
+		recipientService.declineEnvelope(recipient);
+		return new ResponseEntityDto(false, "Envelope declined successfully");
 	}
 
 }

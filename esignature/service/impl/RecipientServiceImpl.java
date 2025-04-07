@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -400,6 +401,28 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEnvelopeInvalidEmail: execution ended");
 		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto declineEnvelope(Recipient recipient) {
+
+		if (recipient.getStatus() == RecipientStatus.APPROVED) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED);
+
+		}
+		if (recipient.getStatus() == RecipientStatus.DECLINED) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP);
+		}
+
+		recipient.setStatus(RecipientStatus.DECLINED);
+
+		recipientRepository.save(recipient);
+
+		sendEmailWhenDocumentIsVoidedOrDeclined(recipient.getEnvelope().getId());
+
+		log.info("declineEnvelope: execution ended");
+		return new ResponseEntityDto(false, "Envelope declined successfully");
 	}
 
 	/**
