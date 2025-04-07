@@ -7,7 +7,7 @@ public interface TemporarySignLinkService {
 
 	TemporaryLinkResponseDto createTemporaryLink(Long envelopeId, Long recipientId);
 
-	boolean isExpired(String token);
+	Boolean isExpired(String token);
 
 	ResponseEntityDto getSigningLinkData(Long envelopeId, Long recipientId);
 

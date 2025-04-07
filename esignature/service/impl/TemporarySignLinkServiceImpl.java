@@ -35,6 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +60,8 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
+	private static final String BASE_SIGNING_URL = "/v1/ep/document/sign?token=";
+
 	@Value("${jwt.access-token.esign.temp-expiration-time}")
 	private Long jwtEsignTempAccessTokenExpirationMs;
 
@@ -68,6 +71,7 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 	@Override
 	@Transactional
 	public TemporaryLinkResponseDto createTemporaryLink(@NotNull Long envelopeId, @NotNull Long recipientId) {
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || authentication.getPrincipal() == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
@@ -92,38 +96,44 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 		Recipient recipient = optionalUpdatableRecipient
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENT_FOUND));
 
+		temporaryLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient).ifPresent(link -> {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_TEMP_SIGN_LINK_AVAILABLE);
+		});
+
 		Long userId = (Long) authentication.getCredentials();
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-		int defaultExpirationHours = (int) (jwtEsignTempAccessTokenExpirationMs / 3600);
+
+		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtEsignTempAccessTokenExpirationMs));
 
 		TemporarySignLink temporarySignLink = TemporarySignLink.builder()
 			.envelopeId(envelope)
 			.recipientId(recipient)
 			.createdByUserId(userId)
 			.createdAt(LocalDateTime.now())
-			.expiresAt(LocalDateTime.now().plusHours(defaultExpirationHours))
+			.expiresAt(expiresAt)
 			.maxClicks(defaultMaxClicks)
 			.clickCount(0)
 			.isActive(true)
 			.build();
 
+		temporaryLinkRepository.save(temporarySignLink);
+
 		String token = generateTemporaryAccessToken(userDetails, userId, temporarySignLink.getId(), tenantId,
-				envelopeId);
+				envelopeId, recipientId);
 
 		temporarySignLink.setToken(token);
 		temporaryLinkRepository.save(temporarySignLink);
 
 		return TemporaryLinkResponseDto.builder()
 			.token(token)
-			.url("/v1/ep/document/sign?token=" + token)
-			.expirationHours(defaultExpirationHours)
+			.url(BASE_SIGNING_URL + token)
+			.expiresAt(expiresAt)
 			.maxClicks(defaultMaxClicks)
 			.build();
 	}
 
 	@Override
-	@Transactional
-	public boolean isExpired(String token) {
+	public Boolean isExpired(String token) {
 		TemporarySignLink temporarySignLink = temporaryLinkRepository.findByToken(token)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
 
@@ -152,11 +162,14 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
 		TemporarySignLink temporarySignLink = temporaryLinkRepository
-			.findByEnvelopeIdAndRecipientId(envelope, recipientObj)
+			.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
 
 		TemporaryLinkResponseDto temporaryLinkResponseDto = eSignMapper
 			.temporaryLinkToTemporaryLinkResponseDto(temporarySignLink);
+		temporaryLinkResponseDto.setUrl(BASE_SIGNING_URL + temporaryLinkResponseDto.getToken());
+		temporaryLinkResponseDto.setExpiresAt(temporarySignLink.getExpiresAt());
+
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
 
 		SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelopeId, recipientObj,
@@ -195,7 +208,7 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 	}
 
 	private String generateTemporaryAccessToken(UserDetails userDetails, Long userId, Long linkId, String tenantId,
-			Long envelopeId) {
+			Long envelopeId, Long recipientId) {
 
 		Map<String, Object> extraClaims = new HashMap<>();
 
@@ -203,7 +216,9 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 		extraClaims.put("userId", userId);
 		extraClaims.put(EpAuthConstants.TENANT_ID, tenantId);
 		extraClaims.put("envelopeId", envelopeId);
+		extraClaims.put("recipientId", recipientId);
 		extraClaims.put("linkId", linkId);
+		extraClaims.put("expireAt", linkId);
 
 		return jwtService.generateTemporaryAccessToken(userDetails, extraClaims);
 	}

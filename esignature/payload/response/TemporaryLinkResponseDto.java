@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,7 +17,7 @@ public class TemporaryLinkResponseDto {
 
 	private String url;
 
-	private long expirationHours;
+	private LocalDateTime expiresAt;
 
 	private int maxClicks;
 

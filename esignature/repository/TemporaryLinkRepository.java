@@ -13,6 +13,6 @@ public interface TemporaryLinkRepository extends JpaRepository<TemporarySignLink
 
 	Optional<TemporarySignLink> findByToken(String token);
 
-	Optional<TemporarySignLink> findByEnvelopeIdAndRecipientId(Envelope envelope, Recipient recipient);
+	Optional<TemporarySignLink> findByEnvelopeIdAndRecipientIdAndIsActiveTrue(Envelope envelope, Recipient recipient);
 
 }
