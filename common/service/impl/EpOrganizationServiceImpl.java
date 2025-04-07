@@ -4,14 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.mapper.CommonMapper;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.impl.OrganizationServiceImpl;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
@@ -19,8 +27,8 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
+import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
-import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -35,14 +43,17 @@ import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
+import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
-import lombok.RequiredArgsConstructor;
+import com.skapp.enterprise.common.type.EpOrganizationConfigType;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -50,22 +61,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
 
+@Primary
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class EpOrganizationServiceImpl implements EpOrganizationService {
+public class EpOrganizationServiceImpl extends OrganizationServiceImpl implements EpOrganizationService {
 
 	private final EpOrganizationDao epOrganizationDao;
 
 	private final AttendanceConfigService attendanceConfigService;
 
 	private final EpCommonEmailService emailService;
-
-	private final TimeService timeService;
 
 	private final LeaveTypeService leaveTypeService;
 
@@ -91,8 +101,45 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 	private final ObjectMapper objectMapper;
 
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final EpOrganizationConfigDao epOrganizationConfigDao;
+
+	private final EsignConfigService esignConfigService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
+
+	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
+			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
+			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
+			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
+			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
+			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
+			SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
+			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService) {
+		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
+				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
+		this.epOrganizationDao = epOrganizationDao;
+		this.attendanceConfigService = attendanceConfigService;
+		this.emailService = emailService;
+		this.leaveTypeService = leaveTypeService;
+		this.leaveCycleService = leaveCycleService;
+		this.tenantService = tenantService;
+		this.tenantContext = tenantContext;
+		this.epCommonMapper = epCommonMapper;
+		this.superAdminDao = superAdminDao;
+		this.userDao = userDao;
+		this.jwtService = jwtService;
+		this.userDetailsService = userDetailsService;
+		this.applicationEventPublisher = applicationEventPublisher;
+		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
+		this.objectMapper = objectMapper;
+		this.organizationConfigDao = organizationConfigDao;
+		this.epOrganizationConfigDao = epOrganizationConfigDao;
+		this.esignConfigService = esignConfigService;
+	}
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
@@ -105,7 +152,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 
-			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod());
+			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
 			log.info("Tenant created for: {}", companyDomain);
 
@@ -115,7 +162,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 
 			EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
-			setDefaultOrganizationConfigs();
+			setDefaultOrganizationConfigsForEp();
 
 			User savedUser = createSuperAdminUser(superAdmin);
 			log.info("Super admin user created for: {}", companyDomain);
@@ -151,15 +198,6 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 			}
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
-		}
-	}
-
-	private void waitForSubdomainActive() {
-		try {
-			Thread.sleep(10000); // 10-second delay
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -223,6 +261,27 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
 	}
 
+	@Override
+	public ResponseEntityDto setQuickSetupCompleted() {
+		log.info("setQuickSetupCompleted: execution started");
+
+		Optional<OrganizationConfig> existingQuickSetupCompletion = epOrganizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(EpOrganizationConfigType.QUICK_SETUP_STATUS.name());
+
+		if (existingQuickSetupCompletion.isPresent()
+				&& existingQuickSetupCompletion.get().getOrganizationConfigValue().equals(Boolean.TRUE.toString()))
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED);
+
+		String quickSetupCompleted = String.valueOf(true);
+		OrganizationConfig organizationConfig = new OrganizationConfig(
+				EpOrganizationConfigType.QUICK_SETUP_STATUS.name(), quickSetupCompleted);
+		organizationConfigDao.save(organizationConfig);
+
+		log.info("setQuickSetupCompleted: execution ended successfully");
+
+		return new ResponseEntityDto(false, organizationConfig);
+	}
+
 	private User createSuperAdminUser(SuperAdmin superAdmin) {
 		User user = new User();
 		user.setEmail(superAdmin.getEmail());
@@ -259,7 +318,7 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 	}
 
 	private UserSettings createNotificationSettings(User user) {
-		log.info("createNotificationSettings: execution started");
+		log.info("createNotificationSettings: execution started {}", user.getUserId());
 		UserSettings userSettings = new UserSettings();
 
 		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
@@ -345,13 +404,14 @@ public class EpOrganizationServiceImpl implements EpOrganizationService {
 		}
 	}
 
-	private void setDefaultOrganizationConfigs() {
+	private void setDefaultOrganizationConfigsForEp() {
 		log.info("setDefaultOrganizationConfigs: execution started");
 
 		attendanceConfigService.setDefaultAttendanceConfig();
-		timeService.getDefaultTimeConfigs();
+		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

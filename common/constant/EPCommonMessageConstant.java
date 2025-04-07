@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum EPCommonMessageConstant implements MessageConstant {
 
+	EP_COMMON_SUCCESS_DISCONNECT_GOOGLE_CALENDAR("ep.common.success.disconnect.google.calendar"),
+
 	EP_COMMON_ERROR_INVALID_LOGIN_METHOD("ep.common.error.invalid-login-method"),
 	EP_COMMON_ERROR_TENANT_NOT_PRESENT("ep.common.error.tenant-not-present"),
 	EP_COMMON_ERROR_TENANT_CONTEXT_ERROR("ep.common.error.tenant-context-error"),
@@ -68,10 +70,12 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TENANT_NAME_REQUIRED("ep.common.error.tenant-name-required"),
 	EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY("ep.common.error.calendar-config-can-not-empty"),
 	EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND("ep.common.error.calendar-config-not-found"),
+	EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED("ep.common.error.quick-setup-already-completed"),
 	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
 	EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH("ep.common.error.calendar-state-mismatch"),
-	EP_COMMON_ERROR_USER_ID_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-id-mismatch-with-current-user"),
-	EP_COMMON_UNABLE_TO_CONNECT_TO_CALENDAR("ep.common.error.unable-to-connect-to-calendar"),
+	EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-email-mismatch-with-current-user"),
+	EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR("ep.common.error.unable-to-connect-google-calendar"),
+	EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR("ep.common.error.unable-to-delete-google-calendar"),
 	EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR(
 			"ep.common.error.unable-to-generate-access-token-to-calendar"),
 	EP_COMMON_UNABLE_TO_GET_AUTH_URL_CALENDAR("ep.common.error.unable-to-get-auth-url-calendar"),
@@ -85,7 +89,60 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_EMAIL_FORMAT("ep.common.error.invalid-email-format"),
 	EP_COMMON_ERROR_PERSONAL_EMAIL("ep.common.error.personal-email"),
 	EP_COMMON_ERROR_TEMP_EMAIL("ep.common.error.temp-email"),
-	EP_COMMON_ERROR_DISPOSABLE_EMAIL("ep.common.error.disposable-email");
+	EP_COMMON_ERROR_DISPOSABLE_EMAIL("ep.common.error.disposable-email"),
+	EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_EXISTS("ep.common.error.subscription-already-exists"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_DATA("ep.common.error.stripe.invalid-subscription-data"),
+	STRIPE_ERROR_CUSTOMER_RETRIEVAL_FAILED("ep.common.error.stripe.customer-retrieval-failed"),
+	STRIPE_ERROR_TENANT_NOT_FOUND("ep.common.error.stripe.tenant-not-found"),
+	STRIPE_ERROR_SUBSCRIPTION_NOT_FOUND("ep.common.error.stripe.subscription-not-found"),
+	STRIPE_ERROR_SUBSCRIPTION_MISMATCH("ep.common.error.stripe.subscription-mismatch"),
+	STRIPE_ERROR_VERIFICATION_FAILED("ep.common.error.stripe.verification-failed"),
+	COMMON_ERROR_STRIPE_EXCEPTION("ep.common.error.stripe.exception"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_PLAN("ep.common.error.stripe.invalid-subscription-plan"),
+	STRIPE_ERROR_INVALID_SUBSCRIPTION_QUANTITY("ep.common.error.stripe.invalid-subscription-quantity"),
+	EP_COMMON_ERROR_SUBSCRIPTION_BILLING_EMAIL_EMPTY("ep.common.error.subscription.billing-email-empty"),
+	EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND("ep.common.error.subscription-not-found"),
+	EP_COMMON_ERROR_INACTIVE_PROMO_CODE("ep.common.error.inactive-promo-code"),
+	EP_COMMON_ERROR_INVALID_PROMO_CODE("ep.common.error.invalid-promo-code"),
+	EP_COMMON_ERROR_DEFAULT_PAYMENT_METHOD("ep.common.error.default-payment-method"),
+	EP_COMMON_SUCCESS_PAYMENT_METHOD_REMOVED("ep.common.success.payment-method-removed"),
+	EP_COMMON_ERROR_INVALID_PAYMENT_METHOD("ep.common.error.invalid-payment-method"),
+	EP_COMMON_ERROR_PAYMENT_METHOD_NOT_BELONG_TO_CUSTOMER("ep.common.error.payment-method-not-belong-to-customer"),
+	EP_COMMON_ERROR_YAML_READ_FAILED("ep.common.error.yaml-read-failed"),
+	EP_COMMON_ERROR_INVALID_MODULE_NAME("ep.common.error.invalid-module-name"),
+	EP_COMMON_ERROR_INVALID_TIER("ep.common.error.invalid-tier"),
+	EP_COMMON_ERROR_SYSTEM_VERSION_MISMATCH("ep.common.error.system-version-mismatch"),
+	EP_COMMON_ERROR_INVALID_CACHE_KEY("ep.common.error.invalid-cache-key"),
+	EP_COMMON_SUCCESS_SUBSCRIPTION_CANCELED("ep.common.success.subscription-canceled"),
+	EP_COMMON_ERROR_SUBSCRIPTION_CANCEL_FAILED("ep.common.error.subscription-cancel-failed"),
+	EP_COMMON_ERROR_SUBSCRIPTION_CREATION_FAILED("ep.common.error.subscription-creation-failed"),
+	EP_COMMON_ERROR_SUBSCRIPTION_ALREADY_CANCELED("ep.common.error.subscription-already-canceled"),
+	EP_COMMON_ERROR_SUBSCRIPTION_CANCELED("ep.common.error.subscription-canceled"),
+	EP_COMMON_ERROR_HANDLE_CHECKOUT_SESSION_COMPLETED("ep.common.error.handle-checkout-session-completed"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_PAYMENT_SUCCEEDED("ep.common.error.handle-subscription-payment-succeeded"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_PAYMENT_FAILED("ep.common.error.handle-subscription-payment-failed"),
+	EP_COMMON_ERROR_HANDLE_TRIAL_END_SOON("ep.common.error.handle-trial-end-soon"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_CANCELLED("ep.common.error.handle-subscription-cancelled"),
+	EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_UPDATED("ep.common.error.handle-subscription-updated"),
+	EP_COMMON_ERROR_SUBSCRIPTION_UPDATE("ep.common.error.subscription-update"),
+	EP_COMMON_ERROR_REQUIRED_SUCCESS_CANCEL_URL("ep.common.error.required-success-cancel-url"),
+	EP_COMMON_ERROR_TENANT_STATUS_NOT_FREE_TRIAL_ENDED("ep.common.error.tenant-status-not-free-trial-ended"),
+	EP_COMMON_ERROR_REQUIRED_SUBSCRIPTION_PLAN("ep.common.error.required-subscription-plan"),
+	EP_COMMON_ERROR_EMAIL_BATCH_ID_NOT_OBTAINED("ep.common.error.email-batch-id-not-obtained"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_FAILED("ep.common.error.email-schedule-cancellation-failed"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_BATCH_ID_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-batch-id-cannot-be-null"),
+	EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_STATUS_NOT_PRESENT(
+			"ep.common.error.email-schedule-cancellation-status-cannot-be-null"),
+	EP_COMMON_ERROR_LIQUIBASE_UPDATE_FAILED("ep.common.error.liquibase-update-failed"),
+	EP_COMMON_ERROR_CANNOT_DETERMINE_TARGET_DATASOURCE_FOR_LOOKUP_KEY(
+			"ep.common.error.cannot-determine-target-datasource-for-lookup-key"),
+	COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN(
+			"ep.common.error.tenant-status-not-active-contact-super-admin"),
+	EP_COMMON_ERROR_TENANT_DATABASE_CREATION_FAILED("ep.common.error.tenant-database-creation-failed"),
+	COMMON_ERROR_INVALID_DB_NAME("ep.common.error.invalid-db-name"),
+	COMMON_ERROR_DB_CREATION_FAILED("ep.common.error.db-creation-failed"),
+	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),;
 
 	private final String messageKey;
 

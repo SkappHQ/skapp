@@ -11,11 +11,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RequestMethodContext {
 
-	private static final ThreadLocal<Boolean> IS_READ_ONLY = new ThreadLocal<>();
+	private static final ThreadLocal<Boolean> isRead = new ThreadLocal<>();
 
 	private static final String HTTP_METHOD_GET = "GET";
-
-	private static final boolean DEFAULT_READ_ONLY = false;
 
 	public static void determineReadOnly() {
 		try {
@@ -25,28 +23,35 @@ public final class RequestMethodContext {
 				HttpServletRequest request = attributes.getRequest();
 				String method = request.getMethod();
 				boolean readOnly = HTTP_METHOD_GET.equalsIgnoreCase(method);
-				IS_READ_ONLY.set(readOnly);
+				isRead.set(readOnly);
 
 				log.info("Request method: {}, readOnly set to: {}", method, readOnly);
 			}
 			else {
-				IS_READ_ONLY.set(DEFAULT_READ_ONLY);
+				isRead.set(false);
 				log.debug("No request context available, defaulting to write mode");
 			}
 		}
 		catch (Exception e) {
-			IS_READ_ONLY.set(DEFAULT_READ_ONLY);
+			isRead.set(false);
 			log.error("Error determining read/write mode from request method", e);
 		}
 	}
 
 	public static boolean isReadOnly() {
-		Boolean readOnly = IS_READ_ONLY.get();
+		Boolean readOnly = isRead.get();
 		return readOnly != null && readOnly;
 	}
 
+	public static void setReadOnly(boolean readOnly) {
+		isRead.set(readOnly);
+		if (log.isTraceEnabled()) {
+			log.trace("Request method context set to readOnly: {}", readOnly);
+		}
+	}
+
 	public static void clear() {
-		IS_READ_ONLY.remove();
+		isRead.remove();
 		if (log.isTraceEnabled()) {
 			log.trace("Request method context cleared");
 		}

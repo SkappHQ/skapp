@@ -17,4 +17,6 @@ public class EpEsignEmailEnvelopeDataDto {
 
 	private String documentNames;
 
+	private Integer reminderDays;
+
 }

@@ -28,11 +28,23 @@ public class FieldDto {
 
 	@NotNull(message = "{validation.field.xPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.xPosition.min}")
-	private Float xPosition;
+	private Float xposition;
 
 	@NotNull(message = "{validation.field.yPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
-	private Float yPosition;
+	private Float yposition;
+
+	@NotNull(message = "{validation.field.fontFamily.notnull}")
+	private String fontFamily;
+
+	@NotNull(message = "{validation.field.fontColor.notnull}")
+	private String fontColor;
+
+	@NotNull(message = "{validation.field.width.notnull}")
+	private Float width;
+
+	@NotNull(message = "{validation.field.height.notnull}")
+	private Float height;
 
 	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;

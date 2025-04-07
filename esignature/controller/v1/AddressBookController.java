@@ -2,8 +2,10 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
+import com.skapp.enterprise.esignature.payload.request.ExternalPatchUserDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.service.AddressBookService;
+import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.type.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -13,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +30,8 @@ public class AddressBookController {
 
 	private final AddressBookService addressBookService;
 
+	private final ExternalUserService externalUserService;
+
 	@Operation(summary = "Add External User",
 			description = "This endpoint allows you to add an external user to both the address book and the external user table")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
@@ -36,6 +42,26 @@ public class AddressBookController {
 		ResponseEntityDto response = addressBookService.addExternalUserToAddressBook(externalUser, UserType.EXTERNAL);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Update External User",
+			description = "This endpoint allows updating only specific fields of an external user.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
+	@PatchMapping("/edit-external-user/{id}")
+	public ResponseEntity<ResponseEntityDto> editExternalUser(@PathVariable Long id,
+			@Valid @RequestBody ExternalPatchUserDto externalPatchUserDto) {
+
+		ResponseEntityDto response = externalUserService.editExternalUser(id, externalPatchUserDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Soft Delete External User",
+			description = "Marks an external user as DELETED and updates their email.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
+	@PatchMapping("/delete-external-user/{id}")
+	public ResponseEntity<ResponseEntityDto> deleteExternalUser(@PathVariable Long id) {
+		ResponseEntityDto response = externalUserService.deleteExternalUser(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "get all address book contacts",

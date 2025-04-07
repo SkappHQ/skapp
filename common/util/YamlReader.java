@@ -2,6 +2,8 @@ package com.skapp.enterprise.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import lombok.experimental.UtilityClass;
 import org.springframework.core.io.ClassPathResource;
 
@@ -17,7 +19,8 @@ public class YamlReader {
 			return yamlMapper.readValue(inputStream, clazz);
 		}
 		catch (Exception e) {
-			throw new RuntimeException("Failed to load YAML configuration: " + path, e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_YAML_READ_FAILED,
+					new String[] { path, e.getMessage() });
 		}
 	}
 

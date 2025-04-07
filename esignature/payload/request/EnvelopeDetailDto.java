@@ -37,4 +37,6 @@ public class EnvelopeDetailDto {
 	@NotEmpty(message = "{validation.envelope.recipients.not_empty}")
 	private List<RecipientDto> recipients;
 
+	private EnvelopeSettingDto envelopeSettingDto;
+
 }

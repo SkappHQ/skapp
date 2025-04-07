@@ -8,7 +8,6 @@ import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.repository.DeviceTokenDao;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -22,26 +21,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EpPushNotificationServiceImpl implements PushNotificationService {
 
-	@NonNull
 	private final FirebaseMessaging firebaseMessaging;
 
-	@NonNull
 	private final DeviceTokenDao deviceTokenDao;
 
 	@Override
-	public void sendNotification(Long userId, Notification notification) {
+	public void sendNotification(Long userId, Notification notification, String title) {
+		if (notification.getBody() == null || title == null) {
+			return;
+		}
+
 		List<DeviceToken> deviceTokens = deviceTokenDao.findAllByUserId(userId);
+
 		com.google.firebase.messaging.Notification firebaseNotification = com.google.firebase.messaging.Notification
 			.builder()
 			.setBody(notification.getBody())
+			.setTitle(title)
 			.build();
+
 		for (DeviceToken deviceToken : deviceTokens) {
 			boolean response = sendNotification(firebaseNotification, deviceToken.getToken());
 			if (!response) {
 				deviceTokenDao.delete(deviceToken);
 			}
 		}
-
 	}
 
 	private boolean sendNotification(com.google.firebase.messaging.Notification notification, String token) {

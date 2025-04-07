@@ -4,6 +4,8 @@ import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
+import com.skapp.enterprise.esignature.model.EsignConfig;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
@@ -16,10 +18,13 @@ import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -81,8 +86,19 @@ public interface EsignMapper {
 	@Mapping(target = "envelopeName", source = "name")
 	@Mapping(target = "envelopeMessage", source = "message")
 	@Mapping(target = "envelopeSubject", source = "subject")
+	@Mapping(target = "reminderDays", source = "setting.reminderDays")
 	EpEsignEmailEnvelopeDataDto envelopeToEpEsignEmailEnvelopeDataDto(Envelope envelope);
 
 	Document documentDtoToDocument(DocumentDto documentDto);
+
+	@Mapping(source = "dateFormat", target = "dateFormat", qualifiedByName = "mapDateFormat")
+	EsignConfigResponseDto esignConfigToEsignConfigResponseDto(EsignConfig esignConfig);
+
+	@Named("mapDateFormat")
+	default String mapDateFormat(DateFormatType dateFormat) {
+		return dateFormat != null ? dateFormat.getValue() : null;
+	}
+
+	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
 
 }

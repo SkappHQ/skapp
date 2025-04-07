@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
+import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.CascadeType;
@@ -46,6 +48,9 @@ public class Recipient {
 	@Column(name = "signing_order")
 	private int signingOrder;
 
+	@Column(name = "color")
+	private String color;
+
 	@ManyToOne
 	@JoinColumn(name = "envelope_id")
 	private Envelope envelope;
@@ -56,5 +61,16 @@ public class Recipient {
 	@ManyToOne
 	@JoinColumn(name = "address_book_id")
 	private AddressBook addressBook;
+
+	@Column(name = "reminder_batch_id")
+	private String reminderBatchId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "reminder_status")
+	private EmailReminderStatus reminderStatus;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "email_status")
+	private EmailStatus emailStatus;
 
 }

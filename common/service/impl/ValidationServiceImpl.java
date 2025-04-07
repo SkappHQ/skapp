@@ -35,7 +35,7 @@ public class ValidationServiceImpl implements ValidationService {
 		emailValidationResultDto.setEmail(email);
 		emailValidationResultDto.setIsValid(validationResult.getIsValid());
 
-		if (!validationResult.getIsValid()) {
+		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
 			emailValidationResultDto.setReason(messageUtil.getMessage(validationResult.getMessageKey()));
 		}
 

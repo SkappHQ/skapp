@@ -2,6 +2,6 @@ package com.skapp.enterprise.common.type;
 
 public enum Tier {
 
-	FREE, PRO
+	FREE, PRO, ENTERPRISE, SUSPENDED,
 
 }

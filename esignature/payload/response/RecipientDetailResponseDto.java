@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
+import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import lombok.Getter;
@@ -23,8 +25,16 @@ public class RecipientDetailResponseDto {
 
 	private int signingOrder;
 
+	private String color;
+
 	private List<FieldDetailResponseDto> fields;
 
 	private Long addressBookId;
+
+	private String reminderBatchId;
+
+	private EmailReminderStatus reminderStatus;
+
+	private EmailStatus emailStatus;
 
 }

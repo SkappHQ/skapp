@@ -2,11 +2,14 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +33,26 @@ public class DocumentController {
 		ResponseEntityDto responseEntityDto = documentService.saveDocument(documentDto);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Sign Document",
+			description = "This endpoint generates a digital signature corresponding to a specific document version, "
+					+ "ensuring integrity and authenticity")
+	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
+		ResponseEntityDto response = documentService.sequentialSignDocument(documentSignDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Sign a field of a recipient ",
+			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "
+					+ "ensuring integrity and authenticity")
+	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto) {
+		ResponseEntityDto response = documentService.sequentialSignField(documentFieldSignDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }

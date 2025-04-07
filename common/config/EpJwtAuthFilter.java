@@ -9,6 +9,8 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
+import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
+import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -25,6 +27,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -54,7 +57,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/v1/ep/organization/login-method",
 			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp", "/v1/auth/refresh-token",
-			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email");
+			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email",
+			"/v1/ep/stripe/webhook");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -65,7 +69,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
-		log.info("EpDoFilterInternal: execution started");
 
 		final String authHeader = request.getHeader(AuthConstants.AUTHORIZATION);
 
@@ -94,13 +97,14 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 			}
 
+			jwtService.checkVersionMismatch(userId, accessToken);
+
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
 				authenticateUser(request, accessToken, userEmail, userId, tenantId);
 			}
 
 			filterChain.doFilter(request, response);
-			log.info("EpDoFilterInternal: execution completed");
 		}
 		catch (ExpiredJwtException e) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
@@ -126,10 +130,20 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
+		String tier = jwtService.extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TIER, String.class));
+		String tenantStatus = jwtService.extractClaim(accessToken,
+				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));
+		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
+
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
-		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+		WebAuthenticationDetails webDetails = new WebAuthenticationDetailsSource().buildDetails(request);
+		AuthenticationDetailsDto authenticationDetails = new AuthenticationDetailsDto(webDetails, additionalDetails);
+
+		authToken.setDetails(authenticationDetails);
+
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);
 	}

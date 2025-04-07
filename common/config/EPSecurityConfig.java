@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -52,14 +51,6 @@ public class EPSecurityConfig {
 	private String allowedOrigins;
 
 	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService);
-		authProvider.setPasswordEncoder(passwordEncoder());
-		return authProvider;
-	}
-
-	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
 			throws Exception {
 		return authenticationConfiguration.getAuthenticationManager();
@@ -72,6 +63,10 @@ public class EPSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+		authProvider.setUserDetailsService(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
+
 		http.cors(Customizer.withDefaults());
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
@@ -85,7 +80,7 @@ public class EPSecurityConfig {
 						"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
 						"/v1/ep/auth/password-reset/verify-otp", "/v1/ep/auth/password-reset/send-otp",
 						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
-						"/v1/google-calendar/redirect", "/v1/validate/email")
+						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -105,7 +100,7 @@ public class EPSecurityConfig {
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-		http.authenticationProvider(authenticationProvider());
+		http.authenticationProvider(authProvider);
 
 		return http.build();
 	}
@@ -117,7 +112,8 @@ public class EPSecurityConfig {
 
 		configuration.setAllowedOriginPatterns(Arrays.asList(origins));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID"));
+		configuration.setAllowedHeaders(
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;

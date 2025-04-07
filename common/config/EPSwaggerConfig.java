@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.config;
 
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.HeaderParameter;
@@ -51,7 +52,7 @@ public class EPSwaggerConfig {
 
 	private void addTenantIdHeader(PathItem pathItem) {
 		pathItem.readOperations()
-			.forEach(operation -> operation.addParametersItem(new HeaderParameter().name("X-Tenant-ID")
+			.forEach(operation -> operation.addParametersItem(new HeaderParameter().name(EpAuthConstants.TENANT_HEADER)
 				.description("Tenant ID for multi-tenancy")
 				.schema(new StringSchema())
 				.required(true)));

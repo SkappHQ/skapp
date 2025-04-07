@@ -15,12 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TenantContext {
 
-	private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
-
-	private final MultiTenantDataSourceConfig multiTenantDataSourceConfig;
-
 	@PersistenceContext
 	private EntityManager entityManager;
+
+	private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
 
 	public static void setCurrentTenant(String tenant) {
 		currentTenant.set(tenant);
@@ -43,7 +41,6 @@ public class TenantContext {
 			}
 			catch (Exception e) {
 				clearCurrentTenant();
-				removeTenant(tenant);
 				throw new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_COULD_NOT_ALTER_CONNECTION_TO_SPECIFIED_TENANT,
 						new String[] { tenant, e.getMessage() });
@@ -53,29 +50,18 @@ public class TenantContext {
 
 	private void switchDatabaseSchema(String tenant) {
 		try {
-			entityManager.unwrap(Session.class).doWork(connection -> {
+			Session session = entityManager.unwrap(Session.class);
+			session.doWork(connection -> {
 				connection.setCatalog(tenant);
-				log.info("Successfully switched database to: {}", tenant);
+				log.info("Switched connection to tenant: {}", tenant);
 			});
+
+			entityManager.clear();
 		}
 		catch (Exception e) {
 			log.error("Error switching database schema for tenant {}: {}", tenant, e.getMessage());
 			throw new ModuleException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_COULD_NOT_ALTER_CONNECTION_TO_SPECIFIED_TENANT,
-					new String[] { tenant, e.getMessage() });
-		}
-	}
-
-	public void removeTenant(String tenant) {
-		try {
-			multiTenantDataSourceConfig.removeTenant(tenant);
-			if (tenant.equals(getCurrentTenant())) {
-				clearCurrentTenant();
-			}
-		}
-		catch (Exception e) {
-			log.error("Error removing tenant {}: {}", tenant, e.getMessage());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COULD_NOT_REMOVE_TENANT,
 					new String[] { tenant, e.getMessage() });
 		}
 	}

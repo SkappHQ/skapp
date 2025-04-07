@@ -1,7 +1,7 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.enterprise.common.config.MultiTenantDataSourceConfig;
+import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
@@ -32,15 +32,15 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 
 	private final TenantDao tenantDao;
 
-	private final MultiTenantDataSourceConfig multiTenantDataSourceConfig;
+	private final DataSource dataSource;
 
 	@Override
 	public void runMigration(String tenantId) {
-		log.info("Starting migration for tenant: {}", tenantId);
+		log.debug("Starting migration for tenant: {}", tenantId);
 
 		try {
 			performLiquibaseMigration(tenantId);
-			log.info("Migration completed for tenant: {}", tenantId);
+			log.debug("Migration completed for tenant: {}", tenantId);
 		}
 		catch (Exception e) {
 			handleMigrationError(tenantId, e);
@@ -52,7 +52,7 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 
 	private void performLiquibaseMigration(String tenantId) throws SQLException, LiquibaseException {
 		TenantContext.setCurrentTenant(tenantId);
-		DataSource dataSource = multiTenantDataSourceConfig.dataSource();
+		RequestMethodContext.setReadOnly(false);
 
 		Database database;
 		Liquibase liquibase = null;
@@ -80,14 +80,10 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 	private void cleanup(String tenantId) {
 		try {
 			TenantContext.clearCurrentTenant();
+			RequestMethodContext.clear();
 		}
-		finally {
-			try {
-				multiTenantDataSourceConfig.removeTenant(tenantId);
-			}
-			catch (Exception e) {
-				log.error("Error removing tenant: {}", tenantId, e);
-			}
+		catch (Exception e) {
+			log.error("Error removing tenant: {}", tenantId, e);
 		}
 	}
 
@@ -124,11 +120,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		summary.append(String.format("Total Tenants: %d%n", successfulTenants.size() + failedTenants.size()));
 		summary.append(String.format("Successful Migrations: %d%n", successfulTenants.size()));
 		summary.append(String.format("Failed Migrations: %d%n", failedTenants.size()));
-
-		if (!successfulTenants.isEmpty()) {
-			summary.append(String.format("%nSuccessfully Migrated Tenants:%n"));
-			successfulTenants.forEach(tenant -> summary.append(String.format("- %s%n", tenant)));
-		}
 
 		if (!failedTenants.isEmpty()) {
 			summary.append(String.format("%nFailed Migrations:%n"));

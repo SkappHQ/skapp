@@ -1,16 +1,24 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.component.ProfileActivator;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.EmployeeSignInResponseDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.SignInResponseDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.BulkContextService;
+import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.impl.AuthServiceImpl;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
@@ -19,6 +27,10 @@ import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
+import com.skapp.community.peopleplanner.service.PeopleEmailService;
+import com.skapp.community.peopleplanner.service.PeopleNotificationService;
+import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.RecaptchaConfig;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -43,24 +55,25 @@ import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDt
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
-import com.skapp.enterprise.people.service.EpPeopleService;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -77,9 +90,9 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class EpAuthServiceImpl implements EpAuthService {
+@Primary
+public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService {
 
 	private final EpCommonMapper epCommonMapper;
 
@@ -111,8 +124,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 	private final EpCommonEmailService epCommonEmailService;
 
-	private final EpPeopleService epPeopleService;
-
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -130,6 +141,41 @@ public class EpAuthServiceImpl implements EpAuthService {
 	private final TenantDao tenantDao;
 
 	private final SecureRandom secureRandom = new SecureRandom();
+
+	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
+			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
+			PasswordEncoder passwordEncoder, EmployeeRoleDao employeeRoleDao, CommonMapper commonMapper,
+			PeopleEmailService peopleEmailService, PeopleNotificationService peopleNotificationService,
+			EncryptionDecryptionService encryptionDecryptionService, ProfileActivator profileActivator,
+			PlatformTransactionManager transactionManager, BulkContextService bulkContextService,
+			MessageUtil messageUtil, RolesService rolesService, OrganizationConfigDao organizationConfigDao,
+			ObjectMapper objectMapper, EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao,
+			EpCommonEmailService emailService, RestTemplate restTemplate, GoogleTokenValidator googleTokenValidator,
+			UserDao userDao1, TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
+			EpCommonEmailService epCommonEmailService, RecaptchaConfig recaptchaConfig, TenantDao tenantDao,
+			UserService userService) {
+		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
+				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
+				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
+				bulkContextService, messageUtil, rolesService, organizationConfigDao, objectMapper);
+		this.epCommonMapper = epCommonMapper;
+		this.passwordEncoder = passwordEncoder;
+		this.superAdminDao = superAdminDao;
+		this.userDetailsService = userDetailsService;
+		this.jwtService = jwtService;
+		this.emailService = emailService;
+		this.messageUtil = messageUtil;
+		this.restTemplate = restTemplate;
+		this.googleTokenValidator = googleTokenValidator;
+		this.employeeDao = employeeDao;
+		this.peopleMapper = peopleMapper;
+		this.userDao = userDao1;
+		this.tenantContext = tenantContext;
+		this.passwordResetOtpDao = passwordResetOtpDao;
+		this.epCommonEmailService = epCommonEmailService;
+		this.recaptchaConfig = recaptchaConfig;
+		this.tenantDao = tenantDao;
+	}
 
 	@Override
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
@@ -153,6 +199,14 @@ public class EpAuthServiceImpl implements EpAuthService {
 		String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 		String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
+		SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
+
+		log.info("superAdminSignUp: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	private SignInResponseDto getSignInResponseDto(String accessToken, String refreshToken,
+			SuperAdmin savedSuperAdmin) {
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
 		signInResponseDto.setRefreshToken(refreshToken);
@@ -164,9 +218,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(true);
-
-		log.info("superAdminSignUp: execution ended");
-		return new ResponseEntityDto(false, signInResponseDto);
+		return signInResponseDto;
 	}
 
 	@Override
@@ -215,7 +267,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 		}
 
 		try {
-			if (!validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
+			if (validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
 				log.warn("verifyOTP: Invalid or expired OTP provided");
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 			}
@@ -311,17 +363,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 			String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 			String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
-			SignInResponseDto signInResponseDto = new SignInResponseDto();
-			signInResponseDto.setAccessToken(accessToken);
-			signInResponseDto.setRefreshToken(refreshToken);
-
-			EmployeeSignInResponseDto employeeSignInResponseDto = new EmployeeSignInResponseDto();
-			employeeSignInResponseDto.setEmployeeId(savedSuperAdmin.getId());
-			employeeSignInResponseDto.setFirstName(savedSuperAdmin.getFirstName());
-			employeeSignInResponseDto.setLastName(savedSuperAdmin.getLastName());
-
-			signInResponseDto.setEmployee(employeeSignInResponseDto);
-			signInResponseDto.setIsPasswordChangedForTheFirstTime(true);
+			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
 			log.info("ssoGoogleSignUp: execution ended");
 			return new ResponseEntityDto(false, signInResponseDto);
@@ -361,10 +403,6 @@ public class EpAuthServiceImpl implements EpAuthService {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
-			if (epPeopleService.checkEmployeesLimit()) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_FREE_USER_LIMIT_EXCEEDED);
-			}
-
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}
@@ -452,6 +490,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 		Tenant tenant = tenantDao.findByTenantName(subDomainName);
 		if (tenant != null) {
 			responseDto.setIsTenantAvailable(true);
+			responseDto.setTier(tenant.getTier());
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -469,7 +508,7 @@ public class EpAuthServiceImpl implements EpAuthService {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 			}
 
-			if (!validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
+			if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 					epPasswordResetOtpVerifyDto.getOtp())) {
 				log.warn("verifyPasswordResetOTP: Invalid or expired OTP provided");
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
@@ -498,6 +537,20 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 		return new ResponseEntityDto(false, "Password reset successfully");
 
+	}
+
+	@Override
+	protected void validateTenantStatus(User user) {
+		String currentTenant = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+		TenantStatus tenantStatus = tenant.getTenantStatus();
+		if (tenantStatus != null && tenantStatus != TenantStatus.ACTIVE
+				&& !user.getEmployee().getEmployeeRole().getIsSuperAdmin()) {
+			throw new ModuleException(
+					EPCommonMessageConstant.COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN);
+		}
 	}
 
 	private DecodedJWT validateAndGetDecodedJWT(String token) {
@@ -558,11 +611,11 @@ public class EpAuthServiceImpl implements EpAuthService {
 		}
 
 		return Jwts.builder()
-			.setClaims(claims)
-			.setSubject(userDetails.getUsername())
-			.setIssuedAt(new Date(System.currentTimeMillis()))
-			.setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-			.signWith(jwtService.getSigningKey(), SignatureAlgorithm.HS256)
+			.claims(claims)
+			.subject(userDetails.getUsername())
+			.issuedAt(new Date(System.currentTimeMillis()))
+			.expiration(new Date(System.currentTimeMillis() + expirationTime))
+			.signWith(jwtService.getSigningKey())
 			.compact();
 	}
 
@@ -572,14 +625,14 @@ public class EpAuthServiceImpl implements EpAuthService {
 
 	private boolean validateOTP(String storedOTP, Instant expiryTime, String providedOTP) {
 		if (storedOTP == null || expiryTime == null) {
-			return false;
+			return true;
 		}
 
 		if (Instant.now().isAfter(expiryTime)) {
-			return false;
+			return true;
 		}
 
-		return storedOTP.equals(providedOTP);
+		return !storedOTP.equals(providedOTP);
 	}
 
 	@Override
