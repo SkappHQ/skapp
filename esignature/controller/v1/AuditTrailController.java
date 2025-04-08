@@ -1,7 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.esignature.payload.request.AuditTrailDTO;
+import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -27,14 +27,14 @@ public class AuditTrailController {
 			description = "This endpoint logs an audit trail event for e-signature activities.")
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDTO auditTrailDTO) {
+	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO) {
 		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Operation(summary = "Validate audit trail hash by audit ID",
 			description = "Checks if the stored hash matches the recomputed hash for a specific audit trail entry.")
-	@GetMapping("/{auditTrailId}/validate")
+	@GetMapping("/validate/{auditTrailId}")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> validateAuditTrailHash(@PathVariable Long auditTrailId) {
 		ResponseEntityDto response = auditTrailService.validateAuditTrailHash(auditTrailId);
@@ -43,7 +43,7 @@ public class AuditTrailController {
 
 	@Operation(summary = "Validate all audit trail records for an envelope",
 			description = "Checks integrity of all audit trail records for a given envelope.")
-	@GetMapping("/envelope/{envelopeId}/validate")
+	@GetMapping("/envelope/validate/{envelopeId}")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> validateEnvelopeAuditTrails(@PathVariable Long envelopeId) {
 		ResponseEntityDto response = auditTrailService.validateEnvelopeAuditTrails(envelopeId);

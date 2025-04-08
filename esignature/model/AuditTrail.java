@@ -1,8 +1,10 @@
 package com.skapp.enterprise.esignature.model;
 
-import com.skapp.community.common.model.User;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,8 +40,8 @@ public class AuditTrail {
 	private Recipient recipient;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "action_user_id", updatable = false)
-	private User actionUser;
+	@JoinColumn(name = "address_book_id", updatable = false)
+	private AddressBook addressBookUser;
 
 	@Column(name = "ip_address", nullable = false, updatable = false)
 	private String ipAddress;
@@ -51,8 +53,9 @@ public class AuditTrail {
 	@Column(name = "timestamp", nullable = false, updatable = false)
 	private Instant timestamp;
 
+	@Convert(converter = JsonTypeConverter.class)
 	@Column(name = "metadata", nullable = false, updatable = false)
-	private String metadata;
+	private JsonNode metadata;
 
 	@Column(name = "is_authorized", nullable = false, updatable = false)
 	private Boolean isAuthorized;
