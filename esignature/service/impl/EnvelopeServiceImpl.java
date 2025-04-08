@@ -351,18 +351,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 
 		Recipient recipient = recipientRepository.findById(recipientId)
-			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+			.orElseThrow(() -> {
+				log.error("Recipient with ID {} not found", recipientId);
+				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
+			});
 
 		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId())
-			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+			.orElseThrow(() -> {
+				log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(), recipientId);
+				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+			});
 
 		if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
+			log.warn("Envelope with ID {} is already declined", envelope.getId());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED);
 		}
 		if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
+			log.warn("Envelope with ID {} is already voided", envelope.getId());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_VOIDED);
 		}
 		if (envelope.getStatus() == EnvelopeStatus.COMPLETED) {
+			log.warn("Envelope with ID {} is already completed", envelope.getId());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED);
 		}
 
