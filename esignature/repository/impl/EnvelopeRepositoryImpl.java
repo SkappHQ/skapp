@@ -13,9 +13,11 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
-import com.skapp.enterprise.esignature.type.EnvelopeInboxSort;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.EntityManager;
@@ -191,13 +193,14 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			Predicate emailLike = cb.like(cb.lower(recipientEmailPath), prefixPattern);
 			Predicate safeEmailLike = cb.and(recipientNotNull, emailLike);
 
-			predicates.add(cb.or(subjectLike, safeEmailLike));
+			// predicates.add(cb.or(subjectLike, safeEmailLike));
+			predicates.add(cb.or(subjectLike));
 
-			Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(safeEmailLike, 2).otherwise(3));
+			// Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike,
+			// 1).when(safeEmailLike, 2).otherwise(3));
+			Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike, 1).otherwise(2));
 
-			Path<?> sortPath = filterDto.getSortKey() == EnvelopeInboxSort.RECEIVED_DATE
-					? recipientJoin.get(filterDto.getSortKey().getSortField())
-					: envelopeRoot.get(filterDto.getSortKey().getSortField());
+			Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
 
 			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
 				query.orderBy(sortingOrder, cb.asc(sortPath));
@@ -208,9 +211,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		}
 		else {
-			Path<?> sortPath = filterDto.getSortKey() == EnvelopeInboxSort.RECEIVED_DATE
-					? recipientJoin.get(filterDto.getSortKey().getSortField())
-					: envelopeRoot.get(filterDto.getSortKey().getSortField());
+
+			Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
 
 			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
 				query.orderBy(cb.asc(sortPath));
@@ -221,6 +223,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		}
 
 		query.where(cb.and(predicates.toArray(new Predicate[0])));
+
 		query.select(envelopeRoot).distinct(true);
 
 		TypedQuery<Envelope> countQuery = entityManager.createQuery(query);
@@ -232,13 +235,77 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		pagedQuery.setMaxResults(filterDto.getSize());
 		List<Envelope> resultList = pagedQuery.getResultList();
 
+		List<EnvelopeSentData> envelopeSentDataList = resultList.stream()
+			.map(this::mapEnvelopeToSentData) // Map each Envelope to EnvelopeSentData
+			.toList();
+
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(resultList);
+		pageDto.setItems(envelopeSentDataList);
 		pageDto.setCurrentPage(filterDto.getPage());
 		pageDto.setTotalItems(totalItems);
 		pageDto.setTotalPages(totalPages);
 
 		return pageDto;
+	}
+
+	private EnvelopeSentData mapEnvelopeToSentData(Envelope envelope) {
+		// Mapping Envelope to EnvelopeSentData
+		EnvelopeSentData envelopeSentData = new EnvelopeSentData();
+
+		// Mapping simple fields
+		envelopeSentData.setEnvelopeId(envelope.getId());
+		envelopeSentData.setSubject(envelope.getSubject());
+		envelopeSentData.setStatus(envelope.getStatus());
+		envelopeSentData.setExpiresAt(envelope.getExpireAt());
+		envelopeSentData.setSentAt(envelope.getSentAt());
+
+		// Mapping owner email and profile pic
+		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null) {
+			envelopeSentData.setOwnerEmail(envelope.getOwner().getEmail());
+			envelopeSentData.setOwnerProfilePic(envelope.getOwner().getInternalUser().getEmployee().getAuthPic());
+		}
+
+		// Mapping recipients data to RecipientResponseDto
+		List<RecipientResponseDto> recipientResponseDtos = new ArrayList<>();
+		if (envelope.getRecipients() != null) {
+			for (Recipient recipient : envelope.getRecipients()) {
+				RecipientResponseDto recipientResponseDto = new RecipientResponseDto();
+
+				// Mapping recipient fields to RecipientResponseDto
+				recipientResponseDto.setId(recipient.getId());
+				recipientResponseDto.setMemberRole(recipient.getMemberRole());
+				recipientResponseDto.setStatus(recipient.getStatus());
+				recipientResponseDto.setSigningOrder(recipient.getSigningOrder());
+				recipientResponseDto.setColor(recipient.getColor());
+
+				// Mapping AddressBookBasicResponseDto (user details)
+				if (recipient.getAddressBook() != null) {
+					AddressBookBasicResponseDto addressBookDto = getAddressBookBasicResponseDto(recipient);
+					recipientResponseDto.setAddressBookBasicResponseDto(addressBookDto);
+				}
+
+				// Add recipientResponseDto to the list
+				recipientResponseDtos.add(recipientResponseDto);
+			}
+		}
+
+		// Setting recipients in EnvelopeSentData
+		envelopeSentData.setRecipients(recipientResponseDtos);
+
+		return envelopeSentData;
+	}
+
+	private AddressBookBasicResponseDto getAddressBookBasicResponseDto(Recipient recipient) {
+		AddressBookBasicResponseDto addressBookDto = new AddressBookBasicResponseDto();
+		addressBookDto.setId(recipient.getAddressBook().getId());
+		addressBookDto.setUserId(recipient.getAddressBook().getUserId());
+		addressBookDto.setFirstName(recipient.getAddressBook().getName());
+		addressBookDto.setLastName(recipient.getAddressBook().getName());
+		addressBookDto.setEmail(recipient.getAddressBook().getEmail());
+		addressBookDto.setPhone(recipient.getAddressBook().getPhone());
+		addressBookDto.setProfilePic(recipient.getAddressBook().getInternalUser() != null
+				? recipient.getAddressBook().getInternalUser().getEmployee().getAuthPic() : null);
+		return addressBookDto;
 	}
 
 	@Override

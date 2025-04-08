@@ -64,4 +64,12 @@ public class AddressBook {
 		return internalUser.getEmail();
 	}
 
+	public String getPhone() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getPhone();
+		}
+
+		return internalUser.getEmployee().getPhone();
+	}
+
 }
