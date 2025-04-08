@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum EnvelopeInboxSort {
 
-	RECEIVED_DATE("receivedAt"), EXPIRE_DATE("expireAt");
+	RECEIVED_DATE("receivedAt");
 
 	private final String sortField;
 

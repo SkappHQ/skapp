@@ -21,7 +21,7 @@ public class EnvelopeSentFilterDto {
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	private EnvelopeInboxSort sortKey = EnvelopeInboxSort.EXPIRE_DATE;
+	private EnvelopeInboxSort sortKey;
 
 	private String searchKeyword;
 

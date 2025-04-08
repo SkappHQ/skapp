@@ -1,7 +1,7 @@
 package com.skapp.enterprise.esignature.payload.request;
 
 import com.skapp.enterprise.esignature.type.EnvelopeInboxSort;
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,10 +21,18 @@ public class EnvelopeInboxFilterDto {
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	private EnvelopeInboxSort sortKey = EnvelopeInboxSort.EXPIRE_DATE;
+	private EnvelopeInboxSort sortKey = EnvelopeInboxSort.RECEIVED_DATE;
 
 	private String searchKeyword;
 
-	private List<EnvelopeStatus> statusTypes;
+	private List<RecipientStatus> statusTypes;
+
+	public EnvelopeInboxSort getSortKey() {
+		return sortKey != null ? sortKey : EnvelopeInboxSort.RECEIVED_DATE;
+	}
+
+	public Sort.Direction getSortOrder() {
+		return sortOrder != null ? sortOrder : Sort.Direction.ASC;
+	}
 
 }

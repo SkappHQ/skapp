@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.repository.projection;
 
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,25 +9,21 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class EnvelopeInboxData {
+
+	private Long envelopeId;
 
 	private String subject;
 
 	private String ownerEmail;
 
-	private EnvelopeStatus status;
+	private RecipientStatus status;
 
 	private LocalDateTime expiresAt;
 
 	private LocalDateTime receivedDate;
 
-	public EnvelopeInboxData(String subject, String ownerEmail, EnvelopeStatus status, LocalDateTime expiresAt,
-			LocalDateTime receivedDate) {
-		this.subject = subject;
-		this.ownerEmail = ownerEmail;
-		this.status = status;
-		this.expiresAt = expiresAt;
-		this.receivedDate = receivedDate;
-	}
+	private String ownerProfilePic;
 
 }

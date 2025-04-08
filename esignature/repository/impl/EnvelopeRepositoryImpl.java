@@ -1,7 +1,10 @@
 package com.skapp.enterprise.esignature.repository.impl;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.Envelope;
@@ -14,11 +17,13 @@ import com.skapp.enterprise.esignature.repository.EnvelopeRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.type.EnvelopeInboxSort;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -28,6 +33,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -70,18 +76,28 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
 		Join<Recipient, AddressBook> addressBookJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
 		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.owner, JoinType.LEFT);
+		Join<AddressBook, User> internalUserJoin = addressBookJoin.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
+
+		Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
-		addStatusPredicate(filterDto.getStatusTypes(), cb, envelopeRoot, predicates);
+		if (filterDto.getStatusTypes() != null && !filterDto.getStatusTypes().isEmpty()) {
+			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.STATUS));
+			for (RecipientStatus status : filterDto.getStatusTypes()) {
+				statusIn.value(status);
+			}
+			predicates.add(statusIn);
+		}
+
+		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
 			String prefixPattern = keyword.toLowerCase() + "%";
 
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
-			Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
 			Predicate ownerNotNull = cb.isNotNull(ownerEmailPath);
 			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
@@ -91,9 +107,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 			Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(safeEmailLike, 2).otherwise(3));
 
-			Path<?> sortPath = filterDto.getSortKey() == EnvelopeInboxSort.RECEIVED_DATE
-					? recipientJoin.get(filterDto.getSortKey().getSortField())
-					: envelopeRoot.get(filterDto.getSortKey().getSortField());
+			Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
 
 			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
 				query.orderBy(sortingOrder, cb.asc(sortPath));
@@ -104,9 +118,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		}
 		else {
-			Path<?> sortPath = filterDto.getSortKey() == EnvelopeInboxSort.RECEIVED_DATE
-					? recipientJoin.get(filterDto.getSortKey().getSortField())
-					: envelopeRoot.get(filterDto.getSortKey().getSortField());
+			Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
 
 			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
 				query.orderBy(cb.asc(sortPath));
@@ -117,11 +129,19 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		}
 
 		query.where(cb.and(predicates.toArray(new Predicate[0])));
+		query.distinct(true);
 
-		query.select(cb.construct(EnvelopeInboxData.class, envelopeRoot.get(Envelope_.SUBJECT),
-				ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL), envelopeRoot.get(Envelope_.STATUS),
-				envelopeRoot.get(Envelope_.EXPIRE_AT), recipientJoin.get(Recipient_.RECEIVED_AT)))
-			.distinct(true);
+		// 🧱 Create constructor expression
+		Expression<Long> envelopeId = envelopeRoot.get(Envelope_.ID);
+		Expression<String> subject = envelopeRoot.get(Envelope_.SUBJECT);
+		Expression<String> ownerEmail = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
+		Expression<RecipientStatus> status = recipientJoin.get(Recipient_.STATUS);
+		Expression<LocalDateTime> expiresAt = envelopeRoot.get(Envelope_.EXPIRE_AT);
+		Expression<LocalDateTime> receivedDate = recipientJoin.get(Recipient_.RECEIVED_AT);
+		Expression<String> ownerProfilePic = employeeJoin.get(Employee_.AUTH_PIC);
+
+		query.select(cb.construct(EnvelopeInboxData.class, envelopeId, subject, ownerEmail, status, expiresAt,
+				receivedDate, ownerProfilePic));
 
 		TypedQuery<EnvelopeInboxData> countQuery = entityManager.createQuery(query);
 		Long totalItems = (long) countQuery.getResultList().size();
@@ -231,7 +251,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Join<Object, Object> internalUser = owner.join("internalUser");
 
 		Predicate byUser = cb.equal(internalUser.get("userId"), userId);
-		Predicate byStatus = envelope.get(Envelope_.STATUS).in(List.of(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.COMPLETED));
+		Predicate byStatus = envelope.get(Envelope_.STATUS)
+			.in(List.of(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.COMPLETED));
 
 		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
 			.where(cb.and(byUser, byStatus))
@@ -252,7 +273,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		return resultMap;
 	}
 
-	private  void addStatusPredicate(List<EnvelopeStatus> envelopeStatusList, CriteriaBuilder cb, Root<Envelope> envelopeRoot, List<Predicate> predicates) {
+	private void addStatusPredicate(List<EnvelopeStatus> envelopeStatusList, CriteriaBuilder cb,
+			Root<Envelope> envelopeRoot, List<Predicate> predicates) {
 		if (envelopeStatusList != null && !envelopeStatusList.isEmpty()) {
 			CriteriaBuilder.In<EnvelopeStatus> statusIn = cb.in(envelopeRoot.get(Envelope_.STATUS));
 			for (EnvelopeStatus status : envelopeStatusList) {
@@ -261,6 +283,5 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			predicates.add(statusIn);
 		}
 	}
-
 
 }
