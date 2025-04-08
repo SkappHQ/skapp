@@ -51,7 +51,9 @@ public class EpEmployeeRoleRepositoryImpl implements EpEmployeeRoleRepository {
 			else if (roleName == Role.SUPER_ADMIN)
 				predicates.add(criteriaBuilder.isTrue(root.get(EmployeeRole_.isSuperAdmin)));
 		}
+
 		predicates.add(criteriaBuilder.notEqual(employee.get(Employee_.accountStatus), AccountStatus.TERMINATED));
+		predicates.add(criteriaBuilder.notEqual(employee.get(Employee_.accountStatus), AccountStatus.DELETED));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);
