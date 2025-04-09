@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class AuditTrailResponseDto {
 
-	private Long envelopId;
+	private Long auditId;
 
 	private AuditAction action;
 

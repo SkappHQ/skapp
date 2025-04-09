@@ -167,7 +167,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 			AuditTrailResponseDto responseDto = new AuditTrailResponseDto();
 
-			responseDto.setEnvelopId(auditTrail.getId());
+			responseDto.setAuditId(auditTrail.getId());
 			responseDto.setAction(auditTrail.getAction());
 
 			ObjectMapper objectMapper = new ObjectMapper();
