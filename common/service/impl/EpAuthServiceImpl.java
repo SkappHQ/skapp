@@ -547,7 +547,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		TenantStatus tenantStatus = tenant.getTenantStatus();
 		if (tenantStatus != null && tenantStatus != TenantStatus.ACTIVE
-				&& !user.getEmployee().getEmployeeRole().getIsSuperAdmin()) {
+				&& Boolean.FALSE.equals(user.getEmployee().getEmployeeRole().getIsSuperAdmin())) {
 			throw new ModuleException(
 					EPCommonMessageConstant.COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN);
 		}
