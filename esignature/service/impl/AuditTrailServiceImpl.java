@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.utill.HashUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -48,6 +49,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private final UserService userService;
 
 	private final AddressBookDao addressBookDao;
+
+	@Value("${audit-trail.hash-secret-key}")
+	private String hashSecretKey;
 
 	@Override
 	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto) {
@@ -202,12 +206,13 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	private String generateHashToValidate(AuditTrail auditTrail) {
-		String rawData = auditTrail.getEnvelope().getId()
-				+ (auditTrail.getRecipient() != null ? auditTrail.getRecipient().getId().toString() : "")
+		String rawData = auditTrail.getEnvelope().getId() + "_"
+				+ (auditTrail.getRecipient() != null ? auditTrail.getRecipient().getId().toString() + "_" : "_")
 				+ (auditTrail.getAddressBookUser() != null
-						? auditTrail.getAddressBookUser().getInternalUser().getUserId().toString() : "")
-				+ auditTrail.getIpAddress() + auditTrail.getAction().name() + auditTrail.getIsAuthorized()
-				+ auditTrail.getTimestamp().truncatedTo(ChronoUnit.MICROS).toString() + auditTrail.getMetadata();
+						? auditTrail.getAddressBookUser().getInternalUser().getUserId().toString() + "_" : "_")
+				+ auditTrail.getIpAddress() + "_" + auditTrail.getAction().name() + "_" + auditTrail.getIsAuthorized()
+				+ "_" + auditTrail.getTimestamp().truncatedTo(ChronoUnit.MICROS).toString() + "_"
+				+ auditTrail.getMetadata() + "_" + hashSecretKey + "_";
 
 		return HashUtil.generateSHA256Hash(rawData);
 	}
