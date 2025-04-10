@@ -82,7 +82,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_RECIPIENT_MISMATCH("ep.esign.error.envelope.recipient.mis-match"),
 	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
-	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found");
+	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
+	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope");
 
 	private final String messageKey;
 
