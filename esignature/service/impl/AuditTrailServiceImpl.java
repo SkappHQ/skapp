@@ -219,7 +219,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				+ "_" + auditTrail.getTimestamp().truncatedTo(ChronoUnit.MICROS).toString() + "_"
 				+ auditTrail.getMetadata() + "_" + hashSecretKey + "_";
 
-		return HashUtil.generateSHA256Hash(rawData);
+		return HashUtil.hash(rawData);
 	}
 
 }

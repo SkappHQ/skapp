@@ -38,6 +38,7 @@ import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.utill.HashUtil;
 import com.skapp.enterprise.esignature.utill.decryptor.AESDecrypt;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -556,19 +557,6 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private String hashDocument(String data) {
-		try {
-			MessageDigest digest = new SHA3.Digest256(); // Using SHA-3 for strong
-															// security
-			byte[] hashBytes = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
-		}
-		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_HASH_DOCUMENT,
-					new String[] { e.getMessage() });
-		}
-	}
-
 	private boolean verifySignature(byte[] documentHash, String base64Signature, PublicKey publicKey) {
 		try {
 			Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM, SECURITY_PROVIDER);
@@ -626,7 +614,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signTextField(FieldSignDto field, PrivateKey privateKey) {
 		try {
-			String newHash = hashDocument(field.getFieldValue());
+			String newHash = HashUtil.hash(field.getFieldValue());
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
 			return getDocumentVersionField(newHash, signature);
 		}
@@ -652,7 +640,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private void verifyTextField(String data, PublicKey publicKey, String base64Signature) {
-		String currentHash = hashDocument(data);
+		String currentHash = HashUtil.hash(data);
 		byte[] decodedHash = Base64.getDecoder().decode(currentHash);
 
 		if (!verifySignature(decodedHash, base64Signature, publicKey)) {
