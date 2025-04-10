@@ -125,14 +125,13 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		}
 
 		if ((user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null)
-				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && (userRoles.getEsignRole() != Role.ESIGN_ADMIN)) {
+				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && userRoles.getEsignRole() != Role.ESIGN_ADMIN) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SHOULD_ASSIGN_PROPER_PERMISSIONS);
 		}
 
 		if (user.getEmployee() != null && user.getEmployee().getEmployeeRole() != null
 				&& user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
-				&& userRoles.getIsSuperAdmin() != null && userRoles.getIsSuperAdmin()
-				&& userRoles.getEsignRole() != Role.ESIGN_ADMIN) {
+				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin()) && userRoles.getEsignRole() != Role.ESIGN_ADMIN) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_ROLES_CANNOT_BE_CHANGED);
 		}
 
