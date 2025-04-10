@@ -57,13 +57,17 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
-		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId())
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
+			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
 
 		Recipient recipient = null;
 		if (auditTrailDto.getRecipientId() != null) {
-			recipient = recipientRepository.findById(auditTrailDto.getRecipientId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+			recipient = recipientRepository.findById(auditTrailDto.getRecipientId()).orElseThrow(() -> {
+				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
+				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
+			});
 		}
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
@@ -76,6 +80,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 			AddressBook addressBookUser = addressBookDao.findByInternalUser(currentUser)
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+			log.debug("AddressBook user found: {}", addressBookUser.getId());
 
 			auditTrail.setAddressBookUser(addressBookUser);
 
@@ -127,7 +132,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
-			log.info("envelope with ID {} not found", envelopeId);
+			log.error("envelope with ID {} not found", envelopeId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 
@@ -153,7 +158,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
-			log.info("envelope with ID {} not found", envelopeId);
+			log.error("envelope with ID {} not found", envelopeId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 
