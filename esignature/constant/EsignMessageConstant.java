@@ -86,7 +86,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash"),
 	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
 	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
-	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted");
+	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
+	ESIGN_ERROR_INVALID_IP_ADDRESS("ep.esign.error.invalid.ip-address");
 
 	private final String messageKey;
 

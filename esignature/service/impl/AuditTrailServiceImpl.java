@@ -10,6 +10,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignValidationConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
@@ -91,11 +92,20 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			isAuthorized = true;
 		}
 
+
+
 		auditTrail.setIsAuthorized(isAuthorized);
 
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
-		auditTrail.setIpAddress(auditTrailDto.getIpAddress());
+
+		if (auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV4_VALIDATION_PATTERN) ||
+		    auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV6_VALIDATION_PATTERN)) {
+		    auditTrail.setIpAddress(auditTrailDto.getIpAddress());
+		} else {
+		    log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
+		    throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
+		}
 		auditTrail.setAction(auditTrailDto.getAction());
 
 		ObjectMapper objectMapper = new ObjectMapper();

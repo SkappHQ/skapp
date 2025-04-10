@@ -13,16 +13,15 @@ import java.util.List;
 @Setter
 public class AuditTrailDto {
 
-	@NotNull(message = "validation.audit_trail.envelope_id.not_null")
+	@NotNull(message = "validation.audit_trail.envelope_id.not_blank")
 	private Long envelopeId;
 
 	private Long recipientId;
 
 	@NotBlank(message = "validation.audit_trail.ip_address.not_blank")
-	@Pattern(regexp = "^\\d{1,3}(\\.\\d{1,3}){3}$", message = "validation.audit_trail.ip_address.invalid_format")
 	private String ipAddress;
 
-	@NotNull(message = "validation.audit_trail.action.not_null")
+	@NotNull(message = "validation.audit_trail.action.not_blank")
 	private AuditAction action;
 
 	private List<MetadataRequestDto> metadata;
