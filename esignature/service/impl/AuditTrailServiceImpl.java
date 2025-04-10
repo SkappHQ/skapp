@@ -92,19 +92,18 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			isAuthorized = true;
 		}
 
-
-
 		auditTrail.setIsAuthorized(isAuthorized);
 
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		if (auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV4_VALIDATION_PATTERN) ||
-		    auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV6_VALIDATION_PATTERN)) {
-		    auditTrail.setIpAddress(auditTrailDto.getIpAddress());
-		} else {
-		    log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
-		    throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
+		if (auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV4_VALIDATION_PATTERN)
+				|| auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV6_VALIDATION_PATTERN)) {
+			auditTrail.setIpAddress(auditTrailDto.getIpAddress());
+		}
+		else {
+			log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
 		}
 		auditTrail.setAction(auditTrailDto.getAction());
 
