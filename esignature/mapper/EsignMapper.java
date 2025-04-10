@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.mapper;
 import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
@@ -10,7 +11,6 @@ import com.skapp.enterprise.esignature.model.EsignConfig;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.model.TemporarySignLink;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -113,6 +113,6 @@ public interface EsignMapper {
 
 	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
 
-	TemporaryLinkResponseDto temporaryLinkToTemporaryLinkResponseDto(TemporarySignLink temporarySignLink);
+	TemporaryLinkResponseDto temporaryLinkToTemporaryLinkResponseDto(DocumentLink documentLink);
 
 }

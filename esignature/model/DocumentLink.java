@@ -22,8 +22,8 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "es_temporary_sign_link")
-public class TemporarySignLink {
+@Table(name = "es_document_link")
+public class DocumentLink {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

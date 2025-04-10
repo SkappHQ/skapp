@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -10,27 +9,31 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
+import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.model.TemporarySignLink;
+import com.skapp.enterprise.esignature.model.DocumentLink;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
+import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
-import com.skapp.enterprise.esignature.repository.TemporaryLinkRepository;
-import com.skapp.enterprise.esignature.service.TemporarySignLinkService;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,13 +49,15 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
+public class DocumentLinkServiceImpl implements DocumentLinkService {
 
-	private final TemporaryLinkRepository temporaryLinkRepository;
+	private final DocumentLinkRepository documentLinkRepository;
 
 	private final JwtService jwtService;
 
-	private final EnvelopeDao envelopeDao;
+	private final DocumentDao documentDao;
+
+	private final AddressBookDao addressBookDao;
 
 	private final RecipientRepository recipientRepository;
 
@@ -60,7 +65,9 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
-	private static final String BASE_SIGNING_URL = "/v1/ep/document/sign?token=";
+	private static final String BASE_SIGNING_URL = "/document/sign?token=";
+
+	private static final String BASE_VIEW_URL = "/document/view?token=";
 
 	@Value("${jwt.access-token.esign.temp-expiration-time}")
 	private Long jwtEsignTempAccessTokenExpirationMs;
@@ -68,44 +75,49 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 	@Value("${jwt.access-token.esign.temp-max-clicks}")
 	private int defaultMaxClicks;
 
+	@Value("${app.parent-domain}")
+	private String parentDomain;
+
 	@Override
 	@Transactional
-	public TemporaryLinkResponseDto createTemporaryLink(@NotNull Long envelopeId, @NotNull Long recipientId) {
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null || authentication.getPrincipal() == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
+	public TemporaryLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
 
 		String tenantId = TenantContext.getCurrentTenant();
 		if (tenantId == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 		}
 
-		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		Long documentId = documentAccessUrlDto.getDocumentId();
+		Long recipientId = documentAccessUrlDto.getRecipientId();
 
-		if (envelopeOptional.isEmpty()) {
-			log.info("createTemporaryLink: Envelope with ID {} not found", envelopeId);
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		Optional<Document> documentOptional = documentDao.findById(documentId);
+
+		if (documentOptional.isEmpty()) {
+			log.info("createTemporaryLink: Document with ID {} not found", documentId);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
 		}
 
-		Envelope envelope = envelopeOptional.get();
+		Envelope envelope = documentOptional.get().getEnvelope();
 
 		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
 
 		Recipient recipient = optionalUpdatableRecipient
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENT_FOUND));
 
-		temporaryLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient).ifPresent(link -> {
+		documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient).ifPresent(link -> {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_TEMP_SIGN_LINK_AVAILABLE);
 		});
 
-		Long userId = (Long) authentication.getCredentials();
-		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		Long userId = recipient.getAddressBook().getUserId();
+		String userEmail = recipient.getAddressBook().getEmail();
+
+		UserDetails userDetails = User.builder().username(userEmail).build();
+
+		UserType userType = recipient.getAddressBook().getType();
 
 		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtEsignTempAccessTokenExpirationMs));
 
-		TemporarySignLink temporarySignLink = TemporarySignLink.builder()
+		DocumentLink documentLink = DocumentLink.builder()
 			.envelopeId(envelope)
 			.recipientId(recipient)
 			.createdByUserId(userId)
@@ -116,63 +128,81 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 			.isActive(true)
 			.build();
 
-		temporaryLinkRepository.save(temporarySignLink);
+		documentLinkRepository.save(documentLink);
 
-		String token = generateTemporaryAccessToken(userDetails, userId, temporarySignLink.getId(), tenantId,
-				envelopeId, recipientId);
+		DocumentAccessData documentAccessData = new DocumentAccessData(userId, documentLink.getId(), tenantId,
+				envelope.getId(), documentId, recipientId, userType.name());
 
-		temporarySignLink.setToken(token);
-		temporaryLinkRepository.save(temporarySignLink);
+		String token;
+		if (documentAccessUrlDto.getPermissionType().equals(DocumentPermissionType.WRITE)) {
+			token = generateSignAccessToken(userDetails, documentAccessData);
+
+		}
+		else {
+			token = generateViewAccessToken(userDetails, documentAccessData);
+		}
+
+		documentLink.setToken(token);
+		documentLinkRepository.save(documentLink);
+
+		String signUrl = generateUrl(tenantId, parentDomain);
 
 		return TemporaryLinkResponseDto.builder()
 			.token(token)
-			.url(BASE_SIGNING_URL + token)
+			.url(signUrl + token)
 			.expiresAt(expiresAt)
 			.maxClicks(defaultMaxClicks)
 			.build();
 	}
 
 	@Override
-	public Boolean isExpired(String token) {
-		TemporarySignLink temporarySignLink = temporaryLinkRepository.findByToken(token)
+	public Boolean isDocumentAccessUrlExpired(String token) {
+		DocumentLink documentLink = documentLinkRepository.findByToken(token)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
 
-		if (temporarySignLink.isExpired()) {
-			temporarySignLink.setActive(false);
-			temporaryLinkRepository.save(temporarySignLink);
+		if (documentLink.isExpired()) {
+			documentLink.setActive(false);
+			documentLinkRepository.save(documentLink);
 			return true;
 		}
 
-		temporarySignLink.incrementClickCount();
-		temporaryLinkRepository.save(temporarySignLink);
+		documentLink.incrementClickCount();
+		documentLinkRepository.save(documentLink);
 
 		return false;
 	}
 
 	@Override
-	public ResponseEntityDto getSigningLinkData(@NotNull Long envelopeId, @NotNull Long recipientId) {
+	public ResponseEntityDto getRecipientDocumentData(@NotNull Long documentId, @NotNull Long recipientId) {
 
-		Envelope envelope = envelopeDao.findById(envelopeId)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
-		Recipient recipientObj = envelope.getRecipients()
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		Recipient recipientObj = document.getEnvelope()
+			.getRecipients()
 			.stream()
 			.filter(recipient -> recipient.getId().equals(recipientId))
 			.findFirst()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
-		TemporarySignLink temporarySignLink = temporaryLinkRepository
+		DocumentLink documentLink = documentLinkRepository
 			.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
 
 		TemporaryLinkResponseDto temporaryLinkResponseDto = eSignMapper
-			.temporaryLinkToTemporaryLinkResponseDto(temporarySignLink);
+			.temporaryLinkToTemporaryLinkResponseDto(documentLink);
 		temporaryLinkResponseDto.setUrl(BASE_SIGNING_URL + temporaryLinkResponseDto.getToken());
-		temporaryLinkResponseDto.setExpiresAt(temporarySignLink.getExpiresAt());
+		temporaryLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
 
-		SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelopeId, recipientObj,
+		SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelope.getId(), recipientObj,
 				recipientResponseDto, temporaryLinkResponseDto);
 
 		return new ResponseEntityDto(false, signLinkData);
@@ -207,20 +237,40 @@ public class TemporarySignLinkServiceImpl implements TemporarySignLinkService {
 		return fieldResponseDtoList;
 	}
 
-	private String generateTemporaryAccessToken(UserDetails userDetails, Long userId, Long linkId, String tenantId,
-			Long envelopeId, Long recipientId) {
+	private String generateSignAccessToken(UserDetails userDetails, DocumentAccessData documentAccessData) {
+		return generateAccessToken(userDetails, documentAccessData,
+				new String[] { DocumentPermissionType.READ.getValue(), DocumentPermissionType.WRITE.getValue() });
+	}
 
+	private String generateViewAccessToken(UserDetails userDetails, DocumentAccessData documentAccessData) {
+		return generateAccessToken(userDetails, documentAccessData,
+				new String[] { DocumentPermissionType.READ.getValue() });
+	}
+
+	private String generateAccessToken(UserDetails userDetails, DocumentAccessData data, String[] permissions) {
 		Map<String, Object> extraClaims = new HashMap<>();
 
 		extraClaims.put("sub", userDetails.getUsername());
-		extraClaims.put("userId", userId);
-		extraClaims.put(EpAuthConstants.TENANT_ID, tenantId);
-		extraClaims.put("envelopeId", envelopeId);
-		extraClaims.put("recipientId", recipientId);
-		extraClaims.put("linkId", linkId);
-		extraClaims.put("expireAt", linkId);
+		extraClaims.put("userId", data.userId());
+		extraClaims.put(EpAuthConstants.TENANT_ID, data.tenantId());
+		extraClaims.put("envelopeId", data.envelopeId());
+		extraClaims.put("documentId", data.documentId());
+		extraClaims.put("userType", data.userType());
+		extraClaims.put("recipientId", data.recipientId());
+		extraClaims.put("linkId", data.linkId());
+		extraClaims.put("permissions", permissions);
 
 		return jwtService.generateTemporaryAccessToken(userDetails, extraClaims);
+	}
+
+	private String generateUrl(String tenantId, String parentDomain) {
+		String protocol = parentDomain.equals("localhost") ? "http" : "https";
+
+		return protocol + "://" + tenantId + "." + parentDomain + BASE_SIGNING_URL;
+	}
+
+	private record DocumentAccessData(Long userId, Long linkId, String tenantId, Long envelopeId, Long documentId,
+			Long recipientId, String userType) {
 	}
 
 }

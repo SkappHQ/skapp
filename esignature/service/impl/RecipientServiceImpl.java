@@ -16,13 +16,15 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.RecipientService;
-import com.skapp.enterprise.esignature.service.TemporarySignLinkService;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -54,7 +56,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final UserService userService;
 
-	private final TemporarySignLinkService temporarySignLinkService;
+	private final DocumentLinkService documentLinkService;
 
 	@Override
 	public ResponseEntityDto sendEmailToRecipient(Long recipientId, Long envelopeId) {
@@ -103,8 +105,14 @@ public class RecipientServiceImpl implements RecipientService {
 
 		nextRecipientList.forEach(recipient -> {
 			recipientIdList.add(recipient.getId());
-			TemporaryLinkResponseDto temporaryLink = temporarySignLinkService.createTemporaryLink(envelopeData.getId(),
-					recipient.getId());
+			DocumentPermissionType permissionType = DocumentPermissionType.WRITE;
+			if (MemberRole.CC.toString().equalsIgnoreCase(recipient.getMemberRole().name())) {
+				permissionType = DocumentPermissionType.READ;
+			}
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelopeData.getId(),
+					recipient.getId(), permissionType);
+			TemporaryLinkResponseDto temporaryLink = documentLinkService
+				.generateDocumentAccessUrl(documentAccessUrlDto);
 			String tempSignUrl = temporaryLink.getUrl();
 
 			sendEnvelopToRecipientEmail(recipient.getId(), recipient.getAddressBook().getName(),

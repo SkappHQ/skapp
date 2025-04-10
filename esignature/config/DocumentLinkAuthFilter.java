@@ -4,12 +4,14 @@ import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.TokenType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
-import com.skapp.enterprise.esignature.service.TemporarySignLinkService;
+import com.skapp.enterprise.esignature.model.ExternalUser;
+import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
+import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.type.UserType;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -27,6 +29,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -39,13 +42,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Component
 @Primary
-public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
+public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
-	private final JwtService jwtService;
-
-	private final TemporarySignLinkService temporarySignLinkService;
-
-	private static final Set<String> TEMPORARY_LINK_URLS = Set.of("/v1/ep/esign/sign-link/envelope");
+	private static final Set<String> TEMPORARY_LINK_URLS = Set.of("/v1/ep/esign/document-link/access");
 
 	private static final int TOKEN_PREFIX_LENGTH = 7; // Length of "Bearer "
 
@@ -54,6 +53,12 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 	private static final String RECIPIENT_ID_PARAM = "recipientId";
 
 	private static final String ROLE_TEMP_LINK = "ROLE_TEMP_ESIGN_USER";
+
+	private final ExternalDocumentJwtService jwtService;
+
+	private final UserDetailsService userDetailsService;
+
+	private final ExternalUserService externalUserService;
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -70,13 +75,17 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 			validateAuthHeader(authHeader);
 
 			final String token = authHeader.substring(TOKEN_PREFIX_LENGTH);
-			validateTokenType(token);
 
-			if (Boolean.TRUE.equals(temporarySignLinkService.isExpired(token))) {
+			String tokenType = jwtService.extractTokenType(token);
+
+			if (!TokenType.TEMP_ACCESS.toString().equals(tokenType)) {
+				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+
+			if (Boolean.TRUE.equals(jwtService.isTokenExpired(token))) {
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
 			}
 
-			// Extract claims from token
 			String userEmail = jwtService.extractUserEmail(token);
 			Long userId = jwtService.extractUserId(token);
 			String tenantId = jwtService.extractClaim(token,
@@ -84,15 +93,15 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 			Long envelopeId = jwtService.extractClaim(token, claims -> claims.get(ENVELOPE_ID_PARAM, Long.class));
 			Long recipientId = jwtService.extractClaim(token, claims -> claims.get(RECIPIENT_ID_PARAM, Long.class));
 
-			// Validate claims
 			validateTenantId(tenantId);
 			validateEnvelopeAndRecipient(envelopeId, recipientId);
 			validateRequestParameters(request, envelopeId, recipientId);
 
-			// Authenticate the user if not already authenticated
-			authenticateUser(request, userEmail, userId);
+			if (StringUtils.isNotEmpty(userEmail) && userId != null
+					&& SecurityContextHolder.getContext().getAuthentication() == null) {
+				authenticateUser(request, token, userEmail, userId);
+			}
 
-			// Continue with the filter chain
 			filterChain.doFilter(request, response);
 		}
 		catch (ExpiredJwtException e) {
@@ -105,14 +114,6 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 
 	private void validateAuthHeader(String authHeader) {
 		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, AuthConstants.BEARER)) {
-			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-	}
-
-	private void validateTokenType(String token) {
-		String tokenType = jwtService.extractClaim(token, claims -> claims.get(AuthConstants.TOKEN_TYPE, String.class));
-
-		if (!TokenType.TEMP_ACCESS.toString().equals(tokenType)) {
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 	}
@@ -144,21 +145,35 @@ public class TemporaryLinkAuthFilter extends OncePerRequestFilter {
 		}
 	}
 
-	private void authenticateUser(HttpServletRequest request, String userEmail, Long userId) {
-		if (SecurityContextHolder.getContext().getAuthentication() == null) {
-			UserDetails userDetails = User.builder()
-				.username(userEmail)
+	private void authenticateUser(HttpServletRequest request, String token, String userEmail, Long userId) {
+
+		final String userType = jwtService.extractUserType(token);
+
+		UserDetails userDetails;
+
+		if (userType.equals(UserType.INTERNAL.name())) {
+			userDetails = userDetailsService.loadUserByUsername(userEmail);
+		}
+		else {
+			ExternalUser externalUser = externalUserService.loadUserByEmail(userEmail);
+			userDetails = User.builder()
+				.username(externalUser.getEmail())
 				.password("")
 				.authorities(Collections.singleton(new SimpleGrantedAuthority(ROLE_TEMP_LINK)))
 				.build();
-
-			SecurityContext context = SecurityContextHolder.createEmptyContext();
-			UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
-					userDetails.getAuthorities());
-			authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-			context.setAuthentication(authToken);
-			SecurityContextHolder.setContext(context);
 		}
+
+		if (!jwtService.isTokenValid(token, userDetails)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
+				userDetails.getAuthorities());
+		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+		context.setAuthentication(authToken);
+		SecurityContextHolder.setContext(context);
+
 	}
 
 }
