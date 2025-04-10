@@ -105,7 +105,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENT_FOUND));
 
 		documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient).ifPresent(link -> {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_TEMP_SIGN_LINK_AVAILABLE);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE);
 		});
 
 		Long userId = recipient.getAddressBook().getUserId();
