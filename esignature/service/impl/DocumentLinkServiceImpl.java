@@ -144,15 +144,16 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtDocumentAccessTokenExpirationMs));
 
 		DocumentLink documentLink = DocumentLink.builder()
-			.envelopeId(envelope)
-			.recipientId(recipient)
-			.createdByUserId(userId)
-			.createdAt(LocalDateTime.now())
-			.expiresAt(expiresAt)
-			.maxClicks(defaultMaxClicks)
-			.clickCount(0)
-			.isActive(true)
-			.build();
+				.documentId(documentOptional.get())
+				.envelopeId(envelope)
+				.recipientId(recipient)
+				.createdByUserId(userId)
+				.createdAt(LocalDateTime.now())
+				.expiresAt(expiresAt)
+				.maxClicks(defaultMaxClicks)
+				.clickCount(0)
+				.isActive(true)
+				.build();
 
 		documentLinkRepository.save(documentLink);
 

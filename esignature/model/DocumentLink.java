@@ -58,6 +58,10 @@ public class DocumentLink {
 	@JoinColumn(name = "recipient_id")
 	private Recipient recipientId;
 
+	@ManyToOne
+	@JoinColumn(name = "document_id")
+	private Document documentId;
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.token == null) {
