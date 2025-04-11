@@ -3,14 +3,18 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.type.TokenType;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.esignature.model.DocumentLink;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,18 +29,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-@Service
-@AllArgsConstructor
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtService {
 
-	private final DocumentLinkServiceImpl documentLinkService;
+	private final DocumentLinkRepository documentLinkRepository;
 
-	@Value("${jwt.access-token.esign.temp-expiration-time}")
-	private Long jwtEsignTempAccessTokenExpirationMs;
+	@Value("${jwt.access-token.esign.expiration-time}")
+	private Long jwtDocumentAccessTokenExpirationMs;
 
-	@Value("${jwt.access-token.esign.temp-signing-key}")
-	private String jwtEsignTempSigningKey;
+	@Value("${jwt.access-token.esign.signing-key}")
+	private String jwtDocumentSigningKey;
 
 	@Override
 	public Long extractUserId(String token) {
@@ -79,10 +83,10 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 	public SecretKey getSigningKey() {
 		String tenant = TenantContext.getCurrentTenant();
 		if (tenant == null) {
-			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtEsignTempSigningKey));
+			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtDocumentSigningKey));
 		}
 
-		byte[] masterKeyBytes = Decoders.BASE64.decode(jwtEsignTempSigningKey);
+		byte[] masterKeyBytes = Decoders.BASE64.decode(jwtDocumentSigningKey);
 		byte[] derivedKeyBytes = deriveTenantKey(masterKeyBytes, tenant);
 		return Keys.hmacShaKeyFor(derivedKeyBytes);
 	}
@@ -113,7 +117,7 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 			.claims(claims)
 			.subject(userDetails.getUsername())
 			.issuedAt(new Date(System.currentTimeMillis()))
-			.expiration(new Date(System.currentTimeMillis() + jwtEsignTempAccessTokenExpirationMs))
+			.expiration(new Date(System.currentTimeMillis() + jwtDocumentAccessTokenExpirationMs))
 			.signWith(getSigningKey())
 			.compact();
 	}
@@ -126,7 +130,14 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 
 	@Override
 	public boolean isTokenExpired(String token) {
-		return documentLinkService.isDocumentAccessUrlExpired(token);
+		return isDocumentAccessUrlExpired(token);
+	}
+
+	public Boolean isDocumentAccessUrlExpired(String token) {
+		DocumentLink documentLink = documentLinkRepository.findByToken(token)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+
+		return documentLink.isExpired();
 	}
 
 }

@@ -1,9 +1,10 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
@@ -21,18 +22,21 @@ import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -41,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,11 +58,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentLinkRepository documentLinkRepository;
 
-	private final JwtService jwtService;
+	private final ExternalDocumentJwtService jwtService;
 
 	private final DocumentDao documentDao;
-
-	private final AddressBookDao addressBookDao;
 
 	private final RecipientRepository recipientRepository;
 
@@ -69,10 +72,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String BASE_VIEW_URL = "/document/view?token=";
 
-	@Value("${jwt.access-token.esign.temp-expiration-time}")
-	private Long jwtEsignTempAccessTokenExpirationMs;
+	@Value("${jwt.access-token.esign.expiration-time}")
+	private Long jwtDocumentAccessTokenExpirationMs;
 
-	@Value("${jwt.access-token.esign.temp-max-clicks}")
+	@Value("${jwt.access-token.esign.max-clicks}")
 	private int defaultMaxClicks;
 
 	@Value("${app.parent-domain}")
@@ -111,11 +114,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Long userId = recipient.getAddressBook().getUserId();
 		String userEmail = recipient.getAddressBook().getEmail();
 
-		UserDetails userDetails = User.builder().username(userEmail).build();
+		UserDetails userDetails = User.builder()
+			.username(userEmail)
+			.password("")
+			.authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_TEMP_LINK")))
+			.build();
 
 		UserType userType = recipient.getAddressBook().getType();
 
-		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtEsignTempAccessTokenExpirationMs));
+		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtDocumentAccessTokenExpirationMs));
 
 		DocumentLink documentLink = DocumentLink.builder()
 			.envelopeId(envelope)
@@ -156,56 +163,81 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public Boolean isDocumentAccessUrlExpired(String token) {
-		DocumentLink documentLink = documentLinkRepository.findByToken(token)
-			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+	public DocumentLink setDocumentAccessUrlProperties(DocumentLink documentLink) {
 
 		if (documentLink.isExpired()) {
 			documentLink.setActive(false);
-			documentLinkRepository.save(documentLink);
-			return true;
+			documentLink = documentLinkRepository.save(documentLink);
+			return documentLink;
 		}
 
 		documentLink.incrementClickCount();
-		documentLinkRepository.save(documentLink);
-
-		return false;
+		documentLink = documentLinkRepository.save(documentLink);
+		return documentLink;
 	}
 
 	@Override
 	public ResponseEntityDto getRecipientDocumentData(@NotNull Long documentId, @NotNull Long recipientId) {
 
-		Document document = documentDao.findById(documentId)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (document.getEnvelope() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		if (authentication == null || authentication.getDetails() == null) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
+		try {
 
-		Envelope envelope = document.getEnvelope();
+			if (!(authentication.getDetails() instanceof Map)) {
+				throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA);
+			}
 
-		Recipient recipientObj = document.getEnvelope()
-			.getRecipients()
-			.stream()
-			.filter(recipient -> recipient.getId().equals(recipientId))
-			.findFirst()
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
 
-		DocumentLink documentLink = documentLinkRepository
-			.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
-			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+			Long linkId = (Long) details.get("linkId");
 
-		TemporaryLinkResponseDto temporaryLinkResponseDto = eSignMapper
-			.temporaryLinkToTemporaryLinkResponseDto(documentLink);
-		temporaryLinkResponseDto.setUrl(BASE_SIGNING_URL + temporaryLinkResponseDto.getToken());
-		temporaryLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
+			Document document = documentDao.findById(documentId)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
-		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
+			if (document.getEnvelope() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+			}
 
-		SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelope.getId(), recipientObj,
-				recipientResponseDto, temporaryLinkResponseDto);
+			Envelope envelope = document.getEnvelope();
 
-		return new ResponseEntityDto(false, signLinkData);
+			Recipient recipientObj = document.getEnvelope()
+				.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getId().equals(recipientId))
+				.findFirst()
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+			DocumentLink documentLink = documentLinkRepository
+				.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
+				.orElseThrow(
+						() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+
+			if (!linkId.equals(documentLink.getId())) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
+			}
+
+			TemporaryLinkResponseDto temporaryLinkResponseDto = eSignMapper
+				.temporaryLinkToTemporaryLinkResponseDto(documentLink);
+			temporaryLinkResponseDto.setUrl(BASE_SIGNING_URL + temporaryLinkResponseDto.getToken());
+			temporaryLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
+
+			RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
+
+			SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelope.getId(), recipientObj,
+					recipientResponseDto, temporaryLinkResponseDto);
+
+			 documentLink = setDocumentAccessUrlProperties(documentLink);
+
+			 signLinkData.getTemporaryLinkResponseDto().setClickCount(documentLink.getClickCount());
+
+			return new ResponseEntityDto(false, signLinkData);
+		}
+		catch (Exception ex) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
+		}
 	}
 
 	private SignLinkDataResponseDto getSignLinkDataResponseDto(Long envelopeId, Recipient recipientObj,
@@ -260,7 +292,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		extraClaims.put("linkId", data.linkId());
 		extraClaims.put("permissions", permissions);
 
-		return jwtService.generateTemporaryAccessToken(userDetails, extraClaims);
+		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
 	private String generateUrl(String tenantId, String parentDomain) {

@@ -85,7 +85,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
-	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available");
+	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available"),
+	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
+	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata");
 
 	private final String messageKey;
 

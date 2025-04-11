@@ -86,7 +86,7 @@ public class DocumentLink {
 
 	public void incrementClickCount() {
 		this.clickCount++;
-		if (this.clickCount > this.maxClicks) {
+		if (this.clickCount >= this.maxClicks) {
 			this.isActive = false;
 		}
 	}

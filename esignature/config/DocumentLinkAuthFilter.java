@@ -36,6 +36,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -48,7 +50,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	private static final int TOKEN_PREFIX_LENGTH = 7; // Length of "Bearer "
 
-	private static final String ENVELOPE_ID_PARAM = "envelopeId";
+	private static final String DOCUMENT_ID_PARAM = "documentId";
 
 	private static final String RECIPIENT_ID_PARAM = "recipientId";
 
@@ -90,12 +92,12 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 			Long userId = jwtService.extractUserId(token);
 			String tenantId = jwtService.extractClaim(token,
 					claims -> claims.get(EpAuthConstants.TENANT_ID, String.class));
-			Long envelopeId = jwtService.extractClaim(token, claims -> claims.get(ENVELOPE_ID_PARAM, Long.class));
+			Long documentId = jwtService.extractClaim(token, claims -> claims.get(DOCUMENT_ID_PARAM, Long.class));
 			Long recipientId = jwtService.extractClaim(token, claims -> claims.get(RECIPIENT_ID_PARAM, Long.class));
 
 			validateTenantId(tenantId);
-			validateEnvelopeAndRecipient(envelopeId, recipientId);
-			validateRequestParameters(request, envelopeId, recipientId);
+			validateDocumentAndRecipient(documentId, recipientId);
+			validateRequestParameters(request, documentId, recipientId);
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -125,21 +127,21 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 		}
 	}
 
-	private void validateEnvelopeAndRecipient(Long envelopeId, Long recipientId) {
-		if (envelopeId == null || recipientId == null) {
+	private void validateDocumentAndRecipient(Long documentId, Long recipientId) {
+		if (documentId == null || recipientId == null) {
 			throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK);
 		}
 	}
 
-	private void validateRequestParameters(HttpServletRequest request, Long envelopeId, Long recipientId) {
-		String envelopeIdFromRequestParam = request.getParameter(ENVELOPE_ID_PARAM);
+	private void validateRequestParameters(HttpServletRequest request, Long documentId, Long recipientId) {
+		String documentIdIdFromRequestParam = request.getParameter(DOCUMENT_ID_PARAM);
 		String recipientIdFromRequestParam = request.getParameter(RECIPIENT_ID_PARAM);
 
-		if (StringUtils.isEmpty(envelopeIdFromRequestParam) || StringUtils.isEmpty(recipientIdFromRequestParam)) {
+		if (StringUtils.isEmpty(documentIdIdFromRequestParam) || StringUtils.isEmpty(recipientIdFromRequestParam)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
-		if (!envelopeId.toString().equals(envelopeIdFromRequestParam)
+		if (!documentId.toString().equals(documentIdIdFromRequestParam)
 				|| !recipientId.toString().equals(recipientIdFromRequestParam)) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK);
 		}
@@ -148,6 +150,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 	private void authenticateUser(HttpServletRequest request, String token, String userEmail, Long userId) {
 
 		final String userType = jwtService.extractUserType(token);
+		Long linkId = jwtService.extractClaim(token, claims -> claims.get("linkId", Long.class));
 
 		UserDetails userDetails;
 
@@ -167,10 +170,14 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
+		request.setAttribute("linkId", linkId);
+
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
-		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+		Map<String, Object> details = new HashMap<>();
+		details.put("linkId", linkId);
+		authToken.setDetails(details);
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);
 
