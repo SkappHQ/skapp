@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
@@ -400,6 +401,39 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEnvelopeInvalidEmail: execution ended");
 		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto sendReminderEmail(Long recipientId) {
+		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipientId);
+
+		Optional<Recipient> recipientOptional = recipientRepository.findById(recipientId);
+		if (recipientOptional.isEmpty()) {
+			log.error("sendReminderEmail: Recipient with ID {} not found", recipientId);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND);
+		}
+
+		Recipient recipient = recipientOptional.get();
+
+		if (recipient.getStatus() == RecipientStatus.APPROVED) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED);
+		}
+
+		if (recipient.getStatus() == RecipientStatus.DECLINED) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED);
+		}
+
+		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
+				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
+				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
+				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null);
+		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
+
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields, recipient.getEmail());
+
+		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
+		return new ResponseEntityDto(false, "Reminder email sent successfully");
 	}
 
 	/**

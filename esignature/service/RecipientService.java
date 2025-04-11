@@ -21,4 +21,6 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
+	ResponseEntityDto sendReminderEmail(Long recipientId);
+
 }

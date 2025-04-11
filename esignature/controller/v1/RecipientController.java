@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,4 +61,14 @@ public class RecipientController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+@Operation(summary = "Send a reminder email to the recipient.",
+            description = "This endpoint sends a reminder email to the recipient when the Nudge button is clicked.")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
+    @PostMapping(value = "/nudge", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseEntityDto> sendReminderEmail(@RequestParam Long recipientId) {
+
+        ResponseEntityDto response = recipientService.sendReminderEmail(recipientId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

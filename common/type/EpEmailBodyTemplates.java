@@ -21,6 +21,7 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	ESIGNATURE_MODULE_ENVELOPE_VOIDED_SENDER_EMAIL("esignature-module-document-voided-sender"),
 	ESIGNATURE_MODULE_ENVELOPE_DECLINED_RECIEVER_EMAIL("esignature-module-document-declined-reciever"),
 	ESIGNATURE_MODULE_ENVELOPE_DECLINED_SENDER_EMAIL("esignature-module-document-declined-sender"),
+	ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER("esignature-module-document-signer-email-reminder"),
 
 	// Payment Templates for stripe
 	PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL("payment-stripe-welcome-to-skapp-pro-free-trial"),
