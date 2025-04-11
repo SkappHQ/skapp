@@ -1,15 +1,14 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.type.TokenType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
+import com.skapp.enterprise.esignature.type.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -39,17 +38,21 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
 
-	@Value("${jwt.access-token.esign.signing-key}")
+	@Value("${jwt.access-token.esign.doc-access-key}")
 	private String jwtDocumentSigningKey;
+
+	public static final String TOKEN_TYPE = "token_type";
+
+	public static final String USER_ID = "userId";
 
 	@Override
 	public Long extractUserId(String token) {
-		return extractClaim(token, claims -> claims.get(AuthConstants.USER_ID, Long.class));
+		return extractClaim(token, claims -> claims.get(USER_ID, Long.class));
 	}
 
 	@Override
 	public String extractTokenType(String token) {
-		return extractClaim(token, claims -> claims.get(AuthConstants.TOKEN_TYPE, String.class));
+		return extractClaim(token, claims -> claims.get(TOKEN_TYPE, String.class));
 	}
 
 	@Override
@@ -111,7 +114,7 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 			claims.putAll(extraClaims);
 		}
 
-		claims.put(AuthConstants.TOKEN_TYPE, TokenType.TEMP_ACCESS);
+		claims.put(TOKEN_TYPE, TokenType.DOCUMENT_ACCESS);
 
 		return Jwts.builder()
 			.claims(claims)

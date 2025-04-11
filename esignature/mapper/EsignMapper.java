@@ -29,7 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -113,6 +113,6 @@ public interface EsignMapper {
 
 	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
 
-	TemporaryLinkResponseDto temporaryLinkToTemporaryLinkResponseDto(DocumentLink documentLink);
+	DocumentLinkResponseDto documentLinkToDocumentLinkResponseDto(DocumentLink documentLink);
 
 }

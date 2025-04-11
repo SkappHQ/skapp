@@ -18,7 +18,7 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
-import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
@@ -111,8 +111,7 @@ public class RecipientServiceImpl implements RecipientService {
 			}
 			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelopeData.getId(),
 					recipient.getId(), permissionType);
-			TemporaryLinkResponseDto temporaryLink = documentLinkService
-				.generateDocumentAccessUrl(documentAccessUrlDto);
+			DocumentLinkResponseDto temporaryLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
 			String tempSignUrl = temporaryLink.getUrl();
 
 			sendEnvelopToRecipientEmail(recipient.getId(), recipient.getAddressBook().getName(),

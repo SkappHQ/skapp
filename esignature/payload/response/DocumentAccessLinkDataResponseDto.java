@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignLinkDataResponseDto {
+public class DocumentAccessLinkDataResponseDto {
 
 	private String name;
 
@@ -21,6 +21,6 @@ public class SignLinkDataResponseDto {
 
 	private List<FieldResponseDto> fieldResponseDtoList;
 
-	private TemporaryLinkResponseDto temporaryLinkResponseDto;
+	private DocumentLinkResponseDto documentLinkResponseDto;
 
 }

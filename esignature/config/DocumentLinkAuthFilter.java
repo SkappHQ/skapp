@@ -4,13 +4,13 @@ import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.type.TokenType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.type.TokenType;
 import com.skapp.enterprise.esignature.type.UserType;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -30,7 +30,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -46,15 +45,17 @@ import java.util.Set;
 @Primary
 public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
-	private static final Set<String> TEMPORARY_LINK_URLS = Set.of("/v1/ep/esign/document-link/access");
+	private static final Set<String> DOCUMENT_LINK_URLS = Set.of("/v1/ep/esign/document-link/access");
 
-	private static final int TOKEN_PREFIX_LENGTH = 7; // Length of "Bearer "
+	private static final int TOKEN_PREFIX_LENGTH = 7;
 
 	private static final String DOCUMENT_ID_PARAM = "documentId";
 
 	private static final String RECIPIENT_ID_PARAM = "recipientId";
 
-	private static final String ROLE_TEMP_LINK = "ROLE_TEMP_ESIGN_USER";
+	private static final String LINK_ID = "linkId";
+
+	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
 	private final ExternalDocumentJwtService jwtService;
 
@@ -65,7 +66,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String path = request.getRequestURI();
-		return TEMPORARY_LINK_URLS.stream().noneMatch(path::startsWith);
+		return DOCUMENT_LINK_URLS.stream().noneMatch(path::startsWith);
 	}
 
 	@Override
@@ -80,7 +81,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 			String tokenType = jwtService.extractTokenType(token);
 
-			if (!TokenType.TEMP_ACCESS.toString().equals(tokenType)) {
+			if (!TokenType.DOCUMENT_ACCESS.toString().equals(tokenType)) {
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 
@@ -101,7 +102,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
-				authenticateUser(request, token, userEmail, userId);
+				authenticateUser(token, userEmail, userId);
 			}
 
 			filterChain.doFilter(request, response);
@@ -147,10 +148,10 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 		}
 	}
 
-	private void authenticateUser(HttpServletRequest request, String token, String userEmail, Long userId) {
+	private void authenticateUser(String token, String userEmail, Long userId) {
 
 		final String userType = jwtService.extractUserType(token);
-		Long linkId = jwtService.extractClaim(token, claims -> claims.get("linkId", Long.class));
+		Long linkId = jwtService.extractClaim(token, claims -> claims.get(LINK_ID, Long.class));
 
 		UserDetails userDetails;
 
@@ -162,7 +163,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 			userDetails = User.builder()
 				.username(externalUser.getEmail())
 				.password("")
-				.authorities(Collections.singleton(new SimpleGrantedAuthority(ROLE_TEMP_LINK)))
+				.authorities(Collections.singleton(new SimpleGrantedAuthority(ROLE_DOC_ACCESS)))
 				.build();
 		}
 
@@ -170,13 +171,11 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		request.setAttribute("linkId", linkId);
-
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
 		Map<String, Object> details = new HashMap<>();
-		details.put("linkId", linkId);
+		details.put(LINK_ID, linkId);
 		authToken.setDetails(details);
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);

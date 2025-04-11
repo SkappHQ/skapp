@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TemporaryLinkResponseDto {
+public class DocumentLinkResponseDto {
 
 	private String token;
 

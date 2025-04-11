@@ -7,7 +7,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.Document;
@@ -17,11 +16,11 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.SignLinkDataResponseDto;
-import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
@@ -81,9 +80,29 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Value("${app.parent-domain}")
 	private String parentDomain;
 
+	public static final String SUB = "sub";
+
+	public static final String USER_ID = "userId";
+
+	public static final String TENANT_ID = "tenantId";
+
+	public static final String ENVELOPE_ID = "envelopeId";
+
+	public static final String DOCUMENT_ID = "documentId";
+
+	public static final String USER_TYPE = "userType";
+
+	public static final String RECIPIENT_ID = "recipientId";
+
+	public static final String LINK_ID = "linkId";
+
+	public static final String PERMISSION = "permission";
+
+	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
+
 	@Override
 	@Transactional
-	public TemporaryLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
+	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
 
 		String tenantId = TenantContext.getCurrentTenant();
 		if (tenantId == null) {
@@ -96,7 +115,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Optional<Document> documentOptional = documentDao.findById(documentId);
 
 		if (documentOptional.isEmpty()) {
-			log.info("createTemporaryLink: Document with ID {} not found", documentId);
+			log.info("generateDocumentAccessUrl: Document with ID {} not found", documentId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
 		}
 
@@ -117,7 +136,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		UserDetails userDetails = User.builder()
 			.username(userEmail)
 			.password("")
-			.authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_TEMP_LINK")))
+			.authorities(Collections.singleton(new SimpleGrantedAuthority(ROLE_DOC_ACCESS)))
 			.build();
 
 		UserType userType = recipient.getAddressBook().getType();
@@ -141,22 +160,23 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				envelope.getId(), documentId, recipientId, userType.name());
 
 		String token;
+		String accessUrl;
 		if (documentAccessUrlDto.getPermissionType().equals(DocumentPermissionType.WRITE)) {
 			token = generateSignAccessToken(userDetails, documentAccessData);
+			accessUrl = generateUrl(tenantId, parentDomain, true);
 
 		}
 		else {
 			token = generateViewAccessToken(userDetails, documentAccessData);
+			accessUrl = generateUrl(tenantId, parentDomain, false);
 		}
 
 		documentLink.setToken(token);
 		documentLinkRepository.save(documentLink);
 
-		String signUrl = generateUrl(tenantId, parentDomain);
-
-		return TemporaryLinkResponseDto.builder()
+		return DocumentLinkResponseDto.builder()
 			.token(token)
-			.url(signUrl + token)
+			.url(accessUrl + token)
 			.expiresAt(expiresAt)
 			.maxClicks(defaultMaxClicks)
 			.build();
@@ -192,7 +212,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
 
-			Long linkId = (Long) details.get("linkId");
+			Long linkId = (Long) details.get(LINK_ID);
 
 			Document document = documentDao.findById(documentId)
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
@@ -219,39 +239,40 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
 			}
 
-			TemporaryLinkResponseDto temporaryLinkResponseDto = eSignMapper
-				.temporaryLinkToTemporaryLinkResponseDto(documentLink);
-			temporaryLinkResponseDto.setUrl(BASE_SIGNING_URL + temporaryLinkResponseDto.getToken());
-			temporaryLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
+			DocumentLinkResponseDto documentLinkResponseDto = eSignMapper
+				.documentLinkToDocumentLinkResponseDto(documentLink);
+			documentLinkResponseDto.setUrl(BASE_SIGNING_URL + documentLinkResponseDto.getToken());
+			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 
 			RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
 
-			SignLinkDataResponseDto signLinkData = getSignLinkDataResponseDto(envelope.getId(), recipientObj,
-					recipientResponseDto, temporaryLinkResponseDto);
+			DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(
+					envelope.getId(), recipientObj, recipientResponseDto, documentLinkResponseDto);
 
-			 documentLink = setDocumentAccessUrlProperties(documentLink);
+			documentLink = setDocumentAccessUrlProperties(documentLink);
 
-			 signLinkData.getTemporaryLinkResponseDto().setClickCount(documentLink.getClickCount());
+			documentAccessLinkData.getDocumentLinkResponseDto().setClickCount(documentLink.getClickCount());
 
-			return new ResponseEntityDto(false, signLinkData);
+			return new ResponseEntityDto(false, documentAccessLinkData);
 		}
 		catch (Exception ex) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
 		}
 	}
 
-	private SignLinkDataResponseDto getSignLinkDataResponseDto(Long envelopeId, Recipient recipientObj,
-			RecipientResponseDto recipientResponseDto, TemporaryLinkResponseDto temporaryLinkResponseDto) {
+	private DocumentAccessLinkDataResponseDto getDocumentAccessLinkDataResponseDto(Long envelopeId,
+			Recipient recipientObj, RecipientResponseDto recipientResponseDto,
+			DocumentLinkResponseDto documentLinkResponseDto) {
 		List<FieldResponseDto> fieldResponseDtoList = getFieldResponseDtos(recipientObj);
 
-		SignLinkDataResponseDto signLinkData = new SignLinkDataResponseDto();
-		signLinkData.setName(recipientObj.getAddressBook().getName());
-		signLinkData.setEmail(recipientObj.getAddressBook().getEmail());
-		signLinkData.setEnvelopeId(envelopeId);
-		signLinkData.setRecipientResponseDto(recipientResponseDto);
-		signLinkData.setFieldResponseDtoList(fieldResponseDtoList);
-		signLinkData.setTemporaryLinkResponseDto(temporaryLinkResponseDto);
-		return signLinkData;
+		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
+		documentAccessLinkData.setName(recipientObj.getAddressBook().getName());
+		documentAccessLinkData.setEmail(recipientObj.getAddressBook().getEmail());
+		documentAccessLinkData.setEnvelopeId(envelopeId);
+		documentAccessLinkData.setRecipientResponseDto(recipientResponseDto);
+		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
+		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);
+		return documentAccessLinkData;
 	}
 
 	private List<FieldResponseDto> getFieldResponseDtos(Recipient recipientObj) {
@@ -282,23 +303,24 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private String generateAccessToken(UserDetails userDetails, DocumentAccessData data, String[] permissions) {
 		Map<String, Object> extraClaims = new HashMap<>();
 
-		extraClaims.put("sub", userDetails.getUsername());
-		extraClaims.put("userId", data.userId());
-		extraClaims.put(EpAuthConstants.TENANT_ID, data.tenantId());
-		extraClaims.put("envelopeId", data.envelopeId());
-		extraClaims.put("documentId", data.documentId());
-		extraClaims.put("userType", data.userType());
-		extraClaims.put("recipientId", data.recipientId());
-		extraClaims.put("linkId", data.linkId());
-		extraClaims.put("permissions", permissions);
+		extraClaims.put(SUB, userDetails.getUsername());
+		extraClaims.put(USER_ID, data.userId());
+		extraClaims.put(TENANT_ID, data.tenantId());
+		extraClaims.put(ENVELOPE_ID, data.envelopeId());
+		extraClaims.put(DOCUMENT_ID, data.documentId());
+		extraClaims.put(USER_TYPE, data.userType());
+		extraClaims.put(RECIPIENT_ID, data.recipientId());
+		extraClaims.put(LINK_ID, data.linkId());
+		extraClaims.put(PERMISSION, permissions);
 
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
-	private String generateUrl(String tenantId, String parentDomain) {
+	private String generateUrl(String tenantId, String parentDomain, boolean isSign) {
 		String protocol = parentDomain.equals("localhost") ? "http" : "https";
+		String baseUrl = isSign ? BASE_SIGNING_URL : BASE_VIEW_URL;
 
-		return protocol + "://" + tenantId + "." + parentDomain + BASE_SIGNING_URL;
+		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
 	}
 
 	private record DocumentAccessData(Long userId, Long linkId, String tenantId, Long envelopeId, Long documentId,

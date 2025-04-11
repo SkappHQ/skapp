@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
-import com.skapp.enterprise.esignature.payload.response.TemporaryLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -24,21 +24,21 @@ public class DocumentLinkController {
 
 	private final DocumentLinkService documentLinkService;
 
-	@Operation(summary = "Create temporary signing link",
-			description = "Generates a temporary signing link for the given envelope Id and recipient Id")
+	@Operation(summary = "Create temporary document access link",
+			description = "Generates a document access link which can view or sign for the given document Id and recipient Id")
 	@PostMapping()
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> generateDocumentAccessUrl(
 			@Valid @RequestBody DocumentAccessUrlDto documentAccessUrlDto) {
 
-		TemporaryLinkResponseDto temporaryLinkResponseDto = documentLinkService
+		DocumentLinkResponseDto documentLinkResponseDto = documentLinkService
 			.generateDocumentAccessUrl(documentAccessUrlDto);
 
-		return new ResponseEntity<>(new ResponseEntityDto(false, temporaryLinkResponseDto), HttpStatus.CREATED);
+		return new ResponseEntity<>(new ResponseEntityDto(false, documentLinkResponseDto), HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Get data for signing link",
-			description = "Fetches the signing-related data for a given envelope and recipient using a temporary access token.")
+	@Operation(summary = "Get data for sign or view link",
+			description = "Fetches the sign or view related data for a given document and recipient using a document access token.")
 	@PostMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getRecipientDocumentData(@RequestParam Long documentId,
 			@RequestParam Long recipientId) {
