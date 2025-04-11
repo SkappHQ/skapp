@@ -61,6 +61,12 @@ public class TenantServiceImpl implements TenantService {
 		tenantDao.save(tenant);
 
 		tenantDatabaseCreationService.createTenantDatabase(tenantName);
+		if (!tenantDatabaseCreationService.doesTenantDatabaseExist(tenantName)) {
+			log.error("Tenant database creation failed: {}", tenantName);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_DATABASE_CREATION_FAILED,
+					new String[] { tenantName });
+		}
+
 		tenantMigrationService.runMigration(tenantName);
 	}
 

@@ -28,10 +28,11 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 	@Override
 	public String get(String cacheKey) {
 		try {
+			log.info("get: Cache key {}", cacheKey);
 			return redisTemplate.opsForValue().get(generateTenantKey(cacheKey));
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("get: Redis connection failed: {}", e.getMessage());
+			log.error("get: Redis connection failed: {}", e.getMessage(), e);
 			return null;
 		}
 	}
@@ -40,9 +41,10 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 	public void put(String cacheKey, String value, long ttl, TimeUnit timeUnit) {
 		try {
 			redisTemplate.opsForValue().set(generateTenantKey(cacheKey), value, ttl, timeUnit);
+			log.info("put: Cache key {} set with value {}", cacheKey, value);
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("put: Redis connection failed: {}", e.getMessage());
+			log.error("put: Redis connection failed: {}", e.getMessage(), e);
 		}
 	}
 
@@ -50,9 +52,10 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 	public void invalidate(String cacheKey) {
 		try {
 			redisTemplate.delete(generateTenantKey(cacheKey));
+			log.info("invalidate: Cache key {} deleted", cacheKey);
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("invalidate: Redis connection failed: {}", e.getMessage());
+			log.error("invalidate: Redis connection failed: {}", e.getMessage(), e);
 		}
 	}
 
