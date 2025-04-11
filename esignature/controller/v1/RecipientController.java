@@ -36,39 +36,15 @@ public class RecipientController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Mock API to Demo Cancel Scheduled Emails Upon Completing the Document",
-			description = "This endpoint is a mock API to Demo Cancel Scheduled Emails Upon Completing the Document.")
+	@Operation(summary = "Send a reminder email to the recipient.",
+			description = "This endpoint sends a reminder email to the recipient when the Nudge button is clicked.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
-	@PatchMapping(value = "/{id}/{envelopeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> updateRecipientStatus(
-			@PathVariable @Schema(description = "ID of the recipient to update", example = "1") Long id,
-			@PathVariable @Schema(description = "ID of the envelope to update", example = "1") Long envelopeId) {
+	@PostMapping(value = "/nudge", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> sendReminderEmail(@RequestParam Long recipientId) {
 
-		ResponseEntityDto response = recipientService.cancelEmailReminders(id, envelopeId);
-
-		return new ResponseEntity<>(response, HttpStatus.OK);
-
-	}
-
-	@Operation(summary = "Mock API to Demo Email Sending when Document is Voided or Declined.",
-			description = "This endpoint is a mock API to Demo Email Sending when Document is Voided or Declined.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
-	@GetMapping(value = "/void", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> sendEmailUpdate(@RequestParam Long envelopeId) {
-
-		ResponseEntityDto response = recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelopeId);
+		ResponseEntityDto response = recipientService.sendReminderEmail(recipientId);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-@Operation(summary = "Send a reminder email to the recipient.",
-            description = "This endpoint sends a reminder email to the recipient when the Nudge button is clicked.")
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
-    @PostMapping(value = "/nudge", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseEntityDto> sendReminderEmail(@RequestParam Long recipientId) {
-
-        ResponseEntityDto response = recipientService.sendReminderEmail(recipientId);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 }
