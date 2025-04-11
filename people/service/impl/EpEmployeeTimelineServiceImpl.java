@@ -517,7 +517,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 							.getPrimarySupervisor() != null && empManager.getManagerType().equals(ManagerType.PRIMARY))
 								|| (createEmployeeRequestDto.getEmployment()
 									.getEmploymentDetails()
-									.getSecondarySupervisor() != null
+									.getOtherSupervisors() != null
 										&& empManager.getManagerType().equals(ManagerType.SECONDARY)))) {
 					employeeTimelines.add(createEmployeeTimeline(employee.get(), epEmployeeTimelineType, null,
 							empManager.getManager().getFirstName() + " " + empManager.getManager().getLastName()));
