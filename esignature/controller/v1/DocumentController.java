@@ -42,7 +42,7 @@ public class DocumentController {
 	@Operation(summary = "Edit Document",
 			description = "This endpoint allows editing the file path and name of a document")
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
-	@PatchMapping(value = "/edit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> editDocument(@PathVariable Long id,
 			@Valid @RequestBody EditDocumentDto editDocumentDto) {
 		ResponseEntityDto response = documentService.editDocument(id, editDocumentDto);
