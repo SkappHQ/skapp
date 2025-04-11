@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill;
+package com.skapp.enterprise.common.util;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
