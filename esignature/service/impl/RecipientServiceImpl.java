@@ -430,7 +430,7 @@ public class RecipientServiceImpl implements RecipientService {
 		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields, recipient.getEmail());
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields, recipient.getAddressBook().getEmail());
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");
