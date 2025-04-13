@@ -415,6 +415,10 @@ public class RecipientServiceImpl implements RecipientService {
 		log.info("Recipient with ID {} has already declined the envelope.", recipient.getId());
 		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP);
 	}
+		if (recipient.getStatus() == RecipientStatus.VOIDED) {
+			log.info("Recipient with ID {} has already voided the envelope.", recipient.getId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP);
+		}
 
 		recipient.setStatus(RecipientStatus.DECLINED);
 
@@ -424,6 +428,28 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("declineEnvelope: execution ended");
 		return new ResponseEntityDto(false, "Envelope declined successfully");
+	}
+
+	@Override
+	public ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
+
+
+		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
+
+		if (recipientListOptional.isEmpty() || recipientListOptional.get().isEmpty()) {
+			log.info("No recipients found for envelope ID {}", envelopeId);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP);
+		}
+
+		recipientListOptional.get().forEach(recipient -> {
+			recipient.setStatus(RecipientStatus.VOIDED);
+			recipientRepository.save(recipient);
+		});
+
+		sendEmailWhenDocumentIsVoidedOrDeclined(envelopeId);
+
+		log.info("All recipients for envelope ID {} have been voided.", envelopeId);
+		return new ResponseEntityDto(false, "All recipients voided successfully");
 	}
 
 	/**

@@ -7,6 +7,7 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -270,25 +271,21 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void processVoidRequest(Envelope envelope) {
+
+		log.info("processVoidRequest: Checking if void is prohibited for envelope ID {}", envelope.getId());
+
 		if (EnvelopeStatus.idVoidProhibitedFrom(envelope.getStatus())) {
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(), envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
 
-		if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
-			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_VOIDED);
-		}
-
 		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
+			log.info("processVoidRequest: Setting status to VOIDED for envelope ID {}", envelope.getId());
+			recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
 			envelope.setStatus(EnvelopeStatus.VOIDED);
-
 		}
 	}
 
-	private void notifyVoid(Envelope envelope) {
-
-		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
-
-	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
 		if (envelope.getExpireAt() == null || envelope.getExpireAt().isBefore(LocalDateTime.now())) {
@@ -319,8 +316,25 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Transactional
 	@Override
 	public ResponseEntityDto voidEnvelope(Long id, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+		log.info("voidEnvelope: execution started for envelope ID: {}", id);
+
 		Envelope envelope = envelopeDao.findById(id)
-			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+			.orElseThrow(() -> {
+				log.error("voidEnvelope: Envelope not found for ID: {}", id);
+				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+			});
+
+		User currentUser = userService.getCurrentUser();
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+		log.debug("voidEnvelope: Current user ID: {}, Role: {}", currentUser.getUserId(), esignRole);
+
+		if (esignRole.equals(Role.ESIGN_SENDER)) {
+			AddressBook owner = envelope.getOwner();
+			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+				log.error("voidEnvelope: Unauthorized access by user ID: {}", currentUser.getUserId());
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
 
 		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
 
@@ -328,8 +342,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
-		notifyVoid(envelope);
-		log.info("voidEnvelope: execution ended");
+		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+
+		log.info("voidEnvelope: execution ended for envelope ID: {}", id);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
 
@@ -374,6 +389,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			log.warn("Envelope with ID {} is already completed", envelope.getId());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED);
 		}
+		if (envelope.getStatus() == EnvelopeStatus.EXPIRED) {
+		    log.warn("Envelope with ID {} is already canceled", envelope.getId());
+		    throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED);
+		}
+
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);

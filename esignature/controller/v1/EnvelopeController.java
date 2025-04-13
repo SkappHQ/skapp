@@ -61,7 +61,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Void an envelope", description = "This endpoint voids an existing envelope by its ID.")
 	@PatchMapping(value = "/void/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ROLE_ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> voidEnvelope(
 			@PathVariable @Schema(description = "ID of the envelope to void", example = "1") Long id,
 			@Valid @RequestBody VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
@@ -72,7 +72,7 @@ public class EnvelopeController {
 	@Operation(summary = "Decline an envelope",
 			description = "This endpoint allows a recipient to decline an envelope.")
 	@PatchMapping(value = "/decline/{recipientId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_ESIGN_ADMIN', 'ROLE_ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelope(
 			@PathVariable @Schema(description = "ID of the recipient", example = "1") Long recipientId,
 			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {

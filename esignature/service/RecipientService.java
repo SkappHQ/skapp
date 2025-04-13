@@ -23,4 +23,6 @@ public interface RecipientService {
 
 	ResponseEntityDto declineEnvelope(Recipient recipient);
 
+	ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId);
+
 }

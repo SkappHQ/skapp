@@ -87,7 +87,10 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED("ep.esign.error.recipient.already-approved"),
 	ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED("ep.esign.error.envelope.already-declined"),
 	ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED("ep.esign.error.envelope.already-completed"),
-	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted");
+	ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP("ep.esign.error.no.recipients.found.in.envelop"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP("ep.esign.error.recipient.already-voided-envelope"),
+	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED ("ep.esign.error.envelope.already-expired");
 
 	private final String messageKey;
 
