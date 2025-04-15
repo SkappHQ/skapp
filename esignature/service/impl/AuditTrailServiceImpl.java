@@ -9,9 +9,9 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
-import com.skapp.enterprise.esignature.constant.EsignValidationConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
@@ -97,8 +97,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		if (auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV4_VALIDATION_PATTERN)
-				|| auditTrailDto.getIpAddress().matches(EsignValidationConstant.IPV6_VALIDATION_PATTERN)) {
+		if (auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV4_VALIDATION_PATTERN)
+				|| auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV6_VALIDATION_PATTERN)) {
 			auditTrail.setIpAddress(auditTrailDto.getIpAddress());
 		}
 		else {
