@@ -21,6 +21,8 @@ public class DocumentAccessLinkDataResponseDto {
 
 	private List<FieldResponseDto> fieldResponseDtoList;
 
+	private DocumentDetailResponseDto documentDetailResponseDto;
+
 	private DocumentLinkResponseDto documentLinkResponseDto;
 
 }

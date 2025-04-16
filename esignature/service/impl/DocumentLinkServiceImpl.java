@@ -10,12 +10,14 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
@@ -23,6 +25,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
@@ -67,6 +70,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private final EsignMapper eSignMapper;
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
+
+	private final DocumentVersionRepository documentVersionRepository;
 
 	private static final String BASE_SIGNING_URL = "/document/sign?token=";
 
@@ -263,8 +268,28 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
 
+			int versionNumber = document.getCurrentVersion();
+			DocumentVersion documentVersion;
+
+			if (versionNumber < 0) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND);
+			}
+
+			if (versionNumber != 0) {
+				documentVersion = documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
+					.orElseThrow(
+							() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+			}
+			else {
+				documentVersion = new DocumentVersion();
+				documentVersion.setFilePath(document.getFilePath());
+			}
+
+			DocumentDetailResponseDto latestDocumentDetailsDto = getLatestDocumentDetails(document, documentVersion);
+
 			DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(
-					envelope.getId(), recipientObj, recipientResponseDto, documentLinkResponseDto);
+					envelope.getId(), recipientObj, recipientResponseDto, documentLinkResponseDto,
+					latestDocumentDetailsDto);
 
 			documentLink = setDocumentAccessUrlProperties(documentLink);
 
@@ -277,9 +302,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 	}
 
+	private DocumentDetailResponseDto getLatestDocumentDetails(Document document, DocumentVersion documentVersion) {
+		DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
+		dto.setId(document.getId());
+		dto.setName(document.getName());
+		dto.setFilePath(documentVersion.getFilePath());
+		return dto;
+	}
+
 	private DocumentAccessLinkDataResponseDto getDocumentAccessLinkDataResponseDto(Long envelopeId,
 			Recipient recipientObj, RecipientResponseDto recipientResponseDto,
-			DocumentLinkResponseDto documentLinkResponseDto) {
+			DocumentLinkResponseDto documentLinkResponseDto, DocumentDetailResponseDto documentDetailResponseDto) {
 		List<FieldResponseDto> fieldResponseDtoList = getFieldResponseDtos(recipientObj);
 
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
@@ -289,6 +322,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		documentAccessLinkData.setRecipientResponseDto(recipientResponseDto);
 		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
 		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);
+		documentAccessLinkData.setDocumentDetailResponseDto(documentDetailResponseDto);
 		return documentAccessLinkData;
 	}
 
