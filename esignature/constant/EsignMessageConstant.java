@@ -36,6 +36,12 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
+	ESIGN_VALIDATION_VOID_REASON_CANNOT_BE_EMPTY("validation.void.reason.cannot.be.empty"),
+	ESIGN_VALIDATION_VOID_REASON_TOO_LONG("validation.void.reason.too.long"),
+	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
+	ESIGN_VALIDATION_DECLINE_REASON_CANNOT_BE_EMPTY("validation.decline.reason.cannot.be.empty"),
+	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
+	ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS("validation.decline.reason.invalid.characters"),
 
 	ESIGN_ERROR_NO_RECIPIENT_FOUND("ep.esign.error.recipient.not-found"),
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
@@ -90,8 +96,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP("ep.esign.error.no.recipients.found.in.envelop"),
 	ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP("ep.esign.error.recipient.already-voided-envelope"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
-	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED ("ep.esign.error.envelope.already-expired");
-
+	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED ("ep.esign.error.envelope.already-expired"),
+	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status");
 	private final String messageKey;
 
 }

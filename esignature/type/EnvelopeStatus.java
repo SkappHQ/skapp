@@ -11,8 +11,12 @@ public enum EnvelopeStatus {
 		return List.of(CREATED, IN_PROGRESS, NEED_TO_SIGN, EXPIRING_SOON, WAITING_FOR_OTHERS, PENDING);
 	}
 
-	public static boolean idVoidProhibitedFrom(EnvelopeStatus envelopeStatus) {
+	public static boolean isVoidProhibitedFrom(EnvelopeStatus envelopeStatus) {
 		return List.of(COMPLETED, CANCELED, VOIDED, EXPIRED).contains(envelopeStatus);
+	}
+
+	public static boolean isDeclineProhibitedFrom(EnvelopeStatus envelopeStatus) {
+		return List.of(COMPLETED, CANCELED, VOIDED, EXPIRED , DECLINED).contains(envelopeStatus);
 	}
 
 

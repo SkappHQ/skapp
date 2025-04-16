@@ -8,6 +8,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -39,6 +40,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -274,7 +276,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("processVoidRequest: Checking if void is prohibited for envelope ID {}", envelope.getId());
 
-		if (EnvelopeStatus.idVoidProhibitedFrom(envelope.getStatus())) {
+		if (EnvelopeStatus.isVoidProhibitedFrom(envelope.getStatus())) {
 			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(), envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
@@ -336,6 +338,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
+		if (StringUtils.isBlank(voidEnvelopeRequestDto.getVoidReason())) {
+		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_CANNOT_BE_EMPTY);
+		}
+		if (voidEnvelopeRequestDto.getVoidReason().length() > EpValidationConstants.ALLOWED_MAX_CHARACTERD_VOID) {
+		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
+		}
+		if (!voidEnvelopeRequestDto.getVoidReason().matches(EpValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
+		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS);
+		}
 		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
 
 		processVoidRequest(envelope);
@@ -376,29 +387,24 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(), recipientId);
 				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 			});
-
-		if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
-			log.warn("Envelope with ID {} is already declined", envelope.getId());
-			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED);
+		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(), envelope.getStatus());
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
 		}
-		if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
-			log.warn("Envelope with ID {} is already voided", envelope.getId());
-			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_VOIDED);
-		}
-		if (envelope.getStatus() == EnvelopeStatus.COMPLETED) {
-			log.warn("Envelope with ID {} is already completed", envelope.getId());
-			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED);
-		}
-		if (envelope.getStatus() == EnvelopeStatus.EXPIRED) {
-		    log.warn("Envelope with ID {} is already canceled", envelope.getId());
-		    throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED);
-		}
-
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
 
-		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
+	if (StringUtils.isBlank(declineEnvelopeRequestDto.getDeclineReason())) {
+	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_CANNOT_BE_EMPTY);
+	}
+	if (declineEnvelopeRequestDto.getDeclineReason().length() > EpValidationConstants.ALLOWED_MAX_CHARACTERD_DECLINE) {
+	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
+	}
+	if (!declineEnvelopeRequestDto.getDeclineReason().matches(EpValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
+	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
+	}
+	recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
 		recipientService.declineEnvelope(recipient);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
