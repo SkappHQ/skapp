@@ -12,4 +12,8 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getEmployeeNeedToSignEnvelopeCount(Long id);
 
+	ResponseEntityDto getEnvelopeForCurrentUser(Long id);
+
+	ResponseEntityDto getEnvelopeForSender(Long id);
+
 }

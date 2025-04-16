@@ -21,8 +21,10 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
@@ -33,6 +35,7 @@ import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -306,6 +309,77 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getEmployeeNeedToSignEnvelopeCount: execution ended");
 
 		return new ResponseEntityDto(false, employeeKPIResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeForCurrentUser(@NotNull Long id) {
+		User currentUser = userService.getCurrentUser();
+
+		if (!Objects.equals(currentUser.getUserId(), id)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(id);
+		if (envelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+		Envelope envelope = envelopeOptional.get();
+
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+
+		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeForSender(@NotNull Long id) {
+		User currentUser = userService.getCurrentUser();
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(id);
+		if (envelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = envelopeOptional.get();
+		AddressBook addressBook = envelope.getOwner();
+
+		if (addressBook == null || !addressBook.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+
+		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+	}
+
+	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
+		envelopeInfoResponseDto.setId(envelope.getId());
+		envelopeInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInfoResponseDto.setStatus(envelope.getStatus());
+
+		List<Recipient> recipients = envelope.getRecipients();
+
+		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
+		AddressBook addressBook = envelope.getOwner();
+
+		envelopeInfoResponseDto.setDocuments(documentDetails);
+		return envelopeInfoResponseDto;
+	}
+
+	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
+		return envelope.getDocuments().stream().map(document -> {
+			int currentVersion = document.getCurrentVersion();
+			DocumentVersion documentVersion = documentVersionRepository
+				.findByVersionNumberAndDocumentId(currentVersion, document.getId())
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
+			dto.setId(document.getId());
+			dto.setName(document.getName());
+			dto.setFilePath(documentVersion.getFilePath());
+
+			return dto;
+		}).toList();
 	}
 
 	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
