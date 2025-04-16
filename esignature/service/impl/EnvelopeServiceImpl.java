@@ -11,6 +11,7 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
@@ -25,23 +26,27 @@ import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -63,6 +68,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentService documentService;
 
 	private final DocumentVersionRepository documentVersionRepository;
+
+	private final DocumentLinkRepository documentLinkRepository;
 
 	@Override
 	@Transactional
@@ -124,10 +131,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		documentDao.saveAll(updatedDocuments);
 
 		// Send Envelopes to recipient - async
-		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
+		RecipientService.DocumentLinksAndRecipientsData documentLinksAndRecipientsData = recipientService
+			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients());
+
+		List<Recipient> notifyRecipients = documentLinksAndRecipientsData.recipientList();
+
+		List<DocumentLink> documentLinkList = documentLinksAndRecipientsData.documentLinkList();
+		documentLinkRepository.saveAll(documentLinkList);
+
+		Map<Long, Recipient> notifyMap = notifyRecipients.stream()
+			.collect(Collectors.toMap(Recipient::getId, Function.identity()));
+
+		for (Recipient recipient : savedEnvelope.getRecipients()) {
+			Recipient updated = notifyMap.get(recipient.getId());
+			if (updated != null) {
+				recipient.setReminderBatchId(updated.getReminderBatchId());
+				recipient.setReminderStatus(updated.getReminderStatus());
+				recipient.setEmailStatus(updated.getEmailStatus());
+			}
+		}
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
-		responseDto.setEmailResponse(emailResponse.getResults());
 
 		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);

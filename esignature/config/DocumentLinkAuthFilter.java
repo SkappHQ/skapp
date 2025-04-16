@@ -54,7 +54,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	private static final String RECIPIENT_ID_PARAM = "recipientId";
 
-	private static final String LINK_ID = "linkId";
+	public static final String TOKEN = "token";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
@@ -152,7 +152,6 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 	private void authenticateUser(String token, String userEmail, Long userId) {
 
 		final String userType = jwtService.extractUserType(token);
-		Long linkId = jwtService.extractClaim(token, claims -> claims.get(LINK_ID, Long.class));
 
 		UserDetails userDetails;
 
@@ -176,7 +175,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
 		Map<String, Object> details = new HashMap<>();
-		details.put(LINK_ID, linkId);
+		details.put(TOKEN, token);
 		authToken.setDetails(details);
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);

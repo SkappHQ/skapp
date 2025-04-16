@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -96,6 +97,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String LINK_ID = "linkId";
 
+	public static final String TOKEN = "token";
+
 	public static final String PERMISSION = "permission";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
@@ -103,11 +106,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Override
 	@Transactional
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
-
-		String tenantId = TenantContext.getCurrentTenant();
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
 
 		Long documentId = documentAccessUrlDto.getDocumentId();
 		Long recipientId = documentAccessUrlDto.getRecipientId();
@@ -124,11 +122,34 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
 
 		Recipient recipient = optionalUpdatableRecipient
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENT_FOUND));
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
 		documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient).ifPresent(link -> {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE);
 		});
+
+		DocumentLinkData documentLinkData = createDocumentLinkData(documentAccessUrlDto, recipient,
+				documentOptional.get(), envelope);
+		DocumentLink documentLink = documentLinkData.documentLink();
+
+		documentLinkRepository.save(documentLink);
+
+		return DocumentLinkResponseDto.builder()
+			.token(documentLink.getToken())
+			.url(documentLinkData.accessUrl() + documentLink.getToken())
+			.expiresAt(documentLink.getExpiresAt())
+			.maxClicks(defaultMaxClicks)
+			.build();
+	}
+
+	@Override
+	public DocumentLinkData createDocumentLinkData(DocumentAccessUrlDto documentAccessUrlDto, Recipient recipient,
+			Document document, Envelope envelope) {
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
 
 		Long userId = recipient.getAddressBook().getUserId();
 		String userEmail = recipient.getAddressBook().getEmail();
@@ -144,21 +165,19 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtDocumentAccessTokenExpirationMs));
 
 		DocumentLink documentLink = DocumentLink.builder()
-				.documentId(documentOptional.get())
-				.envelopeId(envelope)
-				.recipientId(recipient)
-				.createdByUserId(userId)
-				.createdAt(LocalDateTime.now())
-				.expiresAt(expiresAt)
-				.maxClicks(defaultMaxClicks)
-				.clickCount(0)
-				.isActive(true)
-				.build();
+			.documentId(document)
+			.envelopeId(envelope)
+			.recipientId(recipient)
+			.createdByUserId(userId)
+			.createdAt(LocalDateTime.now())
+			.expiresAt(expiresAt)
+			.maxClicks(defaultMaxClicks)
+			.clickCount(0)
+			.isActive(true)
+			.build();
 
-		documentLinkRepository.save(documentLink);
-
-		DocumentAccessData documentAccessData = new DocumentAccessData(userId, documentLink.getId(), tenantId,
-				envelope.getId(), documentId, recipientId, userType.name());
+		DocumentAccessData documentAccessData = new DocumentAccessData(userId, tenantId, envelope.getId(),
+				document.getId(), recipient.getId(), userType.name());
 
 		String token;
 		String accessUrl;
@@ -172,15 +191,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			accessUrl = generateUrl(tenantId, parentDomain, false);
 		}
 
-		documentLink.setToken(token);
-		documentLinkRepository.save(documentLink);
+		accessUrl = accessUrl + token;
 
-		return DocumentLinkResponseDto.builder()
-			.token(token)
-			.url(accessUrl + token)
-			.expiresAt(expiresAt)
-			.maxClicks(defaultMaxClicks)
-			.build();
+		documentLink.setToken(token);
+
+		return new DocumentLinkData(documentLink, accessUrl);
 	}
 
 	@Override
@@ -213,7 +228,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
 
-			Long linkId = (Long) details.get(LINK_ID);
+			String token = (String) details.get(TOKEN);
 
 			Document document = documentDao.findById(documentId)
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
@@ -231,12 +246,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				.findFirst()
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
-			DocumentLink documentLink = documentLinkRepository
-				.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
-				.orElseThrow(
-						() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
+			DocumentLink documentLink = documentLinkRepository.findByToken(token)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
-			if (!linkId.equals(documentLink.getId())) {
+			boolean isValidDocument = Objects.equals(documentLink.getDocumentId().getId(), documentId);
+			boolean isValidRecipient = Objects.equals(documentLink.getRecipientId().getId(), recipientId);
+
+			if (!isValidDocument || !isValidRecipient) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
 			}
 
@@ -311,7 +327,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		extraClaims.put(DOCUMENT_ID, data.documentId());
 		extraClaims.put(USER_TYPE, data.userType());
 		extraClaims.put(RECIPIENT_ID, data.recipientId());
-		extraClaims.put(LINK_ID, data.linkId());
 		extraClaims.put(PERMISSION, permissions);
 
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
@@ -324,8 +339,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
 	}
 
-	private record DocumentAccessData(Long userId, Long linkId, String tenantId, Long envelopeId, Long documentId,
-			Long recipientId, String userType) {
+	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
+			String userType) {
 	}
 
 }
