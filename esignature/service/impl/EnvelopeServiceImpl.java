@@ -277,7 +277,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("processVoidRequest: Checking if void is prohibited for envelope ID {}", envelope.getId());
 
 		if (EnvelopeStatus.isVoidProhibitedFrom(envelope.getStatus())) {
-			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(), envelope.getStatus());
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(),
+					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
 
@@ -287,7 +288,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelope.setStatus(EnvelopeStatus.VOIDED);
 		}
 	}
-
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
 		if (envelope.getExpireAt() == null || envelope.getExpireAt().isBefore(LocalDateTime.now())) {
@@ -320,11 +320,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public ResponseEntityDto voidEnvelope(Long id, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
 		log.info("voidEnvelope: execution started for envelope ID: {}", id);
 
-		Envelope envelope = envelopeDao.findById(id)
-			.orElseThrow(() -> {
-				log.error("voidEnvelope: Envelope not found for ID: {}", id);
-				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-			});
+		Envelope envelope = envelopeDao.findById(id).orElseThrow(() -> {
+			log.error("voidEnvelope: Envelope not found for ID: {}", id);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
 
 		User currentUser = userService.getCurrentUser();
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
@@ -338,14 +337,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
-		if (StringUtils.isBlank(voidEnvelopeRequestDto.getVoidReason())) {
-		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_CANNOT_BE_EMPTY);
-		}
 		if (voidEnvelopeRequestDto.getVoidReason().length() > EpValidationConstants.ALLOWED_MAX_CHARACTERD_VOID) {
-		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
 		}
 		if (!voidEnvelopeRequestDto.getVoidReason().matches(EpValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
-		    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS);
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS);
 		}
 		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
 
@@ -376,35 +372,33 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Override
 	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 
-		Recipient recipient = recipientRepository.findById(recipientId)
-			.orElseThrow(() -> {
-				log.error("Recipient with ID {} not found", recipientId);
-				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
-			});
+		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
+			log.error("Recipient with ID {} not found", recipientId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
+		});
 
-		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId())
-			.orElseThrow(() -> {
-				log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(), recipientId);
-				return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-			});
+		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(),
+					recipientId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
 		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {
-			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(), envelope.getStatus());
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(),
+					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
 		}
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
 
-	if (StringUtils.isBlank(declineEnvelopeRequestDto.getDeclineReason())) {
-	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_CANNOT_BE_EMPTY);
-	}
-	if (declineEnvelopeRequestDto.getDeclineReason().length() > EpValidationConstants.ALLOWED_MAX_CHARACTERD_DECLINE) {
-	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
-	}
-	if (!declineEnvelopeRequestDto.getDeclineReason().matches(EpValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
-	    throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
-	}
-	recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
+		if (declineEnvelopeRequestDto.getDeclineReason()
+			.length() > EpValidationConstants.ALLOWED_MAX_CHARACTERD_DECLINE) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
+		}
+		if (!declineEnvelopeRequestDto.getDeclineReason().matches(EpValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
+		}
+		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
 		recipientService.declineEnvelope(recipient);
 		return new ResponseEntityDto(false, "Envelope declined successfully");

@@ -407,14 +407,14 @@ public class RecipientServiceImpl implements RecipientService {
 	@Override
 	public ResponseEntityDto declineEnvelope(Recipient recipient) {
 
-	if (recipient.getStatus() == RecipientStatus.APPROVED) {
-		log.info("Recipient with ID {} is already approved.", recipient.getId());
-		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED);
-	}
-	if (recipient.getStatus() == RecipientStatus.DECLINED) {
-		log.info("Recipient with ID {} has already declined the envelope.", recipient.getId());
-		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP);
-	}
+		if (recipient.getStatus() == RecipientStatus.APPROVED) {
+			log.info("Recipient with ID {} is already approved.", recipient.getId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED);
+		}
+		if (recipient.getStatus() == RecipientStatus.DECLINED) {
+			log.info("Recipient with ID {} has already declined the envelope.", recipient.getId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP);
+		}
 		if (recipient.getStatus() == RecipientStatus.VOIDED) {
 			log.info("Recipient with ID {} has already voided the envelope.", recipient.getId());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP);
@@ -432,7 +432,6 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Override
 	public ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
-
 
 		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
 

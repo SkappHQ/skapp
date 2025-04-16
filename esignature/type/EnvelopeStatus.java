@@ -16,9 +16,8 @@ public enum EnvelopeStatus {
 	}
 
 	public static boolean isDeclineProhibitedFrom(EnvelopeStatus envelopeStatus) {
-		return List.of(COMPLETED, CANCELED, VOIDED, EXPIRED , DECLINED).contains(envelopeStatus);
+		return List.of(COMPLETED, CANCELED, VOIDED, EXPIRED, DECLINED).contains(envelopeStatus);
 	}
-
 
 	public static List<EnvelopeStatus> inactiveStatuses() {
 		return List.of(VOIDED, DECLINED, EXPIRED);
