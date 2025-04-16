@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
@@ -138,7 +139,7 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 
 	public Boolean isDocumentAccessUrlExpired(String token) {
 		DocumentLink documentLink = documentLinkRepository.findByToken(token)
-			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
 		return documentLink.isExpired();
 	}

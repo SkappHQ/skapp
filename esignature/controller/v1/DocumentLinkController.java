@@ -24,7 +24,7 @@ public class DocumentLinkController {
 
 	private final DocumentLinkService documentLinkService;
 
-	@Operation(summary = "Create temporary document access link",
+	@Operation(summary = "Create  sign or view document access link",
 			description = "Generates a document access link which can view or sign for the given document Id and recipient Id")
 	@PostMapping()
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")

@@ -7,6 +7,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
@@ -130,7 +131,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	private void validateDocumentAndRecipient(Long documentId, Long recipientId) {
 		if (documentId == null || recipientId == null) {
-			throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK);
+			throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK);
 		}
 	}
 
@@ -144,7 +145,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 		if (!documentId.toString().equals(documentIdIdFromRequestParam)
 				|| !recipientId.toString().equals(recipientIdFromRequestParam)) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK);
 		}
 	}
 

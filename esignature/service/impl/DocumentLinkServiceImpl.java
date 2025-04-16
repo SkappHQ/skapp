@@ -234,7 +234,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			DocumentLink documentLink = documentLinkRepository
 				.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipientObj)
 				.orElseThrow(
-						() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_LINK));
+						() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
 			if (!linkId.equals(documentLink.getId())) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
