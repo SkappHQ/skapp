@@ -87,4 +87,16 @@ public class AddressBookController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "get internal eSign senders by search keyword",
+			description = "This endpoint retrieves all internal eSign senders that match the provided keyword. "
+					+ "The search results are prioritized based on email, firstname, lastname.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
+	@GetMapping(value = "/senders/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> searchInternalEsignSendersByEmailPriority(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.fetchAddressBookInternalEsignSenderByEmailPriority(keyWord);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
