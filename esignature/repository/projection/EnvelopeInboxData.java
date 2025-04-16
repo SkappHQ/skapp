@@ -1,15 +1,16 @@
 package com.skapp.enterprise.esignature.repository.projection;
 
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class EnvelopeInboxData {
 
 	private Long envelopeId;
@@ -25,5 +26,7 @@ public class EnvelopeInboxData {
 	private LocalDateTime receivedDate;
 
 	private String ownerProfilePic;
+
+	private List<RecipientResponseDto> recipients = new ArrayList<>();
 
 }

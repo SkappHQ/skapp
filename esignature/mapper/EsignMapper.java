@@ -24,10 +24,16 @@ import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface EsignMapper {
@@ -100,5 +106,28 @@ public interface EsignMapper {
 	}
 
 	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
+
+	@Mapping(source = "id", target = "envelopeId")
+	@Mapping(source = "owner.email", target = "ownerEmail")
+	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
+
+	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
+
+	@Mapping(source = "id", target = "id")
+	@Mapping(source = "userId", target = "userId")
+	@Mapping(source = "firstName", target = "firstName")
+	@Mapping(source = "lastName", target = "lastName")
+	@Mapping(source = "internalUser.employee.authPic", target = "profilePic")
+	AddressBookBasicResponseDto addressBookToAddressBookBasicResponseDto(AddressBook addressBook);
+
+	List<RecipientResponseDto> recipientToRecipinetResponseDtoList(List<Recipient> recipients);
+
+	@Mapping(source = "id", target = "envelopeId")
+	@Mapping(source = "owner.email", target = "ownerEmail")
+	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	@Mapping(target = "status", ignore = true)
+	@Mapping(target = "receivedDate", ignore = true)
+	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
 
 }

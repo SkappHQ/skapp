@@ -1,10 +1,6 @@
 package com.skapp.enterprise.esignature.repository.impl;
 
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
-import com.skapp.community.common.payload.response.PageDto;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.Envelope;
@@ -13,11 +9,7 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
-import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
-import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeRepository;
-import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
-import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.EntityManager;
@@ -25,7 +17,6 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -33,9 +24,11 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -69,116 +62,133 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 	}
 
 	@Override
-	public PageDto getAllUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto filterDto) {
+	public Page<Envelope> getAllUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto filterDto) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<EnvelopeInboxData> query = cb.createQuery(EnvelopeInboxData.class);
-		Root<Envelope> envelopeRoot = query.from(Envelope.class);
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<Envelope> envelopeRoot = dataQuery.from(Envelope.class);
 
 		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
-		Join<Recipient, AddressBook> addressBookJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
-		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.owner, JoinType.LEFT);
-		Join<AddressBook, User> internalUserJoin = addressBookJoin.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
+		Join<Recipient, AddressBook> recipientAddressJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
+		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.OWNER, JoinType.LEFT);
+		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
-		Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+		List<Predicate> predicates = buildPredicates(cb, envelopeRoot, recipientJoin, recipientAddressJoin,
+				ownerEmailPath, filterDto, currentUserId);
 
+		// Sorting
+		String keyword = filterDto.getSearchKeyword();
+		if (keyword != null && !keyword.isBlank()) {
+			String pattern = keyword.toLowerCase() + "%";
+			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), pattern);
+			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), pattern);
+
+			Order priorityOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(ownerEmailLike, 2).otherwise(3));
+			Order sortOrder = getSortOrder(cb, recipientJoin, filterDto);
+			dataQuery.orderBy(priorityOrder, sortOrder);
+		}
+		else {
+			dataQuery.orderBy(getSortOrder(cb, recipientJoin, filterDto));
+		}
+
+		dataQuery.multiselect(envelopeRoot, ownerEmailPath,recipientJoin.get(Recipient_.RECEIVED_AT), recipientJoin.get(Recipient_.STATUS) ).distinct(true);
+		dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(dataQuery);
+		typedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
+		typedQuery.setMaxResults(filterDto.getSize());
+
+		List<Envelope> envelopes = typedQuery.getResultList().stream().map(t -> t.get(0, Envelope.class)).toList();
+
+		long total = countUserEnvelopes(currentUserId, filterDto);
+		return new PageImpl<>(envelopes, PageRequest.of(filterDto.getPage(), filterDto.getSize()), total);
+	}
+
+	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Envelope> envelopeRoot,
+			Join<Envelope, Recipient> recipientJoin, Join<Recipient, AddressBook> recipientAddressJoin,
+			Path<String> ownerEmailPath, EnvelopeInboxFilterDto filterDto, Long currentUserId) {
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
+
+		predicates
+			.add(cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
 		if (filterDto.getStatusTypes() != null && !filterDto.getStatusTypes().isEmpty()) {
 			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.STATUS));
-			for (RecipientStatus status : filterDto.getStatusTypes()) {
-				statusIn.value(status);
-			}
+			filterDto.getStatusTypes().forEach(statusIn::value);
 			predicates.add(statusIn);
 		}
 
-		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
-
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
-			String prefixPattern = keyword.toLowerCase() + "%";
-
-			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
-
-			Predicate ownerNotNull = cb.isNotNull(ownerEmailPath);
-			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
-			Predicate safeEmailLike = cb.and(ownerNotNull, emailLike);
-
-			predicates.add(cb.or(subjectLike, safeEmailLike));
-
-			Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(safeEmailLike, 2).otherwise(3));
-
-			Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
-
-			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
-				query.orderBy(sortingOrder, cb.asc(sortPath));
-			}
-			else {
-				query.orderBy(sortingOrder, cb.desc(sortPath));
-			}
-
-		}
-		else {
-			Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
-
-			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
-				query.orderBy(cb.asc(sortPath));
-			}
-			else {
-				query.orderBy(cb.desc(sortPath));
-			}
+			String pattern = keyword.toLowerCase() + "%";
+			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), pattern);
+			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), pattern);
+			predicates.add(cb.or(subjectLike, cb.and(cb.isNotNull(ownerEmailPath), ownerEmailLike)));
 		}
 
-		query.where(cb.and(predicates.toArray(new Predicate[0])));
-		query.distinct(true);
+		return predicates;
+	}
 
-		// 🧱 Create constructor expression
-		Expression<Long> envelopeId = envelopeRoot.get(Envelope_.ID);
-		Expression<String> subject = envelopeRoot.get(Envelope_.SUBJECT);
-		Expression<String> ownerEmail = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
-		Expression<RecipientStatus> status = recipientJoin.get(Recipient_.STATUS);
-		Expression<LocalDateTime> expiresAt = envelopeRoot.get(Envelope_.EXPIRE_AT);
-		Expression<LocalDateTime> receivedDate = recipientJoin.get(Recipient_.RECEIVED_AT);
-		Expression<String> ownerProfilePic = employeeJoin.get(Employee_.AUTH_PIC);
+	private Order getSortOrder(CriteriaBuilder cb, Join<Envelope, Recipient>  recipientJoin, EnvelopeInboxFilterDto filterDto) {
+		Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
+		return filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(sortPath) : cb.desc(sortPath);
+	}
 
-		query.select(cb.construct(EnvelopeInboxData.class, envelopeId, subject, ownerEmail, status, expiresAt,
-				receivedDate, ownerProfilePic));
+	private long countUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto filterDto) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<Envelope> countRoot = countQuery.from(Envelope.class);
 
-		TypedQuery<EnvelopeInboxData> countQuery = entityManager.createQuery(query);
-		Long totalItems = (long) countQuery.getResultList().size();
-		int totalPages = (int) Math.ceil((double) totalItems / filterDto.getSize());
+		Join<Envelope, Recipient> recipientJoin = countRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
+		Join<Recipient, AddressBook> recipientAddressJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
+		Join<Envelope, AddressBook> ownerJoin = countRoot.join(Envelope_.OWNER, JoinType.LEFT);
+		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
-		TypedQuery<EnvelopeInboxData> pagedQuery = entityManager.createQuery(query);
-		pagedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
-		pagedQuery.setMaxResults(filterDto.getSize());
-		List<EnvelopeInboxData> resultList = pagedQuery.getResultList();
+		List<Predicate> predicates = buildPredicates(cb, countRoot, recipientJoin, recipientAddressJoin,
+				ownerEmailPath, filterDto, currentUserId);
 
-		PageDto pageDto = new PageDto();
-		pageDto.setItems(resultList);
-		pageDto.setCurrentPage(filterDto.getPage());
-		pageDto.setTotalItems(totalItems);
-		pageDto.setTotalPages(totalPages);
-
-		return pageDto;
+		countQuery.select(cb.countDistinct(countRoot));
+		countQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
 	@Override
-	public PageDto getAllSentEnvelopes(Long currentUserId, EnvelopeSentFilterDto filterDto,
+	public Page<Envelope> getAllSentEnvelopes(Long currentUserId, EnvelopeSentFilterDto filterDto,
 			boolean isAllSentEnvelopes) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<Envelope> query = cb.createQuery(Envelope.class);
-		Root<Envelope> envelopeRoot = query.from(Envelope.class);
-
-		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
-		Join<Recipient, AddressBook> addressBookJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<Envelope> envelopeRoot = dataQuery.from(Envelope.class);
 		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.owner, JoinType.LEFT);
+		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
+		List<Predicate> dataPredicates = buildSentEnvelopePredicates(cb, envelopeRoot, ownerJoin, ownerEmailPath,
+				currentUserId, filterDto, isAllSentEnvelopes);
+		dataQuery.where(cb.and(dataPredicates.toArray(new Predicate[0])));
+		dataQuery.multiselect(envelopeRoot, ownerEmailPath).distinct(true);
+		dataQuery.orderBy(getSentEnvelopeSortOrder(cb, envelopeRoot, ownerEmailPath, filterDto));
+
+		TypedQuery<Tuple> pagedQuery = entityManager.createQuery(dataQuery);
+		pagedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
+		pagedQuery.setMaxResults(filterDto.getSize());
+
+		List<Envelope> envelopes = pagedQuery.getResultList()
+			.stream()
+			.map(tuple -> tuple.get(0, Envelope.class))
+			.toList();
+
+		Long totalItems = getSentEnvelopeCount(cb, currentUserId, filterDto, isAllSentEnvelopes);
+
+		return new PageImpl<>(envelopes, PageRequest.of(filterDto.getPage(), filterDto.getSize()), totalItems);
+	}
+
+	private List<Predicate> buildSentEnvelopePredicates(CriteriaBuilder cb, Root<Envelope> envelopeRoot,
+			Join<Envelope, AddressBook> ownerJoin, Path<String> ownerEmailPath, Long currentUserId,
+			EnvelopeSentFilterDto filterDto, boolean isAllSentEnvelopes) {
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (!isAllSentEnvelopes)
+		if (!isAllSentEnvelopes) {
 			predicates.add(cb.equal(ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
+		}
 
 		addStatusPredicate(filterDto.getStatusTypes(), cb, envelopeRoot, predicates);
 
@@ -187,125 +197,51 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			String prefixPattern = keyword.toLowerCase() + "%";
 
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
-			Path<String> recipientEmailPath = addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
+			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
+			Predicate safeEmailLike = cb.and(cb.isNotNull(ownerEmailPath), emailLike);
 
-			Predicate recipientNotNull = cb.isNotNull(recipientEmailPath);
-			Predicate emailLike = cb.like(cb.lower(recipientEmailPath), prefixPattern);
-			Predicate safeEmailLike = cb.and(recipientNotNull, emailLike);
+			predicates.add(cb.or(subjectLike, safeEmailLike));
+		}
 
-			// predicates.add(cb.or(subjectLike, safeEmailLike));
-			predicates.add(cb.or(subjectLike));
+		return predicates;
+	}
 
-			// Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike,
-			// 1).when(safeEmailLike, 2).otherwise(3));
-			Order sortingOrder = cb.asc(cb.selectCase().when(subjectLike, 1).otherwise(2));
+	private List<Order> getSentEnvelopeSortOrder(CriteriaBuilder cb, Root<Envelope> envelopeRoot,
+			Path<String> ownerEmailPath, EnvelopeSentFilterDto filterDto) {
+		String keyword = filterDto.getSearchKeyword();
+		Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
 
-			Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
+		if (keyword != null && !keyword.isBlank()) {
+			String prefixPattern = keyword.toLowerCase() + "%";
+			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
+			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
 
-			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
-				query.orderBy(sortingOrder, cb.asc(sortPath));
-			}
-			else {
-				query.orderBy(sortingOrder, cb.desc(sortPath));
-			}
+			Order matchOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(emailLike, 2).otherwise(3));
 
+			Order directionOrder = filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(sortPath)
+					: cb.desc(sortPath);
+			return List.of(matchOrder, directionOrder);
 		}
 		else {
-
-			Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
-
-			if (filterDto.getSortOrder() == Sort.Direction.ASC) {
-				query.orderBy(cb.asc(sortPath));
-			}
-			else {
-				query.orderBy(cb.desc(sortPath));
-			}
+			Order directionOrder = filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(sortPath)
+					: cb.desc(sortPath);
+			return List.of(directionOrder);
 		}
-
-		query.where(cb.and(predicates.toArray(new Predicate[0])));
-
-		query.select(envelopeRoot).distinct(true);
-
-		TypedQuery<Envelope> countQuery = entityManager.createQuery(query);
-		Long totalItems = (long) countQuery.getResultList().size();
-		int totalPages = (int) Math.ceil((double) totalItems / filterDto.getSize());
-
-		TypedQuery<Envelope> pagedQuery = entityManager.createQuery(query);
-		pagedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
-		pagedQuery.setMaxResults(filterDto.getSize());
-		List<Envelope> resultList = pagedQuery.getResultList();
-
-		List<EnvelopeSentData> envelopeSentDataList = resultList.stream()
-			.map(this::mapEnvelopeToSentData) // Map each Envelope to EnvelopeSentData
-			.toList();
-
-		PageDto pageDto = new PageDto();
-		pageDto.setItems(envelopeSentDataList);
-		pageDto.setCurrentPage(filterDto.getPage());
-		pageDto.setTotalItems(totalItems);
-		pageDto.setTotalPages(totalPages);
-
-		return pageDto;
 	}
 
-	private EnvelopeSentData mapEnvelopeToSentData(Envelope envelope) {
-		// Mapping Envelope to EnvelopeSentData
-		EnvelopeSentData envelopeSentData = new EnvelopeSentData();
+	private Long getSentEnvelopeCount(CriteriaBuilder cb, Long currentUserId, EnvelopeSentFilterDto filterDto,
+			boolean isAllSentEnvelopes) {
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<Envelope> countRoot = countQuery.from(Envelope.class);
+		Join<Envelope, AddressBook> ownerJoin = countRoot.join(Envelope_.owner, JoinType.LEFT);
+		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
-		// Mapping simple fields
-		envelopeSentData.setEnvelopeId(envelope.getId());
-		envelopeSentData.setSubject(envelope.getSubject());
-		envelopeSentData.setStatus(envelope.getStatus());
-		envelopeSentData.setExpiresAt(envelope.getExpireAt());
-		envelopeSentData.setSentAt(envelope.getSentAt());
+		List<Predicate> countPredicates = buildSentEnvelopePredicates(cb, countRoot, ownerJoin, ownerEmailPath,
+				currentUserId, filterDto, isAllSentEnvelopes);
 
-		// Mapping owner email and profile pic
-		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null) {
-			envelopeSentData.setOwnerEmail(envelope.getOwner().getEmail());
-			envelopeSentData.setOwnerProfilePic(envelope.getOwner().getInternalUser().getEmployee().getAuthPic());
-		}
-
-		// Mapping recipients data to RecipientResponseDto
-		List<RecipientResponseDto> recipientResponseDtos = new ArrayList<>();
-		if (envelope.getRecipients() != null) {
-			for (Recipient recipient : envelope.getRecipients()) {
-				RecipientResponseDto recipientResponseDto = new RecipientResponseDto();
-
-				// Mapping recipient fields to RecipientResponseDto
-				recipientResponseDto.setId(recipient.getId());
-				recipientResponseDto.setMemberRole(recipient.getMemberRole());
-				recipientResponseDto.setStatus(recipient.getStatus());
-				recipientResponseDto.setSigningOrder(recipient.getSigningOrder());
-				recipientResponseDto.setColor(recipient.getColor());
-
-				// Mapping AddressBookBasicResponseDto (user details)
-				if (recipient.getAddressBook() != null) {
-					AddressBookBasicResponseDto addressBookDto = getAddressBookBasicResponseDto(recipient);
-					recipientResponseDto.setAddressBookBasicResponseDto(addressBookDto);
-				}
-
-				// Add recipientResponseDto to the list
-				recipientResponseDtos.add(recipientResponseDto);
-			}
-		}
-
-		// Setting recipients in EnvelopeSentData
-		envelopeSentData.setRecipients(recipientResponseDtos);
-
-		return envelopeSentData;
-	}
-
-	private AddressBookBasicResponseDto getAddressBookBasicResponseDto(Recipient recipient) {
-		AddressBookBasicResponseDto addressBookDto = new AddressBookBasicResponseDto();
-		addressBookDto.setId(recipient.getAddressBook().getId());
-		addressBookDto.setUserId(recipient.getAddressBook().getUserId());
-		addressBookDto.setFirstName(recipient.getAddressBook().getName());
-		addressBookDto.setLastName(recipient.getAddressBook().getName());
-		addressBookDto.setEmail(recipient.getAddressBook().getEmail());
-		addressBookDto.setPhone(recipient.getAddressBook().getPhone());
-		addressBookDto.setProfilePic(recipient.getAddressBook().getInternalUser() != null
-				? recipient.getAddressBook().getInternalUser().getEmployee().getAuthPic() : null);
-		return addressBookDto;
+		countQuery.select(cb.countDistinct(countRoot));
+		countQuery.where(cb.and(countPredicates.toArray(new Predicate[0])));
+		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
 	@Override

@@ -19,6 +19,6 @@ public class RecipientResponseDto {
 
 	private String color;
 
-	private AddressBookBasicResponseDto addressBookBasicResponseDto;
+	private AddressBookBasicResponseDto addressBook;
 
 }

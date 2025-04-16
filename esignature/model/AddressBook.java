@@ -56,6 +56,22 @@ public class AddressBook {
 		return internalUser.getEmployee().getFirstName() + " " + internalUser.getEmployee().getLastName();
 	}
 
+	public String getFirstName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getFirstName();
+		}
+
+		return internalUser.getEmployee().getFirstName();
+	}
+
+	public String getLastName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getLastName();
+		}
+
+		return internalUser.getEmployee().getLastName();
+	}
+
 	public String getEmail() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getEmail();

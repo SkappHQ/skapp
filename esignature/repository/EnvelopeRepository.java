@@ -1,9 +1,10 @@
 package com.skapp.enterprise.esignature.repository;
 
-import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -13,9 +14,9 @@ public interface EnvelopeRepository {
 
 	long countNeedToSignEnvelopes(Long currentUserId);
 
-	PageDto getAllUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto envelopeInboxFilterDto);
+	Page<Envelope> getAllUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto envelopeInboxFilterDto);
 
-	PageDto getAllSentEnvelopes(Long currentUserId, EnvelopeSentFilterDto envelopeSentFilterDto,
+	Page<Envelope> getAllSentEnvelopes(Long currentUserId, EnvelopeSentFilterDto envelopeSentFilterDto,
 			boolean isAllSentEnvelopes);
 
 	Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId);
