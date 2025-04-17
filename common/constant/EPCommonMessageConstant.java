@@ -142,7 +142,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TENANT_DATABASE_CREATION_FAILED("ep.common.error.tenant-database-creation-failed"),
 	COMMON_ERROR_INVALID_DB_NAME("ep.common.error.invalid-db-name"),
 	COMMON_ERROR_DB_CREATION_FAILED("ep.common.error.db-creation-failed"),
-	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),;
+	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),
+	EP_COMMON_ERROR_FAILED_TO_HASH("ep.common.error.failed-to-hash");
 
 	private final String messageKey;
 

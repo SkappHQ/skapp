@@ -18,4 +18,6 @@ public interface ExternalUserService {
 
 	ResponseEntityDto deleteExternalUser(Long id);
 
+	ExternalUser loadUserByEmail(String email);
+
 }

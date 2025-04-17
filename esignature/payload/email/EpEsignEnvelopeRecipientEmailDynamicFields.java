@@ -22,7 +22,7 @@ public class EpEsignEnvelopeRecipientEmailDynamicFields {
 
 	private String envelopName;
 
-	private String envelopeUrl;
+	private String documentAccessUrl;
 
 	private String documentNames;
 
