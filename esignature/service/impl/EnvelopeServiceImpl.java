@@ -318,11 +318,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto voidEnvelope(Long id, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
-		log.info("voidEnvelope: execution started for envelope ID: {}", id);
+	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+		log.info("voidEnvelope: execution started for envelope ID: {}", envelopeId);
 
-		Envelope envelope = envelopeDao.findById(id).orElseThrow(() -> {
-			log.error("voidEnvelope: Envelope not found for ID: {}", id);
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("voidEnvelope: Envelope not found for ID: {}", envelopeId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
@@ -338,7 +338,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
-		if (voidEnvelopeRequestDto.getVoidReason().length() > EsignValidationConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
+		if (voidEnvelopeRequestDto.getVoidReason()
+			.length() > EsignValidationConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
 		}
 		if (!voidEnvelopeRequestDto.getVoidReason().matches(EsignValidationConstants.ALLOWED_CHARACTERS_REGEX)) {
@@ -352,7 +353,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
-		log.info("voidEnvelope: execution ended for envelope ID: {}", id);
+		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
 

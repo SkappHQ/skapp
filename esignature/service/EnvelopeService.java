@@ -14,7 +14,7 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getEmployeeNeedToSignEnvelopeCount(Long id);
 
-	ResponseEntityDto voidEnvelope(Long id, VoidEnvelopeRequestDto voidEnvelopeRequestDto);
+	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto);
 
 	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
 
