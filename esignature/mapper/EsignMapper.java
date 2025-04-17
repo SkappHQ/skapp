@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.mapper;
 import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
+import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.EsignConfig;
@@ -22,8 +24,12 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseD
 import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -100,5 +106,13 @@ public interface EsignMapper {
 	}
 
 	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
+
+	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
+
+	FieldResponseDto fieldToFieldResponseDto(Field field);
+
+	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
+
+	DocumentLinkResponseDto documentLinkToDocumentLinkResponseDto(DocumentLink documentLink);
 
 }

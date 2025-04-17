@@ -5,6 +5,7 @@ import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 
 public interface DocumentService {
 
@@ -15,5 +16,9 @@ public interface DocumentService {
 	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto);
 
 	ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto);
+
+	ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto);
+
+	ResponseEntityDto deleteDocument(Long id);
 
 }
