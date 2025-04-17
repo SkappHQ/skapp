@@ -43,6 +43,7 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -432,15 +433,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public ResponseEntityDto getEnvelopeForCurrentUser(@NotNull Long id) {
 		User currentUser = userService.getCurrentUser();
 
-		if (!Objects.equals(currentUser.getUserId(), id)) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(id);
 		if (envelopeOptional.isEmpty()) {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 		Envelope envelope = envelopeOptional.get();
+		boolean isRecipient = envelope.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()));
+
+		if (!isRecipient) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
 
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
 
@@ -459,7 +464,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Envelope envelope = envelopeOptional.get();
 		AddressBook addressBook = envelope.getOwner();
 
-		if (addressBook == null || !addressBook.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+		if (Optional.ofNullable(addressBook)
+			.map(AddressBook::getInternalUser)
+			.map(User::getUserId)
+			.filter(userId -> userId.equals(currentUser.getUserId()))
+			.isEmpty()) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
