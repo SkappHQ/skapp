@@ -22,7 +22,8 @@ public class HashUtil {
 			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
 		}
 		catch (Exception e) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FAILED_TO_HASH, new String[] { e.getMessage() });
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FAILED_TO_HASH,
+					new String[] { e.getMessage() });
 		}
 	}
 
