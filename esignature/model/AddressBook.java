@@ -40,6 +40,14 @@ public class AddressBook {
 	@Column(name = "is_active")
 	private Boolean isActive = true;
 
+	public Long getUserId() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getId();
+		}
+
+		return internalUser.getUserId();
+	}
+
 	public String getName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName() + " " + externalUser.getLastName();
@@ -48,12 +56,36 @@ public class AddressBook {
 		return internalUser.getEmployee().getFirstName() + " " + internalUser.getEmployee().getLastName();
 	}
 
+	public String getFirstName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getFirstName();
+		}
+
+		return internalUser.getEmployee().getFirstName();
+	}
+
+	public String getLastName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getLastName();
+		}
+
+		return internalUser.getEmployee().getLastName();
+	}
+
 	public String getEmail() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getEmail();
 		}
 
 		return internalUser.getEmail();
+	}
+
+	public String getPhone() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getPhone();
+		}
+
+		return internalUser.getEmployee().getPhone();
 	}
 
 }

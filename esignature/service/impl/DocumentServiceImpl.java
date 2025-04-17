@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -19,6 +20,7 @@ import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -51,7 +53,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -114,6 +115,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
 		Document document = eSignMapper.documentDtoToDocument(documentDto);
+		document.setFilePath(bucketName + "/" + document.getFilePath());
 		document = documentRepository.save(document);
 		DocumentDetailResponseDto documentResponseDto = eSignMapper.documentToDocumentDetailDto(document);
 		return new ResponseEntityDto(false, documentResponseDto);
@@ -208,7 +210,7 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 			});
 
-		updatedRecipient.setStatus(RecipientStatus.APPROVED);
+		updatedRecipient.setStatus(RecipientStatus.COMPLETED);
 		recipientRepository.save(updatedRecipient);
 
 		// load current version version-fields
@@ -339,6 +341,53 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
 
+	}
+
+	@Override
+	public ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto) {
+		log.info("editDocument: Start editing document with id {}", id);
+
+		Document document = documentRepository.findById(id).orElseThrow(() -> {
+			log.error("editDocument: Document with id {} not found", id);
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+		});
+
+		if (document.getEnvelope() != null) {
+			log.error("editDocument: Document with id {} is already associated with an envelope", id);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE);
+		}
+
+		if (editDocumentDto.getName() != null) {
+			document.setName(editDocumentDto.getName());
+		}
+		if (editDocumentDto.getFilePath() != null) {
+			document.setFilePath(editDocumentDto.getFilePath());
+		}
+
+		documentRepository.save(document);
+		log.info("editDocument: Document with id {} successfully updated", id);
+
+		return new ResponseEntityDto(false, document);
+	}
+
+	@Override
+	public ResponseEntityDto deleteDocument(Long id) {
+		log.info("deleteDocument: Start deleting document with id {}", id);
+
+		Document document = documentRepository.findById(id).orElseThrow(() -> {
+			log.error("deleteDocument: Document with id {} not found", id);
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+		});
+
+		if (document.getEnvelope() != null) {
+			log.error("deleteDocument: Document with id {} is already associated with an envelope", id);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE);
+		}
+
+		documentRepository.delete(document);
+		log.info("deleteDocument: Document with id {} successfully deleted", id);
+
+		return new ResponseEntityDto(false, "Document successfully deleted");
 	}
 
 	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {
@@ -556,19 +605,6 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private String hashDocument(String data) {
-		try {
-			MessageDigest digest = new SHA3.Digest256(); // Using SHA-3 for strong
-															// security
-			byte[] hashBytes = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
-		}
-		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_HASH_DOCUMENT,
-					new String[] { e.getMessage() });
-		}
-	}
-
 	private boolean verifySignature(byte[] documentHash, String base64Signature, PublicKey publicKey) {
 		try {
 			Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM, SECURITY_PROVIDER);
@@ -626,7 +662,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signTextField(FieldSignDto field, PrivateKey privateKey) {
 		try {
-			String newHash = hashDocument(field.getFieldValue());
+			String newHash = HashUtil.hash(field.getFieldValue());
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
 			return getDocumentVersionField(newHash, signature);
 		}
@@ -652,7 +688,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private void verifyTextField(String data, PublicKey publicKey, String base64Signature) {
-		String currentHash = hashDocument(data);
+		String currentHash = HashUtil.hash(data);
 		byte[] decodedHash = Base64.getDecoder().decode(currentHash);
 
 		if (!verifySignature(decodedHash, base64Signature, publicKey)) {
