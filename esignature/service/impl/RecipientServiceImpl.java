@@ -24,8 +24,8 @@ import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
-import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
@@ -500,13 +500,13 @@ public class RecipientServiceImpl implements RecipientService {
 		Recipient recipient = recipientOptional.get();
 
 		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
-		    throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
 		}
 
 		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
 				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
 				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
-				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null,null);
+				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, null);
 		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
