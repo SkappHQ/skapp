@@ -19,4 +19,6 @@ public interface AddressBookService {
 
 	ResponseEntityDto fetchAddressBookContactsByEmailPriority(String keyWord);
 
+	ResponseEntityDto fetchAddressBookInternalEsignSenderByEmailPriority(String keyWord);
+
 }

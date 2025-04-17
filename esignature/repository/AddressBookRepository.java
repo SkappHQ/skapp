@@ -14,4 +14,6 @@ public interface AddressBookRepository {
 
 	List<AddressBookUserData> fetchAddressBookContactsByEmailPriority(String keyword);
 
+	List<AddressBookUserData> fetchAddressBookEsignSenderByEmailPriority(String keyword);
+
 }
