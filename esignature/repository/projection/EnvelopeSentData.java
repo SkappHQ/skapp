@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.repository.projection;
 
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import lombok.AllArgsConstructor;
@@ -21,15 +22,13 @@ public class EnvelopeSentData {
 
 	private String subject;
 
-	private String ownerEmail;
+	private AddressBookBasicResponseDto sender;
 
 	private EnvelopeStatus status;
 
 	private LocalDateTime expiresAt;
 
 	private LocalDateTime sentAt;
-
-	private String ownerProfilePic;
 
 	private List<RecipientResponseDto> recipients = new ArrayList<>();
 

@@ -18,8 +18,8 @@ public class EnvelopeInfoResponseDto {
 
 	private List<DocumentDetailResponseDto> documents;
 
-	private List<RecipientDetailResponseDto> recipients;
+	private List<RecipientResponseDto> recipients;
 
-	private AddressBookResponseDto addressBook;
+	private AddressBookBasicResponseDto addressBook;
 
 }

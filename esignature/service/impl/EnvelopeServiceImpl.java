@@ -26,10 +26,12 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
@@ -473,9 +475,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeInfoResponseDto.setStatus(envelope.getStatus());
 
 		List<Recipient> recipients = envelope.getRecipients();
+		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		envelopeInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
 		AddressBook addressBook = envelope.getOwner();
+
+		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
+			.addressBookToAddressBookBasicResponseDto(addressBook);
+		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		envelopeInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInfoResponseDto;
