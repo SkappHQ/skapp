@@ -70,12 +70,7 @@ public class DocumentLink {
 		if (this.createdAt == null) {
 			this.expiresAt = LocalDateTime.now();
 		}
-		if (this.expiresAt == null) {
-			this.expiresAt = LocalDateTime.now().plusHours(48);
-		}
-		if (this.maxClicks == null) {
-			this.maxClicks = 5;
-		}
+
 		if (this.clickCount == null) {
 			this.clickCount = 0;
 		}
