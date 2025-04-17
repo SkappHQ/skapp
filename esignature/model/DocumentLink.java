@@ -67,10 +67,6 @@ public class DocumentLink {
 		if (this.token == null) {
 			this.token = UUID.randomUUID().toString();
 		}
-		if (this.createdAt == null) {
-			this.expiresAt = LocalDateTime.now();
-		}
-
 		if (this.clickCount == null) {
 			this.clickCount = 0;
 		}
