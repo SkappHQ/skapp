@@ -23,18 +23,6 @@ public class RecipientController {
 
 	private final RecipientService recipientService;
 
-	@Operation(summary = "Find and send the email to the next recipient based on the defined signing order.",
-			description = "This endpoint finds and send the email to the next available recipients up until the next Signer Role, in the defined signing order.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
-	@GetMapping(value = "/next-recipient", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> retrieveNextDocumentRecipientAndSendEmail(@RequestParam Long recipientId,
-			@RequestParam Long envelopeId) {
-
-		ResponseEntityDto response = recipientService.sendEmailToRecipient(recipientId, envelopeId);
-
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	@Operation(summary = "Mock API to Demo Cancel Scheduled Emails Upon Completing the Document",
 			description = "This endpoint is a mock API to Demo Cancel Scheduled Emails Upon Completing the Document.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
