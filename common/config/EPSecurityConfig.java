@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
+import com.skapp.enterprise.esignature.config.DocumentLinkAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +39,8 @@ public class EPSecurityConfig {
 	private final EpJwtAuthFilter epJwtAuthFilter;
 
 	private final TenantFilter tenantFilter;
+
+	private final DocumentLinkAuthFilter documentLinkAuthFilter;
 
 	private final UserDetailsService userDetailsService;
 
@@ -98,6 +101,7 @@ public class EPSecurityConfig {
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(documentLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		http.authenticationProvider(authProvider);

@@ -20,6 +20,7 @@ import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -114,6 +115,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
 		Document document = eSignMapper.documentDtoToDocument(documentDto);
+		document.setFilePath(bucketName + "/" + document.getFilePath());
 		document = documentRepository.save(document);
 		DocumentDetailResponseDto documentResponseDto = eSignMapper.documentToDocumentDetailDto(document);
 		return new ResponseEntityDto(false, documentResponseDto);
@@ -339,6 +341,53 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
 
+	}
+
+	@Override
+	public ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto) {
+		log.info("editDocument: Start editing document with id {}", id);
+
+		Document document = documentRepository.findById(id).orElseThrow(() -> {
+			log.error("editDocument: Document with id {} not found", id);
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+		});
+
+		if (document.getEnvelope() != null) {
+			log.error("editDocument: Document with id {} is already associated with an envelope", id);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE);
+		}
+
+		if (editDocumentDto.getName() != null) {
+			document.setName(editDocumentDto.getName());
+		}
+		if (editDocumentDto.getFilePath() != null) {
+			document.setFilePath(editDocumentDto.getFilePath());
+		}
+
+		documentRepository.save(document);
+		log.info("editDocument: Document with id {} successfully updated", id);
+
+		return new ResponseEntityDto(false, document);
+	}
+
+	@Override
+	public ResponseEntityDto deleteDocument(Long id) {
+		log.info("deleteDocument: Start deleting document with id {}", id);
+
+		Document document = documentRepository.findById(id).orElseThrow(() -> {
+			log.error("deleteDocument: Document with id {} not found", id);
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+		});
+
+		if (document.getEnvelope() != null) {
+			log.error("deleteDocument: Document with id {} is already associated with an envelope", id);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE);
+		}
+
+		documentRepository.delete(document);
+		log.info("deleteDocument: Document with id {} successfully deleted", id);
+
+		return new ResponseEntityDto(false, "Document successfully deleted");
 	}
 
 	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {

@@ -40,6 +40,14 @@ public class AddressBook {
 	@Column(name = "is_active")
 	private Boolean isActive = true;
 
+	public Long getUserId() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getId();
+		}
+
+		return internalUser.getUserId();
+	}
+
 	public String getName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName() + " " + externalUser.getLastName();
