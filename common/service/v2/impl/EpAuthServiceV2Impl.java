@@ -96,7 +96,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
 	private static final JsonFactory JSON_FACTORY = new GsonFactory();
+
 	private final ValidationService validationService;
+
 	private final MessageUtil messageUtil;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
@@ -323,10 +325,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
-        validateFrontendUrl(frontendUrl);
+		validateFrontendUrl(frontendUrl);
 
 		try {
-			getUserDetailsByAccessToken(validateCodeAndGetRefreshToken(authorizationCode).getAccessToken());
 			com.skapp.enterprise.common.util.Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
 		}
 		catch (Exception exception) {
@@ -340,9 +341,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		}
 
 		log.info("getIdTokenAndRedirect: execution ended");
-		return UriComponentsBuilder.fromUriString(frontendUrl)
-			.queryParam("code", authorizationCode)
-			.toUriString();
+		return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("code", authorizationCode).toUriString();
 	}
 
 	@Override

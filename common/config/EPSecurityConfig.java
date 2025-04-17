@@ -85,7 +85,8 @@ public class EPSecurityConfig {
 						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
 						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook",
 						"/v2/ep/auth/signin/sso/google/auth-url", "/v2/ep/auth/signin/sso/google/redirect",
-						"/v2/ep/auth/signin/sso/google", "/v2/ep/auth/signup/super-admin/sso/google")
+						"/v2/ep/auth/signin/sso/google", "/v2/ep/auth/signup/super-admin/sso/google",
+						"/v1/ep/auth/code-challenge")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()

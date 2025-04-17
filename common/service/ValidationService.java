@@ -8,4 +8,5 @@ public interface ValidationService {
 	ResponseEntityDto validateBusinessEmail(String email);
 
 	ValidationResult validateEmail(String email);
+
 }

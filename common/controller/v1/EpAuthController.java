@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -111,6 +113,13 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> resendVerifyPasswordResetOtp(
 			@RequestBody EpPasswordResetDto epPasswordResetDto) {
 		ResponseEntityDto response = epAuthService.resendVerifyPasswordResetOTP(epPasswordResetDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@PatchMapping("/code-challenge")
+	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
+			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
+		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
