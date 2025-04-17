@@ -26,6 +26,7 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -38,10 +39,12 @@ import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
+import com.skapp.enterprise.common.payload.response.ValidationResult;
 import com.skapp.enterprise.common.payload.v2.GoogleUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
+import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import io.jsonwebtoken.Jwts;
@@ -93,6 +96,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
 	private static final JsonFactory JSON_FACTORY = new GsonFactory();
+	private final ValidationService validationService;
+	private final MessageUtil messageUtil;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
@@ -251,9 +256,16 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
+				ValidationResult validationResult = validationService.validateEmail(userEmail);
+
+				if (Boolean.FALSE.equals(validationResult.getIsValid())) {
+					throw new ModuleException(CommonMessageConstant.valueOf(validationResult.getMessageKey()));
+				}
+
 				if (userEmail != null && !userEmail.isEmpty()) {
 					return getGoogleUserDetailsDto(profile, userEmail);
 				}
+
 				else {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_NOT_FOUND);
 				}
@@ -304,17 +316,17 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		}
 
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
-		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String frontendUrl = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
 
-		if (Objects.equals(decryptedState, "") || decryptedState == null) {
+		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("getIdTokenAndRedirect: State is invalid");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
-		String frontendRedirectUri = decryptedState;
-		validateFrontendUrl(frontendRedirectUri);
+        validateFrontendUrl(frontendUrl);
 
 		try {
+			getUserDetailsByAccessToken(validateCodeAndGetRefreshToken(authorizationCode).getAccessToken());
 			com.skapp.enterprise.common.util.Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
 		}
 		catch (Exception exception) {
@@ -322,15 +334,13 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
-			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
-
-			return UriComponentsBuilder.fromUriString(frontendRedirectUri)
+			return UriComponentsBuilder.fromUriString(frontendUrl)
 				.queryParam("error", encodedErrorMessage)
 				.toUriString();
 		}
 
 		log.info("getIdTokenAndRedirect: execution ended");
-		return UriComponentsBuilder.fromUriString(frontendRedirectUri)
+		return UriComponentsBuilder.fromUriString(frontendUrl)
 			.queryParam("code", authorizationCode)
 			.toUriString();
 	}

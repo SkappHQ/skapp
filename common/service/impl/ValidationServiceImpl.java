@@ -42,7 +42,8 @@ public class ValidationServiceImpl implements ValidationService {
 		return new ResponseEntityDto(validationResult.getIsValid(), emailValidationResultDto);
 	}
 
-	private ValidationResult validateEmail(String email) {
+	@Override
+	public ValidationResult validateEmail(String email) {
 		if (email == null || email.trim().isEmpty()) {
 			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_EMPTY_EMAIL.getMessageKey());
 		}
