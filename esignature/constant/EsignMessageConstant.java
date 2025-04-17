@@ -23,6 +23,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND("ep.esign.error.recipient.-id.not-found"),
 
 	ESIGN_VALIDATION_ENVELOPE_STATUS_INVALID("validation.envelope.status.invalid"),
+	ESIGN_VALIDATION_DOCUMENT_PERMISSION_TYPE_INVALID("validation.document.permission.type.invalid"),
 	ESIGN_VALIDATION_RECIPIENT_MEMBER_ROLE_STATUS_INVALID("validation.recipient.member.role.status.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_TYPE_INVALID("validation.document.field.type.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_STATUS_INVALID("validation.document.field.status.invalid"),
@@ -37,10 +38,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
 
-	ESIGN_ERROR_NO_RECIPIENT_FOUND("ep.esign.error.recipient.not-found"),
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
-	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.recipients.not-found"),
+	ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NO_DOCUMENT_EMAIL_SENT_ENVELOPE("ep.esign.error.envelope.recipient.emails-sent-recipients.not-found"),
 	ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT("ep.esign.error.failed.sign.document"),
 	ESIGN_ERROR_FAILED_TO_LOAD_KEY_PAIR("ep.esign.error.failed.load.key-pair"),
@@ -84,7 +84,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope"),
-	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted");
+	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
+	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available"),
+	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
+	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
+	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link");
 
 	private final String messageKey;
 

@@ -115,6 +115,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
 		Document document = eSignMapper.documentDtoToDocument(documentDto);
+		document.setFilePath(bucketName + "/" + document.getFilePath());
 		document = documentRepository.save(document);
 		DocumentDetailResponseDto documentResponseDto = eSignMapper.documentToDocumentDetailDto(document);
 		return new ResponseEntityDto(false, documentResponseDto);
