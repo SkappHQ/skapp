@@ -90,7 +90,10 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			dataQuery.orderBy(getSortOrder(cb, recipientJoin, filterDto));
 		}
 
-		dataQuery.multiselect(envelopeRoot, ownerEmailPath,recipientJoin.get(Recipient_.RECEIVED_AT), recipientJoin.get(Recipient_.STATUS) ).distinct(true);
+		dataQuery
+			.multiselect(envelopeRoot, ownerEmailPath, recipientJoin.get(Recipient_.RECEIVED_AT),
+					recipientJoin.get(Recipient_.STATUS))
+			.distinct(true);
 		dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
 
 		TypedQuery<Tuple> typedQuery = entityManager.createQuery(dataQuery);
@@ -128,7 +131,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		return predicates;
 	}
 
-	private Order getSortOrder(CriteriaBuilder cb, Join<Envelope, Recipient>  recipientJoin, EnvelopeInboxFilterDto filterDto) {
+	private Order getSortOrder(CriteriaBuilder cb, Join<Envelope, Recipient> recipientJoin,
+			EnvelopeInboxFilterDto filterDto) {
 		Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
 		return filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(sortPath) : cb.desc(sortPath);
 	}
@@ -143,8 +147,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Join<Envelope, AddressBook> ownerJoin = countRoot.join(Envelope_.OWNER, JoinType.LEFT);
 		Path<String> ownerEmailPath = ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL);
 
-		List<Predicate> predicates = buildPredicates(cb, countRoot, recipientJoin, recipientAddressJoin,
-				ownerEmailPath, filterDto, currentUserId);
+		List<Predicate> predicates = buildPredicates(cb, countRoot, recipientJoin, recipientAddressJoin, ownerEmailPath,
+				filterDto, currentUserId);
 
 		countQuery.select(cb.countDistinct(countRoot));
 		countQuery.where(cb.and(predicates.toArray(new Predicate[0])));

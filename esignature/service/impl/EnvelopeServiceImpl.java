@@ -118,27 +118,24 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
-		 List<DocumentVersion> documentVersionList =
-		 getDocumentsFirstVersion(envelopeDetailDto, envelope);
+		List<DocumentVersion> documentVersionList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
 
-		 documentVersionRepository.saveAll(documentVersionList);
+		documentVersionRepository.saveAll(documentVersionList);
 
-		 List<Document> updatedDocuments =
-		 documentVersionList.stream().map(documentVersion -> {
-		 Document document = documentVersion.getDocument();
-		 document.setCurrentVersion(documentVersion.getVersionNumber());
-		 document.setCurrentSignOderNumber(1);
-		 return document;
-		 }).toList();
+		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
+			Document document = documentVersion.getDocument();
+			document.setCurrentVersion(documentVersion.getVersionNumber());
+			document.setCurrentSignOderNumber(1);
+			return document;
+		}).toList();
 
-		 documentDao.saveAll(updatedDocuments);
+		documentDao.saveAll(updatedDocuments);
 
-		 //Send Envelopes to recipient - async
-		 ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null,
-		 savedEnvelope.getId());
+		// Send Envelopes to recipient - async
+		ResponseEntityDto emailResponse = recipientService.sendEmailToRecipient(null, savedEnvelope.getId());
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
-		 responseDto.setEmailResponse(emailResponse.getResults());
+		responseDto.setEmailResponse(emailResponse.getResults());
 
 		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);
@@ -328,21 +325,22 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
-		Page<Envelope> envelopePage  = envelopeDao.getAllUserEnvelopes(currentUser.getUserId(),
-				envelopeInboxFilterDto);
+		Page<Envelope> envelopePage = envelopeDao.getAllUserEnvelopes(currentUser.getUserId(), envelopeInboxFilterDto);
 
-		List<EnvelopeInboxData> envelopeInboxDataList=new ArrayList<>();
+		List<EnvelopeInboxData> envelopeInboxDataList = new ArrayList<>();
 		envelopePage.getContent().forEach(envelope -> {
-			EnvelopeInboxData envelopeInboxData= eSignMapper.envelopeToEnvelopeInboxData(envelope);
-			Optional<Recipient> optionalRecipient = envelope.getRecipients().stream().filter(env -> env.getAddressBook().getUserId().equals(currentUser.getUserId())).findFirst();
-			if(optionalRecipient.isPresent()){
+			EnvelopeInboxData envelopeInboxData = eSignMapper.envelopeToEnvelopeInboxData(envelope);
+			Optional<Recipient> optionalRecipient = envelope.getRecipients()
+				.stream()
+				.filter(env -> env.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+			if (optionalRecipient.isPresent()) {
 				envelopeInboxData.setStatus(optionalRecipient.get().getStatus());
 				envelopeInboxData.setReceivedDate(optionalRecipient.get().getReceivedAt());
 			}
 
 			envelopeInboxDataList.add(envelopeInboxData);
 		});
-
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(envelopeInboxDataList);
