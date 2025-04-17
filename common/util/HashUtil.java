@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.util;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
@@ -21,7 +22,7 @@ public class HashUtil {
 			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
 		}
 		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_HASH, new String[] { e.getMessage() });
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FAILED_TO_HASH, new String[] { e.getMessage() });
 		}
 	}
 
