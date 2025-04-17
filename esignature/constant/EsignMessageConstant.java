@@ -93,8 +93,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
 	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
 	ESIGN_ERROR_INVALID_IP_ADDRESS("ep.esign.error.invalid.ip-address"),
-	ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED("ep.esign.error.recipient.already-approved"),
-	ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED("ep.esign.error.recipient.already-declined");
+	ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED("ep.esign.error.recipient.nudge.prohibited");
 
 	private final String messageKey;
 

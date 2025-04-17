@@ -24,9 +24,9 @@ public class RecipientController {
 			description = "This endpoint sends a reminder email to the recipient when the Nudge button is clicked.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
 	@PostMapping(value = "/nudge", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> sendReminderEmail(@RequestParam Long recipientId) {
+	public ResponseEntity<ResponseEntityDto> sendNudgeEmail(@RequestParam Long recipientId) {
 
-		ResponseEntityDto response = recipientService.sendReminderEmail(recipientId);
+		ResponseEntityDto response = recipientService.sendNudgeEmail(recipientId);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

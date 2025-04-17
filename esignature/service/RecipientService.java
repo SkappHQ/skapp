@@ -25,6 +25,6 @@ public interface RecipientService {
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}
 
-	ResponseEntityDto sendReminderEmail(Long recipientId);
+	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
 }

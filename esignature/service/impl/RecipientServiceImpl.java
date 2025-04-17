@@ -488,7 +488,7 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public ResponseEntityDto sendReminderEmail(Long recipientId) {
+	public ResponseEntityDto sendNudgeEmail(Long recipientId) {
 		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipientId);
 
 		Optional<Recipient> recipientOptional = recipientRepository.findById(recipientId);
@@ -499,12 +499,8 @@ public class RecipientServiceImpl implements RecipientService {
 
 		Recipient recipient = recipientOptional.get();
 
-		if (recipient.getStatus() == RecipientStatus.APPROVED) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED);
-		}
-
-		if (recipient.getStatus() == RecipientStatus.DECLINED) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED);
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+		    throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
 		}
 
 		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
