@@ -58,14 +58,29 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		if (optionalExternalUser.isEmpty()) {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_NOT_FOUND);
 		}
+
+		ExternalUser externalUser = optionalExternalUser.get();
+		Optional<AddressBook> optionalAddressBook = addressBookDao.findByExternalUser(externalUser);
+
+		if (optionalAddressBook.isEmpty()) {
+			log.warn("deleteExternalUser: AddressBook with external user ID {} not found", id);
+			throw new EntityNotFoundException(
+					EsignMessageConstant.ESIGN_ERROR_MISSING_EXTERNAL_USER_ID_IN_ADDRESS_BOOK);
+		}
+
+		AddressBook addressBook = optionalAddressBook.get();
+		if (!addressBook.getIsActive()) {
+			log.warn("deleteExternalUser: User ID {} is already marked as DELETED", id);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED);
+		}
+
 		Optional<ExternalUser> existingUser = externalUserRepository.findByEmail(externalUserDto.getEmail());
 		Optional<User> internalUser = userDao.findByEmail(externalUserDto.getEmail());
 
 		if (existingUser.isPresent() || internalUser.isPresent()) {
+			log.warn("editExternalUser: Email {} already exists for another user", externalUserDto.getEmail());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_EMAIL_ALREADY_EXITS);
 		}
-
-		ExternalUser externalUser = optionalExternalUser.get();
 
 		if (externalUserDto.getFirstName() != null) {
 			externalUser.setFirstName(externalUserDto.getFirstName());
@@ -105,7 +120,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 
 		if (!addressBook.getIsActive()) {
 			log.warn("deleteExternalUser: User ID {} is already marked as DELETED", id);
-			return new ResponseEntityDto(true, "User is already deleted");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED);
 		}
 
 		addressBook.setIsActive(false);

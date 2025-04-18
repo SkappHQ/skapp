@@ -1,13 +1,11 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.enterprise.common.payload.request.RegisterDeviceTokenDto;
 import com.skapp.enterprise.common.service.DeviceTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,11 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "EP device Controller", description = "Operations related enterprise to notification devices")
 public class EpDeviceController {
 
-	@NonNull
 	private final DeviceTokenService notificationService;
-
-	@NonNull
-	private final PushNotificationService pushNotificationService;
 
 	@PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)

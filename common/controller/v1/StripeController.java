@@ -8,6 +8,7 @@ import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,18 +33,21 @@ public class StripeController {
 	}
 
 	@GetMapping("/subscription")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getSubscriptionDetails() throws StripeException {
 		ResponseEntityDto response = stripeService.getSubscriptionDetails();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/pricing-plans")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPricingPlans() throws StripeException {
 		ResponseEntityDto response = stripeService.getPricingPlans();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/checkout-session")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> createCheckoutSession(
 			@RequestBody SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
 		ResponseEntityDto response = stripeService.createCheckoutSession(subscriptionRequestDto);
@@ -51,12 +55,14 @@ public class StripeController {
 	}
 
 	@PostMapping("/customer-portal-session")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> createPortalSession() throws StripeException {
 		ResponseEntityDto response = stripeService.createCustomerPortalSession();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/activate-tenant-after-trial")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> activateTenantAfterFreeTrial() {
 		ResponseEntityDto response = stripeService.activateTenantAfterFreeTrial();
 		return new ResponseEntity<>(response, HttpStatus.OK);
