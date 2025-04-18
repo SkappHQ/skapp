@@ -121,8 +121,7 @@ public interface EsignMapper {
 	DocumentLinkResponseDto documentLinkToDocumentLinkResponseDto(DocumentLink documentLink);
 
 	@Mapping(source = "id", target = "envelopeId")
-	@Mapping(source = "owner.email", target = "ownerEmail")
-	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	@Mapping(source = "owner", target = "sender")
 	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
 
 	@Mapping(source = "id", target = "id")
@@ -135,8 +134,7 @@ public interface EsignMapper {
 	List<RecipientResponseDto> recipientToRecipinetResponseDtoList(List<Recipient> recipients);
 
 	@Mapping(source = "id", target = "envelopeId")
-	@Mapping(source = "owner.email", target = "ownerEmail")
-	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	@Mapping(source = "owner", target = "sender")
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
