@@ -58,6 +58,13 @@ public class AddressBookServiceImpl implements AddressBookService {
 		return new ResponseEntityDto(false, addressBookUserDataList);
 	}
 
+	@Override
+	public ResponseEntityDto fetchAddressBookInternalEsignSenderByEmailPriority(String keyWord) {
+		List<AddressBookUserData> addressBookUserDataList = addressBookDao
+			.fetchAddressBookEsignSenderByEmailPriority(keyWord);
+		return new ResponseEntityDto(false, addressBookUserDataList);
+	}
+
 	private void validateRequest(ExternalUserDto externalUserDto) {
 		Validations.validateEmail(externalUserDto.getEmail());
 		Validations.validateName(externalUserDto.getFirstName());

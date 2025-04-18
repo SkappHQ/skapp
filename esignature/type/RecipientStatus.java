@@ -2,6 +2,6 @@ package com.skapp.enterprise.esignature.type;
 
 public enum RecipientStatus {
 
-	EMPTY, APPROVED, DECLINED, VOIDED
+	NEED_TO_SIGN, COMPLETED, DECLINED, WAITING, VOID, EMPTY
 
 }

@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -72,6 +73,9 @@ public class Recipient {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "email_status")
 	private EmailStatus emailStatus;
+
+	@Column(name = "received_at")
+	private LocalDateTime receivedAt;
 
 	@Column(name = "decline_reason")
 	private String declineReason;
