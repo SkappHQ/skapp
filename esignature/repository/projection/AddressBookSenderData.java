@@ -22,15 +22,15 @@ public class AddressBookSenderData {
 
 	private String phone;
 
-public AddressBookSenderData(Long addressBookId, Long userId, String email, String firstName,
-							 String lastName, String phone, Role userRole) {
-	this.addressBookId = addressBookId;
-	this.userId = userId;
-	this.email = email;
-	this.firstName = firstName;
-	this.lastName = lastName;
-	this.phone = phone;
-	this.userRole = userRole;
-}
+	public AddressBookSenderData(Long addressBookId, Long userId, String email, String firstName, String lastName,
+			String phone, Role userRole) {
+		this.addressBookId = addressBookId;
+		this.userId = userId;
+		this.email = email;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.phone = phone;
+		this.userRole = userRole;
+	}
 
 }

@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
@@ -168,12 +167,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 			AddressBookSenderView user = getAddressBookSenderView(cb, internalUserJoin, employeeJoin);
 
-			query.select(cb.construct(AddressBookSenderData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-					user.firstName(), user.lastName(), user.phone(), employeeRoleJoin.get("esignRole")));
+			query.select(cb.construct(AddressBookSenderData.class, addressBookRoot.get("id"), user.userId(),
+					user.email(), user.firstName(), user.lastName(), user.phone(), employeeRoleJoin.get("esignRole")));
 
 			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
 			Predicate esignRolePredicate = employeeRoleJoin.get("esignRole")
-					.in(Role.ESIGN_SENDER, Role.ESIGN_ADMIN, Role.SUPER_ADMIN);
+				.in(Role.ESIGN_SENDER, Role.ESIGN_ADMIN, Role.SUPER_ADMIN);
 
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
@@ -236,34 +235,35 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	}
 
 	private AddressBookSenderView getAddressBookSenderView(CriteriaBuilder cb, Join<AddressBook, User> internalUserJoin,
-	        Join<User, Employee> employeeJoin) {
-	    Expression<Object> firstName = cb.selectCase()
-	        .when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.FIRST_NAME))
-	        .otherwise(cb.nullLiteral(Object.class));
+			Join<User, Employee> employeeJoin) {
+		Expression<Object> firstName = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.FIRST_NAME))
+			.otherwise(cb.nullLiteral(Object.class));
 
-	    Expression<Object> lastName = cb.selectCase()
-	        .when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
-	        .otherwise(cb.nullLiteral(Object.class));
+		Expression<Object> lastName = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
+			.otherwise(cb.nullLiteral(Object.class));
 
-	    Expression<Object> phone = cb.selectCase()
-	        .when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
-	        .otherwise(cb.nullLiteral(Object.class));
+		Expression<Object> phone = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
+			.otherwise(cb.nullLiteral(Object.class));
 
-	    Expression<Object> userId = cb.selectCase()
-	        .when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
-	        .otherwise(cb.nullLiteral(Object.class));
+		Expression<Object> userId = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
+			.otherwise(cb.nullLiteral(Object.class));
 
-	    Expression<Object> email = cb.selectCase()
-	        .when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.EMAIL))
-	        .otherwise(cb.nullLiteral(Object.class));
+		Expression<Object> email = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.EMAIL))
+			.otherwise(cb.nullLiteral(Object.class));
 
-	    Expression<Object> userRole = cb.nullLiteral(Object.class);
+		Expression<Object> userRole = cb.nullLiteral(Object.class);
 
-	    return new AddressBookSenderView(firstName, lastName, userId, email, phone, userRole);
+		return new AddressBookSenderView(firstName, lastName, userId, email, phone, userRole);
 	}
+
 	private record AddressBookSenderView(Expression<Object> firstName, Expression<Object> lastName,
-	                                     Expression<Object> userId, Expression<Object> email,
-	                                     Expression<Object> phone, Expression<Object> userRole) {
+			Expression<Object> userId, Expression<Object> email, Expression<Object> phone,
+			Expression<Object> userRole) {
 	}
 
 }
