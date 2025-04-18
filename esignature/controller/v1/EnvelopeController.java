@@ -51,7 +51,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Get Employee Need To Sign KPI Values",
 			description = "This endpoint returns the count of envelopes that need to be signed by a specific employee.")
-	@GetMapping(value = "need-to-sign/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "need-to-sign/{id}/count", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeNeedToSignEnvelopeCount(
 			@PathVariable @Schema(description = "ID of the employee to get count") Long id) {
@@ -85,6 +85,26 @@ public class EnvelopeController {
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getSenderKPI() {
 		ResponseEntityDto response = envelopeService.getSenderKPI();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get envelope details assigned to the current employee",
+			description = "Returns the details of the envelope assigned to the currently logged-in employee for signing. Accessible only by users with the ESIGN_EMPLOYEE role.")
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeForCurrentUser(
+			@PathVariable @Schema(description = "ID of the envelope to get") Long id) {
+		ResponseEntityDto response = envelopeService.getEnvelopeForCurrentUser(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get envelope details created by the current sender",
+			description = "Returns the details of the envelope created or sent by the currently logged-in user.")
+	@GetMapping(value = "envelope-sender/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeForSender(
+			@PathVariable @Schema(description = "ID of the envelope to get") Long id) {
+		ResponseEntityDto response = envelopeService.getEnvelopeForSender(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

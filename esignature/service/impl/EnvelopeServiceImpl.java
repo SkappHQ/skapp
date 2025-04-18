@@ -26,8 +26,12 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
@@ -39,7 +43,9 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -421,6 +427,96 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getSenderKPI: execution ended");
 
 		return new ResponseEntityDto(false, envelopeStatusLongMap);
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeForCurrentUser(@NotNull Long id) {
+		User currentUser = userService.getCurrentUser();
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(id);
+		if (envelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+		Envelope envelope = envelopeOptional.get();
+		boolean isRecipient = envelope.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()));
+
+		if (!isRecipient) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+
+		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeForSender(@NotNull Long id) {
+		User currentUser = userService.getCurrentUser();
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(id);
+		if (envelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = envelopeOptional.get();
+		AddressBook addressBook = envelope.getOwner();
+
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
+
+		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
+					.map(AddressBook::getInternalUser)
+					.map(User::getUserId)
+					.filter(userId -> userId.equals(currentUser.getUserId()))
+					.isEmpty())) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+
+		}
+
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+
+		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+	}
+
+	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
+		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
+		envelopeInfoResponseDto.setId(envelope.getId());
+		envelopeInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInfoResponseDto.setStatus(envelope.getStatus());
+
+		List<Recipient> recipients = envelope.getRecipients();
+		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		envelopeInfoResponseDto.setRecipients(recipientResponseDtos);
+
+		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
+		AddressBook addressBook = envelope.getOwner();
+
+		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
+			.addressBookToAddressBookBasicResponseDto(addressBook);
+		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
+
+		envelopeInfoResponseDto.setDocuments(documentDetails);
+		return envelopeInfoResponseDto;
+	}
+
+	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
+		return envelope.getDocuments().stream().map(document -> {
+			int currentVersion = document.getCurrentVersion();
+			DocumentVersion documentVersion = documentVersionRepository
+				.findByVersionNumberAndDocumentId(currentVersion, document.getId())
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
+			dto.setId(document.getId());
+			dto.setName(document.getName());
+			dto.setFilePath(documentVersion.getFilePath());
+
+			return dto;
+		}).toList();
 	}
 
 	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {

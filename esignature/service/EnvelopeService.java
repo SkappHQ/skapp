@@ -20,4 +20,8 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getSenderKPI();
 
+	ResponseEntityDto getEnvelopeForCurrentUser(Long id);
+
+	ResponseEntityDto getEnvelopeForSender(Long id);
+
 }
