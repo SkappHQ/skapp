@@ -87,30 +87,29 @@ public class AddressBookServiceImpl implements AddressBookService {
 			Validations.validateContactNo(externalUserDto.getPhone());
 		}
 	}
+
 	@Override
 	public ResponseEntityDto addUpdateMySignatureLink(MySignatureLinkDto mySignatureLinkDto) {
 		User currentUser = userService.getCurrentUser();
 
-	   AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
-	            .orElseThrow(() -> {
-	                log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
-	                throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
-	            });
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser).orElseThrow(() -> {
+			log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
+		});
 
-	    addressBook.setMySignatureLink(mySignatureLinkDto.getMySignatureLink());
-	    addressBookDao.save(addressBook);
-	    return new ResponseEntityDto(false, mySignatureLinkDto);
+		addressBook.setMySignatureLink(mySignatureLinkDto.getMySignatureLink());
+		addressBookDao.save(addressBook);
+		return new ResponseEntityDto(false, mySignatureLinkDto);
 	}
 
 	@Override
 	public ResponseEntityDto getMySignatureLink() {
 		User currentUser = userService.getCurrentUser();
 
-		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
-				.orElseThrow(() -> {
-					log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
-				});
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser).orElseThrow(() -> {
+			log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
+		});
 
 		MySignatureLinkResponseDto responseDto = new MySignatureLinkResponseDto();
 		responseDto.setMySignatureLink(addressBook.getMySignatureLink());

@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.response;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,5 +7,6 @@ import lombok.Setter;
 @Setter
 public class MySignatureLinkResponseDto {
 
-    private String mySignatureLink;
+	private String mySignatureLink;
+
 }
