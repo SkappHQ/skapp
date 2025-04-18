@@ -550,7 +550,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.length() > EsignValidationConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
 		}
-		if (!voidEnvelopeRequestDto.getVoidReason().matches(EsignValidationConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+		if (!voidEnvelopeRequestDto.getVoidReason()
+			.matches(EsignValidationConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS);
 		}
 		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
@@ -605,7 +606,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.length() > EsignValidationConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
 		}
-		if (!declineEnvelopeRequestDto.getDeclineReason().matches(EsignValidationConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+		if (!declineEnvelopeRequestDto.getDeclineReason()
+			.matches(EsignValidationConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
