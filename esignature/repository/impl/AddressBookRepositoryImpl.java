@@ -3,7 +3,9 @@ package com.skapp.enterprise.esignature.repository.impl;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
@@ -136,6 +138,49 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			Predicate keywordCondition = cb.or(emailLike, firstNameLike, lastNameLike);
 
 			query.where(cb.and(keywordCondition, isActivePredicate));
+
+			Order sortingOrder = cb.asc(cb.selectCase()
+				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)
+				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 2)
+				.when(cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%"), 3)
+				.otherwise(4));
+
+			query.orderBy(sortingOrder);
+			TypedQuery<AddressBookUserData> typedQuery = entityManager.createQuery(query);
+			return typedQuery.getResultList();
+		}
+
+		return new ArrayList<>();
+	}
+
+	@Override
+	public List<AddressBookUserData> fetchAddressBookEsignSenderByEmailPriority(String keyword) {
+		if (keyword != null && !keyword.trim().isEmpty()) {
+			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+			CriteriaQuery<AddressBookUserData> query = cb.createQuery(AddressBookUserData.class);
+			Root<AddressBook> addressBookRoot = query.from(AddressBook.class);
+
+			Join<AddressBook, User> internalUserJoin = addressBookRoot.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
+			Join<AddressBook, ExternalUser> externalUserJoin = addressBookRoot.join(AddressBook_.EXTERNAL_USER,
+					JoinType.LEFT);
+			Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+			Join<Employee, EmployeeRole> employeeRoleJoin = employeeJoin.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
+
+			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
+
+			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
+					user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
+
+			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
+			Predicate esignRolePredicate = cb.equal(employeeRoleJoin.get("esignRole"), Role.ESIGN_SENDER);
+
+			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
+			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
+
+			Predicate keywordCondition = cb.or(emailLike, firstNameLike, lastNameLike);
+
+			query.where(cb.and(isActivePredicate, esignRolePredicate, keywordCondition));
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)

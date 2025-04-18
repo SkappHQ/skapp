@@ -32,7 +32,7 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 			return redisTemplate.opsForValue().get(generateTenantKey(cacheKey));
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("get: Redis connection failed: {}", e.getMessage(), e);
+			log.error("get: Redis connection failed: {}", e.getMessage());
 			return null;
 		}
 	}
@@ -44,7 +44,7 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 			log.info("put: Cache key {} set with value {}", cacheKey, value);
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("put: Redis connection failed: {}", e.getMessage(), e);
+			log.error("put: Redis connection failed: {}", e.getMessage());
 		}
 	}
 
@@ -55,7 +55,7 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 			log.info("invalidate: Cache key {} deleted", cacheKey);
 		}
 		catch (RedisConnectionFailureException e) {
-			log.error("invalidate: Redis connection failed: {}", e.getMessage(), e);
+			log.error("invalidate: Redis connection failed: {}", e.getMessage());
 		}
 	}
 

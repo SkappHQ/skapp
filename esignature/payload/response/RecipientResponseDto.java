@@ -11,10 +11,6 @@ public class RecipientResponseDto {
 
 	private Long id;
 
-	private String name;
-
-	private String email;
-
 	private MemberRole memberRole;
 
 	private RecipientStatus status;
@@ -23,6 +19,6 @@ public class RecipientResponseDto {
 
 	private String color;
 
-	private Long addressBookId;
+	private AddressBookBasicResponseDto addressBook;
 
 }

@@ -88,7 +88,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
-	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link");
+	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link"),
+	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash"),
+	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
+	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
+	ESIGN_ERROR_INVALID_IP_ADDRESS("ep.esign.error.invalid.ip-address");
 
 	private final String messageKey;
 

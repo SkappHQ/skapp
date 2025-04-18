@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -52,7 +53,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -210,7 +210,7 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 			});
 
-		updatedRecipient.setStatus(RecipientStatus.APPROVED);
+		updatedRecipient.setStatus(RecipientStatus.COMPLETED);
 		recipientRepository.save(updatedRecipient);
 
 		// load current version version-fields
@@ -605,19 +605,6 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private String hashDocument(String data) {
-		try {
-			MessageDigest digest = new SHA3.Digest256(); // Using SHA-3 for strong
-															// security
-			byte[] hashBytes = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
-		}
-		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_HASH_DOCUMENT,
-					new String[] { e.getMessage() });
-		}
-	}
-
 	private boolean verifySignature(byte[] documentHash, String base64Signature, PublicKey publicKey) {
 		try {
 			Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM, SECURITY_PROVIDER);
@@ -675,7 +662,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signTextField(FieldSignDto field, PrivateKey privateKey) {
 		try {
-			String newHash = hashDocument(field.getFieldValue());
+			String newHash = HashUtil.hash(field.getFieldValue());
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
 			return getDocumentVersionField(newHash, signature);
 		}
@@ -701,7 +688,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private void verifyTextField(String data, PublicKey publicKey, String base64Signature) {
-		String currentHash = hashDocument(data);
+		String currentHash = HashUtil.hash(data);
 		byte[] decodedHash = Base64.getDecoder().decode(currentHash);
 
 		if (!verifySignature(decodedHash, base64Signature, publicKey)) {
