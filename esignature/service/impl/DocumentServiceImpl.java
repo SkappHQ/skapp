@@ -499,10 +499,10 @@ public class DocumentServiceImpl implements DocumentService {
 		return createSignedField(fieldSignDto, privateKey, field, currentVersion);
 	}
 
-	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey) {
+	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 		return switch (fieldSignDto.getType()) {
-			case DATE, APPROVE, DECLINE -> signTextField(fieldSignDto, privateKey);
-			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> signImageField(fieldSignDto, privateKey);
+			case DATE, APPROVE, DECLINE -> signTextField(fieldSignDto, privateKey, field);
+			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> signImageField(fieldSignDto, privateKey, field);
 		};
 	}
 
@@ -641,8 +641,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private DocumentVersionField signImageField(FieldSignDto field, PrivateKey privateKey) {
-		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, field.getFieldValue());
+	private DocumentVersionField signImageField(FieldSignDto fieldDto, PrivateKey privateKey, Field field) {
+		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, fieldDto.getFieldValue());
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 			imageStream.transferTo(outputStream);
@@ -651,25 +651,25 @@ public class DocumentServiceImpl implements DocumentService {
 			String newHash = hashDocument(imageBytes);
 
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
-			return getDocumentVersionField(newHash, signature);
+			return getDocumentVersionField(newHash, signature, field);
 		}
 		catch (Exception e) {
-			log.error("Failed to load image: {}", field.getFieldValue(), e);
+			log.error("Failed to load image: {}", fieldDto.getFieldValue(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
-					new String[] { field.getFieldValue() });
+					new String[] { fieldDto.getFieldValue() });
 		}
 	}
 
-	private DocumentVersionField signTextField(FieldSignDto field, PrivateKey privateKey) {
+	private DocumentVersionField signTextField(FieldSignDto fieldDto, PrivateKey privateKey, Field field) {
 		try {
-			String newHash = HashUtil.hash(field.getFieldValue());
+			String newHash = HashUtil.hash(fieldDto.getFieldValue());
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
-			return getDocumentVersionField(newHash, signature);
+			return getDocumentVersionField(newHash, signature, field);
 		}
 		catch (Exception e) {
-			log.error("Failed to load image: {}", field.getFieldValue(), e);
+			log.error("Failed to load image: {}", fieldDto.getFieldValue(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
-					new String[] { field.getFieldValue() });
+					new String[] { fieldDto.getFieldValue() });
 		}
 	}
 
@@ -752,8 +752,14 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private DocumentVersionField getDocumentVersionField(String newHash, String signature) {
-		DocumentVersionField documentVersionField = new DocumentVersionField();
+	private DocumentVersionField getDocumentVersionField(String newHash, String signature, Field field) {
+
+		DocumentVersionField documentVersionField = documentVersionFieldRepository.findByField(field);
+
+		if (documentVersionField == null) {
+			documentVersionField = new DocumentVersionField();
+		}
+
 		documentVersionField.setFieldHash(newHash);
 		documentVersionField.setFieldSignature(signature);
 		return documentVersionField;
@@ -787,9 +793,12 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field,
 			DocumentVersion currentVersion) {
 
-		DocumentVersionField documentVersionField = signFieldVersion(fieldSignDto, privateKey);
+		DocumentVersionField documentVersionField = signFieldVersion(fieldSignDto, privateKey, field);
 
-		documentVersionField.setField(field);
+		if (documentVersionField.getId() == null) {
+			documentVersionField.setField(field);
+		}
+
 		documentVersionField.setXPosition(fieldSignDto.getXposition());
 		documentVersionField.setYPosition(fieldSignDto.getYposition());
 		documentVersionField.setValue(fieldSignDto.getFieldValue());

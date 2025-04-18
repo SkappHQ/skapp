@@ -46,7 +46,8 @@ import java.util.Set;
 @Primary
 public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
-	private static final Set<String> DOCUMENT_LINK_URLS = Set.of("/v1/ep/esign/document-link/access");
+	private static final Set<String> DOCUMENT_LINK_URLS = Set.of("/v1/ep/esign/document-link/access",
+			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field");
 
 	private static final int TOKEN_PREFIX_LENGTH = 7;
 
