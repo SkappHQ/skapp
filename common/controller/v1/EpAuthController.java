@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,7 +115,7 @@ public class EpAuthController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PatchMapping("/code-challenge")
+	@PostMapping("/code-challenge")
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
