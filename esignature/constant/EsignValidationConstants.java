@@ -21,7 +21,7 @@ public class EsignValidationConstants {
 	 *
 	 */
 
-	public static final String ALLOWED_CHARACTERS_REGEX =
+	public static final String ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID =
 			// Regex to allow specific Unicode characters, including letters, marks, and
 			// special symbols
 			"[\\p{L}\\p{M}\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF"
