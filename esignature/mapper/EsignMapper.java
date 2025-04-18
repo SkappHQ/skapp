@@ -17,8 +17,10 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
@@ -27,10 +29,9 @@ import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
-import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
@@ -138,5 +139,7 @@ public interface EsignMapper {
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
+
+	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 }

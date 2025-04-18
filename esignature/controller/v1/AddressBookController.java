@@ -102,7 +102,7 @@ public class AddressBookController {
 
 	@Operation(summary = "Add or Update My Signature Link",
 			description = "This endpoint allows adding or updating the signature link for a specific address book entry.")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER','ROLE_ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
 	@PatchMapping("/my-signature-link")
 	public ResponseEntity<ResponseEntityDto> addUpdateMySignatureLink(
 			@Valid @RequestBody MySignatureLinkDto mySignatureLinkDto) {
@@ -113,7 +113,7 @@ public class AddressBookController {
 
 	@Operation(summary = "Get My Signature Link",
 			description = "This endpoint retrieves the signature link for the current user's address book entry.")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER','ROLE_ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
 	@GetMapping("/my-signature-link")
 	public ResponseEntity<ResponseEntityDto> getMySignatureLink() {
 		ResponseEntityDto response = addressBookService.getMySignatureLink();

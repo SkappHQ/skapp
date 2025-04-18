@@ -97,9 +97,17 @@ public class AddressBookServiceImpl implements AddressBookService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
 		});
 
+		if (mySignatureLinkDto.getMySignatureLink() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY);
+		}
 		addressBook.setMySignatureLink(mySignatureLinkDto.getMySignatureLink());
 		addressBookDao.save(addressBook);
-		return new ResponseEntityDto(false, mySignatureLinkDto);
+
+		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
+			.addressBookToMySignatureLinkResponseDto(addressBook);
+		mySignatureLinkResponseDto.setInternalExternalUserId(addressBook.getUserId());
+
+		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
 
 	@Override
@@ -111,10 +119,11 @@ public class AddressBookServiceImpl implements AddressBookService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
 		});
 
-		MySignatureLinkResponseDto responseDto = new MySignatureLinkResponseDto();
-		responseDto.setMySignatureLink(addressBook.getMySignatureLink());
+		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
+			.addressBookToMySignatureLinkResponseDto(addressBook);
+		mySignatureLinkResponseDto.setInternalExternalUserId(addressBook.getUserId());
 
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
 
 }
