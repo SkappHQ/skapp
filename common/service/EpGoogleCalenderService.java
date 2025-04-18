@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 public interface EpGoogleCalenderService {
 
-	String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleCalendarauthRedirectDto);
+	String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto);
 
 	ResponseEntityDto saveGoogleCalendarConfig(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto);
 
