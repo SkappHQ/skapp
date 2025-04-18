@@ -120,7 +120,7 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
