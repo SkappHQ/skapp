@@ -469,11 +469,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
 
 		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
-					.map(AddressBook::getInternalUser)
-					.map(User::getUserId)
-					.filter(userId -> userId.equals(currentUser.getUserId()))
-					.isEmpty())) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			.map(AddressBook::getInternalUser)
+			.map(User::getUserId)
+			.filter(userId -> userId.equals(currentUser.getUserId()))
+			.isEmpty())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 
 		}
 
