@@ -11,4 +11,6 @@ public class CodeChallengeResponseDto {
 
 	private String refreshToken;
 
+	private Boolean isPasswordChangedForTheFirstTime;
+
 }

@@ -537,6 +537,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
 		codeChallengeResponseDto.setAccessToken(accessToken);
 		codeChallengeResponseDto.setRefreshToken(refreshToken);
+		codeChallengeResponseDto.setIsPasswordChangedForTheFirstTime(true);
 
 		return new ResponseEntityDto(false, codeChallengeResponseDto);
 	}
