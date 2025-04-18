@@ -464,12 +464,17 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Envelope envelope = envelopeOptional.get();
 		AddressBook addressBook = envelope.getOwner();
 
-		if (Optional.ofNullable(addressBook)
-			.map(AddressBook::getInternalUser)
-			.map(User::getUserId)
-			.filter(userId -> userId.equals(currentUser.getUserId()))
-			.isEmpty()) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
+
+		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
+					.map(AddressBook::getInternalUser)
+					.map(User::getUserId)
+					.filter(userId -> userId.equals(currentUser.getUserId()))
+					.isEmpty())) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+
 		}
 
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
