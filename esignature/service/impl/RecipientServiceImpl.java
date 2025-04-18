@@ -517,6 +517,36 @@ public class RecipientServiceImpl implements RecipientService {
 		return new ResponseEntityDto(false, "Reminder email sent successfully");
 	}
 
+	@Override
+	public ResponseEntityDto sendEmailWhenDocumentIsCompleted(Envelope envelope) {
+		log.info("sendEmailWhenDocumentIsCompleted: execution started");
+
+		// Sending emails to recipients
+		Optional.ofNullable(envelope)
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
+						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+						concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
+						mailRecipient.getEmail());
+			}));
+
+		// Sending email to the sender
+		EpEsignEnvelopeRecipientEmailDynamicFields senderEmailFields = initializeEpEsignEmailValues(
+				envelope.getOwner().getInternalUser().getEmployee().getFirstName() + " "
+						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
+				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
+				envelope.getOwner().getInternalUser().getEmail());
+
+		log.info("sendEmailWhenDocumentIsCompleted: execution ended");
+		return new ResponseEntityDto(false, "Emails sent successfully for document completion");
+	}
+
 	/**
 	 * @param userName
 	 * @param envelopeId

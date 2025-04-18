@@ -13,4 +13,6 @@ public class EsignEmailTitleConstant {
 
 	public static final String ESIGN_ENVELOPE_DECLINED_EMAIL_TITLE = "Your document is declined!";
 
+	public static final String ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE = "Your document is completed!";
+
 }

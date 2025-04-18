@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.util.HashUtil;
@@ -111,6 +112,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignMapper eSignMapper;
 
 	private final AESKeyLoader aesKeyLoader;
+
+	private final EmailService emailService;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -262,8 +265,8 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
-			// send email to all recipients in envelope
-			// send sender email
+			// Sending emails when the document is completed
+			recipientService.sendEmailWhenDocumentIsCompleted(envelope);
 		}
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
