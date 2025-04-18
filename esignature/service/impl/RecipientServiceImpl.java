@@ -523,7 +523,8 @@ public class RecipientServiceImpl implements RecipientService {
 	public ResponseEntityDto declineEnvelope(Recipient recipient) {
 
 		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
-			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(), recipient.getStatus());
+			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(),
+					recipient.getStatus());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED);
 		}
 
