@@ -20,6 +20,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.impl.AuthServiceImpl;
+import com.skapp.community.common.type.CacheKey;
 import com.skapp.community.common.type.CacheKeys;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
@@ -59,6 +60,7 @@ import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDt
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import io.jsonwebtoken.Jwts;
@@ -523,7 +525,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-		CacheKeys cacheKey = CacheKeys.UUID_CACHE_KEY;
+		CacheKey cacheKey = EpCacheKeys.UUID_CACHE_KEY;
 		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
 
 		if (cachedUuid == null) {
