@@ -162,6 +162,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentLink documentLink = documentLinkRepository.findByToken(resendAccessUrlDto.getToken())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID));
 
+		if(documentLink.isResend()){
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND);
+		}
+
 		String token = resendAccessUrlDto.getToken();
 		Long documentId = jwtService.extractClaim(token, claims -> claims.get(DOCUMENT_ID_PARAM, Long.class));
 		Long recipientId = jwtService.extractClaim(token, claims -> claims.get(RECIPIENT_ID_PARAM, Long.class));
@@ -184,6 +188,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		emailService.resendEnvelopeEmailToRecipient(documentLink.getEnvelopeId(), documentLink.getRecipientId(),
 				documentLinkResponseDto.getUrl());
+
+		documentLink.setResend(true);
+		documentLinkRepository.save(documentLink);
+
 		log.info("resendDocumentAccessURL: process end");
 	}
 
@@ -210,16 +218,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtDocumentAccessTokenExpirationMs));
 
 		DocumentLink documentLink = DocumentLink.builder()
-			.documentId(document)
-			.envelopeId(envelope)
-			.recipientId(recipient)
-			.createdByUserId(userId)
-			.createdAt(LocalDateTime.now())
-			.expiresAt(expiresAt)
-			.maxClicks(defaultMaxClicks)
-			.clickCount(0)
-			.isActive(true)
-			.build();
+				.documentId(document)
+				.envelopeId(envelope)
+				.recipientId(recipient)
+				.createdByUserId(userId)
+				.createdAt(LocalDateTime.now())
+				.expiresAt(expiresAt)
+				.maxClicks(defaultMaxClicks)
+				.clickCount(0)
+				.isActive(true)
+				.isResend(false)
+				.build();
 
 		DocumentAccessData documentAccessData = new DocumentAccessData(userId, tenantId, envelope.getId(),
 				document.getId(), recipient.getId(), userType.name());

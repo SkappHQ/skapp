@@ -95,7 +95,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_IP_ADDRESS("ep.esign.error.invalid.ip-address"),
 	ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED("ep.esign.error.recipient.nudge.prohibited"),
 	ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE("ep.esign.error.document.access.inactive"),
-	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid");
+	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid"),
+	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND("ep.esign.error.document.access.already.resend");
 
 	private final String messageKey;
 
