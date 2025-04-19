@@ -411,7 +411,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private String generateUrl(String tenantId, String parentDomain, boolean isSign) {
-		String protocol = parentDomain.equals("localhost") ? "http" : "https";
+		String protocol = parentDomain.equals("localhost:3000") ? "http" : "https";
 		String baseUrl = BASE_SIGNING_URL;
 
 		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
