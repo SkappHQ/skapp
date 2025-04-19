@@ -61,7 +61,7 @@ public class DocumentController {
 			description = "This endpoint generates a digital signature corresponding to a specific document version, "
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
 		ResponseEntityDto response = documentService.sequentialSignDocument(documentSignDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -71,7 +71,7 @@ public class DocumentController {
 			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto) {
 		ResponseEntityDto response = documentService.sequentialSignField(documentFieldSignDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);

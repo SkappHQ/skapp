@@ -53,7 +53,7 @@ public class DocumentLinkController {
 	@Operation(summary = "Get data for sign or view link",
 			description = "Fetches the sign or view related data for a given document and recipient using a document access token.")
 	@PostMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getRecipientDocumentData(@RequestParam Long documentId,
 			@RequestParam Long recipientId) {
 
