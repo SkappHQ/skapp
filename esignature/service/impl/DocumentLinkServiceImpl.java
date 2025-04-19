@@ -162,7 +162,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentLink documentLink = documentLinkRepository.findByToken(resendAccessUrlDto.getToken())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID));
 
-		if(documentLink.isResend()){
+		if (documentLink.isResend()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND);
 		}
 
@@ -218,17 +218,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		LocalDateTime expiresAt = LocalDateTime.now().plus(Duration.ofMillis(jwtDocumentAccessTokenExpirationMs));
 
 		DocumentLink documentLink = DocumentLink.builder()
-				.documentId(document)
-				.envelopeId(envelope)
-				.recipientId(recipient)
-				.createdByUserId(userId)
-				.createdAt(LocalDateTime.now())
-				.expiresAt(expiresAt)
-				.maxClicks(defaultMaxClicks)
-				.clickCount(0)
-				.isActive(true)
-				.isResend(false)
-				.build();
+			.documentId(document)
+			.envelopeId(envelope)
+			.recipientId(recipient)
+			.createdByUserId(userId)
+			.createdAt(LocalDateTime.now())
+			.expiresAt(expiresAt)
+			.maxClicks(defaultMaxClicks)
+			.clickCount(0)
+			.isActive(true)
+			.isResend(false)
+			.build();
 
 		DocumentAccessData documentAccessData = new DocumentAccessData(userId, tenantId, envelope.getId(),
 				document.getId(), recipient.getId(), userType.name());
