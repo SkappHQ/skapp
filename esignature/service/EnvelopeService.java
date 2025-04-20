@@ -24,4 +24,6 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getEnvelopeForSender(Long id);
 
+	ResponseEntityDto getSignatureCertificate(Long envelopeId);
+
 }
