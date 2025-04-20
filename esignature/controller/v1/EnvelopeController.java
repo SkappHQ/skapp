@@ -108,10 +108,10 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get envelope details by ID",
+	@Operation(summary = "Get signature-certificate details by envelop ID",
 			description = "Fetches detailed information about an envelope, including audit trails.")
 	@GetMapping("/signature-certificate/{envelopeId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@PathVariable Long envelopeId) {
 		ResponseEntityDto response = envelopeService.getSignatureCertificate(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
