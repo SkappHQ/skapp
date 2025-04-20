@@ -37,6 +37,7 @@ import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
+import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.utill.EsignUtil;
@@ -792,6 +793,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field,
 			DocumentVersion currentVersion) {
+
+		if (FieldType.imageFieldTypes().contains(fieldSignDto.getType())) {
+			String url = bucketName + "/" + fieldSignDto.getFieldValue();
+			fieldSignDto.setFieldValue(url);
+		}
 
 		DocumentVersionField documentVersionField = signFieldVersion(fieldSignDto, privateKey, field);
 
