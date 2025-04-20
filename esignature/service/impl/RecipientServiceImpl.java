@@ -525,9 +525,17 @@ public class RecipientServiceImpl implements RecipientService {
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentPermissionType permissionType = DocumentPermissionType.READ;
+
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
+				DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
+				String documentAccessUrl = documentLink.getUrl();
+
+
 				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
-						concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+						concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
 				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
 						mailRecipient.getEmail());
