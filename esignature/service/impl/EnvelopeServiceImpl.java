@@ -6,7 +6,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
-import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -499,52 +498,34 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public ResponseEntityDto getSignatureCertificate(Long envelopeId) {
 		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
-		// Fetch the envelope by ID
-		Envelope envelope = envelopeDao.findById(envelopeId)
-			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
 
-		// Fetch the audit trail data for the envelope
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
-		// Map the envelope data to SignatureCertificateResponseDto
 		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
 
-		// Map the audit trail data manually
-		List<AuditTrailResponseDto> responseDtoList = new ArrayList<>();
-		for (AuditTrail auditTrail : auditTrails) {
-			log.debug("Processing audit trail with ID: {}", auditTrail.getId());
-
+		List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
 			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
 			auditTrailResponseDto.setAuditId(auditTrail.getId());
 			auditTrailResponseDto.setAction(auditTrail.getAction());
-
-			ObjectMapper objectMapper = new ObjectMapper();
-			List<MetadataResponseDto> metadataList = objectMapper.convertValue(auditTrail.getMetadata(),
+			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
 					new TypeReference<List<MetadataResponseDto>>() {
-					});
-
-			auditTrailResponseDto.setMetadata(metadataList);
+					}));
 			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			auditTrailResponseDto.setHash(auditTrail.getHash());
-
-			if (auditTrail.getRecipient() == null) {
-				String actionDoneByName = auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName()
-						+ " " + auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName();
-				auditTrailResponseDto.setActionDoneByName(actionDoneByName);
-				log.debug("Action done by: {}", actionDoneByName);
-			}
-			else {
-				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getName());
-				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getName());
-			}
-
+			auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient() == null
+					? auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName() + " "
+							+ auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName()
+					: auditTrail.getRecipient().getName());
 			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
-			responseDtoList.add(auditTrailResponseDto);
-		}
+			return auditTrailResponseDto;
+		}).toList();
 
-		// Fetch the latest organization and set the organizationTimeZone
-		Optional<Organization> latestOrganization = organizationDao.findTopByOrderByOrganizationIdDesc();
-		latestOrganization.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
+		organizationDao.findTopByOrderByOrganizationIdDesc()
+			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
 		responseDto.setAuditTrails(responseDtoList);
 
 		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
