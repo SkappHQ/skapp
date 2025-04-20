@@ -529,9 +529,9 @@ public class RecipientServiceImpl implements RecipientService {
 
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
 						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
-				DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
+				DocumentLinkResponseDto documentLink = documentLinkService
+					.generateDocumentAccessUrl(documentAccessUrlDto);
 				String documentAccessUrl = documentLink.getUrl();
-
 
 				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
