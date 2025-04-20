@@ -100,7 +100,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 			validateTenantId(tenantId);
 			validateDocumentAndRecipient(documentId, recipientId);
-			validateRequestParameters(request, documentId, recipientId);
+			//validateRequestParameters(request, documentId, recipientId);
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {

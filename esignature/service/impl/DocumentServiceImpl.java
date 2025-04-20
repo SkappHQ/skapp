@@ -336,7 +336,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionFieldRepository.save(documentVersionField);
 
 		Field field = documentVersionField.getField();
-		field.setStatus(FieldStatus.FILLED);
+		field.setStatus(FieldStatus.COMPLETED);
 		fieldRepository.save(field);
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
@@ -474,7 +474,7 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionFields.add(documentVersionField);
 
 			Field field = documentVersionField.getField();
-			field.setStatus(FieldStatus.FILLED);
+			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
