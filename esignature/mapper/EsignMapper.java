@@ -17,8 +17,10 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
@@ -29,8 +31,6 @@ import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
-import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
@@ -121,8 +121,7 @@ public interface EsignMapper {
 	DocumentLinkResponseDto documentLinkToDocumentLinkResponseDto(DocumentLink documentLink);
 
 	@Mapping(source = "id", target = "envelopeId")
-	@Mapping(source = "owner.email", target = "ownerEmail")
-	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	@Mapping(source = "owner", target = "sender")
 	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
 
 	@Mapping(source = "id", target = "id")
@@ -135,8 +134,7 @@ public interface EsignMapper {
 	List<RecipientResponseDto> recipientToRecipinetResponseDtoList(List<Recipient> recipients);
 
 	@Mapping(source = "id", target = "envelopeId")
-	@Mapping(source = "owner.email", target = "ownerEmail")
-	@Mapping(source = "owner.internalUser.employee.authPic", target = "ownerProfilePic")
+	@Mapping(source = "owner", target = "sender")
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);

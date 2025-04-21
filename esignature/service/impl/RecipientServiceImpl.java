@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
@@ -23,8 +24,8 @@ import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
-import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
@@ -484,6 +485,36 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEnvelopeInvalidEmail: execution ended");
 		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto sendNudgeEmail(Long recipientId) {
+		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipientId);
+
+		Optional<Recipient> recipientOptional = recipientRepository.findById(recipientId);
+		if (recipientOptional.isEmpty()) {
+			log.error("sendReminderEmail: Recipient with ID {} not found", recipientId);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND);
+		}
+
+		Recipient recipient = recipientOptional.get();
+
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
+		}
+
+		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
+				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
+				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
+				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, null);
+		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
+
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
+				recipient.getAddressBook().getEmail());
+
+		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
+		return new ResponseEntityDto(false, "Reminder email sent successfully");
 	}
 
 	/**
