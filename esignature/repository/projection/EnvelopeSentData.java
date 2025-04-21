@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class EnvelopeSentData {
 
 	private EnvelopeStatus status;
 
-	private LocalDateTime expiresAt;
+	private LocalDate expiresAt;
 
 	private LocalDateTime sentAt;
 
