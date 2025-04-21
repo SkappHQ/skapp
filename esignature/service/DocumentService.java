@@ -20,7 +20,7 @@ public interface DocumentService {
 
 	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto);
 
-	ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto);
+	ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto);
 
 	ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto);
 

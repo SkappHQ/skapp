@@ -281,7 +281,9 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
-			// set all recipient status to completed
+			envelope.getRecipients().forEach(rec -> rec.setStatus(RecipientStatus.COMPLETED));
+
+			recipientRepository.saveAll(envelope.getRecipients());
 
 			// send email to all recipients in envelope
 			// send sender email
@@ -289,25 +291,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 
-	}
-
-	private UserDetails getCurrentUserDetails() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		// Check if the user is authenticated
-		if (authentication != null && authentication.isAuthenticated()) {
-			Object principal = authentication.getPrincipal();
-
-			if (principal instanceof UserDetails) {
-				return (UserDetails) principal;
-			}
-		}
-		return null; // return null or throw an exception if user is not authenticated
-	}
-
-	private String getCurrentUsername() {
-		UserDetails userDetails = getCurrentUserDetails();
-		return (userDetails != null) ? userDetails.getUsername() : null;
 	}
 
 	@Override
@@ -415,11 +398,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// create final complete document by all field values in each document version
 			for (DocumentVersion version : document.getVersions()) {
-				for (DocumentVersionField documentVersionField : version.getFieldVersions()) {
-					FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
-
-					fullDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPairSign,
-							fieldSignDto, documentBytes);
+				if (version.getFieldVersions() != null) {
+					for (DocumentVersionField documentVersionField : version.getFieldVersions()) {
+						FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
+						KeyPair keyPair = loadKeyPair(documentVersionField.getField().getRecipient().getAddressBook().getId());
+						fullDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPair,
+								fieldSignDto, fullDocumentBytes);
+					}
 				}
 			}
 
@@ -454,33 +439,16 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// send email to all recipients in envelope
 			// send sender email
+			return new ResponseEntityDto(false, "Document Signing completed");
 		}
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 
 	}
 
-	private boolean hasNonWaitingRecipient(Document document) {
-		List<Recipient> recipients = document.getEnvelope().getRecipients();
-		return recipients != null
-				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.WAITING);
-	}
-
-	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
-		String fileUrl = EsignUtil.generateFileUrl();
-
-		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
-			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
-		}
-		catch (IOException e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
-		}
-		return fileUrl;
-	}
-
 	@Override
 	@Transactional
-	public ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto) {
+	public ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto) {
 
 		String username = getCurrentUsername();
 
@@ -593,6 +561,43 @@ public class DocumentServiceImpl implements DocumentService {
 		log.info("deleteDocument: Document with id {} successfully deleted", id);
 
 		return new ResponseEntityDto(false, "Document successfully deleted");
+	}
+
+
+	private UserDetails getCurrentUserDetails() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		if (authentication != null && authentication.isAuthenticated()) {
+			Object principal = authentication.getPrincipal();
+
+			if (principal instanceof UserDetails) {
+				return (UserDetails) principal;
+			}
+		}
+		return null;
+	}
+
+	private String getCurrentUsername() {
+		UserDetails userDetails = getCurrentUserDetails();
+		return (userDetails != null) ? userDetails.getUsername() : null;
+	}
+
+	private boolean hasNonWaitingRecipient(Document document) {
+		List<Recipient> recipients = document.getEnvelope().getRecipients();
+		return recipients != null
+				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.WAITING);
+	}
+
+	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
+		String fileUrl = EsignUtil.generateFileUrl();
+
+		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
+			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
+		}
+		catch (IOException e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
+		}
+		return fileUrl;
 	}
 
 	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {

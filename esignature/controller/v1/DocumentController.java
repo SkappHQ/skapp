@@ -87,7 +87,7 @@ public class DocumentController {
 	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto) {
-		ResponseEntityDto response = documentService.sequentialSignField(documentFieldSignDto);
+		ResponseEntityDto response = documentService.signField(documentFieldSignDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
