@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
@@ -168,7 +169,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			AddressBookSenderView user = getAddressBookSenderView(cb, internalUserJoin, employeeJoin);
 
 			query.select(cb.construct(AddressBookSenderData.class, addressBookRoot.get("id"), user.userId(),
-					user.email(), user.firstName(), user.lastName(), user.phone(), employeeRoleJoin.get("esignRole")));
+					user.email(), user.firstName(), user.lastName(), user.phone(), employeeRoleJoin.get("esignRole"),
+					user.authPic()));
 
 			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
 			Predicate esignRolePredicate = employeeRoleJoin.get("esignRole")
@@ -256,11 +258,16 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.EMAIL))
 			.otherwise(cb.nullLiteral(Object.class));
 
-		return new AddressBookSenderView(firstName, lastName, userId, email, phone);
+		Expression<Object> authPic = cb.selectCase()
+			.when(cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
+					cb.isNotNull(employeeJoin.get(Employee_.authPic))), employeeJoin.get(Employee_.authPic))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		return new AddressBookSenderView(firstName, lastName, userId, email, phone, authPic);
 	}
 
 	private record AddressBookSenderView(Expression<Object> firstName, Expression<Object> lastName,
-			Expression<Object> userId, Expression<Object> email, Expression<Object> phone) {
+			Expression<Object> userId, Expression<Object> email, Expression<Object> phone, Expression<Object> authPic) {
 	}
 
 }

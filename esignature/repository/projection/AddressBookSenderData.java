@@ -22,8 +22,10 @@ public class AddressBookSenderData {
 
 	private String phone;
 
+	private String authPic;
+
 	public AddressBookSenderData(Long addressBookId, Long userId, String email, String firstName, String lastName,
-			String phone, Role userRole) {
+			String phone, Role userRole, String authPic) {
 		this.addressBookId = addressBookId;
 		this.userId = userId;
 		this.email = email;
@@ -31,6 +33,7 @@ public class AddressBookSenderData {
 		this.lastName = lastName;
 		this.phone = phone;
 		this.userRole = userRole;
+		this.authPic = authPic;
 	}
 
 }
