@@ -151,7 +151,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		return DocumentLinkResponseDto.builder()
 			.token(documentLink.getToken())
-			.url(documentLinkData.accessUrl() + documentLink.getToken())
+			.url(documentLinkData.accessUrl())
 			.expiresAt(documentLink.getExpiresAt())
 			.maxClicks(defaultMaxClicks)
 			.build();
