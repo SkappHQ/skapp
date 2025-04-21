@@ -10,6 +10,7 @@ import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
@@ -60,7 +61,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	@Override
 	public ResponseEntityDto fetchAddressBookInternalEsignSenderByEmailPriority(String keyWord) {
-		List<AddressBookUserData> addressBookUserDataList = addressBookDao
+		List<AddressBookSenderData> addressBookUserDataList = addressBookDao
 			.fetchAddressBookEsignSenderByEmailPriority(keyWord);
 		return new ResponseEntityDto(false, addressBookUserDataList);
 	}
