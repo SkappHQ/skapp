@@ -94,6 +94,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Value("${app.parent-domain}")
 	private String parentDomain;
 
+	@Value("${app.protocol}")
+	private String protocol;
+
 	public static final String SUB = "sub";
 
 	public static final String USER_ID = "userId";
@@ -420,9 +423,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private String generateUrl(String tenantId, String parentDomain, boolean isSign) {
-		String protocol = parentDomain.equals("localhost:3000") ? "http" : "https";
 		String baseUrl = BASE_SIGNING_URL;
-
 		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
 	}
 
