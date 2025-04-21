@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -47,6 +48,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,6 +127,12 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	@Override
+	public Document getDocumentById(Long id) {
+		return documentRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+	}
+
+	@Override
 	@Transactional
 	public DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto) {
 		try {
@@ -159,9 +169,17 @@ public class DocumentServiceImpl implements DocumentService {
 	@Transactional
 	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto) {
 
-		User currentUser = userService.getCurrentUser();
+		String username = getCurrentUsername();
 
-		AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -211,7 +229,7 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 			});
 
-		updatedRecipient.setStatus(RecipientStatus.COMPLETED);
+		updatedRecipient.setStatus(RecipientStatus.WAITING);
 		recipientRepository.save(updatedRecipient);
 
 		// load current version version-fields
@@ -263,12 +281,189 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
+			// set all recipient status to completed
+
 			// send email to all recipients in envelope
 			// send sender email
 		}
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 
+	}
+
+	private UserDetails getCurrentUserDetails() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		// Check if the user is authenticated
+		if (authentication != null && authentication.isAuthenticated()) {
+			Object principal = authentication.getPrincipal();
+
+			if (principal instanceof UserDetails) {
+				return (UserDetails) principal;
+			}
+		}
+		return null; // return null or throw an exception if user is not authenticated
+	}
+
+	private String getCurrentUsername() {
+		UserDetails userDetails = getCurrentUserDetails();
+		return (userDetails != null) ? userDetails.getUsername() : null;
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto) {
+
+		String username = getCurrentUsername();
+
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
+
+		validateDocumentSignRequest(documentSignDto);
+
+		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
+
+		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		}
+
+		Document document = documentRepository.findById(documentSignDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (!document.getEnvelope().getId().equals(documentSignDto.getEnvelopeId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
+		}
+
+		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(),
+				documentSignDto.getDocumentId());
+
+		// Load and validate keys-load previous user keys
+		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
+
+		// Process document version and verify existing signature
+		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
+
+		// current user key pair for sign document
+		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
+
+		// if fields remain , complete
+		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
+			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
+					currentVersion);
+
+			documentVersionFieldRepository.saveAll(result.documentVersionFields());
+			fieldRepository.saveAll(result.fields());
+		}
+
+		Recipient updatedRecipient = getRecipientById(documentSignDto.getRecipientId());
+
+		updatedRecipient.getFields()
+			.stream()
+			.filter(field -> field.getStatus().equals(FieldStatus.EMPTY))
+			.findAny()
+			.ifPresent(fields -> {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
+			});
+
+		updatedRecipient.setStatus(RecipientStatus.WAITING);
+		recipientRepository.save(updatedRecipient);
+
+		// load field specific to recipient
+		List<Long> fieldIdList = updatedRecipient.getFields().stream().map(Field::getId).toList();
+		List<DocumentVersionField> fieldVersionList = documentVersionFieldRepository.findByField_IdIn(fieldIdList);
+
+		byte[] updatedDocumentBytes = documentBytes;
+
+		for (DocumentVersionField documentVersionField : fieldVersionList) {
+			FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
+
+			updatedDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPairSign, fieldSignDto,
+					documentBytes);
+		}
+
+		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
+
+		// Create new version with signature
+		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
+				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
+
+		newVersion = documentVersionRepository.save(newVersion);
+
+		// set recipient field values to document version
+		for (DocumentVersionField field : fieldVersionList) {
+			field.setDocumentVersion(newVersion);
+		}
+
+		documentVersionFieldRepository.saveAll(fieldVersionList);
+
+		// if all recipient completed this flow will trigger
+		if (!hasNonWaitingRecipient(document)) {
+
+			byte[] fullDocumentBytes = documentBytes;
+
+			// validate every document by sign adressbook user
+			verifyEachDocumentVersionByAddressBookUser(document);
+
+			// create final complete document by all field values in each document version
+			for (DocumentVersion version : document.getVersions()) {
+				for (DocumentVersionField documentVersionField : version.getFieldVersions()) {
+					FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
+
+					fullDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPairSign,
+							fieldSignDto, documentBytes);
+				}
+			}
+
+			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
+
+			// sign and create final document version
+			String finalHash = hashDocument(new ByteArrayInputStream(fullDocumentBytes));
+
+			String finalSignature = signDocument(Base64.getDecoder().decode(finalHash), keyPairVerify.getPrivate());
+
+			DocumentVersion finalVersion = new DocumentVersion();
+			finalVersion.setDocument(document);
+			finalVersion.setVersionNumber(currentVersion.getVersionNumber() + 1);
+			finalVersion.setAddressBook(currentVersion.getAddressBook());
+			finalVersion.setFilePath(completeFileUrl);
+			finalVersion.setDocumentHash(finalHash);
+
+			DocumentSignature documentSignature = new DocumentSignature();
+			documentSignature.setSignature(finalSignature);
+			finalVersion.setSignatures(documentSignature);
+			documentVersionRepository.save(finalVersion);
+
+			Envelope envelope = document.getEnvelope();
+			envelope.setStatus(EnvelopeStatus.COMPLETED);
+			envelope.setCompletedAt(getCurrentUtcDateTime());
+			envelopeDao.save(envelope);
+
+			// set all recipient status to completed
+			envelope.getRecipients().forEach(rec -> rec.setStatus(RecipientStatus.COMPLETED));
+
+			recipientRepository.saveAll(envelope.getRecipients());
+
+			// send email to all recipients in envelope
+			// send sender email
+		}
+
+		return new ResponseEntityDto(false, "New Document version successfully created");
+
+	}
+
+	private boolean hasNonWaitingRecipient(Document document) {
+		List<Recipient> recipients = document.getEnvelope().getRecipients();
+		return recipients != null
+				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.WAITING);
 	}
 
 	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
@@ -286,11 +481,20 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	@Transactional
 	public ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto) {
-		User currentUser = userService.getCurrentUser();
+
+		String username = getCurrentUsername();
+
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
 
 		validateDocumentFieldSignRequest(documentFieldSignDto);
-
-		AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
 
 		Recipient recipient = getRecipientById(documentFieldSignDto.getRecipientId());
 
@@ -393,14 +597,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {
 
-		List<DocumentVersion> documentVersions = document.getVersions();
-		documentVersions.forEach(documentVersion -> {
-			UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
-			PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
-			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
-
-			verifyDocumentSignature(documentBytes, documentVersion, publicKey);
-		});
+		verifyEachDocumentVersionByAddressBookUser(document);
 
 		KeyPair keyPair = loadKeyPair(document.getEnvelope().getOwner().getId());
 
@@ -411,6 +608,17 @@ public class DocumentServiceImpl implements DocumentService {
 		return createNewDocumentVersion(new DocumentSignDto(), currentVersion, fileUrl, keyPair.getPrivate(),
 				document.getEnvelope().getOwner(), latestDocumentBytes);
 
+	}
+
+	private void verifyEachDocumentVersionByAddressBookUser(Document document) {
+		List<DocumentVersion> documentVersions = document.getVersions();
+		documentVersions.forEach(documentVersion -> {
+			UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
+			PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
+			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+
+			verifyDocumentSignature(documentBytes, documentVersion, publicKey);
+		});
 	}
 
 	private boolean isDocumentComplete(List<Recipient> nextSignRecipientList) {
@@ -719,6 +927,11 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		return addressBook;
+	}
+
+	private AddressBook getCurrentAddressBookUser(@NotNull String userName) {
+		return addressBookDao.findByInternalUserEmail(userName)
+			.orElseGet(() -> addressBookDao.findByExternalUserEmail(userName).orElse(null));
 	}
 
 	private Recipient getRecipientById(@NotNull Long id) {

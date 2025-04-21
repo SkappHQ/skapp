@@ -23,6 +23,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND("ep.esign.error.recipient.-id.not-found"),
 
 	ESIGN_VALIDATION_ENVELOPE_STATUS_INVALID("validation.envelope.status.invalid"),
+	ESIGN_VALIDATION_SIGN_TYPE_INVALID("validation.sign.type.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_PERMISSION_TYPE_INVALID("validation.document.permission.type.invalid"),
 	ESIGN_VALIDATION_RECIPIENT_MEMBER_ROLE_STATUS_INVALID("validation.recipient.member.role.status.invalid"),
 	ESIGN_VALIDATION_DOCUMENT_FIELD_TYPE_INVALID("validation.document.field.type.invalid"),

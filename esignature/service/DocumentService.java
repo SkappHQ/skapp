@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
@@ -11,9 +12,13 @@ public interface DocumentService {
 
 	ResponseEntityDto saveDocument(DocumentDto document);
 
+	Document getDocumentById(Long id);
+
 	DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto);
 
 	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto);
+
+	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto);
 
 	ResponseEntityDto sequentialSignField(DocumentFieldSignDto documentFieldSignDto);
 

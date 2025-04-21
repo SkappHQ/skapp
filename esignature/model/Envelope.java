@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -73,5 +74,9 @@ public class Envelope extends Auditable<String> {
 
 	@Column(name = "void_reason")
 	private String voidReason;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "sign_type", columnDefinition = "varchar(255)")
+	private SignType signType;
 
 }

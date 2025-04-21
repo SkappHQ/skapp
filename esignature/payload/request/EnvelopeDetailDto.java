@@ -2,7 +2,9 @@ package com.skapp.enterprise.esignature.payload.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.utill.deserializer.EnvelopeStatusDeserializer;
+import com.skapp.enterprise.esignature.utill.deserializer.SignTypeDeserializer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -38,5 +40,9 @@ public class EnvelopeDetailDto {
 	private List<RecipientDto> recipients;
 
 	private EnvelopeSettingDto envelopeSettingDto;
+
+	@NotNull
+	@JsonDeserialize(using = SignTypeDeserializer.class)
+	private SignType signType;
 
 }
