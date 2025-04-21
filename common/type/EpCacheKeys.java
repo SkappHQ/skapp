@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public enum EpCacheKeys implements CacheKey {
 
-	UUID_CACHE_KEY("uuid_cache:%s", 5, TimeUnit.MINUTES);
+	CODE_CHALLENGE_CACHE_KEY("code_challenge_cache:%s", 5, TimeUnit.MINUTES);
 
 	private final String key;
 

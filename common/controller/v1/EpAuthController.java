@@ -47,7 +47,7 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> ssoGoogleSignIn(
 			@Valid @RequestBody EpSignInGoogleDataDto epSignUpGoogleDataDto) {
 		ResponseEntityDto response = epAuthService.ssoGoogleSignIn(epSignUpGoogleDataDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/otp/generate")
@@ -115,7 +115,7 @@ public class EpAuthController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PostMapping("/code-challenge")
+	@PostMapping("/code-challenge/verify")
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);

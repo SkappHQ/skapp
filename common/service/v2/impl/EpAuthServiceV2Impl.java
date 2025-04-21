@@ -113,13 +113,13 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
 
-	@Value("${auth.google.client.id}")
+	@Value("${google.auth.client.id}")
 	private String clientId;
 
-	@Value("${auth.google.client.secret}")
+	@Value("${google.auth.client.secret}")
 	private String clientSecret;
 
-	@Value("${auth.google.backend-redirect-uri}")
+	@Value("${google.auth.backend-redirect-uri}")
 	private String backendRedirectURI;
 
 	private SignInResponseDto getSignInResponseDto(String accessToken, String refreshToken,

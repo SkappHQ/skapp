@@ -21,7 +21,6 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.impl.AuthServiceImpl;
 import com.skapp.community.common.type.CacheKey;
-import com.skapp.community.common.type.CacheKeys;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
@@ -525,7 +524,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-		CacheKey cacheKey = EpCacheKeys.UUID_CACHE_KEY;
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
 		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
 
 		if (cachedUuid == null) {

@@ -36,19 +36,20 @@ public class EpAuthControllerV2 {
 	public ResponseEntity<ResponseEntityDto> ssoGoogleSignIn(
 			@Valid @RequestBody EpSignInGoogleDataDto epSignUpGoogleDataDto) {
 		ResponseEntityDto response = epAuthServiceV2.ssoGoogleSignIn(epSignUpGoogleDataDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/signin/sso/google/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
+	// Endpoint to handle redirection from Google after authentication
+	@GetMapping(value = "/sso/google/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public RedirectView ssoGoogleSignInRedirect(@Valid EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
 		return new RedirectView(epAuthServiceV2.ssoGoogleSignInRedirect(epGoogleAuthRedirectDto));
 	}
 
-	@PostMapping(value = "/signin/sso/google/auth-url", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/sso/google/auth-url", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getGoogleAuthUrl(
 			@Valid @RequestBody EpGoogleConsentUrlDto epGoogleConsentUrlDto) {
 		ResponseEntityDto response = epAuthServiceV2.getGoogleAuthUrl(epGoogleConsentUrlDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

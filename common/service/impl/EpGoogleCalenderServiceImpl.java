@@ -109,13 +109,13 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
 
-	@Value("${calendar.google.client.id}")
+	@Value("${google.calendar.client.id}")
 	private String clientId;
 
-	@Value("${calendar.google.client.secret}")
+	@Value("${google.calendar.client.secret}")
 	private String clientSecret;
 
-	@Value("${calendar.google.backend-redirect-uri}")
+	@Value("${google.calendar.backend-redirect-uri}")
 	private String backendRedirectURI;
 
 	@Override

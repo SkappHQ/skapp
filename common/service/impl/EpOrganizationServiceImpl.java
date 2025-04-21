@@ -348,7 +348,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private String generateUUID(String companyDomain) {
 		String uuid = java.util.UUID.randomUUID().toString();
-		CacheKey cacheKey = EpCacheKeys.UUID_CACHE_KEY;
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
 		cacheService.put(cacheKey.format(companyDomain), uuid, cacheKey.getTtl(), cacheKey.getTimeUnit());
 		return uuid;
 	}
