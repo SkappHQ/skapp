@@ -256,14 +256,11 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.EMAIL))
 			.otherwise(cb.nullLiteral(Object.class));
 
-		Expression<Object> userRole = cb.nullLiteral(Object.class);
-
-		return new AddressBookSenderView(firstName, lastName, userId, email, phone, userRole);
+		return new AddressBookSenderView(firstName, lastName, userId, email, phone);
 	}
 
 	private record AddressBookSenderView(Expression<Object> firstName, Expression<Object> lastName,
-			Expression<Object> userId, Expression<Object> email, Expression<Object> phone,
-			Expression<Object> userRole) {
+			Expression<Object> userId, Expression<Object> email, Expression<Object> phone) {
 	}
 
 }
