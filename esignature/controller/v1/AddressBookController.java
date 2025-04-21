@@ -108,7 +108,7 @@ public class AddressBookController {
 			@Valid @RequestBody MySignatureLinkDto mySignatureLinkDto) {
 
 		ResponseEntityDto response = addressBookService.addUpdateMySignatureLink(mySignatureLinkDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Operation(summary = "Get My Signature Link",
