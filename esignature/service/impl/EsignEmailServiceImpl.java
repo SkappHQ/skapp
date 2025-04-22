@@ -20,6 +20,8 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,8 +37,6 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	private final UserService userService;
 
 	private final EmailService emailService;
-
-	private final DocumentLinkService documentLinkService;
 
 	@Override
 	public void resendEnvelopeEmailToRecipient(@NotNull Envelope envelope, @NotNull Recipient recipient,
@@ -54,13 +54,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	}
 
 	@Override
-	public void sendCompleteEmailsToRecipients(Envelope envelope) {
-		log.info("sendEmailsToRecipients: execution started");
-
-		Optional.ofNullable(envelope)
-			.map(Envelope::getRecipients)
-			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-				String documentAccessUrl = generateDocumentAccessUrl(envelope, mailRecipient);
+	public void sendCompleteEmailsToRecipient(Envelope envelope,Recipient mailRecipient,String documentAccessUrl) {
+		log.info("sendEmailsToRecipient: execution started");
 
 				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
@@ -69,9 +64,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
 						mailRecipient.getEmail());
-			}));
 
-		log.info("sendEmailsToRecipients: execution ended");
+		log.info("sendEmailsToRecipient: execution ended");
 	}
 
 	@Override
@@ -89,16 +83,6 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				envelope.getOwner().getInternalUser().getEmail());
 
 		log.info("sendEmailToSender: execution ended");
-	}
-
-	private String generateDocumentAccessUrl(Envelope envelope, Recipient mailRecipient) {
-		DocumentPermissionType permissionType = DocumentPermissionType.READ;
-
-		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelope.getDocuments().getFirst().getId(),
-				mailRecipient.getId(), permissionType);
-
-		DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
-		return documentLink.getUrl();
 	}
 
 	private void sendEnvelopeToRecipientEmail(String userName, String userEmail, String memberRole,
