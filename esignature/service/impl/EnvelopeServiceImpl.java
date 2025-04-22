@@ -581,16 +581,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+	public ResponseEntityDto declineEnvelope( DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 
-		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
-			log.error("Recipient with ID {} not found", recipientId);
-			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
-		});
+		Recipient recipient = recipientService.getRecipient();
 
 		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(),
-					recipientId);
+					recipient.getId());
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {

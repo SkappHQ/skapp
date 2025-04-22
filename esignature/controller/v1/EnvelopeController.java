@@ -126,9 +126,8 @@ public class EnvelopeController {
 	@PatchMapping(value = "/decline", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelope(
-			@RequestParam @Schema(description = "ID of the recipient", example = "1") Long recipientId,
 			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
-		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto);
+		ResponseEntityDto response = envelopeService.declineEnvelope(declineEnvelopeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

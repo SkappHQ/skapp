@@ -22,6 +22,8 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
+	Recipient getRecipient();
+
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}
 
