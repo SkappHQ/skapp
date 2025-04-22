@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.type.RecipientStatus;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class EnvelopeInboxData {
 
 	private RecipientStatus status;
 
-	private LocalDateTime expiresAt;
+	private LocalDate expiresAt;
 
 	private LocalDateTime receivedDate;
 
