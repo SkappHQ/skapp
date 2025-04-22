@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -122,10 +123,10 @@ public class EnvelopeController {
 
 	@Operation(summary = "Decline an envelope",
 			description = "This endpoint allows a recipient to decline an envelope.")
-	@PatchMapping(value = "/decline/{recipientId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PatchMapping(value = "/decline", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelope(
-			@PathVariable @Schema(description = "ID of the recipient", example = "1") Long recipientId,
+			@RequestParam @Schema(description = "ID of the recipient", example = "1") Long recipientId,
 			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
