@@ -257,7 +257,9 @@ public class DocumentServiceImpl implements DocumentService {
 		envelopeDao.save(envelope);
 
 		// Sending emails when the document is completed
-		esignEmailService.sendEmailWhenDocumentIsCompleted(envelope);
+		esignEmailService.sendCompleteEmailsToRecipients(envelope);
+
+		esignEmailService.sendCompleteEmailToSender(envelope);
 
 		return new ResponseEntityDto(false, "Document completed successfully");
 	}

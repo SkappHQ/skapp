@@ -54,40 +54,51 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	}
 
 	@Override
-	public void sendEmailWhenDocumentIsCompleted(Envelope envelope) {
-		log.info("sendEmailWhenDocumentIsCompleted: execution started");
+	public void sendCompleteEmailsToRecipients(Envelope envelope) {
+		log.info("sendEmailsToRecipients: execution started");
 
-		// Sending emails to recipients
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-				DocumentPermissionType permissionType = DocumentPermissionType.READ;
-
-				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
-				DocumentLinkResponseDto documentLink = documentLinkService
-					.generateDocumentAccessUrl(documentAccessUrlDto);
-				String documentAccessUrl = documentLink.getUrl();
+				String documentAccessUrl = generateDocumentAccessUrl(envelope, mailRecipient);
 
 				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
 						concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
+
 				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
 						mailRecipient.getEmail());
 			}));
 
-		// Sending email to the sender
+		log.info("sendEmailsToRecipients: execution ended");
+	}
+
+	@Override
+	public void sendCompleteEmailToSender(Envelope envelope) {
+		log.info("sendEmailToSender: execution started");
+
 		EpEsignEnvelopeRecipientEmailDynamicFields senderEmailFields = initializeEpEsignEmailValues(
 				envelope.getOwner().getInternalUser().getEmployee().getFirstName() + " "
 						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
 				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
 				concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
 				envelope.getOwner().getInternalUser().getEmail());
 
-		log.info("sendEmailWhenDocumentIsCompleted: execution ended");
+		log.info("sendEmailToSender: execution ended");
+	}
+
+	private String generateDocumentAccessUrl(Envelope envelope, Recipient mailRecipient) {
+		DocumentPermissionType permissionType = DocumentPermissionType.READ;
+
+		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelope.getDocuments().getFirst().getId(),
+				mailRecipient.getId(), permissionType);
+
+		DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
+		return documentLink.getUrl();
 	}
 
 	private void sendEnvelopeToRecipientEmail(String userName, String userEmail, String memberRole,
