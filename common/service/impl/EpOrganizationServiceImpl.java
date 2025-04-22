@@ -47,6 +47,7 @@ import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
+import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
@@ -107,8 +108,13 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EsignConfigService esignConfigService;
 
+	private final StripeEmailService stripeEmailService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
+
+	@Value("${organization.email}")
+	private String organizationEmail;
 
 	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
@@ -118,7 +124,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
 			SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService) {
+			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService,
+			StripeEmailService stripeEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -139,6 +146,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
+		this.stripeEmailService = stripeEmailService;
 	}
 
 	@Override
@@ -154,6 +162,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
+
 			log.info("Tenant created for: {}", companyDomain);
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
@@ -178,6 +187,14 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
+
+			String superAdminEmail = superAdmin.getEmail();
+
+			String signedUpDateTime = java.time.LocalDateTime.now().toString();
+
+			stripeEmailService.sendNewOrganizationSignedUpforSkappFreeTierEmail(organizationEmail,
+					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,
+					superAdminEmail);
 
 			return new ResponseEntityDto(false, responseDto);
 

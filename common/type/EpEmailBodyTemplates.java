@@ -27,7 +27,16 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	PAYMENT_STRIPE_WELCOME_TO_SKAPP_CORE_FREE_TRIAL("payment-stripe-welcome-to-skapp-core-free-trial"),
 	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_CORE(
 			"payment-stripe-congratulations-on-upgrading-to-skapp-core"),
-	PAYMENT_STRIPE_CANCEL_SUBSCRIPTION("payment-stripe-cancel-subscription");
+	PAYMENT_STRIPE_CANCEL_SUBSCRIPTION("payment-stripe-cancel-subscription"),
+
+	// Dashboard Templates
+	DASHBOARD_MODULE_NEW_ORGANIZATION_SIGN_UP_FREE_TIER("dashboard-module-new-organization-sign-up-free-tier"),
+	DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL(
+			"dashboard-module-new-organization-started-core-free-trial"),
+	DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE("dashboard-module-trial-organization-converted-to-core"),
+	DASHBOARD_MODULE_FREE_TIER_ORGANIZATION_UPGRADED_TO_CORE_TRIAL(
+			"dashboard-module-free-tier-organization-upgraded-to-core-trial"),
+	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core");
 
 	private final String templateId;
 
