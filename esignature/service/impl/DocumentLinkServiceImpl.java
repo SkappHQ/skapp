@@ -77,9 +77,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentVersionRepository documentVersionRepository;
 
-	private static final String BASE_SIGNING_URL = "/sign/document/access?token=";
-
-	private static final String BASE_VIEW_URL = "sign/document/view?token=";
+	private static final String URL_PATH = "/sign/document/access?token=";
 
 	private static final String DOCUMENT_ID_PARAM = "documentId";
 
@@ -151,7 +149,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		return DocumentLinkResponseDto.builder()
 			.token(documentLink.getToken())
-			.url(documentLinkData.accessUrl() + documentLink.getToken())
+			.url(documentLinkData.accessUrl())
 			.expiresAt(documentLink.getExpiresAt())
 			.maxClicks(defaultMaxClicks)
 			.build();
@@ -237,19 +235,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				document.getId(), recipient.getId(), userType.name());
 
 		String token;
-		String accessUrl;
 		if (documentAccessUrlDto.getPermissionType().equals(DocumentPermissionType.WRITE)) {
 			token = generateSignAccessToken(userDetails, documentAccessData);
-			accessUrl = generateUrl(tenantId, parentDomain, true);
 
 		}
 		else {
 			token = generateViewAccessToken(userDetails, documentAccessData);
-			accessUrl = generateUrl(tenantId, parentDomain, false);
 		}
 
-		accessUrl = accessUrl + token;
-
+		String accessUrl = generateAccessUrl(tenantId, token);
 		documentLink.setToken(token);
 
 		return new DocumentLinkData(documentLink, accessUrl);
@@ -271,6 +265,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public ResponseEntityDto getRecipientDocumentData(@NotNull Long documentId, @NotNull Long recipientId) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -319,7 +319,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			DocumentLinkResponseDto documentLinkResponseDto = eSignMapper
 				.documentLinkToDocumentLinkResponseDto(documentLink);
-			documentLinkResponseDto.setUrl(BASE_SIGNING_URL + documentLinkResponseDto.getToken());
+			documentLinkResponseDto.setUrl(generateAccessUrl(tenantId, documentLinkResponseDto.getToken()));
 			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 
 			RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
@@ -422,9 +422,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
-	private String generateUrl(String tenantId, String parentDomain, boolean isSign) {
-		String baseUrl = BASE_SIGNING_URL;
-		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
+	private String generateAccessUrl(String tenantId, String token) {
+		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + token;
 	}
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
