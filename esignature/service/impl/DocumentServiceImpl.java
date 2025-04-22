@@ -115,8 +115,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AESKeyLoader aesKeyLoader;
 
-	private final EmailService emailService;
-
 	private final EsignEmailService esignEmailService;
 
 	@Override
