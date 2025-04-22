@@ -72,7 +72,6 @@ public class DocumentController {
 
 		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
 			response = documentService.sequentialSignDocument(documentSignDto);
-
 		}
 		else {
 			response = documentService.parallelSignDocument(documentSignDto);

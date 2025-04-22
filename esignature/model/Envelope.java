@@ -79,4 +79,7 @@ public class Envelope extends Auditable<String> {
 	@Column(name = "sign_type", columnDefinition = "varchar(255)")
 	private SignType signType;
 
+	@Column(name = "envelope_uuid", nullable = false, unique = true, length = 23)
+	private String uuid;
+
 }
