@@ -581,13 +581,33 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope( DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 
-		Recipient recipient = recipientService.getRecipient();
+		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
+			log.error("Recipient with ID {} not found", recipientId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
+		});
+
+		// Validate if the recipient
+		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
+				&& !recipient.getId().equals(recipientService.getRecipient().getId())) {
+			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+		else if (recipient.getAddressBook().getType() == UserType.INTERNAL) {
+			User currentUser = userService.getCurrentUser();
+			Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
+			AddressBook addressBook = addressBookOptional
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+			if (!recipient.getAddressBook().getId().equals(addressBook.getId())) {
+				log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
 
 		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(),
-					recipient.getId());
+					recipientId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {

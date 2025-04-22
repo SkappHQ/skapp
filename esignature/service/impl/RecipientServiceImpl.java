@@ -569,29 +569,29 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Override
 	public Recipient getRecipient() {
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-	    if (authentication == null || authentication.getDetails() == null) {
-	        throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-	    }
+		if (authentication == null || authentication.getDetails() == null) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
 
-	    try {
-	        if (!(authentication.getDetails() instanceof Map)) {
-	            throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA);
-	        }
+		try {
+			if (!(authentication.getDetails() instanceof Map)) {
+				throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA);
+			}
 
-	        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-	        String token = (String) details.get(TOKEN);
+			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
+			String token = (String) details.get(TOKEN);
 
 			DocumentLink documentLink = documentLinkRepository.findByToken(token)
-					.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
-	        return documentLink.getRecipientId();
-	    } catch (Exception ex) {
+			return documentLink.getRecipientId();
+		}
+		catch (Exception ex) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
 		}
 	}
-
 
 	/**
 	 * @param userName

@@ -28,6 +28,6 @@ public interface EnvelopeService {
 
 	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto);
 
-	ResponseEntityDto declineEnvelope(DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
+	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
 
 }
