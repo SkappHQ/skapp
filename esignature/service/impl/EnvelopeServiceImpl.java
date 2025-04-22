@@ -9,6 +9,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -35,6 +36,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
+import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
@@ -48,12 +50,16 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,6 +71,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class EnvelopeServiceImpl implements EnvelopeService {
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	private final EsignMapper eSignMapper;
 
@@ -83,6 +92,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentVersionRepository documentVersionRepository;
 
 	private final DocumentLinkRepository documentLinkRepository;
+
+	private final AmazonS3Service amazonS3Service;
+
+	private final DocumentRepository documentRepository;
 
 	@Override
 	@Transactional
@@ -530,6 +543,77 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			documentVersionList.add(documentVersion);
 		});
 		return documentVersionList;
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId) {
+		log.info("transferEnvelopeCustody: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		if (envelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = envelopeOptional.get();
+		if (!envelope.getOwner().getInternalUser().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		Optional<AddressBook> addressBookOptional = addressBookDao.findById(addressbookId);
+		if (addressBookOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
+		}
+
+		if (envelope.getOwner().getId().equals(addressbookId)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE);
+		}
+
+		Document document = documentDao.findByEnvelopeId(envelope.getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		DocumentVersion currentVersion = documentVersionRepository
+			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), document.getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+		// Load and validate keys-load previous user keys
+		KeyPair keyPairVerify = documentService.loadKeyPair(currentVersion.getAddressBook().getId());
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
+
+		// Process document version and verify existing signature
+		documentService.verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
+
+		// custody transfer Hash the document
+		String newHash = documentService.hashDocument(new ByteArrayInputStream(documentBytes));
+
+		// custody transfer user key pair for sign document
+		KeyPair keyPairSign = documentService.loadKeyPair(addressBookOptional.get().getId());
+
+		String signature = documentService.signDocument(Base64.getDecoder().decode(newHash), keyPairSign.getPrivate());
+
+		String fileUrl = currentVersion.getFilePath();
+
+		DocumentVersion newVersion = documentService.buildNewDocumentVersion(currentVersion, fileUrl, newHash,
+				signature, addressBookOptional.get());
+
+		documentVersionRepository.save(newVersion);
+
+		// save document on current version
+		document.setCurrentVersion(newVersion.getVersionNumber());
+		document = documentRepository.save(document);
+
+		AddressBook newOwner = addressBookOptional.get();
+		envelope.setOwner(newOwner);
+		envelopeDao.save(envelope);
+
+		log.info("transferEnvelopeCustody: execution ended");
+		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");
 	}
 
 }

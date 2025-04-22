@@ -66,7 +66,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
@@ -522,7 +521,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return buildNewDocumentVersion(currentVersion, fileUrl, newHash, signature, addressBook);
 	}
 
-	private KeyPair loadKeyPair(Long addressBookId) {
+	@Override
+	public KeyPair loadKeyPair(Long addressBookId) {
 		UserKey userKey = userKeyService.getKeyPairByAddressBookId(addressBookId);
 		try {
 			byte[] decryptedPrivateKey = AESDecrypt.decryptAES(userKey.getPrivateKey(), aesKeyLoader.getAESKeyFromEnv(),
@@ -537,7 +537,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private void verifyDocumentSignature(byte[] documentBytes, DocumentVersion currentVersion, PublicKey publicKey) {
+	@Override
+	public void verifyDocumentSignature(byte[] documentBytes, DocumentVersion currentVersion, PublicKey publicKey) {
 		String currentHash = hashDocument(new ByteArrayInputStream(documentBytes));
 		byte[] decodedHash = Base64.getDecoder().decode(currentHash);
 
@@ -546,7 +547,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private String signDocument(byte[] documentHash, PrivateKey privateKey) {
+	@Override
+	public String signDocument(byte[] documentHash, PrivateKey privateKey) {
 		try {
 			Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM, SECURITY_PROVIDER);
 			signature.initSign(privateKey);
@@ -559,7 +561,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private String hashDocument(InputStream file) {
+	@Override
+	public String hashDocument(InputStream file) {
 		try (InputStream inputStream = file) {
 			MessageDigest digest = new SHA3.Digest256();
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -753,7 +756,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return currentVersion;
 	}
 
-	private DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
+	@Override
+	public DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
 			String signature, AddressBook addressBook) {
 
 		DocumentVersion newVersion = new DocumentVersion();

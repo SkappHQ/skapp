@@ -108,4 +108,17 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Custody Transfer of Envelope",
+			description = "This endpoint updates the owner of an envelope (custody transfer) to a new owner.")
+	@PatchMapping(value = "/custody-transfer/{envelopeId}/{addressbookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> transferEnvelopeCustody(
+			@PathVariable @Schema(description = "ID of the envelope to transfer custody",
+					example = "1") Long envelopeId,
+			@PathVariable @Schema(description = "ID of the new owner in the address book",
+					example = "2") Long addressbookId) {
+		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
