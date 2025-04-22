@@ -194,7 +194,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// if fields remain(auto complete fields) complete them
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
-			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),currentVersion);
+			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
+					currentVersion);
 
 			documentVersionFieldRepository.saveAll(result.documentVersionFields());
 			fieldRepository.saveAll(result.fields());
@@ -252,7 +253,7 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		//  Email notifications would be sent here
+		// Email notifications would be sent here
 
 		return new ResponseEntityDto(false, "Document completed successfully");
 	}
@@ -457,7 +458,8 @@ public class DocumentServiceImpl implements DocumentService {
 		};
 	}
 
-	private DocumentVersionFieldBulk processFieldLevelSign(DocumentSignDto documentSignDto, PrivateKey privateKey,DocumentVersion currentVersion) {
+	private DocumentVersionFieldBulk processFieldLevelSign(DocumentSignDto documentSignDto, PrivateKey privateKey,
+			DocumentVersion currentVersion) {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
 
