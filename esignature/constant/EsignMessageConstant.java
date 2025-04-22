@@ -38,6 +38,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
+	ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY("validation.my-signature-link.empty"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
