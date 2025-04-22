@@ -37,6 +37,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
+	ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY("validation.my-signature-link.empty"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
@@ -93,7 +94,10 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
 	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
 	ESIGN_ERROR_INVALID_IP_ADDRESS("ep.esign.error.invalid.ip-address"),
-	ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED("ep.esign.error.recipient.nudge.prohibited");
+	ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED("ep.esign.error.recipient.nudge.prohibited"),
+	ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE("ep.esign.error.document.access.inactive"),
+	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid"),
+	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND("ep.esign.error.document.access.already.resend");
 
 	private final String messageKey;
 

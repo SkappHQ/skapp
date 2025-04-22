@@ -40,6 +40,9 @@ public class AddressBook {
 	@Column(name = "is_active")
 	private Boolean isActive = true;
 
+	@Column(name = "my_signature_link")
+	private String mySignatureLink;
+
 	public Long getUserId() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getId();

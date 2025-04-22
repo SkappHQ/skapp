@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
@@ -123,6 +124,7 @@ public interface EsignMapper {
 
 	@Mapping(source = "id", target = "envelopeId")
 	@Mapping(source = "owner", target = "sender")
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
 
 	@Mapping(source = "id", target = "id")
@@ -138,7 +140,11 @@ public interface EsignMapper {
 	@Mapping(source = "owner", target = "sender")
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
+
+	@Mapping(source = "id", target = "addressBookId")
+	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 	SignatureCertificateResponseDto envelopeToSignatureCertificateResponseDto(Envelope envelope);
 
