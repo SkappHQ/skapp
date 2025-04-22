@@ -237,7 +237,9 @@ public class RecipientServiceImpl implements RecipientService {
 		log.info("sendEnvelopeToRecipientEmail: execution started");
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-				userName, epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
+				epEsignEmailDataDto.getEnvelopeMessage() != null && !epEsignEmailDataDto.getEnvelopeMessage().isEmpty()
+						? "Hi " + userName : "",
+				epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
 				epEsignEmailDataDto.getEnvelopeMessage(), epEsignEmailDataDto.getDocumentNames(), null, null, null,
 				documentAccessUrl);
 
@@ -506,7 +508,10 @@ public class RecipientServiceImpl implements RecipientService {
 		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
 				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
 				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
-				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, null);
+				concatDocumentNames(recipient.getEnvelope().getDocuments()),
+				recipient.getEnvelope().getMessage() != null && !recipient.getEnvelope().getMessage().isEmpty()
+						? "Hi " + recipient.getAddressBook().getName() : "",
+				null, null, null);
 		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
