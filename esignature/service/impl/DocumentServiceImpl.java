@@ -34,6 +34,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -67,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
@@ -116,6 +116,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final AESKeyLoader aesKeyLoader;
 
 	private final EmailService emailService;
+
+	private final EsignEmailService esignEmailService;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -256,13 +258,13 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-        // Sending emails when the document is completed
-        recipientService.sendEmailWhenDocumentIsCompleted(envelope);
+		// Sending emails when the document is completed
+		esignEmailService.sendEmailWhenDocumentIsCompleted(envelope);
 
 		return new ResponseEntityDto(false, "Document completed successfully");
 	}
 
-		}
+	}
 
 	/**
 	 * Process all document fields and update document bytes

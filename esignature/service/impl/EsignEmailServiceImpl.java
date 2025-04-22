@@ -11,12 +11,19 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +35,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	private final UserService userService;
 
 	private final EmailService emailService;
+
+	private final DocumentLinkService documentLinkService;
 
 	@Override
 	public void resendEnvelopeEmailToRecipient(@NotNull Envelope envelope, @NotNull Recipient recipient,
@@ -42,6 +51,43 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		log.info("resendEnvelopeToRecipient: process ended");
 
+	}
+
+	@Override
+	public void sendEmailWhenDocumentIsCompleted(Envelope envelope) {
+		log.info("sendEmailWhenDocumentIsCompleted: execution started");
+
+		// Sending emails to recipients
+		Optional.ofNullable(envelope)
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentPermissionType permissionType = DocumentPermissionType.READ;
+
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
+				DocumentLinkResponseDto documentLink = documentLinkService
+					.generateDocumentAccessUrl(documentAccessUrlDto);
+				String documentAccessUrl = documentLink.getUrl();
+
+				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
+						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+						concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
+				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
+						mailRecipient.getEmail());
+			}));
+
+		// Sending email to the sender
+		EpEsignEnvelopeRecipientEmailDynamicFields senderEmailFields = initializeEpEsignEmailValues(
+				envelope.getOwner().getInternalUser().getEmployee().getFirstName() + " "
+						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
+				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
+				envelope.getOwner().getInternalUser().getEmail());
+
+		log.info("sendEmailWhenDocumentIsCompleted: execution ended");
 	}
 
 	private void sendEnvelopeToRecipientEmail(String userName, String userEmail, String memberRole,
@@ -112,6 +158,21 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 			epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl(documentAccessUrl);
 
 		return epEsignEnvelopeRecipientEmailDynamicFields;
+	}
+
+	private String concatDocumentNames(List<Document> documents) {
+		String documentName = null;
+
+		for (Document document : documents) {
+			if (documentName == null) {
+				documentName = document.getName();
+			}
+			else {
+				documentName = documentName.concat(" & ").concat(document.getName());
+			}
+		}
+
+		return documentName;
 	}
 
 }
