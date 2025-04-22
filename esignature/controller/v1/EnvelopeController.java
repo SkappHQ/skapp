@@ -118,7 +118,7 @@ public class EnvelopeController {
 			@PathVariable @Schema(description = "ID of the new owner in the address book",
 					example = "2") Long addressbookId) {
 		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }
