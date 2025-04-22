@@ -268,7 +268,7 @@ public class DocumentServiceImpl implements DocumentService {
 				DocumentPermissionType permissionType = DocumentPermissionType.READ;
 
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
+						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), permissionType);
 
 				DocumentLinkResponseDto documentLink = documentLinkService
 					.generateDocumentAccessUrl(documentAccessUrlDto);
