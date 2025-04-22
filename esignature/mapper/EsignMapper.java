@@ -122,6 +122,7 @@ public interface EsignMapper {
 
 	@Mapping(source = "id", target = "envelopeId")
 	@Mapping(source = "owner", target = "sender")
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
 
 	@Mapping(source = "id", target = "id")
@@ -137,6 +138,7 @@ public interface EsignMapper {
 	@Mapping(source = "owner", target = "sender")
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
 
 }
