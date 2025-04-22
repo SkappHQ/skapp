@@ -110,7 +110,7 @@ public class EnvelopeController {
 	}
 
 	@Operation(summary = "Get Signature Certificate",
-	           description = "This endpoint retrieves the signature certificate for a given envelope ID.")
+			description = "This endpoint retrieves the signature certificate for a given envelope ID.")
 	@GetMapping("/signature-certificate")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@RequestParam Long envelopeId) {
