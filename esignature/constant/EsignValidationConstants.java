@@ -22,9 +22,9 @@ public class EsignValidationConstants {
 	 */
 
 	public static final String ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID =
-			// Regex to allow specific Unicode characters, including letters, marks, and
-			// special symbols
-			"[\\p{L}\\p{M}\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF"
-					+ "\\u0100-\\u017F\\u0142\\u00AF\\u0027\\u002D\\u005E\\u0060\\u007E\\u00E7\\u00C7\\u02DA\\u00D8\\u00F8]*";
+	// Regex to allow specific Unicode characters, including letters, marks, spaces, and
+	// special symbols
+	"[\\p{L}\\p{M}\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF"
+			+ "\\u0100-\\u017F\\u0142\\u00AF\\u0027\\u002D\\u005E\\u0060\\u007E\\u00E7\\u00C7\\u02DA\\u00D8\\u00F8\\u0020]*";
 
 }
