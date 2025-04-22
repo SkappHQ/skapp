@@ -46,7 +46,14 @@ import java.util.Set;
 @Primary
 public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
-	private static final Set<String> DOCUMENT_LINK_URLS = Set.of("/v1/ep/esign/document-link/access");
+	public static final String DOCUMENT_LINK_ACCESS_URL = "/v1/ep/esign/document-link/access";
+
+	public static final String DOCUMENT_LINK_SIGN_URL = "/v1/ep/esign/documents/sign";
+
+	public static final String DOCUMENT_LINK_SIGN_FIELD_URL = "/v1/ep/esign/documents/sign-field";
+
+	private static final Set<String> DOCUMENT_LINK_URLS = Set.of(DOCUMENT_LINK_ACCESS_URL, DOCUMENT_LINK_SIGN_URL,
+			DOCUMENT_LINK_SIGN_FIELD_URL);
 
 	private static final int TOKEN_PREFIX_LENGTH = 7;
 
@@ -99,7 +106,10 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 			validateTenantId(tenantId);
 			validateDocumentAndRecipient(documentId, recipientId);
-			validateRequestParameters(request, documentId, recipientId);
+
+			if (request.getRequestURI().equals(DOCUMENT_LINK_ACCESS_URL)) {
+				validateRequestParameters(request, documentId, recipientId);
+			}
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {

@@ -37,6 +37,7 @@ import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
+import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.utill.EsignUtil;
@@ -65,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
@@ -158,20 +160,20 @@ public class DocumentServiceImpl implements DocumentService {
 	@Transactional
 	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto) {
 
+		validateDocumentSignRequest(documentSignDto);
+
 		User currentUser = userService.getCurrentUser();
 
 		AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
 
-		validateDocumentSignRequest(documentSignDto);
+		Document document = documentRepository.findById(documentSignDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
 		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
 		}
-
-		Document document = documentRepository.findById(documentSignDto.getDocumentId())
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
 		if (document.getCurrentSignOderNumber() != recipient.getSigningOrder()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
@@ -182,16 +184,15 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Load and validate keys-load previous user keys
 		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
+		// current user key pair for sign document
+		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		// Process document version and verify existing signature
 		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
-		// current user key pair for sign document
-		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
-
-		// if fields remain in complete flow
+		// if fields remain(auto complete fields) complete them
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
 			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
 					currentVersion);
@@ -200,30 +201,18 @@ public class DocumentServiceImpl implements DocumentService {
 			fieldRepository.saveAll(result.fields());
 		}
 
-		Recipient updatedRecipient = getRecipientById(documentSignDto.getRecipientId());
-
-		updatedRecipient.getFields()
+		boolean hasEmptyFields = recipient.getFields()
 			.stream()
-			.filter(field -> field.getStatus().equals(FieldStatus.EMPTY))
-			.findAny()
-			.ifPresent(fields -> {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
-			});
+			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
-		updatedRecipient.setStatus(RecipientStatus.COMPLETED);
-		recipientRepository.save(updatedRecipient);
-
-		// load current version version-fields
-		List<DocumentVersionField> fieldVersionList = currentVersion.getFieldVersions();
-
-		byte[] updatedDocumentBytes = documentBytes;
-
-		for (DocumentVersionField documentVersionField : fieldVersionList) {
-			FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
-
-			updatedDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPairSign, fieldSignDto,
-					documentBytes);
+		if (hasEmptyFields) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 		}
+
+		recipient.setStatus(RecipientStatus.COMPLETED);
+		recipientRepository.save(recipient);
+
+		byte[] updatedDocumentBytes = processDocumentFields(currentVersion, keyPairSign, documentBytes);
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
@@ -233,41 +222,56 @@ public class DocumentServiceImpl implements DocumentService {
 
 		newVersion = documentVersionRepository.save(newVersion);
 
-		List<FieldSignDto> fieldSignDtoList = documentSignDto.getFieldSignDtoList();
-
-		if (fieldSignDtoList != null) {
-			List<DocumentVersionField> versionFields = getDocumentVersionFields(fieldSignDtoList, newVersion);
-
-			documentVersionFieldRepository.saveAll(versionFields);
-		}
-
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
 		document.setCurrentSignOderNumber(document.getCurrentSignOderNumber() + 1);
 		document = documentRepository.save(document);
 
 		List<Recipient> nextSignRecipientList = recipientService
-			.getNextSignRecipientData(Optional.ofNullable(updatedRecipient.getId()), document.getEnvelope().getId());
+			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-
-			// sign the document by sender and create new document version
-			DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
-			documentVersionRepository.save(documentVersion);
-			document.setCurrentVersion(documentVersion.getVersionNumber());
-			documentRepository.save(document);
-
-			Envelope envelope = document.getEnvelope();
-			envelope.setStatus(EnvelopeStatus.COMPLETED);
-			envelope.setCompletedAt(getCurrentUtcDateTime());
-			envelopeDao.save(envelope);
-
-			// send email to all recipients in envelope
-			// send sender email
+			return completeDocument(document, newVersion);
 		}
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 
+	}
+
+	/**
+	 * Complete the document signing process
+	 */
+	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
+		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
+		documentVersionRepository.save(documentVersion);
+
+		document.setCurrentVersion(documentVersion.getVersionNumber());
+		documentRepository.save(document);
+
+		Envelope envelope = document.getEnvelope();
+		envelope.setStatus(EnvelopeStatus.COMPLETED);
+		envelope.setCompletedAt(getCurrentUtcDateTime());
+		envelopeDao.save(envelope);
+
+		// Email notifications would be sent here
+
+		return new ResponseEntityDto(false, "Document completed successfully");
+	}
+
+	/**
+	 * Process all document fields and update document bytes
+	 */
+	private byte[] processDocumentFields(DocumentVersion currentVersion, KeyPair keyPairSign, byte[] documentBytes) {
+		List<DocumentVersionField> fieldVersionList = currentVersion.getFieldVersions();
+		byte[] updatedDocumentBytes = documentBytes;
+
+		for (DocumentVersionField documentVersionField : fieldVersionList) {
+			FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
+			updatedDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPairSign, fieldSignDto,
+					updatedDocumentBytes);
+		}
+
+		return updatedDocumentBytes;
 	}
 
 	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
@@ -330,13 +334,12 @@ public class DocumentServiceImpl implements DocumentService {
 
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
-		DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, keyPairSign.getPrivate(),
-				currentVersion);
-
+		DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, keyPairSign.getPrivate());
+		documentVersionField.setDocumentVersion(currentVersion);
 		documentVersionFieldRepository.save(documentVersionField);
 
 		Field field = documentVersionField.getField();
-		field.setStatus(FieldStatus.FILLED);
+		field.setStatus(FieldStatus.COMPLETED);
 		fieldRepository.save(field);
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
@@ -428,13 +431,13 @@ public class DocumentServiceImpl implements DocumentService {
 	private byte[] updateDocumentAfterFieldVerification(DocumentVersionField documentVersionField, KeyPair keyPairSign,
 			FieldSignDto fieldSignDto, byte[] documentBytes) {
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, APPROVE, DECLINE -> {
+			case DATE, APPROVE, DECLINE, NAME, EMAIL -> {
 				verifyTextField(documentVersionField.getValue(), keyPairSign.getPublic(),
 						documentVersionField.getFieldSignature());
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 
 			}
-			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> {
+			case SIGNATURE, INITIAL, STAMP -> {
 				try (InputStream imageStream = amazonS3Service.downloadFile(bucketName,
 						documentVersionField.getValue());
 						ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -456,7 +459,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersionFieldBulk processFieldLevelSign(DocumentSignDto documentSignDto, PrivateKey privateKey,
-			DocumentVersion documentVersion) {
+			DocumentVersion currentVersion) {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
 
@@ -468,20 +471,19 @@ public class DocumentServiceImpl implements DocumentService {
 			documentFieldSignDto.setEnvelopeId(documentSignDto.getEnvelopeId());
 			documentFieldSignDto.setRecipientId(documentSignDto.getRecipientId());
 
-			DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, privateKey,
-					documentVersion);
+			DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, privateKey);
+			documentVersionField.setDocumentVersion(currentVersion);
 
 			documentVersionFields.add(documentVersionField);
 
 			Field field = documentVersionField.getField();
-			field.setStatus(FieldStatus.FILLED);
+			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
 
-	private DocumentVersionField processFieldSign(DocumentFieldSignDto documentFieldSignDto, PrivateKey privateKey,
-			DocumentVersion currentVersion) {
+	private DocumentVersionField processFieldSign(DocumentFieldSignDto documentFieldSignDto, PrivateKey privateKey) {
 
 		Field field = fieldRepository.findById(documentFieldSignDto.getFieldSignDto().getFieldId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_ID_NOT_FOUND));
@@ -496,31 +498,14 @@ public class DocumentServiceImpl implements DocumentService {
 
 		FieldSignDto fieldSignDto = documentFieldSignDto.getFieldSignDto();
 
-		return createSignedField(fieldSignDto, privateKey, field, currentVersion);
+		return createSignedField(fieldSignDto, privateKey, field);
 	}
 
-	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey) {
+	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 		return switch (fieldSignDto.getType()) {
-			case DATE, APPROVE, DECLINE -> signTextField(fieldSignDto, privateKey);
-			case SIGNATURE, INITIAL, STAMP, NAME, EMAIL -> signImageField(fieldSignDto, privateKey);
+			case DATE, APPROVE, DECLINE, NAME, EMAIL -> signTextField(fieldSignDto, privateKey, field);
+			case SIGNATURE, INITIAL, STAMP -> signImageField(fieldSignDto, privateKey, field);
 		};
-	}
-
-	private List<DocumentVersionField> getDocumentVersionFields(List<FieldSignDto> fieldSignDtoList,
-			DocumentVersion newVersion) {
-		List<Field> fields = getFieldsFromFieldSignDtoList(fieldSignDtoList);
-		return fields.stream().map(field -> {
-			DocumentVersionField versionField = new DocumentVersionField();
-			versionField.setField(field);
-			versionField.setDocumentVersion(newVersion);
-
-			fieldSignDtoList.stream()
-				.filter(dto -> dto.getFieldId().equals(field.getId()))
-				.findFirst()
-				.ifPresent(fieldSignDto -> versionField.setValue(fieldSignDto.getFieldValue()));
-
-			return versionField;
-		}).toList();
 	}
 
 	private DocumentVersion createNewDocumentVersion(DocumentSignDto signDto, DocumentVersion currentVersion,
@@ -641,8 +626,8 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private DocumentVersionField signImageField(FieldSignDto field, PrivateKey privateKey) {
-		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, field.getFieldValue());
+	private DocumentVersionField signImageField(FieldSignDto fieldDto, PrivateKey privateKey, Field field) {
+		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, fieldDto.getFieldValue());
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 			imageStream.transferTo(outputStream);
@@ -651,25 +636,25 @@ public class DocumentServiceImpl implements DocumentService {
 			String newHash = hashDocument(imageBytes);
 
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
-			return getDocumentVersionField(newHash, signature);
+			return getDocumentVersionField(newHash, signature, field);
 		}
 		catch (Exception e) {
-			log.error("Failed to load image: {}", field.getFieldValue(), e);
+			log.error("Failed to load image: {}", fieldDto.getFieldValue(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
-					new String[] { field.getFieldValue() });
+					new String[] { fieldDto.getFieldValue() });
 		}
 	}
 
-	private DocumentVersionField signTextField(FieldSignDto field, PrivateKey privateKey) {
+	private DocumentVersionField signTextField(FieldSignDto fieldDto, PrivateKey privateKey, Field field) {
 		try {
-			String newHash = HashUtil.hash(field.getFieldValue());
+			String newHash = HashUtil.hash(fieldDto.getFieldValue());
 			String signature = signDocument(Base64.getDecoder().decode(newHash), privateKey);
-			return getDocumentVersionField(newHash, signature);
+			return getDocumentVersionField(newHash, signature, field);
 		}
 		catch (Exception e) {
-			log.error("Failed to load image: {}", field.getFieldValue(), e);
+			log.error("Failed to load image: {}", fieldDto.getFieldValue(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_IMAGE,
-					new String[] { field.getFieldValue() });
+					new String[] { fieldDto.getFieldValue() });
 		}
 	}
 
@@ -700,11 +685,6 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
 		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
-	}
-
-	private List<Field> getFieldsFromFieldSignDtoList(List<FieldSignDto> fieldSignDtoList) {
-		List<Long> fieldIds = fieldSignDtoList.stream().map(FieldSignDto::getFieldId).toList();
-		return fieldRepository.findByIdIn(fieldIds);
 	}
 
 	private AddressBook getAddressBookIdByInternalUserId(@NotNull User currentUser) {
@@ -752,8 +732,14 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 	}
 
-	private DocumentVersionField getDocumentVersionField(String newHash, String signature) {
-		DocumentVersionField documentVersionField = new DocumentVersionField();
+	private DocumentVersionField getDocumentVersionField(String newHash, String signature, Field field) {
+
+		DocumentVersionField documentVersionField = documentVersionFieldRepository.findByField(field);
+
+		if (documentVersionField == null) {
+			documentVersionField = new DocumentVersionField();
+		}
+
 		documentVersionField.setFieldHash(newHash);
 		documentVersionField.setFieldSignature(signature);
 		return documentVersionField;
@@ -784,18 +770,24 @@ public class DocumentServiceImpl implements DocumentService {
 		return newVersion;
 	}
 
-	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field,
-			DocumentVersion currentVersion) {
+	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 
-		DocumentVersionField documentVersionField = signFieldVersion(fieldSignDto, privateKey);
+		if (FieldType.imageFieldTypes().contains(fieldSignDto.getType())) {
+			String url = bucketName + "/" + fieldSignDto.getFieldValue();
+			fieldSignDto.setFieldValue(url);
+		}
 
-		documentVersionField.setField(field);
+		DocumentVersionField documentVersionField = signFieldVersion(fieldSignDto, privateKey, field);
+
+		if (documentVersionField.getId() == null) {
+			documentVersionField.setField(field);
+		}
+
 		documentVersionField.setXPosition(fieldSignDto.getXposition());
 		documentVersionField.setYPosition(fieldSignDto.getYposition());
 		documentVersionField.setValue(fieldSignDto.getFieldValue());
 		documentVersionField.setWidth(fieldSignDto.getWidth());
 		documentVersionField.setHeight(fieldSignDto.getHeight());
-		documentVersionField.setDocumentVersion(currentVersion);
 
 		return documentVersionField;
 	}
