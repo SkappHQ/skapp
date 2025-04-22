@@ -52,7 +52,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 				mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
-				concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
+				concatDocumentNames(envelope.getDocuments()), null, null, EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl);
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
@@ -69,7 +69,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				envelope.getOwner().getInternalUser().getEmployee().getFirstName() + " "
 						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
 				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
-				concatDocumentNames(envelope.getDocuments()), null, null, null, null);
+				concatDocumentNames(envelope.getDocuments()), null, null, EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null);
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
