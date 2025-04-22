@@ -7,7 +7,7 @@ public interface EsignEmailService {
 
 	void resendEnvelopeEmailToRecipient(Envelope envelope, Recipient recipient, String documentAccessUrl);
 
-	void sendCompleteEmailsToRecipient(Envelope envelope,Recipient mailRecipient,String documentAccessUrl);
+	void sendCompleteEmailsToRecipient(Envelope envelope, Recipient mailRecipient, String documentAccessUrl);
 
 	void sendCompleteEmailToSender(Envelope envelope);
 

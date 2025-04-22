@@ -5,8 +5,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
-import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
-import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -19,7 +17,6 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
-import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
@@ -264,21 +261,22 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		//Mail Recipients
+		// Mail Recipients
 		Optional.ofNullable(envelope)
-				.map(Envelope::getRecipients)
-				.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-					DocumentPermissionType permissionType = DocumentPermissionType.READ;
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentPermissionType permissionType = DocumentPermissionType.READ;
 
-					DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelope.getDocuments().getFirst().getId(),
-							mailRecipient.getId(), permissionType);
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), permissionType);
 
-					DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
-					esignEmailService.sendCompleteEmailsToRecipient(envelope,mailRecipient,documentLink.getUrl());
+				DocumentLinkResponseDto documentLink = documentLinkService
+					.generateDocumentAccessUrl(documentAccessUrlDto);
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.getUrl());
 
-				}));
+			}));
 
-		//Mail Sender
+		// Mail Sender
 		esignEmailService.sendCompleteEmailToSender(envelope);
 
 		return new ResponseEntityDto(false, "Document completed successfully");

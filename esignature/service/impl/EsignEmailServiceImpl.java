@@ -11,21 +11,14 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
-import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
-import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
-import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -54,16 +47,16 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	}
 
 	@Override
-	public void sendCompleteEmailsToRecipient(Envelope envelope,Recipient mailRecipient,String documentAccessUrl) {
+	public void sendCompleteEmailsToRecipient(Envelope envelope, Recipient mailRecipient, String documentAccessUrl) {
 		log.info("sendEmailsToRecipient: execution started");
 
-				EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
-						mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
-						concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
+		EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
+				mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				concatDocumentNames(envelope.getDocuments()), null, null, null, documentAccessUrl);
 
-				emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
-						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
-						mailRecipient.getEmail());
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
+				mailRecipient.getEmail());
 
 		log.info("sendEmailsToRecipient: execution ended");
 	}
