@@ -62,6 +62,9 @@ public class DocumentLink {
 	@JoinColumn(name = "document_id")
 	private Document documentId;
 
+	@Column(name = "is_resend", nullable = false)
+	private boolean isResend;
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.token == null) {
@@ -72,6 +75,9 @@ public class DocumentLink {
 		}
 		if (!this.isActive) {
 			this.isActive = true;
+		}
+		if (this.isResend) {
+			this.isResend = false;
 		}
 	}
 
