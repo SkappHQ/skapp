@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -108,11 +109,11 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get signature-certificate details by envelop ID",
-			description = "Fetches detailed information about an envelope, including audit trails.")
-	@GetMapping("/signature-certificate/{envelopeId}")
-	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@PathVariable Long envelopeId) {
+	@Operation(summary = "Get Signature Certificate",
+	           description = "This endpoint retrieves the signature certificate for a given envelope ID.")
+	@GetMapping("/signature-certificate")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@RequestParam Long envelopeId) {
 		ResponseEntityDto response = envelopeService.getSignatureCertificate(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
