@@ -142,6 +142,7 @@ public interface EsignMapper {
 	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
 
+	@Mapping(source = "id", target = "addressBookId")
 	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 }

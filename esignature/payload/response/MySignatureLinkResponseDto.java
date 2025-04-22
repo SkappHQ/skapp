@@ -8,11 +8,15 @@ import lombok.Setter;
 @Setter
 public class MySignatureLinkResponseDto {
 
-	private Long id;
+	private Long addressBookId;
 
-	private Long internalExternalUserId;
+	private Long userId;
 
 	private UserType type;
+
+	private String firstName;
+
+	private String lastName;
 
 	private String mySignatureLink;
 

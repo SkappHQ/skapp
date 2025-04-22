@@ -106,7 +106,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
 			.addressBookToMySignatureLinkResponseDto(addressBook);
-		mySignatureLinkResponseDto.setInternalExternalUserId(addressBook.getUserId());
+		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
@@ -122,7 +122,9 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
 			.addressBookToMySignatureLinkResponseDto(addressBook);
-		mySignatureLinkResponseDto.setInternalExternalUserId(addressBook.getUserId());
+		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
+		mySignatureLinkResponseDto.setFirstName(addressBook.getFirstName());
+		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
