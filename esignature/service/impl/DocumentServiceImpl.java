@@ -3,7 +3,6 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.util.HashUtil;
@@ -256,14 +255,12 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		// Sending emails when the document is completed
+		// Email notifications would be sent here
 		esignEmailService.sendCompleteEmailsToRecipients(envelope);
 
 		esignEmailService.sendCompleteEmailToSender(envelope);
 
 		return new ResponseEntityDto(false, "Document completed successfully");
-	}
-
 	}
 
 	/**
