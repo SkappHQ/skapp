@@ -113,7 +113,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Void an envelope", description = "This endpoint voids an existing envelope by its ID.")
 	@PatchMapping(value = "/void/{envelopeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ROLE_ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> voidEnvelope(
 			@PathVariable @Schema(description = "ID of the envelope to void", example = "1") Long envelopeId,
 			@Valid @RequestBody VoidEnvelopeRequestDto voidEnvelopeRequestDto) {

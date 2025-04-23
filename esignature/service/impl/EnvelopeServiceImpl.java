@@ -231,7 +231,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				envelope.setStatus(EnvelopeStatus.CREATED);
 			}
 			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.VOIDED) {
-
 				processVoidRequest(envelope);
 			}
 			else {
@@ -617,6 +616,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Override
 	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
 
+		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
+
 		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
 			log.error("Recipient with ID {} not found", recipientId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
@@ -664,6 +665,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
 		recipientService.declineEnvelope(recipient);
+
+		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
 	}
 
