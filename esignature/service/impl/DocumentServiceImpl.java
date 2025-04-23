@@ -17,12 +17,14 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
@@ -31,10 +33,13 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
@@ -66,7 +71,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
@@ -113,6 +117,10 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignMapper eSignMapper;
 
 	private final AESKeyLoader aesKeyLoader;
+
+	private final EsignEmailService esignEmailService;
+
+	private final DocumentLinkService documentLinkService;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -253,7 +261,23 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		// Email notifications would be sent here
+		// Mail Recipients
+		Optional.ofNullable(envelope)
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentPermissionType permissionType = DocumentPermissionType.READ;
+
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), permissionType);
+
+				DocumentLinkResponseDto documentLink = documentLinkService
+					.generateDocumentAccessUrl(documentAccessUrlDto);
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.getUrl());
+
+			}));
+
+		// Mail Sender
+		esignEmailService.sendCompleteEmailToSender(envelope);
 
 		return new ResponseEntityDto(false, "Document completed successfully");
 	}
