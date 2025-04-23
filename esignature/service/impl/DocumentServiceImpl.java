@@ -266,7 +266,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	}
 
-
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
 		documentVersionRepository.save(documentVersion);
