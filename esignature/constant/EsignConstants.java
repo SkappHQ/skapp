@@ -1,8 +1,6 @@
 package com.skapp.enterprise.esignature.constant;
 
-import java.util.Set;
-
-public class EsignValidationConstants {
+public class EsignConstants {
 
 	public static final int ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE = 500;
 
