@@ -182,9 +182,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 		validateDocumentSignRequest(documentSignDto);
 
-		User currentUser = userService.getCurrentUser();
+		String username = getCurrentUsername();
 
-		AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
 
 		Document document = documentRepository.findById(documentSignDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
@@ -258,9 +266,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	}
 
-	/**
-	 * Complete the document signing process
-	 */
+
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
 		documentVersionRepository.save(documentVersion);
@@ -277,15 +283,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientRepository.saveAll(envelope.getRecipients());
 
-		// Email notifications would be sent here
-		// Mail Recipients
+		sendDocumentCompletedEmailNotifications(envelope);
+
+		return new ResponseEntityDto(false, "Document completed successfully");
+	}
+
+	private void sendDocumentCompletedEmailNotifications(Envelope envelope) {
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-				DocumentPermissionType permissionType = DocumentPermissionType.READ;
 
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), permissionType);
+						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
 
 				DocumentLinkResponseDto documentLink = documentLinkService
 					.generateDocumentAccessUrl(documentAccessUrlDto);
@@ -293,15 +302,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 			}));
 
-		// Mail Sender
 		esignEmailService.sendCompleteEmailToSender(envelope);
-
-		return new ResponseEntityDto(false, "Document completed successfully");
 	}
 
-	/**
-	 * Process all document fields and update document bytes
-	 */
 	private byte[] processDocumentFields(DocumentVersion currentVersion, KeyPair keyPairSign, byte[] documentBytes) {
 		List<DocumentVersionField> fieldVersionList = currentVersion.getFieldVersions();
 		byte[] updatedDocumentBytes = documentBytes;
@@ -426,15 +429,14 @@ public class DocumentServiceImpl implements DocumentService {
 			recipients.forEach(rec -> rec.setStatus(RecipientStatus.COMPLETED));
 			recipientRepository.saveAll(recipients);
 
+			sendDocumentCompletedEmailNotifications(envelope);
+
 			return new ResponseEntityDto(false, "Document Signing completed");
 		}
 
 		return new ResponseEntityDto(false, "New Document version successfully created");
 	}
 
-	/**
-	 * Applies all signatures to the document
-	 */
 	private byte[] mergeFieldsToLatestDocument(List<DocumentVersionField> fieldVersionList, byte[] documentBytes,
 			KeyPair keyPair) {
 
@@ -448,9 +450,6 @@ public class DocumentServiceImpl implements DocumentService {
 		return updatedBytes;
 	}
 
-	/**
-	 * Applies all signatures from all document versions
-	 */
 	private byte[] mergeAllFieldsToFinalDocument(Document document, byte[] documentBytes) {
 		byte[] fullDocumentBytes = documentBytes;
 
@@ -471,9 +470,6 @@ public class DocumentServiceImpl implements DocumentService {
 		return fullDocumentBytes;
 	}
 
-	/**
-	 * Creates the final version of the document with all signatures
-	 */
 	private DocumentVersion signFinalDocumentVersionBySender(Document document, byte[] documentBytes, String filePath,
 			KeyPair keyPairSender) {
 
@@ -566,7 +562,7 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setStatus(EnvelopeStatus.DECLINED);
 			envelopeDao.save(envelope);
 
-			// send email to relevant recipients
+			// send decline email to relevant recipients
 		}
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
