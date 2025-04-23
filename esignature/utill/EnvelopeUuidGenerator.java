@@ -1,57 +1,61 @@
 package com.skapp.enterprise.esignature.utill;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public class EnvelopeUuidGenerator {
 
-	private static final String ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	private static final char[] ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
 
 	private static final int SECTION_LENGTH = 5;
 
 	private static final int NUM_SECTIONS = 4;
+
+	private static final int TOTAL_ID_LENGTH = SECTION_LENGTH * NUM_SECTIONS;
 
 	private static final String DIVIDER = "-";
 
 	private EnvelopeUuidGenerator() {
 	}
 
-	/**
-	 * Generates a globally unique envelope ID in the format: XXXXX-XXXXX-XXXXX-XXXXX
-	 * where X is a random capital letter or number.
-	 * @return A unique envelope ID string
-	 */
 	public static String generateUniqueEnvelopeId() {
-		// Use UUID as the base for uniqueness
+		// Get current timestamp (milliseconds since epoch)
+		long timestamp = Instant.now().toEpochMilli();
+
+		// Use UUID as additional source of uniqueness
 		UUID uuid = UUID.randomUUID();
+		long mostSigBits = uuid.getMostSignificantBits();
+		long leastSigBits = uuid.getLeastSignificantBits();
 
-		// Convert UUID to a string of allowed characters
-		StringBuilder idBuilder = new StringBuilder();
-		String uuidStr = uuid.toString().replace("-", "");
+		// Combine timestamp with UUID bits for enhanced uniqueness
+		long combinedBits1 = mostSigBits ^ (timestamp << 32);
+		long combinedBits2 = leastSigBits ^ timestamp;
 
-		// Generate ID with required length
-		for (int i = 0; i < SECTION_LENGTH * NUM_SECTIONS; i++) {
-			// Use each 2 hex characters from UUID to select a character from allowed set
-			int hexPos = i * 2 % uuidStr.length();
-			String hexValue = uuidStr.substring(hexPos, Math.min(hexPos + 2, uuidStr.length()));
+		// Pre-allocate the exact buffer size needed for the result
+		StringBuilder result = new StringBuilder(TOTAL_ID_LENGTH + NUM_SECTIONS - 1);
 
-			// Convert hex value to integer and map to our allowed character set
-			int index = Integer.parseInt(hexValue, 16) % ALLOWED_CHARS.length();
-			idBuilder.append(ALLOWED_CHARS.charAt(index));
-		}
-
-		// Format with dividers
-		StringBuilder formattedId = new StringBuilder();
-		for (int i = 0; i < NUM_SECTIONS; i++) {
-			int startPos = i * SECTION_LENGTH;
-			formattedId.append(idBuilder.substring(startPos, startPos + SECTION_LENGTH));
-
-			// Add divider except after last section
-			if (i < NUM_SECTIONS - 1) {
-				formattedId.append(DIVIDER);
+		// Generate characters using combined bits
+		for (int i = 0; i < TOTAL_ID_LENGTH; i++) {
+			// Insert dividers at appropriate positions
+			if (i > 0 && i % SECTION_LENGTH == 0) {
+				result.append(DIVIDER);
 			}
+
+			// Use different parts of the combined bits to select characters
+			int index;
+			if (i < TOTAL_ID_LENGTH / 2) {
+				// Use first combined value for first half
+				index = (int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length;
+			}
+			else {
+				// Use second combined value for second half
+				index = (int) ((combinedBits2 >> ((i - TOTAL_ID_LENGTH / 2) * 3)) & 0x3F) % ALLOWED_CHARS.length;
+			}
+
+			result.append(ALLOWED_CHARS[index]);
 		}
 
-		return formattedId.toString();
+		return result.toString();
 	}
 
 }
