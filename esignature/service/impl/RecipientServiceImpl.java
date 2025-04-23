@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
+import com.skapp.enterprise.esignature.constant.EsignCommonConstant;
 import com.skapp.enterprise.esignature.constant.EsignEmailTitleConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -238,7 +239,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
 				epEsignEmailDataDto.getEnvelopeMessage() != null && !epEsignEmailDataDto.getEnvelopeMessage().isEmpty()
-						? "Hi " + userName : "",
+						? EsignCommonConstant.ESIGN_EMAIL_NAME_PREFIX + userName : "",
 				epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
 				epEsignEmailDataDto.getEnvelopeMessage(), epEsignEmailDataDto.getDocumentNames(), null, null, null,
 				documentAccessUrl);
@@ -510,7 +511,7 @@ public class RecipientServiceImpl implements RecipientService {
 				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
 				concatDocumentNames(recipient.getEnvelope().getDocuments()),
 				recipient.getEnvelope().getMessage() != null && !recipient.getEnvelope().getMessage().isEmpty()
-						? "Hi " + recipient.getAddressBook().getName() : "",
+						? EsignCommonConstant.ESIGN_EMAIL_NAME_PREFIX + recipient.getAddressBook().getName() : "",
 				null, null, null);
 		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
 

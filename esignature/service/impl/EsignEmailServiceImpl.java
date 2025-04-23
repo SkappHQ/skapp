@@ -4,6 +4,7 @@ import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
+import com.skapp.enterprise.esignature.constant.EsignCommonConstant;
 import com.skapp.enterprise.esignature.constant.EsignEmailTitleConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.Document;
@@ -51,7 +52,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
 				epEsignEmailDataDto.getEnvelopeMessage() != null && !epEsignEmailDataDto.getEnvelopeMessage().isEmpty()
-						? "Hi " + userName : "",
+						? EsignCommonConstant.ESIGN_EMAIL_NAME_PREFIX + userName : "",
 				epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
 				epEsignEmailDataDto.getEnvelopeMessage(), epEsignEmailDataDto.getDocumentNames(), null, null, null,
 				documentAccessUrl);
