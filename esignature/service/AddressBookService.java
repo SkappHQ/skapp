@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
+import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.type.UserType;
 
 public interface AddressBookService {
@@ -20,5 +21,9 @@ public interface AddressBookService {
 	ResponseEntityDto fetchAddressBookContactsByEmailPriority(String keyWord);
 
 	ResponseEntityDto fetchAddressBookInternalEsignSenderByEmailPriority(String keyWord);
+
+	ResponseEntityDto addUpdateMySignatureLink(MySignatureLinkDto mySignatureLinkDto);
+
+	ResponseEntityDto getMySignatureLink();
 
 }

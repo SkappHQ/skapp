@@ -37,6 +37,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
+	ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY("validation.my-signature-link.empty"),
 	ESIGN_VALIDATION_VOID_REASON_TOO_LONG("validation.void.reason.too.long"),
 	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
 	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
