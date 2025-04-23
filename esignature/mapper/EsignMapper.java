@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
@@ -140,5 +141,8 @@ public interface EsignMapper {
 	@Mapping(target = "receivedDate", ignore = true)
 	@Mapping(source = "setting.expirationDate", target = "expiresAt")
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
+
+	@Mapping(source = "id", target = "addressBookId")
+	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 }
