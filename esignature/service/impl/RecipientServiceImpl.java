@@ -32,6 +32,7 @@ import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
+import com.skapp.enterprise.esignature.type.SignType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,10 +62,11 @@ public class RecipientServiceImpl implements RecipientService {
 	private final DocumentLinkService documentLinkService;
 
 	@Override
-	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients) {
+	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
 		log.info("notifyRecipients: execution started");
 
-		List<Recipient> nextRecipientList = getNextInLineRecipients(Optional.empty(), recipients);
+		List<Recipient> nextRecipientList = signType.equals(SignType.SEQUENTIAL)
+				? getNextInLineRecipients(Optional.empty(), recipients) : recipients;
 
 		if (nextRecipientList.isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE);

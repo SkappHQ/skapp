@@ -109,8 +109,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String RECIPIENT_ID = "recipientId";
 
-	public static final String LINK_ID = "linkId";
-
 	public static final String TOKEN = "token";
 
 	public static final String PERMISSION = "permission";
