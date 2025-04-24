@@ -1,10 +1,12 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
+import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 
 public interface EnvelopeService {
 
@@ -25,6 +27,10 @@ public interface EnvelopeService {
 	ResponseEntityDto getEnvelopeForSender(Long id);
 
 	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId);
+
+	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto);
+
+	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
 
 	ResponseEntityDto getSignatureCertificate(Long envelopeId);
 
