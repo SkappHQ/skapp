@@ -500,6 +500,14 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
+	public ResponseEntityDto updateRecipientConsent(boolean isConsent) {
+		Recipient recipient = getRecipientFromToken();
+		recipient.setConsent(isConsent);
+		recipientRepository.save(recipient);
+		return new ResponseEntityDto(false, "Recipient Consent Updated");
+	}
+
+	@Override
 	public ResponseEntityDto sendNudgeEmail(Long recipientId) {
 		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipientId);
 
@@ -580,7 +588,7 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public Recipient GetRecipientFromToken() {
+	public Recipient getRecipientFromToken() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || authentication.getDetails() == null) {

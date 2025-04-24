@@ -36,6 +36,7 @@ import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
@@ -132,6 +133,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), envelope);
+
 		envelope.setDocuments(documents);
 
 		boolean hasInvalidDocumentId = envelopeDetailDto.getRecipients()
@@ -154,14 +156,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
-		List<DocumentVersion> documentVersionList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+
+		List<DocumentVersion> documentVersionList = signedDocumentResponseList.stream()
+			.map(SignedDocumentResponse::getDocumentVersion)
+			.toList();
 
 		documentVersionRepository.saveAll(documentVersionList);
 
-		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
+		List<Document> updatedDocuments = signedDocumentResponseList.stream().map(signedDocumentResponse -> {
+			DocumentVersion documentVersion = signedDocumentResponse.getDocumentVersion();
 			Document document = documentVersion.getDocument();
 			document.setCurrentVersion(documentVersion.getVersionNumber());
 			document.setCurrentSignOderNumber(1);
+			document.setNumOfPages(signedDocumentResponse.getNumberOfPages());
 			return document;
 		}).toList();
 
@@ -206,6 +214,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelopeSetting;
 	}
 
+	@Deprecated
 	@Override
 	public ResponseEntityDto updateEnvelope(Long id, EnvelopeUpdateDto envelopeUpdateDto) {
 		log.info("updateEnvelope: execution started");
@@ -235,12 +244,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		if (envelopeUpdateDto.getStatus() != null) {
 			// CANCELED, CREATED AND VOIDED are the only status that allow manually update
-			if (envelopeUpdateDto.getStatus() == EnvelopeStatus.CANCELED) {
-				envelope.setStatus(EnvelopeStatus.CANCELED);
+			if (envelopeUpdateDto.getStatus() == EnvelopeStatus.DECLINED) {
+				envelope.setStatus(EnvelopeStatus.DECLINED);
 			}
-			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.CREATED) {
+			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.WAITING) {
 				validateEnvelopeExpiration(envelope);
-				envelope.setStatus(EnvelopeStatus.CREATED);
+				envelope.setStatus(EnvelopeStatus.WAITING);
 			}
 			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.VOIDED) {
 				processVoidRequest(envelope);
@@ -259,7 +268,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private Envelope initializeEnvelope(EnvelopeDetailDto dto) {
 		Envelope envelope = new Envelope();
 		envelope.setName(dto.getName());
-		envelope.setStatus(EnvelopeStatus.NEED_TO_SIGN);
+		envelope.setStatus(EnvelopeStatus.WAITING);
 		envelope.setMessage(dto.getMessage());
 		envelope.setSubject(dto.getSubject());
 		envelope.setExpireAt(dto.getExpireAt());
@@ -321,6 +330,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
+			recipient.setConsent(addressBook.getType().equals(UserType.INTERNAL));
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
@@ -610,17 +620,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
 
-	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
-		List<DocumentVersion> documentVersionList = new ArrayList<>();
+	private List<SignedDocumentResponse> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto,
+			Envelope envelope) {
+		List<SignedDocumentResponse> signedDocumentResponseList = new ArrayList<>();
 
 		envelopeDetailDto.getDocumentIds().forEach(doc -> {
 			DocumentSignDto documentSignDto = new DocumentSignDto();
 			documentSignDto.setDocumentId(doc);
 			documentSignDto.setEnvelopeId(envelope.getId());
-			DocumentVersion documentVersion = documentService.signFirstVersionDocument(documentSignDto);
-			documentVersionList.add(documentVersion);
+			SignedDocumentResponse signedDocumentResponse = documentService.signFirstVersionDocument(envelope,
+					documentSignDto, envelope.getUuid());
+			signedDocumentResponseList.add(signedDocumentResponse);
 		});
-		return documentVersionList;
+		return signedDocumentResponseList;
 	}
 
 	@Transactional
@@ -684,7 +696,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		document = documentRepository.save(document);
+		documentRepository.save(document);
 
 		AddressBook newOwner = addressBookOptional.get();
 		envelope.setOwner(newOwner);
@@ -707,7 +719,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		// Validate the recipient
 		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
-				&& !recipient.getId().equals(recipientService.GetRecipientFromToken().getId())) {
+				&& !recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
 			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}

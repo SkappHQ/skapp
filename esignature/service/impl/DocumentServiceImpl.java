@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
@@ -93,6 +94,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private static final String SECURITY_PROVIDER = "BC";
 
+	public static final String SKAPP_SIGN_ENVELOPE_TEXT = "Skapp Sign Envelope ID: ";
+
 	private final DocumentRepository documentRepository;
 
 	private final AddressBookDao addressBookDao;
@@ -145,18 +148,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public DocumentVersion signFirstVersionDocument(DocumentSignDto documentSignDto) {
+	public SignedDocumentResponse signFirstVersionDocument(Envelope envelope, DocumentSignDto documentSignDto,
+			String uuid) {
 		try {
 
-			User currentUser = userService.getCurrentUser();
-
-			if (documentSignDto.getDocumentId() == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ID_NOT_FOUND);
-			}
-
-			AddressBook currentAddressBookUser = getAddressBookIdByInternalUserId(currentUser);
-
-			KeyPair keyPair = loadKeyPair(currentAddressBookUser.getId());
+			KeyPair keyPair = loadKeyPair(envelope.getOwner().getId());
 
 			Document document = documentRepository.findById(documentSignDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
@@ -165,10 +161,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
-			String fileUrl = currentVersion.getFilePath();
+			int numberOfPages = documentProcessingService.getNumberOfPages(documentBytes);
 
-			return createNewDocumentVersion(documentSignDto, currentVersion, fileUrl, keyPair.getPrivate(),
-					currentAddressBookUser, documentBytes);
+			String value = SKAPP_SIGN_ENVELOPE_TEXT + uuid;
+
+			byte[] updatedDoc = updateEnvelopeUuidInDocument(value, documentBytes, numberOfPages);
+
+			String fileUrl = uploadProcessedDocumentVersion(updatedDoc);
+
+			DocumentVersion newDocumentVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
+					keyPair.getPrivate(), envelope.getOwner(), documentBytes);
+
+			return new SignedDocumentResponse(newDocumentVersion, numberOfPages);
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
@@ -557,11 +561,14 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
 			Envelope envelope = document.getEnvelope();
-			envelope.getRecipients().forEach(recipientData -> recipientData.setStatus(RecipientStatus.DECLINED));
+			envelope.getRecipients().forEach(recipientData -> {
+				if (recipientData.getId().equals(recipient.getId())) {
+					recipient.setStatus(RecipientStatus.DECLINED);
+				}
+			});
 			envelope.setStatus(EnvelopeStatus.DECLINED);
 			envelopeDao.save(envelope);
-
-			// send decline email to relevant recipients
+			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 		}
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
@@ -718,6 +725,11 @@ public class DocumentServiceImpl implements DocumentService {
 				}
 			}
 		};
+	}
+
+	private byte[] updateEnvelopeUuidInDocument(String value, byte[] documentBytes, int numOfPages) {
+
+		return documentProcessingService.updateEnvelopeUuidToEachPage(value, documentBytes, numOfPages);
 	}
 
 	private DocumentVersionFieldBulk processFieldLevelSign(DocumentSignDto documentSignDto, PrivateKey privateKey,
@@ -951,19 +963,6 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
 		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
-	}
-
-	private AddressBook getAddressBookIdByInternalUserId(@NotNull User currentUser) {
-		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND,
-					new String[] { currentUser.getUserId().toString() }));
-
-		if (Boolean.FALSE.equals(addressBook.getIsActive())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND,
-					new String[] { currentUser.getUserId().toString() });
-		}
-
-		return addressBook;
 	}
 
 	private AddressBook getCurrentAddressBookUser(@NotNull String userName) {

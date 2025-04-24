@@ -361,6 +361,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		dto.setId(document.getId());
 		dto.setName(document.getName());
 		dto.setFilePath(documentVersion.getFilePath());
+		dto.setNumOfPages(document.getNumOfPages());
 		return dto;
 	}
 
