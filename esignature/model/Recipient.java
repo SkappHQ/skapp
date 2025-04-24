@@ -77,4 +77,7 @@ public class Recipient {
 	@Column(name = "received_at")
 	private LocalDateTime receivedAt;
 
+	@Column(name = "decline_reason")
+	private String declineReason;
+
 }
