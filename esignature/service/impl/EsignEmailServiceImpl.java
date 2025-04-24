@@ -55,7 +55,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				concatDocumentNames(envelope.getDocuments()), null, null,
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl);
 
-		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
 				mailRecipient.getEmail());
 
@@ -73,7 +73,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				concatDocumentNames(envelope.getDocuments()), null, null,
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null);
 
-		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
 				envelope.getOwner().getInternalUser().getEmail());
 
@@ -92,7 +92,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
 			epEsignEnvelopeRecipientEmailDynamicFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_CC_EMAIL_TITLE);
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 
@@ -100,7 +100,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		else {
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 		}

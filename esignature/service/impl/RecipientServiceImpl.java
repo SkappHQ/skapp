@@ -259,7 +259,7 @@ public class RecipientServiceImpl implements RecipientService {
 		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
 			// Handle CC recipient email
 			epEsignEnvelopeRecipientEmailDynamicFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_CC_EMAIL_TITLE);
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_CC_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 
@@ -268,7 +268,7 @@ public class RecipientServiceImpl implements RecipientService {
 		else {
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
 					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 
@@ -315,7 +315,7 @@ public class RecipientServiceImpl implements RecipientService {
 			emailFields.setSendAt(sendAt);
 
 			// Send scheduled reminder email
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL, emailFields, userEmail);
 
 			scheduledEmailCount++;
@@ -385,10 +385,9 @@ public class RecipientServiceImpl implements RecipientService {
 	/**
 	 * @param recipientId
 	 * @param envelopeId
-	 * @return
-	 *
-	 * This method cancels any scheduled reminders to Signers If any reminders are set,
-	 * upon signer approving or declining the document before the next reminder is sent.
+	 * @return This method cancels any scheduled reminders to Signers If any reminders are
+	 * set, upon signer approving or declining the document before the next reminder is
+	 * sent.
 	 */
 	@Override
 	public ResponseEntityDto cancelEmailReminders(Long recipientId, Long envelopeId) {
@@ -520,9 +519,10 @@ public class RecipientServiceImpl implements RecipientService {
 				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
 				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
 				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, null);
+
 		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
 
-		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
 				recipient.getAddressBook().getEmail());
 
@@ -651,13 +651,13 @@ public class RecipientServiceImpl implements RecipientService {
 			if (MemberRole.SIGNER == memberRole || MemberRole.CC == memberRole) {
 				switch (envelopeStatus) {
 					case EnvelopeStatus.VOIDED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_VOIDED_RECIEVER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;
 
 					case EnvelopeStatus.DECLINED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_DECLINED_RECIEVER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;
@@ -667,13 +667,13 @@ public class RecipientServiceImpl implements RecipientService {
 				// Send email to the Sender
 				switch (envelopeStatus) {
 					case EnvelopeStatus.VOIDED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_VOIDED_SENDER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;
 
 					case EnvelopeStatus.DECLINED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_DECLINED_SENDER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;

@@ -1,10 +1,9 @@
 package com.skapp.enterprise.common.constant;
 
-public class EpApiUriConstants {
+import lombok.experimental.UtilityClass;
 
-	private EpApiUriConstants() {
-		throw new IllegalStateException("Illegal instantiate");
-	}
+@UtilityClass
+public class EpApiUriConstants {
 
 	public static final String SENDGRID_POST_API = "mail/send";
 

@@ -131,6 +131,12 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final CacheService cacheService;
 
+	private final RecaptchaConfig recaptchaConfig;
+
+	private final TenantDao tenantDao;
+
+	private final SecureRandom secureRandom = new SecureRandom();
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -142,12 +148,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Value("${otp.expiry-minutes}")
 	private int otpExpiryMinutes;
-
-	private final RecaptchaConfig recaptchaConfig;
-
-	private final TenantDao tenantDao;
-
-	private final SecureRandom secureRandom = new SecureRandom();
 
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
 			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
