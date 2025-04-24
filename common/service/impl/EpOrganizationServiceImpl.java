@@ -12,10 +12,11 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.impl.OrganizationServiceImpl;
+import com.skapp.community.common.type.CacheKey;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -49,15 +50,15 @@ import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -92,10 +93,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final UserDao userDao;
 
-	private final JwtService jwtService;
-
-	private final UserDetailsService userDetailsService;
-
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
@@ -107,6 +104,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
 	private final EsignConfigService esignConfigService;
+
+	private final CacheService cacheService;
 
 	private final StripeEmailService stripeEmailService;
 
@@ -126,6 +125,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
 			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService,
 			StripeEmailService stripeEmailService) {
+			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
+			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
+			EsignConfigService esignConfigService, @Qualifier("epCacheServiceImpl") CacheService cacheService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -138,8 +140,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epCommonMapper = epCommonMapper;
 		this.superAdminDao = superAdminDao;
 		this.userDao = userDao;
-		this.jwtService = jwtService;
-		this.userDetailsService = userDetailsService;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
 		this.objectMapper = objectMapper;
@@ -147,6 +147,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
 		this.stripeEmailService = stripeEmailService;
+		this.cacheService = cacheService;
 	}
 
 	@Override
@@ -183,7 +184,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
+			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
@@ -356,20 +357,20 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		return userSettings;
 	}
 
-	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,
-			String companyDomain) {
+	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, String companyDomain) {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
-
-		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-		responseDto.setAccessToken(accessToken);
-		responseDto.setRefreshToken(refreshToken);
+		responseDto.setUuid(generateUUID(companyDomain));
 		responseDto.setTenantId(companyDomain);
 
 		return responseDto;
+	}
+
+	private String generateUUID(String companyDomain) {
+		String uuid = java.util.UUID.randomUUID().toString();
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
+		cacheService.put(cacheKey.format(companyDomain), uuid, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		return uuid;
 	}
 
 	private void cleanup(String companyDomain, boolean tenantCreated) {

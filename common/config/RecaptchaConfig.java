@@ -10,10 +10,10 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RecaptchaConfig {
 
-	@Value("${recaptcha.secret}")
+	@Value("${google.recaptcha.secret}")
 	private String secret;
 
-	@Value("${recaptcha.verify-url}")
+	@Value("${google.recaptcha.verify-url}")
 	private String verifyUrl;
 
 	@Bean

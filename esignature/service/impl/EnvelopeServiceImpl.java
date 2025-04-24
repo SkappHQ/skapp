@@ -43,6 +43,8 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -60,6 +62,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
+import static com.skapp.enterprise.esignature.utill.EnvelopeUuidGenerator.generateUniqueEnvelopeId;
 
 @Service
 @Slf4j
@@ -145,7 +150,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		// Send Envelopes to recipient - async
 		RecipientService.DocumentLinksAndRecipientsData documentLinksAndRecipientsData = recipientService
-			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients());
+			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients(), envelopeDetailDto.getSignType());
 
 		List<Recipient> notifyRecipients = documentLinksAndRecipientsData.recipientList();
 
@@ -161,6 +166,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipient.setReminderBatchId(updated.getReminderBatchId());
 				recipient.setReminderStatus(updated.getReminderStatus());
 				recipient.setEmailStatus(updated.getEmailStatus());
+				recipient.setReceivedAt(getCurrentUtcDateTime());
+				recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
+				if (recipient.getMemberRole().equals(MemberRole.CC)) {
+					recipient.setStatus(RecipientStatus.WAITING);
+				}
 			}
 		}
 
@@ -235,7 +245,30 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setSubject(dto.getSubject());
 		envelope.setExpireAt(dto.getExpireAt());
 		envelope.setSentAt(LocalDateTime.now());
+		envelope.setSignType(dto.getSignType());
+		envelope.setUuid(generateAndEnsureUniqueUuidWithRetry());
 		return envelope;
+	}
+
+	public String generateAndEnsureUniqueUuidWithRetry() {
+		int maxRetries = 3;
+		int retryCount = 0;
+
+		while (retryCount < maxRetries) {
+			String uuid = generateUniqueEnvelopeId();
+
+			if (!isEnvelopeUuidExists(uuid)) {
+				return uuid;
+			}
+
+			retryCount++;
+		}
+
+		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_UUID_CREATION_FAIL);
+	}
+
+	public boolean isEnvelopeUuidExists(String uuid) {
+		return envelopeDao.existsByUuid(uuid);
 	}
 
 	private List<Document> assignDocumentsToEnvelope(List<Long> documentIds, Envelope envelope) {

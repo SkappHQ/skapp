@@ -58,8 +58,10 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp", "/v1/auth/refresh-token",
 			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email",
-			"/v1/ep/stripe/webhook", "/v1/ep/esign/document-link/access", "/v1/ep/esign/documents/sign",
-			"/v1/ep/esign/documents/sign-field");
+			"/v1/ep/stripe/webhook", "/v1/ep/esign/document-link/access", "/v2/ep/auth/sso/google/auth-url",
+			"/v2/ep/auth/sso/google/redirect", "/v2/ep/auth/signin/sso/google",
+			"/v2/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/code-challenge/verify",
+			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {

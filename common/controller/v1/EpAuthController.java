@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
@@ -46,7 +47,7 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> ssoGoogleSignIn(
 			@Valid @RequestBody EpSignInGoogleDataDto epSignUpGoogleDataDto) {
 		ResponseEntityDto response = epAuthService.ssoGoogleSignIn(epSignUpGoogleDataDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/otp/generate")
@@ -112,6 +113,13 @@ public class EpAuthController {
 			@RequestBody EpPasswordResetDto epPasswordResetDto) {
 		ResponseEntityDto response = epAuthService.resendVerifyPasswordResetOTP(epPasswordResetDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@PostMapping("/code-challenge/verify")
+	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
+			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
+		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

@@ -17,8 +17,8 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
@@ -108,8 +108,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	public static final String USER_TYPE = "userType";
 
 	public static final String RECIPIENT_ID = "recipientId";
-
-	public static final String LINK_ID = "linkId";
 
 	public static final String TOKEN = "token";
 

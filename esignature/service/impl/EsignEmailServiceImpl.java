@@ -18,6 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -42,6 +44,40 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		log.info("resendEnvelopeToRecipient: process ended");
 
+	}
+
+	@Override
+	public void sendCompleteEmailsToRecipient(Envelope envelope, Recipient mailRecipient, String documentAccessUrl) {
+		log.info("sendEmailsToRecipient: execution started");
+
+		EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
+				mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				concatDocumentNames(envelope.getDocuments()), null, null,
+				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl);
+
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
+				mailRecipient.getEmail());
+
+		log.info("sendEmailsToRecipient: execution ended");
+	}
+
+	@Override
+	public void sendCompleteEmailToSender(Envelope envelope) {
+		log.info("sendEmailToSender: execution started");
+
+		EpEsignEnvelopeRecipientEmailDynamicFields senderEmailFields = initializeEpEsignEmailValues(
+				envelope.getOwner().getInternalUser().getEmployee().getFirstName() + " "
+						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
+				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				concatDocumentNames(envelope.getDocuments()), null, null,
+				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null);
+
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
+				envelope.getOwner().getInternalUser().getEmail());
+
+		log.info("sendEmailToSender: execution ended");
 	}
 
 	private void sendEnvelopeToRecipientEmail(String userName, String userEmail, String memberRole,
@@ -112,6 +148,21 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 			epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl(documentAccessUrl);
 
 		return epEsignEnvelopeRecipientEmailDynamicFields;
+	}
+
+	private String concatDocumentNames(List<Document> documents) {
+		String documentName = null;
+
+		for (Document document : documents) {
+			if (documentName == null) {
+				documentName = document.getName();
+			}
+			else {
+				documentName = documentName.concat(" & ").concat(document.getName());
+			}
+		}
+
+		return documentName;
 	}
 
 }
