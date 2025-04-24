@@ -61,40 +61,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DocumentLinkServiceImpl implements DocumentLinkService {
 
-	private final DocumentLinkRepository documentLinkRepository;
-
-	private final ExternalDocumentJwtService jwtService;
-
-	private final EsignEmailService emailService;
-
-	private final DocumentDao documentDao;
-
-	private final RecipientRepository recipientRepository;
-
-	private final EsignMapper eSignMapper;
-
-	private final DocumentVersionFieldRepository documentVersionFieldRepository;
-
-	private final DocumentVersionRepository documentVersionRepository;
-
-	private static final String URL_PATH = "/sign/document/access?token=";
-
-	private static final String DOCUMENT_ID_PARAM = "documentId";
-
-	private static final String RECIPIENT_ID_PARAM = "recipientId";
-
-	@Value("${jwt.access-token.esign.expiration-time}")
-	private Long jwtDocumentAccessTokenExpirationMs;
-
-	@Value("${jwt.access-token.esign.max-clicks}")
-	private int defaultMaxClicks;
-
-	@Value("${app.parent-domain}")
-	private String parentDomain;
-
-	@Value("${app.protocol}")
-	private String protocol;
-
 	public static final String SUB = "sub";
 
 	public static final String USER_ID = "userId";
@@ -113,7 +79,41 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String PERMISSION = "permission";
 
+	private static final String URL_PATH = "/sign/document/access?token=";
+
+	private static final String DOCUMENT_ID_PARAM = "documentId";
+
+	private static final String RECIPIENT_ID_PARAM = "recipientId";
+
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
+
+	private final DocumentLinkRepository documentLinkRepository;
+
+	private final ExternalDocumentJwtService jwtService;
+
+	private final EsignEmailService emailService;
+
+	private final DocumentDao documentDao;
+
+	private final RecipientRepository recipientRepository;
+
+	private final EsignMapper eSignMapper;
+
+	private final DocumentVersionFieldRepository documentVersionFieldRepository;
+
+	private final DocumentVersionRepository documentVersionRepository;
+
+	@Value("${jwt.access-token.esign.expiration-time}")
+	private Long jwtDocumentAccessTokenExpirationMs;
+
+	@Value("${jwt.access-token.esign.max-clicks}")
+	private int defaultMaxClicks;
+
+	@Value("${app.parent-domain}")
+	private String parentDomain;
+
+	@Value("${app.protocol}")
+	private String protocol;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {

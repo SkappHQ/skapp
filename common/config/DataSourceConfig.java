@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.config;
 
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class DataSourceConfig {
 
 	private final DataSourceFactory dataSourceFactory;
@@ -31,10 +33,6 @@ public class DataSourceConfig {
 		routingDataSource.afterPropertiesSet();
 
 		return routingDataSource;
-	}
-
-	public DataSourceConfig(DataSourceFactory dataSourceFactory) {
-		this.dataSourceFactory = dataSourceFactory;
 	}
 
 }
