@@ -25,9 +25,6 @@ public interface RecipientService {
 
 	Recipient GetRecipientFromToken();
 
-	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
-	}
-
 	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
