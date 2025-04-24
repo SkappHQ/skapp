@@ -56,8 +56,10 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	public static final String DOCUMENT_RECIPIENT_DECLINE_URL = "v1/ep/esign/envelopes/decline";
 
+	public static final String ENVELOPE_SIGNATURE_CERTIFICATE_URL = "v1/ep/esign/envelopes/signature-certificate";
+
 	private static final Set<String> DOCUMENT_LINK_URLS = Set.of(DOCUMENT_LINK_ACCESS_URL, DOCUMENT_LINK_SIGN_URL,
-			DOCUMENT_LINK_SIGN_FIELD_URL, DOCUMENT_RECIPIENT_DECLINE_URL);
+			DOCUMENT_LINK_SIGN_FIELD_URL, DOCUMENT_RECIPIENT_DECLINE_URL, ENVELOPE_SIGNATURE_CERTIFICATE_URL);
 
 	private static final int TOKEN_PREFIX_LENGTH = 7;
 

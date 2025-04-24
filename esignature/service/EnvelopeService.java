@@ -32,4 +32,6 @@ public interface EnvelopeService {
 
 	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
 
+	ResponseEntityDto getSignatureCertificate(Long envelopeId);
+
 }

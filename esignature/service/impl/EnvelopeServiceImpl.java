@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -7,6 +9,7 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -14,6 +17,7 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -31,12 +35,16 @@ import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
@@ -107,6 +115,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentRepository documentRepository;
 
 	private final RecipientRepository recipientRepository;
+
+	private final AuditTrailDao auditTrailDao;
+
+	private final OrganizationDao organizationDao;
 
 	@Override
 	@Transactional
@@ -530,6 +542,69 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
 
 		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getSignatureCertificate(Long envelopeId) {
+		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
+
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
+
+		String username = documentService.getCurrentUsername();
+
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
+
+		if (currentAddressBookUser.getType() == UserType.INTERNAL) {
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId,
+					currentAddressBookUser.getId()) == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
+			Recipient envelopRecipient = recipientService.GetRecipientFromToken();
+			if (!envelopRecipient.getEnvelope().getId().equals(envelopeId)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
+
+		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
+
+		List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
+			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
+			auditTrailResponseDto.setAuditId(auditTrail.getId());
+			auditTrailResponseDto.setAction(auditTrail.getAction());
+			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
+					new TypeReference<List<MetadataResponseDto>>() {
+					}));
+			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
+			auditTrailResponseDto.setHash(auditTrail.getHash());
+			auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient() == null
+					? auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName() + " "
+							+ auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName()
+					: auditTrail.getRecipient().getName());
+			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
+			return auditTrailResponseDto;
+		}).toList();
+
+		organizationDao.findTopByOrderByOrganizationIdDesc()
+			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
+		responseDto.setAuditTrails(responseDtoList);
+
+		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
