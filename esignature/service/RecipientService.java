@@ -23,14 +23,14 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
-	Recipient getRecipient();
+	Recipient GetRecipientFromToken();
 
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}
 
 	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
-	ResponseEntityDto declineEnvelope(Recipient recipient);
+	ResponseEntityDto declineRecipientInEnvelope(Recipient recipient);
 
 	ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId);
 

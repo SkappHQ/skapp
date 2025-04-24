@@ -532,18 +532,26 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope(Recipient recipient) {
-
-		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
-			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(),
-					recipient.getStatus());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED);
-		}
+	public ResponseEntityDto declineRecipientInEnvelope(Recipient recipient) {
 
 		recipient.setStatus(RecipientStatus.DECLINED);
-
 		recipientRepository.save(recipient);
 
+		List<Recipient> envelopeRecipients = recipientRepository.findByEnvelopeId(recipient.getEnvelope().getId())
+				.orElse(new ArrayList<>());
+
+envelopeRecipients.stream()
+.filter(recipientToUpdate -> !recipientToUpdate.getId().equals(recipient.getId())) // Exclude the DECLINED recipient
+.forEach(recipientToUpdate -> {
+	if (recipientToUpdate.getMemberRole() == MemberRole.SIGNER && recipientToUpdate.getStatus() == RecipientStatus.NEED_TO_SIGN) {
+		recipientToUpdate.setStatus(RecipientStatus.EMPTY);
+	} else if (recipientToUpdate.getMemberRole() == MemberRole.CC) {
+		recipientToUpdate.setStatus(RecipientStatus.COMPLETED);
+	}
+	recipientRepository.save(recipientToUpdate);
+});
+
+		// Send email notifications for the envelope
 		sendEmailWhenDocumentIsVoidedOrDeclined(recipient.getEnvelope().getId());
 
 		log.info("declineEnvelope: execution ended");
@@ -570,7 +578,7 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public Recipient getRecipient() {
+	public Recipient GetRecipientFromToken() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || authentication.getDetails() == null) {

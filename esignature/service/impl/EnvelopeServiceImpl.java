@@ -622,12 +622,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 		});
 
-		// Validate if the recipient
+
+		// Validate the recipient
 		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
-				&& !recipient.getId().equals(recipientService.getRecipient().getId())) {
+				&& !recipient.getId().equals(recipientService.GetRecipientFromToken().getId())) {
 			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
+
 		else if (recipient.getAddressBook().getType() == UserType.INTERNAL) {
 			User currentUser = userService.getCurrentUser();
 			Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
@@ -650,20 +652,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
 		}
 
-		envelope.setStatus(EnvelopeStatus.DECLINED);
-		envelopeDao.save(envelope);
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(),
+					recipient.getStatus());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED);
+		}
 
 		if (declineEnvelopeRequestDto.getDeclineReason()
-			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
+				.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
-		}
-		if (!declineEnvelopeRequestDto.getDeclineReason()
-			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+		} else if (!declineEnvelopeRequestDto.getDeclineReason()
+				.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
-		recipientService.declineEnvelope(recipient);
+		recipientService.declineRecipientInEnvelope(recipient);
+
+		envelope.setStatus(EnvelopeStatus.DECLINED);
+		envelopeDao.save(envelope);
+
+
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
