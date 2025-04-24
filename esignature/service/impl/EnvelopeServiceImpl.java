@@ -46,7 +46,6 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.UserType;
-import com.skapp.enterprise.esignature.utill.EnvelopeUuidGenerator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
