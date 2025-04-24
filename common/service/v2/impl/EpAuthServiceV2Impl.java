@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.service.v2.impl;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -26,7 +25,6 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
-import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -46,7 +44,6 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
-import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,8 +80,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	private final JwtService jwtService;
 
-	private final GoogleTokenValidator googleTokenValidator;
-
 	private final EmployeeDao employeeDao;
 
 	private final PeopleMapper peopleMapper;
@@ -98,8 +93,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final ValidationService validationService;
-
-	private final MessageUtil messageUtil;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
@@ -366,18 +359,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		}
 		log.info("getGoogleAuthUrl: execution ended");
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private DecodedJWT validateAndGetDecodedJWT(String token) {
-		DecodedJWT decodedJWT;
-
-		try {
-			decodedJWT = googleTokenValidator.validateToken(token);
-		}
-		catch (Exception e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_VALIDATE_GOOGLE_TOKEN);
-		}
-		return decodedJWT;
 	}
 
 	public String generateAccessToken(Long userId, UserDetails userDetails) {
