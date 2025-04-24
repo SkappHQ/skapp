@@ -75,8 +75,8 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 		dashboardEmailDynamicFields.setTenantId(tenantId);
 		dashboardEmailDynamicFields.setCancellationDateTime(cancellationDateTime);
 		dashboardEmailDynamicFields.setUserCount(userCount);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-		dashboardEmailDynamicFields.setContactNumber(contactNumber);
+		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail != null ? superAdminEmail : "");
+		dashboardEmailDynamicFields.setContactNumber(contactNumber != null ? contactNumber : "");
 
 		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE, dashboardEmailDynamicFields,

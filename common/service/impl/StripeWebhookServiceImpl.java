@@ -402,15 +402,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
-			OrganizationDetailsDto organizationDetailsDto = getOrganizationDetails();
-
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-
-			dashboardEmailService.sendOrganizationCancelledSkappCoreSubscriptionEmail(organizationEmail,
-					organizationDetailsDto.getCompanyName(), tenantName, organizationDetailsDto.getCurrentTime(),
-					organizationDetailsDto.getUserCount(), organizationDetailsDto.getSuperAdminEmail(),
-					organizationDetailsDto.getContactNumber());
 
 			log.info(
 					"handleSubscriptionCancelled: Successfully updated tenant subscription status to CANCELLED for tenant: {}",
@@ -469,6 +462,17 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 						.equals(subscription.getCancellationDetails().getReason())) {
 
 				stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), endDate, tenant.getTenantName());
+
+				tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+
+				OrganizationDetailsDto organizationDetailsDto = getOrganizationDetails();
+
+				dashboardEmailService.sendOrganizationCancelledSkappCoreSubscriptionEmail(organizationEmail,
+						organizationDetailsDto.getCompanyName(), tenant.getTenantName(),
+						organizationDetailsDto.getCurrentTime(), organizationDetailsDto.getUserCount(),
+						organizationDetailsDto.getSuperAdminEmail(), organizationDetailsDto.getContactNumber());
+
+				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			}
 
 			log.info("handleSubscriptionUpdated: Successfully updated subscription details for tenant: {}",
