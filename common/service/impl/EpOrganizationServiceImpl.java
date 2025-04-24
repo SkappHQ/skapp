@@ -236,7 +236,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 				log.info("editCalendarConfigs: execution ended successfully");
 				return new ResponseEntityDto(false, newCalendar);
 			}
-
 			else {
 				return new ResponseEntityDto(false, existingOrganizationCalendar);
 			}

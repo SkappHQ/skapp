@@ -29,12 +29,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float DEFAULT_FONT_SIZE = 12f;
 
-	@Value("${aws.s3.bucket-name}")
-	private String bucketName;
-
 	private final AmazonS3Service amazonS3Service;
 
 	private final MessageUtil messageUtil;
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {

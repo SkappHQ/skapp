@@ -84,6 +84,10 @@ import java.util.Optional;
 @Slf4j
 public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
+	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+
+	private static final JsonFactory JSON_FACTORY = new GsonFactory();
+
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final TenantContext tenantContext;
@@ -97,10 +101,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private final UserDao userDao;
 
 	private final CalendarEventDao calendarEventDao;
-
-	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-
-	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final MessageUtil messageUtil;
 

@@ -374,10 +374,9 @@ public class RecipientServiceImpl implements RecipientService {
 	/**
 	 * @param recipientId
 	 * @param envelopeId
-	 * @return
-	 *
-	 * This method cancels any scheduled reminders to Signers If any reminders are set,
-	 * upon signer approving or declining the document before the next reminder is sent.
+	 * @return This method cancels any scheduled reminders to Signers If any reminders are
+	 * set, upon signer approving or declining the document before the next reminder is
+	 * sent.
 	 */
 	@Override
 	public ResponseEntityDto cancelEmailReminders(Long recipientId, Long envelopeId) {

@@ -15,17 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TenantContext {
 
+	private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
+
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
+	public static String getCurrentTenant() {
+		return currentTenant.get();
+	}
 
 	public static void setCurrentTenant(String tenant) {
 		currentTenant.set(tenant);
-	}
-
-	public static String getCurrentTenant() {
-		return currentTenant.get();
 	}
 
 	public static void clearCurrentTenant() {

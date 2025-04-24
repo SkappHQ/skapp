@@ -1,12 +1,11 @@
 package com.skapp.enterprise.common.constant;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.Set;
 
+@UtilityClass
 public class EpValidationConstants {
-
-	private EpValidationConstants() {
-		throw new UnsupportedOperationException("Utility class");
-	}
 
 	public static final String VALID_COMPANY_DOMAIN_NAME_REGEXP = "^[a-z]+(-[a-z]+)*$";
 

@@ -19,11 +19,11 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ValidationServiceImpl implements ValidationService {
 
-	private final MessageUtil messageUtil;
-
 	private static final String CONFIG_PATH = "enterprise/validations/email-validation.yml";
 
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+
+	private final MessageUtil messageUtil;
 
 	private final EmailValidationProperties properties = YamlReader.read(CONFIG_PATH, EmailValidationProperties.class);
 

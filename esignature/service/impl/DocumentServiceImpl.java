@@ -93,9 +93,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private static final String SECURITY_PROVIDER = "BC";
 
-	@Value("${aws.s3.bucket-name}")
-	private String bucketName;
-
 	private final DocumentRepository documentRepository;
 
 	private final AddressBookDao addressBookDao;
@@ -127,6 +124,9 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignEmailService esignEmailService;
 
 	private final DocumentLinkService documentLinkService;
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -842,7 +842,7 @@ public class DocumentServiceImpl implements DocumentService {
 	private String hashDocument(byte[] data) {
 		try {
 			MessageDigest digest = new SHA3.Digest256(); // Using SHA-3 for strong
-															// security
+			// security
 			byte[] hashBytes = digest.digest(data);
 			return Base64.getEncoder().encodeToString(hashBytes); // Encode in Base64
 		}
