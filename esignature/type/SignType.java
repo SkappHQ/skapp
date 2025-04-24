@@ -1,7 +1,7 @@
 package com.skapp.enterprise.esignature.type;
 
-public enum FieldStatus {
+public enum SignType {
 
-	EMPTY, COMPLETED
+	SEQUENTIAL, PARALLEL
 
 }

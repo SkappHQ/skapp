@@ -18,6 +18,7 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
+import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
@@ -29,8 +30,10 @@ import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +45,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -63,6 +65,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final ExternalDocumentJwtService jwtService;
 
+	private final EsignEmailService emailService;
+
 	private final DocumentDao documentDao;
 
 	private final RecipientRepository recipientRepository;
@@ -73,9 +77,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentVersionRepository documentVersionRepository;
 
-	private static final String BASE_SIGNING_URL = "/document/sign?token=";
+	private static final String URL_PATH = "/sign/document/access?token=";
 
-	private static final String BASE_VIEW_URL = "/document/view?token=";
+	private static final String DOCUMENT_ID_PARAM = "documentId";
+
+	private static final String RECIPIENT_ID_PARAM = "recipientId";
 
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
@@ -85,6 +91,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${app.parent-domain}")
 	private String parentDomain;
+
+	@Value("${app.protocol}")
+	private String protocol;
 
 	public static final String SUB = "sub";
 
@@ -100,8 +109,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String RECIPIENT_ID = "recipientId";
 
-	public static final String LINK_ID = "linkId";
-
 	public static final String TOKEN = "token";
 
 	public static final String PERMISSION = "permission";
@@ -109,7 +116,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
 	@Override
-	@Transactional
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
 
 		Long documentId = documentAccessUrlDto.getDocumentId();
@@ -141,10 +147,51 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		return DocumentLinkResponseDto.builder()
 			.token(documentLink.getToken())
-			.url(documentLinkData.accessUrl() + documentLink.getToken())
+			.url(documentLinkData.accessUrl())
 			.expiresAt(documentLink.getExpiresAt())
 			.maxClicks(defaultMaxClicks)
 			.build();
+	}
+
+	@Override
+	public void resendDocumentAccessURL(ResendAccessUrlDto resendAccessUrlDto) {
+
+		log.info("resendDocumentAccessURL: process started");
+
+		DocumentLink documentLink = documentLinkRepository.findByToken(resendAccessUrlDto.getToken())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID));
+
+		if (documentLink.isResend()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND);
+		}
+
+		String token = resendAccessUrlDto.getToken();
+		Long documentId = jwtService.extractClaim(token, claims -> claims.get(DOCUMENT_ID_PARAM, Long.class));
+		Long recipientId = jwtService.extractClaim(token, claims -> claims.get(RECIPIENT_ID_PARAM, Long.class));
+		List<String> permissions = jwtService.extractClaim(token, claims -> claims.get(PERMISSION, List.class));
+
+		if (!documentId.equals(documentLink.getDocumentId().getId())
+				|| !recipientId.equals(documentLink.getRecipientId().getId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK);
+		}
+
+		DocumentPermissionType permissionType = DocumentPermissionType.READ;
+
+		if (permissions != null && permissions.contains("document:write")) {
+			permissionType = DocumentPermissionType.WRITE;
+		}
+
+		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(documentId, recipientId, permissionType);
+
+		DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(documentAccessUrlDto);
+
+		emailService.resendEnvelopeEmailToRecipient(documentLink.getEnvelopeId(), documentLink.getRecipientId(),
+				documentLinkResponseDto.getUrl());
+
+		documentLink.setResend(true);
+		documentLinkRepository.save(documentLink);
+
+		log.info("resendDocumentAccessURL: process end");
 	}
 
 	@Override
@@ -179,25 +226,22 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			.maxClicks(defaultMaxClicks)
 			.clickCount(0)
 			.isActive(true)
+			.isResend(false)
 			.build();
 
 		DocumentAccessData documentAccessData = new DocumentAccessData(userId, tenantId, envelope.getId(),
 				document.getId(), recipient.getId(), userType.name());
 
 		String token;
-		String accessUrl;
 		if (documentAccessUrlDto.getPermissionType().equals(DocumentPermissionType.WRITE)) {
 			token = generateSignAccessToken(userDetails, documentAccessData);
-			accessUrl = generateUrl(tenantId, parentDomain, true);
 
 		}
 		else {
 			token = generateViewAccessToken(userDetails, documentAccessData);
-			accessUrl = generateUrl(tenantId, parentDomain, false);
 		}
 
-		accessUrl = accessUrl + token;
-
+		String accessUrl = generateAccessUrl(tenantId, token);
 		documentLink.setToken(token);
 
 		return new DocumentLinkData(documentLink, accessUrl);
@@ -219,6 +263,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public ResponseEntityDto getRecipientDocumentData(@NotNull Long documentId, @NotNull Long recipientId) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -244,6 +294,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			Envelope envelope = document.getEnvelope();
 
+			if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+			}
+
 			Recipient recipientObj = document.getEnvelope()
 				.getRecipients()
 				.stream()
@@ -263,7 +317,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			DocumentLinkResponseDto documentLinkResponseDto = eSignMapper
 				.documentLinkToDocumentLinkResponseDto(documentLink);
-			documentLinkResponseDto.setUrl(BASE_SIGNING_URL + documentLinkResponseDto.getToken());
+			documentLinkResponseDto.setUrl(generateAccessUrl(tenantId, documentLinkResponseDto.getToken()));
 			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 
 			RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipientObj);
@@ -366,11 +420,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
-	private String generateUrl(String tenantId, String parentDomain, boolean isSign) {
-		String protocol = parentDomain.equals("localhost") ? "http" : "https";
-		String baseUrl = isSign ? BASE_SIGNING_URL : BASE_VIEW_URL;
-
-		return protocol + "://" + tenantId + "." + parentDomain + baseUrl;
+	private String generateAccessUrl(String tenantId, String token) {
+		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + token;
 	}
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,

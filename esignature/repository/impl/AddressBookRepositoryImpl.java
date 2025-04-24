@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
@@ -13,6 +14,7 @@ import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.ExternalUser_;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.repository.AddressBookRepository;
+import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
@@ -154,25 +156,25 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	}
 
 	@Override
-	public List<AddressBookUserData> fetchAddressBookEsignSenderByEmailPriority(String keyword) {
+	public List<AddressBookSenderData> fetchAddressBookEsignSenderByEmailPriority(String keyword) {
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-			CriteriaQuery<AddressBookUserData> query = cb.createQuery(AddressBookUserData.class);
+			CriteriaQuery<AddressBookSenderData> query = cb.createQuery(AddressBookSenderData.class);
 			Root<AddressBook> addressBookRoot = query.from(AddressBook.class);
 
 			Join<AddressBook, User> internalUserJoin = addressBookRoot.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
-			Join<AddressBook, ExternalUser> externalUserJoin = addressBookRoot.join(AddressBook_.EXTERNAL_USER,
-					JoinType.LEFT);
 			Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
 			Join<Employee, EmployeeRole> employeeRoleJoin = employeeJoin.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
 
-			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
+			AddressBookSenderView user = getAddressBookSenderView(cb, internalUserJoin, employeeJoin);
 
-			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-					user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
+			query.select(cb.construct(AddressBookSenderData.class, addressBookRoot.get("id"), user.userId(),
+					user.email(), user.firstName(), user.lastName(), user.phone(), employeeRoleJoin.get("esignRole"),
+					user.authPic()));
 
 			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
-			Predicate esignRolePredicate = cb.equal(employeeRoleJoin.get("esignRole"), Role.ESIGN_SENDER);
+			Predicate esignRolePredicate = employeeRoleJoin.get("esignRole")
+				.in(Role.ESIGN_SENDER, Role.ESIGN_ADMIN, Role.SUPER_ADMIN);
 
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
@@ -189,7 +191,7 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 				.otherwise(4));
 
 			query.orderBy(sortingOrder);
-			TypedQuery<AddressBookUserData> typedQuery = entityManager.createQuery(query);
+			TypedQuery<AddressBookSenderData> typedQuery = entityManager.createQuery(query);
 			return typedQuery.getResultList();
 		}
 
@@ -232,6 +234,40 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	private record AddressBookUserView(Expression<Object> firstName, Expression<Object> lastName,
 			Expression<Object> userId, Expression<Object> email, Expression<Object> userType,
 			Expression<Object> authPic, Expression<Object> phone) {
+	}
+
+	private AddressBookSenderView getAddressBookSenderView(CriteriaBuilder cb, Join<AddressBook, User> internalUserJoin,
+			Join<User, Employee> employeeJoin) {
+		Expression<Object> firstName = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.FIRST_NAME))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		Expression<Object> lastName = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		Expression<Object> phone = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		Expression<Object> userId = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		Expression<Object> email = cb.selectCase()
+			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.EMAIL))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		Expression<Object> authPic = cb.selectCase()
+			.when(cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
+					cb.isNotNull(employeeJoin.get(Employee_.authPic))), employeeJoin.get(Employee_.authPic))
+			.otherwise(cb.nullLiteral(Object.class));
+
+		return new AddressBookSenderView(firstName, lastName, userId, email, phone, authPic);
+	}
+
+	private record AddressBookSenderView(Expression<Object> firstName, Expression<Object> lastName,
+			Expression<Object> userId, Expression<Object> email, Expression<Object> phone, Expression<Object> authPic) {
 	}
 
 }

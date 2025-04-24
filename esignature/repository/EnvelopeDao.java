@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EnvelopeDao extends JpaRepository<Envelope, Long>, EnvelopeRepository {
 
+	boolean existsByUuid(String uuid);
+
 }

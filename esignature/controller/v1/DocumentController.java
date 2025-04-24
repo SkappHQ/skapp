@@ -1,11 +1,13 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.type.SignType;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,9 +63,20 @@ public class DocumentController {
 			description = "This endpoint generates a digital signature corresponding to a specific document version, "
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
-		ResponseEntityDto response = documentService.sequentialSignDocument(documentSignDto);
+
+		Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
+
+		ResponseEntityDto response;
+
+		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
+			response = documentService.sequentialSignDocument(documentSignDto);
+		}
+		else {
+			response = documentService.parallelSignDocument(documentSignDto);
+		}
+
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -71,9 +84,9 @@ public class DocumentController {
 			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto) {
-		ResponseEntityDto response = documentService.sequentialSignField(documentFieldSignDto);
+		ResponseEntityDto response = documentService.signField(documentFieldSignDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
