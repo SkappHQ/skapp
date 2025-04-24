@@ -141,17 +141,12 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
+		log.info("ssoGoogleSignUp: SSO Signup flow executed");
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
 		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
 
-		DecodedJWT decodedJWT = validateAndGetDecodedJWT(googleTokenResponse.getIdToken());
-		if (decodedJWT == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CONNECTION);
-		}
-
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
-			log.info("ssoGoogleSignUp: SSO Signup flow executed");
 			SuperAdmin superAdmin = new SuperAdmin();
 			superAdmin.setEmail(googleUserDetailsDto.getEmail());
 			superAdmin.setFirstName(googleUserDetailsDto.getFirstName());
@@ -168,10 +163,11 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
-			log.info("ssoGoogleSignUp: execution ended");
+			log.info("ssoGoogleSignUp: super admin flow: execution ended");
 			return new ResponseEntityDto(false, signInResponseDto);
 		}
 
+		log.info("ssoGoogleSignUp: execution ended");
 		return new ResponseEntityDto(false, null);
 
 	}
@@ -181,13 +177,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		log.info("ssoGoogleSignIn: execution started");
 
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
-
 		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
-
-		DecodedJWT decodedJWT = validateAndGetDecodedJWT(googleTokenResponse.getIdToken());
-		if (decodedJWT == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CONNECTION);
-		}
 
 		Optional<User> optionalUser = userDao.findByEmail(googleUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
