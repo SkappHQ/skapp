@@ -538,18 +538,20 @@ public class RecipientServiceImpl implements RecipientService {
 		recipientRepository.save(recipient);
 
 		List<Recipient> envelopeRecipients = recipientRepository.findByEnvelopeId(recipient.getEnvelope().getId())
-				.orElse(new ArrayList<>());
+			.orElse(new ArrayList<>());
 
-envelopeRecipients.stream()
-.filter(recipientToUpdate -> !recipientToUpdate.getId().equals(recipient.getId())) // Exclude the DECLINED recipient
-.forEach(recipientToUpdate -> {
-	if (recipientToUpdate.getMemberRole() == MemberRole.SIGNER && recipientToUpdate.getStatus() == RecipientStatus.NEED_TO_SIGN) {
-		recipientToUpdate.setStatus(RecipientStatus.EMPTY);
-	} else if (recipientToUpdate.getMemberRole() == MemberRole.CC) {
-		recipientToUpdate.setStatus(RecipientStatus.COMPLETED);
-	}
-	recipientRepository.save(recipientToUpdate);
-});
+		envelopeRecipients.stream()
+			.filter(recipientToUpdate -> !recipientToUpdate.getId().equals(recipient.getId()))
+			.forEach(recipientToUpdate -> {
+				if (recipientToUpdate.getMemberRole() == MemberRole.SIGNER
+						&& recipientToUpdate.getStatus() == RecipientStatus.NEED_TO_SIGN) {
+					recipientToUpdate.setStatus(RecipientStatus.EMPTY);
+				}
+				else if (recipientToUpdate.getMemberRole() == MemberRole.CC) {
+					recipientToUpdate.setStatus(RecipientStatus.COMPLETED);
+				}
+				recipientRepository.save(recipientToUpdate);
+			});
 
 		// Send email notifications for the envelope
 		sendEmailWhenDocumentIsVoidedOrDeclined(recipient.getEnvelope().getId());
