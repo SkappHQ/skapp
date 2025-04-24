@@ -30,6 +30,7 @@ import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -497,16 +498,17 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		Optional<Organization> optionalOrganization = organizationDao.findTopByOrderByOrganizationIdDesc();
 		String companyName = optionalOrganization.map(Organization::getOrganizationName).orElse(null);
 
-		String currentTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Colombo")).toString();
+		String formattedCurrentTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(java.time.ZonedDateTime.now());
+
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		Employee superAdmin = employeeDao.findFirstSuperAdmin();
-		String superAdminEmail = superAdmin != null ? superAdmin.getUser().getEmail() : null;
-		String contactNumber = superAdmin != null ? superAdmin.getPhone() : null;
+		String superAdminEmail = superAdmin != null ? superAdmin.getUser().getEmail() : "";
+		String contactNumber = superAdmin != null ? superAdmin.getPhone() : "";
 
 		OrganizationDetailsDto organizationDetailsDto = new OrganizationDetailsDto();
 		organizationDetailsDto.setCompanyName(companyName);
-		organizationDetailsDto.setCurrentTime(currentTime);
+		organizationDetailsDto.setCurrentTime(formattedCurrentTime);
 		organizationDetailsDto.setUserCount(userCount);
 		organizationDetailsDto.setSuperAdminEmail(superAdminEmail);
 		organizationDetailsDto.setContactNumber(contactNumber);

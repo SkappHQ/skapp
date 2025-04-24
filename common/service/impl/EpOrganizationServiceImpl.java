@@ -52,6 +52,7 @@ import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -187,11 +188,11 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			String superAdminEmail = superAdmin.getEmail();
 
-			String signedUpDateTime = java.time.LocalDateTime.now().toString();
+			String signedUpDateTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(java.time.ZonedDateTime.now());
 
 			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationEmail,
 					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,
-					superAdminEmail);
+					superAdminEmail, "");
 
 			return new ResponseEntityDto(false, responseDto);
 

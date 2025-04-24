@@ -18,13 +18,14 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 
 	@Override
 	public void sendNewOrganizationCreatedEmail(String userEmail, String companyName, String tenantId,
-			String signedUpDateTime, String superAdminEmail) {
+			String signedUpDateTime, String superAdminEmail, String contactNo) {
 
 		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
 		dashboardEmailDynamicFields.setCompanyName(companyName);
 		dashboardEmailDynamicFields.setTenantId(tenantId);
 		dashboardEmailDynamicFields.setSignedUpDateTime(signedUpDateTime);
 		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
+		dashboardEmailDynamicFields.setContactNumber(contactNo);
 
 		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_CREATED, dashboardEmailDynamicFields, userEmail);

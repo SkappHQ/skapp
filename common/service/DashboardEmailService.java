@@ -3,7 +3,7 @@ package com.skapp.enterprise.common.service;
 public interface DashboardEmailService {
 
 	void sendNewOrganizationCreatedEmail(String userEmail, String companyName, String tenantId, String signedUpDateTime,
-			String superAdminEmail);
+			String superAdminEmail, String contactNo);
 
 	void sendNewOrganizationStartedSkappCoreFreeTrialEmail(String userEmail, String companyName, String tenantId,
 			String signedUpDateTime, String superAdminEmail, String contactNumber);
