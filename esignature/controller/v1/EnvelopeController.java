@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -106,6 +107,19 @@ public class EnvelopeController {
 			@PathVariable @Schema(description = "ID of the envelope to get") Long id) {
 		ResponseEntityDto response = envelopeService.getEnvelopeForSender(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Custody Transfer of Envelope",
+			description = "This endpoint updates the owner of an envelope (custody transfer) to a new owner.")
+	@PatchMapping(value = "/custody-transfer", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> transferEnvelopeCustody(
+			@RequestParam @Schema(description = "ID of the envelope to transfer custody",
+					example = "1") Long envelopeId,
+			@RequestParam @Schema(description = "ID of the new owner in the address book",
+					example = "2") Long addressbookId) {
+		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }

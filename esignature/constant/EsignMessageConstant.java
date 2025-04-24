@@ -99,7 +99,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE("ep.esign.error.document.access.inactive"),
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid"),
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND("ep.esign.error.document.access.already.resend"),
-	ESIGN_ERROR_ENVELOPE_UUID_CREATION_FAIL("ep.esign.error.envelope.uuid.creation.fail");
+	ESIGN_ERROR_ENVELOPE_UUID_CREATION_FAIL("ep.esign.error.envelope.uuid.creation.fail"),
+	ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE("ep.esign.error.user.already.owner.of.envelope");
 
 	private final String messageKey;
 
