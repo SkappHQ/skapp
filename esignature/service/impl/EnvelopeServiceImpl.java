@@ -553,6 +553,31 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
+		String username = documentService.getCurrentUsername();
+
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
+
+		if (currentAddressBookUser.getType() == UserType.INTERNAL) {
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId,
+					currentAddressBookUser.getId()) == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
+			Recipient envelopRecipient = recipientService.GetRecipientFromToken();
+			if (!envelopRecipient.getEnvelope().getId().equals(envelopeId)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
 		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);

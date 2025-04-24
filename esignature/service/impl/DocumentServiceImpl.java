@@ -628,7 +628,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return null;
 	}
 
-	private String getCurrentUsername() {
+	@Override
+	public String getCurrentUsername() {
 		UserDetails userDetails = getCurrentUserDetails();
 		return (userDetails != null) ? userDetails.getUsername() : null;
 	}
@@ -966,7 +967,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return addressBook;
 	}
 
-	private AddressBook getCurrentAddressBookUser(@NotNull String userName) {
+	@Override
+	public AddressBook getCurrentAddressBookUser(@NotNull String userName) {
 		return addressBookDao.findByInternalUserEmail(userName)
 			.orElseGet(() -> addressBookDao.findByExternalUserEmail(userName).orElse(null));
 	}
