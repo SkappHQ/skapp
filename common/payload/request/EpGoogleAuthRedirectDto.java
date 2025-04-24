@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EpGoogleCalendarAuthRedirectDto {
+public class EpGoogleAuthRedirectDto {
 
 	private String code;
 

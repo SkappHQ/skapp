@@ -14,6 +14,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TENANT_NOT_PRESENT("ep.common.error.tenant-not-present"),
 	EP_COMMON_ERROR_TENANT_CONTEXT_ERROR("ep.common.error.tenant-context-error"),
 	EP_COMMON_ERROR_TENANT_NOT_FOUND("ep.common.error.tenant-not-found"),
+	EP_COMMON_ERROR_USER_EMAIL_NOT_FOUND("ep.common.error.email-not-found"),
 	EP_COMMON_ERROR_TENANT_ALREADY_EXISTS("ep.common.error.tenant-already-exists"),
 	EP_COMMON_ERROR_TENANT_CREATION_ERROR("ep.common.error.tenant-creation-error"),
 	EP_COMMON_ERROR_TENANT_CREATION_UNEXPECTED_ERROR("ep.common.error.tenant-creation-unexpected-error"),
@@ -72,13 +73,14 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND("ep.common.error.calendar-config-not-found"),
 	EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED("ep.common.error.quick-setup-already-completed"),
 	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
-	EP_COMMON_ERROR_GOOGLE_CALENDAR_STATE_MISMATCH("ep.common.error.calendar-state-mismatch"),
+	EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH("ep.common.error.google-state-mismatch"),
 	EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-email-mismatch-with-current-user"),
 	EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR("ep.common.error.unable-to-connect-google-calendar"),
 	EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR("ep.common.error.unable-to-delete-google-calendar"),
 	EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR(
 			"ep.common.error.unable-to-generate-access-token-to-calendar"),
-	EP_COMMON_UNABLE_TO_GET_AUTH_URL_CALENDAR("ep.common.error.unable-to-get-auth-url-calendar"),
+	EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL("ep.common.error.unable-to-get-google-auth-url"),
+	EP_COMMON_INVALID_GOOGLE_AUTH_CODE("ep.common.error.invalid-google-auth-code"),
 	EP_COMMON_UNABLE_TO_DISCONNECT_FROM_GOOGLE_CALENDAR("ep.common.error.unable-to-disconnect-from-calendar"),
 	EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR("ep.common.error.unable-to-revoke-permission"),
 	EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL("ep.common.error.unable-to-fetch-organization-url"),
@@ -143,6 +145,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_INVALID_DB_NAME("ep.common.error.invalid-db-name"),
 	COMMON_ERROR_DB_CREATION_FAILED("ep.common.error.db-creation-failed"),
 	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),
+	EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND("ep.common.error.cached-uuid-not-found"),
 	EP_COMMON_ERROR_FAILED_TO_HASH("ep.common.error.failed-to-hash");
 
 	private final String messageKey;
