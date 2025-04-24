@@ -52,6 +52,8 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	public static final String DOCUMENT_LINK_SIGN_FIELD_URL = "/v1/ep/esign/documents/sign-field";
 
+	public static final String TOKEN = "token";
+
 	public static final String ENVELOPE_SIGNATURE_CERTIFICATE_URL = "v1/ep/esign/envelopes/signature-certificate";
 
 	private static final Set<String> DOCUMENT_LINK_URLS = Set.of(DOCUMENT_LINK_ACCESS_URL, DOCUMENT_LINK_SIGN_URL,
@@ -62,8 +64,6 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 	private static final String DOCUMENT_ID_PARAM = "documentId";
 
 	private static final String RECIPIENT_ID_PARAM = "recipientId";
-
-	public static final String TOKEN = "token";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 

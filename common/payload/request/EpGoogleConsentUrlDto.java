@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EpGoogleCalendarConsentUrlDto {
+public class EpGoogleConsentUrlDto {
 
 	private String frontendRedirectUrl;
 

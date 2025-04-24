@@ -33,6 +33,10 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtService {
 
+	public static final String TOKEN_TYPE = "token_type";
+
+	public static final String USER_ID = "userId";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	@Value("${jwt.access-token.esign.expiration-time}")
@@ -40,10 +44,6 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 
 	@Value("${jwt.access-token.esign.doc-access-key}")
 	private String jwtDocumentSigningKey;
-
-	public static final String TOKEN_TYPE = "token_type";
-
-	public static final String USER_ID = "userId";
 
 	@Override
 	public Long extractUserId(String token) {

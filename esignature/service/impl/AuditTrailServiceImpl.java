@@ -199,14 +199,12 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setHash(auditTrail.getHash());
 
 			if (auditTrail.getRecipient() == null) {
-				String actionDoneByName = auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName()
-						+ " " + auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName();
-				responseDto.setActionDoneByName(actionDoneByName);
-				log.debug("Action done by: {}", actionDoneByName);
+				responseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
+				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
 			else {
-				responseDto.setActionDoneByName(auditTrail.getRecipient().getName());
-				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getName());
+				responseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
+				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
 
 			responseDto.setTimestamp(auditTrail.getTimestamp());

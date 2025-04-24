@@ -17,8 +17,8 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
@@ -61,6 +61,32 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DocumentLinkServiceImpl implements DocumentLinkService {
 
+	public static final String SUB = "sub";
+
+	public static final String USER_ID = "userId";
+
+	public static final String TENANT_ID = "tenantId";
+
+	public static final String ENVELOPE_ID = "envelopeId";
+
+	public static final String DOCUMENT_ID = "documentId";
+
+	public static final String USER_TYPE = "userType";
+
+	public static final String RECIPIENT_ID = "recipientId";
+
+	public static final String TOKEN = "token";
+
+	public static final String PERMISSION = "permission";
+
+	private static final String URL_PATH = "/sign/document/access?token=";
+
+	private static final String DOCUMENT_ID_PARAM = "documentId";
+
+	private static final String RECIPIENT_ID_PARAM = "recipientId";
+
+	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -77,12 +103,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentVersionRepository documentVersionRepository;
 
-	private static final String URL_PATH = "/sign/document/access?token=";
-
-	private static final String DOCUMENT_ID_PARAM = "documentId";
-
-	private static final String RECIPIENT_ID_PARAM = "recipientId";
-
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
 
@@ -94,28 +114,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${app.protocol}")
 	private String protocol;
-
-	public static final String SUB = "sub";
-
-	public static final String USER_ID = "userId";
-
-	public static final String TENANT_ID = "tenantId";
-
-	public static final String ENVELOPE_ID = "envelopeId";
-
-	public static final String DOCUMENT_ID = "documentId";
-
-	public static final String USER_TYPE = "userType";
-
-	public static final String RECIPIENT_ID = "recipientId";
-
-	public static final String LINK_ID = "linkId";
-
-	public static final String TOKEN = "token";
-
-	public static final String PERMISSION = "permission";
-
-	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {

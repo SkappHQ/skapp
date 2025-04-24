@@ -20,15 +20,6 @@ public class SpecialTenantConfig {
 
 	private List<TenantInfo> tenantInfoList;
 
-	@Data
-	public static class TenantInfo {
-
-		private String name;
-
-		private Integer userCount;
-
-	}
-
 	private void parseTenantInfo() {
 		tenantInfoList = new ArrayList<>();
 
@@ -79,6 +70,15 @@ public class SpecialTenantConfig {
 	public TenantInfo getCurrentTenantInfo() {
 		String currentTenant = TenantContext.getCurrentTenant();
 		return getTenantInfoList().stream().filter(t -> t.getName().equals(currentTenant)).findFirst().orElse(null);
+	}
+
+	@Data
+	public static class TenantInfo {
+
+		private String name;
+
+		private Integer userCount;
+
 	}
 
 }

@@ -4,13 +4,14 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
+import com.skapp.enterprise.esignature.type.SignType;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface RecipientService {
 
-	DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients);
+	DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType);
 
 	ResponseEntityDto sendEmailToNextRecipients(List<Recipient> nextRecipientList);
 
@@ -22,9 +23,9 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
+	ResponseEntityDto sendNudgeEmail(Long recipientId);
+
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}
-
-	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
 }

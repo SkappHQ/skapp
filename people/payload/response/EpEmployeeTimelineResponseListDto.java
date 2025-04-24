@@ -9,10 +9,10 @@ import java.util.List;
 @Setter
 public class EpEmployeeTimelineResponseListDto {
 
+	List<EpEmployeeTimelineResponseDto> employeeTimelineRecords;
+
 	private Long year;
 
 	private String month;
-
-	List<EpEmployeeTimelineResponseDto> employeeTimelineRecords;
 
 }

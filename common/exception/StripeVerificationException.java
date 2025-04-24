@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 public class StripeVerificationException extends RuntimeException {
 
+	private static final AtomicReference<MessageUtil> messageUtil = new AtomicReference<>();
+
 	private final transient MessageConstant messageKey;
 
 	private final transient Event event;
@@ -25,18 +27,6 @@ public class StripeVerificationException extends RuntimeException {
 	private final String customerName;
 
 	private final String customerId;
-
-	private static final AtomicReference<MessageUtil> messageUtil = new AtomicReference<>();
-
-	@Component
-	public static class MessageUtilInjector implements ApplicationContextAware {
-
-		@Override
-		public void setApplicationContext(ApplicationContext applicationContext) {
-			messageUtil.set(applicationContext.getBean(MessageUtil.class));
-		}
-
-	}
 
 	public StripeVerificationException(MessageConstant messageKey, Event event, StripeWebhookEventTypes eventType) {
 		super(getMessageUtil().getMessage(messageKey.getMessageKey()));
@@ -87,6 +77,16 @@ public class StripeVerificationException extends RuntimeException {
 			throw new IllegalStateException("MessageUtil not initialized");
 		}
 		return util;
+	}
+
+	@Component
+	public static class MessageUtilInjector implements ApplicationContextAware {
+
+		@Override
+		public void setApplicationContext(ApplicationContext applicationContext) {
+			messageUtil.set(applicationContext.getBean(MessageUtil.class));
+		}
+
 	}
 
 }

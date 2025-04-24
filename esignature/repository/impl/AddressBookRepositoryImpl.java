@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
@@ -231,11 +230,6 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		return new AddressBookUserView(firstName, lastName, userId, email, userType, authPic, phone);
 	}
 
-	private record AddressBookUserView(Expression<Object> firstName, Expression<Object> lastName,
-			Expression<Object> userId, Expression<Object> email, Expression<Object> userType,
-			Expression<Object> authPic, Expression<Object> phone) {
-	}
-
 	private AddressBookSenderView getAddressBookSenderView(CriteriaBuilder cb, Join<AddressBook, User> internalUserJoin,
 			Join<User, Employee> employeeJoin) {
 		Expression<Object> firstName = cb.selectCase()
@@ -264,6 +258,11 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.otherwise(cb.nullLiteral(Object.class));
 
 		return new AddressBookSenderView(firstName, lastName, userId, email, phone, authPic);
+	}
+
+	private record AddressBookUserView(Expression<Object> firstName, Expression<Object> lastName,
+			Expression<Object> userId, Expression<Object> email, Expression<Object> userType,
+			Expression<Object> authPic, Expression<Object> phone) {
 	}
 
 	private record AddressBookSenderView(Expression<Object> firstName, Expression<Object> lastName,
