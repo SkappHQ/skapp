@@ -44,6 +44,7 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
+import com.skapp.enterprise.common.util.Validation;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,12 +68,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.skapp.enterprise.common.util.Validation.validateFrontendUrl;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
+
+	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+
+	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final SuperAdminDao superAdminDao;
 
@@ -87,10 +90,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private final UserDao userDao;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
-
-	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-
-	private static final JsonFactory JSON_FACTORY = new GsonFactory();
 
 	private final ValidationService validationService;
 
@@ -114,6 +113,18 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Value("${google.auth.backend-redirect-uri}")
 	private String backendRedirectURI;
+
+	private static GoogleUserDetailsDto getGoogleUserDetailsDto(Person profile, String userEmail) {
+		String authPicUrl = (profile.getPhotos() != null && !profile.getPhotos().isEmpty())
+				? profile.getPhotos().getFirst().getUrl() : null;
+		String name = (profile.getNames() != null && !profile.getNames().isEmpty())
+				? String.valueOf(profile.getNames().getFirst().getDisplayName()) : null;
+		GoogleUserDetailsDto googleUserDetailsDto = new GoogleUserDetailsDto();
+		googleUserDetailsDto.setEmail(userEmail);
+		googleUserDetailsDto.setAuthPicUrl(authPicUrl);
+		googleUserDetailsDto.setName(name);
+		return googleUserDetailsDto;
+	}
 
 	private SignInResponseDto getSignInResponseDto(String accessToken, String refreshToken,
 			SuperAdmin savedSuperAdmin) {
@@ -250,7 +261,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 				if (userEmail != null && !userEmail.isEmpty()) {
 					return getGoogleUserDetailsDto(profile, userEmail);
 				}
-
 				else {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_NOT_FOUND);
 				}
@@ -262,18 +272,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		catch (IOException ioException) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CONNECTION);
 		}
-	}
-
-	private static GoogleUserDetailsDto getGoogleUserDetailsDto(Person profile, String userEmail) {
-		String authPicUrl = (profile.getPhotos() != null && !profile.getPhotos().isEmpty())
-				? profile.getPhotos().getFirst().getUrl() : null;
-		String name = (profile.getNames() != null && !profile.getNames().isEmpty())
-				? String.valueOf(profile.getNames().getFirst().getDisplayName()) : null;
-		GoogleUserDetailsDto googleUserDetailsDto = new GoogleUserDetailsDto();
-		googleUserDetailsDto.setEmail(userEmail);
-		googleUserDetailsDto.setAuthPicUrl(authPicUrl);
-		googleUserDetailsDto.setName(name);
-		return googleUserDetailsDto;
 	}
 
 	private GoogleTokenResponse validateCodeAndGetRefreshToken(String authorizationCode) {
@@ -308,10 +306,10 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
-		validateFrontendUrl(frontendUrl);
+		Validation.validateFrontendUrl(frontendUrl);
 
 		try {
-			com.skapp.enterprise.common.util.Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
+			Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
 		}
 		catch (Exception exception) {
 			log.error("getIdTokenAndRedirect: {}", exception.getMessage(), exception);

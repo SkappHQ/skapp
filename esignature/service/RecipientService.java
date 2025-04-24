@@ -23,9 +23,9 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
+	ResponseEntityDto sendNudgeEmail(Long recipientId);
+
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}
-
-	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
 }
