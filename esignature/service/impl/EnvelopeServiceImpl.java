@@ -578,8 +578,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
-		if (voidEnvelopeRequestDto.getVoidReason()
-			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
+		if (voidEnvelopeRequestDto.getVoidReason().length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
 		}
 		if (!voidEnvelopeRequestDto.getVoidReason()
@@ -622,7 +621,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 		});
 
-
 		// Validate the recipient
 		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
 				&& !recipient.getId().equals(recipientService.GetRecipientFromToken().getId())) {
@@ -655,14 +653,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
 			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(),
 					recipient.getStatus());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
 		}
 
 		if (declineEnvelopeRequestDto.getDeclineReason()
-				.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
+			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
-		} else if (!declineEnvelopeRequestDto.getDeclineReason()
-				.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+		}
+		else if (!declineEnvelopeRequestDto.getDeclineReason()
+			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
@@ -671,8 +670,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
-
-
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
