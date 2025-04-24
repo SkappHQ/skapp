@@ -20,6 +20,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.OrganizationDetailsDto;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
@@ -68,6 +69,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final SpecialTenantConfig specialTenantConfig;
 
 	private final OrganizationDao organizationDao;
+
+	private final DashboardEmailService dashboardEmailService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -189,10 +192,9 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 
 			stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(billingEmail, trialEndDate, tenant.getTenantName());
-			stripeEmailService.sendFreeTierUserUpgradedToSkappCoreFreeTrialEmail(organizationEmail,
+			dashboardEmailService.sendNewOrganizationStartedSkappCoreFreeTrialEmail(organizationEmail,
 					organizationDetailsDto.getCompanyName(), tenantId, organizationDetailsDto.getCurrentTime(),
-					organizationDetailsDto.getUserCount(), organizationDetailsDto.getSuperAdminEmail(),
-					organizationDetailsDto.getContactNumber());
+					organizationDetailsDto.getSuperAdminEmail(), organizationDetailsDto.getContactNumber());
 
 			log.info("handleCheckoutSessionCompleted: Successfully saved subscription details for tenant: {}",
 					tenantId);
@@ -257,7 +259,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 				stripeEmailService.sendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate,
 						currentTenant.getTenantName());
-				stripeEmailService.sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(organizationEmail,
+				dashboardEmailService.sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(organizationEmail,
 						organizationDetailsDto.getCompanyName(), currentTenant.getTenant().getTenantName(),
 						organizationDetailsDto.getCurrentTime(), organizationDetailsDto.getUserCount(),
 						organizationDetailsDto.getSuperAdminEmail(), organizationDetailsDto.getContactNumber());
@@ -404,7 +406,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			stripeEmailService.sendOrganizationCancelledSkappCoreSubscriptionEmail(organizationEmail,
+			dashboardEmailService.sendOrganizationCancelledSkappCoreSubscriptionEmail(organizationEmail,
 					organizationDetailsDto.getCompanyName(), tenantName, organizationDetailsDto.getCurrentTime(),
 					organizationDetailsDto.getUserCount(), organizationDetailsDto.getSuperAdminEmail(),
 					organizationDetailsDto.getContactNumber());
@@ -495,7 +497,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		Optional<Organization> optionalOrganization = organizationDao.findTopByOrderByOrganizationIdDesc();
 		String companyName = optionalOrganization.map(Organization::getOrganizationName).orElse(null);
 
-		String currentTime = java.time.LocalDateTime.now().toString();
+		String currentTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Colombo")).toString();
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		Employee superAdmin = employeeDao.findFirstSuperAdmin();

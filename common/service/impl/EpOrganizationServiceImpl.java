@@ -46,15 +46,14 @@ import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
-import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
@@ -107,7 +106,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final CacheService cacheService;
 
-	private final StripeEmailService stripeEmailService;
+	private final DashboardEmailService dashboardEmailService;
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
@@ -121,13 +120,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
 			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
-			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService,
-			StripeEmailService stripeEmailService) {
 			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
 			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			EsignConfigService esignConfigService, @Qualifier("epCacheServiceImpl") CacheService cacheService) {
+			EsignConfigService esignConfigService, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -146,8 +142,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
-		this.stripeEmailService = stripeEmailService;
 		this.cacheService = cacheService;
+		this.dashboardEmailService = dashboardEmailService;
 	}
 
 	@Override
@@ -193,7 +189,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			String signedUpDateTime = java.time.LocalDateTime.now().toString();
 
-			stripeEmailService.sendNewOrganizationSignedUpforSkappFreeTierEmail(organizationEmail,
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationEmail,
 					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,
 					superAdminEmail);
 

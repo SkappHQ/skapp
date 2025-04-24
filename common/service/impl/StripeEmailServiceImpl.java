@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.payload.email.DashboardEmailDynamicFields;
 import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -62,90 +61,6 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 				EpEmailBodyTemplates.PAYMENT_STRIPE_CANCEL_SUBSCRIPTION, paymentEmailStripeDynamicFields, userEmail);
 
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-	}
-
-	@Override
-	public void sendNewOrganizationSignedUpforSkappFreeTierEmail(String userEmail, String companyName, String tenantId,
-			String signedUpDateTime, String superAdminEmail) {
-
-		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
-		dashboardEmailDynamicFields.setCompanyName(companyName);
-		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setSignedUpDateTime(signedUpDateTime);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-
-		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_SIGN_UP_FREE_TIER, dashboardEmailDynamicFields,
-				userEmail);
-	}
-
-	@Override
-	public void sendNewOrganizationStartedSkappCoreFreeTrialEmail(String userEmail, String companyName, String tenantId,
-			String signedUpDateTime, String superAdminEmail, String contactNumber) {
-
-		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
-		dashboardEmailDynamicFields.setCompanyName(companyName);
-		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setSignedUpDateTime(signedUpDateTime);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-		dashboardEmailDynamicFields.setContactNumber(contactNumber);
-
-		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL,
-				dashboardEmailDynamicFields, userEmail);
-	}
-
-	@Override
-	public void sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(String userEmail, String companyName,
-			String tenantId, String subscriptionStartDate, long userCount, String superAdminEmail,
-			String contactNumber) {
-
-		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
-		dashboardEmailDynamicFields.setCompanyName(companyName);
-		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setSubscriptionStartDate(subscriptionStartDate);
-		dashboardEmailDynamicFields.setUserCount(userCount);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-		dashboardEmailDynamicFields.setContactNumber(contactNumber);
-
-		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE, dashboardEmailDynamicFields,
-				userEmail);
-	}
-
-	@Override
-	public void sendFreeTierUserUpgradedToSkappCoreFreeTrialEmail(String userEmail, String companyName, String tenantId,
-			String upgradeDateTime, long userCount, String superAdminEmail, String contactNumber) {
-
-		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
-		dashboardEmailDynamicFields.setCompanyName(companyName);
-		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setUpgradeDateTime(upgradeDateTime);
-		dashboardEmailDynamicFields.setUserCount(userCount);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-		dashboardEmailDynamicFields.setContactNumber(contactNumber);
-
-		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_FREE_TIER_ORGANIZATION_UPGRADED_TO_CORE_TRIAL,
-				dashboardEmailDynamicFields, userEmail);
-	}
-
-	@Override
-	public void sendOrganizationCancelledSkappCoreSubscriptionEmail(String userEmail, String companyName,
-			String tenantId, String cancellationDateTime, long userCount, String superAdminEmail,
-			String contactNumber) {
-
-		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
-		dashboardEmailDynamicFields.setCompanyName(companyName);
-		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setCancellationDateTime(cancellationDateTime);
-		dashboardEmailDynamicFields.setUserCount(userCount);
-		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail);
-		dashboardEmailDynamicFields.setContactNumber(contactNumber);
-
-		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE, dashboardEmailDynamicFields,
-				userEmail);
 	}
 
 }
