@@ -101,6 +101,12 @@ public class AddressBookServiceImpl implements AddressBookService {
 		if (mySignatureLinkDto.getMySignatureLink() == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY);
 		}
+
+		if (mySignatureLinkDto.getMySignatureMethod() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY);
+		}
+
+		addressBook.setMySignatureMethod(mySignatureLinkDto.getMySignatureMethod());
 		addressBook.setMySignatureLink(mySignatureLinkDto.getMySignatureLink());
 		addressBookDao.save(addressBook);
 
