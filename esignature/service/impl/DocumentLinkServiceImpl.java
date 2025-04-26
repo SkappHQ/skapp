@@ -157,7 +157,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public void validatePermissionForGenerateAccessUrl(Envelope envelope, Recipient recipient,
-													   DocumentPermissionType requestedPermission) {
+			DocumentPermissionType requestedPermission) {
 		List<DocumentLink> activeLinks = documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope,
 				recipient);
 
@@ -281,6 +281,46 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		documentLink.setToken(token);
 
 		return new DocumentLinkData(documentLink, accessUrl);
+	}
+
+	@Override
+	public String getRecipientDocumentAccessUrlByPermissionType(Envelope envelope, Recipient recipient,
+			DocumentPermissionType permissionType) {
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		String accessUrl = findAccessUrlByPermissionType(envelope, recipient, permissionType, true, tenantId);
+
+		if (accessUrl == null) {
+			accessUrl = findAccessUrlByPermissionType(envelope, recipient, permissionType, false, tenantId);
+		}
+
+		return accessUrl;
+	}
+
+	private String findAccessUrlByPermissionType(Envelope envelope, Recipient recipient,
+			DocumentPermissionType permissionType, boolean isActive, String tenantId) {
+		List<DocumentLink> documentLinks;
+
+		if (isActive) {
+			documentLinks = documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient);
+		}
+		else {
+			documentLinks = documentLinkRepository
+				.findByEnvelopeIdAndRecipientIdAndIsActiveFalseAndIsResendFalse(envelope, recipient);
+		}
+
+		for (DocumentLink documentLink : documentLinks) {
+			DocumentPermissionType permissionTypeByToken = getPermissionTypeByToken(documentLink.getToken());
+			if (permissionTypeByToken.equals(permissionType)) {
+				return generateAccessUrl(tenantId, documentLink.getToken());
+			}
+		}
+
+		return null;
 	}
 
 	@Override

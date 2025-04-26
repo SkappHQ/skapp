@@ -22,6 +22,9 @@ public interface DocumentLinkService {
 	DocumentLinkData createDocumentLinkData(DocumentAccessUrlDto documentAccessUrlDto, Recipient recipient,
 			Document document, Envelope envelope);
 
+	String getRecipientDocumentAccessUrlByPermissionType(Envelope envelope, Recipient recipient,
+			DocumentPermissionType permissionType);
+
 	DocumentLink setDocumentAccessUrlProperties(DocumentLink documentLink);
 
 	ResponseEntityDto getRecipientDocumentData(Long documentId, Long recipientId);

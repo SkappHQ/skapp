@@ -39,6 +39,7 @@ import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
@@ -54,9 +55,11 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
@@ -106,6 +109,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final RecipientService recipientService;
 
 	private final DocumentService documentService;
+
+	private final DocumentLinkService documentLinkService;
 
 	private final DocumentVersionRepository documentVersionRepository;
 
@@ -519,9 +524,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
-		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope);
+		Optional<Recipient> currentRecippientOptional = envelope.getRecipients()
+			.stream()
+			.filter(recipient -> recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+			.findFirst();
 
-		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+		if (currentRecippientOptional.isPresent()) {
+			String accessUrl = documentLinkService.getRecipientDocumentAccessUrlByPermissionType(envelope,
+					currentRecippientOptional.get(), DocumentPermissionType.WRITE);
+			envelopeInboxInfoResponseDto.setEnvelopeAccessLink(accessUrl);
+		}
+
+		return new ResponseEntityDto(false, envelopeInboxInfoResponseDto);
 	}
 
 	@Override
@@ -636,6 +652,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelopeInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInfoResponseDto;
+	}
+
+	private EnvelopeInboxInfoResponseDto getEnvelopeInboxInfoResponseDto(Envelope envelope) {
+		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
+		envelopeInboxInfoResponseDto.setId(envelope.getId());
+		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInboxInfoResponseDto.setStatus(envelope.getStatus());
+
+		List<Recipient> recipients = envelope.getRecipients();
+		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
+
+		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
+		AddressBook addressBook = envelope.getOwner();
+
+		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
+			.addressBookToAddressBookBasicResponseDto(addressBook);
+		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
+
+		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
+		return envelopeInboxInfoResponseDto;
 	}
 
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {

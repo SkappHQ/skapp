@@ -52,7 +52,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
 				mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
 				concatDocumentNames(envelope.getDocuments()), null, null,
-				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl,envelope.getOwner().getName(),envelope.getOwner().getEmail());
+				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl,
+				envelope.getOwner().getName(), envelope.getOwner().getEmail());
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
@@ -70,7 +71,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 						+ envelope.getOwner().getInternalUser().getEmployee().getLastName(),
 				envelope.getId(), envelope.getSubject(), envelope.getMessage(),
 				concatDocumentNames(envelope.getDocuments()), null, null,
-				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null,envelope.getOwner().getName(),envelope.getOwner().getEmail());
+				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null, envelope.getOwner().getName(),
+				envelope.getOwner().getEmail());
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
@@ -79,19 +81,20 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		log.info("sendEmailToSender: execution ended");
 	}
 
-	private void sendEnvelopeToRecipientEmail(Recipient recipient,
-			String documentAccessUrl, EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
+	private void sendEnvelopeToRecipientEmail(Recipient recipient, String documentAccessUrl,
+			EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
 
-		String userName =recipient.getAddressBook().getName();
-		String userEmail= recipient.getAddressBook().getEmail();
-		String memberRole =	recipient.getMemberRole().toString();
+		String userName = recipient.getAddressBook().getName();
+		String userEmail = recipient.getAddressBook().getEmail();
+		String memberRole = recipient.getMemberRole().toString();
 
 		log.info("sendEnvelopeToRecipientEmail: execution started");
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
 				userName, epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
 				epEsignEmailDataDto.getEnvelopeMessage(), epEsignEmailDataDto.getDocumentNames(), null, null, null,
-				documentAccessUrl,recipient.getEnvelope().getOwner().getName(),recipient.getEnvelope().getOwner().getEmail());
+				documentAccessUrl, recipient.getEnvelope().getOwner().getName(),
+				recipient.getEnvelope().getOwner().getEmail());
 
 		if ((MemberRole.CC).toString().equalsIgnoreCase(memberRole)) {
 			epEsignEnvelopeRecipientEmailDynamicFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_CC_EMAIL_TITLE);
@@ -132,7 +135,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 	private EpEsignEnvelopeRecipientEmailDynamicFields initializeEpEsignEmailValues(String userName, Long envelopeId,
 			String envelopeSubject, String envelopeMessage, String documentName, String voidDeclinedReason,
-			String declinedBy, String title, String documentAccessUrl,String name, String email) {
+			String declinedBy, String title, String documentAccessUrl, String name, String email) {
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = new EpEsignEnvelopeRecipientEmailDynamicFields();
 		epEsignEnvelopeRecipientEmailDynamicFields.setRecipientName(userName);
