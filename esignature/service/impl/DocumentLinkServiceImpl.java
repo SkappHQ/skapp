@@ -341,9 +341,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			DocumentDetailResponseDto latestDocumentDetailsDto = getLatestDocumentDetails(document, documentVersion);
 
-			DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(
-					envelope.getId(), recipientObj, recipientResponseDto, documentLinkResponseDto,
-					latestDocumentDetailsDto);
+			DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(envelope,
+					recipientObj, recipientResponseDto, documentLinkResponseDto, latestDocumentDetailsDto);
 
 			documentLink = setDocumentAccessUrlProperties(documentLink);
 
@@ -365,7 +364,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return dto;
 	}
 
-	private DocumentAccessLinkDataResponseDto getDocumentAccessLinkDataResponseDto(Long envelopeId,
+	private DocumentAccessLinkDataResponseDto getDocumentAccessLinkDataResponseDto(Envelope envelope,
 			Recipient recipientObj, RecipientResponseDto recipientResponseDto,
 			DocumentLinkResponseDto documentLinkResponseDto, DocumentDetailResponseDto documentDetailResponseDto) {
 		List<FieldResponseDto> fieldResponseDtoList = getFieldResponseDtos(recipientObj);
@@ -373,7 +372,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
 		documentAccessLinkData.setName(recipientObj.getAddressBook().getName());
 		documentAccessLinkData.setEmail(recipientObj.getAddressBook().getEmail());
-		documentAccessLinkData.setEnvelopeId(envelopeId);
+		documentAccessLinkData.setEnvelopeId(envelope.getId());
+		documentAccessLinkData.setEnvelopeStatus(envelope.getStatus());
 		documentAccessLinkData.setRecipientResponseDto(recipientResponseDto);
 		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
 		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);

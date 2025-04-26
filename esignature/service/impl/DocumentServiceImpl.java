@@ -308,8 +308,8 @@ public class DocumentServiceImpl implements DocumentService {
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
 						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
 
-				DocumentLinkService.DocumentLinkData documentLink = documentLinkService
-					.createDocumentLinkData(documentAccessUrlDto,mailRecipient,envelope.getDocuments().getFirst(),envelope);
+				DocumentLinkService.DocumentLinkData documentLink = documentLinkService.createDocumentLinkData(
+						documentAccessUrlDto, mailRecipient, envelope.getDocuments().getFirst(), envelope);
 
 				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.accessUrl());
 
@@ -414,7 +414,8 @@ public class DocumentServiceImpl implements DocumentService {
 			// Get first version of document
 			DocumentVersion firstDocumentVersion = getDocumentVersion(1, document.getId());
 
-			byte[] initialDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName, firstDocumentVersion.getFilePath());
+			byte[] initialDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName,
+					firstDocumentVersion.getFilePath());
 			KeyPair keyPairSender = loadKeyPair(document.getEnvelope().getOwner().getId());
 
 			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairSender.getPublic());
@@ -670,7 +671,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
 			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
 		}
 		return fileUrl;
@@ -983,8 +985,8 @@ public class DocumentServiceImpl implements DocumentService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 	}
 
-    @Override
-    public AddressBook getCurrentAddressBookUser(@NotNull String userName) {
+	@Override
+	public AddressBook getCurrentAddressBookUser(@NotNull String userName) {
 		return addressBookDao.findByInternalUserEmail(userName)
 			.orElseGet(() -> addressBookDao.findByExternalUserEmail(userName).orElse(null));
 	}
