@@ -9,7 +9,7 @@ public class EsignUtil {
 	private EsignUtil() {
 	}
 
-	public static String generateFileUrl() {
+	public static String randomUrlPath() {
 		return FILE_PREFIX + UUID.randomUUID() + ".pdf";
 	}
 

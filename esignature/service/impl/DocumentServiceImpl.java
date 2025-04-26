@@ -2,9 +2,10 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
@@ -25,7 +26,6 @@ import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
@@ -95,6 +95,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private static final String SECURITY_PROVIDER = "BC";
 
 	public static final String SKAPP_SIGN_ENVELOPE_TEXT = "Skapp Sign Envelope ID: ";
+
+	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
 	private final DocumentRepository documentRepository;
 
@@ -170,7 +172,7 @@ public class DocumentServiceImpl implements DocumentService {
 			String fileUrl = uploadProcessedDocumentVersion(updatedDoc);
 
 			DocumentVersion newDocumentVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
-					keyPair.getPrivate(), envelope.getOwner(), documentBytes);
+					keyPair.getPrivate(), envelope.getOwner(), updatedDoc);
 
 			return new SignedDocumentResponse(newDocumentVersion, numberOfPages);
 		}
@@ -292,6 +294,13 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private void sendDocumentCompletedEmailNotifications(Envelope envelope) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
@@ -299,9 +308,10 @@ public class DocumentServiceImpl implements DocumentService {
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
 						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
 
-				DocumentLinkResponseDto documentLink = documentLinkService
-					.generateDocumentAccessUrl(documentAccessUrlDto);
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.getUrl());
+				DocumentLinkService.DocumentLinkData documentLink = documentLinkService
+					.createDocumentLinkData(documentAccessUrlDto,mailRecipient,envelope.getDocuments().getFirst(),envelope);
+
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.accessUrl());
 
 			}));
 
@@ -402,10 +412,10 @@ public class DocumentServiceImpl implements DocumentService {
 		// Process complete document if all recipients have completed
 		if (!hasNonWaitingRecipient(document)) {
 			// Get first version of document
-			byte[] initialDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName, document.getFilePath());
-			KeyPair keyPairSender = loadKeyPair(document.getEnvelope().getOwner().getId());
-
 			DocumentVersion firstDocumentVersion = getDocumentVersion(1, document.getId());
+
+			byte[] initialDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName, firstDocumentVersion.getFilePath());
+			KeyPair keyPairSender = loadKeyPair(document.getEnvelope().getOwner().getId());
 
 			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairSender.getPublic());
 
@@ -647,12 +657,19 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
-		String fileUrl = EsignUtil.generateFileUrl();
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		String randomUrl = EsignUtil.randomUrlPath();
+
+		String fileUrl = bucketName + UPLOAD_DOCUMENT_URL_PATH + tenantId + "/" + randomUrl;
 
 		try (InputStream inputStream = new ByteArrayInputStream(updatedDocumentBytes)) {
 			amazonS3Service.uploadFile(bucketName, fileUrl, inputStream);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_UPLOAD_FILE);
 		}
 		return fileUrl;
