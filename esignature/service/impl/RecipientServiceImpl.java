@@ -28,6 +28,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseD
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
@@ -71,6 +72,8 @@ public class RecipientServiceImpl implements RecipientService {
 	private final DocumentLinkRepository documentLinkRepository;
 
 	public static final String TOKEN = "token";
+
+	private final EsignEmailService esignEmailService;
 
 	@Override
 	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
@@ -515,16 +518,29 @@ public class RecipientServiceImpl implements RecipientService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
 		}
 
-		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
-				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
-				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
-				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, null);
+		Optional<DocumentLink> optionalDocumentLink = documentLinkRepository
+			.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(recipient.getEnvelope(), recipient);
 
-		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
+		String documentLinkUrl = null;
 
-		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
-				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
-				recipient.getAddressBook().getEmail());
+		if (optionalDocumentLink.isPresent()) {
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(recipient.getEnvelope().getId(),
+					recipient.getId(), DocumentPermissionType.WRITE);
+			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
+					documentAccessUrlDto, recipient, optionalDocumentLink.get().getDocumentId(),
+					recipient.getEnvelope());
+
+			documentLinkUrl = documentLinkData.accessUrl();
+		}
+		else {
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(recipient.getEnvelope().getId(),
+					recipient.getId(), DocumentPermissionType.WRITE);
+			DocumentLinkResponseDto newDocumentLink = documentLinkService
+				.generateDocumentAccessUrl(documentAccessUrlDto);
+			documentLinkUrl = newDocumentLink.getUrl();
+		}
+
+		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");

@@ -80,6 +80,23 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		log.info("sendEmailToSender: execution ended");
 	}
 
+	@Override
+	public void sendNudgeEmail(Recipient recipient, String documentLinkUrl) {
+		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipient.getId());
+
+		EpEsignEnvelopeRecipientEmailDynamicFields emailFields = initializeEpEsignEmailValues(
+				recipient.getAddressBook().getName(), recipient.getEnvelope().getId(),
+				recipient.getEnvelope().getSubject(), recipient.getEnvelope().getMessage(),
+				concatDocumentNames(recipient.getEnvelope().getDocuments()), null, null, null, documentLinkUrl);
+		emailFields.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
+
+		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
+				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
+				recipient.getAddressBook().getEmail());
+
+		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipient.getId());
+	}
+
 	private void sendEnvelopeToRecipientEmail(String userName, String userEmail, String memberRole,
 			String documentAccessUrl, EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
 
