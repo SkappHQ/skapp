@@ -111,6 +111,15 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get Signature Certificate",
+			description = "This endpoint retrieves the signature certificate for a given envelope ID.")
+	@GetMapping("/signature-certificate")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@RequestParam Long envelopeId) {
+		ResponseEntityDto response = envelopeService.getSignatureCertificate(envelopeId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Custody Transfer of Envelope",
 			description = "This endpoint updates the owner of an envelope (custody transfer) to a new owner.")
 	@PatchMapping(value = "/custody-transfer", produces = MediaType.APPLICATION_JSON_VALUE)

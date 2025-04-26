@@ -645,7 +645,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return null;
 	}
 
-	private String getCurrentUsername() {
+	@Override
+	public String getCurrentUsername() {
 		UserDetails userDetails = getCurrentUserDetails();
 		return (userDetails != null) ? userDetails.getUsername() : null;
 	}
@@ -982,7 +983,8 @@ public class DocumentServiceImpl implements DocumentService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 	}
 
-	private AddressBook getCurrentAddressBookUser(@NotNull String userName) {
+    @Override
+    public AddressBook getCurrentAddressBookUser(@NotNull String userName) {
 		return addressBookDao.findByInternalUserEmail(userName)
 			.orElseGet(() -> addressBookDao.findByExternalUserEmail(userName).orElse(null));
 	}

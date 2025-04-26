@@ -9,6 +9,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
+import jakarta.validation.constraints.NotNull;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 
 import java.io.InputStream;
@@ -34,6 +35,8 @@ public interface DocumentService {
 
 	ResponseEntityDto deleteDocument(Long id);
 
+	String getCurrentUsername();
+
 	KeyPair loadKeyPair(Long addressBookId);
 
 	void verifyDocumentSignature(byte[] documentBytes, DocumentVersion currentVersion, PublicKey publicKey);
@@ -41,6 +44,8 @@ public interface DocumentService {
 	String signDocument(byte[] documentHash, PrivateKey privateKey);
 
 	String hashDocument(InputStream file);
+
+	AddressBook getCurrentAddressBookUser(@NotNull String userName);
 
 	DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
 			String signature, AddressBook addressBook);

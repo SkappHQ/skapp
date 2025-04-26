@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.User;
+import com.skapp.enterprise.esignature.type.MySignatureMethods;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +43,10 @@ public class AddressBook {
 
 	@Column(name = "my_signature_link")
 	private String mySignatureLink;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "my_signature_method")
+	private MySignatureMethods mySignatureMethod;
 
 	public Long getUserId() {
 		if (type == UserType.EXTERNAL) {
