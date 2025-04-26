@@ -582,7 +582,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
-			Recipient envelopRecipient = recipientService.GetRecipientFromToken();
+			Recipient envelopRecipient = recipientService.getRecipientFromToken();
 			if (!envelopRecipient.getEnvelope().getId().equals(envelopeId)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}

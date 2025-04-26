@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
@@ -306,12 +307,13 @@ public class DocumentServiceImpl implements DocumentService {
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
 
 				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getLast().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
 
-				DocumentLinkService.DocumentLinkData documentLink = documentLinkService.createDocumentLinkData(
-						documentAccessUrlDto, mailRecipient, envelope.getDocuments().getFirst(), envelope);
+				DocumentLinkResponseDto documentLinkResponseDto = documentLinkService
+					.generateDocumentAccessUrl(documentAccessUrlDto);
 
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentLink.accessUrl());
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient,
+						documentLinkResponseDto.getUrl());
 
 			}));
 

@@ -39,7 +39,7 @@ public class RecipientController {
 
 		ResponseEntityDto response = recipientService.updateRecipientConsent(isConsent);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }

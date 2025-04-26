@@ -8,10 +8,14 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 
 public interface DocumentLinkService {
 
 	DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto);
+
+	void validatePermissionForGenerateAccessUrl(Envelope envelope, Recipient recipient,
+			DocumentPermissionType requestedPermission);
 
 	void resendDocumentAccessURL(ResendAccessUrlDto resendAccessUrlDto);
 
