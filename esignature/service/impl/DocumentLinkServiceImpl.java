@@ -450,7 +450,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private String generateSignAccessToken(UserDetails userDetails, DocumentAccessData documentAccessData) {
 		return generateAccessToken(userDetails, documentAccessData,
-				new String[] { DocumentPermissionType.READ.getValue(), DocumentPermissionType.WRITE.getValue() });
+				new String[] { DocumentPermissionType.WRITE.getValue() });
 	}
 
 	private String generateViewAccessToken(UserDetails userDetails, DocumentAccessData documentAccessData) {
