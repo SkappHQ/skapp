@@ -564,9 +564,20 @@ public class DocumentServiceImpl implements DocumentService {
 
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
+		List<DocumentVersionField> documentVersionFieldList = new ArrayList<>();
+
 		DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, keyPairSign.getPrivate());
+
 		documentVersionField.setDocumentVersion(currentVersion);
-		documentVersionFieldRepository.save(documentVersionField);
+
+		documentVersionFieldList.add(documentVersionField);
+
+		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.SIGNATURE)
+				|| documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.INITIAL)) {
+			updateOtherFieldsOfSameType(documentFieldSignDto, recipient, keyPairSign, documentVersionFieldList);
+		}
+
+		documentVersionFieldRepository.saveAll(documentVersionFieldList);
 
 		Field field = documentVersionField.getField();
 		field.setStatus(FieldStatus.COMPLETED);
@@ -586,6 +597,34 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
 
+	}
+
+	private void updateOtherFieldsOfSameType(DocumentFieldSignDto documentFieldSignDto, Recipient recipient,
+			KeyPair keyPairSign, List<DocumentVersionField> documentVersionFieldList) {
+		List<Field> otherSameTypeFields = fieldRepository.findByRecipientAndTypeAndStatus(recipient,
+				documentFieldSignDto.getFieldSignDto().getType(), FieldStatus.COMPLETED);
+		for (Field otherSameTypeField : otherSameTypeFields) {
+			DocumentVersionField otherFieldVersion = documentVersionFieldRepository.findByField(otherSameTypeField);
+
+			if (!otherFieldVersion.getValue().equals(documentFieldSignDto.getFieldSignDto().getFieldValue())) {
+
+				if (!otherSameTypeField.getRecipient().getId().equals(documentFieldSignDto.getRecipientId())) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE);
+				}
+
+				if (!otherSameTypeField.getDocument().getId().equals(documentFieldSignDto.getDocumentId())) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+				}
+
+				FieldSignDto fieldSignDto = eSignMapper.fieldToFieldSignDto(otherSameTypeField);
+				fieldSignDto.setFieldValue(documentFieldSignDto.getFieldSignDto().getFieldValue());
+
+				otherFieldVersion = createSignedField(fieldSignDto, keyPairSign.getPrivate(), otherSameTypeField);
+				documentVersionFieldList.add(otherFieldVersion);
+
+			}
+
+		}
 	}
 
 	@Override
