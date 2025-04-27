@@ -7,9 +7,11 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailButtonText;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.esignature.constant.EsignEmailTitleConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
@@ -480,6 +482,7 @@ public class RecipientServiceImpl implements RecipientService {
 						epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
 			});
 
+			String tenant = TenantContext.getCurrentTenant();
 			// Send the mail to the Sender
 			String documentName = concatDocumentNames(envelope.getDocuments());
 
@@ -488,6 +491,10 @@ public class RecipientServiceImpl implements RecipientService {
 							+ userService.getCurrentUser().getEmployee().getLastName(),
 					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
 					declinedBy, title, null);
+			epEsignEnvelopeRecipientEmailDynamicFields
+				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
+			epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl("https://" + tenant + ".skapp.com/signin");
+
 			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
 					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
 
@@ -651,13 +658,13 @@ public class RecipientServiceImpl implements RecipientService {
 			if (MemberRole.SIGNER == memberRole || MemberRole.CC == memberRole) {
 				switch (envelopeStatus) {
 					case EnvelopeStatus.VOIDED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_NO_BUTTON_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_VOIDED_RECIEVER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;
 
 					case EnvelopeStatus.DECLINED:
-						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
+						emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_NO_BUTTON_V1,
 								EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_DECLINED_RECIEVER_EMAIL,
 								epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
 						break;

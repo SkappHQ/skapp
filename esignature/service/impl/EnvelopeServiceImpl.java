@@ -13,8 +13,8 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.service.AmazonS3Service;
-import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
@@ -825,10 +825,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
-		recipientService.declineRecipientInEnvelope(recipient);
-
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
+		recipientService.declineRecipientInEnvelope(recipient);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
