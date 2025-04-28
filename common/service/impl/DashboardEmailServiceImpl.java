@@ -73,7 +73,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 		DashboardEmailDynamicFields dashboardEmailDynamicFields = new DashboardEmailDynamicFields();
 		dashboardEmailDynamicFields.setCompanyName(companyName);
 		dashboardEmailDynamicFields.setTenantId(tenantId);
-		dashboardEmailDynamicFields.setCancellationDateTime(cancellationDateTime);
+		dashboardEmailDynamicFields.setCancelledDateTime(cancellationDateTime);
 		dashboardEmailDynamicFields.setUserCount(userCount);
 		dashboardEmailDynamicFields.setSuperAdminEmail(superAdminEmail != null ? superAdminEmail : "");
 		dashboardEmailDynamicFields.setContactNumber(contactNumber != null ? contactNumber : "");

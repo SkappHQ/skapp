@@ -61,6 +61,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -188,7 +189,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			String superAdminEmail = superAdmin.getEmail();
 
-			String signedUpDateTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(java.time.ZonedDateTime.now());
+			String signedUpDateTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
 
 			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationEmail,
 					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,

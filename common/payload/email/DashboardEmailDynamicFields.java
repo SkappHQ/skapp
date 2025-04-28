@@ -17,11 +17,11 @@ public class DashboardEmailDynamicFields {
 
 	private String contactNumber;
 
-	private String upgradeDateTime;
+	private String upgradedDateTime;
 
 	private String signedUpDateTime;
 
-	private String cancellationDateTime;
+	private String cancelledDateTime;
 
 	private String subscriptionStartDate;
 

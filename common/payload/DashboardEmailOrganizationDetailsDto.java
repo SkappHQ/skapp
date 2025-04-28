@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class OrganizationDetailsDto {
+public class DashboardEmailOrganizationDetailsDto {
 
 	private String companyName;
 
@@ -15,6 +15,6 @@ public class OrganizationDetailsDto {
 
 	private String superAdminEmail;
 
-	private String contactNumber;
+	private String contactNo;
 
 }
