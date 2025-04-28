@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -23,6 +25,7 @@ import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.RecipientService;
@@ -33,8 +36,11 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -42,6 +48,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -60,6 +67,10 @@ public class RecipientServiceImpl implements RecipientService {
 	private final UserService userService;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final DocumentLinkRepository documentLinkRepository;
+
+	public static final String TOKEN = "token";
 
 	@Override
 	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
@@ -517,6 +528,81 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto declineRecipientInEnvelope(Recipient recipient) {
+
+		recipient.setStatus(RecipientStatus.DECLINED);
+		recipientRepository.save(recipient);
+
+		List<Recipient> envelopeRecipients = recipientRepository.findByEnvelopeId(recipient.getEnvelope().getId())
+			.orElse(new ArrayList<>());
+
+		envelopeRecipients.stream()
+			.filter(recipientToUpdate -> !recipientToUpdate.getId().equals(recipient.getId()))
+			.forEach(recipientToUpdate -> {
+				if (recipientToUpdate.getMemberRole() == MemberRole.SIGNER
+						&& recipientToUpdate.getStatus() == RecipientStatus.NEED_TO_SIGN) {
+					recipientToUpdate.setStatus(RecipientStatus.EMPTY);
+				}
+				else if (recipientToUpdate.getMemberRole() == MemberRole.CC) {
+					recipientToUpdate.setStatus(RecipientStatus.COMPLETED);
+				}
+				recipientRepository.save(recipientToUpdate);
+			});
+
+		// Send email notifications for the envelope
+		sendEmailWhenDocumentIsVoidedOrDeclined(recipient.getEnvelope().getId());
+
+		log.info("declineEnvelope: execution ended");
+		return new ResponseEntityDto(false, "Envelope declined successfully");
+	}
+
+	@Override
+	public ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
+
+		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
+
+		if (recipientListOptional.isEmpty() || recipientListOptional.get().isEmpty()) {
+			log.info("No recipients found for envelope ID {}", envelopeId);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP);
+		}
+
+		recipientListOptional.get().forEach(recipient -> {
+			recipient.setStatus(RecipientStatus.VOID);
+			recipientRepository.save(recipient);
+		});
+
+		log.info("All recipients for envelope ID {} have been voided.", envelopeId);
+		return new ResponseEntityDto(false, "All recipients voided successfully");
+	}
+
+	@Override
+	public Recipient GetRecipientFromToken() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		if (authentication == null || authentication.getDetails() == null) {
+			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		try {
+			if (!(authentication.getDetails() instanceof Map)) {
+				throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA);
+			}
+
+			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
+			String token = (String) details.get(TOKEN);
+
+			DocumentLink documentLink = documentLinkRepository.findByToken(token)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
+
+			return documentLink.getRecipientId();
+		}
+		catch (Exception ex) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
+		}
 	}
 
 	/**
