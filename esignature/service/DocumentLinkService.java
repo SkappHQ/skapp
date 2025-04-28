@@ -29,6 +29,10 @@ public interface DocumentLinkService {
 
 	ResponseEntityDto getRecipientDocumentData(Long documentId, Long recipientId);
 
+	DocumentPermissionType getPermissionTypeByToken(String token);
+
+	String getDocumentAccessUrlForNudge(Envelope envelope, Recipient recipient);
+
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}
 
