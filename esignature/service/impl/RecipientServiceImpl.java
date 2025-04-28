@@ -246,9 +246,8 @@ public class RecipientServiceImpl implements RecipientService {
 		return nextRecipientList;
 	}
 
-	private Recipient sendEnvelopeToRecipientEmail(Recipient recipient, String userName,
-			String userEmail, String memberRole, String documentAccessUrl,
-			EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
+	private Recipient sendEnvelopeToRecipientEmail(Recipient recipient, String userName, String userEmail,
+			String memberRole, String documentAccessUrl, EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
 
 		log.info("sendEnvelopeToRecipientEmail: execution started");
 
@@ -285,9 +284,9 @@ public class RecipientServiceImpl implements RecipientService {
 		log.info("sendEnvelopeToRecipientEmail: execution ended");
 
 		// Update recipient based on provided parameters
-        return setUpdatedRecipient(recipient, recipientUpdateDto);
+		return setUpdatedRecipient(recipient, recipientUpdateDto);
 
-    }
+	}
 
 	private void handleReminderScheduling(EpEsignEnvelopeRecipientEmailDynamicFields emailFields,
 			EpEsignEmailEnvelopeDataDto emailDataDto, String userEmail, RecipientUpdateDto recipientUpdateDto) {
