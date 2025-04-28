@@ -25,6 +25,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_COMPANY_DOMAIN_REQUIRED("ep.common.error.company-domain-required"),
 	EP_COMMON_ERROR_COMPANY_DOMAIN_LENGTH_EXCEEDED("ep.common.error.company-domain-length-exceeded"),
 	EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID("ep.common.error.company-domain-invalid"),
+	EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID("ep.common.error.company-contact-no-invalid"),
 	EP_COMMON_ERROR_NO_HOSTED_ZONES_FOUND("ep.common.error.no-hosted-zones-found"),
 	EP_COMMON_ERROR_FETCHING_HOSTED_ZONE_ID("ep.common.error.fetching-hosted-zone-id"),
 	EP_COMMON_ERROR_HOSTED_ZONE_NOT_FOUND("ep.common.error.hosted-zone-not-found"),
