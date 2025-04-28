@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.component.event.handler;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class QuartzJobHandler implements Job {
 
 	public static final String ENTITY_ID = "entityId";
@@ -23,11 +25,6 @@ public class QuartzJobHandler implements Job {
 	private final TenantContext tenantContext;
 
 	private final EnvelopeService envelopeService;
-
-	public QuartzJobHandler(TenantContext tenantContext, EnvelopeService envelopeService) {
-		this.tenantContext = tenantContext;
-		this.envelopeService = envelopeService;
-	}
 
 	@Override
 	@Transactional
