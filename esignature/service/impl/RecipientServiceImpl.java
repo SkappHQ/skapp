@@ -477,7 +477,7 @@ public class RecipientServiceImpl implements RecipientService {
 					userService.getCurrentUser().getEmployee().getFirstName() + " "
 							+ userService.getCurrentUser().getEmployee().getLastName(),
 					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-					declinedBy, title, null,senderName, senderEmail);
+					declinedBy, title, null, senderName, senderEmail);
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 			epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl("https://" + tenant + ".skapp.com/signin");
