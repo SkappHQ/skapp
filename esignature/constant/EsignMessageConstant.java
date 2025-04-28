@@ -113,7 +113,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP("ep.esign.error.no.recipients.found.in.envelop"),
 	ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP("ep.esign.error.recipient.already-voided-envelope"),
 	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED("ep.esign.error.envelope.already-expired"),
-	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status");
+	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status"),
+	ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED("ep.esign.error.recipient.document.sign.completed"),
+	ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED("ep.esign.error.recipient.field.sign.completed");
 
 	private final String messageKey;
 
