@@ -48,4 +48,7 @@ public class Document {
 	@OneToMany(mappedBy = "document")
 	private List<DocumentVersion> versions;
 
+	@Column(name = "num_of_pages")
+	private int numOfPages;
+
 }

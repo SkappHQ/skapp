@@ -80,4 +80,7 @@ public class Recipient {
 	@Column(name = "decline_reason")
 	private String declineReason;
 
+	@Column(name = "is_consent", nullable = false)
+	private boolean isConsent;
+
 }

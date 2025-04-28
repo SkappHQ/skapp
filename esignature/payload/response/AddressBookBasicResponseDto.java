@@ -21,4 +21,6 @@ public class AddressBookBasicResponseDto {
 
 	private String profilePic;
 
+	private String mySignatureLink;
+
 }

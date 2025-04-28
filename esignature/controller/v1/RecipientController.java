@@ -31,4 +31,15 @@ public class RecipientController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Update recipient consent for document signing",
+			description = "This endpoint updates the recipient's consent status for signing a document")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
+	@PostMapping(value = "/consent", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> updateRecipientConsent(@RequestParam boolean isConsent) {
+
+		ResponseEntityDto response = recipientService.updateRecipientConsent(isConsent);
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 }
