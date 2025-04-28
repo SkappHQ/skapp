@@ -50,14 +50,14 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		log.info("sendEmailsToRecipient: execution started");
 
 		EpEsignEnvelopeRecipientEmailDynamicFields recipientEmailFields = initializeEpEsignEmailValues(
-				mailRecipient.getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
+				mailRecipient.getAddressBook().getName(), envelope.getId(), envelope.getSubject(), envelope.getMessage(),
 				concatDocumentNames(envelope.getDocuments()), null, null,
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, documentAccessUrl,
 				envelope.getOwner().getName(), envelope.getOwner().getEmail());
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL, recipientEmailFields,
-				mailRecipient.getEmail());
+				mailRecipient.getAddressBook().getEmail());
 
 		log.info("sendEmailsToRecipient: execution ended");
 	}
