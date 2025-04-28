@@ -4,13 +4,10 @@ public enum QuartzEntityType {
 
 	ENVELOPE;
 
-	public static QuartzEntityType fromString(String value) {
-		try {
-			return QuartzEntityType.valueOf(value.toUpperCase());
-		}
-		catch (IllegalArgumentException | NullPointerException e) {
-			return null;
-		}
+	public static QuartzEntityType convertToUpperCase(String value) {
+
+		return QuartzEntityType.valueOf(value.toUpperCase());
+
 	}
 
 }

@@ -39,7 +39,7 @@ public class QuartzJobHandler implements Job {
 		try {
 			tenantContext.setTenantAndSwitchSchema(tenantId);
 
-			QuartzEntityType entityType = QuartzEntityType.fromString(entityTypeStr);
+			QuartzEntityType entityType = QuartzEntityType.convertToUpperCase(entityTypeStr);
 			if (entityType == null) {
 				log.warn("Unknown or null entity type for expiration: {}", entityTypeStr);
 				return;
