@@ -53,7 +53,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		// Predicate to filter by internalUser's userId
 		Predicate userPredicate = cb.equal(addressBookJoin.get("internalUser").get("userId"), currentUserId);
 
-		Predicate statusPredicate = cb.equal(envelope.get(Envelope_.STATUS), EnvelopeStatus.NEED_TO_SIGN);
+		Predicate statusPredicate = cb.equal(recipientJoin.get(Recipient_.STATUS), RecipientStatus.NEED_TO_SIGN);
 
 		query.select(cb.count(envelope)).where(cb.and(userPredicate, statusPredicate));
 
@@ -259,7 +259,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		Predicate byUser = cb.equal(internalUser.get("userId"), userId);
 		Predicate byStatus = envelope.get(Envelope_.STATUS)
-			.in(List.of(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.COMPLETED));
+			.in(List.of(EnvelopeStatus.WAITING, EnvelopeStatus.COMPLETED));
 
 		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
 			.where(cb.and(byUser, byStatus))
@@ -274,7 +274,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			resultMap.put(status, count);
 		}
 
-		resultMap.putIfAbsent(EnvelopeStatus.NEED_TO_SIGN, 0L);
+		resultMap.putIfAbsent(EnvelopeStatus.WAITING, 0L);
 		resultMap.putIfAbsent(EnvelopeStatus.COMPLETED, 0L);
 
 		return resultMap;

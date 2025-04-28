@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.skapp.enterprise.esignature.type.MySignatureMethods;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,7 @@ public class MySignatureLinkResponseDto {
 	private String lastName;
 
 	private String mySignatureLink;
+
+	private MySignatureMethods mySignatureMethod;
 
 }

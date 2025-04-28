@@ -19,6 +19,8 @@ public class RecipientResponseDto {
 
 	private String color;
 
+	private boolean isConsent;
+
 	private AddressBookBasicResponseDto addressBook;
 
 }
