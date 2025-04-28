@@ -4,7 +4,9 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -60,7 +62,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RecipientServiceImpl implements RecipientService {
 
+	private final OrganizationDao organizationDao;
+
 	public static final String TOKEN = "token";
+
+	public static final String VISIT_LINK = "/sign/sent/envelope/";
 
 	private final RecipientRepository recipientRepository;
 
@@ -484,7 +490,11 @@ public class RecipientServiceImpl implements RecipientService {
 					declinedBy, title, null, senderName, senderEmail);
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
-			epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl("https://" + tenant + ".skapp.com/signin");
+			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
+			organization.ifPresent(value -> {
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setDocumentAccessUrl(tenant + "." + value.getAppUrl() + VISIT_LINK + envelope.getId());
+			});
 
 			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
 					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
