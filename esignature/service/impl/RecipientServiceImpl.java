@@ -101,6 +101,9 @@ public class RecipientServiceImpl implements RecipientService {
 			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
 					envelopeData.getDocuments().getFirst().getId(), recipient.getId(), permissionType);
 
+			documentLinkService.validatePermissionForGenerateAccessUrl(recipient.getEnvelope(), recipient,
+					documentAccessUrlDto.getPermissionType());
+
 			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
 					documentAccessUrlDto, recipient, envelopeData.getDocuments().getFirst(), envelopeData);
 
@@ -255,7 +258,8 @@ public class RecipientServiceImpl implements RecipientService {
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
 				userName, epEsignEmailDataDto.getEnvelopeId(), epEsignEmailDataDto.getEnvelopeSubject(),
 				epEsignEmailDataDto.getEnvelopeMessage(), epEsignEmailDataDto.getDocumentNames(), null, null, null,
-				documentAccessUrl);
+				documentAccessUrl, recipient.getEnvelope().getOwner().getName(),
+				recipient.getEnvelope().getOwner().getEmail());
 
 		RecipientUpdateDto recipientUpdateDto = new RecipientUpdateDto();
 
@@ -446,6 +450,9 @@ public class RecipientServiceImpl implements RecipientService {
 			String declinedBy;
 			String voidOrDeclinedReason;
 			String title;
+			String senderName = envelope.getOwner().getName();
+			String senderEmail = envelope.getOwner().getEmail();
+
 			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
 				declinedBy = obtainEnvelopeDeclinedBy(recipientList);
 				voidOrDeclinedReason = envelope.getVoidReason();
@@ -477,7 +484,8 @@ public class RecipientServiceImpl implements RecipientService {
 
 				EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
 						rcpt.getAddressBook().getName(), rcpt.getEnvelope().getId(), finalEnvelope.getSubject(),
-						finalEnvelope.getMessage(), documentName, voidOrDeclinedReason, declinedBy, title, null);
+						finalEnvelope.getMessage(), documentName, voidOrDeclinedReason, declinedBy, title, null,
+						senderName, senderEmail);
 
 				sendEmailBasedOnRoleAndEnvelopeStatus(rcpt.getMemberRole(), finalEnvelope.getStatus(),
 						epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
@@ -490,7 +498,7 @@ public class RecipientServiceImpl implements RecipientService {
 					userService.getCurrentUser().getEmployee().getFirstName() + " "
 							+ userService.getCurrentUser().getEmployee().getLastName(),
 					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-					declinedBy, title, null);
+					declinedBy, title, null, senderName, senderEmail);
 			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
 					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
 
@@ -500,6 +508,14 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("sendEnvelopeInvalidEmail: execution ended");
 		return new ResponseEntityDto(false, envelopeDetailedResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto updateRecipientConsent(boolean isConsent) {
+		Recipient recipient = getRecipientFromToken();
+		recipient.setConsent(isConsent);
+		recipientRepository.save(recipient);
+		return new ResponseEntityDto(false, "Recipient Consent Updated");
 	}
 
 	@Override
@@ -596,7 +612,7 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public Recipient GetRecipientFromToken() {
+	public Recipient getRecipientFromToken() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || authentication.getDetails() == null) {
@@ -632,16 +648,15 @@ public class RecipientServiceImpl implements RecipientService {
 	 */
 	private EpEsignEnvelopeRecipientEmailDynamicFields initializeEpEsignEmailValues(String userName, Long envelopeId,
 			String envelopeSubject, String envelopeMessage, String documentName, String voidDeclinedReason,
-			String declinedBy, String title, String documentAccessUrl) {
+			String declinedBy, String title, String documentAccessUrl, String name, String email) {
 
 		EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = new EpEsignEnvelopeRecipientEmailDynamicFields();
 		epEsignEnvelopeRecipientEmailDynamicFields.setRecipientName(userName);
 		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopId(envelopeId);
 		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopeSubject(envelopeSubject);
 		epEsignEnvelopeRecipientEmailDynamicFields.setEnvelopeMessage(envelopeMessage);
-		epEsignEnvelopeRecipientEmailDynamicFields.setSender(userService.getCurrentUser().getEmployee().getFirstName()
-				+ " " + userService.getCurrentUser().getEmployee().getLastName());
-		epEsignEnvelopeRecipientEmailDynamicFields.setSenderEmail(userService.getCurrentUser().getEmail());
+		epEsignEnvelopeRecipientEmailDynamicFields.setSender(name);
+		epEsignEnvelopeRecipientEmailDynamicFields.setSenderEmail(email);
 		epEsignEnvelopeRecipientEmailDynamicFields.setDocumentNames(documentName);
 		epEsignEnvelopeRecipientEmailDynamicFields.setVoidReason(voidDeclinedReason);
 		epEsignEnvelopeRecipientEmailDynamicFields.setDeclinedBy(declinedBy);

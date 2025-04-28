@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,6 +14,9 @@ public interface DocumentLinkRepository extends JpaRepository<DocumentLink, Long
 
 	Optional<DocumentLink> findByToken(String token);
 
-	Optional<DocumentLink> findByEnvelopeIdAndRecipientIdAndIsActiveTrue(Envelope envelope, Recipient recipient);
+	List<DocumentLink> findByEnvelopeIdAndRecipientIdAndIsActiveTrue(Envelope envelope, Recipient recipient);
+
+	List<DocumentLink> findByEnvelopeIdAndRecipientIdAndIsActiveFalseAndIsResendFalse(Envelope envelopeId,
+			Recipient recipientId);
 
 }
