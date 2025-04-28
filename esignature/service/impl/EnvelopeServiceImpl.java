@@ -392,8 +392,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
 			log.info("processVoidRequest: Setting status to VOIDED for envelope ID {}", envelope.getId());
 			recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
-			envelope.setStatus(EnvelopeStatus.VOIDED);
 		}
+		envelope.setStatus(EnvelopeStatus.VOIDED);
 	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
