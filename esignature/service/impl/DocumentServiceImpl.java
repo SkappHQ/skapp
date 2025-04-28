@@ -206,6 +206,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
+		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+		}
+
 		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
 		}
@@ -352,6 +356,10 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
+
+		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+		}
 
 		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
@@ -552,6 +560,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (!fieldExists) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH);
+		}
+
+		Field fieldData = fieldRepository.findById(documentFieldSignDto.getFieldSignDto().getFieldId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH));
+
+		if (fieldData.getStatus().equals(FieldStatus.COMPLETED)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED);
 		}
 
 		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)
