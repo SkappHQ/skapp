@@ -34,4 +34,6 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getSignatureCertificate(Long envelopeId);
 
+	void expireEnvelope(Long envelopeId);
+
 }
