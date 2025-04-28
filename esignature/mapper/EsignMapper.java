@@ -16,6 +16,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
+import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
@@ -147,5 +148,10 @@ public interface EsignMapper {
 	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 	SignatureCertificateResponseDto envelopeToSignatureCertificateResponseDto(Envelope envelope);
+
+	@Mapping(source = "id", target = "fieldId")
+	@Mapping(source = "XPosition", target = "xposition")
+	@Mapping(source = "YPosition", target = "yposition")
+	FieldSignDto fieldToFieldSignDto(Field field);
 
 }

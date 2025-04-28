@@ -29,6 +29,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float DEFAULT_FONT_SIZE = 12f;
 
+	private static final float UUID_FONT_SIZE = 10f;
+
+	private static final float UUID_X_POSITION = 40;
+
+	private static final float UUID_Y_POSITION = 20;
+
 	private final AmazonS3Service amazonS3Service;
 
 	private final MessageUtil messageUtil;
@@ -73,6 +79,51 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	@Override
+	public byte[] updateEnvelopeUuidToEachPage(String value, byte[] inputBytes, int numOfPages) {
+
+		if (inputBytes == null || inputBytes.length == 0) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
+		}
+
+		if (value == null) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
+		}
+
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+			for (int i = 0; i < numOfPages; i++) {
+				PDPage page = document.getPage(i);
+				float pageHeight = page.getMediaBox().getHeight();
+
+				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
+						PDPageContentStream.AppendMode.APPEND, true, true)) {
+					float adjustedY = pageHeight - UUID_Y_POSITION;
+					contentStream.beginText();
+					PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+					contentStream.setFont(font, UUID_FONT_SIZE);
+
+					// take co-ordinated from bottom-left
+					contentStream.newLineAtOffset(UUID_X_POSITION, adjustedY);
+					contentStream.showText(value);
+					contentStream.endText();
+				}
+			}
+
+			document.save(outputStream);
+			return outputStream.toByteArray();
+
+		}
+		catch (IOException e) {
+			log.error("Error processing envelop Uuid PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
 	public byte[] mergeImageFieldToDocument(FieldSignDto field, byte[] inputBytes, byte[] imageBytes) {
 
 		if (inputBytes == null || inputBytes.length == 0) {
@@ -109,6 +160,18 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Error processing PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public int getNumberOfPages(byte[] inputBytes) {
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+			return document.getNumberOfPages();
+		}
+		catch (IOException e) {
+			log.error("Error processing getNumberOfPages: {}", e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
