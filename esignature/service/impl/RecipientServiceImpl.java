@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
@@ -57,6 +58,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RecipientServiceImpl implements RecipientService {
 
+	public static final String TOKEN = "token";
+
 	private final RecipientRepository recipientRepository;
 
 	private final EsignMapper eSignMapper;
@@ -70,8 +73,6 @@ public class RecipientServiceImpl implements RecipientService {
 	private final DocumentLinkService documentLinkService;
 
 	private final DocumentLinkRepository documentLinkRepository;
-
-	public static final String TOKEN = "token";
 
 	private final EsignEmailService esignEmailService;
 
@@ -513,27 +514,7 @@ public class RecipientServiceImpl implements RecipientService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NUDGE_PROHIBITED);
 		}
 
-		Optional<DocumentLink> optionalDocumentLink = documentLinkRepository
-			.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(recipient.getEnvelope(), recipient);
-
-		String documentLinkUrl = null;
-
-		if (optionalDocumentLink.isPresent()) {
-			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(recipient.getEnvelope().getId(),
-					recipient.getId(), DocumentPermissionType.WRITE);
-			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
-					documentAccessUrlDto, recipient, optionalDocumentLink.get().getDocumentId(),
-					recipient.getEnvelope());
-
-			documentLinkUrl = documentLinkData.accessUrl();
-		}
-		else {
-			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(recipient.getEnvelope().getId(),
-					recipient.getId(), DocumentPermissionType.WRITE);
-			DocumentLinkResponseDto newDocumentLink = documentLinkService
-				.generateDocumentAccessUrl(documentAccessUrlDto);
-			documentLinkUrl = newDocumentLink.getUrl();
-		}
+		String documentLinkUrl = documentLinkService.getDocumentAccessUrlForNudge(recipient.getEnvelope(), recipient);
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 

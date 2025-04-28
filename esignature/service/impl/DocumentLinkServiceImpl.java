@@ -305,13 +305,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			DocumentPermissionType permissionType, boolean isActive, String tenantId) {
 		List<DocumentLink> documentLinks;
 
-		if (isActive) {
-			documentLinks = documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient);
-		}
-		else {
-			documentLinks = documentLinkRepository
-				.findByEnvelopeIdAndRecipientIdAndIsActiveFalseAndIsResendFalse(envelope, recipient);
-		}
+		documentLinks = getLatestDocumentLinks(envelope, recipient, isActive);
 
 		for (DocumentLink documentLink : documentLinks) {
 			DocumentPermissionType permissionTypeByToken = getPermissionTypeByToken(documentLink.getToken());
@@ -321,6 +315,18 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 
 		return null;
+	}
+
+	private List<DocumentLink> getLatestDocumentLinks(Envelope envelope, Recipient recipient, boolean isActive) {
+		List<DocumentLink> documentLinks;
+		if (isActive) {
+			documentLinks = documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope, recipient);
+		}
+		else {
+			documentLinks = documentLinkRepository
+				.findByEnvelopeIdAndRecipientIdAndIsActiveFalseAndIsResendFalse(envelope, recipient);
+		}
+		return documentLinks;
 	}
 
 	@Override
@@ -434,7 +440,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 	}
 
-	private DocumentPermissionType getPermissionTypeByToken(String token) {
+	@Override
+	public DocumentPermissionType getPermissionTypeByToken(String token) {
 		List<String> permissions = jwtService.extractClaim(token, claims -> claims.get(PERMISSION, List.class));
 
 		DocumentPermissionType documentPermissionType = DocumentPermissionType.READ;
@@ -442,6 +449,58 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			documentPermissionType = DocumentPermissionType.WRITE;
 		}
 		return documentPermissionType;
+	}
+
+	@Override
+	public String getDocumentAccessUrlForNudge(Envelope envelope, Recipient recipient) {
+
+		List<DocumentLink> latestDocumentLinks = getLatestDocumentLinks(envelope, recipient, true);
+		if (!latestDocumentLinks.isEmpty()) {
+			for (DocumentLink documentLink : latestDocumentLinks) {
+				String token = documentLink.getToken();
+				List<String> permissions = jwtService.extractClaim(token,
+						claims -> (List<String>) claims.get(PERMISSION));
+				if (permissions.contains(DocumentPermissionType.WRITE.name())) {
+					if (documentLink.isExpired()) {
+						documentLink.setActive(false);
+						documentLink.setResend(true);
+						documentLink = documentLinkRepository.save(documentLink);
+
+						DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+								documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId(),
+								getPermissionTypeByToken(documentLink.getToken()));
+						DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(
+								documentAccessUrlDto);
+						return documentLinkResponseDto.getUrl();
+					}
+					else {
+						return getRecipientDocumentAccessUrlByPermissionType(envelope, recipient,
+								DocumentPermissionType.WRITE);
+					}
+				}
+			}
+		}
+
+		List<DocumentLink> latestDocumentLinksInactive = getLatestDocumentLinks(envelope, recipient, false);
+		if (!latestDocumentLinksInactive.isEmpty()) {
+			for (DocumentLink documentLink : latestDocumentLinksInactive) {
+				String token = documentLink.getToken();
+				List<String> permissions = jwtService.extractClaim(token,
+						claims -> (List<String>) claims.get(PERMISSION));
+				if (permissions.contains(DocumentPermissionType.WRITE.name())) {
+					documentLink.setResend(true);
+					documentLink = documentLinkRepository.save(documentLink);
+
+					DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+							documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId(),
+							getPermissionTypeByToken(documentLink.getToken()));
+					DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(documentAccessUrlDto);
+					return documentLinkResponseDto.getUrl();
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private DocumentDetailResponseDto getLatestDocumentDetails(Document document, DocumentVersion documentVersion) {
