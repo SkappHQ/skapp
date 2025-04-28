@@ -108,7 +108,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 			documentLinkList.add(documentLinkData.documentLink());
 
-			return sendEnvelopToFirstRecipientEmail(recipient, recipient.getAddressBook().getName(),
+			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
 					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
 					epEsignEmailDataDto);
 		}).toList();
@@ -144,7 +144,7 @@ public class RecipientServiceImpl implements RecipientService {
 			DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
 			String documentAccessUrl = documentLink.getUrl();
 
-			sendEnvelopToRecipientEmail(recipient.getId(), recipient.getAddressBook().getName(),
+			sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
 					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
 					epEsignEmailDataDto);
 		});
@@ -246,7 +246,7 @@ public class RecipientServiceImpl implements RecipientService {
 		return nextRecipientList;
 	}
 
-	private Recipient sendEnvelopeToRecipientEmail(Recipient recipient, Long recipientId, String userName,
+	private Recipient sendEnvelopeToRecipientEmail(Recipient recipient, String userName,
 			String userEmail, String memberRole, String documentAccessUrl,
 			EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
 
@@ -285,15 +285,9 @@ public class RecipientServiceImpl implements RecipientService {
 		log.info("sendEnvelopeToRecipientEmail: execution ended");
 
 		// Update recipient based on provided parameters
-		if (recipient != null) {
-			return setUpdatedRecipient(recipient, recipientUpdateDto);
-		}
-		else if (recipientId != null) {
-			updateRecipient(recipientId, recipientUpdateDto);
-		}
+        return setUpdatedRecipient(recipient, recipientUpdateDto);
 
-		return null;
-	}
+    }
 
 	private void handleReminderScheduling(EpEsignEnvelopeRecipientEmailDynamicFields emailFields,
 			EpEsignEmailEnvelopeDataDto emailDataDto, String userEmail, RecipientUpdateDto recipientUpdateDto) {
@@ -329,20 +323,6 @@ public class RecipientServiceImpl implements RecipientService {
 		recipientUpdateDto.setReminderBatchId(obtainedBatchId);
 		recipientUpdateDto.setReminderStatus(EmailReminderStatus.SCHEDULED);
 		recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
-	}
-
-	public Recipient sendEnvelopToFirstRecipientEmail(Recipient recipient, String userName, String userEmail,
-			String memberRole, String documentAccessUrl, EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
-
-		return sendEnvelopeToRecipientEmail(recipient, null, userName, userEmail, memberRole, documentAccessUrl,
-				epEsignEmailDataDto);
-	}
-
-	public void sendEnvelopToRecipientEmail(Long recipientId, String userName, String userEmail, String memberRole,
-			String documentAccessUrl, EpEsignEmailEnvelopeDataDto epEsignEmailDataDto) {
-
-		sendEnvelopeToRecipientEmail(null, recipientId, userName, userEmail, memberRole, documentAccessUrl,
-				epEsignEmailDataDto);
 	}
 
 	@Override
