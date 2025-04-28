@@ -453,54 +453,60 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public String getDocumentAccessUrlForNudge(Envelope envelope, Recipient recipient) {
-
-		List<DocumentLink> latestDocumentLinks = getLatestDocumentLinks(envelope, recipient, true);
-		if (!latestDocumentLinks.isEmpty()) {
-			for (DocumentLink documentLink : latestDocumentLinks) {
-				String token = documentLink.getToken();
-				List<String> permissions = jwtService.extractClaim(token,
-						claims -> (List<String>) claims.get(PERMISSION));
-				if (permissions.contains(DocumentPermissionType.WRITE.name())) {
-					if (documentLink.isExpired()) {
-						documentLink.setActive(false);
-						documentLink.setResend(true);
-						documentLink = documentLinkRepository.save(documentLink);
-
-						DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-								documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId(),
-								getPermissionTypeByToken(documentLink.getToken()));
-						DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(
-								documentAccessUrlDto);
-						return documentLinkResponseDto.getUrl();
-					}
-					else {
-						return getRecipientDocumentAccessUrlByPermissionType(envelope, recipient,
-								DocumentPermissionType.WRITE);
-					}
-				}
-			}
+		String tenantId = TenantContext.getCurrentTenant();
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 		}
 
-		List<DocumentLink> latestDocumentLinksInactive = getLatestDocumentLinks(envelope, recipient, false);
-		if (!latestDocumentLinksInactive.isEmpty()) {
-			for (DocumentLink documentLink : latestDocumentLinksInactive) {
-				String token = documentLink.getToken();
-				List<String> permissions = jwtService.extractClaim(token,
-						claims -> (List<String>) claims.get(PERMISSION));
-				if (permissions.contains(DocumentPermissionType.WRITE.name())) {
+		// First try with active links
+		String url = processAccessUrlForNudge(envelope, recipient, true, tenantId);
+		if (url != null) {
+			return url;
+		}
+
+		// If no active links with WRITE permission found, try with inactive links
+		return processAccessUrlForNudge(envelope, recipient, false, tenantId);
+	}
+
+	private String processAccessUrlForNudge(Envelope envelope, Recipient recipient, boolean active, String tenantId) {
+		List<DocumentLink> documentLinks = getLatestDocumentLinks(envelope, recipient, active);
+
+		for (DocumentLink documentLink : documentLinks) {
+			String token = documentLink.getToken();
+			DocumentPermissionType permissionTypeByToken = getPermissionTypeByToken(token);
+
+			if (permissionTypeByToken.equals(DocumentPermissionType.WRITE)) {
+				if (active && documentLink.isExpired()) {
+					// Handle expired active link
+					documentLink.setActive(false);
 					documentLink.setResend(true);
 					documentLink = documentLinkRepository.save(documentLink);
 
-					DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-							documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId(),
-							getPermissionTypeByToken(documentLink.getToken()));
-					DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(documentAccessUrlDto);
-					return documentLinkResponseDto.getUrl();
+					return generateNewAccessUrl(documentLink);
+				}
+				else if (active) {
+					// Handle non-expired active link
+					return generateAccessUrl(tenantId, token);
+				}
+				else {
+					// Handle inactive link
+					documentLink.setResend(true);
+					documentLink = documentLinkRepository.save(documentLink);
+
+					return generateNewAccessUrl(documentLink);
 				}
 			}
 		}
 
 		return null;
+	}
+
+	private String generateNewAccessUrl(DocumentLink documentLink) {
+		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(documentLink.getDocumentId().getId(),
+				documentLink.getRecipientId().getId(), getPermissionTypeByToken(documentLink.getToken()));
+
+		DocumentLinkResponseDto documentLinkResponseDto = generateDocumentAccessUrl(documentAccessUrlDto);
+		return documentLinkResponseDto.getUrl();
 	}
 
 	private DocumentDetailResponseDto getLatestDocumentDetails(Document document, DocumentVersion documentVersion) {
