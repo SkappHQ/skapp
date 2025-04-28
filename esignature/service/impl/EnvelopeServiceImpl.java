@@ -388,11 +388,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
-
-		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
-			log.info("processVoidRequest: Setting status to VOIDED for envelope ID {}", envelope.getId());
-			recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
-		}
+		recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
 		envelope.setStatus(EnvelopeStatus.VOIDED);
 	}
 
