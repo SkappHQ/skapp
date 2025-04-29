@@ -396,11 +396,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
 		}
 
-		if (organizationDto.getContactNo() == null || organizationDto.getContactNo().isEmpty()) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
-		}
-
-		if (!organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
+		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
+				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
