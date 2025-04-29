@@ -51,7 +51,6 @@ public class QuartzJobHandler implements Job {
 		catch (Exception e) {
 			log.error("Error executing expiration job for {} ID: {} in tenant: {}", entityTypeStr, entityId, tenantId,
 					e);
-			throw new JobExecutionException(e);
 		}
 		finally {
 			TenantContext.clearCurrentTenant();
