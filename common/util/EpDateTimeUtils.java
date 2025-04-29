@@ -4,6 +4,7 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import lombok.experimental.UtilityClass;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -15,6 +16,9 @@ public class EpDateTimeUtils {
 
 	private static final DateTimeFormatter GOOGLE_CALENDAR_DATE_TIME_FORMATTER = DateTimeFormatter
 		.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+		.withZone(ZoneId.of("Asia/Colombo"));
 
 	/**
 	 * Format a LocalDateTime to a UTC date-time string.

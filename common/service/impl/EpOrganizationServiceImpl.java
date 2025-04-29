@@ -46,20 +46,22 @@ import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,8 +108,13 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final CacheService cacheService;
 
+	private final DashboardEmailService dashboardEmailService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
+
+	@Value("${organization.email}")
+	private String organizationEmail;
 
 	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
@@ -117,7 +124,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
 			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
 			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			EsignConfigService esignConfigService, @Qualifier("epCacheServiceImpl") CacheService cacheService) {
+			EsignConfigService esignConfigService, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -137,6 +145,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
 		this.cacheService = cacheService;
+		this.dashboardEmailService = dashboardEmailService;
 	}
 
 	@Override
@@ -152,6 +161,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
+
 			log.info("Tenant created for: {}", companyDomain);
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
@@ -176,6 +186,14 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
+
+			String superAdminEmail = superAdmin.getEmail();
+
+			String signedUpDateTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
+
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationEmail,
+					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,
+					superAdminEmail, "");
 
 			return new ResponseEntityDto(false, responseDto);
 
