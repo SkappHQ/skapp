@@ -400,12 +400,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
-
-		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
-			log.info("processVoidRequest: Setting status to VOIDED for envelope ID {}", envelope.getId());
-			recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
-			envelope.setStatus(EnvelopeStatus.VOIDED);
-		}
+		recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
+		envelope.setStatus(EnvelopeStatus.VOIDED);
 	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
@@ -886,10 +882,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
-		recipientService.declineRecipientInEnvelope(recipient);
-
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
+		recipientService.declineRecipientInEnvelope(recipient);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
