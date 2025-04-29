@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +27,7 @@ public class QuartzJobHandler implements Job {
 
 	@Override
 	@Transactional
-	public void execute(JobExecutionContext context){
+	public void execute(JobExecutionContext context) {
 		Long entityId = context.getJobDetail().getJobDataMap().getLong(ENTITY_ID);
 		String tenantId = context.getJobDetail().getJobDataMap().getString(JOB_TENANT_ID);
 		String entityTypeStr = context.getJobDetail().getJobDataMap().getString(ENTITY_TYPE);
