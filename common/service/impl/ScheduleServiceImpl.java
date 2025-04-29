@@ -31,6 +31,10 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 	public static final String ENTITY_TYPE = "entityType";
 
+	public static final String EXPIRE = "-expire-";
+	public static final String EXPIRATION_GROUP = "expiration";
+	public static final String TRIGGER_PREFIX = "trigger-";
+
 	private final Scheduler scheduler;
 
 	private final TenantContext tenantContext;
@@ -44,7 +48,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 			String entityTypeName = entityType.name();
 
 			JobDetail jobDetail = JobBuilder.newJob(QuartzJobHandler.class)
-				.withIdentity(entityTypeName + "-expire-" + entityId, "expiration")
+			.withIdentity(entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
 				.storeDurably(true)
 				.usingJobData(ENTITY_ID, entityId)
 				.usingJobData(JOB_TENANT_ID, tenantId)
@@ -52,7 +56,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 				.build();
 
 			Trigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity("trigger-" + entityTypeName + "-expire-" + entityId, "expiration")
+				.withIdentity(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
 				.forJob(jobDetail)
 				.startAt(Date.from(expireAt.toInstant(ZoneOffset.UTC)))
 				.withSchedule(SimpleScheduleBuilder.simpleSchedule()
