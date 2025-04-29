@@ -33,12 +33,12 @@ import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
-import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
@@ -53,6 +53,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -135,38 +136,37 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Override
-	public ResponseEntityDto sendEmailToNextRecipients(List<Recipient> nextRecipientList) {
-		if (nextRecipientList.isEmpty()) {
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOR_ENVELOPE);
-		}
-
-		Envelope envelopeData = nextRecipientList.getFirst().getEnvelope();
-
-		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(envelopeData);
-
-		// After obtaining the next in line recipient, implement the email sender
+	public List<Recipient> sendEmailToNextRecipients(List<Recipient> nextRecipientList, Document document) {
 		log.info("sendEnvelopToRecipientEmail: process started");
 
-		List<Long> recipientIdList = new ArrayList<>();
+		if (nextRecipientList.isEmpty()) {
+			return Collections.emptyList(); // or throw an exception if preferred
+		}
 
-		nextRecipientList.forEach(recipient -> {
-			recipientIdList.add(recipient.getId());
-			DocumentPermissionType permissionType = DocumentPermissionType.WRITE;
-			if (MemberRole.CC.toString().equalsIgnoreCase(recipient.getMemberRole().name())) {
-				permissionType = DocumentPermissionType.READ;
-			}
-			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-					envelopeData.getDocuments().getFirst().getId(), recipient.getId(), permissionType);
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(document.getEnvelope());
+
+		log.info("sendEnvelopToRecipientEmail: process ended");
+
+		return nextRecipientList.stream().map(recipient -> {
+
+			DocumentPermissionType permissionType = MemberRole.CC.toString()
+				.equalsIgnoreCase(recipient.getMemberRole().name()) ? DocumentPermissionType.READ
+						: DocumentPermissionType.WRITE;
+
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(document.getId(), recipient.getId(),
+					permissionType);
+
 			DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
 			String documentAccessUrl = documentLink.getUrl();
 
-			sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
+			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
 					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
 					epEsignEmailDataDto);
-		});
-		log.info("sendEnvelopToRecipientEmail: process ended");
-
-		return new ResponseEntityDto(false, recipientIdList);
+		}).toList();
 	}
 
 	@Override
@@ -584,10 +584,14 @@ public class RecipientServiceImpl implements RecipientService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP);
 		}
 
-		recipientListOptional.get().forEach(recipient -> {
-			recipient.setStatus(RecipientStatus.VOID);
-			recipientRepository.save(recipient);
+		List<Recipient> recipients = recipientListOptional.get();
+
+		recipients.forEach(recipient -> {
+			recipient.setStatus(RecipientStatus.EMPTY);
+			recipient.setInboxStatus(InboxStatus.VOID);
 		});
+
+		recipientRepository.saveAll(recipients);
 
 		log.info("All recipients for envelope ID {} have been voided.", envelopeId);
 		return new ResponseEntityDto(false, "All recipients voided successfully");

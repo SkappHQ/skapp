@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
@@ -13,7 +14,7 @@ public interface RecipientService {
 
 	DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType);
 
-	ResponseEntityDto sendEmailToNextRecipients(List<Recipient> nextRecipientList);
+	List<Recipient> sendEmailToNextRecipients(List<Recipient> nextRecipientList, Document document);
 
 	List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId);
 

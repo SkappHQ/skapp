@@ -46,6 +46,7 @@ import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
@@ -231,7 +232,6 @@ public class DocumentServiceImpl implements DocumentService {
 		// Process document version and verify existing signature
 		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
-		// if fields remain(auto complete fields) complete them
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
 			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
 					currentVersion);
@@ -249,6 +249,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		recipient.setStatus(RecipientStatus.COMPLETED);
+		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientRepository.save(recipient);
 
 		byte[] updatedDocumentBytes = processDocumentFields(currentVersion, keyPairSign, documentBytes);
@@ -273,8 +274,26 @@ public class DocumentServiceImpl implements DocumentService {
 			return completeDocument(document, newVersion);
 		}
 
-		return new ResponseEntityDto(false, "New Document version successfully created");
+		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
 
+		for (Recipient rec : updatedRecipients) {
+			rec.setReceivedAt(getCurrentUtcDateTime());
+
+			if (rec.getMemberRole().equals(MemberRole.CC)) {
+				rec.setStatus(RecipientStatus.COMPLETED);
+				rec.setInboxStatus(InboxStatus.WAITING);
+			}
+			else {
+				rec.setStatus(RecipientStatus.NEED_TO_SIGN);
+				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
+			}
+		}
+
+		recipientRepository.saveAll(updatedRecipients);
+
+		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
+
+		return new ResponseEntityDto(false, "New Document version successfully created");
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
@@ -289,7 +308,7 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		envelope.getRecipients().forEach(rec -> rec.setStatus(RecipientStatus.COMPLETED));
+		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
 		recipientRepository.saveAll(envelope.getRecipients());
 
@@ -397,7 +416,8 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ALL_FIELDS_NEED_SIGN);
 		}
 
-		recipient.setStatus(RecipientStatus.WAITING);
+		recipient.setStatus(RecipientStatus.COMPLETED);
+		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientRepository.save(recipient);
 
 		List<Long> fieldIdList = recipient.getFields().stream().map(Field::getId).toList();
@@ -450,7 +470,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
-			recipients.forEach(rec -> rec.setStatus(RecipientStatus.COMPLETED));
+			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 			recipientRepository.saveAll(recipients);
 
 			sendDocumentCompletedEmailNotifications(envelope);
@@ -614,12 +634,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 	}
 
-	private static Envelope updateDeclineStatus(Document document, Recipient recipient) {
+	private Envelope updateDeclineStatus(Document document, Recipient recipient) {
 		Envelope envelope = document.getEnvelope();
 		envelope.getRecipients().forEach(recipientData -> {
 			if (recipientData.getId().equals(recipient.getId())) {
-				recipient.setStatus(RecipientStatus.DECLINED);
+				recipientData.setStatus(RecipientStatus.DECLINED);
 			}
+			recipientData.setInboxStatus(InboxStatus.DECLINED);
 		});
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		return envelope;
@@ -722,7 +743,7 @@ public class DocumentServiceImpl implements DocumentService {
 	private boolean hasNonWaitingRecipient(Document document) {
 		List<Recipient> recipients = document.getEnvelope().getRecipients();
 		return recipients != null
-				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.WAITING);
+				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.COMPLETED);
 	}
 
 	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
@@ -778,8 +799,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean containsSigner = nextSignRecipientList.stream()
 			.anyMatch(recipient -> MemberRole.SIGNER.equals(recipient.getMemberRole()));
-
-		recipientService.sendEmailToNextRecipients(nextSignRecipientList);
 
 		return !containsSigner;
 	}
