@@ -11,7 +11,7 @@ public enum EnvelopeStatus {
 	}
 
 	public static boolean isVoidProhibitedFrom(EnvelopeStatus envelopeStatus) {
-		return List.of(COMPLETED, VOIDED, EXPIRED).contains(envelopeStatus);
+		return List.of(COMPLETED, VOIDED, EXPIRED, DECLINED).contains(envelopeStatus);
 	}
 
 	public static boolean isDeclineProhibitedFrom(EnvelopeStatus envelopeStatus) {
