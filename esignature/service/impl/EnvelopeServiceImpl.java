@@ -12,7 +12,10 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -43,8 +46,8 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoRespons
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
@@ -126,6 +129,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final OrganizationDao organizationDao;
 
+	private final ScheduleService scheduleService;
+
+	private final TenantContext tenantContext;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createNewEnvelope(@Valid EnvelopeDetailDto envelopeDetailDto) {
@@ -172,6 +179,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setOwner(addressBook);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
+
+		String tenantId = TenantContext.getCurrentTenant();
+		// schedule expiration
+		scheduleService.scheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+				envelope.getExpireAt());
 
 		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
 
@@ -876,6 +888,23 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
+	}
+
+	@Override
+	public void expireEnvelope(Long envelopeId) {
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		if (envelopeOptional.isEmpty()) {
+			log.info("expireEnvelope: envelope with ID {} not found", envelopeId);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = envelopeOptional.get();
+		if (!EnvelopeStatus.EXPIRED.equals(envelope.getStatus())) {
+			envelope.setStatus(EnvelopeStatus.EXPIRED);
+			envelopeDao.save(envelope);
+			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, tenantContext.getCurrentTenant());
+		}
+
 	}
 
 }
