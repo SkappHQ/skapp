@@ -339,6 +339,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, String companyDomain) {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
+		responseDto.setContactNo(organization.getContactNo());
 		responseDto.setUuid(generateUUID(companyDomain));
 		responseDto.setTenantId(companyDomain);
 
