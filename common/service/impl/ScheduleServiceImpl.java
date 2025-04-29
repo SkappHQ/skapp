@@ -32,7 +32,9 @@ public class ScheduleServiceImpl implements ScheduleService {
 	public static final String ENTITY_TYPE = "entityType";
 
 	public static final String EXPIRE = "-expire-";
+
 	public static final String EXPIRATION_GROUP = "expiration";
+
 	public static final String TRIGGER_PREFIX = "trigger-";
 
 	private final Scheduler scheduler;
@@ -48,7 +50,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 			String entityTypeName = entityType.name();
 
 			JobDetail jobDetail = JobBuilder.newJob(QuartzJobHandler.class)
-			.withIdentity(entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
+				.withIdentity(entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
 				.storeDurably(true)
 				.usingJobData(ENTITY_ID, entityId)
 				.usingJobData(JOB_TENANT_ID, tenantId)
