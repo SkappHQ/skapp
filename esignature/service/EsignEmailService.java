@@ -11,4 +11,6 @@ public interface EsignEmailService {
 
 	void sendCompleteEmailToSender(Envelope envelope);
 
+	void sendNudgeEmail(Recipient recipient, String documentLinkUrl);
+
 }

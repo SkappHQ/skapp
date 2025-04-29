@@ -92,7 +92,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
-	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available"),
+	ESIGN_ERROR_VALID_DOCUMENT_ACCESS_LINK_AVAILABLE("ep.esign.error.document.access-link.valid.available"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
 	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link"),
@@ -113,7 +113,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP("ep.esign.error.no.recipients.found.in.envelop"),
 	ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP("ep.esign.error.recipient.already-voided-envelope"),
 	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED("ep.esign.error.envelope.already-expired"),
-	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status");
+	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status"),
+	ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED("ep.esign.error.recipient.document.sign.completed"),
+	ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED("ep.esign.error.recipient.field.sign.completed");
 
 	private final String messageKey;
 
