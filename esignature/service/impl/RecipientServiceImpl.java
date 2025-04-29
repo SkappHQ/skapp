@@ -140,7 +140,7 @@ public class RecipientServiceImpl implements RecipientService {
 		log.info("sendEnvelopToRecipientEmail: process started");
 
 		if (nextRecipientList.isEmpty()) {
-			return Collections.emptyList(); // or throw an exception if preferred
+			return Collections.emptyList();
 		}
 
 		if (document.getEnvelope() == null) {
