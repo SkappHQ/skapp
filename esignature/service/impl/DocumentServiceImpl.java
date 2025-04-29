@@ -574,6 +574,12 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
 		}
 
+		int pageNumber = documentFieldSignDto.getFieldSignDto().getPageNumber();
+
+		if (pageNumber < 1 || pageNumber > document.getNumOfPages()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_PAGE_NUMBER);
+		}
+
 		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(),
 				documentFieldSignDto.getDocumentId());
 
@@ -599,19 +605,24 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldRepository.save(field);
 
 		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
-			Envelope envelope = document.getEnvelope();
-			envelope.getRecipients().forEach(recipientData -> {
-				if (recipientData.getId().equals(recipient.getId())) {
-					recipient.setStatus(RecipientStatus.DECLINED);
-				}
-			});
-			envelope.setStatus(EnvelopeStatus.DECLINED);
+			Envelope envelope = updateDeclineStatus(document, recipient);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 		}
 
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
 
+	}
+
+	private static Envelope updateDeclineStatus(Document document, Recipient recipient) {
+		Envelope envelope = document.getEnvelope();
+		envelope.getRecipients().forEach(recipientData -> {
+			if (recipientData.getId().equals(recipient.getId())) {
+				recipient.setStatus(RecipientStatus.DECLINED);
+			}
+		});
+		envelope.setStatus(EnvelopeStatus.DECLINED);
+		return envelope;
 	}
 
 	private void updateOtherFieldsOfSameType(DocumentFieldSignDto documentFieldSignDto, Recipient recipient,
