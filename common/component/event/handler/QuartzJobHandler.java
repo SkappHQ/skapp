@@ -28,7 +28,7 @@ public class QuartzJobHandler implements Job {
 
 	@Override
 	@Transactional
-	public void execute(JobExecutionContext context) throws JobExecutionException {
+	public void execute(JobExecutionContext context){
 		Long entityId = context.getJobDetail().getJobDataMap().getLong(ENTITY_ID);
 		String tenantId = context.getJobDetail().getJobDataMap().getString(JOB_TENANT_ID);
 		String entityTypeStr = context.getJobDetail().getJobDataMap().getString(ENTITY_TYPE);
