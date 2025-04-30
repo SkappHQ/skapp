@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -7,12 +9,18 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -20,6 +28,7 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
@@ -27,24 +36,35 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
+import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.UserType;
@@ -53,9 +73,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
@@ -94,6 +117,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final DocumentService documentService;
 
+	private final DocumentLinkService documentLinkService;
+
 	private final DocumentVersionRepository documentVersionRepository;
 
 	private final DocumentLinkRepository documentLinkRepository;
@@ -101,6 +126,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final AmazonS3Service amazonS3Service;
 
 	private final DocumentRepository documentRepository;
+
+	private final RecipientRepository recipientRepository;
+
+	private final AuditTrailDao auditTrailDao;
+
+	private final OrganizationDao organizationDao;
+
+	private final ScheduleService scheduleService;
+
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	@Transactional
@@ -126,6 +161,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), envelope);
+
 		envelope.setDocuments(documents);
 
 		boolean hasInvalidDocumentId = envelopeDetailDto.getRecipients()
@@ -148,14 +184,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
-		List<DocumentVersion> documentVersionList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+
+		List<DocumentVersion> documentVersionList = signedDocumentResponseList.stream()
+			.map(SignedDocumentResponse::getDocumentVersion)
+			.toList();
 
 		documentVersionRepository.saveAll(documentVersionList);
 
-		List<Document> updatedDocuments = documentVersionList.stream().map(documentVersion -> {
+		List<Document> updatedDocuments = signedDocumentResponseList.stream().map(signedDocumentResponse -> {
+			DocumentVersion documentVersion = signedDocumentResponse.getDocumentVersion();
 			Document document = documentVersion.getDocument();
 			document.setCurrentVersion(documentVersion.getVersionNumber());
 			document.setCurrentSignOderNumber(1);
+			document.setNumOfPages(signedDocumentResponse.getNumberOfPages());
 			return document;
 		}).toList();
 
@@ -180,14 +222,30 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipient.setReminderStatus(updated.getReminderStatus());
 				recipient.setEmailStatus(updated.getEmailStatus());
 				recipient.setReceivedAt(getCurrentUtcDateTime());
-				recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
-				if (recipient.getMemberRole().equals(MemberRole.CC)) {
-					recipient.setStatus(RecipientStatus.WAITING);
+
+				if (recipient.getMemberRole().equals(MemberRole.SIGNER)) {
+					recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
+					recipient.setInboxStatus(InboxStatus.NEED_TO_SIGN);
+				}
+				else {
+					// CC-Member role
+					recipient.setStatus(RecipientStatus.COMPLETED);
+					recipient.setInboxStatus(InboxStatus.WAITING);
 				}
 			}
 		}
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
+
+		// Register a post-commit callback to handle scheduling after transaction commit
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+						savedEnvelope.getExpireAt());
+			}
+		});
 
 		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);
@@ -200,6 +258,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelopeSetting;
 	}
 
+	@Deprecated
 	@Override
 	public ResponseEntityDto updateEnvelope(Long id, EnvelopeUpdateDto envelopeUpdateDto) {
 		log.info("updateEnvelope: execution started");
@@ -229,12 +288,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		if (envelopeUpdateDto.getStatus() != null) {
 			// CANCELED, CREATED AND VOIDED are the only status that allow manually update
-			if (envelopeUpdateDto.getStatus() == EnvelopeStatus.CANCELED) {
-				envelope.setStatus(EnvelopeStatus.CANCELED);
+			if (envelopeUpdateDto.getStatus() == EnvelopeStatus.DECLINED) {
+				envelope.setStatus(EnvelopeStatus.DECLINED);
 			}
-			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.CREATED) {
+			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.WAITING) {
 				validateEnvelopeExpiration(envelope);
-				envelope.setStatus(EnvelopeStatus.CREATED);
+				envelope.setStatus(EnvelopeStatus.WAITING);
 			}
 			else if (envelopeUpdateDto.getStatus() == EnvelopeStatus.VOIDED) {
 				processVoidRequest(envelope);
@@ -253,7 +312,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private Envelope initializeEnvelope(EnvelopeDetailDto dto) {
 		Envelope envelope = new Envelope();
 		envelope.setName(dto.getName());
-		envelope.setStatus(EnvelopeStatus.NEED_TO_SIGN);
+		envelope.setStatus(EnvelopeStatus.WAITING);
 		envelope.setMessage(dto.getMessage());
 		envelope.setSubject(dto.getSubject());
 		envelope.setExpireAt(dto.getExpireAt());
@@ -315,6 +374,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
+			recipient.setConsent(addressBook.getType().equals(UserType.INTERNAL));
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
@@ -347,22 +407,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void processVoidRequest(Envelope envelope) {
-		if (EnvelopeStatus.idVoidProhibitedFrom(envelope.getStatus())) {
+
+		log.info("processVoidRequest: Checking if void is prohibited for envelope ID {}", envelope.getId());
+
+		if (EnvelopeStatus.isVoidProhibitedFrom(envelope.getStatus())) {
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(),
+					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VOID_PROHIBITED_FROM_CURRENT_STATUS);
 		}
-
-		if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
-			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_VOIDED);
-		}
-
-		if (EnvelopeStatus.activeStatuses().contains(envelope.getStatus())) {
-			envelope.setStatus(EnvelopeStatus.VOIDED);
-			notifyVoid(envelope);
-		}
-	}
-
-	private void notifyVoid(Envelope envelope) {
-		// Notify all recipients that the envelope has been voided
+		recipientService.voidAllRecipientsByEnvelopeId(envelope.getId());
+		envelope.setStatus(EnvelopeStatus.VOIDED);
 	}
 
 	private void validateEnvelopeExpiration(Envelope envelope) {
@@ -410,7 +464,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.filter(env -> env.getAddressBook().getUserId().equals(currentUser.getUserId()))
 				.findFirst();
 			if (optionalRecipient.isPresent()) {
-				envelopeInboxData.setStatus(optionalRecipient.get().getStatus());
+				envelopeInboxData.setStatus(optionalRecipient.get().getInboxStatus());
 				envelopeInboxData.setReceivedDate(optionalRecipient.get().getReceivedAt());
 			}
 
@@ -493,9 +547,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
-		EnvelopeInfoResponseDto envelopeInfoResponseDto = getEnvelopeInfoResponseDto(envelope);
+		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope);
+		Optional<Recipient> currentRecippientOptional = envelope.getRecipients()
+			.stream()
+			.filter(recipient -> recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+			.findFirst();
 
-		return new ResponseEntityDto(false, envelopeInfoResponseDto);
+		if (currentRecippientOptional.isPresent()) {
+			String accessUrl = documentLinkService.getRecipientDocumentAccessUrlByPermissionType(envelope,
+					currentRecippientOptional.get(), DocumentPermissionType.WRITE);
+			envelopeInboxInfoResponseDto.setEnvelopeAccessLink(accessUrl);
+		}
+
+		return new ResponseEntityDto(false, envelopeInboxInfoResponseDto);
 	}
 
 	@Override
@@ -528,6 +593,69 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return new ResponseEntityDto(false, envelopeInfoResponseDto);
 	}
 
+	@Override
+	public ResponseEntityDto getSignatureCertificate(Long envelopeId) {
+		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
+
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
+
+		String username = documentService.getCurrentUsername();
+
+		if (username == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(username);
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+		}
+
+		if (currentAddressBookUser.getType() == UserType.INTERNAL) {
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId,
+					currentAddressBookUser.getId()) == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
+			Recipient envelopRecipient = recipientService.getRecipientFromToken();
+			if (!envelopRecipient.getEnvelope().getId().equals(envelopeId)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
+
+		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
+
+		List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
+			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
+			auditTrailResponseDto.setAuditId(auditTrail.getId());
+			auditTrailResponseDto.setAction(auditTrail.getAction());
+			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
+					new TypeReference<List<MetadataResponseDto>>() {
+					}));
+			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
+			auditTrailResponseDto.setHash(auditTrail.getHash());
+			auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient() == null
+					? auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName() + " "
+							+ auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName()
+					: auditTrail.getRecipient().getName());
+			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
+			return auditTrailResponseDto;
+		}).toList();
+
+		organizationDao.findTopByOrderByOrganizationIdDesc()
+			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
+		responseDto.setAuditTrails(responseDtoList);
+
+		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
+		return new ResponseEntityDto(false, responseDto);
+	}
+
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
 		envelopeInfoResponseDto.setId(envelope.getId());
@@ -549,6 +677,28 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelopeInfoResponseDto;
 	}
 
+	private EnvelopeInboxInfoResponseDto getEnvelopeInboxInfoResponseDto(Envelope envelope) {
+		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
+		envelopeInboxInfoResponseDto.setId(envelope.getId());
+		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInboxInfoResponseDto.setStatus(envelope.getStatus());
+		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
+
+		List<Recipient> recipients = envelope.getRecipients();
+		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
+
+		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
+		AddressBook addressBook = envelope.getOwner();
+
+		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
+			.addressBookToAddressBookBasicResponseDto(addressBook);
+		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
+
+		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
+		return envelopeInboxInfoResponseDto;
+	}
+
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
 		return envelope.getDocuments().stream().map(document -> {
 			int currentVersion = document.getCurrentVersion();
@@ -565,17 +715,60 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}).toList();
 	}
 
-	private List<DocumentVersion> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto, Envelope envelope) {
-		List<DocumentVersion> documentVersionList = new ArrayList<>();
+	@Transactional
+	@Override
+	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+		log.info("voidEnvelope: execution started for envelope ID: {}", envelopeId);
+
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("voidEnvelope: Envelope not found for ID: {}", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
+
+		User currentUser = userService.getCurrentUser();
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+		log.debug("voidEnvelope: Current user ID: {}, Role: {}", currentUser.getUserId(), esignRole);
+
+		if (esignRole.equals(Role.ESIGN_SENDER)) {
+			AddressBook owner = envelope.getOwner();
+			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+				log.error("voidEnvelope: Unauthorized access by user ID: {}", currentUser.getUserId());
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		if (voidEnvelopeRequestDto.getVoidReason().length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_VOID) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_TOO_LONG);
+		}
+		if (!voidEnvelopeRequestDto.getVoidReason()
+			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS);
+		}
+		envelope.setVoidReason(voidEnvelopeRequestDto.getVoidReason());
+
+		processVoidRequest(envelope);
+
+		envelope = envelopeDao.save(envelope);
+
+		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+
+		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
+		return new ResponseEntityDto(false, "Envelope voided successfully");
+	}
+
+	private List<SignedDocumentResponse> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto,
+			Envelope envelope) {
+		List<SignedDocumentResponse> signedDocumentResponseList = new ArrayList<>();
 
 		envelopeDetailDto.getDocumentIds().forEach(doc -> {
 			DocumentSignDto documentSignDto = new DocumentSignDto();
 			documentSignDto.setDocumentId(doc);
 			documentSignDto.setEnvelopeId(envelope.getId());
-			DocumentVersion documentVersion = documentService.signFirstVersionDocument(documentSignDto);
-			documentVersionList.add(documentVersion);
+			SignedDocumentResponse signedDocumentResponse = documentService.signFirstVersionDocument(envelope,
+					documentSignDto, envelope.getUuid());
+			signedDocumentResponseList.add(signedDocumentResponse);
 		});
-		return documentVersionList;
+		return signedDocumentResponseList;
 	}
 
 	@Transactional
@@ -645,7 +838,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		document = documentRepository.save(document);
+		documentRepository.save(document);
 
 		AddressBook newOwner = addressBookOptional.get();
 		envelope.setOwner(newOwner);
@@ -653,6 +846,93 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("transferEnvelopeCustody: execution ended");
 		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+
+		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
+
+		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
+			log.error("Recipient with ID {} not found", recipientId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
+		});
+
+		// Validate the recipient
+		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
+				&& !recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
+			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		else if (recipient.getAddressBook().getType() == UserType.INTERNAL) {
+			User currentUser = userService.getCurrentUser();
+			Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
+			AddressBook addressBook = addressBookOptional
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+			if (!recipient.getAddressBook().getId().equals(addressBook.getId())) {
+				log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(),
+					recipientId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
+		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {
+			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(),
+					envelope.getStatus());
+			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
+		}
+
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+			log.info("Recipient with ID {} cannot decline the envelope. Current status: {}", recipient.getId(),
+					recipient.getStatus());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
+		}
+
+		if (declineEnvelopeRequestDto.getDeclineReason()
+			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
+		}
+		else if (!declineEnvelopeRequestDto.getDeclineReason()
+			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
+			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
+		}
+		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
+
+		envelope.setStatus(EnvelopeStatus.DECLINED);
+		envelopeDao.save(envelope);
+		recipientService.declineRecipientInEnvelope(recipient);
+
+		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
+		return new ResponseEntityDto(false, "Envelope declined successfully");
+	}
+
+	@Override
+	public void expireEnvelope(Long envelopeId) {
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		if (envelopeOptional.isEmpty()) {
+			log.info("expireEnvelope: envelope with ID {} not found", envelopeId);
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = envelopeOptional.get();
+		if (!EnvelopeStatus.EXPIRED.equals(envelope.getStatus())) {
+			envelope.setStatus(EnvelopeStatus.EXPIRED);
+
+			envelope.getRecipients().forEach(recipient -> {
+				recipient.setStatus(RecipientStatus.EXPIRED);
+				recipient.setInboxStatus(InboxStatus.EXPIRED);
+			});
+
+			envelopeDao.save(envelope);
+			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
+		}
+
 	}
 
 }

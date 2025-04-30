@@ -39,6 +39,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
 	ESIGN_VALIDATION_MY_SIGNATURE_LINK_EMPTY("validation.my-signature-link.empty"),
+	ESIGN_VALIDATION_VOID_REASON_TOO_LONG("validation.void.reason.too.long"),
+	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
+	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
+	ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS("validation.decline.reason.invalid.characters"),
+	ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY("validation.my-signature-method.empty"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
@@ -87,7 +92,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
-	ESIGN_ERROR_VALID_DOCUMENT_SIGN_LINK_AVAILABLE("ep.esign.error.document.sign-link.valid.available"),
+	ESIGN_ERROR_VALID_DOCUMENT_ACCESS_LINK_AVAILABLE("ep.esign.error.document.access-link.valid.available"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
 	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link"),
@@ -100,7 +105,18 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid"),
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND("ep.esign.error.document.access.already.resend"),
 	ESIGN_ERROR_ENVELOPE_UUID_CREATION_FAIL("ep.esign.error.envelope.uuid.creation.fail"),
-	ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE("ep.esign.error.user.already.owner.of.envelope");
+	ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE("ep.esign.error.user.already.owner.of.envelope"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP("ep.esign.error.recipient.already-declined-envelope"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED("ep.esign.error.recipient.already-approved"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED("ep.esign.error.envelope.already-declined"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED("ep.esign.error.envelope.already-completed"),
+	ESIGN_ERROR_NO_RECIPIENTS_FOUND_IN_ENVELOP("ep.esign.error.no.recipients.found.in.envelop"),
+	ESIGN_ERROR_RECIPIENT_ALREADY_VOIDED_ENVELOP("ep.esign.error.recipient.already-voided-envelope"),
+	ESIGN_ERROR_ENVELOPE_ALREADY_EXPIRED("ep.esign.error.envelope.already-expired"),
+	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status"),
+	ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED("ep.esign.error.recipient.document.sign.completed"),
+	ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED("ep.esign.error.recipient.field.sign.completed"),
+	ESIGN_ERROR_INVALID_PAGE_NUMBER("ep.esign.error.invalid.page.number");
 
 	private final String messageKey;
 

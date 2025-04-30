@@ -53,7 +53,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		// Predicate to filter by internalUser's userId
 		Predicate userPredicate = cb.equal(addressBookJoin.get("internalUser").get("userId"), currentUserId);
 
-		Predicate statusPredicate = cb.equal(envelope.get(Envelope_.STATUS), EnvelopeStatus.NEED_TO_SIGN);
+		Predicate statusPredicate = cb.equal(recipientJoin.get(Recipient_.STATUS), RecipientStatus.NEED_TO_SIGN);
 
 		query.select(cb.count(envelope)).where(cb.and(userPredicate, statusPredicate));
 
@@ -92,7 +92,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		dataQuery
 			.multiselect(envelopeRoot, ownerEmailPath, recipientJoin.get(Recipient_.RECEIVED_AT),
-					recipientJoin.get(Recipient_.STATUS))
+					recipientJoin.get(Recipient_.INBOX_STATUS))
 			.distinct(true);
 		dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
 
@@ -115,7 +115,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			.add(cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
 		if (filterDto.getStatusTypes() != null && !filterDto.getStatusTypes().isEmpty()) {
-			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.STATUS));
+			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.INBOX_STATUS));
 			filterDto.getStatusTypes().forEach(statusIn::value);
 			predicates.add(statusIn);
 		}
@@ -259,7 +259,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		Predicate byUser = cb.equal(internalUser.get("userId"), userId);
 		Predicate byStatus = envelope.get(Envelope_.STATUS)
-			.in(List.of(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.COMPLETED));
+			.in(List.of(EnvelopeStatus.WAITING, EnvelopeStatus.COMPLETED));
 
 		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
 			.where(cb.and(byUser, byStatus))
@@ -274,7 +274,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			resultMap.put(status, count);
 		}
 
-		resultMap.putIfAbsent(EnvelopeStatus.NEED_TO_SIGN, 0L);
+		resultMap.putIfAbsent(EnvelopeStatus.WAITING, 0L);
 		resultMap.putIfAbsent(EnvelopeStatus.COMPLETED, 0L);
 
 		return resultMap;

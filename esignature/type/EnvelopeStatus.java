@@ -4,15 +4,18 @@ import java.util.List;
 
 public enum EnvelopeStatus {
 
-	CREATED, IN_PROGRESS, COMPLETED, CANCELED, NEED_TO_SIGN, EXPIRING_SOON, WAITING, PENDING, DRAFT, DECLINED, EXPIRED,
-	VOIDED;
+	COMPLETED, WAITING, DECLINED, EXPIRED, VOIDED, NEED_TO_SIGN;
 
 	public static List<EnvelopeStatus> activeStatuses() {
-		return List.of(CREATED, IN_PROGRESS, NEED_TO_SIGN, EXPIRING_SOON, WAITING, PENDING);
+		return List.of(COMPLETED, WAITING);
 	}
 
-	public static boolean idVoidProhibitedFrom(EnvelopeStatus envelopeStatus) {
-		return List.of(COMPLETED, CANCELED).contains(envelopeStatus);
+	public static boolean isVoidProhibitedFrom(EnvelopeStatus envelopeStatus) {
+		return List.of(COMPLETED, VOIDED, EXPIRED, DECLINED).contains(envelopeStatus);
+	}
+
+	public static boolean isDeclineProhibitedFrom(EnvelopeStatus envelopeStatus) {
+		return List.of(COMPLETED, VOIDED, EXPIRED, DECLINED).contains(envelopeStatus);
 	}
 
 	public static List<EnvelopeStatus> inactiveStatuses() {
