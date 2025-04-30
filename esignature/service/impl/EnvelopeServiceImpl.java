@@ -786,7 +786,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 
-
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
 
