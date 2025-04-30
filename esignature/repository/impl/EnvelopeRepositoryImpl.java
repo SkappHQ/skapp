@@ -92,7 +92,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		dataQuery
 			.multiselect(envelopeRoot, ownerEmailPath, recipientJoin.get(Recipient_.RECEIVED_AT),
-					recipientJoin.get(Recipient_.STATUS))
+					recipientJoin.get(Recipient_.INBOX_STATUS))
 			.distinct(true);
 		dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
 
@@ -115,7 +115,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			.add(cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
 		if (filterDto.getStatusTypes() != null && !filterDto.getStatusTypes().isEmpty()) {
-			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.STATUS));
+			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.INBOX_STATUS));
 			filterDto.getStatusTypes().forEach(statusIn::value);
 			predicates.add(statusIn);
 		}

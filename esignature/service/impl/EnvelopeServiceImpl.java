@@ -64,6 +64,7 @@ import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.UserType;
@@ -72,9 +73,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
@@ -131,7 +135,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final ScheduleService scheduleService;
 
-	private final TenantContext tenantContext;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	@Transactional
@@ -180,11 +184,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
-		String tenantId = TenantContext.getCurrentTenant();
-		// schedule expiration
-		scheduleService.scheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
-				envelope.getExpireAt());
-
 		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
 
 		List<DocumentVersion> documentVersionList = signedDocumentResponseList.stream()
@@ -223,14 +222,30 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipient.setReminderStatus(updated.getReminderStatus());
 				recipient.setEmailStatus(updated.getEmailStatus());
 				recipient.setReceivedAt(getCurrentUtcDateTime());
-				recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
-				if (recipient.getMemberRole().equals(MemberRole.CC)) {
-					recipient.setStatus(RecipientStatus.WAITING);
+
+				if (recipient.getMemberRole().equals(MemberRole.SIGNER)) {
+					recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
+					recipient.setInboxStatus(InboxStatus.NEED_TO_SIGN);
+				}
+				else {
+					// CC-Member role
+					recipient.setStatus(RecipientStatus.COMPLETED);
+					recipient.setInboxStatus(InboxStatus.WAITING);
 				}
 			}
 		}
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
+
+		// Register a post-commit callback to handle scheduling after transaction commit
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+						savedEnvelope.getExpireAt());
+			}
+		});
 
 		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);
@@ -449,7 +464,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.filter(env -> env.getAddressBook().getUserId().equals(currentUser.getUserId()))
 				.findFirst();
 			if (optionalRecipient.isPresent()) {
-				envelopeInboxData.setStatus(optionalRecipient.get().getStatus());
+				envelopeInboxData.setStatus(optionalRecipient.get().getInboxStatus());
 				envelopeInboxData.setReceivedDate(optionalRecipient.get().getReceivedAt());
 			}
 
@@ -667,6 +682,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
 		envelopeInboxInfoResponseDto.setStatus(envelope.getStatus());
+		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
@@ -901,8 +917,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Envelope envelope = envelopeOptional.get();
 		if (!EnvelopeStatus.EXPIRED.equals(envelope.getStatus())) {
 			envelope.setStatus(EnvelopeStatus.EXPIRED);
+
+			envelope.getRecipients().forEach(recipient -> {
+				recipient.setStatus(RecipientStatus.EXPIRED);
+				recipient.setInboxStatus(InboxStatus.EXPIRED);
+			});
+
 			envelopeDao.save(envelope);
-			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, tenantContext.getCurrentTenant());
+			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
 
 	}
