@@ -661,6 +661,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeInfoResponseDto.setId(envelope.getId());
 		envelopeInfoResponseDto.setSubject(envelope.getSubject());
 		envelopeInfoResponseDto.setStatus(envelope.getStatus());
+		envelopeInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);

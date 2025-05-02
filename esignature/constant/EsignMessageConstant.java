@@ -116,7 +116,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS("ep.esign.error.decline.prohibited.from.current.status"),
 	ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED("ep.esign.error.recipient.document.sign.completed"),
 	ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED("ep.esign.error.recipient.field.sign.completed"),
-	ESIGN_ERROR_INVALID_PAGE_NUMBER("ep.esign.error.invalid.page.number");
+	ESIGN_ERROR_INVALID_PAGE_NUMBER("ep.esign.error.invalid.page.number"),
+	ESIGN_ERROR_FAILED_TO_LOAD_FONT("ep.esign.error.failed.load.font");
 
 	private final String messageKey;
 

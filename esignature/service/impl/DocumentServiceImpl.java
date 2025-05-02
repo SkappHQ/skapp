@@ -271,7 +271,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion);
+			return completeDocument(document, newVersion, updatedDocumentBytes);
 		}
 
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
@@ -296,8 +296,10 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, "New Document version successfully created");
 	}
 
-	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
-		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
+	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
+			byte[] latestDocumentBytes) {
+		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
+				latestDocumentBytes);
 		documentVersionRepository.save(documentVersion);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
@@ -640,8 +642,15 @@ public class DocumentServiceImpl implements DocumentService {
 			if (recipientData.getId().equals(recipient.getId())) {
 				recipientData.setStatus(RecipientStatus.DECLINED);
 			}
+
+			if (envelope.getSignType().equals(SignType.PARALLEL)
+					&& recipientData.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+				recipientData.setStatus(RecipientStatus.EMPTY);
+			}
+
 			recipientData.setInboxStatus(InboxStatus.DECLINED);
 		});
+
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		return envelope;
 	}
@@ -692,7 +701,7 @@ public class DocumentServiceImpl implements DocumentService {
 			document.setName(editDocumentDto.getName());
 		}
 		if (editDocumentDto.getFilePath() != null) {
-			document.setFilePath(editDocumentDto.getFilePath());
+			document.setFilePath(bucketName + "/" + editDocumentDto.getFilePath());
 		}
 
 		documentRepository.save(document);
@@ -766,13 +775,12 @@ public class DocumentServiceImpl implements DocumentService {
 		return fileUrl;
 	}
 
-	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {
+	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion,
+			byte[] latestDocumentBytes) {
 
 		verifyEachDocumentVersionByAddressBookUser(document);
 
 		KeyPair keyPair = loadKeyPair(document.getEnvelope().getOwner().getId());
-
-		byte[] latestDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		String fileUrl = currentVersion.getFilePath();
 
@@ -784,11 +792,12 @@ public class DocumentServiceImpl implements DocumentService {
 	private void verifyEachDocumentVersionByAddressBookUser(Document document) {
 		List<DocumentVersion> documentVersions = document.getVersions();
 		documentVersions.forEach(documentVersion -> {
-			UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
-			PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
-			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
-
-			verifyDocumentSignature(documentBytes, documentVersion, publicKey);
+			if (documentVersion.getVersionNumber() != document.getCurrentVersion()) {
+				UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
+				PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
+				byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+				verifyDocumentSignature(documentBytes, documentVersion, publicKey);
+			}
 		});
 	}
 
