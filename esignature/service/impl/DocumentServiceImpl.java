@@ -784,11 +784,12 @@ public class DocumentServiceImpl implements DocumentService {
 	private void verifyEachDocumentVersionByAddressBookUser(Document document) {
 		List<DocumentVersion> documentVersions = document.getVersions();
 		documentVersions.forEach(documentVersion -> {
-			UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
-			PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
-			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
-
-			verifyDocumentSignature(documentBytes, documentVersion, publicKey);
+			if (documentVersion.getVersionNumber() != document.getCurrentVersion()) {
+				UserKey userKey = userKeyService.getKeyPairByAddressBookId(documentVersion.getAddressBook().getId());
+				PublicKey publicKey = convertToPublicKey(userKey.getPublicKey());
+				byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+				verifyDocumentSignature(documentBytes, documentVersion, publicKey);
+			}
 		});
 	}
 
