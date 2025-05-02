@@ -271,7 +271,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion);
+			return completeDocument(document, newVersion, updatedDocumentBytes);
 		}
 
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
@@ -296,8 +296,10 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, "New Document version successfully created");
 	}
 
-	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion) {
-		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion);
+	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
+			byte[] latestDocumentBytes) {
+		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
+				latestDocumentBytes);
 		documentVersionRepository.save(documentVersion);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
@@ -773,13 +775,12 @@ public class DocumentServiceImpl implements DocumentService {
 		return fileUrl;
 	}
 
-	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion) {
+	private DocumentVersion verifyDocumentVersionsRelatedToDocument(Document document, DocumentVersion currentVersion,
+			byte[] latestDocumentBytes) {
 
 		verifyEachDocumentVersionByAddressBookUser(document);
 
 		KeyPair keyPair = loadKeyPair(document.getEnvelope().getOwner().getId());
-
-		byte[] latestDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		String fileUrl = currentVersion.getFilePath();
 

@@ -247,6 +247,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			float adjustedY = pageHeight - y - height;
 
+			// border create with given field width and height
 			drawImageWithBorder(document, page, x, adjustedY, width, height, imageBytes);
 
 			document.save(outputStream);
