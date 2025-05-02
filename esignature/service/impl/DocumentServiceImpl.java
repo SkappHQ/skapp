@@ -640,8 +640,15 @@ public class DocumentServiceImpl implements DocumentService {
 			if (recipientData.getId().equals(recipient.getId())) {
 				recipientData.setStatus(RecipientStatus.DECLINED);
 			}
+
+			if (envelope.getSignType().equals(SignType.PARALLEL)
+					&& recipientData.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+				recipientData.setStatus(RecipientStatus.EMPTY);
+			}
+
 			recipientData.setInboxStatus(InboxStatus.DECLINED);
 		});
+
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		return envelope;
 	}
@@ -692,7 +699,7 @@ public class DocumentServiceImpl implements DocumentService {
 			document.setName(editDocumentDto.getName());
 		}
 		if (editDocumentDto.getFilePath() != null) {
-			document.setFilePath(editDocumentDto.getFilePath());
+			document.setFilePath(bucketName + "/" + editDocumentDto.getFilePath());
 		}
 
 		documentRepository.save(document);
