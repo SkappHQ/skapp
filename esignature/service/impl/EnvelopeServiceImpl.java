@@ -787,9 +787,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
-		if (!envelope.getOwner().getInternalUser().getUserId().equals(currentUser.getUserId())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+
+		if (esignRole.equals(Role.ESIGN_SENDER)) {
+			AddressBook owner = envelope.getOwner();
+			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
 		}
 
 		Optional<AddressBook> addressBookOptional = addressBookDao.findById(addressbookId);
