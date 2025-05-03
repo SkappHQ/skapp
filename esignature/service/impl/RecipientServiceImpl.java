@@ -488,9 +488,8 @@ public class RecipientServiceImpl implements RecipientService {
 			String documentName = concatDocumentNames(envelope.getDocuments());
 
 			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					envelope.getOwner().getName(),
-					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-					declinedBy, title, null, senderName, senderEmail);
+					envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
+					documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
