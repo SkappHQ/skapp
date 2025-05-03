@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
@@ -293,7 +294,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		return new ResponseEntityDto(false, "New Document version successfully created");
+		DocumentCompleteResponseDto documentCompleteResponseDto=new DocumentCompleteResponseDto();
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
@@ -316,7 +321,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 		sendDocumentCompletedEmailNotifications(envelope);
 
-		return new ResponseEntityDto(false, "Document completed successfully");
+		DocumentCompleteResponseDto documentCompleteResponseDto=new DocumentCompleteResponseDto();
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private void sendDocumentCompletedEmailNotifications(Envelope envelope) {
@@ -476,10 +485,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 			sendDocumentCompletedEmailNotifications(envelope);
 
-			return new ResponseEntityDto(false, "Document Signing completed");
+			DocumentCompleteResponseDto documentCompleteResponseDto=new DocumentCompleteResponseDto();
+			documentCompleteResponseDto.setStatus(envelope.getStatus());
+			documentCompleteResponseDto.setAccessLink(finalVersion.getFilePath());
+
+			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
 
-		return new ResponseEntityDto(false, "New Document version successfully created");
+		DocumentCompleteResponseDto documentCompleteResponseDto=new DocumentCompleteResponseDto();
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private byte[] mergeFieldsToLatestDocument(List<DocumentVersionField> fieldVersionList, byte[] documentBytes,
