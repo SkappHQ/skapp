@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,7 +56,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private String hashSecretKey;
 
 	@Override
-	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto) {
+	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, HttpServletRequest request) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
 		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
@@ -97,14 +98,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		if (auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV4_VALIDATION_PATTERN)
-				|| auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV6_VALIDATION_PATTERN)) {
-			auditTrail.setIpAddress(auditTrailDto.getIpAddress());
-		}
-		else {
-			log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
-		}
+		String ipAddress = getClientIp(request);
+		auditTrail.setIpAddress(ipAddress);
+
 		auditTrail.setAction(auditTrailDto.getAction());
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -119,6 +115,21 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Audit trail saved successfully with hash: {}", auditTrail.getHash());
 
 		return new ResponseEntityDto("Audit trail created successfully", false);
+	}
+
+	public String getClientIp(HttpServletRequest request) {
+		String ip = request.getHeader("X-Forwarded-For");
+		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+			// First IP in the list is the original client
+			return ip.split(",")[0].trim();
+		}
+
+		ip = request.getHeader("X-Real-IP");
+		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+			return ip;
+		}
+
+		return request.getRemoteAddr(); // Fallback to direct IP
 	}
 
 	@Override

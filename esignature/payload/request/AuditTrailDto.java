@@ -17,9 +17,6 @@ public class AuditTrailDto {
 
 	private Long recipientId;
 
-	@NotBlank(message = "validation.audit_trail.ip_address.not_blank")
-	private String ipAddress;
-
 	@NotNull(message = "validation.audit_trail.action.not_blank")
 	private AuditAction action;
 

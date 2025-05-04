@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,9 +27,10 @@ public class AuditTrailController {
 	@Operation(summary = "Create an audit trail record",
 			description = "This endpoint logs an audit trail event for e-signature activities.")
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO) {
-		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO);
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
+			HttpServletRequest request) {
+		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, request);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
