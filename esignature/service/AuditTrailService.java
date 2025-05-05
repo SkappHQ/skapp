@@ -18,5 +18,7 @@ public interface AuditTrailService {
 
 	ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId);
 
-	AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action, AddressBook addressBook);
+	AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
+			AddressBook addressBook);
+
 }

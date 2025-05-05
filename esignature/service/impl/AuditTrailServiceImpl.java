@@ -219,8 +219,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	@Override
-	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action, AddressBook addressBook) {
-		AuditTrail auditTrail=new AuditTrail();
+	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
+			AddressBook addressBook) {
+		AuditTrail auditTrail = new AuditTrail();
 
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
