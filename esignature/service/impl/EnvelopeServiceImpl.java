@@ -759,6 +759,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_VOIDED,
+				addressBook);
+		auditTrailDao.save(auditTrail);
+
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
