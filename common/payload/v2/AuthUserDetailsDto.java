@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GoogleUserDetailsDto {
+public class AuthUserDetailsDto {
 
 	private String name;
 
