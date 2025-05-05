@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,9 +57,15 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private String hashSecretKey;
 
 	@Override
-	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, HttpServletRequest request) {
+	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
+		if (auditTrailDto.getAction() != AuditAction.ENVELOPE_VIEWED
+				&& auditTrailDto.getAction() != AuditAction.ENVELOPE_SIGNED
+				&& auditTrailDto.getAction() != AuditAction.ENVELOPE_DECLINED) {
+			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
+		}
 		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
 			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
 			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
@@ -98,7 +105,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		String ipAddress = getClientIp(request);
 		auditTrail.setIpAddress(ipAddress);
 
 		auditTrail.setAction(auditTrailDto.getAction());
@@ -115,21 +121,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Audit trail saved successfully with hash: {}", auditTrail.getHash());
 
 		return new ResponseEntityDto("Audit trail created successfully", false);
-	}
-
-	public String getClientIp(HttpServletRequest request) {
-		String ip = request.getHeader("X-Forwarded-For");
-		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-			// First IP in the list is the original client
-			return ip.split(",")[0].trim();
-		}
-
-		ip = request.getHeader("X-Real-IP");
-		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-			return ip;
-		}
-
-		return request.getRemoteAddr(); // Fallback to direct IP
 	}
 
 	@Override

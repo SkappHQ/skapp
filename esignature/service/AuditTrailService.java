@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuditTrailService {
 
-	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, HttpServletRequest request);
+	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, String ipAddress);
 
 	ResponseEntityDto validateAuditTrailHash(Long auditTrailId);
 
