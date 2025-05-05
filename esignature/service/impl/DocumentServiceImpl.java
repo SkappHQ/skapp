@@ -458,6 +458,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
+		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
+
 		// Process complete document if all recipients have completed
 		if (!hasNonWaitingRecipient(document)) {
 			// Get first version of document
@@ -497,14 +499,12 @@ public class DocumentServiceImpl implements DocumentService {
 
 			sendDocumentCompletedEmailNotifications(envelope);
 
-			DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(finalVersion.getFilePath());
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
 
-		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
 
