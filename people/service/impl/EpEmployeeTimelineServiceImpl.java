@@ -556,14 +556,16 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(savedEmployee.getEmployeeId())
-			.ifPresent(employeePeriod -> {
-				addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
-						EpEmployeeTimelineType.PROBATION_START_DATE_ADDED, employeePeriod.getStartDate());
+		List<EmployeePeriod> employeePeriods = employeePeriodDao
+			.findEmployeePeriodByEmployee_EmployeeId(savedEmployee.getEmployeeId());
+		if (!employeePeriods.isEmpty()) {
+			EmployeePeriod employeePeriod = employeePeriods.getFirst();
+			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
+					EpEmployeeTimelineType.PROBATION_START_DATE_ADDED, employeePeriod.getStartDate());
 
-				addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
-						EpEmployeeTimelineType.PROBATION_END_DATE_ADDED, employeePeriod.getEndDate());
-			});
+			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
+					EpEmployeeTimelineType.PROBATION_END_DATE_ADDED, employeePeriod.getEndDate());
+		}
 	}
 
 	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee,
