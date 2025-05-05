@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -215,6 +216,24 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Successfully fetched {} audit trails for envelopeId: {}", responseDtoList.size(), envelopeId);
 
 		return new ResponseEntityDto(false, responseDtoList);
+	}
+
+	@Override
+	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action, AddressBook addressBook) {
+		AuditTrail auditTrail=new AuditTrail();
+
+		auditTrail.setEnvelope(envelope);
+		auditTrail.setRecipient(recipient);
+		auditTrail.setAddressBookUser(addressBook);
+		auditTrail.setAction(action);
+
+		auditTrail.setIsAuthorized(true);
+
+		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
+		auditTrail.setTimestamp(timestamp);
+		auditTrail.setHash(generateHashToValidate(auditTrail));
+
+		return auditTrail;
 	}
 
 	private String generateHashToValidate(AuditTrail auditTrail) {

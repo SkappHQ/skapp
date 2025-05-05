@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -30,6 +31,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDt
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
@@ -37,12 +39,14 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
+import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
@@ -113,7 +117,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final EnvelopeDao envelopeDao;
 
-	private final UserService userService;
+	private final AuditTrailDao auditTrailDao;
 
 	private final UserKeyService userKeyService;
 
@@ -132,6 +136,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignEmailService esignEmailService;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final AuditTrailService auditTrailService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -317,6 +323,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,null);
+		auditTrailDao.save(auditTrail);
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		sendDocumentCompletedEmailNotifications(envelope);
@@ -477,6 +486,9 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setStatus(EnvelopeStatus.COMPLETED);
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
+
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,null);
+			auditTrailDao.save(auditTrail);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
