@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
+import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -83,15 +84,18 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 
 		if (externalUserDto.getFirstName() != null) {
+			Validations.validateName(externalUserDto.getFirstName());
 			externalUser.setFirstName(externalUserDto.getFirstName());
 		}
 		if (externalUserDto.getLastName() != null) {
 			externalUser.setLastName(externalUserDto.getLastName());
 		}
 		if (externalUserDto.getEmail() != null) {
+			Validations.validateEmail(externalUserDto.getEmail());
 			externalUser.setEmail(externalUserDto.getEmail());
 		}
 		if (externalUserDto.getPhone() != null) {
+			Validations.validateContactNo(externalUserDto.getPhone());
 			externalUser.setPhone(externalUserDto.getPhone());
 		}
 
