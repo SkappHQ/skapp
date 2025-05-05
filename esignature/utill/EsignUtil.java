@@ -8,6 +8,16 @@ public class EsignUtil {
 
 	private static final String FILE_PREFIX = "processed_";
 
+	private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+
+	private static final String HEADER_CF_CONNECTING_IP = "CF-Connecting-IP";
+
+	private static final String HEADER_CF_CONNECTING_IPV6 = "CF-Connecting-IPv6";
+
+	private static final String HEADER_X_REAL_IP = "X-Real-IP";
+
+	private static final String UNKNOWN = "unknown";
+
 	private EsignUtil() {
 	}
 
@@ -16,15 +26,15 @@ public class EsignUtil {
 	}
 
 	public static String getClientIp(HttpServletRequest request) {
-		String ip = request.getHeader("X-Forwarded-For");
-		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-			// First IP in the list is the original client
-			return ip.split(",")[0].trim();
-		}
+		String[] headers = { HEADER_X_FORWARDED_FOR, HEADER_CF_CONNECTING_IP, HEADER_CF_CONNECTING_IPV6,
+				HEADER_X_REAL_IP };
 
-		ip = request.getHeader("X-Real-IP");
-		if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-			return ip;
+		for (String header : headers) {
+			String ip = request.getHeader(header);
+			if (ip != null && !ip.isEmpty() && !UNKNOWN.equalsIgnoreCase(ip)) {
+				// For HEADER_X_FORWARDED_FOR, return the first IP in the list
+				return header.equals(HEADER_X_FORWARDED_FOR) ? ip.split(",")[0].trim() : ip;
+			}
 		}
 
 		return request.getRemoteAddr(); // Fallback to direct IP

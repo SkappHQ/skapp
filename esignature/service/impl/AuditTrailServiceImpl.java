@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
@@ -25,7 +26,9 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +56,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final AddressBookDao addressBookDao;
 
+	RecipientService recipientService;
+
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
 
@@ -77,6 +82,12 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
 				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 			});
+			// Validate the recipient
+			if (!recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
+				log.error("Recipient with ID {} is not authorized to decline the envelope", recipient.getId());
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+
 		}
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);

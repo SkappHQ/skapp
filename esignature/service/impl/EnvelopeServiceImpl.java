@@ -860,21 +860,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		});
 
 		// Validate the recipient
-		if (recipient.getAddressBook().getType() == UserType.EXTERNAL
-				&& !recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
+		if (!recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
 			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-
-		else if (recipient.getAddressBook().getType() == UserType.INTERNAL) {
-			User currentUser = userService.getCurrentUser();
-			Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
-			AddressBook addressBook = addressBookOptional
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
-			if (!recipient.getAddressBook().getId().equals(addressBook.getId())) {
-				log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
 		}
 
 		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
