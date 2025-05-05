@@ -37,7 +37,7 @@ public class AuditTrailController {
 	@Operation(summary = "Validate audit trail hash by audit ID",
 			description = "Checks if the stored hash matches the recomputed hash for a specific audit trail entry.")
 	@GetMapping("/validate/{auditTrailId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> validateAuditTrailHash(@PathVariable Long auditTrailId) {
 		ResponseEntityDto response = auditTrailService.validateAuditTrailHash(auditTrailId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -46,7 +46,7 @@ public class AuditTrailController {
 	@Operation(summary = "Validate all audit trail records for an envelope",
 			description = "Checks integrity of all audit trail records for a given envelope.")
 	@GetMapping("/envelope/validate/{envelopeId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> validateEnvelopeAuditTrails(@PathVariable Long envelopeId) {
 		ResponseEntityDto response = auditTrailService.validateEnvelopeAuditTrails(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -55,7 +55,7 @@ public class AuditTrailController {
 	@Operation(summary = "Get a list of audit trail records",
 			description = "This endpoint fetches a list of audit trail events for a given envelope ID.")
 	@GetMapping("/envelope/{envelopeId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER', 'ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getAuditTrails(@PathVariable Long envelopeId) {
 		ResponseEntityDto response = auditTrailService.getAuditTrailsByEnvelopeId(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
