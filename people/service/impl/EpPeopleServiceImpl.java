@@ -16,6 +16,7 @@ import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -77,6 +78,7 @@ import com.skapp.enterprise.people.service.EpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -512,7 +514,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		List<EmployeePeriod> employeePeriod = employeePeriodDao
-			.findEmployeePeriodByEmployee_EmployeeId(currentEmployee.getEmployeeId());
+			.findEmployeePeriodByEmployee_EmployeeId(currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
 
 		if (!employeePeriod.isEmpty()) {
 			deepCopiedDto.setEmployeePeriod(new EmployeePeriod(employeePeriod.getFirst()));
