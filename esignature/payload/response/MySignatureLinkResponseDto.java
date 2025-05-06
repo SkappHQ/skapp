@@ -23,4 +23,8 @@ public class MySignatureLinkResponseDto {
 
 	private MySignatureMethods mySignatureMethod;
 
+	private String fontFamily;
+
+	private String fontColor;
+
 }

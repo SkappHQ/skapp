@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -25,10 +26,12 @@ import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
@@ -36,12 +39,14 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
+import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
@@ -112,7 +117,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final EnvelopeDao envelopeDao;
 
-	private final UserService userService;
+	private final AuditTrailDao auditTrailDao;
 
 	private final UserKeyService userKeyService;
 
@@ -131,6 +136,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignEmailService esignEmailService;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final AuditTrailService auditTrailService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -293,7 +300,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		return new ResponseEntityDto(false, "New Document version successfully created");
+		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
@@ -312,11 +323,19 @@ public class DocumentServiceImpl implements DocumentService {
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
+				null);
+		auditTrailDao.save(auditTrail);
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		sendDocumentCompletedEmailNotifications(envelope);
 
-		return new ResponseEntityDto(false, "Document completed successfully");
+		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private void sendDocumentCompletedEmailNotifications(Envelope envelope) {
@@ -401,7 +420,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
-		// sign auto complete fields
 		if (!CollectionUtils.isEmpty(documentSignDto.getFieldSignDtoList())) {
 			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
 					currentVersion);
@@ -441,6 +459,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
+		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
+
 		// Process complete document if all recipients have completed
 		if (!hasNonWaitingRecipient(document)) {
 			// Get first version of document
@@ -470,6 +490,10 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+					AuditAction.ENVELOPE_COMPLETED, null);
+			auditTrailDao.save(auditTrail);
+
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
@@ -477,10 +501,16 @@ public class DocumentServiceImpl implements DocumentService {
 
 			sendDocumentCompletedEmailNotifications(envelope);
 
-			return new ResponseEntityDto(false, "Document Signing completed");
+			documentCompleteResponseDto.setStatus(envelope.getStatus());
+			documentCompleteResponseDto.setAccessLink(finalVersion.getFilePath());
+
+			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
 
-		return new ResponseEntityDto(false, "New Document version successfully created");
+		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
+		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
 	private byte[] mergeFieldsToLatestDocument(List<DocumentVersionField> fieldVersionList, byte[] documentBytes,
@@ -584,16 +614,21 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH);
 		}
 
-		Field fieldData = fieldRepository.findById(documentFieldSignDto.getFieldSignDto().getFieldId())
+		Field field = fieldRepository.findById(documentFieldSignDto.getFieldSignDto().getFieldId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH));
 
-		if (fieldData.getStatus().equals(FieldStatus.COMPLETED)) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED);
-		}
+		validateInputField(documentFieldSignDto.getRecipientId(), documentFieldSignDto.getDocumentId(), field);
 
 		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)
 				&& document.getCurrentSignOderNumber() != recipient.getSigningOrder()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
+		}
+
+		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
+			Envelope envelope = updateDeclineStatus(document, recipient);
+			envelopeDao.save(envelope);
+			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+			return new ResponseEntityDto(false, "The document was declined");
 		}
 
 		int pageNumber = documentFieldSignDto.getFieldSignDto().getPageNumber();
@@ -609,7 +644,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		List<DocumentVersionField> documentVersionFieldList = new ArrayList<>();
 
-		DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, keyPairSign.getPrivate());
+		DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, keyPairSign.getPrivate(),
+				field);
 
 		documentVersionField.setDocumentVersion(currentVersion);
 
@@ -622,18 +658,25 @@ public class DocumentServiceImpl implements DocumentService {
 
 		documentVersionFieldRepository.saveAll(documentVersionFieldList);
 
-		Field field = documentVersionField.getField();
 		field.setStatus(FieldStatus.COMPLETED);
 		fieldRepository.save(field);
 
-		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
-			Envelope envelope = updateDeclineStatus(document, recipient);
-			envelopeDao.save(envelope);
-			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
-		}
-
 		return new ResponseEntityDto(false, "New Document Field Version successfully created");
 
+	}
+
+	private void validateInputField(Long recipientId, Long documentId, Field field) {
+		if (field.getStatus().equals(FieldStatus.COMPLETED)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_SIGN_COMPLETED);
+		}
+
+		if (!field.getRecipient().getId().equals(recipientId)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE);
+		}
+
+		if (!field.getDocument().getId().equals(documentId)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
+		}
 	}
 
 	private Envelope updateDeclineStatus(Document document, Recipient recipient) {
@@ -815,7 +858,7 @@ public class DocumentServiceImpl implements DocumentService {
 	private byte[] updateDocumentAfterFieldVerification(DocumentVersionField documentVersionField, KeyPair keyPairSign,
 			FieldSignDto fieldSignDto, byte[] documentBytes) {
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, APPROVE, DECLINE, NAME, EMAIL -> {
+			case DATE, NAME, EMAIL -> {
 				verifyTextField(documentVersionField.getValue(), keyPairSign.getPublic(),
 						documentVersionField.getFieldSignature());
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
@@ -839,6 +882,10 @@ public class DocumentServiceImpl implements DocumentService {
 							new String[] { documentVersionField.getValue() });
 				}
 			}
+			default -> {
+				log.info("No processing required for field type: {}", documentVersionField.getField().getType());
+				yield documentBytes;
+			}
 		};
 	}
 
@@ -853,6 +900,17 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Field> fields = new ArrayList<>();
 
 		documentSignDto.getFieldSignDtoList().forEach(fieldSignDto -> {
+			Field field = fieldRepository.findById(fieldSignDto.getFieldId())
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH));
+
+			validateInputField(documentSignDto.getRecipientId(), documentSignDto.getDocumentId(), field);
+
+			// Skip processing if DECLINE
+			if (fieldSignDto.getType().equals(FieldType.DECLINE)) {
+				field.setStatus(FieldStatus.SKIP);
+				fields.add(field);
+				return;
+			}
 
 			DocumentFieldSignDto documentFieldSignDto = new DocumentFieldSignDto();
 			documentFieldSignDto.setFieldSignDto(fieldSignDto);
@@ -860,30 +918,18 @@ public class DocumentServiceImpl implements DocumentService {
 			documentFieldSignDto.setEnvelopeId(documentSignDto.getEnvelopeId());
 			documentFieldSignDto.setRecipientId(documentSignDto.getRecipientId());
 
-			DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, privateKey);
+			DocumentVersionField documentVersionField = processFieldSign(documentFieldSignDto, privateKey, field);
 			documentVersionField.setDocumentVersion(currentVersion);
 
 			documentVersionFields.add(documentVersionField);
-
-			Field field = documentVersionField.getField();
 			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
 
-	private DocumentVersionField processFieldSign(DocumentFieldSignDto documentFieldSignDto, PrivateKey privateKey) {
-
-		Field field = fieldRepository.findById(documentFieldSignDto.getFieldSignDto().getFieldId())
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_ID_NOT_FOUND));
-
-		if (!field.getRecipient().getId().equals(documentFieldSignDto.getRecipientId())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE);
-		}
-
-		if (!field.getDocument().getId().equals(documentFieldSignDto.getDocumentId())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND);
-		}
+	private DocumentVersionField processFieldSign(DocumentFieldSignDto documentFieldSignDto, PrivateKey privateKey,
+			Field field) {
 
 		FieldSignDto fieldSignDto = documentFieldSignDto.getFieldSignDto();
 
