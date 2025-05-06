@@ -1,8 +1,11 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.model.Organization;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
-import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailButtonText;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.esignature.constant.EsignEmailTitleConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -15,21 +18,30 @@ import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Slf4j
 public class EsignEmailServiceImpl implements EsignEmailService {
 
+	public static final String ENVELOP_LINK = "/sign/sent/envelope/";
+
 	private final EsignMapper eSignMapper;
 
-	private final UserService userService;
-
 	private final EmailService emailService;
+
+	private final OrganizationDao organizationDao;
+
+	@Value("${app.protocol}")
+	private String protocol;
 
 	@Override
 	public void resendEnvelopeEmailToRecipient(@NotNull Envelope envelope, @NotNull Recipient recipient,
@@ -73,6 +85,15 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				concatDocumentNames(envelope.getDocuments()), null, null,
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null, envelope.getOwner().getName(),
 				envelope.getOwner().getEmail());
+
+		String tenant = TenantContext.getCurrentTenant();
+
+		senderEmailFields.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
+		Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
+		organization.ifPresent(value -> {
+			senderEmailFields.setDocumentAccessUrl(
+					protocol + "://" + tenant + "." + value.getAppUrl() + ENVELOP_LINK + envelope.getId());
+		});
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL, senderEmailFields,
