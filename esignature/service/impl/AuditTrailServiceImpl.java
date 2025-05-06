@@ -206,7 +206,11 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			responseDto.setHash(auditTrail.getHash());
 
-			if (auditTrail.getRecipient() == null) {
+			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
+				responseDto.setActionDoneByName("");
+				log.debug("Action done by: null (both recipient and address book user are null)");
+			}
+			else if (auditTrail.getRecipient() == null) {
 				responseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
 				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
