@@ -3,13 +3,13 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,13 +53,19 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final AddressBookDao addressBookDao;
 
+	private final RecipientService recipientService;
+
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
 
 	@Override
-	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto) {
+	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
+		if (!AuditAction.isEsignTokenAllowedAction(auditTrailDto.getAction())) {
+			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
+		}
 		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
 			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
 			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
@@ -70,6 +77,12 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
 				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 			});
+			// Validate the recipient
+			if (!recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
+				log.error("Recipient with ID {} is not authorized to decline the envelope", recipient.getId());
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+
 		}
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
@@ -98,14 +111,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		if (auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV4_VALIDATION_PATTERN)
-				|| auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV6_VALIDATION_PATTERN)) {
-			auditTrail.setIpAddress(auditTrailDto.getIpAddress());
-		}
-		else {
-			log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
-		}
+		auditTrail.setIpAddress(ipAddress);
+
 		auditTrail.setAction(auditTrailDto.getAction());
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -199,7 +206,11 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			responseDto.setHash(auditTrail.getHash());
 
-			if (auditTrail.getRecipient() == null) {
+			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
+				responseDto.setActionDoneByName("");
+				log.debug("Action done by: null (both recipient and address book user are null)");
+			}
+			else if (auditTrail.getRecipient() == null) {
 				responseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
 				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
