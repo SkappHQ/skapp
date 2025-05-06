@@ -3,7 +3,6 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -350,18 +349,30 @@ public class DocumentServiceImpl implements DocumentService {
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
 
-				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
-
-				DocumentLinkResponseDto documentLinkResponseDto = documentLinkService
-					.generateDocumentAccessUrl(documentAccessUrlDto);
-
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient,
-						documentLinkResponseDto.getUrl());
+				String accessUrl = getOrCreateAccessUrlForRecipient(envelope, mailRecipient,
+						envelope.getDocuments().getFirst().getId());
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, accessUrl);
 
 			}));
 
 		esignEmailService.sendCompleteEmailToSender(envelope);
+	}
+
+	private String getOrCreateAccessUrlForRecipient(Envelope envelope, Recipient recipient, Long documentId) {
+
+		DocumentAccessUrlDto accessUrlDto = new DocumentAccessUrlDto(documentId, recipient.getId(),
+				DocumentPermissionType.READ);
+
+		if (MemberRole.CC.equals(recipient.getMemberRole())) {
+			String existingUrl = documentLinkService.getActiveDocumentLinkForCCMemberRole(envelope, recipient);
+
+			if (existingUrl != null) {
+				return existingUrl;
+			}
+		}
+
+		DocumentLinkResponseDto responseDto = documentLinkService.generateDocumentAccessUrl(accessUrlDto);
+		return responseDto.getUrl();
 	}
 
 	private byte[] processDocumentFields(DocumentVersion currentVersion, KeyPair keyPairSign, byte[] documentBytes) {

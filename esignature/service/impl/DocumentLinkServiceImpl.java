@@ -195,6 +195,27 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
+	public String getActiveDocumentLinkForCCMemberRole(Envelope envelope, Recipient recipient) {
+
+		List<DocumentLink> activeLinks = documentLinkRepository.findByEnvelopeIdAndRecipientIdAndIsActiveTrue(envelope,
+				recipient);
+
+		if (activeLinks.isEmpty()) {
+			return null;
+		}
+
+		return activeLinks.stream().filter(Objects::nonNull).filter(link -> {
+			DocumentPermissionType permissionType = getPermissionTypeByToken(link.getToken());
+			return DocumentPermissionType.READ.equals(permissionType);
+		}).map(link -> {
+			String token = link.getToken();
+			String tenant = TenantContext.getCurrentTenant();
+			return generateAccessUrl(tenant, token);
+		}).findFirst().orElse(null);
+
+	}
+
+	@Override
 	public void resendDocumentAccessURL(ResendAccessUrlDto resendAccessUrlDto) {
 
 		log.info("resendDocumentAccessURL: process started");
