@@ -28,7 +28,6 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@AllArgsConstructor
 @Slf4j
 public class EsignEmailServiceImpl implements EsignEmailService {
 
