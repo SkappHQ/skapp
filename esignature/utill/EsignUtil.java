@@ -26,7 +26,7 @@ public class EsignUtil {
 	}
 
 	public static String getClientIp(HttpServletRequest request) {
-		String[] headers = { HEADER_X_FORWARDED_FOR, HEADER_CF_CONNECTING_IP, HEADER_CF_CONNECTING_IPV6,
+		String[] headers = { HEADER_CF_CONNECTING_IP, HEADER_CF_CONNECTING_IPV6, HEADER_X_FORWARDED_FOR,
 				HEADER_X_REAL_IP };
 
 		for (String header : headers) {

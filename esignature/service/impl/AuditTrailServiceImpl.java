@@ -62,9 +62,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
-		if (auditTrailDto.getAction() != AuditAction.ENVELOPE_VIEWED
-				&& auditTrailDto.getAction() != AuditAction.ENVELOPE_SIGNED
-				&& auditTrailDto.getAction() != AuditAction.ENVELOPE_DECLINED) {
+		if (!AuditAction.isAllowedAction(auditTrailDto.getAction())) {
 			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
 		}
