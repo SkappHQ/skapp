@@ -383,7 +383,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
-			recipient.setConsent(addressBook.getType().equals(UserType.INTERNAL));
+			recipient.setConsent(false);
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
