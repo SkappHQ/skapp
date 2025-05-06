@@ -27,7 +27,7 @@ public class AuditTrailController {
 
 	@Operation(summary = "Create an audit trail record",
 			description = "This endpoint logs an audit trail event for e-signature activities.")
-	@PostMapping
+	@PostMapping("/create")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
 			HttpServletRequest request) {
