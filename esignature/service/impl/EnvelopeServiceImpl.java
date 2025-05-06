@@ -58,10 +58,12 @@ import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
+import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
@@ -124,6 +126,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final AmazonS3Service amazonS3Service;
+
+	private final AuditTrailService auditTrailService;
 
 	private final DocumentRepository documentRepository;
 
@@ -215,7 +219,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Map<Long, Recipient> notifyMap = notifyRecipients.stream()
 			.collect(Collectors.toMap(Recipient::getId, Function.identity()));
 
-		for (Recipient recipient : savedEnvelope.getRecipients()) {
+		for (Recipient recipient : notifyRecipients) {
 			Recipient updated = notifyMap.get(recipient.getId());
 			if (updated != null) {
 				recipient.setReminderBatchId(updated.getReminderBatchId());
@@ -234,6 +238,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				}
 			}
 		}
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
+				envelope.getOwner());
+		auditTrailDao.save(auditTrail);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
 
@@ -751,6 +759,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_VOIDED,
+				addressBook);
+		auditTrailDao.save(auditTrail);
+
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
@@ -918,6 +933,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			});
 
 			envelopeDao.save(envelope);
+
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+					AuditAction.ENVELOPE_EXPIRED, null);
+			auditTrailDao.save(auditTrail);
+
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
 

@@ -46,7 +46,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final Color TEXT_COLOR = new Color(82, 82, 91);
 
-	private static final float FONT_SIZE = 5.0f;
+	private static final float FONT_SIZE = 8.0f;
 
 	private static final float CORNER_RADIUS = 5.0f;
 

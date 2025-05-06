@@ -11,4 +11,6 @@ public interface EsignConfigService {
 
 	ResponseEntityDto getEsignConfig();
 
+	ResponseEntityDto getExternalEsignConfig();
+
 }

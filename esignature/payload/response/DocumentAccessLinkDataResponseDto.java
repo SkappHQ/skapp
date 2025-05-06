@@ -18,6 +18,8 @@ public class DocumentAccessLinkDataResponseDto {
 
 	private Long envelopeId;
 
+	private String subject;
+
 	private EnvelopeStatus envelopeStatus;
 
 	private RecipientResponseDto recipientResponseDto;

@@ -295,6 +295,7 @@ public class RecipientServiceImpl implements RecipientService {
 				handleReminderScheduling(epEsignEnvelopeRecipientEmailDynamicFields, epEsignEmailDataDto, userEmail,
 						recipientUpdateDto);
 			}
+			recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
 		}
 
 		log.info("sendEnvelopeToRecipientEmail: execution ended");
@@ -337,7 +338,6 @@ public class RecipientServiceImpl implements RecipientService {
 		// Update recipient DTO with batch ID and scheduled status
 		recipientUpdateDto.setReminderBatchId(obtainedBatchId);
 		recipientUpdateDto.setReminderStatus(EmailReminderStatus.SCHEDULED);
-		recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
 	}
 
 	@Override
@@ -432,7 +432,7 @@ public class RecipientServiceImpl implements RecipientService {
 				EmailStatus.SENT);
 
 		// If no recipients found for the given Document Id, return an empty response
-		if (optionalRecipientList.isPresent()) {
+		if (optionalRecipientList.isPresent() && !optionalRecipientList.get().isEmpty()) {
 
 			List<Recipient> recipientList = optionalRecipientList.get();
 
@@ -488,10 +488,8 @@ public class RecipientServiceImpl implements RecipientService {
 			String documentName = concatDocumentNames(envelope.getDocuments());
 
 			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					userService.getCurrentUser().getEmployee().getFirstName() + " "
-							+ userService.getCurrentUser().getEmployee().getLastName(),
-					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-					declinedBy, title, null, senderName, senderEmail);
+					envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
+					documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();

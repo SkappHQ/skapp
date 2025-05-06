@@ -94,8 +94,9 @@ public class AddressBookServiceImpl implements AddressBookService {
 		User currentUser = userService.getCurrentUser();
 
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser).orElseThrow(() -> {
-			log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
+			log.error("addUpdateMySignatureLink: AddressBook not found for internal user id: {}",
+					currentUser.getUserId());
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
 		});
 
 		if (mySignatureLinkDto.getMySignatureLink() == null) {
@@ -104,6 +105,14 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		if (mySignatureLinkDto.getMySignatureMethod() == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY);
+		}
+
+		if (mySignatureLinkDto.getFontColor() != null) {
+			addressBook.setFontColor(mySignatureLinkDto.getFontColor());
+		}
+
+		if (mySignatureLinkDto.getFontFamily() != null) {
+			addressBook.setFontFamily(mySignatureLinkDto.getFontFamily());
 		}
 
 		addressBook.setMySignatureMethod(mySignatureLinkDto.getMySignatureMethod());
@@ -123,7 +132,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser).orElseThrow(() -> {
 			log.error("AddressBook not found for internal user id: {}", currentUser.getUserId());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
+			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
 		});
 
 		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper

@@ -531,6 +531,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		documentAccessLinkData.setEmail(recipient.getAddressBook().getEmail());
 		documentAccessLinkData.setEnvelopeId(envelope.getId());
 		documentAccessLinkData.setEnvelopeStatus(envelope.getStatus());
+		documentAccessLinkData.setSubject(envelope.getSubject());
 		documentAccessLinkData.setRecipientResponseDto(recipientResponseDto);
 		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
 		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);
