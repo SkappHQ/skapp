@@ -513,8 +513,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			deepCopiedDto.setEmployeeRole(new EmployeeRole(currentEmployee.getEmployeeRole()));
 		}
 
-		List<EmployeePeriod> employeePeriod = employeePeriodDao
-			.findEmployeePeriodByEmployee_EmployeeId(currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
+		List<EmployeePeriod> employeePeriod = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
+				currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
 
 		if (!employeePeriod.isEmpty()) {
 			deepCopiedDto.setEmployeePeriod(new EmployeePeriod(employeePeriod.getFirst()));

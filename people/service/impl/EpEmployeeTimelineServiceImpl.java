@@ -558,8 +558,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		List<EmployeePeriod> employeePeriods = employeePeriodDao
-			.findEmployeePeriodByEmployee_EmployeeId(savedEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
+		List<EmployeePeriod> employeePeriods = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
+				savedEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
 		if (!employeePeriods.isEmpty()) {
 			EmployeePeriod employeePeriod = employeePeriods.getFirst();
 			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
