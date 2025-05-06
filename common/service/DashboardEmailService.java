@@ -2,17 +2,12 @@ package com.skapp.enterprise.common.service;
 
 public interface DashboardEmailService {
 
-	void sendNewOrganizationCreatedEmail(String userEmail, String companyName, String tenantId, String signedUpDateTime,
-			String superAdminEmail, String contactNo);
+	void sendNewOrganizationCreatedEmail(String companyName, String tenantId, String superAdminEmail, String contactNo);
 
-	void sendNewOrganizationStartedSkappCoreFreeTrialEmail(String userEmail, String companyName, String tenantId,
-			String signedUpDateTime, String superAdminEmail, String contactNumber);
+	void sendNewOrganizationStartedSkappCoreFreeTrialEmail(String tenantId, String superAdminEmail);
 
-	void sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(String userEmail, String companyName,
-			String tenantId, String subscriptionStartDate, long userCount, String superAdminEmail,
-			String contactNumber);
+	void sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(String tenantId, String superAdminEmail);
 
-	void sendOrganizationCancelledSkappCoreSubscriptionEmail(String userEmail, String companyName, String tenantId,
-			String cancellationDateTime, long userCount, String superAdminEmail, String contactNumber);
+	void sendOrganizationCancelledSkappCoreSubscriptionEmail(String tenantId, String superAdminEmail);
 
 }

@@ -52,7 +52,6 @@ import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
-import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +60,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -112,9 +110,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
-
-	@Value("${organization.email}")
-	private String organizationEmail;
 
 	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
@@ -182,18 +177,13 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getOrganizationName(),
+					organizationDto.getCompanyDomain(), superAdmin.getEmail(), "");
+
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
-
-			String superAdminEmail = superAdmin.getEmail();
-
-			String signedUpDateTime = EpDateTimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
-
-			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationEmail,
-					organizationDto.getOrganizationName(), organizationDto.getCompanyDomain(), signedUpDateTime,
-					superAdminEmail, "");
 
 			return new ResponseEntityDto(false, responseDto);
 
