@@ -53,7 +53,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final AddressBookDao addressBookDao;
 
-	RecipientService recipientService;
+	private final RecipientService recipientService;
 
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
@@ -62,7 +62,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
-		if (!AuditAction.isAllowedAction(auditTrailDto.getAction())) {
+		if (!AuditAction.isEsignTokenAllowedAction(auditTrailDto.getAction())) {
 			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
 		}
