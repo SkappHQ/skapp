@@ -637,6 +637,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
 			Envelope envelope = updateDeclineStatus(document, recipient);
+
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
+					AuditAction.ENVELOPE_DECLINED, null);
+			auditTrailDao.save(auditTrail);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 			return new ResponseEntityDto(false, "The document was declined");
