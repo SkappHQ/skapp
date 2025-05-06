@@ -124,7 +124,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
 					contentStream.beginText();
-					PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+					PDType0Font font = loadFont(document);
+
 					contentStream.setFont(font, UUID_FONT_SIZE);
 
 					// take co-ordinated from bottom-left

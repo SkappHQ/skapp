@@ -277,7 +277,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes);
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient);
 		}
 
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
@@ -297,6 +297,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientRepository.saveAll(updatedRecipients);
 
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrailDao.save(auditTrail);
+
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
@@ -307,7 +311,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
-			byte[] latestDocumentBytes) {
+			byte[] latestDocumentBytes, Recipient recipient) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionRepository.save(documentVersion);
@@ -322,9 +326,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
+		List<AuditTrail> auditTrails = new ArrayList<>();
+
+		AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrails.add(auditTrailRecipient);
+
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
 				null);
-		auditTrailDao.save(auditTrail);
+		auditTrails.add(auditTrail);
+
+		auditTrailDao.saveAll(auditTrails);
 
 		recipientRepository.saveAll(envelope.getRecipients());
 
@@ -501,9 +513,17 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
+			List<AuditTrail> auditTrails = new ArrayList<>();
+
+			AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+					AuditAction.ENVELOPE_SIGNED, null);
+			auditTrails.add(auditTrailRecipient);
+
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
 					AuditAction.ENVELOPE_COMPLETED, null);
-			auditTrailDao.save(auditTrail);
+			auditTrails.add(auditTrail);
+
+			auditTrailDao.saveAll(auditTrails);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -517,6 +537,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
