@@ -69,6 +69,7 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
+import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -907,9 +908,26 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
+		envelope.getRecipients().forEach(recipientData -> {
+			if (recipientData.getId().equals(recipient.getId())) {
+				recipientData.setStatus(RecipientStatus.DECLINED);
+			}
+
+			if (envelope.getSignType().equals(SignType.PARALLEL)
+					&& recipientData.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+				recipientData.setStatus(RecipientStatus.EMPTY);
+			}
+
+			recipientData.setInboxStatus(InboxStatus.DECLINED);
+		});
+
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
-		recipientService.declineRecipientInEnvelope(recipient);
+		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
+				AuditAction.ENVELOPE_DECLINED, null);
+		auditTrailDao.save(auditTrail);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
