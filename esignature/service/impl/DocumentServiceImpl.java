@@ -3,7 +3,6 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -278,7 +277,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes);
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient);
 		}
 
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
@@ -298,6 +297,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientRepository.saveAll(updatedRecipients);
 
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrailDao.save(auditTrail);
+
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
@@ -308,7 +311,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
-			byte[] latestDocumentBytes) {
+			byte[] latestDocumentBytes, Recipient recipient) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionRepository.save(documentVersion);
@@ -323,9 +326,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
+		List<AuditTrail> auditTrails = new ArrayList<>();
+
+		AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrails.add(auditTrailRecipient);
+
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
 				null);
-		auditTrailDao.save(auditTrail);
+		auditTrails.add(auditTrail);
+
+		auditTrailDao.saveAll(auditTrails);
 
 		recipientRepository.saveAll(envelope.getRecipients());
 
@@ -350,18 +361,30 @@ public class DocumentServiceImpl implements DocumentService {
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
 
-				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
-
-				DocumentLinkResponseDto documentLinkResponseDto = documentLinkService
-					.generateDocumentAccessUrl(documentAccessUrlDto);
-
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient,
-						documentLinkResponseDto.getUrl());
+				String accessUrl = getOrCreateAccessUrlForRecipient(envelope, mailRecipient,
+						envelope.getDocuments().getFirst().getId());
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, accessUrl);
 
 			}));
 
 		esignEmailService.sendCompleteEmailToSender(envelope);
+	}
+
+	private String getOrCreateAccessUrlForRecipient(Envelope envelope, Recipient recipient, Long documentId) {
+
+		DocumentAccessUrlDto accessUrlDto = new DocumentAccessUrlDto(documentId, recipient.getId(),
+				DocumentPermissionType.READ);
+
+		if (MemberRole.CC.equals(recipient.getMemberRole())) {
+			String existingUrl = documentLinkService.getActiveDocumentLinkForCCMemberRole(envelope, recipient);
+
+			if (existingUrl != null) {
+				return existingUrl;
+			}
+		}
+
+		DocumentLinkResponseDto responseDto = documentLinkService.generateDocumentAccessUrl(accessUrlDto);
+		return responseDto.getUrl();
 	}
 
 	private byte[] processDocumentFields(DocumentVersion currentVersion, KeyPair keyPairSign, byte[] documentBytes) {
@@ -490,9 +513,17 @@ public class DocumentServiceImpl implements DocumentService {
 			envelope.setCompletedAt(getCurrentUtcDateTime());
 			envelopeDao.save(envelope);
 
+			List<AuditTrail> auditTrails = new ArrayList<>();
+
+			AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+					AuditAction.ENVELOPE_SIGNED, null);
+			auditTrails.add(auditTrailRecipient);
+
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
 					AuditAction.ENVELOPE_COMPLETED, null);
-			auditTrailDao.save(auditTrail);
+			auditTrails.add(auditTrail);
+
+			auditTrailDao.saveAll(auditTrails);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -506,6 +537,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
+				AuditAction.ENVELOPE_SIGNED, null);
+		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
@@ -626,6 +661,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (documentFieldSignDto.getFieldSignDto().getType().equals(FieldType.DECLINE)) {
 			Envelope envelope = updateDeclineStatus(document, recipient);
+
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
+					AuditAction.ENVELOPE_DECLINED, null);
+			auditTrailDao.save(auditTrail);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 			return new ResponseEntityDto(false, "The document was declined");

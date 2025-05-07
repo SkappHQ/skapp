@@ -17,6 +17,8 @@ public interface DocumentLinkService {
 	void validatePermissionForGenerateAccessUrl(Envelope envelope, Recipient recipient,
 			DocumentPermissionType requestedPermission);
 
+	String getActiveDocumentLinkForCCMemberRole(Envelope envelope, Recipient recipient);
+
 	void resendDocumentAccessURL(ResendAccessUrlDto resendAccessUrlDto);
 
 	DocumentLinkData createDocumentLinkData(DocumentAccessUrlDto documentAccessUrlDto, Recipient recipient,

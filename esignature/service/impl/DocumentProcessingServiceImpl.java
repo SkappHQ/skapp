@@ -86,7 +86,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
-				addTextField(field, contentStream, pageHeight);
+				addTextField(field, contentStream, pageHeight, document);
 			}
 
 			document.save(outputStream);
@@ -124,7 +124,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
 					contentStream.beginText();
-					PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+					PDType0Font font = loadFont(document);
+
 					contentStream.setFont(font, UUID_FONT_SIZE);
 
 					// take co-ordinated from bottom-left
@@ -186,12 +187,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return document.getPage(pageNumber - 1);
 	}
 
-	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight) {
+	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
 			float adjustedY = pageHeight - field.getYposition();
 			contentStream.beginText();
-			PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
 
 			// take co-ordinated from bottom-left
