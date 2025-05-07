@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 @Slf4j
@@ -56,7 +56,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String DEFAULT_LABEL = "Signed by";
 
-	private static final String FONT_PATH = "src/main/resources/enterprise/fonts/Poppins/Poppins-Regular.ttf";
+	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
 	private final MessageUtil messageUtil;
 
@@ -302,10 +302,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private PDType0Font loadFont(PDDocument document) {
-		try {
-			File fontFile = new File(FONT_PATH);
+		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(FONT_PATH)) {
 
-			return PDType0Font.load(document, fontFile);
+			if (fontStream == null) {
+				log.error("font file not found");
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
+			}
+
+			return PDType0Font.load(document, fontStream);
 		}
 		catch (IOException e) {
 			log.error("Error processing: loadFont : {}", e.getMessage());
