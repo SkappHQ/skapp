@@ -302,8 +302,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private PDType0Font loadFont(PDDocument document) {
-		try (InputStream fontStream = getClass().getClassLoader()
-				.getResourceAsStream(FONT_PATH)) {
+		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(FONT_PATH)) {
 
 			if (fontStream == null) {
 				log.error("font file not found");
@@ -311,7 +310,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			}
 
 			return PDType0Font.load(document, fontStream);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Error processing: loadFont : {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
 		}
