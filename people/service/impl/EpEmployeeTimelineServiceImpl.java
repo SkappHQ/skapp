@@ -31,6 +31,7 @@ import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
@@ -559,7 +560,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		}
 
 		List<EmployeePeriod> employeePeriods = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
-				savedEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
+				savedEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 		if (!employeePeriods.isEmpty()) {
 			EmployeePeriod employeePeriod = employeePeriods.getFirst();
 			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,

@@ -48,6 +48,7 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
@@ -514,7 +515,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		List<EmployeePeriod> employeePeriod = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
-				currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, PeopleConstants.ID));
+				currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 
 		if (!employeePeriod.isEmpty()) {
 			deepCopiedDto.setEmployeePeriod(new EmployeePeriod(employeePeriod.getFirst()));
