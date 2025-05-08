@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import lombok.Setter;
 @Setter
 public class ExternalPatchUserDto {
 
+	@NotBlank(message = "firstName cannot be blank")
 	private String firstName;
 
 	private String lastName;
