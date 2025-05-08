@@ -7,7 +7,6 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuditTrailService {
 
@@ -20,6 +19,6 @@ public interface AuditTrailService {
 	ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId);
 
 	AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook);
+			AddressBook addressBook, String ipAddress);
 
 }

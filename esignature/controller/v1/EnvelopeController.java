@@ -8,8 +8,10 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
+import com.skapp.enterprise.esignature.utill.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -138,8 +140,9 @@ public class EnvelopeController {
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> voidEnvelope(
 			@PathVariable @Schema(description = "ID of the envelope to void", example = "1") Long envelopeId,
-			@Valid @RequestBody VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
-		ResponseEntityDto response = envelopeService.voidEnvelope(envelopeId, voidEnvelopeRequestDto);
+			@Valid @RequestBody VoidEnvelopeRequestDto voidEnvelopeRequestDto, HttpServletRequest request) {
+		ResponseEntityDto response = envelopeService.voidEnvelope(envelopeId, voidEnvelopeRequestDto,
+				EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -149,8 +152,9 @@ public class EnvelopeController {
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelope(
 			@RequestParam @Schema(description = "ID of the recipient", example = "1") Long recipientId,
-			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
-		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto);
+			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto, HttpServletRequest request) {
+		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto,
+				EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
