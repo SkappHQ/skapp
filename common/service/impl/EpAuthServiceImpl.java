@@ -59,6 +59,7 @@ import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDt
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
@@ -137,6 +138,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final SecureRandom secureRandom = new SecureRandom();
 
+	private final ValidationService validationService;
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -161,7 +164,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			EpCommonEmailService emailService, RestTemplate restTemplate, GoogleTokenValidator googleTokenValidator,
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
-			TenantDao tenantDao) {
+			TenantDao tenantDao, ValidationService validationService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -184,6 +187,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.cacheService = cacheService;
 		this.recaptchaConfig = recaptchaConfig;
 		this.tenantDao = tenantDao;
+		this.validationService = validationService;
 	}
 
 	@Override
@@ -194,6 +198,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
 		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
+		validationService.validateBusinessEMail(superAdminSignUpRequestDto.getEmail());
 
 		SuperAdmin superAdmin = epCommonMapper.createSuperAdminRequestDtoToSuperAdmin(superAdminSignUpRequestDto);
 		superAdmin.setPassword(passwordEncoder.encode(superAdminSignUpRequestDto.getPassword()));
