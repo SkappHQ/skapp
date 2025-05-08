@@ -87,8 +87,6 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null, envelope.getOwner().getName(),
 				envelope.getOwner().getEmail());
 
-		String tenant = TenantContext.getCurrentTenant();
-
 		senderEmailFields.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 		Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
 		organization.ifPresent(value -> {

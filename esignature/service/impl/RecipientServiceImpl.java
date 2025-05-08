@@ -476,7 +476,6 @@ public class RecipientServiceImpl implements RecipientService {
 						epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
 			});
 
-			String tenant = TenantContext.getCurrentTenant();
 			// Send the mail to the Sender
 			String documentName = concatDocumentNames(envelope.getDocuments());
 
