@@ -9,7 +9,6 @@ import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.type.ManagerType;
-import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;

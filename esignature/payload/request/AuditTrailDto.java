@@ -1,7 +1,6 @@
 package com.skapp.enterprise.esignature.payload.request;
 
 import com.skapp.enterprise.esignature.type.AuditAction;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;

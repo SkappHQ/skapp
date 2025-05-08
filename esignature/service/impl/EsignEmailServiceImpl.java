@@ -17,7 +17,6 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEma
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
