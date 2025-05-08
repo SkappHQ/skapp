@@ -65,7 +65,7 @@ public class EpAuthController {
 
 	@PostMapping("/otp/resend")
 	public ResponseEntity<ResponseEntityDto> resendOTP() {
-		ResponseEntityDto response = epAuthService.resendOTP();
+		ResponseEntityDto response = epAuthService.generateAndSendOTP();
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
