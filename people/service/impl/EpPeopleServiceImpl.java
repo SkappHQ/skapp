@@ -16,6 +16,7 @@ import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -47,6 +48,7 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
@@ -77,6 +79,7 @@ import com.skapp.enterprise.people.service.EpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -511,9 +514,12 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			deepCopiedDto.setEmployeeRole(new EmployeeRole(currentEmployee.getEmployeeRole()));
 		}
 
-		Optional<EmployeePeriod> employeePeriod = employeePeriodDao
-			.findEmployeePeriodByEmployee_EmployeeId(currentEmployee.getEmployeeId());
-		employeePeriod.ifPresent(period -> deepCopiedDto.setEmployeePeriod(new EmployeePeriod(period)));
+		List<EmployeePeriod> employeePeriod = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
+				currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
+
+		if (!employeePeriod.isEmpty()) {
+			deepCopiedDto.setEmployeePeriod(new EmployeePeriod(employeePeriod.getFirst()));
+		}
 
 		return deepCopiedDto;
 	}
