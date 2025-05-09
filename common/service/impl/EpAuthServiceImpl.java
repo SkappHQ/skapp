@@ -439,7 +439,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
 		passwordResetOtp.setUserId(user.getUserId());
@@ -457,7 +457,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 		if (passwordResetOtp == null) {
