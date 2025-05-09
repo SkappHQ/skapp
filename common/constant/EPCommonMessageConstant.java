@@ -146,7 +146,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_DB_CREATION_FAILED("ep.common.error.db-creation-failed"),
 	COMMON_ERROR_DB_EXISTENCE_CHECK_FAILED("ep.common.error.db-existence-check-failed"),
 	EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND("ep.common.error.cached-uuid-not-found"),
-	EP_COMMON_ERROR_FAILED_TO_HASH("ep.common.error.failed-to-hash");
+	EP_COMMON_ERROR_FAILED_TO_HASH("ep.common.error.failed-to-hash"),
+	EP_COMMON_ERROR_OTP_STILL_VALID("ep.common.error.otp-still-valid"),;
 
 	private final String messageKey;
 
