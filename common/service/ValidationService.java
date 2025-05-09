@@ -9,6 +9,6 @@ public interface ValidationService {
 
 	ValidationResult validateEmail(String email);
 
-	void validateBusinessEMail(String email);
+	void checkBusinessEmailValidity(String email);
 
 }

@@ -282,7 +282,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void enterpriseValidations(String email) {
-		validationService.validateBusinessEMail(email);
+		validationService.checkBusinessEmailValidity(email);
 	}
 
 	private void deactivateEmployees(List<Employee> employees) {

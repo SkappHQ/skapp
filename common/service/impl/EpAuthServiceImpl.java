@@ -198,7 +198,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
 		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
-		validationService.validateBusinessEMail(superAdminSignUpRequestDto.getEmail());
+		validationService.checkBusinessEmailValidity(superAdminSignUpRequestDto.getEmail());
 
 		SuperAdmin superAdmin = epCommonMapper.createSuperAdminRequestDtoToSuperAdmin(superAdminSignUpRequestDto);
 		superAdmin.setPassword(passwordEncoder.encode(superAdminSignUpRequestDto.getPassword()));

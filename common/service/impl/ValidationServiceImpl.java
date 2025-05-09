@@ -44,7 +44,7 @@ public class ValidationServiceImpl implements ValidationService {
 	}
 
 	@Override
-	public void validateBusinessEMail(String email) {
+	public void checkBusinessEmailValidity(String email) {
 		ValidationResult validationResult = validateEmail(email);
 
 		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
