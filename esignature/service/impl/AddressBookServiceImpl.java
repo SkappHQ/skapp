@@ -77,10 +77,13 @@ public class AddressBookServiceImpl implements AddressBookService {
 	}
 
 	private void validateRequest(ExternalUserDto externalUserDto) {
+
 		Validations.validateEmail(externalUserDto.getEmail());
+		externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
 		Validations.validateName(externalUserDto.getFirstName());
 
 		if (externalUserDto.getLastName() != null && !externalUserDto.getLastName().isEmpty()) {
+			externalUserDto.setLastName(externalUserDto.getLastName().trim());
 			Validations.validateName(externalUserDto.getLastName());
 		}
 
