@@ -13,4 +13,6 @@ public interface EsignEmailService {
 
 	void sendNudgeEmail(Recipient recipient, String documentLinkUrl);
 
+	String getDocumentAccessUrlForSender(Envelope envelope);
+
 }
