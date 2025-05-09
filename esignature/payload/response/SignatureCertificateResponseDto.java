@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.response;
 
-import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import lombok.Getter;
 import lombok.Setter;

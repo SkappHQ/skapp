@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.component.EmailValidationProperties;
@@ -40,6 +41,15 @@ public class ValidationServiceImpl implements ValidationService {
 		}
 
 		return new ResponseEntityDto(validationResult.getIsValid(), emailValidationResultDto);
+	}
+
+	@Override
+	public void checkBusinessEmailValidity(String email) {
+		ValidationResult validationResult = validateEmail(email);
+
+		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL);
+		}
 	}
 
 	@Override
