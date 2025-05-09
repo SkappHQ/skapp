@@ -192,7 +192,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto) {
+	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -277,7 +277,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient);
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
 		}
 
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
@@ -298,7 +298,7 @@ public class DocumentServiceImpl implements DocumentService {
 		recipientRepository.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
@@ -311,7 +311,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
-			byte[] latestDocumentBytes, Recipient recipient) {
+			byte[] latestDocumentBytes, Recipient recipient, String ipAddress) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionRepository.save(documentVersion);
@@ -329,11 +329,11 @@ public class DocumentServiceImpl implements DocumentService {
 		List<AuditTrail> auditTrails = new ArrayList<>();
 
 		AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
 		auditTrails.add(auditTrailRecipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
-				null);
+				null, null);
 		auditTrails.add(auditTrail);
 
 		auditTrailDao.saveAll(auditTrails);
@@ -402,7 +402,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto) {
+	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -516,11 +516,11 @@ public class DocumentServiceImpl implements DocumentService {
 			List<AuditTrail> auditTrails = new ArrayList<>();
 
 			AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-					AuditAction.ENVELOPE_SIGNED, null);
+					AuditAction.ENVELOPE_SIGNED, null, ipAddress);
 			auditTrails.add(auditTrailRecipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_COMPLETED, null);
+					AuditAction.ENVELOPE_COMPLETED, null, null);
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
@@ -539,7 +539,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
@@ -603,7 +603,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto) {
+	public ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto, String ipAddress) {
 
 		String username = getCurrentUsername();
 
@@ -663,7 +663,7 @@ public class DocumentServiceImpl implements DocumentService {
 			Envelope envelope = updateDeclineStatus(document, recipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-					AuditAction.ENVELOPE_DECLINED, null);
+					AuditAction.ENVELOPE_DECLINED, null, ipAddress);
 			auditTrailDao.save(auditTrail);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());

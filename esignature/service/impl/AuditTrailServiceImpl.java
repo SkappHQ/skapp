@@ -231,13 +231,14 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	@Override
 	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook) {
+			AddressBook addressBook, String ipAddress) {
 		AuditTrail auditTrail = new AuditTrail();
 
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
+		auditTrail.setIpAddress(ipAddress);
 
 		auditTrail.setIsAuthorized(true);
 

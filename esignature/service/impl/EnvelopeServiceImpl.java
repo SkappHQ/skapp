@@ -241,7 +241,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
-				envelope.getOwner());
+				envelope.getOwner(), null);
 		auditTrailDao.save(auditTrail);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
@@ -727,7 +727,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto,
+			String ipAddress) {
 		log.info("voidEnvelope: execution started for envelope ID: {}", envelopeId);
 
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
@@ -764,7 +765,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_VOIDED,
-				addressBook);
+				addressBook, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
@@ -866,7 +867,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
+			String ipAddress) {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 
@@ -926,7 +928,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-				AuditAction.ENVELOPE_DECLINED, null);
+				AuditAction.ENVELOPE_DECLINED, null, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
@@ -953,7 +955,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelopeDao.save(envelope);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null);
+					AuditAction.ENVELOPE_EXPIRED, null, null);
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
