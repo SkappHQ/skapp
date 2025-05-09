@@ -149,8 +149,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${jwt.access-token.expiration-time}")
 	private Long jwtAccessTokenExpirationMs;
 
-	@Value("${otp.expiry-minutes}")
-	private int otpExpiryMinutes;
+	@Value("${otp.expiry-seconds}")
+	private int otpExpirySeconds;
 
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
 			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
@@ -237,19 +237,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto generateAndSendOTP() {
-		log.info("generateAndSendOTP: execution started");
-
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-		SuperAdmin superAdmin = superAdminDao.findById(userId).orElse(null);
-		if (superAdmin == null) {
-			log.warn("generateAndSendOTP: SuperAdmin not found");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND);
+		SuperAdmin superAdmin = superAdminDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+
+		Instant now = Instant.now();
+
+		if (superAdmin.getOtpExpiryTime() != null && now.isBefore(superAdmin.getOtpExpiryTime())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_STILL_VALID);
 		}
 
 		String otp = generateOTP();
-		log.info("generateAndSendOTP: OTP generated successfully");
-
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = now.plusSeconds(otpExpirySeconds);
 
 		try {
 			superAdmin.setVerificationCode(otp);
@@ -258,12 +257,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 			emailService.sendSuperAdminVerifyOtpEmail(superAdmin, otp);
 
-			log.info("generateAndSendOTP: OTP generated and sent successfully");
 			return new ResponseEntityDto(false,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND));
+					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND,
+							new String[] { superAdmin.getEmail() }));
 		}
 		catch (Exception e) {
-			log.error("generateAndSendOTP: Error in OTP generation or sending", e);
 			return new ResponseEntityDto(true,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_GENERATION_OR_SEND));
 		}
@@ -299,12 +297,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			log.error("verifyOTP: Error in OTP verification", e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
 		}
-	}
-
-	@Override
-	public ResponseEntityDto resendOTP() {
-		log.info("resendOTP: execution started");
-		return generateAndSendOTP();
 	}
 
 	@Override
@@ -452,7 +444,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds * 60L);
 
 		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
 		passwordResetOtp.setUserId(user.getUserId());
@@ -470,7 +462,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds * 60L);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 		if (passwordResetOtp == null) {
