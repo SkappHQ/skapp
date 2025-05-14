@@ -71,10 +71,31 @@ public class DocumentController {
 		ResponseEntityDto response;
 
 		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
-			response = documentService.sequentialSignDocument(documentSignDto);
+			response = documentService.sequentialSignDocument(documentSignDto, true);
 		}
 		else {
-			response = documentService.parallelSignDocument(documentSignDto);
+			response = documentService.parallelSignDocument(documentSignDto, true);
+		}
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Digitally Sign Document Internally",
+			description = "Signs a document internally using either sequential or parallel signing based on the envelope's sign type. "
+					+ "Ensures the integrity and authenticity of the signed document version.")
+	@PostMapping(value = "/internal/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signDocumentInternal(@Valid @RequestBody DocumentSignDto documentSignDto) {
+
+		Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
+
+		ResponseEntityDto response;
+
+		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
+			response = documentService.sequentialSignDocument(documentSignDto, false);
+		}
+		else {
+			response = documentService.parallelSignDocument(documentSignDto, false);
 		}
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);

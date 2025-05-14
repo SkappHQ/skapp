@@ -7,11 +7,10 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuditTrailService {
 
-	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, String ipAddress);
+	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, String ipAddress, boolean isDocAccess);
 
 	ResponseEntityDto validateAuditTrailHash(Long auditTrailId);
 

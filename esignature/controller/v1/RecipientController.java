@@ -42,4 +42,16 @@ public class RecipientController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@Operation(summary = "Update Recipient Consent Internally",
+			description = "Updates the consent status of a recipient for signing a document, performed by an internal user.")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	@PostMapping(value = "/internal/consent", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> updateInternalRecipientConsent(@RequestParam Long recipientId,
+			@RequestParam boolean isConsent) {
+
+		ResponseEntityDto response = recipientService.updateInternalRecipientConsent(recipientId, isConsent);
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 }

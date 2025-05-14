@@ -24,15 +24,13 @@ public interface RecipientService {
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
 
-	Recipient getRecipientFromToken();
-
 	ResponseEntityDto updateRecipientConsent(boolean isConsent);
 
 	ResponseEntityDto sendNudgeEmail(Long recipientId);
 
-	ResponseEntityDto declineRecipientInEnvelope(Recipient recipient);
-
 	ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId);
+
+	ResponseEntityDto updateInternalRecipientConsent(Long recipientId, boolean isConsent);
 
 	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
 	}

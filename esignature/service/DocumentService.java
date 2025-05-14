@@ -25,9 +25,9 @@ public interface DocumentService {
 
 	SignedDocumentResponse signFirstVersionDocument(Envelope envelope, DocumentSignDto documentSignDto, String uuid);
 
-	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto);
+	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess);
 
-	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto);
+	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess);
 
 	ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto);
 

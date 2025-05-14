@@ -42,7 +42,21 @@ public class DocumentLinkController {
 	public ResponseEntity<ResponseEntityDto> getRecipientDocumentData(@RequestParam Long documentId,
 			@RequestParam Long recipientId) {
 
-		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId);
+		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
+				true);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Data for Internal Document Access",
+			description = "Retrieves data required for signing or viewing a document internally for a given document and recipient, using internal access privileges.")
+	@PostMapping(value = "/internal/access", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getRecipientDocumentDataInternal(@RequestParam Long documentId,
+			@RequestParam Long recipientId) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
+				false);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
