@@ -119,7 +119,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_PAGE_NUMBER("ep.esign.error.invalid.page.number"),
 	ESIGN_ERROR_FAILED_TO_LOAD_FONT("ep.esign.error.failed.load.font"),
 	ESIGN_ERROR_UNAUTHORIZED_ACTION("ep.esign.error.unauthorized.action"),
-	ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS("ep.esign.error.cc.recipient.cannot.have.fields");
+	ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS("ep.esign.error.cc.recipient.cannot.have.fields"),
+	ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO("ep.esign.error.signing.order.cannot.be.zero"),
+	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order");
 
 	private final String messageKey;
 

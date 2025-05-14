@@ -88,10 +88,12 @@ import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -369,6 +371,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
+		validateSigningOrder(recipientDtos);
+
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND));
@@ -395,6 +399,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			return recipient;
 		}).toList();
+	}
+
+	private static void validateSigningOrder(List<RecipientDto> recipientDtos) {
+		// Validate signing orders are not zero and are unique
+		Set<Integer> signingOrders = new HashSet<>();
+		for (RecipientDto recipientDto : recipientDtos) {
+			if (recipientDto.getSigningOrder() <= 0) {
+				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO);
+			}
+
+			if (!signingOrders.add(recipientDto.getSigningOrder())) {
+				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DUPLICATE_SIGNING_ORDER);
+			}
+		}
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
