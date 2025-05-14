@@ -86,12 +86,12 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 
 		if (externalUserDto.getFirstName() != null) {
 			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-			EsignValidations.validateName(externalUserDto.getFirstName());
+			EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
 			externalUser.setFirstName(externalUserDto.getFirstName());
 		}
 		if (externalUserDto.getLastName() != null) {
 			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-			EsignValidations.validateName(externalUserDto.getLastName());
+			EsignValidations.validateExternalUserName(externalUserDto.getLastName());
 			externalUser.setLastName(externalUserDto.getLastName());
 		}
 		if (externalUserDto.getEmail() != null) {

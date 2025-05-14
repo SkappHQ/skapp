@@ -81,11 +81,11 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		Validations.validateEmail(externalUserDto.getEmail());
 		externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-		EsignValidations.validateName(externalUserDto.getFirstName());
+		EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
 
 		if (externalUserDto.getLastName() != null && !externalUserDto.getLastName().isEmpty()) {
 			externalUserDto.setLastName(externalUserDto.getLastName().trim());
-			EsignValidations.validateName(externalUserDto.getLastName());
+			EsignValidations.validateExternalUserName(externalUserDto.getLastName());
 		}
 
 		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {

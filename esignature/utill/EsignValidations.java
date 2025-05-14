@@ -12,7 +12,7 @@ import static com.skapp.community.common.util.Validation.NAME_REGEX;
 @UtilityClass
 public class EsignValidations {
 
-	public static void validateName(String name) {
+	public static void validateExternalUserName(String name) {
 		if (name != null && !name.trim().matches(NAME_REGEX))
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME);
 
