@@ -159,31 +159,21 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			return;
 		}
 
-		for (DocumentLink link : activeLinks) {
+		// Check if any non-expired link already has the requested permission
+		boolean hasExistingValidLink = activeLinks.stream()
+				.filter(link -> !link.isExpired())
+				.anyMatch(link -> {
+					DocumentPermissionType permissionType = link.getPermissionType();
 
-			if (link.isExpired()) {
-				continue;
-			}
+					return switch (requestedPermission) {
+						case READ -> permissionType.equals(DocumentPermissionType.READ);
+						case WRITE -> permissionType.equals(DocumentPermissionType.WRITE);
+						default -> throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNSUPPORTED_PERMISSION_TYPE);
+					};
+				});
 
-			DocumentPermissionType permissionType = link.getPermissionType();
-
-			boolean hasRequestedPermission = false;
-
-			switch (requestedPermission) {
-				case READ:
-					hasRequestedPermission = permissionType.equals(DocumentPermissionType.READ);
-					break;
-				case WRITE:
-					hasRequestedPermission = permissionType.equals(DocumentPermissionType.WRITE);
-					break;
-				default:
-					// Handle any future permission types
-					break;
-			}
-
-			if (hasRequestedPermission) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_DOCUMENT_ACCESS_LINK_AVAILABLE);
-			}
+		if (hasExistingValidLink) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VALID_DOCUMENT_ACCESS_LINK_AVAILABLE);
 		}
 	}
 
