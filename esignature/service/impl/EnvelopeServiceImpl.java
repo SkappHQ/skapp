@@ -405,7 +405,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		// Validate signing orders are not zero and are unique
 		Set<Integer> signingOrders = new HashSet<>();
 		for (RecipientDto recipientDto : recipientDtos) {
-			if (recipientDto.getSigningOrder() == 0) {
+			if (recipientDto.getSigningOrder() <= 0) {
 				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO);
 			}
 
