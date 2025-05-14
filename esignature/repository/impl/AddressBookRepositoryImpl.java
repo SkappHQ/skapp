@@ -7,6 +7,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.ExternalUser;
@@ -57,6 +58,13 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE)));
+
+		Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
+				cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
+		Predicate userStatusPredicate = cb.or(cb.isNull(internalUserJoin.get(User_.USER_ID)),
+				internalUserActivePredicate);
+		predicates.add(userStatusPredicate);
 
 		List<UserType> userTypes = addressBookFilterDto.getUserType();
 

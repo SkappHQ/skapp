@@ -88,10 +88,12 @@ import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -241,7 +243,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
-				envelope.getOwner());
+				envelope.getOwner(), null);
 		auditTrailDao.save(auditTrail);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
@@ -369,12 +371,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
+		validateSigningOrder(recipientDtos);
+
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND));
 
 			if (Boolean.FALSE.equals(addressBook.getIsActive())) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+			}
+
+			if (recipientDto.getMemberRole() == MemberRole.CC && !recipientDto.getFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
 
 			Recipient recipient = new Recipient();
@@ -391,6 +399,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			return recipient;
 		}).toList();
+	}
+
+	private static void validateSigningOrder(List<RecipientDto> recipientDtos) {
+		// Validate signing orders are not zero and are unique
+		Set<Integer> signingOrders = new HashSet<>();
+		for (RecipientDto recipientDto : recipientDtos) {
+			if (recipientDto.getSigningOrder() <= 0) {
+				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO);
+			}
+
+			if (!signingOrders.add(recipientDto.getSigningOrder())) {
+				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DUPLICATE_SIGNING_ORDER);
+			}
+		}
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
@@ -716,7 +738,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto) {
+	public ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto,
+			String ipAddress) {
 		log.info("voidEnvelope: execution started for envelope ID: {}", envelopeId);
 
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
@@ -753,7 +776,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_VOIDED,
-				addressBook);
+				addressBook, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
@@ -855,8 +878,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
-			boolean isDocAccess) {
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto, boolean isDocAccess,
+			String ipAddress) {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 
@@ -913,7 +936,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-				AuditAction.ENVELOPE_DECLINED, null);
+				AuditAction.ENVELOPE_DECLINED, null, ipAddress);
 		auditTrailDao.save(auditTrail);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
@@ -940,7 +963,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelopeDao.save(envelope);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null);
+					AuditAction.ENVELOPE_EXPIRED, null, null);
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());

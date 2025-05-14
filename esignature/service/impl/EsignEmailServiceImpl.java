@@ -17,7 +17,6 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEma
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +40,9 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 	@Value("${app.protocol}")
 	private String protocol;
+
+	@Value("${app.parent-domain}")
+	private String parentDomain;
 
 	@Override
 	public void resendEnvelopeEmailToRecipient(@NotNull Envelope envelope, @NotNull Recipient recipient,
@@ -85,13 +87,10 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE, null, envelope.getOwner().getName(),
 				envelope.getOwner().getEmail());
 
-		String tenant = TenantContext.getCurrentTenant();
-
 		senderEmailFields.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 		Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
 		organization.ifPresent(value -> {
-			senderEmailFields.setDocumentAccessUrl(
-					protocol + "://" + tenant + "." + value.getAppUrl() + ENVELOP_LINK + envelope.getId());
+			senderEmailFields.setDocumentAccessUrl(getDocumentAccessUrlForSender(envelope));
 		});
 
 		emailService.sendEmail(EpEmailMainTemplates.ESIGN_SENDER_TEMPLATE_V1,
@@ -206,6 +205,12 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 		}
 
 		return documentName;
+	}
+
+	@Override
+	public String getDocumentAccessUrlForSender(Envelope envelope) {
+		return protocol + "://" + TenantContext.getCurrentTenant() + "." + parentDomain + ENVELOP_LINK
+				+ envelope.getId();
 	}
 
 }

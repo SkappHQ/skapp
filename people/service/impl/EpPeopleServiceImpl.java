@@ -16,7 +16,6 @@ import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
-import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -56,6 +55,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
@@ -89,7 +89,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -138,6 +137,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final SpecialTenantConfig specialTenantConfig;
 
+	private final ValidationService validationService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
@@ -155,7 +156,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
-			SpecialTenantConfig specialTenantConfig) {
+			SpecialTenantConfig specialTenantConfig, ValidationService validationService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
@@ -181,6 +182,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epRolesService = epRolesService;
 		this.epAsyncEmployeeTimelineServiceImpl = epAsyncEmployeeTimelineServiceImpl;
 		this.specialTenantConfig = specialTenantConfig;
+		this.validationService = validationService;
 	}
 
 	@Override
@@ -276,6 +278,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED));
+	}
+
+	@Override
+	protected void enterpriseValidations(String email) {
+		validationService.checkBusinessEmailValidity(email);
 	}
 
 	private void deactivateEmployees(List<Employee> employees) {
