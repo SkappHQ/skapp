@@ -198,7 +198,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
-			String prefixPattern = keyword.toLowerCase() + "%";
+			String prefixPattern = "%" + keyword.toLowerCase() + "%";
 
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
 			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
@@ -216,7 +216,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Path<?> sortPath = envelopeRoot.get(filterDto.getSortKey().getSortField());
 
 		if (keyword != null && !keyword.isBlank()) {
-			String prefixPattern = keyword.toLowerCase() + "%";
+			String prefixPattern = "%" + keyword.toLowerCase() + "%";
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
 			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
 
