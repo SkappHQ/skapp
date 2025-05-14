@@ -77,32 +77,33 @@ public class DocumentController {
 			response = documentService.sequentialSignDocument(documentSignDto, true, EsignUtil.getClientIp(request));
 		}
 		else {
-			response = documentService.parallelSignDocument(documentSignDto,true,  EsignUtil.getClientIp(request));
+			response = documentService.parallelSignDocument(documentSignDto, true, EsignUtil.getClientIp(request));
 		}
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-    @Operation(summary = "Digitally Sign Document Internally",
-            description = "Signs a document internally using either sequential or parallel signing based on the envelope's sign type. "
-                    + "Ensures the integrity and authenticity of the signed document version.")
-    @PostMapping(value = "/internal/sign", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
-    public ResponseEntity<ResponseEntityDto> signDocumentInternal(@Valid @RequestBody DocumentSignDto documentSignDto) {
+	@Operation(summary = "Digitally Sign Document Internally",
+			description = "Signs a document internally using either sequential or parallel signing based on the envelope's sign type. "
+					+ "Ensures the integrity and authenticity of the signed document version.")
+	@PostMapping(value = "/internal/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signDocumentInternal(@Valid @RequestBody DocumentSignDto documentSignDto,
+			HttpServletRequest request) {
 
-        Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
+		Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
 
-        ResponseEntityDto response;
+		ResponseEntityDto response;
 
-        if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
-            response = documentService.sequentialSignDocument(documentSignDto, false);
-        }
-        else {
-            response = documentService.parallelSignDocument(documentSignDto, false);
-        }
+		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
+			response = documentService.sequentialSignDocument(documentSignDto, false, EsignUtil.getClientIp(request));
+		}
+		else {
+			response = documentService.parallelSignDocument(documentSignDto, false, EsignUtil.getClientIp(request));
+		}
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
 
 	@Operation(summary = "Sign a field of a recipient ",
 			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "

@@ -878,8 +878,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto, boolean isDocAccess,
-			String ipAddress) {
+	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
+			boolean isDocAccess, String ipAddress) {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 

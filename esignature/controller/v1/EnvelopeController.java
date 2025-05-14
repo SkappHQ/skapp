@@ -158,15 +158,16 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-    @Operation(summary = "Decline Envelope Internally",
-            description = "Allows an internal user to decline an envelope on behalf of a recipient. Records the reason for the decline and updates the envelope status accordingly.")
-    @PatchMapping(value = "/internal/decline", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
-    public ResponseEntity<ResponseEntityDto> declineEnvelopeInternal(
-            @RequestParam @Schema(description = "ID of the recipient", example = "1") Long recipientId,
-            @Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto) {
-        ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto, false);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+	@Operation(summary = "Decline Envelope Internally",
+			description = "Allows an internal user to decline an envelope on behalf of a recipient. Records the reason for the decline and updates the envelope status accordingly.")
+	@PatchMapping(value = "/internal/decline", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> declineEnvelopeInternal(
+			@RequestParam @Schema(description = "ID of the recipient", example = "1") Long recipientId,
+			@Valid @RequestBody DeclineEnvelopeRequestDto declineEnvelopeRequestDto, HttpServletRequest request) {
+		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto, false,
+				EsignUtil.getClientIp(request));
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
 
 }

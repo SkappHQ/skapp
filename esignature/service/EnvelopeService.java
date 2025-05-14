@@ -30,8 +30,8 @@ public interface EnvelopeService {
 
 	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto, String ipAddress);
 
-	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto, boolean isDocAccess,
-			String ipAddress);
+	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
+			boolean isDocAccess, String ipAddress);
 
 	ResponseEntityDto getSignatureCertificate(Long envelopeId);
 

@@ -195,7 +195,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto,boolean isDocAccess, String ipAddress) {
+	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
+			String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -404,7 +405,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,  String ipAddress) {
+	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
+			String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
