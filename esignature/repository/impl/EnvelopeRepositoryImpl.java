@@ -254,15 +254,42 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<Envelope> envelope = query.from(Envelope.class);
 
-		Join<Object, Object> owner = envelope.join("owner");
-		Join<Object, Object> internalUser = owner.join("internalUser");
+		Join<Envelope, AddressBook> owner = envelope.join(Envelope_.OWNER, JoinType.INNER);
+		Join<AddressBook, Object> internalUser = owner.join("internalUser", JoinType.INNER);
+		Join<Object, Object> employee = internalUser.join("employee", JoinType.LEFT);
+		Join<Object, Object> employeeRole = employee.join("employeeRole", JoinType.LEFT);
 
-		Predicate byUser = cb.equal(internalUser.get("userId"), userId);
+		// First determine if the user is an admin
+		CriteriaQuery<Boolean> isAdminQuery = cb.createQuery(Boolean.class);
+		Root<?> userRoot = isAdminQuery.from(internalUser.getJavaType());
+		Join<Object, Object> empJoin = userRoot.join("employee", JoinType.LEFT);
+		Join<Object, Object> roleJoin = empJoin.join("employeeRole", JoinType.LEFT);
+
+		Predicate isUserPredicate = cb.equal(userRoot.get("userId"), userId);
+		Predicate isAdminPredicate = cb.or(cb.equal(roleJoin.get("esignRole"), "ESIGN_ADMIN"),
+				cb.equal(roleJoin.get("isSuperAdmin"), true));
+
+		isAdminQuery.select(cb.literal(true)).where(cb.and(isUserPredicate, isAdminPredicate));
+
+		boolean isAdmin = !entityManager.createQuery(isAdminQuery).getResultList().isEmpty();
+
+		// Build query based on admin status
+		Predicate wherePredicate;
 		Predicate byStatus = envelope.get(Envelope_.STATUS)
 			.in(List.of(EnvelopeStatus.WAITING, EnvelopeStatus.COMPLETED));
 
+		if (isAdmin) {
+			// Admin sees all envelopes
+			wherePredicate = byStatus;
+		}
+		else {
+			// Regular user only sees their own envelopes
+			Predicate byUser = cb.equal(owner.get("internalUser").get("userId"), userId);
+			wherePredicate = cb.and(byUser, byStatus);
+		}
+
 		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
-			.where(cb.and(byUser, byStatus))
+			.where(wherePredicate)
 			.groupBy(envelope.get(Envelope_.STATUS));
 
 		List<Tuple> results = entityManager.createQuery(query).getResultList();
