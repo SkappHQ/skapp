@@ -553,8 +553,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (currentUser == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
+		boolean isAllCount = currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.ESIGN_ADMIN)
+				|| currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.SUPER_ADMIN);
 
-		Map<EnvelopeStatus, Long> envelopeStatusLongMap = envelopeDao.countEnvelopesByStatus(currentUser.getUserId());
+		Map<EnvelopeStatus, Long> envelopeStatusLongMap = envelopeDao.countEnvelopesByStatus(currentUser.getUserId(),
+				isAllCount);
 		log.info("getSenderKPI: execution ended");
 
 		return new ResponseEntityDto(false, envelopeStatusLongMap);
