@@ -30,9 +30,6 @@ public class EnvelopeDetailDto {
 	@NotBlank(message = "{validation.envelope.subject.not_blank}")
 	private String subject;
 
-	@NotNull(message = "{validation.envelope.expireAt.not_null}")
-	private LocalDateTime expireAt;
-
 	@NotEmpty(message = "{validation.envelope.documentIds.not_empty}")
 	private List<Long> documentIds;
 
