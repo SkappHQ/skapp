@@ -121,7 +121,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_UNAUTHORIZED_ACTION("ep.esign.error.unauthorized.action"),
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS("ep.esign.error.cc.recipient.cannot.have.fields"),
 	ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO("ep.esign.error.signing.order.cannot.be.zero"),
-	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order");
+	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order"),
+	ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN("ep.esign.error.cc.recipient.cannot.sign");
 
 	private final String messageKey;
 
