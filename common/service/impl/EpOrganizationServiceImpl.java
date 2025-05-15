@@ -12,10 +12,11 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.impl.OrganizationServiceImpl;
+import com.skapp.community.common.type.CacheKey;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -45,9 +46,11 @@ import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +58,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -91,10 +92,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final UserDao userDao;
 
-	private final JwtService jwtService;
-
-	private final UserDetailsService userDetailsService;
-
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
@@ -107,6 +104,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EsignConfigService esignConfigService;
 
+	private final CacheService cacheService;
+
+	private final DashboardEmailService dashboardEmailService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -116,9 +117,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
 			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, JwtService jwtService, UserDetailsService userDetailsService,
-			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			EpOrganizationConfigDao epOrganizationConfigDao, EsignConfigService esignConfigService) {
+			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
+			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
+			EsignConfigService esignConfigService, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -131,14 +133,14 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epCommonMapper = epCommonMapper;
 		this.superAdminDao = superAdminDao;
 		this.userDao = userDao;
-		this.jwtService = jwtService;
-		this.userDetailsService = userDetailsService;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
 		this.objectMapper = objectMapper;
 		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
+		this.cacheService = cacheService;
+		this.dashboardEmailService = dashboardEmailService;
 	}
 
 	@Override
@@ -154,6 +156,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
+
 			log.info("Tenant created for: {}", companyDomain);
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
@@ -174,7 +177,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, savedUser, companyDomain);
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getOrganizationName(),
+					organizationDto.getCompanyDomain(), superAdmin.getEmail(), "");
+
+			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
@@ -238,7 +244,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 				log.info("editCalendarConfigs: execution ended successfully");
 				return new ResponseEntityDto(false, newCalendar);
 			}
-
 			else {
 				return new ResponseEntityDto(false, existingOrganizationCalendar);
 			}
@@ -339,20 +344,20 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		return userSettings;
 	}
 
-	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, User user,
-			String companyDomain) {
+	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, String companyDomain) {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
-
-		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-		responseDto.setAccessToken(accessToken);
-		responseDto.setRefreshToken(refreshToken);
+		responseDto.setUuid(generateUUID(companyDomain));
 		responseDto.setTenantId(companyDomain);
 
 		return responseDto;
+	}
+
+	private String generateUUID(String companyDomain) {
+		String uuid = java.util.UUID.randomUUID().toString();
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
+		cacheService.put(cacheKey.format(companyDomain), uuid, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		return uuid;
 	}
 
 	private void cleanup(String companyDomain, boolean tenantCreated) {

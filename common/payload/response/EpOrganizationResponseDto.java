@@ -12,8 +12,6 @@ public class EpOrganizationResponseDto extends OrganizationDto {
 
 	private String tenantId;
 
-	private String accessToken;
-
-	private String refreshToken;
+	private String uuid;
 
 }

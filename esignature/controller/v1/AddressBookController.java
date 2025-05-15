@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalPatchUserDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
+import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.type.UserType;
@@ -84,6 +85,38 @@ public class AddressBookController {
 
 		ResponseEntityDto response = addressBookService.fetchAddressBookContactsByEmailPriority(keyWord);
 
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "get internal eSign senders by search keyword",
+			description = "This endpoint retrieves all internal eSign senders that match the provided keyword. "
+					+ "The search results are prioritized based on email, firstname, lastname.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN','ROLE_ESIGN_SENDER')")
+	@GetMapping(value = "/senders/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> searchInternalEsignSendersByEmailPriority(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.fetchAddressBookInternalEsignSenderByEmailPriority(keyWord);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Add or Update My Signature Link",
+			description = "This endpoint allows adding or updating the signature link for a specific address book entry.")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@PatchMapping("/my-signature-link")
+	public ResponseEntity<ResponseEntityDto> addUpdateMySignatureLink(
+			@Valid @RequestBody MySignatureLinkDto mySignatureLinkDto) {
+
+		ResponseEntityDto response = addressBookService.addUpdateMySignatureLink(mySignatureLinkDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Get My Signature Link",
+			description = "This endpoint retrieves the signature link for the current user's address book entry.")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@GetMapping("/my-signature-link")
+	public ResponseEntity<ResponseEntityDto> getMySignatureLink() {
+		ResponseEntityDto response = addressBookService.getMySignatureLink();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

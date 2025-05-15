@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.component.EmailValidationProperties;
@@ -19,11 +20,11 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ValidationServiceImpl implements ValidationService {
 
-	private final MessageUtil messageUtil;
-
 	private static final String CONFIG_PATH = "enterprise/validations/email-validation.yml";
 
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+
+	private final MessageUtil messageUtil;
 
 	private final EmailValidationProperties properties = YamlReader.read(CONFIG_PATH, EmailValidationProperties.class);
 
@@ -42,7 +43,17 @@ public class ValidationServiceImpl implements ValidationService {
 		return new ResponseEntityDto(validationResult.getIsValid(), emailValidationResultDto);
 	}
 
-	private ValidationResult validateEmail(String email) {
+	@Override
+	public void checkBusinessEmailValidity(String email) {
+		ValidationResult validationResult = validateEmail(email);
+
+		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL);
+		}
+	}
+
+	@Override
+	public ValidationResult validateEmail(String email) {
 		if (email == null || email.trim().isEmpty()) {
 			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_EMPTY_EMAIL.getMessageKey());
 		}

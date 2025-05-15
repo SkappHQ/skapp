@@ -16,6 +16,7 @@ import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.StripeWebhookService;
@@ -61,6 +62,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final StripeSubscriptionDao stripeSubscriptionDao;
 
 	private final SpecialTenantConfig specialTenantConfig;
+
+	private final DashboardEmailService dashboardEmailService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -169,6 +172,10 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenantDao.save(tenant);
 
 			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+
+			dashboardEmailService.sendNewOrganizationStartedSkappCoreFreeTrialEmail(tenantId,
+					tenant.getStripeSubscription().getLastModifiedByEmail());
+
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
 					SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -231,6 +238,11 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				tenantDao.save(currentTenant.getTenant());
 
 				tenantContext.setTenantAndSwitchSchema(currentTenant.getTenantName());
+
+				dashboardEmailService.sendTrialOrganizationConvertedToSkappCoreSubscriptionEmail(
+						currentTenant.getTenant().getTenantName(),
+						currentTenant.getTenant().getStripeSubscription().getLastModifiedByEmail());
+
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
 						SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -374,6 +386,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenantDao.save(tenant);
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
+
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
@@ -434,6 +447,13 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 						.equals(subscription.getCancellationDetails().getReason())) {
 
 				stripeEmailService.sendCancelSubscriptionEmail(customer.getEmail(), endDate, tenant.getTenantName());
+
+				tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+
+				dashboardEmailService.sendOrganizationCancelledSkappCoreSubscriptionEmail(tenant.getTenantName(),
+						tenant.getStripeSubscription().getLastModifiedByEmail());
+
+				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			}
 
 			log.info("handleSubscriptionUpdated: Successfully updated subscription details for tenant: {}",

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.User;
+import com.skapp.enterprise.esignature.type.MySignatureMethods;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +41,27 @@ public class AddressBook {
 	@Column(name = "is_active")
 	private Boolean isActive = true;
 
+	@Column(name = "my_signature_link")
+	private String mySignatureLink;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "my_signature_method")
+	private MySignatureMethods mySignatureMethod;
+
+	@Column(name = "font_family")
+	private String fontFamily;
+
+	@Column(name = "font_color")
+	private String fontColor;
+
+	public Long getUserId() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getId();
+		}
+
+		return internalUser.getUserId();
+	}
+
 	public String getName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName() + " " + externalUser.getLastName();
@@ -48,12 +70,36 @@ public class AddressBook {
 		return internalUser.getEmployee().getFirstName() + " " + internalUser.getEmployee().getLastName();
 	}
 
+	public String getFirstName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getFirstName();
+		}
+
+		return internalUser.getEmployee().getFirstName();
+	}
+
+	public String getLastName() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getLastName();
+		}
+
+		return internalUser.getEmployee().getLastName();
+	}
+
 	public String getEmail() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getEmail();
 		}
 
 		return internalUser.getEmail();
+	}
+
+	public String getPhone() {
+		if (type == UserType.EXTERNAL) {
+			return externalUser.getPhone();
+		}
+
+		return internalUser.getEmployee().getPhone();
 	}
 
 }

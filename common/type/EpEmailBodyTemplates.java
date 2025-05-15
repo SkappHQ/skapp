@@ -21,12 +21,22 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	ESIGNATURE_MODULE_ENVELOPE_VOIDED_SENDER_EMAIL("esignature-module-document-voided-sender"),
 	ESIGNATURE_MODULE_ENVELOPE_DECLINED_RECIEVER_EMAIL("esignature-module-document-declined-reciever"),
 	ESIGNATURE_MODULE_ENVELOPE_DECLINED_SENDER_EMAIL("esignature-module-document-declined-sender"),
+	ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER("esignature-module-document-signer-email-reminder"),
+	ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL("esignature-module-document-completed-receiver"),
+	ESIGNATURE_MODULE_ENVELOPE_COMPLETED_SENDER_EMAIL("esignature-module-document-completed-sender"),
 
 	// Payment Templates for stripe
-	PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL("payment-stripe-welcome-to-skapp-pro-free-trial"),
-	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_PRO(
-			"payment-stripe-congratulations-on-upgrading-to-skapp-pro"),
-	PAYMENT_STRIPE_CANCEL_SUBSCRIPTION("payment-stripe-cancel-subscription");
+	PAYMENT_STRIPE_WELCOME_TO_SKAPP_CORE_FREE_TRIAL("payment-stripe-welcome-to-skapp-core-free-trial"),
+	PAYMENT_STRIPE_CONGRATULATIONS_ON_UPGRADING_TO_SKAPP_CORE(
+			"payment-stripe-congratulations-on-upgrading-to-skapp-core"),
+	PAYMENT_STRIPE_CANCEL_SUBSCRIPTION("payment-stripe-cancel-subscription"),
+
+	// Dashboard Templates
+	DASHBOARD_MODULE_NEW_ORGANIZATION_CREATED("dashboard-module-new-organization-created"),
+	DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL(
+			"dashboard-module-new-organization-started-core-free-trial"),
+	DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE("dashboard-module-trial-organization-converted-to-core"),
+	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core");
 
 	private final String templateId;
 

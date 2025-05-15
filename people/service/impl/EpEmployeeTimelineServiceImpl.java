@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.mapper.EpPeopleMapper;
@@ -43,6 +44,7 @@ import com.skapp.enterprise.people.type.EpEmployeeTimelineType;
 import com.skapp.enterprise.people.type.EpTimelineModuleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -556,14 +558,16 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			return;
 		}
 
-		employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(savedEmployee.getEmployeeId())
-			.ifPresent(employeePeriod -> {
-				addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
-						EpEmployeeTimelineType.PROBATION_START_DATE_ADDED, employeePeriod.getStartDate());
+		List<EmployeePeriod> employeePeriods = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
+				savedEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
+		if (!employeePeriods.isEmpty()) {
+			EmployeePeriod employeePeriod = employeePeriods.getFirst();
+			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
+					EpEmployeeTimelineType.PROBATION_START_DATE_ADDED, employeePeriod.getStartDate());
 
-				addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
-						EpEmployeeTimelineType.PROBATION_END_DATE_ADDED, employeePeriod.getEndDate());
-			});
+			addProbationDateTimelineEntry(savedEmployee, employeeTimelines,
+					EpEmployeeTimelineType.PROBATION_END_DATE_ADDED, employeePeriod.getEndDate());
+		}
 	}
 
 	private void updateProbationDateTimeline(CurrentEmployeeDto currentEmployee,

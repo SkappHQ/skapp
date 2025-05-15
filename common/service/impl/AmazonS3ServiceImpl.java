@@ -23,9 +23,9 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 public class AmazonS3ServiceImpl implements AmazonS3Service {
 
-	private final S3Client s3Client;
-
 	private static final String CONTENT_TYPE = "application/pdf";
+
+	private final S3Client s3Client;
 
 	@Override
 	public InputStream downloadFile(String bucketName, String objectKey) {

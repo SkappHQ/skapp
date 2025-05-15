@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.mapper;
 import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
+import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.EsignConfig;
@@ -14,20 +16,32 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
+import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
+import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface EsignMapper {
@@ -100,5 +114,44 @@ public interface EsignMapper {
 	}
 
 	EnvelopeSettingResponseDto envelopeSettingToEnvelopeSettingResponseDto(EnvelopeSetting setting);
+
+	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
+
+	FieldResponseDto fieldToFieldResponseDto(Field field);
+
+	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
+
+	DocumentLinkResponseDto documentLinkToDocumentLinkResponseDto(DocumentLink documentLink);
+
+	@Mapping(source = "id", target = "envelopeId")
+	@Mapping(source = "owner", target = "sender")
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
+	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
+
+	@Mapping(source = "id", target = "id")
+	@Mapping(source = "userId", target = "userId")
+	@Mapping(source = "firstName", target = "firstName")
+	@Mapping(source = "lastName", target = "lastName")
+	@Mapping(source = "internalUser.employee.authPic", target = "profilePic")
+	AddressBookBasicResponseDto addressBookToAddressBookBasicResponseDto(AddressBook addressBook);
+
+	List<RecipientResponseDto> recipientToRecipinetResponseDtoList(List<Recipient> recipients);
+
+	@Mapping(source = "id", target = "envelopeId")
+	@Mapping(source = "owner", target = "sender")
+	@Mapping(target = "status", ignore = true)
+	@Mapping(target = "receivedDate", ignore = true)
+	@Mapping(source = "setting.expirationDate", target = "expiresAt")
+	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
+
+	@Mapping(source = "id", target = "addressBookId")
+	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
+
+	SignatureCertificateResponseDto envelopeToSignatureCertificateResponseDto(Envelope envelope);
+
+	@Mapping(source = "id", target = "fieldId")
+	@Mapping(source = "XPosition", target = "xposition")
+	@Mapping(source = "YPosition", target = "yposition")
+	FieldSignDto fieldToFieldSignDto(Field field);
 
 }

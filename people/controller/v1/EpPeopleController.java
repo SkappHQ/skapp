@@ -60,7 +60,7 @@ public class EpPeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_MANAGER')")
 	@GetMapping(value = "/managers-and-supervisors")
 	public ResponseEntity<ResponseEntityDto> getManagersAndSupervisorsFromEmployeeIds(
 			@RequestParam List<Long> employeeIds) {

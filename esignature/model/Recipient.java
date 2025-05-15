@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.model;
 
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.CascadeType;
@@ -19,6 +20,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -72,5 +74,18 @@ public class Recipient {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "email_status")
 	private EmailStatus emailStatus;
+
+	@Column(name = "received_at")
+	private LocalDateTime receivedAt;
+
+	@Column(name = "decline_reason")
+	private String declineReason;
+
+	@Column(name = "is_consent", nullable = false)
+	private boolean isConsent;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "inbox_status")
+	private InboxStatus inboxStatus;
 
 }

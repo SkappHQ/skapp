@@ -15,10 +15,12 @@ import com.skapp.community.common.payload.response.SignInResponseDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
+import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.impl.AuthServiceImpl;
+import com.skapp.community.common.type.CacheKey;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
@@ -44,17 +46,21 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.PasswordResetOtp;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
 import com.skapp.enterprise.common.payload.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
+import com.skapp.enterprise.common.payload.response.CodeChallengeResponseDto;
 import com.skapp.enterprise.common.payload.response.EpDomainAvailabilityResponseDto;
 import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDto;
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.service.ValidationService;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import io.jsonwebtoken.Jwts;
@@ -124,6 +130,16 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final EpCommonEmailService epCommonEmailService;
 
+	private final CacheService cacheService;
+
+	private final RecaptchaConfig recaptchaConfig;
+
+	private final TenantDao tenantDao;
+
+	private final SecureRandom secureRandom = new SecureRandom();
+
+	private final ValidationService validationService;
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -133,27 +149,22 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${jwt.access-token.expiration-time}")
 	private Long jwtAccessTokenExpirationMs;
 
-	@Value("${otp.expiry-minutes}")
-	private int otpExpiryMinutes;
-
-	private final RecaptchaConfig recaptchaConfig;
-
-	private final TenantDao tenantDao;
-
-	private final SecureRandom secureRandom = new SecureRandom();
+	@Value("${otp.expiry-seconds}")
+	private int otpExpirySeconds;
 
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
 			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
 			PasswordEncoder passwordEncoder, EmployeeRoleDao employeeRoleDao, CommonMapper commonMapper,
-			PeopleEmailService peopleEmailService, PeopleNotificationService peopleNotificationService,
+			UserService userService, PeopleEmailService peopleEmailService,
+			PeopleNotificationService peopleNotificationService,
 			EncryptionDecryptionService encryptionDecryptionService, ProfileActivator profileActivator,
 			PlatformTransactionManager transactionManager, BulkContextService bulkContextService,
 			MessageUtil messageUtil, RolesService rolesService, OrganizationConfigDao organizationConfigDao,
 			ObjectMapper objectMapper, EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao,
 			EpCommonEmailService emailService, RestTemplate restTemplate, GoogleTokenValidator googleTokenValidator,
-			UserDao userDao1, TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
-			EpCommonEmailService epCommonEmailService, RecaptchaConfig recaptchaConfig, TenantDao tenantDao,
-			UserService userService) {
+			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
+			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
+			TenantDao tenantDao, ValidationService validationService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -169,12 +180,14 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.googleTokenValidator = googleTokenValidator;
 		this.employeeDao = employeeDao;
 		this.peopleMapper = peopleMapper;
-		this.userDao = userDao1;
+		this.userDao = userDao;
 		this.tenantContext = tenantContext;
 		this.passwordResetOtpDao = passwordResetOtpDao;
 		this.epCommonEmailService = epCommonEmailService;
+		this.cacheService = cacheService;
 		this.recaptchaConfig = recaptchaConfig;
 		this.tenantDao = tenantDao;
+		this.validationService = validationService;
 	}
 
 	@Override
@@ -185,6 +198,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
 		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
+		validationService.checkBusinessEmailValidity(superAdminSignUpRequestDto.getEmail());
 
 		SuperAdmin superAdmin = epCommonMapper.createSuperAdminRequestDtoToSuperAdmin(superAdminSignUpRequestDto);
 		superAdmin.setPassword(passwordEncoder.encode(superAdminSignUpRequestDto.getPassword()));
@@ -223,19 +237,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto generateAndSendOTP() {
-		log.info("generateAndSendOTP: execution started");
-
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-		SuperAdmin superAdmin = superAdminDao.findById(userId).orElse(null);
-		if (superAdmin == null) {
-			log.warn("generateAndSendOTP: SuperAdmin not found");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND);
+		SuperAdmin superAdmin = superAdminDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+
+		Instant now = Instant.now();
+
+		if (superAdmin.getOtpExpiryTime() != null && now.isBefore(superAdmin.getOtpExpiryTime())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_STILL_VALID);
 		}
 
 		String otp = generateOTP();
-		log.info("generateAndSendOTP: OTP generated successfully");
-
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = now.plusSeconds(otpExpirySeconds);
 
 		try {
 			superAdmin.setVerificationCode(otp);
@@ -244,12 +257,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 			emailService.sendSuperAdminVerifyOtpEmail(superAdmin, otp);
 
-			log.info("generateAndSendOTP: OTP generated and sent successfully");
 			return new ResponseEntityDto(false,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND));
+					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND,
+							new String[] { superAdmin.getEmail() }));
 		}
 		catch (Exception e) {
-			log.error("generateAndSendOTP: Error in OTP generation or sending", e);
 			return new ResponseEntityDto(true,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_GENERATION_OR_SEND));
 		}
@@ -285,12 +297,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			log.error("verifyOTP: Error in OTP verification", e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
 		}
-	}
-
-	@Override
-	public ResponseEntityDto resendOTP() {
-		log.info("resendOTP: execution started");
-		return generateAndSendOTP();
 	}
 
 	@Override
@@ -438,7 +444,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
 		passwordResetOtp.setUserId(user.getUserId());
@@ -456,7 +462,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto) {
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpiryMinutes * 60L);
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 		if (passwordResetOtp == null) {
@@ -495,6 +501,41 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		}
 
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto validateCodeChallenge(CodeChallengeRequestDto codeChallengeRequestDto) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null || tenantId.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
+		}
+
+		User user = userDao.findAll().getFirst();
+		if (user == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
+		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
+
+		if (cachedUuid == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
+		}
+
+		cacheService.invalidate(cacheKey.format(tenantId));
+
+		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
+		codeChallengeResponseDto.setAccessToken(accessToken);
+		codeChallengeResponseDto.setRefreshToken(refreshToken);
+		codeChallengeResponseDto.setIsPasswordChangedForTheFirstTime(true);
+
+		return new ResponseEntityDto(false, codeChallengeResponseDto);
 	}
 
 	@Override

@@ -1,17 +1,20 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
+import com.skapp.enterprise.esignature.type.SignType;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface RecipientService {
 
-	ResponseEntityDto sendEmailToRecipient(Long recipientId, Long envelopeId);
+	DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType);
 
-	ResponseEntityDto sendEmailToNextRecipients(List<Recipient> nextRecipientList);
+	List<Recipient> sendEmailToNextRecipients(List<Recipient> nextRecipientList, Document document);
 
 	List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId);
 
@@ -20,5 +23,18 @@ public interface RecipientService {
 	ResponseEntityDto cancelEmailReminders(Long recipientId, Long envelopeId);
 
 	ResponseEntityDto sendEmailWhenDocumentIsVoidedOrDeclined(Long envelopeId);
+
+	Recipient getRecipientFromToken();
+
+	ResponseEntityDto updateRecipientConsent(boolean isConsent);
+
+	ResponseEntityDto sendNudgeEmail(Long recipientId);
+
+	ResponseEntityDto declineRecipientInEnvelope(Recipient recipient);
+
+	ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId);
+
+	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
+	}
 
 }
