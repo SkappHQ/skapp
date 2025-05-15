@@ -89,6 +89,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_RECIPIENT_MISMATCH("ep.esign.error.envelope.recipient.mis-match"),
 	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
+	ESIGN_ERROR_INVALID_ENVELOPE_ID("ep.esign.error.invalid.envelope.id"),
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
@@ -96,6 +97,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
 	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link"),
+	ESIGN_ERROR_DOC_ACCESS_TOKEN_NOT_FOUND("ep.esign.error.doc.access-token.not-found"),
 	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash"),
 	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
 	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
@@ -122,6 +124,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS("ep.esign.error.cc.recipient.cannot.have.fields"),
 	ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO("ep.esign.error.signing.order.cannot.be.zero"),
 	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order"),
+	ESIGN_ERROR_RECIPIENT_CONSENT_PROHIBITED("ep.esign.error.recipient.consent.prohibited"),
+	ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND("ep.esign.error.document.link.not-found"),
+	ESIGN_ERROR_UNSUPPORTED_PERMISSION_TYPE("ep.esign.error.unsupported.permission.type"),
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN("ep.esign.error.cc.recipient.cannot.sign");
 
 	private final String messageKey;

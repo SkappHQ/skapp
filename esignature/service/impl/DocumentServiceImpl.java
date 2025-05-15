@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
@@ -27,10 +28,10 @@ import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
@@ -118,6 +119,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AuditTrailDao auditTrailDao;
 
+	private final DocumentLinkRepository documentLinkRepository;
+
 	private final UserKeyService userKeyService;
 
 	private final AmazonS3Service amazonS3Service;
@@ -192,7 +195,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, String ipAddress) {
+	public ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
+			String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -211,7 +215,13 @@ public class DocumentServiceImpl implements DocumentService {
 		Document document = documentRepository.findById(documentSignDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
+		if (!document.getEnvelope().getId().equals(documentSignDto.getEnvelopeId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
+		}
+
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
+
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentSignDto.getDocumentId());
 
 		if (recipient.getMemberRole().equals(MemberRole.CC)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN);
@@ -361,34 +371,27 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 		}
 
+		List<DocumentLink> documentLinkList = new ArrayList<>();
+
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
 
-				String accessUrl = getOrCreateAccessUrlForRecipient(envelope, mailRecipient,
-						envelope.getDocuments().getFirst().getId());
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, accessUrl);
+				DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
+						documentAccessUrlDto, mailRecipient, envelope.getDocuments().getFirst(), envelope);
+
+				String documentAccessUrl = documentLinkData.accessUrl();
+
+				documentLinkList.add(documentLinkData.documentLink());
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
 
 			}));
 
+		documentLinkRepository.saveAll(documentLinkList);
+
 		esignEmailService.sendCompleteEmailToSender(envelope);
-	}
-
-	private String getOrCreateAccessUrlForRecipient(Envelope envelope, Recipient recipient, Long documentId) {
-
-		DocumentAccessUrlDto accessUrlDto = new DocumentAccessUrlDto(documentId, recipient.getId(),
-				DocumentPermissionType.READ);
-
-		if (MemberRole.CC.equals(recipient.getMemberRole())) {
-			String existingUrl = documentLinkService.getActiveDocumentLinkForCCMemberRole(envelope, recipient);
-
-			if (existingUrl != null) {
-				return existingUrl;
-			}
-		}
-
-		DocumentLinkResponseDto responseDto = documentLinkService.generateDocumentAccessUrl(accessUrlDto);
-		return responseDto.getUrl();
 	}
 
 	private byte[] processDocumentFields(DocumentVersion currentVersion, KeyPair keyPairSign, byte[] documentBytes) {
@@ -406,7 +409,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, String ipAddress) {
+	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
+			String ipAddress) {
 
 		validateDocumentSignRequest(documentSignDto);
 
@@ -424,6 +428,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentSignDto.getDocumentId());
+
 		if (recipient.getMemberRole().equals(MemberRole.CC)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN);
 		}
@@ -440,7 +446,7 @@ public class DocumentServiceImpl implements DocumentService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
 		if (!document.getEnvelope().getId().equals(documentSignDto.getEnvelopeId())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
 		}
 
 		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(), document.getId());

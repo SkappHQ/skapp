@@ -16,7 +16,7 @@ public enum AuditAction {
 	ENVELOPE_DOWNLOADED, // Envelope downloaded by recipient
 	ENVELOPE_COMPLETED;// Full envelope completion (all recipients finished)
 
-	public static boolean isEsignTokenAllowedAction(AuditAction action) {
+	public static boolean isWebAllowedAction(AuditAction action) {
 		return List.of(ENVELOPE_VIEWED, ENVELOPE_DOWNLOADED).contains(action);
 	}
 

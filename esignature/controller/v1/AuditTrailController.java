@@ -31,7 +31,19 @@ public class AuditTrailController {
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
 			HttpServletRequest request) {
-		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request));
+		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request),
+				true);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Log Internal Audit Trail Event",
+			description = "Creates an internal audit trail record for e-signature-related activities, capturing details such as action type, timestamp, and user IP.")
+	@PostMapping("/internal/create")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> createInternalAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
+			HttpServletRequest request) {
+		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request),
+				false);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

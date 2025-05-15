@@ -64,7 +64,6 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
@@ -76,7 +75,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,8 +139,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final OrganizationDao organizationDao;
 
 	private final ScheduleService scheduleService;
-
-	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	@Transactional
@@ -391,7 +387,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setStatus(recipientDto.getStatus());
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
-			recipient.setConsent(false);
+			recipient.setConsent(recipientDto.getMemberRole().equals(MemberRole.CC));
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
@@ -579,17 +575,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope);
-		Optional<Recipient> currentRecippientOptional = envelope.getRecipients()
-			.stream()
-			.filter(recipient -> recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)
-					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
-			.findFirst();
-
-		if (currentRecippientOptional.isPresent()) {
-			String accessUrl = documentLinkService.getRecipientDocumentAccessUrlByPermissionType(envelope,
-					currentRecippientOptional.get(), DocumentPermissionType.WRITE);
-			envelopeInboxInfoResponseDto.setEnvelopeAccessLink(accessUrl);
-		}
 
 		return new ResponseEntityDto(false, envelopeInboxInfoResponseDto);
 	}
@@ -652,8 +637,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
-			Recipient envelopRecipient = recipientService.getRecipientFromToken();
-			if (!envelopRecipient.getEnvelope().getId().equals(envelopeId)) {
+			Recipient envelopeRecipient = documentLinkService.getDocumentLinkFromToken().getRecipientId();
+			if (!envelopeRecipient.getEnvelope().getId().equals(envelopeId)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 		}
@@ -890,7 +875,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Transactional
 	@Override
 	public ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
-			String ipAddress) {
+			boolean isDocAccess, String ipAddress) {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 
@@ -899,19 +884,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 		});
 
-		// Validate the recipient
-		if (!recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
-			log.error("Recipient with ID {} is not authorized to decline the envelope", recipientId);
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, null);
 
 		Envelope envelope = envelopeDao.findById(recipient.getEnvelope().getId()).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found for recipient ID {}", recipient.getEnvelope().getId(),
 					recipientId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
+
 		if (EnvelopeStatus.isDeclineProhibitedFrom(envelope.getStatus())) {
-			log.warn("processVoidRequest: Void prohibited for envelope ID {} with status {}", envelope.getId(),
+			log.warn("declineEnvelope: decline prohibited for envelope ID {} with status {}", envelope.getId(),
 					envelope.getStatus());
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DECLINE_PROHIBITED_FROM_CURRENT_STATUS);
 		}
