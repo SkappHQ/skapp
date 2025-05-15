@@ -249,7 +249,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 	}
 
 	@Override
-	public Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId) {
+	public Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId, boolean isAllCount) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<Envelope> envelope = query.from(Envelope.class);
@@ -261,10 +261,11 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Predicate byStatus = envelope.get(Envelope_.STATUS)
 			.in(List.of(EnvelopeStatus.WAITING, EnvelopeStatus.COMPLETED));
 
-		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
-			.where(cb.and(byUser, byStatus))
-			.groupBy(envelope.get(Envelope_.STATUS));
+		Predicate wherePredicate = isAllCount ? byStatus : cb.and(byUser, byStatus);
 
+		query.multiselect(envelope.get(Envelope_.STATUS).alias("status"), cb.count(envelope).alias("count"))
+			.where(wherePredicate)
+			.groupBy(envelope.get(Envelope_.STATUS));
 		List<Tuple> results = entityManager.createQuery(query).getResultList();
 
 		Map<EnvelopeStatus, Long> resultMap = new EnumMap<>(EnvelopeStatus.class);
