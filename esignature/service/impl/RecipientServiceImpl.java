@@ -3,13 +3,10 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -29,7 +26,6 @@ import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
@@ -45,9 +41,6 @@ import com.skapp.enterprise.esignature.type.SignType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -64,10 +57,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RecipientServiceImpl implements RecipientService {
 
-	private final OrganizationDao organizationDao;
-
-	public static final String TOKEN = "token";
-
 	private final RecipientRepository recipientRepository;
 
 	private final EsignMapper eSignMapper;
@@ -79,8 +68,6 @@ public class RecipientServiceImpl implements RecipientService {
 	private final UserService userService;
 
 	private final DocumentLinkService documentLinkService;
-
-	private final DocumentLinkRepository documentLinkRepository;
 
 	private final EsignEmailService esignEmailService;
 

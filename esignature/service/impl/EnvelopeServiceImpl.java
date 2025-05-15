@@ -64,7 +64,6 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
@@ -76,7 +75,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,8 +139,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final OrganizationDao organizationDao;
 
 	private final ScheduleService scheduleService;
-
-	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	@Transactional
