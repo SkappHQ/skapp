@@ -10,7 +10,7 @@ import com.skapp.enterprise.esignature.type.AuditAction;
 
 public interface AuditTrailService {
 
-	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, String ipAddress);
+	ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDTO, String ipAddress, boolean isDocAccess);
 
 	ResponseEntityDto validateAuditTrailHash(Long auditTrailId);
 
