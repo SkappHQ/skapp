@@ -132,7 +132,9 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 
 		addressBook.setIsActive(false);
-		externalUser.setEmail(PeopleConstants.DELETED_PREFIX + externalUser.getEmail());
+		// Add timestamp to make the deleted email unique
+		String timestamp = String.valueOf(System.currentTimeMillis());
+		externalUser.setEmail(PeopleConstants.DELETED_PREFIX + timestamp + "_" + externalUser.getEmail());
 		log.info("deleteExternalUser: ExternalUser email updated to {}", externalUser.getEmail());
 		addressBookDao.save(addressBook);
 		externalUserRepository.save(externalUser);
