@@ -83,7 +83,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
@@ -151,7 +153,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBook addressBook = addressBookOptional.filter(AddressBook::getIsActive)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
-		if (envelopeDetailDto.getExpireAt().isBefore(LocalDateTime.now())) {
+		if (envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate().isBefore(LocalDate.now())
+				|| envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate().isEqual(LocalDate.now())) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_VALIDATION_ENTER_ENVELOPE_EXPIRES_AT);
 		}
 
@@ -250,7 +253,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
-						savedEnvelope.getExpireAt());
+						LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), LocalTime.MAX));
 			}
 		});
 
@@ -322,7 +325,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setStatus(EnvelopeStatus.WAITING);
 		envelope.setMessage(dto.getMessage());
 		envelope.setSubject(dto.getSubject());
-		envelope.setExpireAt(dto.getExpireAt());
 		envelope.setSentAt(LocalDateTime.now());
 		envelope.setSignType(dto.getSignType());
 		envelope.setUuid(generateAndEnsureUniqueUuidWithRetry());
