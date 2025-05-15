@@ -17,6 +17,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserRepository;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.utill.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -85,12 +86,12 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 
 		if (externalUserDto.getFirstName() != null) {
 			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-			Validations.validateName(externalUserDto.getFirstName());
+			EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
 			externalUser.setFirstName(externalUserDto.getFirstName());
 		}
 		if (externalUserDto.getLastName() != null) {
 			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-			Validations.validateName(externalUserDto.getLastName());
+			EsignValidations.validateExternalUserName(externalUserDto.getLastName());
 			externalUser.setLastName(externalUserDto.getLastName());
 		}
 		if (externalUserDto.getEmail() != null) {

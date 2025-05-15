@@ -26,4 +26,6 @@ public class EsignConstants {
 			"[\\p{L}\\p{M}\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF"
 					+ "\\u0100-\\u017F\\u0142\\u00AF\\u0027\\u002D\\u005E\\u0060\\u007E\\u00E7\\u00C7\\u02DA\\u00D8\\u00F8\\u0020]*";
 
+	public static final int ESIGN_MAX_NAME_LENGTH_EXTERNAL_USER = 100;
+
 }

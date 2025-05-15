@@ -22,6 +22,7 @@ import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.utill.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -80,11 +81,11 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		Validations.validateEmail(externalUserDto.getEmail());
 		externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
-		Validations.validateName(externalUserDto.getFirstName());
+		EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
 
 		if (externalUserDto.getLastName() != null && !externalUserDto.getLastName().isEmpty()) {
 			externalUserDto.setLastName(externalUserDto.getLastName().trim());
-			Validations.validateName(externalUserDto.getLastName());
+			EsignValidations.validateExternalUserName(externalUserDto.getLastName());
 		}
 
 		if (externalUserDto.getPhone() != null && !externalUserDto.getPhone().isEmpty()) {
