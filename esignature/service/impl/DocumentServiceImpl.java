@@ -223,6 +223,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentSignDto.getDocumentId());
 
+		if (recipient.getMemberRole().equals(MemberRole.CC)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN);
+		}
+
 		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
 		}
@@ -425,6 +429,10 @@ public class DocumentServiceImpl implements DocumentService {
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
 		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentSignDto.getDocumentId());
+
+		if (recipient.getMemberRole().equals(MemberRole.CC)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN);
+		}
 
 		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
