@@ -80,7 +80,6 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		if (keyword != null && !keyword.isBlank()) {
 			String subjectPattern = "%" + keyword.toLowerCase() + "%";
 			String emailPrefixPattern = keyword.toLowerCase() + "%";
-
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), subjectPattern);
 			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 
