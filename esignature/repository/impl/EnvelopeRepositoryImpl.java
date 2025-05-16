@@ -78,9 +78,11 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		// Sorting
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
-			String pattern = keyword.toLowerCase() + "%";
-			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), pattern);
-			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), pattern);
+			String subjectPattern = "%" + keyword.toLowerCase() + "%";
+			String emailPrefixPattern = keyword.toLowerCase() + "%";
+
+			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), subjectPattern);
+			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 
 			Order priorityOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(ownerEmailLike, 2).otherwise(3));
 			Order sortOrder = getSortOrder(cb, recipientJoin, filterDto);
@@ -122,9 +124,10 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
-			String pattern = keyword.toLowerCase() + "%";
+			String pattern = "%" + keyword.toLowerCase() + "%";
+			String emailPrefixPattern = keyword.toLowerCase() + "%";
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), pattern);
-			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), pattern);
+			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 			predicates.add(cb.or(subjectLike, cb.and(cb.isNotNull(ownerEmailPath), ownerEmailLike)));
 		}
 
@@ -199,9 +202,10 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
 			String prefixPattern = "%" + keyword.toLowerCase() + "%";
+			String emailPrefixPattern = keyword.toLowerCase() + "%";
 
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
-			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
+			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 			Predicate safeEmailLike = cb.and(cb.isNotNull(ownerEmailPath), emailLike);
 
 			predicates.add(cb.or(subjectLike, safeEmailLike));
@@ -217,8 +221,9 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		if (keyword != null && !keyword.isBlank()) {
 			String prefixPattern = "%" + keyword.toLowerCase() + "%";
+			String emailPrefixPattern = keyword.toLowerCase() + "%";
 			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.subject)), prefixPattern);
-			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), prefixPattern);
+			Predicate emailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 
 			Order matchOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(emailLike, 2).otherwise(3));
 
