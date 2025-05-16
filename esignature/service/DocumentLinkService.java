@@ -32,6 +32,8 @@ public interface DocumentLinkService {
 
 	void validateTokenFlows(boolean isDocAccess, Recipient recipient, Long documentId);
 
+	ResponseEntityDto getTokenFromUuid(String uuid, String state);
+
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}
 

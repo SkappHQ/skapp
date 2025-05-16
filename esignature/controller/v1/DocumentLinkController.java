@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,6 +58,17 @@ public class DocumentLinkController {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
 				false);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Exchange UUID for Document Access Token",
+			description = "Exchanges a decrypted and validated UUID for an internal access token used to sign or view a document. "
+					+ "The token is only returned if the document link is available.")
+	@GetMapping(value = "/exchange/token", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getTokenFromUuid(@RequestParam String uuid, @RequestParam String state) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getTokenFromUuid(uuid, state);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}

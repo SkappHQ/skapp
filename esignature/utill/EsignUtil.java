@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.utill;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public class EsignUtil {
@@ -38,6 +39,15 @@ public class EsignUtil {
 		}
 
 		return request.getRemoteAddr(); // Fallback to direct IP
+	}
+
+	public static String randomTimeStampUUId() {
+		UUID generatedUUID = UUID.randomUUID();
+
+		Instant now = Instant.now();
+		long epochMillis = now.toEpochMilli();
+
+		return generatedUUID + "_" + epochMillis;
 	}
 
 }
