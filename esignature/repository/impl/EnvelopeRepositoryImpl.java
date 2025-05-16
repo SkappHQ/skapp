@@ -78,9 +78,9 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		// Sorting
 		String keyword = filterDto.getSearchKeyword();
 		if (keyword != null && !keyword.isBlank()) {
-			String subjectPattern = "%" + keyword.toLowerCase() + "%";
+			String pattern = "%" + keyword.toLowerCase() + "%";
 			String emailPrefixPattern = keyword.toLowerCase() + "%";
-			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), subjectPattern);
+			Predicate subjectLike = cb.like(cb.lower(envelopeRoot.get(Envelope_.SUBJECT)), pattern);
 			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 
 			Order priorityOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(ownerEmailLike, 2).otherwise(3));
