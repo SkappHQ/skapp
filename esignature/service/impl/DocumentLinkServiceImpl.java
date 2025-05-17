@@ -270,12 +270,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		documentLink.setToken(token);
 
-		String tokenUUID = EsignUtil.randomTimeStampUUId();
+		String tokenUuid = generateAndEnsureUniqueUuidWithRetry();
 
-		String encryptedUUID = encryptionDecryptionService.encrypt(tokenUUID, encryptSecret);
-		documentLink.setUuid(encryptedUUID);
+		String encryptedUuid = encryptionDecryptionService.encrypt(tokenUuid, encryptSecret);
+		documentLink.setUuid(encryptedUuid);
 
-		String accessUrl = generateAccessUrl(tenantId, recipient.getId(), envelope.getUuid(), encryptedUUID);
+		String accessUrl = generateAccessUrl(tenantId, recipient.getId(), envelope.getUuid(), encryptedUuid);
 
 		return new DocumentLinkData(documentLink, accessUrl);
 	}
@@ -502,6 +502,27 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 	}
 
+	private String generateAndEnsureUniqueUuidWithRetry() {
+		int maxRetries = 3;
+		int retryCount = 0;
+
+		while (retryCount < maxRetries) {
+			String uuid = EsignUtil.randomTimeStampUUId();
+
+			if (!isDocumentLinkUuidExists(uuid)) {
+				return uuid;
+			}
+
+			retryCount++;
+		}
+
+		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_UUID_CREATION_FAIL);
+	}
+
+	public boolean isDocumentLinkUuidExists(String uuid) {
+		return documentLinkRepository.existsByUuid(uuid);
+	}
+
 	private String generateNewAccessUrl(DocumentLink documentLink) {
 		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(documentLink.getDocumentId().getId(),
 				documentLink.getRecipientId().getId(), documentLink.getPermissionType());
@@ -580,15 +601,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
-	private String generateAccessUrl(String tenantId, Long recipientId, String envelopeUUID, String token) {
+	private String generateAccessUrl(String tenantId, Long recipientId, String envelopeUuid, String uuid) {
 
-		String state = recipientId + EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + envelopeUUID
+		String state = recipientId + EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + envelopeUuid
 				+ EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + tenantId;
 
 		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
 
-		String encodedEncryptedUUID = URLEncoder.encode(token, StandardCharsets.UTF_8);
+		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
 
 		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + encodedEncryptedUUID + STATE_STRING
 				+ encodedState;

@@ -22,4 +22,6 @@ public interface DocumentLinkRepository extends JpaRepository<DocumentLink, Long
 
 	Optional<DocumentLink> findByUuid(String uuid);
 
+	boolean existsByUuid(String uuid);
+
 }
