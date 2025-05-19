@@ -51,6 +51,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -456,8 +457,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	public ResponseEntityDto getTokenFromUuid(@NotNull String uuid, @NotNull String state) {
 
 		try {
-			String decryptedUuid = encryptionDecryptionService.decrypt(uuid, encryptSecret);
-			String decryptedState = encryptionDecryptionService.decrypt(state, encryptSecret);
+			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
 
 			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
 					|| decryptedState.trim().isEmpty()) {
@@ -479,7 +483,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			tenantContext.setTenantAndSwitchSchema(tenantId);
 
-			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(uuid);
+			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
 
 			if (documentLinkOpt.isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
