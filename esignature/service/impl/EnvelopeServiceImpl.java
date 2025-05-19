@@ -98,7 +98,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
-import static com.skapp.enterprise.esignature.utill.EnvelopeUuidGenerator.generateUniqueEnvelopeId;
+import static com.skapp.enterprise.esignature.util.EnvelopeUuidGenerator.generateUniqueEnvelopeId;
 
 @Service
 @Slf4j

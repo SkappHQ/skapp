@@ -3,15 +3,14 @@ package com.skapp.enterprise.esignature.payload.request;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.utill.deserializer.EnvelopeStatusDeserializer;
-import com.skapp.enterprise.esignature.utill.deserializer.SignTypeDeserializer;
+import com.skapp.enterprise.esignature.util.deserializer.EnvelopeStatusDeserializer;
+import com.skapp.enterprise.esignature.util.deserializer.SignTypeDeserializer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter

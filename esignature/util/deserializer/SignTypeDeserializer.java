@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill.deserializer;
+package com.skapp.enterprise.esignature.util.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -7,18 +7,18 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
-import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.SignType;
 
 import java.io.IOException;
 
-public class RecipientMemberRoleDeserializer extends StdDeserializer<MemberRole> {
+public class SignTypeDeserializer extends StdDeserializer<SignType> {
 
-	public RecipientMemberRoleDeserializer() {
+	public SignTypeDeserializer() {
 		super(AccountStatus.class);
 	}
 
 	@Override
-	public MemberRole deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException, IOException {
+	public SignType deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException, IOException {
 		JsonNode jsonNode = p.readValueAsTree();
 		String value = jsonNode.asText().trim();
 
@@ -27,11 +27,10 @@ public class RecipientMemberRoleDeserializer extends StdDeserializer<MemberRole>
 		}
 
 		try {
-			return MemberRole.valueOf(value.toUpperCase());
+			return SignType.valueOf(value.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_RECIPIENT_MEMBER_ROLE_STATUS_INVALID,
-					new String[] { value });
+			throw new ModuleException(EsignMessageConstant.ESIGN_VALIDATION_SIGN_TYPE_INVALID, new String[] { value });
 		}
 	}
 

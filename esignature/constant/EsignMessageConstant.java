@@ -129,7 +129,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_UNSUPPORTED_PERMISSION_TYPE("ep.esign.error.unsupported.permission.type"),
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN("ep.esign.error.cc.recipient.cannot.sign"),
 	ESIGN_ERROR_INVALID_AES_KEY_SIZE("ep.esign.error.invalid.aes.key.size"),
-	ESIGN_ERROR_INVALID_AES_KEY_FORMAT("ep.esign.error.invalid.aes.key.format");
+	ESIGN_ERROR_INVALID_AES_KEY_FORMAT("ep.esign.error.invalid.aes.key.format"),
+	FAILED_TO_GENERATE_EC_KEY_PAIR("ep.esign.error.failed.generate.ec.key-pair");
 
 	private final String messageKey;
 

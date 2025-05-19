@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill;
+package com.skapp.enterprise.esignature.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 

@@ -1,8 +1,7 @@
-package com.skapp.enterprise.esignature.utill;
+package com.skapp.enterprise.esignature.util;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.util.UUID;
 
 public class EnvelopeUuidGenerator {
