@@ -41,7 +41,7 @@ public class EsignUtil {
 		return request.getRemoteAddr(); // Fallback to direct IP
 	}
 
-	public static String randomTimeStampUUId() {
+	public static String generateTimestampUUID() {
 		UUID generatedUUID = UUID.randomUUID();
 
 		Instant now = Instant.now();

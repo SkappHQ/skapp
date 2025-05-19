@@ -507,7 +507,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		int retryCount = 0;
 
 		while (retryCount < maxRetries) {
-			String uuid = EsignUtil.randomTimeStampUUId();
+			String uuid = EsignUtil.generateTimestampUUID();
 
 			if (!isDocumentLinkUuidExists(uuid)) {
 				return uuid;
