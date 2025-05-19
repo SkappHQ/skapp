@@ -488,7 +488,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			DocumentLink documentLink = documentLinkOpt.get();
 
 			if (!documentLink.getRecipientId().getId().equals(recipientId)
-					&& !documentLink.getEnvelopeId().getUuid().equals(uuid)) {
+					&& !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 			}
 
