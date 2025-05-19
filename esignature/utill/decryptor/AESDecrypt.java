@@ -17,6 +17,10 @@ public class AESDecrypt {
 	}
 
 	public static byte[] decryptAES(String encryptedPrivateKeyBase64, SecretKey aesKey, byte[] iv) {
+		if (encryptedPrivateKeyBase64 == null || aesKey == null || iv == null || iv.length != 12) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION, null);
+		}
+
 		try {
 			byte[] encryptedPrivateKey = Base64.getDecoder().decode(encryptedPrivateKeyBase64);
 
@@ -27,10 +31,9 @@ public class AESDecrypt {
 			return cipher.doFinal(encryptedPrivateKey);
 		}
 		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION,
-					new String[] { e.getMessage() });
+			// Avoid leaking sensitive exception information
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION, null);
 		}
-
 	}
 
 }

@@ -18,6 +18,10 @@ public class AESEncrypt {
 	}
 
 	public static String encryptPrivateKey(PrivateKey privateKey, SecretKey aesKey, byte[] iv) {
+		if (privateKey == null || aesKey == null || iv == null || iv.length != 12) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
+		}
+
 		try {
 			byte[] privateKeyBytes = privateKey.getEncoded();
 
@@ -28,11 +32,10 @@ public class AESEncrypt {
 			byte[] encryptedData = cipher.doFinal(privateKeyBytes);
 
 			return Base64.getEncoder().encodeToString(encryptedData);
-
 		}
 		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION,
-					new String[] { e.getMessage() });
+			// Avoid leaking sensitive exception information
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
 		}
 	}
 

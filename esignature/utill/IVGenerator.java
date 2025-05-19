@@ -4,14 +4,20 @@ import java.security.SecureRandom;
 
 public class IVGenerator {
 
-	private static final int IV_LENGTH = 16; // 128-bit authentication tag
+	private static final int IV_LENGTH = 12; // 12 bytes (96 bits) for AES-GCM
+
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();// static to
+																			// reuse the
+																			// instance
+																			// for better
+																			// performance
 
 	private IVGenerator() {
 	}
 
 	public static byte[] generateIV() {
 		byte[] iv = new byte[IV_LENGTH];
-		new SecureRandom().nextBytes(iv);
+		SECURE_RANDOM.nextBytes(iv);
 		return iv;
 	}
 

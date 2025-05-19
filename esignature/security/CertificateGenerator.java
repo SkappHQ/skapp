@@ -55,6 +55,13 @@ public final class CertificateGenerator {
 
 	private static final String DEPARTMENT = "Digital Signatures";
 
+	// Make these configurable via application properties
+	// private static final String OCSP_URL = System.getProperty("certificate.ocsp.url",
+	// "https://ocsp.organization.com");
+	//
+	// private static final String EMAIL_DOMAIN =
+	// System.getProperty("certificate.email.domain", "@organization.com");
+
 	private static final String OCSP_URL = "https://ocsp.organization.com";
 
 	private static final String EMAIL_DOMAIN = "@organization.com";
@@ -114,8 +121,13 @@ public final class CertificateGenerator {
 	private static void addCertificateExtensions(X509v3CertificateBuilder certBuilder, KeyPair keyPair,
 			BigInteger serialNumber) {
 		try {
-
 			SubjectPublicKeyInfo pubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+
+			// Validate key strength
+			if (keyPair.getPublic().getEncoded().length * 8 < 2048) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+						new String[] { "Key strength below 2048 bits" });
+			}
 
 			byte[] skiBytes = calculateIdentifier(pubKeyInfo);
 
@@ -141,11 +153,21 @@ public final class CertificateGenerator {
 			addOCSPAccessInfo(certBuilder);
 
 		}
+		catch (NoSuchAlgorithmException e) {
+			log.error("Algorithm error during certificate generation", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+					new String[] { "Cryptographic algorithm error: " + e.getMessage() });
+		}
+		catch (CertIOException e) {
+			log.error("Certificate extension error", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+					new String[] { "Failed to add certificate extensions: " + e.getMessage() });
+		}
 		catch (Exception e) {
+			log.error("Unexpected error during certificate generation", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
 					new String[] { e.getMessage() });
 		}
-
 	}
 
 	private static void addAuthorityKeyIdentifier(X509v3CertificateBuilder certBuilder, byte[] skiBytes,

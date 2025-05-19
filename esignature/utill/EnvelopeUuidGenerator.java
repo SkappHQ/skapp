@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.utill;
 
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,15 +21,18 @@ public class EnvelopeUuidGenerator {
 	}
 
 	public static String generateUniqueEnvelopeId() {
-		long timestamp = Instant.now().toEpochMilli();
+		// Use SecureRandom instead of timestamp for better unpredictability
+		SecureRandom secureRandom = new SecureRandom();
+		byte[] randomBytes = new byte[16];
+		secureRandom.nextBytes(randomBytes);
 
 		UUID uuid = UUID.randomUUID();
 		long mostSigBits = uuid.getMostSignificantBits();
 		long leastSigBits = uuid.getLeastSignificantBits();
 
-		// Combine timestamp with UUID bits for enhanced uniqueness
-		long combinedBits1 = mostSigBits ^ (timestamp << 32);
-		long combinedBits2 = leastSigBits ^ timestamp;
+		// XOR with secure random bytes instead of timestamp
+		long combinedBits1 = mostSigBits ^ ByteBuffer.wrap(randomBytes, 0, 8).getLong();
+		long combinedBits2 = leastSigBits ^ ByteBuffer.wrap(randomBytes, 8, 8).getLong();
 
 		StringBuilder result = new StringBuilder(TOTAL_ID_LENGTH + NUM_SECTIONS - 1);
 
@@ -38,10 +43,11 @@ public class EnvelopeUuidGenerator {
 
 			int index;
 			if (i < TOTAL_ID_LENGTH / 2) {
-				index = (int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length;
+				index = Math.abs((int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length);
 			}
 			else {
-				index = (int) ((combinedBits2 >> ((i - TOTAL_ID_LENGTH / 2) * 3)) & 0x3F) % ALLOWED_CHARS.length;
+				index = Math
+					.abs((int) ((combinedBits2 >> ((i - TOTAL_ID_LENGTH / 2) * 3)) & 0x3F) % ALLOWED_CHARS.length);
 			}
 
 			result.append(ALLOWED_CHARS[index]);
