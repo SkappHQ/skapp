@@ -90,7 +90,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
-	public static final String STATE_STRING = "&&state=";
+	public static final String STATE_STRING = "&state=";
 
 	private final DocumentLinkRepository documentLinkRepository;
 
