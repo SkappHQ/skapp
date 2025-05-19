@@ -17,6 +17,7 @@ public class AESEncrypt {
 	private AESEncrypt() {
 	}
 
+
 	public static String encryptPrivateKey(PrivateKey privateKey, SecretKey aesKey, byte[] iv) {
 		if (privateKey == null || aesKey == null || iv == null || iv.length != 12) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
