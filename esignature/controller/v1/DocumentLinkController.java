@@ -65,7 +65,7 @@ public class DocumentLinkController {
 	@Operation(summary = "Exchange UUID for Document Access Token",
 			description = "Exchanges a decrypted and validated UUID for an internal access token used to sign or view a document. "
 					+ "The token is only returned if the document link is available.")
-	@GetMapping(value = "/exchange/token", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/token-exchange", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getTokenFromUuid(@RequestParam String uuid, @RequestParam String state) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.getTokenFromUuid(uuid, state);
