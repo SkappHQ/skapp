@@ -102,8 +102,8 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 
-			boolean isAccessCheck = request.getRequestURI().equals(DOCUMENT_LINK_ACCESS_URL);
-			boolean isAccessDenied = isAccessCheck && !jwtService.isDocumentAccessAllowed(token);
+			boolean isDocumentAccessCheck = request.getRequestURI().equals(DOCUMENT_LINK_ACCESS_URL);
+			boolean isAccessDenied = isDocumentAccessCheck && !jwtService.isDocumentAccessAllowed(token);
 			boolean isTokenExpired = jwtService.isTokenExpired(token);
 
 			if (isAccessDenied || isTokenExpired) {

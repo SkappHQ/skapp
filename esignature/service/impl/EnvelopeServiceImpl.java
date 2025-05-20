@@ -179,9 +179,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
 		}
 
-		List<AuditTrail>  auditTrails = new ArrayList<>();
-		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_CREATED,
-				envelope.getOwner(), null);
+		List<AuditTrail> auditTrails = new ArrayList<>();
+		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
+				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null);
 
 		auditTrails.add(auditTrailCreate);
 
