@@ -282,20 +282,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public DocumentLink setDocumentAccessUrlProperties(DocumentLink documentLink) {
-
-		if (documentLink.isExpired()) {
-			documentLink.setActive(false);
-			documentLink = documentLinkRepository.save(documentLink);
-			return documentLink;
-		}
-
-		documentLink.incrementClickCount();
-		documentLink = documentLinkRepository.save(documentLink);
-		return documentLink;
-	}
-
-	@Override
 	public ResponseEntityDto getRecipientDocumentData(@NotNull Long documentId, @NotNull Long recipientId,
 			boolean isDocAccess) {
 
@@ -354,8 +340,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (isDocAccess) {
 			DocumentLink documentLink = getDocumentLinkFromToken();
-			documentLink = setDocumentAccessUrlProperties(documentLink);
-
 			documentLinkResponseDto = eSignMapper.documentLinkToDocumentLinkResponseDto(documentLink);
 			if (documentLink.getUuid() != null) {
 				documentLinkResponseDto

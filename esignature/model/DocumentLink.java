@@ -92,12 +92,12 @@ public class DocumentLink {
 	}
 
 	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(expiresAt) || clickCount >= maxClicks || !isActive;
+		return LocalDateTime.now().isAfter(expiresAt) || clickCount > maxClicks || !isActive;
 	}
 
 	public void incrementClickCount() {
 		this.clickCount++;
-		if (this.clickCount >= this.maxClicks) {
+		if (this.clickCount > this.maxClicks) {
 			this.isActive = false;
 		}
 	}
