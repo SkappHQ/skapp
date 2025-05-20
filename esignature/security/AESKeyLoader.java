@@ -25,7 +25,8 @@ public class AESKeyLoader {
 
 		try {
 			// Convert char[] directly to byte[] for Base64 decoding
-			java.nio.ByteBuffer byteBuffer = java.nio.charset.StandardCharsets.UTF_8.encode(java.nio.CharBuffer.wrap(aesSecretKey));
+			java.nio.ByteBuffer byteBuffer = java.nio.charset.StandardCharsets.UTF_8
+				.encode(java.nio.CharBuffer.wrap(aesSecretKey));
 			byte[] keyBytes = new byte[byteBuffer.remaining()];
 			byteBuffer.get(keyBytes);
 			keyBytes = Base64.getDecoder().decode(keyBytes);
