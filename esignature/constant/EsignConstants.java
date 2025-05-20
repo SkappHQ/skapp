@@ -28,4 +28,6 @@ public class EsignConstants {
 
 	public static final int ESIGN_MAX_NAME_LENGTH_EXTERNAL_USER = 100;
 
+	public static final String DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN = "ES___---ES___---";
+
 }

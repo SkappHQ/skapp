@@ -72,6 +72,9 @@ public class DocumentLink {
 	@Column(name = "permission_type")
 	private DocumentPermissionType permissionType;
 
+	@Column(name = "uuid", nullable = false)
+	private String uuid;
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.token == null) {
