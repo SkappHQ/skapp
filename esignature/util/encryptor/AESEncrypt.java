@@ -14,7 +14,7 @@ public class AESEncrypt {
 
 	private static final int TAG_LENGTH = 128;
 
-	private static final int IV_LENGTH_VALIDATE = 12;
+	private static final int IV_LENGTH_VALIDATE = 16;
 
 	private AESEncrypt() {
 	}
