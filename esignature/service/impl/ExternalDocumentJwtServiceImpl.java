@@ -137,7 +137,7 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 	}
 
 	@Override
-	public boolean isAccessAllowed(String token) {
+	public boolean isDocumentAccessAllowed(String token) {
 		DocumentLink documentLink = documentLinkRepository.findByToken(token)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
