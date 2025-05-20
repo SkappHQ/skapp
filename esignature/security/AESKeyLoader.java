@@ -24,9 +24,11 @@ public class AESKeyLoader {
 		}
 
 		try {
-			// Convert char[] to string only for decoding purpose
-			String keyString = new String(aesSecretKey);
-			byte[] keyBytes = Base64.getDecoder().decode(keyString);
+			// Convert char[] directly to byte[] for Base64 decoding
+			java.nio.ByteBuffer byteBuffer = java.nio.charset.StandardCharsets.UTF_8.encode(java.nio.CharBuffer.wrap(aesSecretKey));
+			byte[] keyBytes = new byte[byteBuffer.remaining()];
+			byteBuffer.get(keyBytes);
+			keyBytes = Base64.getDecoder().decode(keyBytes);
 
 			// Validate key size
 			boolean validKeySize = false;
