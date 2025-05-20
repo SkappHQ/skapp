@@ -124,9 +124,15 @@ public final class CertificateGenerator {
 			SubjectPublicKeyInfo pubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 
 			// Validate key strength
-			if (keyPair.getPublic().getEncoded().length * 8 < 2048) {
+			if (keyPair.getPublic() instanceof java.security.interfaces.RSAPublicKey) {
+				int keySize = ((java.security.interfaces.RSAPublicKey) keyPair.getPublic()).getModulus().bitLength();
+				if (keySize < 2048) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+							new String[] { "Key strength below 2048 bits" });
+				}
+			} else {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-						new String[] { "Key strength below 2048 bits" });
+						new String[] { "Unsupported key type for validation" });
 			}
 
 			byte[] skiBytes = calculateIdentifier(pubKeyInfo);
