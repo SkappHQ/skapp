@@ -11,6 +11,7 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeRepository;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -116,7 +117,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			.add(cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
 		if (filterDto.getStatusTypes() != null && !filterDto.getStatusTypes().isEmpty()) {
-			CriteriaBuilder.In<RecipientStatus> statusIn = cb.in(recipientJoin.get(Recipient_.INBOX_STATUS));
+			CriteriaBuilder.In<InboxStatus> statusIn = cb.in(recipientJoin.get(Recipient_.INBOX_STATUS));
 			filterDto.getStatusTypes().forEach(statusIn::value);
 			predicates.add(statusIn);
 		}
