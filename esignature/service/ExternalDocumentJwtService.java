@@ -21,6 +21,8 @@ public interface ExternalDocumentJwtService {
 
 	boolean isTokenExpired(String token);
 
+	boolean isDocumentAccessAllowed(String token);
+
 	Long extractUserId(String token);
 
 	Key getSigningKey();

@@ -136,6 +136,23 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 		return isDocumentAccessUrlExpired(token);
 	}
 
+	/**
+	 * Checks whether access is allowed based on the provided token.
+	 * @param token the JWT token to evaluate
+	 * @return true if access is allowed, false otherwise
+	 */
+	@Override
+	public boolean isDocumentAccessAllowed(String token) {
+		DocumentLink documentLink = documentLinkRepository.findByToken(token)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
+
+		documentLink.incrementClickCount();
+
+		documentLinkRepository.save(documentLink);
+
+		return !documentLink.isExpired();
+	}
+
 	public Boolean isDocumentAccessUrlExpired(String token) {
 		DocumentLink documentLink = documentLinkRepository.findByToken(token)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
