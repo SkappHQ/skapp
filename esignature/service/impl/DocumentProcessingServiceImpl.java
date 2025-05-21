@@ -84,6 +84,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
+
 				addTextField(field, contentStream, pageHeight, document);
 			}
 
@@ -189,7 +190,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
-			float adjustedY = pageHeight - field.getYposition();
+			// Add a baseline offset to move text to middle on y
+			float baselineOffset = DEFAULT_FONT_SIZE * 2f;
+			float adjustedY = pageHeight - field.getYposition() - baselineOffset;
+
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
@@ -202,7 +206,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
-
 	}
 
 	private void validateField(FieldSignDto field) {
