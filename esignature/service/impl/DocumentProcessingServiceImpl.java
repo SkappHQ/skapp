@@ -84,7 +84,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
-
 				addTextField(field, contentStream, pageHeight, document);
 			}
 
