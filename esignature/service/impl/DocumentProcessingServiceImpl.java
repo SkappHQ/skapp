@@ -189,16 +189,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
-			// Add a baseline offset to move text to middle on y
-			float baselineOffset = DEFAULT_FONT_SIZE * 2f;
-			float adjustedY = pageHeight - field.getYposition() - baselineOffset;
+			// Adjust baseline offset for Y position
+			float ylineOffset = DEFAULT_FONT_SIZE * 2.0f;
+			float adjustedY = pageHeight - field.getYposition() - ylineOffset;
+
+			// Small X offset to correct left shift
+			float xOffset = DEFAULT_FONT_SIZE * 0.8f;
+			float adjustedX = field.getXposition() + xOffset;
+
 
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
 
-			// take co-ordinated from bottom-left
-			contentStream.newLineAtOffset(field.getXposition(), adjustedY);
+			// Position text at adjusted coordinates
+			contentStream.newLineAtOffset(adjustedX, adjustedY);
 			contentStream.showText(field.getFieldValue());
 			contentStream.endText();
 		}
