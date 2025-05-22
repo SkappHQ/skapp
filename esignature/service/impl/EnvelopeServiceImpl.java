@@ -179,6 +179,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
 		}
 
+		List<AuditTrail> auditTrails = new ArrayList<>();
+		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
+				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null);
+
+		auditTrails.add(auditTrailCreate);
+
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
@@ -241,9 +247,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
-		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
+		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
 				envelope.getOwner(), null);
-		auditTrailDao.save(auditTrail);
+
+		auditTrails.add(auditTrailSent);
+
+		auditTrailDao.saveAll(auditTrails);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
 
@@ -570,16 +579,21 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 		Envelope envelope = envelopeOptional.get();
-		boolean isRecipient = envelope.getRecipients()
-			.stream()
-			.anyMatch(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
-					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()));
 
-		if (!isRecipient) {
+		Optional<Recipient> recipientOptional = envelope.getRecipients()
+			.stream()
+			.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+			.findFirst();
+
+		if (recipientOptional.isEmpty()) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
-		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope);
+		Recipient recipient = recipientOptional.get();
+
+		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope,
+				recipient);
 
 		return new ResponseEntityDto(false, envelopeInboxInfoResponseDto);
 	}
@@ -699,7 +713,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelopeInfoResponseDto;
 	}
 
-	private EnvelopeInboxInfoResponseDto getEnvelopeInboxInfoResponseDto(Envelope envelope) {
+	private EnvelopeInboxInfoResponseDto getEnvelopeInboxInfoResponseDto(Envelope envelope, Recipient recipient) {
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
@@ -711,7 +725,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
-		AddressBook addressBook = envelope.getOwner();
+		AddressBook addressBook = recipient.getAddressBook();
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);

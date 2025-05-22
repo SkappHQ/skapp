@@ -20,4 +20,8 @@ public interface DocumentLinkRepository extends JpaRepository<DocumentLink, Long
 
 	List<DocumentLink> findByEnvelopeIdAndRecipientId(Envelope envelope, Recipient recipient);
 
+	Optional<DocumentLink> findByUuid(String uuid);
+
+	boolean existsByUuid(String uuid);
+
 }

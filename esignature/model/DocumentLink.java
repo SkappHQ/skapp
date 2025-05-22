@@ -72,6 +72,9 @@ public class DocumentLink {
 	@Column(name = "permission_type")
 	private DocumentPermissionType permissionType;
 
+	@Column(name = "uuid", nullable = false)
+	private String uuid;
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.token == null) {
@@ -89,12 +92,12 @@ public class DocumentLink {
 	}
 
 	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(expiresAt) || clickCount >= maxClicks || !isActive;
+		return LocalDateTime.now().isAfter(expiresAt) || clickCount > maxClicks || !isActive;
 	}
 
 	public void incrementClickCount() {
 		this.clickCount++;
-		if (this.clickCount >= this.maxClicks) {
+		if (this.clickCount > this.maxClicks) {
 			this.isActive = false;
 		}
 	}

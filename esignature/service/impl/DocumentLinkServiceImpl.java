@@ -5,9 +5,11 @@ import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.Document;
@@ -22,6 +24,7 @@ import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
@@ -36,6 +39,7 @@ import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.utill.EsignUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +51,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,9 +87,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String PERMISSION = "permission";
 
-	private static final String URL_PATH = "/sign/document/access?token=";
+	private static final String URL_PATH = "/sign/document/access?uuid=";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
+
+	public static final String STATE_STRING = "&state=";
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -91,6 +100,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private final EsignEmailService emailService;
 
 	private final UserService userService;
+
+	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final DocumentDao documentDao;
 
@@ -101,6 +112,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
 	private final DocumentVersionRepository documentVersionRepository;
+
+	private final TenantContext tenantContext;
 
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
@@ -113,6 +126,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${app.protocol}")
 	private String protocol;
+
+	@Value("${encryptDecryptAlgorithm.secret}")
+	private String encryptSecret;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
@@ -253,24 +269,16 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			token = generateViewAccessToken(userDetails, documentAccessData);
 		}
 
-		String accessUrl = generateAccessUrl(tenantId, token);
 		documentLink.setToken(token);
 
+		String tokenUuid = generateAndEnsureUniqueUuidWithRetry();
+
+		String encryptedUuid = encryptionDecryptionService.encrypt(tokenUuid, encryptSecret);
+		documentLink.setUuid(encryptedUuid);
+
+		String accessUrl = generateAccessUrl(tenantId, recipient.getId(), envelope.getUuid(), encryptedUuid);
+
 		return new DocumentLinkData(documentLink, accessUrl);
-	}
-
-	@Override
-	public DocumentLink setDocumentAccessUrlProperties(DocumentLink documentLink) {
-
-		if (documentLink.isExpired()) {
-			documentLink.setActive(false);
-			documentLink = documentLinkRepository.save(documentLink);
-			return documentLink;
-		}
-
-		documentLink.incrementClickCount();
-		documentLink = documentLinkRepository.save(documentLink);
-		return documentLink;
 	}
 
 	@Override
@@ -332,12 +340,16 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (isDocAccess) {
 			DocumentLink documentLink = getDocumentLinkFromToken();
-			documentLink = setDocumentAccessUrlProperties(documentLink);
-
 			documentLinkResponseDto = eSignMapper.documentLinkToDocumentLinkResponseDto(documentLink);
-			documentLinkResponseDto.setUrl(generateAccessUrl(tenantId, documentLinkResponseDto.getToken()));
+			if (documentLink.getUuid() != null) {
+				documentLinkResponseDto
+					.setUrl(generateAccessUrl(tenantId, recipientId, envelope.getUuid(), documentLink.getUuid()));
+			}
 			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 			documentPermissionType = documentLink.getPermissionType();
+
+			log.warn("getRecipientDocumentData: documentLinkResponseDto: count: {}",
+					documentLinkResponseDto.getClickCount());
 		}
 
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(envelope,
@@ -369,7 +381,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				return generateNewAccessUrl(documentLink);
 			}
 			else {
-				return generateAccessUrl(tenantId, documentLink.getToken());
+				return generateAccessUrl(tenantId, recipient.getId(), envelope.getUuid(),
+						documentLink.getUuid() != null ? documentLink.getUuid() : null);
 			}
 		}
 		return null;
@@ -427,6 +440,80 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 	}
 
+	@Override
+	public ResponseEntityDto getTokenFromUuid(@NotNull String uuid, @NotNull String state) {
+
+		try {
+			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+
+			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
+					|| decryptedState.trim().isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
+			if (stateParts.length != 3) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			Long recipientId = Long.valueOf(stateParts[0]);
+			String envelopeUUID = stateParts[1];
+			String tenantId = stateParts[2];
+
+			if (envelopeUUID == null || tenantId == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			tenantContext.setTenantAndSwitchSchema(tenantId);
+
+			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
+
+			if (documentLinkOpt.isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+			}
+
+			DocumentLink documentLink = documentLinkOpt.get();
+
+			if (!documentLink.getRecipientId().getId().equals(recipientId)
+					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
+			documentTokenResponseDto.setToken(documentLink.getToken());
+
+			return new ResponseEntityDto(false, documentTokenResponseDto);
+		}
+		catch (Exception ex) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+	}
+
+	private String generateAndEnsureUniqueUuidWithRetry() {
+		int maxRetries = 3;
+		int retryCount = 0;
+
+		while (retryCount < maxRetries) {
+			String uuid = EsignUtil.generateTimestampUUID();
+
+			if (!isDocumentLinkUuidExists(uuid)) {
+				return uuid;
+			}
+
+			retryCount++;
+		}
+
+		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_UUID_CREATION_FAIL);
+	}
+
+	public boolean isDocumentLinkUuidExists(String uuid) {
+		return documentLinkRepository.existsByUuid(uuid);
+	}
+
 	private String generateNewAccessUrl(DocumentLink documentLink) {
 		DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(documentLink.getDocumentId().getId(),
 				documentLink.getRecipientId().getId(), documentLink.getPermissionType());
@@ -455,6 +542,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
 		documentAccessLinkData.setName(recipient.getAddressBook().getName());
 		documentAccessLinkData.setEmail(recipient.getAddressBook().getEmail());
+		documentAccessLinkData.setSenderEmail(envelope.getOwner().getEmail());
 		documentAccessLinkData.setEnvelopeId(envelope.getId());
 		documentAccessLinkData.setEnvelopeStatus(envelope.getStatus());
 		documentAccessLinkData.setSubject(envelope.getSubject());
@@ -505,8 +593,18 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return jwtService.generateDocumentAccessToken(userDetails, extraClaims);
 	}
 
-	private String generateAccessUrl(String tenantId, String token) {
-		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + token;
+	private String generateAccessUrl(String tenantId, Long recipientId, String envelopeUuid, String uuid) {
+
+		String state = recipientId + EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + envelopeUuid
+				+ EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + tenantId;
+
+		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
+		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
+
+		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
+
+		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + encodedEncryptedUUID + STATE_STRING
+				+ encodedState;
 	}
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,

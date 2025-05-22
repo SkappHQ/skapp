@@ -86,7 +86,8 @@ public class EPSecurityConfig {
 						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook",
 						"/v2/ep/auth/sso/google/auth-url", "/v2/ep/auth/sso/google/redirect",
 						"/v2/ep/auth/signin/sso/google", "/v2/ep/auth/signup/super-admin/sso/google",
-						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend")
+						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend",
+						"/v1/ep/esign/document-link/token-exchange")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
