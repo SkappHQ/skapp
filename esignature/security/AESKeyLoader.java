@@ -14,8 +14,7 @@ public class AESKeyLoader {
 
 	@Value("${esign.private-key.aes-secret-key}")
 	private char[] aesSecretKey; // Using char[] instead of String for better security:
-									// 1. Can be explicitly cleared from memory (see line
-									// 50)
+									// 1. Can be explicitly cleared from memory
 									// 2. Avoids String pool retention of sensitive data
 									// 3. Follows security best practices for credential
 									// handling
