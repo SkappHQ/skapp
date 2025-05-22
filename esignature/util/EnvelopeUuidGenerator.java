@@ -40,6 +40,8 @@ public class EnvelopeUuidGenerator {
 				result.append(DIVIDER);
 			}
 
+			// Using Math.abs to ensure index is positive and prevent potential ArrayIndexOutOfBoundsException
+			// when bit manipulations produce negative values
 			int index;
 			if (i < TOTAL_ID_LENGTH / 2) {
 				index = Math.abs((int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length);
