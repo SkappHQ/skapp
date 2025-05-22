@@ -52,6 +52,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float BORDER_IMAGE_PADDING = 5.0f;
 
+	private static final float Y_OFFSET_VALUE = 2.0f;
+
+	private static final float X_OFFSET_VALUE = 0.8f;
+
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
@@ -190,11 +194,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		// Relative to the co-ordinates taken from UI -top left
 		try {
 			// Adjust baseline offset for Y position
-			float ylineOffset = DEFAULT_FONT_SIZE * 2.0f;
-			float adjustedY = pageHeight - field.getYposition() - ylineOffset;
+			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
+			float adjustedY = pageHeight - field.getYposition() - yOffset;
 
 			// Small X offset to correct left shift
-			float xOffset = DEFAULT_FONT_SIZE * 0.8f;
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
 
