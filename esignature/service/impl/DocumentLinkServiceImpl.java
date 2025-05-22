@@ -348,7 +348,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 			documentPermissionType = documentLink.getPermissionType();
 
-			log.warn("getRecipientDocumentData: documentLinkResponseDto: count: {}", documentLinkResponseDto.getClickCount());
+			log.warn("getRecipientDocumentData: documentLinkResponseDto: count: {}",
+					documentLinkResponseDto.getClickCount());
 		}
 
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = getDocumentAccessLinkDataResponseDto(envelope,
@@ -541,6 +542,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
 		documentAccessLinkData.setName(recipient.getAddressBook().getName());
 		documentAccessLinkData.setEmail(recipient.getAddressBook().getEmail());
+		documentAccessLinkData.setSenderEmail(envelope.getOwner().getEmail());
 		documentAccessLinkData.setEnvelopeId(envelope.getId());
 		documentAccessLinkData.setEnvelopeStatus(envelope.getStatus());
 		documentAccessLinkData.setSubject(envelope.getSubject());
