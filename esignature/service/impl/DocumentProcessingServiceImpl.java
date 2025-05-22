@@ -197,7 +197,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
 			float adjustedY = pageHeight - field.getYposition() - yOffset;
 
-			// Small X offset to correct left shift
+			// Adjust baseline offset for x position
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
