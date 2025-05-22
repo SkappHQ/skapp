@@ -517,7 +517,7 @@ public class RecipientServiceImpl implements RecipientService {
 				.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
 
 			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
-					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
+					epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
 
 			envelopeDetailedResponseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
 
