@@ -12,6 +12,10 @@ public class IVGenerator {
 																			// for better
 																			// performance
 
+	// Without the static field, each call to generateIV() would potentially create a new
+	// SecureRandom instance,
+	// which would be much less efficient, especially in high-throughput scenarios where
+	// the method is called frequently.
 	private IVGenerator() {
 	}
 

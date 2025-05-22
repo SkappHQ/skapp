@@ -55,13 +55,6 @@ public final class CertificateGenerator {
 
 	private static final String DEPARTMENT = "Digital Signatures";
 
-	// Make these configurable via application properties
-	// private static final String OCSP_URL = System.getProperty("certificate.ocsp.url",
-	// "https://ocsp.organization.com");
-	//
-	// private static final String EMAIL_DOMAIN =
-	// System.getProperty("certificate.email.domain", "@organization.com");
-
 	private static final String OCSP_URL = "https://ocsp.organization.com";
 
 	private static final String EMAIL_DOMAIN = "@organization.com";
@@ -92,7 +85,7 @@ public final class CertificateGenerator {
 		catch (Exception e) {
 			log.error("Failed to generate certificate", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { e.getMessage() });
+					new String[] { "Certificate generation failed" });
 		}
 	}
 
@@ -123,14 +116,23 @@ public final class CertificateGenerator {
 		try {
 			SubjectPublicKeyInfo pubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 
-			// Validate key strength
+			// Validate key strength - essential security requirement for digital
+			// signatures
 			if (keyPair.getPublic() instanceof java.security.interfaces.RSAPublicKey) {
+				// Extract the actual bit length of the RSA key from the modulus
 				int keySize = ((java.security.interfaces.RSAPublicKey) keyPair.getPublic()).getModulus().bitLength();
+				// Enforce minimum 2048-bit keys as per NIST recommendations and industry
+				// standards
+				// Keys smaller than 2048 bits are vulnerable to factorization attacks
 				if (keySize < 2048) {
 					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
 							new String[] { "Key strength below 2048 bits" });
 				}
-			} else {
+			}
+			else {
+				// This certificate generator is specifically designed for RSA keys
+				// Other key types would require different validation logic and possibly
+				// different certificate parameters
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
 						new String[] { "Unsupported key type for validation" });
 			}
@@ -159,21 +161,24 @@ public final class CertificateGenerator {
 			addOCSPAccessInfo(certBuilder);
 
 		}
+		// Specific exception handling allows targeted logging and sanitized error
+		// messages
 		catch (NoSuchAlgorithmException e) {
 			log.error("Algorithm error during certificate generation", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { "Cryptographic algorithm error: " + e.getMessage() });
+					new String[] { "Certificate generation failed due to cryptographic configuration issue" });
 		}
 		catch (CertIOException e) {
 			log.error("Certificate extension error", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { "Failed to add certificate extensions: " + e.getMessage() });
+					new String[] { "Certificate generation failed due to extension configuration issue" });
 		}
 		catch (Exception e) {
 			log.error("Unexpected error during certificate generation", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { e.getMessage() });
+					new String[] { "Certificate generation failed due to an internal error" });
 		}
+
 	}
 
 	private static void addAuthorityKeyIdentifier(X509v3CertificateBuilder certBuilder, byte[] skiBytes,
