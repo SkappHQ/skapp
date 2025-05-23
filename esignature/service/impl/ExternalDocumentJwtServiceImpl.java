@@ -147,13 +147,13 @@ public class ExternalDocumentJwtServiceImpl implements ExternalDocumentJwtServic
 		DocumentLink documentLink = documentLinkRepository.findByToken(token)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
 
-		log.warn("isDocumentAccessAllowed: envelopeID: " + documentLink.getEnvelopeId() + "start: count: "
+		log.info("isDocumentAccessAllowed: envelopeID: " + documentLink.getEnvelopeId() + "start: count: "
 				+ documentLink.getClickCount());
 
 		documentLink.incrementClickCount();
 
 		documentLinkRepository.save(documentLink);
-		log.warn("isDocumentAccessAllowed: envelopeID: " + documentLink.getEnvelopeId() + "end: count: "
+		log.info("isDocumentAccessAllowed: envelopeID: " + documentLink.getEnvelopeId() + "end: count: "
 				+ documentLink.getClickCount());
 
 		return !documentLink.isExpired();
