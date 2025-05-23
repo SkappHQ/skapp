@@ -650,8 +650,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		if (currentAddressBookUser.getType() == UserType.INTERNAL) {
-			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId,
-					currentAddressBookUser.getId()) == null) {
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
+				.isEmpty()) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 		}
