@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
@@ -20,6 +22,9 @@ public class AwsConfig {
 	@Value("${aws.s3.region}")
 	private String s3Region;
 
+	@Value("${aws.s3.max-attempts}")
+	private int maxAttempts;
+
 	@Bean
 	public S3Client s3Client() {
 		AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
@@ -27,6 +32,9 @@ public class AwsConfig {
 		return S3Client.builder()
 			.region(Region.of(s3Region))
 			.credentialsProvider(StaticCredentialsProvider.create(credentials))
+			.overrideConfiguration(ClientOverrideConfiguration.builder()
+				.retryStrategy(StandardRetryStrategy.builder().maxAttempts(maxAttempts).build())
+				.build())
 			.build();
 	}
 
