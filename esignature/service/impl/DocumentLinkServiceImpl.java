@@ -348,7 +348,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			documentLinkResponseDto.setExpiresAt(documentLink.getExpiresAt());
 			documentPermissionType = documentLink.getPermissionType();
 
-			log.warn("getRecipientDocumentData: documentLinkResponseDto: count: {}",
+			log.info("getRecipientDocumentData: documentLinkResponseDto: count: {}",
 					documentLinkResponseDto.getClickCount());
 		}
 
