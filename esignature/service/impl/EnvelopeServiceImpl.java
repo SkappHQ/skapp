@@ -739,7 +739,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelope.getDocuments().stream().map(document -> {
 			int currentVersion = document.getCurrentVersion();
 			DocumentVersion documentVersion = documentVersionRepository
-				.findByVersionNumberAndDocumentId(currentVersion, document.getId())
+				.findFirstByVersionNumberAndDocumentIdOrderByIdDesc(currentVersion, document.getId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
