@@ -123,11 +123,20 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		}
 		else {
-			epEsignEnvelopeRecipientEmailDynamicFields
-				.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
-			emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
-					EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
-					epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
+			if (recipient.getEnvelope().getStatus() == recipient.getEnvelope().getStatus().COMPLETED) {
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE);
+				emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
+						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_COMPLETED_RECEIVER_EMAIL,
+						epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
+			}
+			else {
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_RECIEVER_EMAIL_TITLE);
+				emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
+						EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_SIGNER_EMAIL,
+						epEsignEnvelopeRecipientEmailDynamicFields, userEmail);
+			}
 		}
 
 		log.info("sendEnvelopeToRecipientEmail: execution ended");
