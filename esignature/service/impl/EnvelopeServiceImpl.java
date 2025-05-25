@@ -395,7 +395,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Recipient recipient = new Recipient();
 			recipient.setAddressBook(addressBook);
 			recipient.setMemberRole(recipientDto.getMemberRole());
-			recipient.setStatus(recipientDto.getStatus());
+			recipient.setStatus(RecipientStatus.EMPTY);
+			recipient.setInboxStatus(InboxStatus.NONE);
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
 			recipient.setConsent(recipientDto.getMemberRole().equals(MemberRole.CC));
@@ -591,6 +592,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		Recipient recipient = recipientOptional.get();
+
+		if (recipient.getInboxStatus().equals(InboxStatus.NONE)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
 
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = getEnvelopeInboxInfoResponseDto(envelope,
 				recipient);

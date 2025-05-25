@@ -113,6 +113,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			Path<String> ownerEmailPath, EnvelopeInboxFilterDto filterDto, Long currentUserId) {
 		List<Predicate> predicates = new ArrayList<>();
 
+		predicates.add(cb.notEqual(recipientJoin.get(Recipient_.INBOX_STATUS), InboxStatus.NONE));
+
 		predicates
 			.add(cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId));
 
