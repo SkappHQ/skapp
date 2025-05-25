@@ -15,6 +15,7 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -123,7 +124,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 
 		}
 		else {
-			if (recipient.getEnvelope().getStatus() == recipient.getEnvelope().getStatus().COMPLETED) {
+			if (recipient.getEnvelope().getStatus() == EnvelopeStatus.COMPLETED) {
 				epEsignEnvelopeRecipientEmailDynamicFields
 					.setTitle(EsignEmailTitleConstant.ESIGN_ENVELOPE_COMPLETED_EMAIL_TITLE);
 				emailService.sendEmail(EpEmailMainTemplates.ESIGN_RECEIVER_TEMPLATE_V1,
