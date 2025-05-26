@@ -15,6 +15,8 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
 
 	Optional<DocumentVersion> findByVersionNumberAndDocumentId(int versionNumber, Long documentId);
 
+	Optional<DocumentVersion> findFirstByVersionNumberAndDocumentIdOrderByIdDesc(int versionNumber, Long documentId);
+
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT d FROM DocumentVersion d WHERE d.versionNumber = :versionNumber AND d.document.id = :documentId")
 	Optional<DocumentVersion> findByVersionNumberAndDocumentIdForUpdate(@Param("versionNumber") int versionNumber,

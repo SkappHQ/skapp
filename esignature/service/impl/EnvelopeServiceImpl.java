@@ -179,12 +179,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
 		}
 
-		List<AuditTrail> auditTrails = new ArrayList<>();
-		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
-				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null);
-
-		auditTrails.add(auditTrailCreate);
-
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
@@ -193,6 +187,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope.setSetting(envelopeSetting);
 		envelope.setOwner(addressBook);
+
+		List<AuditTrail> auditTrails = new ArrayList<>();
+		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
+				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null);
+
+		auditTrails.add(auditTrailCreate);
 
 		Envelope savedEnvelope = envelopeDao.save(envelope);
 
@@ -744,7 +744,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelope.getDocuments().stream().map(document -> {
 			int currentVersion = document.getCurrentVersion();
 			DocumentVersion documentVersion = documentVersionRepository
-				.findByVersionNumberAndDocumentId(currentVersion, document.getId())
+				.findFirstByVersionNumberAndDocumentIdOrderByIdDesc(currentVersion, document.getId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
