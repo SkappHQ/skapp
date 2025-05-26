@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,8 +19,8 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
 	Optional<DocumentVersion> findFirstByVersionNumberAndDocumentIdOrderByIdDesc(int versionNumber, Long documentId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("SELECT d FROM DocumentVersion d WHERE d.versionNumber = :versionNumber AND d.document.id = :documentId")
-	Optional<DocumentVersion> findByVersionNumberAndDocumentIdForUpdate(@Param("versionNumber") int versionNumber,
+	@Query("SELECT d FROM DocumentVersion d WHERE d.versionNumber = :versionNumber AND d.document.id = :documentId ORDER BY d.id DESC")
+	List<DocumentVersion> findByVersionNumberAndDocumentIdForUpdateOrdered(@Param("versionNumber") int versionNumber,
 			@Param("documentId") Long documentId);
 
 }
