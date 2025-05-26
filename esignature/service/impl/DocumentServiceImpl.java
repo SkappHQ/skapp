@@ -404,7 +404,7 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
 		}
 
-		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(), document.getId());
+		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
@@ -1257,6 +1257,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
 		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+	}
+
+	private DocumentVersion getDocumentVersionForUpdate(int versionNumber, Long documentId) {
+		return documentVersionRepository.findByVersionNumberAndDocumentIdForUpdate(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 	}
 
