@@ -17,6 +17,6 @@ public interface RecipientRepository extends JpaRepository<Recipient, Long> {
 
 	Optional<List<Recipient>> findByEnvelopeIdAndEmailStatus(Long envelopeId, EmailStatus emailStatus);
 
-	Recipient findByEnvelopeIdAndAddressBookId(Long envelopeId, Long addressBookId);
+	List<Recipient> findByEnvelopeIdAndAddressBookId(Long envelopeId, Long addressBookId);
 
 }

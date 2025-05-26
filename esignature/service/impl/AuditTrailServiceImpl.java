@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
@@ -26,6 +27,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -169,10 +171,23 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
 
+		User currentUser = userService.getCurrentUser();
+
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
 			log.error("envelope with ID {} not found", envelopeId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+		Envelope envelope = envelopeOptional.get();
+
+		Optional<Recipient> recipientOptional = envelope.getRecipients()
+			.stream()
+			.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+			.findFirst();
+
+		if (recipientOptional.isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
