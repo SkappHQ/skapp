@@ -201,7 +201,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
-
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
