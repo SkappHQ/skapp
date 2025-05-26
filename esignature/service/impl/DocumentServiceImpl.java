@@ -283,8 +283,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		document.setCurrentSignOderNumber(document.getCurrentSignOderNumber() + 1);
-		document = documentRepository.save(document);
+
 
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
@@ -303,11 +302,12 @@ public class DocumentServiceImpl implements DocumentService {
 				rec.setInboxStatus(InboxStatus.WAITING);
 			}
 			else {
+				document.setCurrentSignOderNumber(rec.getSigningOrder());
 				rec.setStatus(RecipientStatus.NEED_TO_SIGN);
 				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 			}
 		}
-
+		document = documentRepository.save(document);
 		recipientRepository.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
