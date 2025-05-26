@@ -213,8 +213,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return document;
 		}).toList();
 
-
-
 		// Send Envelopes to recipient - async
 		RecipientService.DocumentLinksAndRecipientsData documentLinksAndRecipientsData = recipientService
 			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients(), envelopeDetailDto.getSignType());
