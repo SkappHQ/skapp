@@ -1264,9 +1264,11 @@ public class DocumentServiceImpl implements DocumentService {
 		List<DocumentVersion> documentVersionList = documentVersionRepository
 			.findByVersionNumberAndDocumentIdForUpdateOrdered(versionNumber, documentId);
 
-		return documentVersionList.stream()
-			.findFirst()
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+		if (documentVersionList.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND);
+		}
+
+		return documentVersionList.getFirst();
 	}
 
 	@Override
