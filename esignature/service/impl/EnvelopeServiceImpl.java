@@ -217,8 +217,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return document;
 		}).toList();
 
-		documentDao.saveAll(updatedDocuments);
-
 		// Send Envelopes to recipient - async
 		RecipientService.DocumentLinksAndRecipientsData documentLinksAndRecipientsData = recipientService
 			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients(), envelopeDetailDto.getSignType());
@@ -240,6 +238,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipient.setReceivedAt(getCurrentUtcDateTime());
 
 				if (recipient.getMemberRole().equals(MemberRole.SIGNER)) {
+					for (Document doc : updatedDocuments) {
+						doc.setCurrentSignOderNumber(recipient.getSigningOrder());
+					}
 					recipient.setStatus(RecipientStatus.NEED_TO_SIGN);
 					recipient.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 				}
@@ -250,6 +251,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				}
 			}
 		}
+
+		documentDao.saveAll(updatedDocuments);
 
 		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
 				envelope.getOwner(), null);
