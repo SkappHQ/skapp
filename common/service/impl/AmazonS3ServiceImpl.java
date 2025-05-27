@@ -105,12 +105,12 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 				case UPLOAD -> {
 					PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
 						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-						.putObjectRequest(req -> req.bucket(bucketName).key(objectKey))
+						.putObjectRequest(req -> req.bucket(bucketName)
+							.key(objectKey)
+							.contentType(amazonS3SignedUrlRequestDto.getFileType()))
 						.build();
 
-					String url = s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
-					log.info("Signed URL generated successfully for upload: {}", url);
-					yield url;
+					yield s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
 				}
 				case DOWNLOAD -> {
 					GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -118,9 +118,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 						.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
 						.build();
 
-					String url = s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
-					log.info("Signed URL generated successfully for download: {}", url);
-					yield url;
+					yield s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
 				}
 			};
 
