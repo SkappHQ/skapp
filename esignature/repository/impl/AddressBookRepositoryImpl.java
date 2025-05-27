@@ -53,7 +53,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
 
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
+				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()))
+			.distinct(true);
 
 		List<Predicate> predicates = new ArrayList<>();
 
@@ -81,12 +82,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			Predicate searchPredicate = cb.or(firstNameLike, lastNameLike, emailLike);
 			predicates.add(searchPredicate);
 
-			Order sortingOrder = cb.asc(cb.selectCase()
-				.when(cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%"), 1)
-				.when(cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%"), 2)
-				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 3)
-				.otherwise(4));
-			query.orderBy(sortingOrder);
+			if (addressBookFilterDto.getSortOrder().isAscending()) {
+				query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()), cb.asc(user.email()));
+			}
+			else {
+				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()), cb.desc(user.email()));
+			}
 		}
 		else {
 			if (addressBookFilterDto.getSortOrder().isAscending()) {
