@@ -52,6 +52,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float BORDER_IMAGE_PADDING = 5.0f;
 
+	private static final float Y_OFFSET_VALUE = 2.0f;
+
+	private static final float X_OFFSET_VALUE = 0.8f;
+
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
@@ -189,20 +193,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
-			float adjustedY = pageHeight - field.getYposition();
+			// Adjust baseline offset for Y position
+			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
+			float adjustedY = pageHeight - field.getYposition() - yOffset;
+
+			// Adjust baseline offset for x position
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+			float adjustedX = field.getXposition() + xOffset;
+
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
 
-			// take co-ordinated from bottom-left
-			contentStream.newLineAtOffset(field.getXposition(), adjustedY);
+			// Position text at adjusted coordinates
+			contentStream.newLineAtOffset(adjustedX, adjustedY);
 			contentStream.showText(field.getFieldValue());
 			contentStream.endText();
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
-
 	}
 
 	private void validateField(FieldSignDto field) {

@@ -92,6 +92,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -512,6 +513,21 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
 		}
 
+		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
+		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
+
+		if (cachedUuid == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
+		}
+
+		if (!Objects.equals(codeChallengeRequestDto.getUuid(), cachedUuid)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		if (tenantId == null || tenantId.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
+		}
+
 		User user = userDao.findAll().getFirst();
 		if (user == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
@@ -520,13 +536,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-		CacheKey cacheKey = EpCacheKeys.CODE_CHALLENGE_CACHE_KEY;
-		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
-
-		if (cachedUuid == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
-		}
 
 		cacheService.invalidate(cacheKey.format(tenantId));
 

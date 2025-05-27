@@ -404,7 +404,7 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
 		}
 
-		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(), document.getId());
+		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
 		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
@@ -454,7 +454,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 
 		// Process complete document if all recipients have completed
-		if (!hasNonWaitingRecipient(document)) {
+		if (!hasNonWaitingRecipient(document.getEnvelope().getId())) {
 			// Get first version of document
 			DocumentVersion firstDocumentVersion = getDocumentVersion(1, document.getId());
 
@@ -819,10 +819,10 @@ public class DocumentServiceImpl implements DocumentService {
 		return (userDetails != null) ? userDetails.getUsername() : null;
 	}
 
-	private boolean hasNonWaitingRecipient(Document document) {
-		List<Recipient> recipients = document.getEnvelope().getRecipients();
-		return recipients != null
-				&& recipients.stream().anyMatch(recipient -> recipient.getStatus() != RecipientStatus.COMPLETED);
+	private boolean hasNonWaitingRecipient(Long envelopeId) {
+		Envelope envelope = envelopeDao.findByIdWithRecipientsForUpdate(envelopeId);
+		List<Recipient> recipients = envelope.getRecipients();
+		return recipients != null && recipients.stream().anyMatch(r -> r.getStatus() != RecipientStatus.COMPLETED);
 	}
 
 	private String uploadProcessedDocumentVersion(byte[] updatedDocumentBytes) {
@@ -1258,6 +1258,17 @@ public class DocumentServiceImpl implements DocumentService {
 	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
 		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+	}
+
+	private DocumentVersion getDocumentVersionForUpdate(int versionNumber, Long documentId) {
+		List<DocumentVersion> documentVersionList = documentVersionRepository
+			.findByVersionNumberAndDocumentIdForUpdateOrdered(versionNumber, documentId);
+
+		if (documentVersionList.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND);
+		}
+
+		return documentVersionList.getFirst();
 	}
 
 	@Override
