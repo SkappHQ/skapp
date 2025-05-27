@@ -36,7 +36,6 @@ public class AESEncrypt {
 			return Base64.getEncoder().encodeToString(encryptedData);
 		}
 		catch (Exception e) {
-			// Avoid leaking sensitive exception information
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
 		}
 	}

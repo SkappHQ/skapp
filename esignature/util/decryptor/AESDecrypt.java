@@ -33,7 +33,6 @@ public class AESDecrypt {
 			return cipher.doFinal(encryptedPrivateKey);
 		}
 		catch (Exception e) {
-			// Avoid leaking sensitive exception information
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_DECRYPTION, null);
 		}
 	}
