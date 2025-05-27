@@ -388,7 +388,12 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+			if (recipient.getInboxStatus().equals(InboxStatus.DECLINED)) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED);
+			}
+			else {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+			}
 		}
 
 		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
