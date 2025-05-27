@@ -8,7 +8,6 @@ public class IVGenerator {
 
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-
 	private IVGenerator() {
 	}
 
