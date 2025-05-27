@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
 import com.skapp.enterprise.common.payload.response.AmazonS3SignedUrlResponseDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -121,7 +122,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 					log.info("Signed URL generated successfully for download: {}", url);
 					yield url;
 				}
-            };
+			};
 
 			AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
 			responseDto.setSignedUrl(signedUrl);
@@ -136,8 +137,9 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	}
 
 	@Override
-	public ResponseEntityDto deleteFileFromS3(String objectKey) {
+	public ResponseEntityDto deleteFileFromS3(AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto) {
 		try {
+			String objectKey = amazonS3DeleteItemRequestDto.getFolderPath();
 			if (objectKey == null || objectKey.isEmpty()) {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 			}

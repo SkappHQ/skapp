@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import jakarta.validation.Valid;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +28,10 @@ public class AmazonS3Controller {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/files/{objectKey}")
-	public ResponseEntity<ResponseEntityDto> deleteFileFromS3(@PathVariable String objectKey) {
-		ResponseEntityDto response = amazonS3Service.deleteFileFromS3(objectKey);
+	@DeleteMapping("/files")
+	public ResponseEntity<ResponseEntityDto> deleteFileFromS3(
+			@Valid @RequestBody AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto) {
+		ResponseEntityDto response = amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
