@@ -79,12 +79,13 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	/**
 	 * Generates a signed URL for accessing an object in an Amazon S3 bucket.
-	 *
-	 * @param amazonS3RequestDto the request object containing details such as the bucket name,
-	 *                           object key, and any additional parameters required for generating
-	 *                           the signed URL.
-	 * @return a {@link ResponseEntityDto} containing the signed URL and any additional metadata.
-	 * @throws jakarta.validation.ConstraintViolationException if the input validation fails.
+	 * @param amazonS3RequestDto the request object containing details such as the bucket
+	 * name, object key, and any additional parameters required for generating the signed
+	 * URL.
+	 * @return a {@link ResponseEntityDto} containing the signed URL and any additional
+	 * metadata.
+	 * @throws jakarta.validation.ConstraintViolationException if the input validation
+	 * fails.
 	 * @throws RuntimeException if an error occurs while generating the signed URL.
 	 */
 	@Override
