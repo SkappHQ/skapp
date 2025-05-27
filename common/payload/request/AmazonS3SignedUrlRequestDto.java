@@ -1,14 +1,14 @@
 package com.skapp.enterprise.common.payload.request;
 
 import com.skapp.enterprise.common.type.AmazonS3ActionType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class AmazonS3RequestDto {
+@Getter
+@Setter
+public class AmazonS3SignedUrlRequestDto {
 
 	private String folderPath;
-
-	private String type;
 
 	private AmazonS3ActionType action;
 

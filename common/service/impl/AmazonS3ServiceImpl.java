@@ -4,9 +4,9 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.payload.request.AmazonS3RequestDto;
+import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
+import com.skapp.enterprise.common.payload.response.AmazonS3SignedUrlResponseDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
-import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -79,9 +81,9 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	/**
 	 * Generates a signed URL for accessing an object in an Amazon S3 bucket.
-	 * @param amazonS3RequestDto the request object containing details such as the bucket
-	 * name, object key, and any additional parameters required for generating the signed
-	 * URL.
+	 * @param amazonS3SignedUrlRequestDto the request object containing details such as
+	 * the bucket name, object key, and any additional parameters required for generating
+	 * the signed URL.
 	 * @return a {@link ResponseEntityDto} containing the signed URL and any additional
 	 * metadata.
 	 * @throws jakarta.validation.ConstraintViolationException if the input validation
@@ -89,44 +91,76 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	 * @throws RuntimeException if an error occurs while generating the signed URL.
 	 */
 	@Override
-	public ResponseEntityDto getSignedUrl(AmazonS3RequestDto amazonS3RequestDto) {
+	public ResponseEntityDto getSignedUrl(AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
 		try {
-			log.info("Generating signed URL for action: {}", amazonS3RequestDto.getAction());
+			log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
 
-			String objectKey = amazonS3RequestDto.getFolderPath();
+			String objectKey = amazonS3SignedUrlRequestDto.getFolderPath();
 			if (objectKey == null || objectKey.isEmpty()) {
-				log.error("Folder path is null or empty");
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 			}
 
-			String signedUrl;
-			if (amazonS3RequestDto.getAction() == AmazonS3ActionType.UPLOAD) {
-				PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-					.putObjectRequest(req -> req.bucket(bucketName).key(objectKey))
-					.build();
+			String signedUrl = switch (amazonS3SignedUrlRequestDto.getAction()) {
+				case UPLOAD -> {
+					PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
+						.putObjectRequest(req -> req.bucket(bucketName).key(objectKey))
+						.build();
 
-				signedUrl = s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
-				log.info("Signed URL generated successfully for upload: {}", signedUrl);
-			}
-			else if (amazonS3RequestDto.getAction() == AmazonS3ActionType.DOWNLOAD) {
-				GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-					.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
-					.build();
+					String url = s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
+					log.info("Signed URL generated successfully for upload: {}", url);
+					yield url;
+				}
+				case DOWNLOAD -> {
+					GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
+						.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
+						.build();
 
-				signedUrl = s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
-				log.info("Signed URL generated successfully for download: {}", signedUrl);
-			}
-			else {
-				log.error("Invalid action type: {}", amazonS3RequestDto.getAction());
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_ACTION_TYPE);
-			}
+					String url = s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
+					log.info("Signed URL generated successfully for download: {}", url);
+					yield url;
+				}
+            };
 
-			return new ResponseEntityDto(false, signedUrl);
+			AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
+			responseDto.setSignedUrl(signedUrl);
+
+			return new ResponseEntityDto(false, responseDto);
 		}
 		catch (Exception e) {
 			log.error("Error generating signed URL: {}", e.getMessage(), e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED,
+					new String[] { e.getMessage() });
+		}
+	}
+
+	@Override
+	public ResponseEntityDto deleteFileFromS3(String objectKey) {
+		try {
+			if (objectKey == null || objectKey.isEmpty()) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
+			}
+
+			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+				.bucket(bucketName)
+				.key(objectKey)
+				.build();
+
+			DeleteObjectResponse response = s3Client.deleteObject(deleteObjectRequest);
+
+			int status = response.sdkHttpResponse().statusCode();
+			if (status >= 200 && status < 300) {
+				log.info("File deleted successfully: {}", objectKey);
+				return new ResponseEntityDto(false, "File deleted successfully");
+			}
+			else {
+				log.error("File deletion failed: {}", objectKey);
+				return new ResponseEntityDto(true, "File deletion failed");
+			}
+		}
+		catch (Exception e) {
+			log.error("Error deleting file: {}", e.getMessage(), e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED,
 					new String[] { e.getMessage() });
 		}
