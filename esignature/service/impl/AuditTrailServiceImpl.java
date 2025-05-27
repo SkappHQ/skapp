@@ -182,15 +182,29 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		AddressBook addressBook = envelope.getOwner();
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 
-		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
+		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
+		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
 
-		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
-			.map(AddressBook::getInternalUser)
-			.map(User::getUserId)
-			.filter(userId -> userId.equals(currentUser.getUserId()))
-			.isEmpty())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		if (isSenderRole) {
+			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
+					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
 
+			if (!isEnvelopeOwner) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+
+		}
+
+		if (isEmployee) {
+			Optional<Recipient> recipientOptional = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+
+			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
 		}
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
