@@ -179,15 +179,18 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 		Envelope envelope = envelopeOptional.get();
+		AddressBook addressBook = envelope.getOwner();
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 
-		Optional<Recipient> recipientOptional = envelope.getRecipients()
-			.stream()
-			.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
-					&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
-			.findFirst();
+		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
 
-		if (recipientOptional.isEmpty()) {
+		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
+			.map(AddressBook::getInternalUser)
+			.map(User::getUserId)
+			.filter(userId -> userId.equals(currentUser.getUserId()))
+			.isEmpty())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+
 		}
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
