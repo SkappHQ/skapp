@@ -116,27 +116,6 @@ public final class CertificateGenerator {
 		try {
 			SubjectPublicKeyInfo pubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 
-//			// Validate key strength - essential security requirement for digital
-//			// signatures
-//			if (keyPair.getPublic() instanceof java.security.interfaces.RSAPublicKey) {
-//				// Extract the actual bit length of the RSA key from the modulus
-//				int keySize = ((java.security.interfaces.RSAPublicKey) keyPair.getPublic()).getModulus().bitLength();
-//				// Enforce minimum 2048-bit keys as per NIST recommendations and industry
-//				// standards
-//				// Keys smaller than 2048 bits are vulnerable to factorization attacks
-//				if (keySize < 2048) {
-//					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-//							new String[] { "Key strength below 2048 bits" });
-//				}
-//			}
-//			else {
-//				// This certificate generator is specifically designed for RSA keys
-//				// Other key types would require different validation logic and possibly
-//				// different certificate parameters
-//				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-//						new String[] { "Unsupported key type for validation" });
-//			}
-
 			byte[] skiBytes = calculateIdentifier(pubKeyInfo);
 
 			// Subject Key Identifier
