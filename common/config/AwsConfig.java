@@ -9,6 +9,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.retries.StandardRetryStrategy;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
 public class AwsConfig {
@@ -35,6 +36,16 @@ public class AwsConfig {
 			.overrideConfiguration(ClientOverrideConfiguration.builder()
 				.retryStrategy(StandardRetryStrategy.builder().maxAttempts(maxAttempts).build())
 				.build())
+			.build();
+	}
+
+	@Bean
+	public S3Presigner s3Presigner() {
+		AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+
+		return S3Presigner.builder()
+			.region(Region.of(s3Region))
+			.credentialsProvider(StaticCredentialsProvider.create(credentials))
 			.build();
 	}
 

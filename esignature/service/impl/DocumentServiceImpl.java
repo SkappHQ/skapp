@@ -45,7 +45,6 @@ import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
@@ -283,8 +282,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		document.setCurrentSignOderNumber(document.getCurrentSignOderNumber() + 1);
-		document = documentRepository.save(document);
 
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
@@ -303,11 +300,12 @@ public class DocumentServiceImpl implements DocumentService {
 				rec.setInboxStatus(InboxStatus.WAITING);
 			}
 			else {
+				document.setCurrentSignOderNumber(rec.getSigningOrder());
 				rec.setStatus(RecipientStatus.NEED_TO_SIGN);
 				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 			}
 		}
-
+		document = documentRepository.save(document);
 		recipientRepository.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
@@ -390,7 +388,12 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		if (!recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+			if (recipient.getInboxStatus().equals(InboxStatus.DECLINED)) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_DECLINED);
+			}
+			else {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
+			}
 		}
 
 		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
