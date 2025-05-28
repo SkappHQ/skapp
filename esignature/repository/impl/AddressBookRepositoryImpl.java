@@ -42,8 +42,6 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	@Transactional
 	public PageDto fetchAddressBookWithPaginationAndSorting(AddressBookFilterDto addressBookFilterDto) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-
-		// Main query for data
 		CriteriaQuery<AddressBookUserData> query = cb.createQuery(AddressBookUserData.class);
 		Root<AddressBook> addressBookRoot = query.from(AddressBook.class);
 
