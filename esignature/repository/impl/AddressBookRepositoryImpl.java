@@ -42,6 +42,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	@Transactional
 	public PageDto fetchAddressBookWithPaginationAndSorting(AddressBookFilterDto addressBookFilterDto) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		// Main query for data
 		CriteriaQuery<AddressBookUserData> query = cb.createQuery(AddressBookUserData.class);
 		Root<AddressBook> addressBookRoot = query.from(AddressBook.class);
 
@@ -53,67 +55,108 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
 
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
-				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()))
-			.distinct(true);
+				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
 
+		// Count query
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<AddressBook> countRoot = countQuery.from(AddressBook.class);
+
+		Join<AddressBook, User> countInternalUserJoin = countRoot.join(AddressBook_.INTERNAL_USER, JoinType.LEFT);
+		Join<AddressBook, ExternalUser> countExternalUserJoin = countRoot.join(AddressBook_.EXTERNAL_USER,
+				JoinType.LEFT);
+		Join<User, Employee> countEmployeeJoin = countInternalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+
+		AddressBookUserView countUser = getAddressBookUserView(cb, countInternalUserJoin, countEmployeeJoin,
+				countExternalUserJoin);
+
+		countQuery.select(cb.count(countRoot));
+
+		// Apply filters to both queries
 		List<Predicate> predicates = new ArrayList<>();
+		List<Predicate> countPredicates = new ArrayList<>();
 
+		// Active records only
 		predicates.add(cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE)));
+		countPredicates.add(cb.isTrue(countRoot.get(AddressBook_.IS_ACTIVE)));
 
+		// User status filter
 		Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
 				cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
-
 		Predicate userStatusPredicate = cb.or(cb.isNull(internalUserJoin.get(User_.USER_ID)),
 				internalUserActivePredicate);
 		predicates.add(userStatusPredicate);
 
-		List<UserType> userTypes = addressBookFilterDto.getUserType();
+		Predicate countInternalUserActivePredicate = cb.and(cb.isNotNull(countInternalUserJoin.get(User_.USER_ID)),
+				cb.equal(countEmployeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+		Predicate countUserStatusPredicate = cb.or(cb.isNull(countInternalUserJoin.get(User_.USER_ID)),
+				countInternalUserActivePredicate);
+		countPredicates.add(countUserStatusPredicate);
 
+		// User type filter
+		List<UserType> userTypes = addressBookFilterDto.getUserType();
 		if (userTypes != null && userTypes.size() == 1) {
 			predicates.add(cb.equal(addressBookRoot.get(AddressBook_.TYPE), userTypes.getFirst()));
+			countPredicates.add(cb.equal(countRoot.get(AddressBook_.TYPE), userTypes.getFirst()));
 		}
 
+		// Keyword search
 		String keyword = addressBookFilterDto.getSearchKeyword();
 		if (keyword != null && !keyword.trim().isEmpty()) {
-			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
-			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
-			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
+			String searchTerm = keyword.toLowerCase() + "%";
 
+			// Main query predicates
+			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), searchTerm);
+			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), searchTerm);
+			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), searchTerm);
 			Predicate searchPredicate = cb.or(firstNameLike, lastNameLike, emailLike);
 			predicates.add(searchPredicate);
 
-			if (addressBookFilterDto.getSortOrder().isAscending()) {
-				query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()), cb.asc(user.email()));
-			}
-			else {
-				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()), cb.desc(user.email()));
-			}
+			// Count query predicates
+			Predicate countFirstNameLike = cb.like(cb.lower(countUser.firstName().as(String.class)), searchTerm);
+			Predicate countLastNameLike = cb.like(cb.lower(countUser.lastName().as(String.class)), searchTerm);
+			Predicate countEmailLike = cb.like(cb.lower(countUser.email().as(String.class)), searchTerm);
+			Predicate countSearchPredicate = cb.or(countFirstNameLike, countLastNameLike, countEmailLike);
+			countPredicates.add(countSearchPredicate);
+
+			// Add a consistent primary sorting by ID to ensure consistency across pages
+			Order relevanceOrder = cb.asc(cb.selectCase()
+				.when(cb.like(cb.lower(user.firstName().as(String.class)), searchTerm), 1)
+				.when(cb.like(cb.lower(user.lastName().as(String.class)), searchTerm), 2)
+				.when(cb.like(cb.lower(user.email().as(String.class)), searchTerm), 3)
+				.otherwise(4));
+
+			// Add a second order by addressBookId to ensure consistency across pages
+			query.orderBy(relevanceOrder, cb.asc(addressBookRoot.get("id")));
 		}
 		else {
+			// Regular sorting with consistent secondary sort
 			if (addressBookFilterDto.getSortOrder().isAscending()) {
-				query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()));
+				query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()), cb.asc(addressBookRoot.get("id")));
 			}
 			else {
-				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()));
+				query.orderBy(cb.desc(user.firstName()), cb.desc(user.lastName()), cb.asc(addressBookRoot.get("id")));
 			}
 		}
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		query.where(predArray);
+		// Apply predicates to queries
+		query.where(predicates.toArray(new Predicate[0]));
+		countQuery.where(countPredicates.toArray(new Predicate[0]));
 
+		// Pagination setup
 		int page = addressBookFilterDto.getPage();
 		int size = addressBookFilterDto.getSize();
 
+		// Get total count first
+		Long totalItems = entityManager.createQuery(countQuery).getSingleResult();
+		int totalPages = (int) Math.ceil((double) totalItems / size);
+
+		// Execute the main query with pagination
 		TypedQuery<AddressBookUserData> typedQuery = entityManager.createQuery(query);
-		long totalItems = typedQuery.getResultList().size();
 		typedQuery.setFirstResult(page * size);
 		typedQuery.setMaxResults(size);
 
-		int totalPages = (int) Math.ceil((double) totalItems / size);
-
+		// Create result
 		PageDto pageDto = new PageDto();
-
 		pageDto.setTotalItems(totalItems);
 		pageDto.setCurrentPage(page);
 		pageDto.setTotalPages(totalPages);
