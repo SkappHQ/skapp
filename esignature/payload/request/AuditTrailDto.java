@@ -1,7 +1,6 @@
 package com.skapp.enterprise.esignature.payload.request;
 
 import com.skapp.enterprise.esignature.type.AuditAction;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +15,6 @@ public class AuditTrailDto {
 	private Long envelopeId;
 
 	private Long recipientId;
-
-	@NotBlank(message = "validation.audit_trail.ip_address.not_blank")
-	private String ipAddress;
 
 	@NotNull(message = "validation.audit_trail.action.not_blank")
 	private AuditAction action;

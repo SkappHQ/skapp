@@ -16,7 +16,11 @@ public class DocumentAccessLinkDataResponseDto {
 
 	private String email;
 
+	private String senderEmail;
+
 	private Long envelopeId;
+
+	private String subject;
 
 	private EnvelopeStatus envelopeStatus;
 

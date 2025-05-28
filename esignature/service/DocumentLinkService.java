@@ -22,16 +22,15 @@ public interface DocumentLinkService {
 	DocumentLinkData createDocumentLinkData(DocumentAccessUrlDto documentAccessUrlDto, Recipient recipient,
 			Document document, Envelope envelope);
 
-	String getRecipientDocumentAccessUrlByPermissionType(Envelope envelope, Recipient recipient,
-			DocumentPermissionType permissionType);
-
-	DocumentLink setDocumentAccessUrlProperties(DocumentLink documentLink);
-
-	ResponseEntityDto getRecipientDocumentData(Long documentId, Long recipientId);
-
-	DocumentPermissionType getPermissionTypeByToken(String token);
+	ResponseEntityDto getRecipientDocumentData(Long documentId, Long recipientId, boolean isDocAccess);
 
 	String getDocumentAccessUrlForNudge(Envelope envelope, Recipient recipient);
+
+	DocumentLink getDocumentLinkFromToken();
+
+	void validateTokenFlows(boolean isDocAccess, Recipient recipient, Long documentId);
+
+	ResponseEntityDto getTokenFromUuid(String uuid, String state);
 
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}

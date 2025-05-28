@@ -13,16 +13,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 @Slf4j
@@ -46,7 +44,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final Color TEXT_COLOR = new Color(82, 82, 91);
 
-	private static final float FONT_SIZE = 5.0f;
+	private static final float FONT_SIZE = 8.0f;
 
 	private static final float CORNER_RADIUS = 5.0f;
 
@@ -54,9 +52,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float BORDER_IMAGE_PADDING = 5.0f;
 
+	private static final float Y_OFFSET_VALUE = 2.0f;
+
+	private static final float X_OFFSET_VALUE = 0.8f;
+
 	private static final String DEFAULT_LABEL = "Signed by";
 
-	private static final String FONT_PATH = "src/main/resources/enterprise/fonts/Poppins/Poppins-Regular.ttf";
+	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
 	private final MessageUtil messageUtil;
 
@@ -86,7 +88,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
-				addTextField(field, contentStream, pageHeight);
+				addTextField(field, contentStream, pageHeight, document);
 			}
 
 			document.save(outputStream);
@@ -124,7 +126,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
 					contentStream.beginText();
-					PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+					PDType0Font font = loadFont(document);
+
 					contentStream.setFont(font, UUID_FONT_SIZE);
 
 					// take co-ordinated from bottom-left
@@ -186,23 +189,30 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return document.getPage(pageNumber - 1);
 	}
 
-	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight) {
+	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
-			float adjustedY = pageHeight - field.getYposition();
+			// Adjust baseline offset for Y position
+			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
+			float adjustedY = pageHeight - field.getYposition() - yOffset;
+
+			// Adjust baseline offset for x position
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+			float adjustedX = field.getXposition() + xOffset;
+
 			contentStream.beginText();
-			PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+			PDType0Font font = loadFont(document);
 			contentStream.setFont(font, DEFAULT_FONT_SIZE);
 
-			// take co-ordinated from bottom-left
-			contentStream.newLineAtOffset(field.getXposition(), adjustedY);
+			// Position text at adjusted coordinates
+			contentStream.newLineAtOffset(adjustedX, adjustedY);
 			contentStream.showText(field.getFieldValue());
 			contentStream.endText();
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
-
 	}
 
 	private void validateField(FieldSignDto field) {
@@ -300,10 +310,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private PDType0Font loadFont(PDDocument document) {
-		try {
-			File fontFile = new File(FONT_PATH);
+		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(FONT_PATH)) {
 
-			return PDType0Font.load(document, fontFile);
+			if (fontStream == null) {
+				log.error("font file not found");
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
+			}
+
+			return PDType0Font.load(document, fontStream);
 		}
 		catch (IOException e) {
 			log.error("Error processing: loadFont : {}", e.getMessage());

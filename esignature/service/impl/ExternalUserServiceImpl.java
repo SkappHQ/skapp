@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
+import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -16,6 +17,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserRepository;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.utill.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -83,15 +85,21 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 
 		if (externalUserDto.getFirstName() != null) {
+			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
+			EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
 			externalUser.setFirstName(externalUserDto.getFirstName());
 		}
 		if (externalUserDto.getLastName() != null) {
+			externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
+			EsignValidations.validateExternalUserName(externalUserDto.getLastName());
 			externalUser.setLastName(externalUserDto.getLastName());
 		}
 		if (externalUserDto.getEmail() != null) {
+			Validations.validateEmail(externalUserDto.getEmail());
 			externalUser.setEmail(externalUserDto.getEmail());
 		}
 		if (externalUserDto.getPhone() != null) {
+			Validations.validateContactNo(externalUserDto.getPhone());
 			externalUser.setPhone(externalUserDto.getPhone());
 		}
 
@@ -125,7 +133,9 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 
 		addressBook.setIsActive(false);
-		externalUser.setEmail(PeopleConstants.DELETED_PREFIX + externalUser.getEmail());
+		// Add timestamp to make the deleted email unique
+		String timestamp = String.valueOf(System.currentTimeMillis());
+		externalUser.setEmail(PeopleConstants.DELETED_PREFIX + timestamp + "_" + externalUser.getEmail());
 		log.info("deleteExternalUser: ExternalUser email updated to {}", externalUser.getEmail());
 		addressBookDao.save(addressBook);
 		externalUserRepository.save(externalUser);

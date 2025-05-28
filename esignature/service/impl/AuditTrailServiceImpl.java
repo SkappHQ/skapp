@@ -3,13 +3,13 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -25,6 +25,9 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
+import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,12 +54,19 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final AddressBookDao addressBookDao;
 
+	private final DocumentLinkService documentLinkService;
+
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
 
 	@Override
-	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto) {
+	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress, boolean isDocAccess) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
+
+		if (!AuditAction.isWebAllowedAction(auditTrailDto.getAction())) {
+			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
+		}
 
 		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
 			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
@@ -69,6 +79,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
 				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 			});
+
+			documentLinkService.validateTokenFlows(isDocAccess, recipient, null);
 		}
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
@@ -97,14 +109,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setEnvelope(envelope);
 		auditTrail.setRecipient(recipient);
 
-		if (auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV4_VALIDATION_PATTERN)
-				|| auditTrailDto.getIpAddress().matches(EpValidationConstants.IPV6_VALIDATION_PATTERN)) {
-			auditTrail.setIpAddress(auditTrailDto.getIpAddress());
-		}
-		else {
-			log.error("Invalid IP address: {}", auditTrailDto.getIpAddress());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_IP_ADDRESS);
-		}
+		auditTrail.setIpAddress(ipAddress);
+
 		auditTrail.setAction(auditTrailDto.getAction());
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -165,10 +171,40 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
 
+		User currentUser = userService.getCurrentUser();
+
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
 			log.error("envelope with ID {} not found", envelopeId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+		Envelope envelope = envelopeOptional.get();
+		AddressBook addressBook = envelope.getOwner();
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
+		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
+
+		if (isSenderRole) {
+			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
+					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+
+			if (!isEnvelopeOwner) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+
+		}
+
+		if (isEmployee) {
+			Optional<Recipient> recipientOptional = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+
+			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
 		}
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
@@ -198,7 +234,11 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			responseDto.setHash(auditTrail.getHash());
 
-			if (auditTrail.getRecipient() == null) {
+			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
+				responseDto.setActionDoneByName("");
+				log.debug("Action done by: null (both recipient and address book user are null)");
+			}
+			else if (auditTrail.getRecipient() == null) {
 				responseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
 				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
@@ -215,6 +255,26 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Successfully fetched {} audit trails for envelopeId: {}", responseDtoList.size(), envelopeId);
 
 		return new ResponseEntityDto(false, responseDtoList);
+	}
+
+	@Override
+	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
+			AddressBook addressBook, String ipAddress) {
+		AuditTrail auditTrail = new AuditTrail();
+
+		auditTrail.setEnvelope(envelope);
+		auditTrail.setRecipient(recipient);
+		auditTrail.setAddressBookUser(addressBook);
+		auditTrail.setAction(action);
+		auditTrail.setIpAddress(ipAddress);
+
+		auditTrail.setIsAuthorized(true);
+
+		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
+		auditTrail.setTimestamp(timestamp);
+		auditTrail.setHash(generateHashToValidate(auditTrail));
+
+		return auditTrail;
 	}
 
 	private String generateHashToValidate(AuditTrail auditTrail) {

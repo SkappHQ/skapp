@@ -19,6 +19,6 @@ public interface EnvelopeRepository {
 	Page<Envelope> getAllSentEnvelopes(Long currentUserId, EnvelopeSentFilterDto envelopeSentFilterDto,
 			boolean isAllSentEnvelopes);
 
-	Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId);
+	Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId, boolean isAllCount);
 
 }

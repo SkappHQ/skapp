@@ -1,15 +1,14 @@
 package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.model.Organization;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -45,9 +44,7 @@ import com.skapp.enterprise.esignature.type.SignType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -56,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -64,13 +61,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RecipientServiceImpl implements RecipientService {
 
-	private final OrganizationDao organizationDao;
-
-	public static final String TOKEN = "token";
-
-	public static final String ENVELOP_LINK = "/sign/sent/envelope/";
-
 	private final RecipientRepository recipientRepository;
+
+	private final DocumentLinkRepository documentLinkRepository;
 
 	private final EsignMapper eSignMapper;
 
@@ -82,12 +75,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final DocumentLinkService documentLinkService;
 
-	private final DocumentLinkRepository documentLinkRepository;
-
 	private final EsignEmailService esignEmailService;
-
-	@Value("${app.protocol}")
-	private String protocol;
 
 	@Override
 	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
@@ -181,6 +169,39 @@ public class RecipientServiceImpl implements RecipientService {
 		List<Recipient> recipientList = recipientListOptional.get();
 
 		return getNextInLineRecipients(recipientId, recipientList);
+	}
+
+	@Async
+	@Override
+	public void sendDocumentCompletedEmailNotifications(Envelope envelope) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		List<DocumentLink> documentLinkList = new ArrayList<>();
+
+		Optional.ofNullable(envelope)
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
+				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
+						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
+
+				DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
+						documentAccessUrlDto, mailRecipient, envelope.getDocuments().getFirst(), envelope);
+
+				String documentAccessUrl = documentLinkData.accessUrl();
+
+				documentLinkList.add(documentLinkData.documentLink());
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
+
+			}));
+
+		documentLinkRepository.saveAll(documentLinkList);
+
+		esignEmailService.sendCompleteEmailToSender(envelope);
 	}
 
 	private EpEsignEmailEnvelopeDataDto getEpEsignEmailEnvelopeDataDto(Envelope envelopeData) {
@@ -295,6 +316,7 @@ public class RecipientServiceImpl implements RecipientService {
 				handleReminderScheduling(epEsignEnvelopeRecipientEmailDynamicFields, epEsignEmailDataDto, userEmail,
 						recipientUpdateDto);
 			}
+			recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
 		}
 
 		log.info("sendEnvelopeToRecipientEmail: execution ended");
@@ -337,7 +359,6 @@ public class RecipientServiceImpl implements RecipientService {
 		// Update recipient DTO with batch ID and scheduled status
 		recipientUpdateDto.setReminderBatchId(obtainedBatchId);
 		recipientUpdateDto.setReminderStatus(EmailReminderStatus.SCHEDULED);
-		recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
 	}
 
 	@Override
@@ -432,7 +453,7 @@ public class RecipientServiceImpl implements RecipientService {
 				EmailStatus.SENT);
 
 		// If no recipients found for the given Document Id, return an empty response
-		if (optionalRecipientList.isPresent()) {
+		if (optionalRecipientList.isPresent() && !optionalRecipientList.get().isEmpty()) {
 
 			List<Recipient> recipientList = optionalRecipientList.get();
 
@@ -483,25 +504,20 @@ public class RecipientServiceImpl implements RecipientService {
 						epEsignEnvelopeRecipientEmailDynamicFields, rcpt.getAddressBook().getEmail());
 			});
 
-			String tenant = TenantContext.getCurrentTenant();
 			// Send the mail to the Sender
 			String documentName = concatDocumentNames(envelope.getDocuments());
 
 			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					userService.getCurrentUser().getEmployee().getFirstName() + " "
-							+ userService.getCurrentUser().getEmployee().getLastName(),
-					envelopeId, envelope.getSubject(), envelope.getMessage(), documentName, voidOrDeclinedReason,
-					declinedBy, title, null, senderName, senderEmail);
+					envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
+					documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
 			epEsignEnvelopeRecipientEmailDynamicFields
 				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
-			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
-			organization.ifPresent(value -> {
-				epEsignEnvelopeRecipientEmailDynamicFields.setDocumentAccessUrl(
-						protocol + "://" + tenant + "." + value.getAppUrl() + ENVELOP_LINK + envelope.getId());
-			});
+
+			epEsignEnvelopeRecipientEmailDynamicFields
+				.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
 
 			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
-					epEsignEnvelopeRecipientEmailDynamicFields, userService.getCurrentUser().getEmail());
+					epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
 
 			envelopeDetailedResponseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
 
@@ -513,7 +529,33 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Override
 	public ResponseEntityDto updateRecipientConsent(boolean isConsent) {
-		Recipient recipient = getRecipientFromToken();
+		Recipient recipient = documentLinkService.getDocumentLinkFromToken().getRecipientId();
+
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CONSENT_PROHIBITED);
+		}
+
+		recipient.setConsent(isConsent);
+		recipientRepository.save(recipient);
+		return new ResponseEntityDto(false, "Recipient Consent Updated");
+	}
+
+	@Override
+	public ResponseEntityDto updateInternalRecipientConsent(Long recipientId, boolean isConsent) {
+		User currentUser = userService.getCurrentUser();
+
+		Recipient recipient = recipientRepository.findById(recipientId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		User internalUser = recipient.getAddressBook().getInternalUser();
+		if (internalUser == null || !Objects.equals(internalUser.getUserId(), currentUser.getUserId())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		}
+
+		if (recipient.getStatus() != RecipientStatus.NEED_TO_SIGN) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CONSENT_PROHIBITED);
+		}
+
 		recipient.setConsent(isConsent);
 		recipientRepository.save(recipient);
 		return new ResponseEntityDto(false, "Recipient Consent Updated");
@@ -536,41 +578,15 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		String documentLinkUrl = documentLinkService.getDocumentAccessUrlForNudge(recipient.getEnvelope(), recipient);
+		if (documentLinkUrl == null) {
+			log.error("sendNudgeEmail: Document link URL not found for recipient with ID {}", recipientId);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+		}
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");
-	}
-
-	@Transactional
-	@Override
-	public ResponseEntityDto declineRecipientInEnvelope(Recipient recipient) {
-
-		recipient.setStatus(RecipientStatus.DECLINED);
-		recipientRepository.save(recipient);
-
-		List<Recipient> envelopeRecipients = recipientRepository.findByEnvelopeId(recipient.getEnvelope().getId())
-			.orElse(new ArrayList<>());
-
-		envelopeRecipients.stream()
-			.filter(recipientToUpdate -> !recipientToUpdate.getId().equals(recipient.getId()))
-			.forEach(recipientToUpdate -> {
-				if (recipientToUpdate.getMemberRole() == MemberRole.SIGNER
-						&& recipientToUpdate.getStatus() == RecipientStatus.NEED_TO_SIGN) {
-					recipientToUpdate.setStatus(RecipientStatus.EMPTY);
-				}
-				else if (recipientToUpdate.getMemberRole() == MemberRole.CC) {
-					recipientToUpdate.setStatus(RecipientStatus.COMPLETED);
-				}
-				recipientRepository.save(recipientToUpdate);
-			});
-
-		// Send email notifications for the envelope
-		sendEmailWhenDocumentIsVoidedOrDeclined(recipient.getEnvelope().getId());
-
-		log.info("declineEnvelope: execution ended");
-		return new ResponseEntityDto(false, "Envelope declined successfully");
 	}
 
 	@Transactional
@@ -595,32 +611,6 @@ public class RecipientServiceImpl implements RecipientService {
 
 		log.info("All recipients for envelope ID {} have been voided.", envelopeId);
 		return new ResponseEntityDto(false, "All recipients voided successfully");
-	}
-
-	@Override
-	public Recipient getRecipientFromToken() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		if (authentication == null || authentication.getDetails() == null) {
-			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-
-		try {
-			if (!(authentication.getDetails() instanceof Map)) {
-				throw new AuthenticationException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA);
-			}
-
-			Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-			String token = (String) details.get(TOKEN);
-
-			DocumentLink documentLink = documentLinkRepository.findByToken(token)
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_OR_EXPIRED_LINK));
-
-			return documentLink.getRecipientId();
-		}
-		catch (Exception ex) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_LINK);
-		}
 	}
 
 	/**
