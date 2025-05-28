@@ -89,4 +89,6 @@ public class EpCommonConstants {
 
 	public static final String EMAIL_KEY = "email";
 
+	public static final int S3_SIGNED_URL_DURATION = 15;
+
 }
