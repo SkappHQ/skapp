@@ -127,7 +127,8 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			query.orderBy(relevanceOrder, cb.asc(addressBookRoot.get("id")));
 		}
 		else {
-			// Regular sorting with consistent secondary sort
+			//The "id" is just used as a tie-breaker to ensure stable sorting
+			//Using the same direction for the "id" in both cases maintains consistency in how ties are broken
 			if (addressBookFilterDto.getSortOrder().isAscending()) {
 				query.orderBy(cb.asc(user.firstName()), cb.asc(user.lastName()), cb.asc(addressBookRoot.get("id")));
 			}
