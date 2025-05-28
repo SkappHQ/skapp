@@ -7,7 +7,9 @@ import com.skapp.enterprise.common.service.AmazonS3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +34,14 @@ public class AmazonS3Controller {
 	public ResponseEntity<ResponseEntityDto> deleteFileFromS3(
 			@Valid @RequestBody AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto) {
 		ResponseEntityDto response = amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/esign/files/signed-url", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getPreSignedS3UrlFromEsignToken(
+			@Valid @RequestBody AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
+		ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
