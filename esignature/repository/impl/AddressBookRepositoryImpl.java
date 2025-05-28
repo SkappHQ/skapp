@@ -153,7 +153,6 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		typedQuery.setFirstResult(page * size);
 		typedQuery.setMaxResults(size);
 
-		// Create result
 		PageDto pageDto = new PageDto();
 		pageDto.setTotalItems(totalItems);
 		pageDto.setCurrentPage(page);
