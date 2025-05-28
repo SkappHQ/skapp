@@ -47,7 +47,7 @@ public class AddressBookController {
 
 	@Operation(summary = "Update External User",
 			description = "This endpoint allows updating only specific fields of an external user.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	@PatchMapping("/edit-external-user/{id}")
 	public ResponseEntity<ResponseEntityDto> editExternalUser(@PathVariable Long id,
 			@Valid @RequestBody ExternalPatchUserDto externalPatchUserDto) {
@@ -58,7 +58,7 @@ public class AddressBookController {
 
 	@Operation(summary = "Soft Delete External User",
 			description = "Marks an external user as DELETED and updates their email.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ESIGN_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	@PatchMapping("/delete-external-user/{id}")
 	public ResponseEntity<ResponseEntityDto> deleteExternalUser(@PathVariable Long id) {
 		ResponseEntityDto response = externalUserService.deleteExternalUser(id);
