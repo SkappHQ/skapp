@@ -32,7 +32,7 @@ public interface DocumentLinkService {
 
 	ResponseEntityDto getTokenFromUuid(String uuid, String state);
 
-	ResponseEntityDto getTokenResendStatus(ResendAccessUrlDto resendAccessUrlDto);
+	ResponseEntityDto getTokenResendStatus(String token);
 
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}

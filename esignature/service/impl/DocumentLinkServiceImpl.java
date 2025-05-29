@@ -495,11 +495,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public ResponseEntityDto getTokenResendStatus(ResendAccessUrlDto resendAccessUrlDto) {
+	public ResponseEntityDto getTokenResendStatus(@NotNull String token) {
 
 		log.info("getTokenResendStatus: process started");
 
-		String token = resendAccessUrlDto.getToken();
 		if (token == null || token.isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID);
 		}
