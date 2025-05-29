@@ -904,7 +904,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		ObjectMapper objectMapper = new ObjectMapper();
 		com.fasterxml.jackson.databind.node.ArrayNode metadata = objectMapper.createArrayNode();
 		com.fasterxml.jackson.databind.node.ObjectNode previousOwnerNode = objectMapper.createObjectNode();
-		previousOwnerNode.put("name", "previousOwner");
+		previousOwnerNode.put("name", "currentOwner");
 		previousOwnerNode.put("value", owner != null ? owner.getName() : null);
 		metadata.add(previousOwnerNode);
 
