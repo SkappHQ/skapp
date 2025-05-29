@@ -844,8 +844,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
-		AddressBook owner = envelope.getOwner();
 		if (esignRole.equals(Role.ESIGN_SENDER)) {
+			AddressBook owner = envelope.getOwner();
 			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
@@ -905,7 +905,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		com.fasterxml.jackson.databind.node.ArrayNode metadata = objectMapper.createArrayNode();
 		com.fasterxml.jackson.databind.node.ObjectNode previousOwnerNode = objectMapper.createObjectNode();
 		previousOwnerNode.put("name", "currentOwner");
-		previousOwnerNode.put("value", owner != null ? owner.getName() : null);
+		previousOwnerNode.put("value", newOwner.getName());
 		metadata.add(previousOwnerNode);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
