@@ -88,6 +88,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -505,13 +506,23 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<EnvelopeInboxData> envelopeInboxDataList = new ArrayList<>();
 		envelopePage.getContent().forEach(envelope -> {
 			EnvelopeInboxData envelopeInboxData = eSignMapper.envelopeToEnvelopeInboxData(envelope);
-			Optional<Recipient> optionalRecipient = envelope.getRecipients()
+
+			List<Recipient> orderedRecipients = envelope.getRecipients()
 				.stream()
-				.filter(env -> env.getAddressBook().getUserId().equals(currentUser.getUserId()))
-				.findFirst();
-			if (optionalRecipient.isPresent()) {
-				envelopeInboxData.setStatus(optionalRecipient.get().getInboxStatus());
-				envelopeInboxData.setReceivedDate(optionalRecipient.get().getReceivedAt());
+				.filter(recipient -> recipient.getAddressBook() != null
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId())
+						&& recipient.getStatus() != null && recipient.getStatus() != RecipientStatus.EMPTY)
+				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
+				.toList();
+
+			Recipient resultRecipient = orderedRecipients.stream()
+				.filter(r -> r.getStatus() == RecipientStatus.NEED_TO_SIGN)
+				.findFirst()
+				.orElseGet(() -> orderedRecipients.isEmpty() ? null : orderedRecipients.getFirst());
+
+			if (resultRecipient != null) {
+				envelopeInboxData.setStatus(resultRecipient.getInboxStatus());
+				envelopeInboxData.setReceivedDate(orderedRecipients.getLast().getReceivedAt());
 			}
 
 			envelopeInboxDataList.add(envelopeInboxData);
