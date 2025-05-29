@@ -8,7 +8,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

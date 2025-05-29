@@ -13,15 +13,43 @@ import java.util.Base64;
 public class AESKeyLoader {
 
 	@Value("${esign.private-key.aes-secret-key}")
-	private String aesSecretKey;
+	private char[] aesSecretKey;
+
+	private static final int[] VALID_KEY_SIZES = { 16, 24, 32 };
 
 	public SecretKey getAESKeyFromEnv() {
-		String secretKeyBase64 = aesSecretKey;
-		if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
+		if (aesSecretKey == null || aesSecretKey.length == 0) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AES_KEY_NOT_FOUND);
 		}
-		byte[] keyBytes = Base64.getDecoder().decode(secretKeyBase64);
-		return new SecretKeySpec(keyBytes, "AES");
+
+		try {
+
+			java.nio.ByteBuffer byteBuffer = java.nio.charset.StandardCharsets.UTF_8
+				.encode(java.nio.CharBuffer.wrap(aesSecretKey));
+			byte[] keyBytes = new byte[byteBuffer.remaining()];
+			byteBuffer.get(keyBytes);
+			keyBytes = Base64.getDecoder().decode(keyBytes);
+
+			boolean validKeySize = false;
+			for (int size : VALID_KEY_SIZES) {
+				if (keyBytes.length == size) {
+					validKeySize = true;
+					break;
+				}
+			}
+			if (!validKeySize) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_AES_KEY_SIZE);
+			}
+			SecretKey key = new SecretKeySpec(keyBytes, "AES");
+
+			// Overwrite the keyBytes array to remove sensitive data from memory
+			java.util.Arrays.fill(keyBytes, (byte) 0);
+
+			return key;
+		}
+		catch (IllegalArgumentException e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_AES_KEY_FORMAT);
+		}
 	}
 
 }

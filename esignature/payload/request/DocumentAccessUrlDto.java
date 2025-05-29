@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.payload.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
-import com.skapp.enterprise.esignature.utill.deserializer.DocumentPermissionTypeDeserializer;
+import com.skapp.enterprise.esignature.util.deserializer.DocumentPermissionTypeDeserializer;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

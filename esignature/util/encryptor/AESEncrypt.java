@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill.encryptor;
+package com.skapp.enterprise.esignature.util.encryptor;
 
 import com.skapp.community.common.constant.EncryptionDecryptionAlgorithmConstants;
 import com.skapp.community.common.exception.ModuleException;
@@ -14,10 +14,16 @@ public class AESEncrypt {
 
 	private static final int TAG_LENGTH = 128;
 
+	private static final int IV_LENGTH_VALIDATE = 16;
+
 	private AESEncrypt() {
 	}
 
 	public static String encryptPrivateKey(PrivateKey privateKey, SecretKey aesKey, byte[] iv) {
+		if (privateKey == null || aesKey == null || iv == null || iv.length != IV_LENGTH_VALIDATE) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
+		}
+
 		try {
 			byte[] privateKeyBytes = privateKey.getEncoded();
 
@@ -28,11 +34,9 @@ public class AESEncrypt {
 			byte[] encryptedData = cipher.doFinal(privateKeyBytes);
 
 			return Base64.getEncoder().encodeToString(encryptedData);
-
 		}
 		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION,
-					new String[] { e.getMessage() });
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_PRIVATE_KEY_ENCRYPTION, null);
 		}
 	}
 

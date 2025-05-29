@@ -3,7 +3,7 @@ package com.skapp.enterprise.esignature.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

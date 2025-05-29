@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill;
+package com.skapp.enterprise.esignature.util;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,13 +35,13 @@ public class EnvelopeUuidGenerator {
 			if (i > 0 && i % SECTION_LENGTH == 0) {
 				result.append(DIVIDER);
 			}
-
 			int index;
 			if (i < TOTAL_ID_LENGTH / 2) {
-				index = (int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length;
+				index = Math.abs((int) ((combinedBits1 >> (i * 3)) & 0x3F) % ALLOWED_CHARS.length);
 			}
 			else {
-				index = (int) ((combinedBits2 >> ((i - TOTAL_ID_LENGTH / 2) * 3)) & 0x3F) % ALLOWED_CHARS.length;
+				index = Math
+					.abs((int) ((combinedBits2 >> ((i - TOTAL_ID_LENGTH / 2) * 3)) & 0x3F) % ALLOWED_CHARS.length);
 			}
 
 			result.append(ALLOWED_CHARS[index]);
