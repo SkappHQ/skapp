@@ -183,13 +183,23 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
 
+			// For internal users, only include if Employee status is ACTIVE
+			Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
+					cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
+			// For external users, just check if external user is present (as per address
+			// book)
+			Predicate externalUserPredicate = cb.isNotNull(externalUserJoin.get(ExternalUser_.ID));
+
+			Predicate userTypePredicate = cb.or(internalUserActivePredicate, externalUserPredicate);
+
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
 
 			Predicate keywordCondition = cb.or(emailLike, firstNameLike, lastNameLike);
 
-			query.where(cb.and(keywordCondition, isActivePredicate));
+			query.where(cb.and(isActivePredicate, userTypePredicate, keywordCondition));
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)
