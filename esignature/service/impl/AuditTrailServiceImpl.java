@@ -259,7 +259,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	@Override
 	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook, String ipAddress) {
+			AddressBook addressBook, String ipAddress, JsonNode metadata) {
 		AuditTrail auditTrail = new AuditTrail();
 
 		auditTrail.setEnvelope(envelope);
@@ -267,6 +267,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
+		auditTrail.setMetadata(metadata);
 
 		auditTrail.setIsAuthorized(true);
 

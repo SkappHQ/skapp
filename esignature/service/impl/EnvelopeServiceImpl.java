@@ -194,7 +194,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		List<AuditTrail> auditTrails = new ArrayList<>();
 		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
-				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null);
+				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null, null);
 
 		auditTrails.add(auditTrailCreate);
 
@@ -255,7 +255,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		documentDao.saveAll(updatedDocuments);
 
 		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
-				envelope.getOwner(), null);
+				envelope.getOwner(), null, null);
 
 		auditTrails.add(auditTrailSent);
 
@@ -803,7 +803,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_VOIDED,
-				addressBook, ipAddress);
+				addressBook, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
@@ -844,9 +844,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
-
+		AddressBook owner = envelope.getOwner();
 		if (esignRole.equals(Role.ESIGN_SENDER)) {
-			AddressBook owner = envelope.getOwner();
 			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
@@ -902,8 +901,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
+		ObjectMapper objectMapper = new ObjectMapper();
+		com.fasterxml.jackson.databind.node.ObjectNode metadata = objectMapper.createObjectNode();
+		metadata.put("previousOwner", owner != null ? owner.getName() : null);
+
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress);
+				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
 		auditTrailDao.save(auditTrail);
 
 		log.info("transferEnvelopeCustody: execution ended");
@@ -970,7 +973,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-				AuditAction.ENVELOPE_DECLINED, null, ipAddress);
+				AuditAction.ENVELOPE_DECLINED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
@@ -997,7 +1000,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelopeDao.save(envelope);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null, null);
+					AuditAction.ENVELOPE_EXPIRED, null, null, null);
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
