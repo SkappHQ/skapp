@@ -844,6 +844,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
+
 		if (esignRole.equals(Role.ESIGN_SENDER)) {
 			AddressBook owner = envelope.getOwner();
 			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
