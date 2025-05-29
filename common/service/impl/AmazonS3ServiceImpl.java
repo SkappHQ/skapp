@@ -96,21 +96,19 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		try {
 			log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
 
-			String objectKey = amazonS3SignedUrlRequestDto.getFolderPath();
-			if (objectKey == null || objectKey.isEmpty()) {
+			String folderPath = amazonS3SignedUrlRequestDto.getFolderPath();
+			if (folderPath == null || folderPath.isEmpty()) {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 			}
 
-			objectKey = bucketName + "/" + amazonS3SignedUrlRequestDto.getFolderPath();
+			String objectKey = bucketName + "/" + amazonS3SignedUrlRequestDto.getFolderPath();
 
-			String finalObjectKey = objectKey;
-			String finalObjectKey1 = objectKey;
 			String signedUrl = switch (amazonS3SignedUrlRequestDto.getAction()) {
 				case UPLOAD -> {
 					PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
 						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
 						.putObjectRequest(req -> req.bucket(bucketName)
-							.key(finalObjectKey)
+							.key(objectKey)
 							.contentType(amazonS3SignedUrlRequestDto.getFileType()))
 						.build();
 
@@ -119,7 +117,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 				case DOWNLOAD -> {
 					GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
 						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-						.getObjectRequest(req -> req.bucket(bucketName).key(finalObjectKey1))
+						.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
 						.build();
 
 					yield s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
