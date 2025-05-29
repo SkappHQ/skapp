@@ -902,8 +902,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		com.fasterxml.jackson.databind.node.ObjectNode metadata = objectMapper.createObjectNode();
-		metadata.put("previousOwner", owner != null ? owner.getName() : null);
+		com.fasterxml.jackson.databind.node.ArrayNode metadata = objectMapper.createArrayNode();
+		com.fasterxml.jackson.databind.node.ObjectNode previousOwnerNode = objectMapper.createObjectNode();
+		previousOwnerNode.put("name", "previousOwner");
+		previousOwnerNode.put("value", owner != null ? owner.getName() : null);
+		metadata.add(previousOwnerNode);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
 				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
