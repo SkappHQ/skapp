@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.utill.deserializer;
+package com.skapp.enterprise.esignature.util.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

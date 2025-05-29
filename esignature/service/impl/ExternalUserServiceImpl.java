@@ -17,7 +17,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserRepository;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
-import com.skapp.enterprise.esignature.utill.EsignValidations;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
