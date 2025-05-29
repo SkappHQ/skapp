@@ -829,7 +829,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId) {
+	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress) {
 		log.info("transferEnvelopeCustody: execution started");
 
 		User currentUser = userService.getCurrentUser();
@@ -898,6 +898,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBook newOwner = addressBookOptional.get();
 		envelope.setOwner(newOwner);
 		envelopeDao.save(envelope);
+
+		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress);
+		auditTrailDao.save(auditTrail);
 
 		log.info("transferEnvelopeCustody: execution ended");
 		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");

@@ -130,8 +130,10 @@ public class EnvelopeController {
 			@RequestParam @Schema(description = "ID of the envelope to transfer custody",
 					example = "1") Long envelopeId,
 			@RequestParam @Schema(description = "ID of the new owner in the address book",
-					example = "2") Long addressbookId) {
-		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId);
+					example = "2") Long addressbookId,
+			HttpServletRequest request) {
+		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId,
+				EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
