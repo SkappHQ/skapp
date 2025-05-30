@@ -187,8 +187,7 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
 					cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
-			// For external users, just check if external user is present (as per address
-			// book)
+			// For external users, just check if external user is present
 			Predicate externalUserPredicate = cb.isNotNull(externalUserJoin.get(ExternalUser_.ID));
 
 			Predicate userTypePredicate = cb.or(internalUserActivePredicate, externalUserPredicate);
