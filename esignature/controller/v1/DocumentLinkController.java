@@ -73,4 +73,14 @@ public class DocumentLinkController {
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Check Resend Status of Document Access Token",
+			description = "Retrieves the current resend status of a document access token.")
+	@GetMapping(value = "/token/resend-status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getTokenResendStatus(@RequestParam String token) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getTokenResendStatus(token);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
 }

@@ -24,6 +24,7 @@ import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentTokenResendStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
@@ -491,6 +492,26 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		catch (Exception ex) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getTokenResendStatus(@NotNull String token) {
+
+		log.info("getTokenResendStatus: process started");
+
+		if (token == null || token.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID);
+		}
+
+		DocumentLink documentLink = documentLinkRepository.findByToken(token)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID));
+
+		DocumentTokenResendStatusResponseDto documentTokenResendStatusResponseDto = new DocumentTokenResendStatusResponseDto();
+
+		documentTokenResendStatusResponseDto.setResend(documentLink.isResend());
+		log.info("getTokenResendStatus: process end");
+
+		return new ResponseEntityDto(false, documentTokenResendStatusResponseDto);
 	}
 
 	private String generateAndEnsureUniqueUuidWithRetry() {

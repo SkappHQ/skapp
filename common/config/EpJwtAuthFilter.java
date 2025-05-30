@@ -58,7 +58,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field", "/v1/ep/esign/envelopes/decline",
 			"/v1/ep/esign/envelopes/signature-certificate", "/v1/ep/esign/recipients/consent",
 			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trial/create",
-			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external");
+			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
+			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status");
 
 	private final JwtService jwtService;
 
