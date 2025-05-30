@@ -18,6 +18,7 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -31,9 +32,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class EnvelopeRepositoryImpl implements EnvelopeRepository {
@@ -65,8 +70,8 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 	@Override
 	public Page<Envelope> getAllUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto filterDto) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
-		Root<Envelope> envelopeRoot = dataQuery.from(Envelope.class);
+		CriteriaQuery<Tuple> idQuery = cb.createTupleQuery();
+		Root<Envelope> envelopeRoot = idQuery.from(Envelope.class);
 
 		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
 		Join<Recipient, AddressBook> recipientAddressJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
@@ -76,8 +81,23 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		List<Predicate> predicates = buildPredicates(cb, envelopeRoot, recipientJoin, recipientAddressJoin,
 				ownerEmailPath, filterDto, currentUserId);
 
-		// Sorting
+		Expression<Date> receivedAtPath = recipientJoin.get(Recipient_.RECEIVED_AT).as(Date.class);
+		Expression<Date> maxReceivedAt = cb.greatest(receivedAtPath);
+
+		idQuery.multiselect(envelopeRoot.get(Envelope_.ID).alias("envelopeId"));
+		idQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+		idQuery.groupBy(envelopeRoot.get(Envelope_.ID));
+
 		String keyword = filterDto.getSearchKeyword();
+
+		Order sortOrder;
+		if (filterDto.getSortOrder() == Sort.Direction.ASC) {
+			sortOrder = cb.asc(maxReceivedAt);
+		}
+		else {
+			sortOrder = cb.desc(maxReceivedAt);
+		}
+
 		if (keyword != null && !keyword.isBlank()) {
 			String pattern = "%" + keyword.toLowerCase() + "%";
 			String emailPrefixPattern = keyword.toLowerCase() + "%";
@@ -85,24 +105,27 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			Predicate ownerEmailLike = cb.like(cb.lower(ownerEmailPath), emailPrefixPattern);
 
 			Order priorityOrder = cb.asc(cb.selectCase().when(subjectLike, 1).when(ownerEmailLike, 2).otherwise(3));
-			Order sortOrder = getSortOrder(cb, recipientJoin, filterDto);
-			dataQuery.orderBy(priorityOrder, sortOrder);
+			idQuery.orderBy(priorityOrder, sortOrder);
 		}
 		else {
-			dataQuery.orderBy(getSortOrder(cb, recipientJoin, filterDto));
+			idQuery.orderBy(sortOrder);
 		}
 
-		dataQuery
-			.multiselect(envelopeRoot, ownerEmailPath, recipientJoin.get(Recipient_.RECEIVED_AT),
-					recipientJoin.get(Recipient_.INBOX_STATUS))
-			.distinct(true);
-		dataQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+		TypedQuery<Tuple> idTypedQuery = entityManager.createQuery(idQuery);
+		idTypedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
+		idTypedQuery.setMaxResults(filterDto.getSize());
+		List<Tuple> idTuples = idTypedQuery.getResultList();
+		List<Long> envelopeIds = idTuples.stream().map(t -> t.get("envelopeId", Long.class)).toList();
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(dataQuery);
-		typedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
-		typedQuery.setMaxResults(filterDto.getSize());
-
-		List<Envelope> envelopes = typedQuery.getResultList().stream().map(t -> t.get(0, Envelope.class)).toList();
+		List<Envelope> envelopes = Collections.emptyList();
+		if (!envelopeIds.isEmpty()) {
+			CriteriaQuery<Envelope> envelopeQuery = cb.createQuery(Envelope.class);
+			Root<Envelope> fullRoot = envelopeQuery.from(Envelope.class);
+			envelopeQuery.select(fullRoot).where(fullRoot.get(Envelope_.ID).in(envelopeIds));
+			List<Envelope> unordered = entityManager.createQuery(envelopeQuery).getResultList();
+			Map<Long, Envelope> byId = unordered.stream().collect(Collectors.toMap(Envelope::getId, e -> e));
+			envelopes = envelopeIds.stream().map(byId::get).filter(Objects::nonNull).toList();
+		}
 
 		long total = countUserEnvelopes(currentUserId, filterDto);
 		return new PageImpl<>(envelopes, PageRequest.of(filterDto.getPage(), filterDto.getSize()), total);
@@ -134,12 +157,6 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		}
 
 		return predicates;
-	}
-
-	private Order getSortOrder(CriteriaBuilder cb, Join<Envelope, Recipient> recipientJoin,
-			EnvelopeInboxFilterDto filterDto) {
-		Path<?> sortPath = recipientJoin.get(filterDto.getSortKey().getSortField());
-		return filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(sortPath) : cb.desc(sortPath);
 	}
 
 	private long countUserEnvelopes(Long currentUserId, EnvelopeInboxFilterDto filterDto) {

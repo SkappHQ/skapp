@@ -101,7 +101,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 			}
 
-			String objectKey = bucketName + "/" + amazonS3SignedUrlRequestDto.getFolderPath();
+			String objectKey = bucketName + "/" + folderPath;
 
 			String signedUrl = switch (amazonS3SignedUrlRequestDto.getAction()) {
 				case UPLOAD -> {
