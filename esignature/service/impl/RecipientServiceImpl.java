@@ -701,7 +701,11 @@ public class RecipientServiceImpl implements RecipientService {
 			.filter(recpt -> recpt.getStatus() == RecipientStatus.DECLINED)
 			.findFirst();
 
-		return declinedRecipient.orElse(null);
+		if (declinedRecipient.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND);
+		}
+
+		return declinedRecipient.get();
 	}
 
 	private RecipientUpdateDto initializerecipientDtoData(RecipientStatus recipientStatus, String reminderBatchId,
