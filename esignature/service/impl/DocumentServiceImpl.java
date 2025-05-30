@@ -309,7 +309,7 @@ public class DocumentServiceImpl implements DocumentService {
 		recipientRepository.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
@@ -340,11 +340,11 @@ public class DocumentServiceImpl implements DocumentService {
 		List<AuditTrail> auditTrails = new ArrayList<>();
 
 		AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrails.add(auditTrailRecipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
-				null, null);
+				null, null, null);
 		auditTrails.add(auditTrail);
 
 		auditTrailDao.saveAll(auditTrails);
@@ -488,11 +488,11 @@ public class DocumentServiceImpl implements DocumentService {
 			List<AuditTrail> auditTrails = new ArrayList<>();
 
 			AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-					AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+					AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 			auditTrails.add(auditTrailRecipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_COMPLETED, null, null);
+					AuditAction.ENVELOPE_COMPLETED, null, null, null);
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
@@ -511,7 +511,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
@@ -654,7 +654,7 @@ public class DocumentServiceImpl implements DocumentService {
 			Envelope envelope = updateDeclineStatus(document, recipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-					AuditAction.ENVELOPE_DECLINED, null, ipAddress);
+					AuditAction.ENVELOPE_DECLINED, null, ipAddress, null);
 			auditTrailDao.save(auditTrail);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
