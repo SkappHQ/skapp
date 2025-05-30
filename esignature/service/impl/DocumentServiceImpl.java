@@ -1295,6 +1295,13 @@ public class DocumentServiceImpl implements DocumentService {
 		if (request.getRecipientId() == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND);
 		}
+		if (request.getFieldSignDtoList() != null) {
+			for (FieldSignDto fieldSignDto : request.getFieldSignDtoList()) {
+				if (fieldSignDto.getFieldValue() == null) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_VALUE_NOT_FOUND);
+				}
+			}
+		}
 	}
 
 	private void validateDocumentFieldSignRequest(@NotNull DocumentFieldSignDto request) {
