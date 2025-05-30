@@ -2,6 +2,8 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -903,11 +905,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		com.fasterxml.jackson.databind.node.ArrayNode metadata = objectMapper.createArrayNode();
-		com.fasterxml.jackson.databind.node.ObjectNode previousOwnerNode = objectMapper.createObjectNode();
-		previousOwnerNode.put("name", "currentOwner");
-		previousOwnerNode.put("value", newOwner.getName());
-		metadata.add(previousOwnerNode);
+		ArrayNode metadata = objectMapper.createArrayNode();
+		ObjectNode currentOwnerNode = objectMapper.createObjectNode();
+		currentOwnerNode.put("name", "currentOwner");
+		currentOwnerNode.put("value", newOwner.getName());
+		metadata.add(currentOwnerNode);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
 				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
