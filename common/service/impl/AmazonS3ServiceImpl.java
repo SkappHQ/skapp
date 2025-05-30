@@ -96,10 +96,12 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		try {
 			log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
 
-			String objectKey = amazonS3SignedUrlRequestDto.getFolderPath();
-			if (objectKey == null || objectKey.isEmpty()) {
+			String folderPath = amazonS3SignedUrlRequestDto.getFolderPath();
+			if (folderPath == null || folderPath.isEmpty()) {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 			}
+
+			String objectKey = bucketName + "/" + folderPath;
 
 			String signedUrl = switch (amazonS3SignedUrlRequestDto.getAction()) {
 				case UPLOAD -> {
