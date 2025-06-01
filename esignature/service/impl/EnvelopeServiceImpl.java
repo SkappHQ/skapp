@@ -1018,6 +1018,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 						&& recipient.getReminderStatus() == EmailReminderStatus.SCHEDULED) {
 					recipientService.cancelEmailReminders(recipient.getId(), envelope.getId());
 				}
+				recipient.setReminderStatus(EmailReminderStatus.CANCELLED);
 			});
 
 			envelopeDao.save(envelope);
