@@ -74,7 +74,7 @@ public class AuditTrailController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get a list of audit trail records",
+	@Operation(summary = "Get a list of audit trail records for inbox page",
 			description = "This endpoint fetches a list of audit trail events for a given envelope ID.")
 	@GetMapping("/envelope/inbox/{envelopeId}")
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
