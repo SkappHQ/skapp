@@ -467,8 +467,9 @@ public class RecipientServiceImpl implements RecipientService {
 			String senderEmail = envelope.getOwner().getEmail();
 
 			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
-				declinedBy = obtainEnvelopeDeclinedBy(recipientList);
-				voidOrDeclinedReason = envelope.getVoidReason();
+				Recipient declinedRecipient = obtainEnvelopeDeclinedBy(recipientList);
+				declinedBy = declinedRecipient.getAddressBook().getName();
+				voidOrDeclinedReason = declinedRecipient.getDeclineReason();
 				title = EsignEmailTitleConstant.ESIGN_ENVELOPE_DECLINED_EMAIL_TITLE;
 			}
 			else if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
@@ -694,16 +695,17 @@ public class RecipientServiceImpl implements RecipientService {
 	 * @return This method is used to find who declined the envelope in order to mention
 	 * that in the email
 	 */
-	private String obtainEnvelopeDeclinedBy(List<Recipient> recipients) {
+	private Recipient obtainEnvelopeDeclinedBy(List<Recipient> recipients) {
 
 		Optional<Recipient> declinedRecipient = recipients.stream()
 			.filter(recpt -> recpt.getStatus() == RecipientStatus.DECLINED)
 			.findFirst();
 
-		if (declinedRecipient.isPresent()) {
-			return declinedRecipient.get().getAddressBook().getName();
+		if (declinedRecipient.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND);
 		}
-		return null;
+
+		return declinedRecipient.get();
 	}
 
 	private RecipientUpdateDto initializerecipientDtoData(RecipientStatus recipientStatus, String reminderBatchId,

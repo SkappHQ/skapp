@@ -96,7 +96,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 		if (externalUserDto.getEmail() != null) {
 			Validations.validateEmail(externalUserDto.getEmail());
-			externalUser.setEmail(externalUserDto.getEmail());
+			externalUser.setEmail(externalUserDto.getEmail().trim());
 		}
 		if (externalUserDto.getPhone() != null) {
 			Validations.validateContactNo(externalUserDto.getPhone());

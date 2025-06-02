@@ -66,6 +66,7 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
@@ -742,7 +743,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
-		envelopeInboxInfoResponseDto.setStatus(envelope.getStatus());
+		envelopeInboxInfoResponseDto.setStatus(recipient.getInboxStatus());
 		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
@@ -1012,6 +1013,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelope.getRecipients().forEach(recipient -> {
 				recipient.setStatus(RecipientStatus.EXPIRED);
 				recipient.setInboxStatus(InboxStatus.EXPIRED);
+
+				if (recipient.getReminderBatchId() != null
+						&& recipient.getReminderStatus() == EmailReminderStatus.SCHEDULED) {
+					recipientService.cancelEmailReminders(recipient.getId(), envelope.getId());
+				}
+				recipient.setReminderStatus(EmailReminderStatus.CANCELLED);
 			});
 
 			envelopeDao.save(envelope);
