@@ -17,7 +17,6 @@ public class ExternalUserDto {
 	private String lastName;
 
 	@NotNull(message = "email is required")
-	@Email
 	private String email;
 
 	private String phone;
