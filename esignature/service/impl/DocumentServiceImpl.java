@@ -983,6 +983,10 @@ public class DocumentServiceImpl implements DocumentService {
 				markField(field, fields, FieldStatus.SKIP);
 			}
 			else if (FieldType.imageFieldTypes().contains(fieldType)) {
+
+				if (fieldSignDto.getFieldValue() == null) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_VALUE_NOT_FOUND);
+				}
 				fieldSignDto.setFieldValue(processImageFieldPath(fieldSignDto.getFieldValue()));
 				String imageUrl = fieldSignDto.getFieldValue();
 
@@ -1036,6 +1040,10 @@ public class DocumentServiceImpl implements DocumentService {
 				field.setStatus(FieldStatus.SKIP);
 				fields.add(field);
 				return;
+			}
+
+			if (fieldSignDto.getFieldValue() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_VALUE_NOT_FOUND);
 			}
 
 			if (FieldType.imageFieldTypes().contains(fieldSignDto.getType()) && fieldSignDto.getFieldValue() != null) {

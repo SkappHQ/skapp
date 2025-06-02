@@ -37,12 +37,11 @@ public class ECDSAKeyGenerator {
 			return keyPairGenerator.generateKeyPair();
 		}
 		catch (NoSuchProviderException e) {
-			throw new NoSuchProviderException(
-					EsignMessageConstant.ESIGN_FAILED_TO_GENERATE_KEY_PAIR + e.getMessage());
+			throw new NoSuchProviderException(EsignMessageConstant.ESIGN_FAILED_TO_GENERATE_KEY_PAIR + e.getMessage());
 		}
 		catch (Exception e) {
-			throw new NoSuchAlgorithmException(
-					EsignMessageConstant.ESIGN_FAILED_TO_GENERATE_KEY_PAIR + e.getMessage(), e);
+			throw new NoSuchAlgorithmException(EsignMessageConstant.ESIGN_FAILED_TO_GENERATE_KEY_PAIR + e.getMessage(),
+					e);
 		}
 	}
 
