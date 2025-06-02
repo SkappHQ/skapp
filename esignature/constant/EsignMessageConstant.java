@@ -132,7 +132,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_PROCESSING_IMAGE_FIELD("ep.esign.error.failed.processing.image-field"),
 	ESIGN_ERROR_INVALID_AES_KEY_SIZE("ep.esign.error.invalid.aes.key.size"),
 	ESIGN_ERROR_INVALID_AES_KEY_FORMAT("ep.esign.error.invalid.aes.key.format"),
-	FAILED_TO_GENERATE_EC_KEY_PAIR("ep.esign.error.failed.generate.ec.key-pair");
+	ESIGN_FAILED_TO_GENERATE_KEY_PAIR("ep.esign.error.failed.generate.key-pair"),
+	ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND("ep.esign.error.no.declined.recipient.found");
 
 	private final String messageKey;
 
