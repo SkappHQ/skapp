@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.constant;
 
+import java.util.regex.Pattern;
+
 public class EsignConstants {
 
 	public static final int ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE = 500;
@@ -38,6 +40,7 @@ public class EsignConstants {
 	 * \u0060) - Caret (^, \u005E) - Tilde (~, \u007E) - ç (\u00E7) and Ç (\u00C7) -
 	 * Diaeresis (¨, \u00A8) - Acute accent (´, \u00B4) - Space character
 	 */
-	public static final String ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME = "^[\\p{L}\\p{M}'\\-\\u00AF\\u02DA\\u00D8\\u00F8\\u0142\\u0060\\u005E\\u007E\\u00E7\\u00C7\\u00A8\\u00B4\\s]+$";
+	public static final Pattern ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME = Pattern.compile(
+			"^[\\p{L}\\p{M}'\\-\\u00AF\\u02DA\\u00D8\\u00F8\\u0142\\u0060\\u005E\\u007E\\u00E7\\u00C7\\u00A8\\u00B4\\s]+$");
 
 }
