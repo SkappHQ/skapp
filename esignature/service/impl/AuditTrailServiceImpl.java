@@ -168,7 +168,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	@Override
-	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId) {
+	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId, boolean isInbox) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
 
 		User currentUser = userService.getCurrentUser();
@@ -185,17 +185,12 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
 		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
 
-		if (isSenderRole) {
-			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
-					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+		// Check if user is authorized to access this envelope's audit trail
+		boolean needsRecipientCheck = isInbox || isEmployee;
+		boolean needsOwnerCheck = !isInbox && isSenderRole;
 
-			if (!isEnvelopeOwner) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-
-		}
-
-		if (isEmployee) {
+		// If user needs to be a recipient, verify
+		if (needsRecipientCheck) {
 			Optional<Recipient> recipientOptional = envelope.getRecipients()
 				.stream()
 				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
@@ -203,6 +198,16 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				.findFirst();
 
 			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		// If user needs to be the envelope owner, verify
+		if (needsOwnerCheck) {
+			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
+					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+
+			if (!isEnvelopeOwner) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 		}
