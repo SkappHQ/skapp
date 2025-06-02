@@ -180,37 +180,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		}
 		Envelope envelope = envelopeOptional.get();
 		AddressBook addressBook = envelope.getOwner();
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
-
-		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
-		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
-
-		// Check if user is authorized to access this envelope's audit trail
-		boolean needsRecipientCheck = isInbox || isEmployee;
-		boolean needsOwnerCheck = !isInbox && isSenderRole;
-
-		// If user needs to be a recipient, verify
-		if (needsRecipientCheck) {
-			Optional<Recipient> recipientOptional = envelope.getRecipients()
-				.stream()
-				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
-						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
-				.findFirst();
-
-			if (recipientOptional.isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
-
-		// If user needs to be the envelope owner, verify
-		if (needsOwnerCheck) {
-			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
-					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
-
-			if (!isEnvelopeOwner) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
+		checkAuthorization(isInbox, currentUser, envelope, addressBook);
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
@@ -260,6 +230,41 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		log.info("Successfully fetched {} audit trails for envelopeId: {}", responseDtoList.size(), envelopeId);
 
 		return new ResponseEntityDto(false, responseDtoList);
+	}
+
+	private static void checkAuthorization(boolean isInbox, User currentUser, Envelope envelope,
+			AddressBook addressBook) {
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
+		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
+
+		// Check if user is authorized to access this envelope's audit trail
+		boolean needsRecipientCheck = isInbox || isEmployee;
+		boolean needsOwnerCheck = !isInbox && isSenderRole;
+
+		// If user needs to be a recipient, verify
+		if (needsRecipientCheck) {
+			Optional<Recipient> recipientOptional = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+
+			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		// If user needs to be the envelope owner, verify
+		if (needsOwnerCheck) {
+			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
+					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+
+			if (!isEnvelopeOwner) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
 	}
 
 	@Override
