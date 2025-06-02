@@ -54,12 +54,17 @@ import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.decryptor.AESDecrypt;
+import jakarta.persistence.PessimisticLockException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -142,6 +147,20 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	@Value("${retry.max-attempts}")
+	private int retryMaxAttempts;
+
+	@Value("${retry.backoff-delay}")
+	private Long retryBackoffDelay;
+
+	public int getRetryMaxAttempts() {
+		return retryMaxAttempts;
+	}
+
+	public Long getRetryBackoffDelay() {
+		return retryBackoffDelay;
+	}
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -360,6 +379,11 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
+	@Retryable(
+			retryFor = { CannotAcquireLockException.class, PessimisticLockException.class,
+					LockAcquisitionException.class },
+			maxAttemptsExpression = "#{@documentServiceImpl.retryMaxAttempts}",
+			backoff = @Backoff(delayExpression = "#{@documentServiceImpl.retryBackoffDelay}"))
 	@Override
 	@Transactional
 	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
