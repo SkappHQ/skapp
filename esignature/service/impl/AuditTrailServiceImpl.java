@@ -168,6 +168,15 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	@Override
+	public ResponseEntityDto getAuditTrailsBySentEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, false);
+	}
+
+	@Override
+	public ResponseEntityDto getAuditTrailsByInboxEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, true);
+	}
+
 	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId, boolean isInbox) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
 
@@ -233,7 +242,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	private static void checkAuthorization(boolean isInbox, User currentUser, Envelope envelope,
-			AddressBook addressBook) {
+			AddressBook ownerAddressBook) {
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 
 		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
@@ -258,8 +267,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		// If user needs to be the envelope owner, verify
 		if (needsOwnerCheck) {
-			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
-					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+			boolean isEnvelopeOwner = ownerAddressBook != null && ownerAddressBook.getInternalUser() != null
+					&& ownerAddressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
 
 			if (!isEnvelopeOwner) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);

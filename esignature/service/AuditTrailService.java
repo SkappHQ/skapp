@@ -17,7 +17,9 @@ public interface AuditTrailService {
 
 	ResponseEntityDto validateEnvelopeAuditTrails(Long envelopeId);
 
-	ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId, boolean isInbox);
+	ResponseEntityDto getAuditTrailsBySentEnvelope(Long envelopeId);
+
+	ResponseEntityDto getAuditTrailsByInboxEnvelope(Long envelopeId);
 
 	AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
 			AddressBook addressBook, String ipAddress, JsonNode metadata);
