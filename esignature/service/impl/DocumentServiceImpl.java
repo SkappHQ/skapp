@@ -581,7 +581,7 @@ public class DocumentServiceImpl implements DocumentService {
 	public DocumentVersion getPreviousDocumentVersion(Document document, int currentVersionNumber) {
 		List<DocumentVersion> versions = document.getVersions();
 		if (versions == null || versions.isEmpty()) {
-			return null;
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY);
 		}
 		return versions.stream()
 			.filter(v -> v.getVersionNumber() < currentVersionNumber)
