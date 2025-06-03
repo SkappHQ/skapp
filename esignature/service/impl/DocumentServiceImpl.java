@@ -586,7 +586,7 @@ public class DocumentServiceImpl implements DocumentService {
 		return versions.stream()
 			.filter(v -> v.getVersionNumber() < currentVersionNumber)
 			.max(Comparator.comparingInt(DocumentVersion::getVersionNumber))
-			.orElse(null);
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_PREVIOUS_VERSION));
 	}
 
 	private byte[] mergeAllFieldsToDocument(DocumentVersion currentVersion, byte[] documentBytes) {
