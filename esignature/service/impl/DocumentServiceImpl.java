@@ -56,6 +56,7 @@ import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.decryptor.AESDecrypt;
 import jakarta.persistence.PessimisticLockException;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -70,6 +71,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -85,6 +87,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,19 +151,16 @@ public class DocumentServiceImpl implements DocumentService {
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
+	@Value("${aws.s3.max-attempts}")
+	private int s3MaxAttempts;
+
+	@Getter
 	@Value("${retry.max-attempts}")
 	private int retryMaxAttempts;
 
+	@Getter
 	@Value("${retry.backoff-delay}")
 	private Long retryBackoffDelay;
-
-	public int getRetryMaxAttempts() {
-		return retryMaxAttempts;
-	}
-
-	public Long getRetryBackoffDelay() {
-		return retryBackoffDelay;
-	}
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -432,10 +432,14 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
-		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
-		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
-		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
+		LatestDocumentData latestDocumentData = downloadLatestDocumentBytes(document, currentVersion);
+		byte[] documentBytes = latestDocumentData.fileBytes();
+
+		DocumentVersion usedVersion = latestDocumentData.documentVersion();
+
+		KeyPair keyPairVerify = loadKeyPair(usedVersion.getAddressBook().getId());
+		verifyDocumentSignature(documentBytes, usedVersion, keyPairVerify.getPublic());
 
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
@@ -542,6 +546,47 @@ public class DocumentServiceImpl implements DocumentService {
 		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
+	}
+
+	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
+		int attempt = 0;
+		DocumentVersion documentVersion = currentVersion;
+
+		while (attempt < s3MaxAttempts) {
+			try {
+				byte[] bytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+				return new LatestDocumentData(bytes, documentVersion);
+			}
+			catch (S3Exception ex) {
+				if (ex.statusCode() == 404) {
+					attempt++;
+					if (attempt >= s3MaxAttempts) {
+						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOWNLOAD_FILE_MAX_ATTEMPT_FAILED,
+								new Integer[] { attempt });
+					}
+					documentVersion = getPreviousDocumentVersion(document, documentVersion.getVersionNumber());
+				}
+				else {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_DOWNLOAD_FILE);
+				}
+			}
+		}
+
+		// Final fallback
+		DocumentVersion firstDocumentVersion = getDocumentVersion(1, document.getId());
+		byte[] bytes = amazonS3Service.downloadFileAsBytes(bucketName, firstDocumentVersion.getFilePath());
+		return new LatestDocumentData(bytes, firstDocumentVersion);
+	}
+
+	public DocumentVersion getPreviousDocumentVersion(Document document, int currentVersionNumber) {
+		List<DocumentVersion> versions = document.getVersions();
+		if (versions == null || versions.isEmpty()) {
+			return null;
+		}
+		return versions.stream()
+			.filter(v -> v.getVersionNumber() < currentVersionNumber)
+			.max(Comparator.comparingInt(DocumentVersion::getVersionNumber))
+			.orElse(null);
 	}
 
 	private byte[] mergeAllFieldsToDocument(DocumentVersion currentVersion, byte[] documentBytes) {
@@ -1439,6 +1484,9 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private record DocumentVersionFieldBulk(List<DocumentVersionField> documentVersionFields, List<Field> fields) {
+	}
+
+	private record LatestDocumentData(byte[] fileBytes, DocumentVersion documentVersion) {
 	}
 
 }
