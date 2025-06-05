@@ -256,6 +256,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
+		boolean isDocumentComplete = envelope.getRecipients()
+			.stream()
+			.allMatch(recipient -> recipient.getStatus() == RecipientStatus.COMPLETED);
+		if (isDocumentComplete) {
+			envelope.getRecipients().forEach(recipient -> recipient.setInboxStatus(InboxStatus.COMPLETED));
+
+			envelope.setStatus(EnvelopeStatus.COMPLETED);
+		}
+
 		documentDao.saveAll(updatedDocuments);
 
 		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
