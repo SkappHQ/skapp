@@ -2,6 +2,7 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
@@ -14,6 +15,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.event.UsersDeactivatedEvent;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
@@ -259,6 +261,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 		deactivateEmployees(employees);
 		epRolesService.downgradeUserRolesToEmployeeRole();
+
+		List<User> users = employees.stream().map(Employee::getUser).toList();
+		applicationEventPublisher.publishEvent(new UsersDeactivatedEvent(this, users));
 
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		String currentTenant = TenantContext.getCurrentTenant();
