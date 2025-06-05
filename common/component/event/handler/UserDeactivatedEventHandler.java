@@ -33,15 +33,15 @@ public class UserDeactivatedEventHandler {
 
 	@EventListener
 	public void handleUsersDeactivation(UsersDeactivatedEvent event) {
-		List<AddressBook> deactivateAddressBookUsers = new ArrayList<>();
-		for (User user : event.getUsers()) {
-			addressBookDao.findByInternalUser(user).ifPresent(addressBook -> {
-				addressBook.setIsActive(false);
-				deactivateAddressBookUsers.add(addressBook);
-			});
+		List<User> users = event.getUsers();
+		List<AddressBook> addressBooks = addressBookDao.findByInternalUserIn(users);
+
+		for (AddressBook addressBook : addressBooks) {
+			addressBook.setIsActive(false);
 		}
-		if (!deactivateAddressBookUsers.isEmpty()) {
-			addressBookDao.saveAll(deactivateAddressBookUsers);
+
+		if (!addressBooks.isEmpty()) {
+			addressBookDao.saveAll(addressBooks);
 		}
 	}
 
