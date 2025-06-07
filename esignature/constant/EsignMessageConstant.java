@@ -89,6 +89,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_RECIPIENT_MISMATCH("ep.esign.error.envelope.recipient.mis-match"),
 	ESIGN_ERROR_RECIPIENT_FIELD_MISMATCH("ep.esign.error.recipient.field.mis-match"),
 	ESIGN_ERROR_INVALID_DOCUMENT_ID("ep.esign.error.invalid.document.id"),
+	ESIGN_ERROR_INVALID_ENVELOPE_ID("ep.esign.error.invalid.envelope.id"),
 	ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND("ep.esign.error.address-book.user.not-found"),
 	ESIGN_ERROR_DOCUMENT_ALREADY_ASSOCIATED_WITH_ENVELOPE("ep.esign.error.document.already.associated-with-envelope"),
 	ESIGN_ERROR_EXTERNAL_USER_ALREADY_DELETED("ep.esign.error.external-user.already-deleted"),
@@ -96,6 +97,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK("ep.esign.error.invalid.document.link"),
 	ESIGN_ERROR_INVALID_DOCUMENT_LINK_METADATA("ep.esign.error.invalid.document.link.metadata"),
 	ESIGN_ERROR_INVALID_OR_EXPIRED_LINK("ep.esign.error.invalid.document.access-link"),
+	ESIGN_ERROR_DOC_ACCESS_TOKEN_NOT_FOUND("ep.esign.error.doc.access-token.not-found"),
 	ESIGN_ERROR_FAILED_TO_GENERATE_AUDIT_HASH("ep.esign.error.failed.to.generate.audit.hash"),
 	ESIGN_ERROR_AUDIT_TRAIL_NOT_FOUND("ep.esign.error.audit.trial.not.found"),
 	ESIGN_ERROR_FAILED_TO_HASH("ep.esign.error.failed.hash"),
@@ -105,6 +107,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID("ep.esign.error.document.access.link.invalid"),
 	ESIGN_ERROR_DOCUMENT_ACCESS_LINK_ALREADY_RESEND("ep.esign.error.document.access.already.resend"),
 	ESIGN_ERROR_ENVELOPE_UUID_CREATION_FAIL("ep.esign.error.envelope.uuid.creation.fail"),
+	ESIGN_ERROR_DOCUMENT_LINK_UUID_CREATION_FAIL("ep.esign.error.document-link.uuid.creation.fail"),
 	ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE("ep.esign.error.user.already.owner.of.envelope"),
 	ESIGN_ERROR_RECIPIENT_ALREADY_DECLINED_ENVELOP("ep.esign.error.recipient.already-declined-envelope"),
 	ESIGN_ERROR_RECIPIENT_ALREADY_APPROVED("ep.esign.error.recipient.already-approved"),
@@ -121,7 +124,20 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_UNAUTHORIZED_ACTION("ep.esign.error.unauthorized.action"),
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS("ep.esign.error.cc.recipient.cannot.have.fields"),
 	ESIGN_ERROR_SIGNING_ORDER_CANNOT_BE_ZERO("ep.esign.error.signing.order.cannot.be.zero"),
-	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order");
+	ESIGN_ERROR_DUPLICATE_SIGNING_ORDER("ep.esign.error.duplicate.signing.order"),
+	ESIGN_ERROR_RECIPIENT_CONSENT_PROHIBITED("ep.esign.error.recipient.consent.prohibited"),
+	ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND("ep.esign.error.document.link.not-found"),
+	ESIGN_ERROR_UNSUPPORTED_PERMISSION_TYPE("ep.esign.error.unsupported.permission.type"),
+	ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN("ep.esign.error.cc.recipient.cannot.sign"),
+	ESIGN_ERROR_FAILED_PROCESSING_IMAGE_FIELD("ep.esign.error.failed.processing.image-field"),
+	ESIGN_ERROR_INVALID_AES_KEY_SIZE("ep.esign.error.invalid.aes.key.size"),
+	ESIGN_ERROR_INVALID_AES_KEY_FORMAT("ep.esign.error.invalid.aes.key.format"),
+	ESIGN_FAILED_TO_GENERATE_KEY_PAIR("ep.esign.error.failed.generate.key-pair"),
+	ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND("ep.esign.error.no.declined.recipient.found"),
+	ESIGN_ERROR_FIELD_VALUE_NOT_FOUND("ep.esign.error.field.value.not-found"),
+	ESIGN_ERROR_DOWNLOAD_FILE_MAX_ATTEMPT_FAILED("ep.esign.error.download.file.max-attempt.failed"),
+	ESIGN_ERROR_NO_PREVIOUS_VERSION("ep.esign.error.no.previous.version"),
+	ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY("ep.esign.error.document.versions.empty");
 
 	private final String messageKey;
 

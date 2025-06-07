@@ -25,7 +25,7 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 	@Override
 	public void setDefaultEsignConfigs() {
 		EsignConfig esignConfig = new EsignConfig();
-		esignConfig.setDateFormat(DateFormatType.DD_MM_YYYY);
+		esignConfig.setDateFormat(DateFormatType.YYYY_MM_DD);
 		esignConfig.setDefaultEnvelopeExpireDays(120);
 		esignConfig.setReminderDaysBeforeExpire(6);
 		esignConfigRepository.save(esignConfig);

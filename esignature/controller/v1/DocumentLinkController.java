@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +43,42 @@ public class DocumentLinkController {
 	public ResponseEntity<ResponseEntityDto> getRecipientDocumentData(@RequestParam Long documentId,
 			@RequestParam Long recipientId) {
 
-		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId);
+		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
+				true);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Data for Internal Document Access",
+			description = "Retrieves data required for signing or viewing a document internally for a given document and recipient, using internal access privileges.")
+	@PostMapping(value = "/internal/access", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getRecipientDocumentDataInternal(@RequestParam Long documentId,
+			@RequestParam Long recipientId) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
+				false);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Exchange UUID for Document Access Token",
+			description = "Exchanges a decrypted and validated UUID for an internal access token used to sign or view a document. "
+					+ "The token is only returned if the document link is available.")
+	@GetMapping(value = "/token-exchange", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getTokenFromUuid(@RequestParam String uuid, @RequestParam String state) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getTokenFromUuid(uuid, state);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check Resend Status of Document Access Token",
+			description = "Retrieves the current resend status of a document access token.")
+	@GetMapping(value = "/token/resend-status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getTokenResendStatus(@RequestParam String token) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getTokenResendStatus(token);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}

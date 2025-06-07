@@ -3,7 +3,7 @@ package com.skapp.enterprise.esignature.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -31,7 +31,19 @@ public class AuditTrailController {
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
 			HttpServletRequest request) {
-		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request));
+		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request),
+				true);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Log Internal Audit Trail Event",
+			description = "Creates an internal audit trail record for e-signature-related activities, capturing details such as action type, timestamp, and user IP.")
+	@PostMapping("/internal/create")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> createInternalAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
+			HttpServletRequest request) {
+		ResponseEntityDto response = auditTrailService.createAuditTrail(auditTrailDTO, EsignUtil.getClientIp(request),
+				false);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -55,10 +67,19 @@ public class AuditTrailController {
 
 	@Operation(summary = "Get a list of audit trail records",
 			description = "This endpoint fetches a list of audit trail events for a given envelope ID.")
-	@GetMapping("/envelope/{envelopeId}")
+	@GetMapping("/sent/envelope/{envelopeId}")
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getAuditTrails(@PathVariable Long envelopeId) {
-		ResponseEntityDto response = auditTrailService.getAuditTrailsByEnvelopeId(envelopeId);
+		ResponseEntityDto response = auditTrailService.getAuditTrailsBySentEnvelope(envelopeId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get a list of audit trail records for inbox page",
+			description = "This endpoint fetches a list of audit trail events for a given envelope ID.")
+	@GetMapping("/inbox/envelope/{envelopeId}")
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getInboxAuditTrails(@PathVariable Long envelopeId) {
+		ResponseEntityDto response = auditTrailService.getAuditTrailsByInboxEnvelope(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -25,8 +25,9 @@ import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
-import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,19 +54,20 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final AddressBookDao addressBookDao;
 
-	private final RecipientService recipientService;
+	private final DocumentLinkService documentLinkService;
 
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
 
 	@Override
-	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress) {
+	public ResponseEntityDto createAuditTrail(AuditTrailDto auditTrailDto, String ipAddress, boolean isDocAccess) {
 		log.info("Creating audit trail for envelope: {}", auditTrailDto.getEnvelopeId());
 
-		if (!AuditAction.isEsignTokenAllowedAction(auditTrailDto.getAction())) {
+		if (!AuditAction.isWebAllowedAction(auditTrailDto.getAction())) {
 			log.error("Unauthorized action attempted: {}", auditTrailDto.getAction());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_UNAUTHORIZED_ACTION);
 		}
+
 		Envelope envelope = envelopeDao.findById(auditTrailDto.getEnvelopeId()).orElseThrow(() -> {
 			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
 			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
@@ -77,12 +79,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
 				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 			});
-			// Validate the recipient
-			if (!recipient.getId().equals(recipientService.getRecipientFromToken().getId())) {
-				log.error("Recipient with ID {} is not authorized to decline the envelope", recipient.getId());
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
 
+			documentLinkService.validateTokenFlows(isDocAccess, recipient, null);
 		}
 
 		Instant timestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
@@ -170,14 +168,28 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	@Override
-	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId) {
+	public ResponseEntityDto getAuditTrailsBySentEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, false);
+	}
+
+	@Override
+	public ResponseEntityDto getAuditTrailsByInboxEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, true);
+	}
+
+	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId, boolean isInbox) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
+
+		User currentUser = userService.getCurrentUser();
 
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
 			log.error("envelope with ID {} not found", envelopeId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
+		Envelope envelope = envelopeOptional.get();
+		AddressBook addressBook = envelope.getOwner();
+		checkAuthorization(isInbox, currentUser, envelope, addressBook);
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
@@ -229,9 +241,44 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		return new ResponseEntityDto(false, responseDtoList);
 	}
 
+	private static void checkAuthorization(boolean isInbox, User currentUser, Envelope envelope,
+			AddressBook ownerAddressBook) {
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
+		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
+
+		// Check if user is authorized to access this envelope's audit trail
+		boolean needsRecipientCheck = isInbox || isEmployee;
+		boolean needsOwnerCheck = !isInbox && isSenderRole;
+
+		// If user needs to be a recipient, verify
+		if (needsRecipientCheck) {
+			Optional<Recipient> recipientOptional = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+
+			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		// If user needs to be the envelope owner, verify
+		if (needsOwnerCheck) {
+			boolean isEnvelopeOwner = ownerAddressBook != null && ownerAddressBook.getInternalUser() != null
+					&& ownerAddressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+
+			if (!isEnvelopeOwner) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+	}
+
 	@Override
 	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook, String ipAddress) {
+			AddressBook addressBook, String ipAddress, JsonNode metadata) {
 		AuditTrail auditTrail = new AuditTrail();
 
 		auditTrail.setEnvelope(envelope);
@@ -239,6 +286,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
+		auditTrail.setMetadata(metadata);
 
 		auditTrail.setIsAuthorized(true);
 
