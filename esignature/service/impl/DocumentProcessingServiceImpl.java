@@ -50,7 +50,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 4.3f; //4.3f to match the front end design
+	private static final float BORDER_IMAGE_PADDING = 4.3f; // 4.3f to match the front end
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
