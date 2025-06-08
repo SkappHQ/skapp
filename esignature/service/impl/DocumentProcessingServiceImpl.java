@@ -50,7 +50,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 5.0f;
+	private static final float BORDER_IMAGE_PADDING = 4.3f;
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
@@ -59,6 +59,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
+
+	// sign image offset
+	private static final float SIGNATURE_Y_OFFSET_VALUE = 7.0f;
 
 	private final MessageUtil messageUtil;
 
@@ -240,7 +243,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		int pageNumber = field.getPageNumber();
 		float x = field.getXposition();
-		float y = field.getYposition();
+		float y = field.getYposition() - SIGNATURE_Y_OFFSET_VALUE;
 		float width = field.getWidth();
 		float height = field.getHeight();
 
@@ -271,9 +274,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private BorderDimensions calculateBorderDimensions(float imageX, float imageY, float imageWidth,
 			float imageHeight) {
-		float borderWidth = imageWidth + (BORDER_IMAGE_PADDING * 2);
+		float borderWidth = imageWidth;
 		float borderHeight = imageHeight + (BORDER_IMAGE_PADDING * 2);
-		float borderX = imageX - BORDER_IMAGE_PADDING;
+		float borderX = imageX;
 		float borderY = imageY - BORDER_IMAGE_PADDING;
 
 		return new BorderDimensions(borderX, borderY, borderWidth, borderHeight);
