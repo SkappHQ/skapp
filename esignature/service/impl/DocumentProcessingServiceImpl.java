@@ -63,6 +63,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	// sign image offset
 	private static final float SIGNATURE_Y_OFFSET_VALUE = 7.0f;
 
+	private static final float IMAGE_Y_OFFSET = 3.0f;
+
 	private final MessageUtil messageUtil;
 
 	@Value("${aws.s3.bucket-name}")
@@ -366,14 +368,27 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float imageWidth = image.getWidth();
 			float imageHeight = image.getHeight();
 
-			float scale = Math.min(width / imageWidth, height / imageHeight);
+			// Define a pixel to point conversion factor (typically 72 DPI for PDFs)
+			float pixelToPoint = 72f / 86f; // Assuming screen DPI of 96, adjust if needed
+
+			// Convert dimensions from pixels to points
+			float adjustedWidth = width * pixelToPoint;
+			float adjustedHeight = height * pixelToPoint;
+
+			// Maintain aspect ratio while fitting within the bounds
+			float scale = Math.min(adjustedWidth / imageWidth, adjustedHeight / imageHeight);
 			float scaledWidth = imageWidth * scale;
 			float scaledHeight = imageHeight * scale;
 
+			// Center the image horizontally and shift it down slightly
 			float imageX = x + (width - scaledWidth) / 2;
-			float imageY = y + (height - scaledHeight) / 2;
+			// Add a small offset to push the image down by a few points
+			float imageY = y + (height - scaledHeight) / 2 - IMAGE_Y_OFFSET;
 
+			// Draw the image with exact dimensions
 			contentStream.drawImage(image, imageX, imageY, scaledWidth, scaledHeight);
+
+			log.debug("Drawing image at ({}, {}) with dimensions: {}x{}", imageX, imageY, scaledWidth, scaledHeight);
 		}
 		catch (IOException e) {
 			log.error("Error processing: drawInputImage : {}", e.getMessage());
