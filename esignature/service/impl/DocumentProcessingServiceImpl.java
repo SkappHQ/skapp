@@ -50,7 +50,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 4.3f;
+	private static final float BORDER_IMAGE_PADDING = 4.3f; //4.3f to match the front end design
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
@@ -369,7 +369,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float imageHeight = image.getHeight();
 
 			// Define a pixel to point conversion factor (typically 72 DPI for PDFs)
-			float pixelToPoint = 72f / 86f; // Assuming screen DPI of 96, adjust if needed
+			float pixelToPoint = 72f / 86f;
 
 			// Convert dimensions from pixels to points
 			float adjustedWidth = width * pixelToPoint;
