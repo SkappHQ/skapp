@@ -356,7 +356,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void drawInputImage(PDDocument document, PDPageContentStream contentStream, float x, float y, float width,
-								float height, byte[] imageBytes) {
+			float height, byte[] imageBytes) {
 		PDImageXObject image = null;
 		try {
 			image = PDImageXObject.createFromByteArray(document, imageBytes, "image");
