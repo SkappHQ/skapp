@@ -50,7 +50,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 4.3f; // 4.3f to match the front end
+	private static final float BORDER_IMAGE_PADDING = 1.0f; // 1.0f to match the front end
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
@@ -59,11 +59,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
-
-	// sign image offset
-	private static final float SIGNATURE_Y_OFFSET_VALUE = 7.0f;
-
-	private static final float IMAGE_Y_OFFSET = 3.0f;
 
 	private final MessageUtil messageUtil;
 
@@ -245,7 +240,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		int pageNumber = field.getPageNumber();
 		float x = field.getXposition();
-		float y = field.getYposition() - SIGNATURE_Y_OFFSET_VALUE;
+		float y = field.getYposition();
 		float width = field.getWidth();
 		float height = field.getHeight();
 
@@ -361,7 +356,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void drawInputImage(PDDocument document, PDPageContentStream contentStream, float x, float y, float width,
-			float height, byte[] imageBytes) {
+								float height, byte[] imageBytes) {
 		PDImageXObject image = null;
 		try {
 			image = PDImageXObject.createFromByteArray(document, imageBytes, "image");
@@ -369,21 +364,22 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float imageHeight = image.getHeight();
 
 			// Define a pixel to point conversion factor (typically 72 DPI for PDFs)
-			float pixelToPoint = 72f / 86f;
+			float pixelToPoint = 72f / 77f;
 
 			// Convert dimensions from pixels to points
 			float adjustedWidth = width * pixelToPoint;
-			float adjustedHeight = height * pixelToPoint;
+			// Reduce height to account for border padding (top and bottom)
+			float adjustedHeight = (height - (BORDER_IMAGE_PADDING * 2)) * pixelToPoint;
 
 			// Maintain aspect ratio while fitting within the bounds
 			float scale = Math.min(adjustedWidth / imageWidth, adjustedHeight / imageHeight);
 			float scaledWidth = imageWidth * scale;
 			float scaledHeight = imageHeight * scale;
 
-			// Center the image horizontally and shift it down slightly
+			// Center the image horizontally and vertically within available space
 			float imageX = x + (width - scaledWidth) / 2;
-			// Add a small offset to push the image down by a few points
-			float imageY = y + (height - scaledHeight) / 2 - IMAGE_Y_OFFSET;
+			// Position image with padding adjustment
+			float imageY = y + BORDER_IMAGE_PADDING + (height - BORDER_IMAGE_PADDING * 2 - scaledHeight) / 2;
 
 			// Draw the image with exact dimensions
 			contentStream.drawImage(image, imageX, imageY, scaledWidth, scaledHeight);
