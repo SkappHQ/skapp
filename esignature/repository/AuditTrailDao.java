@@ -11,4 +11,6 @@ public interface AuditTrailDao extends JpaRepository<AuditTrail, Long> {
 
 	List<AuditTrail> findByEnvelopeIdOrderByTimestampAsc(Long envelopeId);
 
+	List<AuditTrail> findByEnvelopeIdOrderByTimestampDesc(Long envelopeId);
+
 }
