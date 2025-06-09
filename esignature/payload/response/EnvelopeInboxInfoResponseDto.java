@@ -25,6 +25,8 @@ public class EnvelopeInboxInfoResponseDto {
 
 	private AddressBookBasicResponseDto addressBook;
 
+	private AddressBookBasicResponseDto senderAddressBook;
+
 	private String envelopeAccessLink;
 
 }
