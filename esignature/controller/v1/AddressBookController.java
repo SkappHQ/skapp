@@ -120,4 +120,11 @@ public class AddressBookController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping(value = "/migrate-user-key", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> migrateUserKeyData(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.migrateUserKeyData(keyWord);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 }

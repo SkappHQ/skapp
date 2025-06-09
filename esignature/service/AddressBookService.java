@@ -26,4 +26,6 @@ public interface AddressBookService {
 
 	ResponseEntityDto getMySignatureLink();
 
+	ResponseEntityDto migrateUserKeyData(String keyWord);
+
 }
