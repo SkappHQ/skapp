@@ -162,7 +162,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	@Override
 	public ResponseEntityDto migrateUserKeyData(String keyWord) {
-		if(Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")){
+		if (Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")) {
 			List<String> tenantIds = tenantMigrationService.getAllTenantIds();
 			for (String tenantId : tenantIds) {
 				try {
