@@ -189,4 +189,26 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	}
 
+	@Override
+	public ResponseEntityDto deleteUserKeyData(String keyWord) {
+		if (Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")) {
+			List<String> tenantIds = tenantMigrationService.getAllTenantIds();
+			for (String tenantId : tenantIds) {
+				try {
+					tenantContext.setTenantAndSwitchSchema(tenantId);
+					userKeyRepository.deleteAll();
+				}
+				catch (Exception e) {
+					log.error("Error during migration for tenant: {}", tenantId, e);
+				}
+			}
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			log.info("User key data migration completed successfully.");
+
+			return new ResponseEntityDto(false, "User key data migration completed successfully.");
+		}
+		return new ResponseEntityDto(true, "invalid key word provided for migration.");
+
+	}
+
 }
