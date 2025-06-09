@@ -28,4 +28,6 @@ public interface AddressBookService {
 
 	ResponseEntityDto migrateUserKeyData(String keyWord);
 
+	ResponseEntityDto deleteUserKeyData(String keyWord);
+
 }
