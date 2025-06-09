@@ -305,10 +305,6 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
-		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
-		}
-
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
 
 		for (Recipient rec : updatedRecipients) {
@@ -324,6 +320,11 @@ public class DocumentServiceImpl implements DocumentService {
 				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 			}
 		}
+
+		if (isDocumentComplete(nextSignRecipientList)) {
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
+		}
+
 		document = documentRepository.save(document);
 		recipientRepository.saveAll(updatedRecipients);
 
