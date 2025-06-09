@@ -760,11 +760,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
-		AddressBook addressBook = envelope.getOwner();
+		AddressBook addressBook = recipient.getAddressBook();
+		AddressBook senderAddressBook = envelope.getOwner();
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
 		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
+
+		AddressBookBasicResponseDto senderAddressBookResponseDto = eSignMapper
+			.addressBookToAddressBookBasicResponseDto(senderAddressBook);
+		envelopeInboxInfoResponseDto.setSenderAddressBook(senderAddressBookResponseDto);
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInboxInfoResponseDto;
