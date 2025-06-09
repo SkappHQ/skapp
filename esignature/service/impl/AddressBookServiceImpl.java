@@ -6,6 +6,9 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -16,6 +19,7 @@ import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.UserKeyRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
@@ -28,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -40,9 +45,15 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	private final AddressBookDao addressBookDao;
 
+	private final UserKeyRepository userKeyRepository;
+
 	private final EsignMapper esignMapper;
 
 	private final UserService userService;
+
+	private final TenantMigrationService tenantMigrationService;
+
+	private final TenantContext tenantContext;
 
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
@@ -147,6 +158,35 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto migrateUserKeyData(String keyWord) {
+		if(Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")){
+			List<String> tenantIds = tenantMigrationService.getAllTenantIds();
+			for (String tenantId : tenantIds) {
+				try {
+					tenantContext.setTenantAndSwitchSchema(tenantId);
+					List<AddressBook> addressBookList = addressBookDao.findAll();
+					for (AddressBook addressBook : addressBookList) {
+						userKeyRepository.findByAddressBookId(addressBook.getId()).ifPresentOrElse(userKey -> {
+							log.info("User key already exists for address book id: {}", addressBook.getId());
+						}, () -> {
+							log.info("Generating user key for address book id: {}", addressBook.getId());
+							userKeyService.generateAndStoreKeys(addressBook);
+						});
+					}
+				}
+				catch (Exception e) {
+					log.error("Error during migration for tenant: {}", tenantId, e);
+				}
+			}
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
+			return new ResponseEntityDto(false, "User key data migration completed successfully.");
+		}
+		return new ResponseEntityDto(true, "invalid key word provided for migration.");
+
 	}
 
 }

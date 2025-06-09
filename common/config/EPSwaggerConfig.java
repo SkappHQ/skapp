@@ -20,7 +20,7 @@ public class EPSwaggerConfig {
 				"/v1/ep/auth/signup/super-admin", "/v1/ep/auth/otp/generate", "/v1/ep/auth/otp/verify",
 				"/v1/ep/auth/otp/resend", "/v1/ep/auth/domain/verify", "/v1/ep/auth/signup/super-admin/sso/google",
 				"/v1/ep/auth/signup/super-admin", "/v1/ep/auth/recaptcha", "/v1/ep/auth/tenant/availability",
-				"/v1/validate/email");
+				"/v1/validate/email", "/v1/ep/esign/address-book/migrate-user-key");
 
 		Map<String, List<PathItem.HttpMethod>> hiddenApiMethods = Map.of("/v1/auth/signup/super-admin",
 				List.of(PathItem.HttpMethod.POST), "/v1/organization", List.of(PathItem.HttpMethod.POST),
