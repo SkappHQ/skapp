@@ -605,7 +605,9 @@ public class RecipientServiceImpl implements RecipientService {
 
 		recipients.forEach(recipient -> {
 			recipient.setStatus(RecipientStatus.EMPTY);
-			recipient.setInboxStatus(InboxStatus.VOID);
+			if (recipient.getEmailStatus() != null && recipient.getEmailStatus().equals(EmailStatus.SENT)) {
+				recipient.setInboxStatus(InboxStatus.VOID);
+			}
 		});
 
 		recipientRepository.saveAll(recipients);
