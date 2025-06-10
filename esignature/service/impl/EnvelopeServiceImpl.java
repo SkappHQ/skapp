@@ -519,11 +519,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopePage.getContent().forEach(envelope -> {
 			EnvelopeInboxData envelopeInboxData = eSignMapper.envelopeToEnvelopeInboxData(envelope);
 
+			EnvelopeStatus envelopeStatus = envelope.getStatus();
+
 			List<Recipient> orderedRecipients = envelope.getRecipients()
 				.stream()
 				.filter(recipient -> recipient.getAddressBook() != null
 						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId())
-						&& recipient.getStatus() != null && recipient.getStatus() != RecipientStatus.EMPTY)
+						&& (envelopeStatus == EnvelopeStatus.VOIDED
+								|| (recipient.getStatus() != null && recipient.getStatus() != RecipientStatus.EMPTY)))
 				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
 				.toList();
 
