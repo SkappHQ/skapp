@@ -120,4 +120,18 @@ public class AddressBookController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping(value = "/migrate-user-key", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> migrateUserKeyData(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.migrateUserKeyData(keyWord);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@PostMapping(value = "/delete/user-key-data", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> deleteUserKeyData(@RequestParam String keyWord) {
+
+		ResponseEntityDto response = addressBookService.deleteUserKeyData(keyWord);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 }
