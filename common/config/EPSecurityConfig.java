@@ -87,8 +87,7 @@ public class EPSecurityConfig {
 						"/v2/ep/auth/sso/google/auth-url", "/v2/ep/auth/sso/google/redirect",
 						"/v2/ep/auth/signin/sso/google", "/v2/ep/auth/signup/super-admin/sso/google",
 						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend",
-						"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/document-link/token/resend-status",
-						"/v1/ep/esign/address-book/migrate-user-key", "/v1/ep/esign/address-book/delete/user-key-data")
+						"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/document-link/token/resend-status")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()

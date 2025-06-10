@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -158,57 +157,6 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
-	}
-
-	@Override
-	public ResponseEntityDto migrateUserKeyData(String keyWord) {
-		if (Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")) {
-			List<String> tenantIds = tenantMigrationService.getAllTenantIds();
-			for (String tenantId : tenantIds) {
-				try {
-					tenantContext.setTenantAndSwitchSchema(tenantId);
-					List<AddressBook> addressBookList = addressBookDao.findAll();
-					for (AddressBook addressBook : addressBookList) {
-						userKeyRepository.findByAddressBookId(addressBook.getId()).ifPresentOrElse(userKey -> {
-							log.info("User key already exists for address book id: {}", addressBook.getId());
-						}, () -> {
-							log.info("Generating user key for address book id: {}", addressBook.getId());
-							userKeyService.generateAndStoreKeys(addressBook);
-						});
-					}
-				}
-				catch (Exception e) {
-					log.error("Error during migration for tenant: {}", tenantId, e);
-				}
-			}
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-
-			return new ResponseEntityDto(false, "User key data migration completed successfully.");
-		}
-		return new ResponseEntityDto(true, "invalid key word provided for migration.");
-
-	}
-
-	@Override
-	public ResponseEntityDto deleteUserKeyData(String keyWord) {
-		if (Objects.equals(keyWord, "m5LJ5M4aD4HkuH2+QwZQ3D9lAq4K8Tz3H9v2wQd2WxY=")) {
-			List<String> tenantIds = tenantMigrationService.getAllTenantIds();
-			for (String tenantId : tenantIds) {
-				try {
-					tenantContext.setTenantAndSwitchSchema(tenantId);
-					userKeyRepository.deleteAll();
-				}
-				catch (Exception e) {
-					log.error("Error during migration for tenant: {}", tenantId, e);
-				}
-			}
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			log.info("User key data migration completed successfully.");
-
-			return new ResponseEntityDto(false, "User key data migration completed successfully.");
-		}
-		return new ResponseEntityDto(true, "invalid key word provided for migration.");
-
 	}
 
 }
