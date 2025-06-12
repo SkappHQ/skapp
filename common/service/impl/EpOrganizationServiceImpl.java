@@ -145,6 +145,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
+		log.info("-------------------------------13");
 		validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
 		boolean tenantCreated = false;
@@ -153,6 +154,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+			log.info("-------------------------------14");
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
@@ -162,6 +164,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 			epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
 			log.info("Organization saved for: {}", companyDomain);
+
+			log.info("-------------------------------15");
 
 			EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
@@ -185,6 +189,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
+			log.info("-------------------------------16");
 			return new ResponseEntityDto(false, responseDto);
 
 		}
