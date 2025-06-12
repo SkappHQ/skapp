@@ -520,12 +520,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
 		}
 
-		if (!Objects.equals(codeChallengeRequestDto.getUuid(), cachedUuid)) {
+		if (!Objects.equals(codeChallengeRequestDto.getCode(), cachedUuid)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-
-		if (tenantId == null || tenantId.isEmpty()) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
 		}
 
 		User user = userDao.findAll().getFirst();
