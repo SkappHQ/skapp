@@ -77,12 +77,6 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		predicates.add(cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE)));
 		countPredicates.add(cb.isTrue(countRoot.get(AddressBook_.IS_ACTIVE)));
 
-		// User status filter
-		Predicate countInternalUserActivePredicate = cb.isNotNull(countInternalUserJoin.get(User_.USER_ID));
-		Predicate countUserStatusPredicate = cb.or(cb.isNull(countInternalUserJoin.get(User_.USER_ID)),
-				countInternalUserActivePredicate);
-		countPredicates.add(countUserStatusPredicate);
-
 		// User type filter
 		List<UserType> userTypes = addressBookFilterDto.getUserType();
 		if (userTypes != null && userTypes.size() == 1) {
