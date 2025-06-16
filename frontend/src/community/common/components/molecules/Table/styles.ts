@@ -284,7 +284,8 @@ const styles = (theme: Theme): StylesType => ({
         flexDirection: "row",
         justifyContent: "flex-end",
         alignItems: "center",
-        spacing: 1
+        spacing: 1,
+        marginLeft: "auto"
       }
     }
   }

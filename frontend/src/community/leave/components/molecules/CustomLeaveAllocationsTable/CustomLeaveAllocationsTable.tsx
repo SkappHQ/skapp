@@ -1,14 +1,13 @@
 import { Box, Chip, Theme, Typography, useTheme } from "@mui/material";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import Select from "~community/common/components/molecules/Select/Select";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   currentYear,
   getAdjacentYearsWithCurrent,
@@ -126,8 +125,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     () => [
       { field: "employee", headerName: translateText(["tableHeaderOne"]) },
       { field: "duration", headerName: translateText(["tableHeaderTwo"]) },
-      { field: "type", headerName: translateText(["tableHeaderThree"]) },
-      { field: "actions", headerName: translateText(["tableHeaderFour"]) }
+      { field: "type", headerName: translateText(["tableHeaderThree"]) }
     ],
     [translateText]
   );
@@ -152,41 +150,48 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
         return {
           id: leaveAllocation.entitlementId,
           employee: (
-            <Box width="100%">
-              <AvatarChip
-                firstName={leaveAllocation.employee?.firstName}
-                lastName={leaveAllocation.employee?.lastName}
-                avatarUrl={leaveAllocation.employee?.authPic}
-                chipStyles={{
-                  display: "flex",
-                  justifyContent: "start",
-                  maxWidth: "fit-content"
-                }}
-              />
-            </Box>
+            <AvatarChip
+              firstName={leaveAllocation.employee?.firstName}
+              lastName={leaveAllocation.employee?.lastName}
+              avatarUrl={leaveAllocation.employee?.authPic}
+              chipStyles={{
+                display: "flex",
+                justifyContent: "start",
+                maxWidth: "fit-content"
+              }}
+            />
           ),
           duration: (
-            <BasicChip
-              label={
-                leaveAllocation.totalDaysAllocated === 0.5
-                  ? translateText(["halfDayChip"])
-                  : `${leaveAllocation.totalDaysAllocated} ${
-                      leaveAllocation.totalDaysAllocated === 1
-                        ? translateText(["day"])
-                        : translateText(["days"])
-                    }`
-              }
-            />
+            <div
+              style={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                padding: "0.5rem 1rem"
+              }}
+            >
+              {leaveAllocation.totalDaysAllocated === 0.5
+                ? translateText(["halfDayChip"])
+                : `${leaveAllocation.totalDaysAllocated} ${
+                    leaveAllocation.totalDaysAllocated === 1
+                      ? translateText(["day"])
+                      : translateText(["days"])
+                  }`}
+            </div>
           ),
           type: (
-            <IconChip
-              icon={
-                leaveAllocation.leaveType?.emojiCode ||
-                leaveAllocation.leaveType?.name
-              }
-              label={leaveAllocation.leaveType?.name}
-              isTruncated={false}
-            />
+            <div
+              style={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                padding: "0.5rem 1rem"
+              }}
+            >
+              <span role="img" aria-hidden="true">
+                {getEmoji(leaveAllocation.leaveType?.emojiCode || "")}
+              </span>
+              &nbsp;
+              {leaveAllocation.leaveType?.name}
+            </div>
           ),
           actionData: leaveAllocation
         };

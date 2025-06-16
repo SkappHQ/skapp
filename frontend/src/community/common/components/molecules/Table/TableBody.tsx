@@ -66,7 +66,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
   checkboxSelection,
   customStyles,
   isRowDisabled = () => false,
-  onRowClick
+  onRowClick = undefined
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);

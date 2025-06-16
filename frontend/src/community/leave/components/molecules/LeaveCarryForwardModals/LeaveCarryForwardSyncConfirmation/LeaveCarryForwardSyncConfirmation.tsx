@@ -72,11 +72,18 @@ const LeaveCarryForwardSyncConfirmation = ({
 
   return (
     <Stack sx={classes.wrapper}>
-      <Typography sx={classes.title} variant="body1">
+      <Typography
+        sx={classes.title}
+        variant="body1"
+        id="confirm-synchronization-modal-description"
+      >
         {translateTexts(["leaveCarryForwardModalDescription"]) ?? ""}
       </Typography>
       <Box>
         <Button
+          accessibility={{
+            ariaDescribedBy: "confirm-synchronization-modal-description"
+          }}
           label={translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}
           endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           type={ButtonTypes.SUBMIT}

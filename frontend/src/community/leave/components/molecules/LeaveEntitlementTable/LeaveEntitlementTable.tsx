@@ -87,7 +87,7 @@ const LeaveEntitlementTable = ({
 
       activeLeaveTypes.forEach((leaveType) => {
         const columnKey = leaveType.name.toLowerCase();
-        row[columnKey] = 0;
+        row[columnKey] = "-";
       });
 
       entitlement.entitlements.forEach((ent) => {

@@ -7,7 +7,7 @@ import { TimesheetAnalyticsTabTypes } from "~community/attendance/enums/timeshee
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import Button from "~community/common/components/atoms/Button/Button";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
-import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
+import TeamSelect from "~community/common/components/molecules/TeamSelect/TeamSelect";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -39,6 +39,7 @@ const TimeSheetFilters = ({
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const {
+    timesheetAnalyticsParams,
     setTimesheetAnalyticsSelectedDates,
     setTimesheetAnalyticsMonthWeek,
     setTimesheetAnalyticsTeam
@@ -147,6 +148,7 @@ const TimeSheetFilters = ({
         direction={"row"}
         alignItems={"center"}
         justifyContent={"flex-start"}
+        gap={1}
       >
         <Stack
           display={"flex"}
@@ -169,9 +171,12 @@ const TimeSheetFilters = ({
           />
         </Stack>
         {isTeamSelectionAvailable && (
-          <TeamSelector
-            setTeamId={setTimesheetAnalyticsTeam}
-            moduleAdminType={AdminTypes.ATTENDANCE_ADMIN}
+          <TeamSelect
+            adminType={AdminTypes.ATTENDANCE_ADMIN}
+            value={timesheetAnalyticsParams?.teamId.toString() || ""}
+            onChange={(event) => {
+              setTimesheetAnalyticsTeam(event.target.value);
+            }}
           />
         )}
       </Stack>

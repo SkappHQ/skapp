@@ -39,6 +39,7 @@ export type carryForwardEntitlementUserType = {
   employeeId: string;
   name: string;
   lastName: string;
+  firstName: string;
   email: string;
   authPic: string;
 };
@@ -49,4 +50,10 @@ export type carryForwardEntitlementType = {
   totalDaysUsed: number;
   carryForwardAmount: number;
   name: string;
+};
+
+export type carryForwardTableDataType = {
+  employeeId: string;
+  name: string;
+  [key: string]: string | number;
 };

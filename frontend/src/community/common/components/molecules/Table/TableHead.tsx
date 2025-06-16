@@ -58,8 +58,9 @@ const TableHead: FC<
     <MuiTableHead sx={mergeSx([classes.tableHead.head, customStyles?.head])}>
       <TableRow sx={mergeSx([classes.tableHead.row, customStyles?.row])}>
         {rows?.length > 0 &&
-          checkboxSelection?.isSelectAllVisible &&
-          checkboxSelection?.isEnabled && (
+          checkboxSelection?.isEnabled &&
+          checkboxSelection?.isSelectAllEnabled &&
+          checkboxSelection?.isSelectAllVisible && (
             <TableCell
               scope="col"
               sx={mergeSx([
