@@ -3,6 +3,11 @@
     "resourceAvailabilityTrendMonthlyNext": "next month",
     "resourceAvailabilityTrendMonthlyPrevious": "previous month"
   },
+  "myRequests": {
+    "myLeaveRequests": {
+      "sortBy": "Sort by {{sortBy}}"
+    }
+  },
   "applyLeave": {
     "comment": {
       "textArea": "Comment",
@@ -34,6 +39,11 @@
     "selectHalfMorning": "Select half, Morning",
     "selectedHalfEvening": "Selected half, Evening",
     "selectHalfEvening": "Select half, Evening"
+  },
+  "entitlement": {
+    "leaveEntitlementTable": {
+      "select": "Leave entitlements by year"
+    }
   },
   "leaveTypeCard": {
     "entitlementOver": "{{name}} entitlements are over, please choose a different leave type",
