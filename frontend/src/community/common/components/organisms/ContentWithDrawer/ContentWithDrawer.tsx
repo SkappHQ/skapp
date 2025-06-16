@@ -5,6 +5,7 @@ import TimeWidgetPopupController from "~community/attendance/components/organism
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   initialState,
   useToast
@@ -22,6 +23,7 @@ const ContentWithDrawer = ({ children }: Props) => {
   const classes = styles();
 
   const { toastMessage, setToastMessage } = useToast();
+  const translateAria = useTranslator("commonAria", "contentWithDrawer");
 
   return (
     <>
@@ -40,7 +42,8 @@ const ContentWithDrawer = ({ children }: Props) => {
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={0}
-              role="section"
+              role="region"
+              aria-label={translateAria(["contentAreaWithDrawer"])}
               style={{
                 flexDirection: "column",
                 width: "100%",
