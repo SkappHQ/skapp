@@ -15,8 +15,6 @@ import { mergeSx } from "~community/common/utils/commonUtil";
 import {
   shouldActivateButton,
   shouldMoveDownward,
-  shouldMoveLeft,
-  shouldMoveRight,
   shouldMoveUpward,
   shouldToggleCheckbox
 } from "~community/common/utils/keyboardUtils";
@@ -173,59 +171,13 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   )}
                 </TableCell>
               )}
-            {headers?.map((header, headerIndex) => (
+            {headers?.map((header) => (
               <TableCell
                 key={header.id}
-                tabIndex={onRowClick ? 0 : -1}
                 sx={mergeSx([
                   classes.tableBody.cell.wrapper,
                   customStyles?.cell?.wrapper
                 ])}
-                onKeyDown={(e) => {
-                  if (shouldMoveRight(e.key)) {
-                    const nextCell = e.currentTarget
-                      .nextElementSibling as HTMLElement;
-                    if (nextCell && nextCell.tabIndex !== -1) {
-                      nextCell.focus();
-                    }
-                  }
-                  if (shouldMoveLeft(e.key)) {
-                    const prevCell = e.currentTarget
-                      .previousElementSibling as HTMLElement;
-                    if (prevCell && prevCell.tabIndex !== -1) {
-                      prevCell.focus();
-                    }
-                  }
-                  if (shouldMoveUpward(e.key)) {
-                    const currentRow = e.currentTarget.closest("tr");
-                    const previousRow =
-                      currentRow?.previousElementSibling as HTMLElement;
-                    if (previousRow) {
-                      const cellInPreviousRow = previousRow.children[
-                        headerIndex + (checkboxSelection?.isEnabled ? 1 : 0)
-                      ] as HTMLElement;
-                      if (
-                        cellInPreviousRow &&
-                        cellInPreviousRow.tabIndex !== -1
-                      ) {
-                        cellInPreviousRow.focus();
-                      }
-                    }
-                  }
-                  if (shouldMoveDownward(e.key)) {
-                    const currentRow = e.currentTarget.closest("tr");
-                    const nextRow =
-                      currentRow?.nextElementSibling as HTMLElement;
-                    if (nextRow) {
-                      const cellInNextRow = nextRow.children[
-                        headerIndex + (checkboxSelection?.isEnabled ? 1 : 0)
-                      ] as HTMLElement;
-                      if (cellInNextRow && cellInNextRow.tabIndex !== -1) {
-                        cellInNextRow.focus();
-                      }
-                    }
-                  }
-                }}
               >
                 {typeof row[header?.id] === "function" ? (
                   row[header?.id]()
