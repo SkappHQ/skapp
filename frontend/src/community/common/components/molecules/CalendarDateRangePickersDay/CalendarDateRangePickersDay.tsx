@@ -6,6 +6,7 @@ import {
 import { DateTime } from "luxon";
 import { useMemo } from "react";
 
+import { MONTH_YEAR_FULL } from "~community/attendance/constants/constants";
 import styles from "~community/common/components/molecules/DateRangePickersDay/styles";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -112,7 +113,7 @@ const CalendarDateRangePickersDay = ({
   const dayNum = day.day;
   const ordinalSuffix = getOrdinalIndicator(dayNum);
 
-  const formattedWithOrdinal = `${dayNum}${ordinalSuffix} of ${day.toFormat("LLLL yyyy")}`;
+  const formattedWithOrdinal = `${dayNum}${ordinalSuffix} of ${day.toFormat(MONTH_YEAR_FULL)}`;
 
   const isCurrent = day.hasSame(DateTime.now(), "day");
 

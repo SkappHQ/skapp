@@ -2,6 +2,7 @@ import { Stack, SxProps, Theme, Typography, useTheme } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { HalfDayType } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { DurationSelectorDisabledOptions } from "~community/common/types/MoleculeTypes";
@@ -47,7 +48,7 @@ const DurationSelector = <T,>({
 
   const [isHalfDaySelected, setIsHalfDaySelected] = useState(false);
   const [shouldFocusButton, setShouldFocusButton] = useState<
-    "morning" | "evening" | null
+    HalfDayType.MORNING | HalfDayType.EVENING | null
   >(null);
   const [lastFocusedElement, setLastFocusedElement] =
     useState<HTMLElement | null>(null);
@@ -64,9 +65,15 @@ const DurationSelector = <T,>({
 
   useEffect(() => {
     if (shouldFocusButton && isHalfDaySelected) {
-      if (shouldFocusButton === "morning" && morningButtonRef.current) {
+      if (
+        shouldFocusButton === HalfDayType.MORNING &&
+        morningButtonRef.current
+      ) {
         morningButtonRef.current.focus();
-      } else if (shouldFocusButton === "evening" && eveningButtonRef.current) {
+      } else if (
+        shouldFocusButton === HalfDayType.EVENING &&
+        eveningButtonRef.current
+      ) {
         eveningButtonRef.current.focus();
       }
       setShouldFocusButton(null);
@@ -142,7 +149,7 @@ const DurationSelector = <T,>({
     onChange(halfDayOptionToSelect);
 
     setShouldFocusButton(
-      disabledOptions.halfDayMorning ? "evening" : "morning"
+      disabledOptions.halfDayMorning ? HalfDayType.EVENING : HalfDayType.MORNING
     );
   };
 
@@ -250,7 +257,7 @@ const DurationSelector = <T,>({
                   sx={classes.btnText}
                   variant="body1"
                 >
-                  {translateText(["morning"])}
+                  {translateText([HalfDayType.MORNING])}
                 </Typography>
                 {!disabledOptions.halfDayMorning &&
                   value === options.halfDayMorning && (
@@ -282,7 +289,7 @@ const DurationSelector = <T,>({
                   sx={classes.btnText}
                   variant="body1"
                 >
-                  {translateText(["evening"])}
+                  {translateText([HalfDayType.EVENING])}
                 </Typography>
                 {!disabledOptions.halfDayEvening &&
                   value === options.halfDayEvening && (
