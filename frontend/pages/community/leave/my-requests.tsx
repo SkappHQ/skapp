@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { type NextPage } from "next";
 
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
+import Select from "~community/common/components/molecules/Select/Select";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
@@ -37,13 +37,11 @@ const MyRequests: NextPage = () => {
       customRightContent={
         isEntitlementAvailableNextYear &&
         isEntitlementAvailableNextYear.length !== 0 ? (
-          <Dropdown
-            onItemClick={(event) =>
-              setSelectedYear(event?.currentTarget?.innerText)
-            }
-            selectedItem={selectedYear}
-            title={selectedYear}
-            items={getCurrentAndNextYear()}
+          <Select
+            id="leave-allocations-year-dropdown"
+            value={selectedYear}
+            options={getCurrentAndNextYear()}
+            onChange={(event) => setSelectedYear(event?.target.value)}
           />
         ) : (
           <></>

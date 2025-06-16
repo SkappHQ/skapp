@@ -63,7 +63,7 @@ const Modal: FC<Props> = ({
     >
       <Stack
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
-        role="dialog"
+        role="modal"
         aria-label={translateAria(["modal"], { title })}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>

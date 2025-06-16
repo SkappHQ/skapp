@@ -1,17 +1,16 @@
-import { Box, Divider, Stack, Typography } from "@mui/material";
 import {
-  ChangeEvent,
-  FC,
-  MouseEvent,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+  Box,
+  Divider,
+  SelectChangeEvent,
+  Stack,
+  Typography
+} from "@mui/material";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import Select from "~community/common/components/molecules/Select/Select";
 import Table from "~community/common/components/molecules/Table/Table";
 import {
   ButtonSizes,
@@ -19,7 +18,7 @@ import {
 } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { SortKeyTypes, StyleProps } from "~community/common/types/CommonTypes";
+import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import {
@@ -69,6 +68,7 @@ const LeaveRequests: FC = () => {
   } = useGetEmployeeLeaveRequestData(newLeaveId as number);
 
   const translateText = useTranslator("leaveModule", "myRequests");
+  const translateAria = useTranslator("leaveAria", "myRequests");
 
   useEffect(() => {
     if (isSuccess && leaveData) {
@@ -299,28 +299,12 @@ const LeaveRequests: FC = () => {
     }
   ];
 
-  const handleItemClick = (
-    event: MouseEvent<HTMLElement>,
-    item: (typeof dropdownItems)[number]
-  ) => {
-    handleLeaveRequestsSort("sortKey", item.value);
+  const handleItemClick = (event: SelectChangeEvent) => {
+    handleLeaveRequestsSort("sortKey", event.target.value);
   };
 
   const selectedItem = dropdownItems.find(
     (item) => item.value === leaveRequestSort
-  );
-
-  const sortButton = (
-    <Dropdown
-      onItemClick={handleItemClick}
-      selectedItem={selectedItem || dropdownItems[0]}
-      title={translateText(["myLeaveRequests", "sortBy"], {
-        sortBy: selectedItem?.label
-      })}
-      items={dropdownItems}
-      displayKey="label"
-      dropdownBtnStyles={{ width: "100%" } as StyleProps}
-    />
   );
 
   const handleRowClick = (leaveRequest: any): void => {
@@ -391,7 +375,25 @@ const LeaveRequests: FC = () => {
         }}
         actionToolbar={{
           firstRow: {
-            leftButton: sortButton,
+            leftButton: (
+              <Select
+                id="leave-requests-filter"
+                onChange={handleItemClick}
+                value={selectedItem?.value ?? ""}
+                options={dropdownItems}
+                renderValue={(selectedValue: string) => (
+                  <Typography
+                    aria-label={translateAria(["myLeaveRequests", "sortBy"], {
+                      sortBy: selectedValue
+                    })}
+                  >
+                    {translateText(["myLeaveRequests", "sortBy"], {
+                      sortBy: selectedValue
+                    })}
+                  </Typography>
+                )}
+              />
+            ),
             rightButton: filterButton
           }
         }}

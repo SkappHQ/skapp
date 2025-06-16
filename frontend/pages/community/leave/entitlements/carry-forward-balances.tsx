@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { type NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -14,7 +14,11 @@ import { useGetUseCarryForwardLeaveEntitlements } from "~community/leave/api/Lea
 import CarryForwardTable from "~community/leave/components/molecules/CarryForwardTable/CarryForwardTable";
 import LeaveCarryForwardModalController from "~community/leave/components/organisms/LeaveCarryForwardModalController/LeaveCarryForwardModalController";
 import { useLeaveStore } from "~community/leave/store/store";
-import { LeaveCarryForwardModalTypes } from "~community/leave/types/LeaveCarryForwardTypes";
+import {
+  LeaveCarryForwardModalTypes,
+  carryForwardEntitlementType,
+  carryForwardLeaveEntitlementsType
+} from "~community/leave/types/LeaveCarryForwardTypes";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
@@ -40,39 +44,58 @@ const CarryForwardBalances: NextPage = () => {
   }));
 
   const [checkedList] = useState<number[]>(leaveCarryForwardId);
-  const [rows, setRows] = useState<any[]>([]);
 
   const { data: carryForwardEntitlement } =
     useGetUseCarryForwardLeaveEntitlements(checkedList);
 
-  const getLeaveTypeNames = (carryForwardLeaveTypes: any) => {
-    return carryForwardLeaveTypes?.map((leaveType: any) => leaveType.name);
-  };
+  const headers = useMemo(() => {
+    if (carryForwardLeaveTypes.length > 0) {
+      return carryForwardLeaveTypes.map((leaveType) => ({
+        label: leaveType.name,
+        id: leaveType.typeId
+      }));
+    }
 
-  useEffect(() => {
-    const row = carryForwardEntitlement?.items.map((item: any) => {
-      const employeeName = `${item?.employee?.firstName} ${item?.employee?.lastName}`;
-      const employeeData = {
-        id: item?.employee?.employeeId,
-        name: employeeName,
-        email: item?.employee?.email
-      };
-      const entitlements = getLeaveTypeNames(carryForwardLeaveTypes).map(
-        (header: string) => {
-          const entitlement = item.entitlements.find(
-            (ent: any) => ent.name.toUpperCase() === header.toUpperCase()
-          );
-          return entitlement && entitlement.carryForwardAmount !== 0
-            ? entitlement.carryForwardAmount
-            : "-";
+    return [];
+  }, []);
+
+  const rows = useMemo(() => {
+    const carryForwardEntitlementItems = carryForwardEntitlement?.items;
+    if (
+      carryForwardEntitlementItems !== undefined &&
+      carryForwardEntitlementItems.length > 0
+    ) {
+      return carryForwardEntitlementItems.map(
+        (entitlement: carryForwardLeaveEntitlementsType) => {
+          const tableData: Array<Record<string, string | number>> = [];
+
+          const tableRow: Record<string, string | number> = {
+            employeeId: entitlement.employee.employeeId,
+            name:
+              entitlement.employee.firstName +
+              " " +
+              entitlement.employee.lastName
+          };
+
+          headers.forEach((header) => {
+            const leaveType = entitlement.entitlements.find(
+              (entitlement: carryForwardEntitlementType) =>
+                entitlement.leaveTypeId === header.id
+            );
+            tableRow[header.id] = leaveType
+              ? leaveType.carryForwardAmount
+              : "-";
+          });
+
+          tableData.push(tableRow);
+
+          return tableData;
         }
       );
+    }
 
-      return { name: employeeName, entitlements, employeeData };
-    });
-
-    setRows(row);
-  }, [carryForwardEntitlement, checkedList]);
+    return [];
+  }, [carryForwardEntitlement, headers]);
 
   const handleSync = () => {
     setIsLeaveCarryForwardModalOpen(true);
@@ -98,8 +121,8 @@ const CarryForwardBalances: NextPage = () => {
       >
         <>
           <CarryForwardTable
-            leaveHeaders={getLeaveTypeNames(carryForwardLeaveTypes)}
-            recordData={rows}
+            headers={headers}
+            rows={rows[0]}
             totalPage={carryForwardEntitlement?.totalPages}
           />
           <Box

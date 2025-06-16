@@ -126,7 +126,10 @@ export const generateTimeArray = () => {
 export const getAdjacentYearsWithCurrent = () => {
   const now = DateTime.now();
   const year = now.year - 1;
-  return Array.from({ length: 3 }, (_, index) => (year + index).toString());
+  return Array.from({ length: 3 }, (_, index) => {
+    const value = (year + index).toString();
+    return { label: value, value };
+  });
 };
 
 export const currentYear = new Date().getFullYear();
@@ -430,16 +433,29 @@ export const getAsDaysString = (input: string | number) => {
   return `${number} ${number > 0 && number <= 1 ? "Day" : "Days"}`;
 };
 
-export const getRecentYearsInStrings = (): string[] => {
+export const getRecentYearsInStrings = () => {
   const currentYear = DateTime.local().year;
   const nextYear = currentYear + 1;
-  return [currentYear.toString(), nextYear.toString()];
+
+  return [
+    {
+      label: currentYear.toString(),
+      value: currentYear.toString()
+    },
+    {
+      label: nextYear.toString(),
+      value: nextYear.toString()
+    }
+  ];
 };
 
 export const getCurrentAndNextYear = () => {
   const now = DateTime.now();
   const year = now.year;
-  return Array.from({ length: 2 }, (_, index) => (year + index).toString());
+  return Array.from({ length: 2 }, (_, index) => {
+    const value = (year + index).toString();
+    return { label: value, value };
+  });
 };
 
 export const calculateMinMonth = (

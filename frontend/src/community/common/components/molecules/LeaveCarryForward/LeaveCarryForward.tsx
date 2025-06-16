@@ -56,6 +56,7 @@ const LeaveCarryForward = () => {
           sx={{
             maxWidth: "39.563rem"
           }}
+          id="leave-carry-forward-section-description"
         >
           {translateTexts(["leaveCarryForwardSectionDescription"]) ?? ""}
         </Typography>
@@ -77,6 +78,9 @@ const LeaveCarryForward = () => {
             paddingY: "1.25rem"
           }}
           onClick={handleLeaveSync}
+          accessibility={{
+            ariaDescribedBy: "leave-carry-forward-section-description"
+          }}
         />
       </Box>
       <LeaveCarryForwardModalController />

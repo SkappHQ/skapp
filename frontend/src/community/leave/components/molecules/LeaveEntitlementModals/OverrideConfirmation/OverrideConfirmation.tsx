@@ -20,7 +20,11 @@ const OverrideConfirmation = () => {
 
   return (
     <Box sx={classes.wrapper}>
-      <Typography variant="body1" sx={classes.textOne}>
+      <Typography
+        id="override-confirmation-description"
+        variant="body1"
+        sx={classes.textOne}
+      >
         {translateText(["overrideConfirmationModalDes"], {
           uploadingYear: selectedYear
         })}
@@ -29,6 +33,9 @@ const OverrideConfirmation = () => {
         {translateText(["overrideConfirmationTxt"])}
       </Typography>
       <Button
+        accessibility={{
+          ariaDescribedBy: "override-confirmation-description"
+        }}
         label={translateText(["proceedBtnTxt"])}
         endIcon={IconName.RIGHT_ARROW_ICON}
         buttonStyle={ButtonStyle.PRIMARY}

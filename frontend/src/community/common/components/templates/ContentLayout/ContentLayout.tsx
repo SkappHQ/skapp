@@ -86,7 +86,7 @@ interface Props {
   customStyles?: {
     header?: SxProps<Theme>;
   };
-  ariaDescription?: {
+  ariaDescribedBy?: {
     primaryButton?: string;
     secondaryButton?: string;
   };
@@ -118,8 +118,8 @@ const ContentLayout = ({
   id,
   shouldBlink,
   customStyles,
-  showBackButtonTooltip = true,
-  ariaDescription
+  ariaDescribedBy,
+  showBackButtonTooltip = true
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -312,7 +312,9 @@ const ContentLayout = ({
                 dataTestId={contentLayoutTestId.buttons.secondaryButton}
                 shouldBlink={shouldBlink?.secondaryBtn}
                 id={id?.secondaryBtn}
-                ariaDescription={ariaDescription?.secondaryButton}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.secondaryButton
+                }}
               />
             )}
             {primaryButtonText && (
@@ -328,7 +330,9 @@ const ContentLayout = ({
                 shouldBlink={shouldBlink?.primaryBtn}
                 id={id?.primaryBtn}
                 disabled={isPrimaryBtnDisabled}
-                ariaDescription={ariaDescription?.primaryButton}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.primaryButton
+                }}
               />
             )}
             {customRightContent}

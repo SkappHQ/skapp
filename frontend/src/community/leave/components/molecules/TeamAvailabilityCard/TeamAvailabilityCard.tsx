@@ -1,11 +1,17 @@
-import { Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
+import {
+  Chip,
+  SelectChangeEvent,
+  Stack,
+  Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroupWithLabel from "~community/common/components/molecules/AvatarGroupWithLabel/AvatarGroupWithLabel";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
+import Select from "~community/common/components/molecules/Select/Select";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { StyleProps } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
@@ -33,12 +39,6 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
   const translateText = useTranslator(
     "leaveModule",
     "myRequests",
-    "teamAvailabilityCard"
-  );
-
-  const translateAria = useTranslator(
-    "leaveAria",
-    "applyLeave",
     "teamAvailabilityCard"
   );
 
@@ -75,6 +75,23 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     }
   }, [cardData, selectedDates, totalLeaveCount]);
 
+  const teamsDropdownOptions = useMemo(() => {
+    return (
+      teams?.map((team) => ({
+        label: team.teamName,
+        value: team.teamId
+      })) ?? []
+    );
+  }, [teams]);
+
+  const handleTeamSelect = (event: SelectChangeEvent) => {
+    const teamId = event.target.value;
+
+    const selectedTeam = teams?.find((team) => team.teamId === teamId) ?? null;
+
+    setSelectedTeam(selectedTeam);
+  };
+
   return (
     <Stack
       sx={mergeSx([
@@ -91,16 +108,11 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     >
       <Stack sx={classes.rowOne}>
         <Typography variant="h3">{translateText(["title"])}</Typography>
-        <Dropdown
-          title={selectedTeam?.teamName ?? translateText(["dropDownLabel"])}
-          displayKey="teamName"
-          items={teams ?? []}
-          onItemClick={(_event, item) => setSelectedTeam(item)}
-          selectedItem={selectedTeam as TeamNamesType}
-          position="bottom-end"
-          wrapperStyles={classes.wrapperStyles as StyleProps}
-          dropdownBtnStyles={classes.dropdownBtnStyles as StyleProps}
-          ariaLabel={translateAria(["dropdown"])}
+        <Select
+          id="team-availability-card-team-select"
+          onChange={handleTeamSelect}
+          value={selectedTeam?.teamId?.toString() ?? ""}
+          options={teamsDropdownOptions}
         />
       </Stack>
       <Stack sx={classes.rowTwo}>

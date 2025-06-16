@@ -138,10 +138,18 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
 
   return (
     <Stack sx={classes.wrapper}>
-      <Typography variant="body1" sx={classes.description}>
+      <Typography
+        variant="body1"
+        sx={classes.description}
+        id="upload-csv-modal-description"
+      >
         {translateText(["uploadCsvModalDes"])}
       </Typography>
       <DragAndDropField
+        accessibility={{
+          componentName: translateText(["title"]),
+          ariaDescribedBy: "upload-csv-modal-description"
+        }}
         setAttachments={(acceptedFiles: FileUploadType[]) =>
           setAttachment({
             acceptedFiles,

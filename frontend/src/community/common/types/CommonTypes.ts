@@ -269,7 +269,6 @@ export enum AnalyticsTypes {
 export type TableHeaderTypes = {
   id: string | number;
   label?: string;
-  element?: JSX.Element;
 };
 
 export type TableTypes = {

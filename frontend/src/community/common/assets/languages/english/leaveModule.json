@@ -462,6 +462,7 @@
     "selectTeam": "Team:"
   },
   "leaveCarryForward": {
+    "name": "NAME",
     "leaveCarryForwardSectionTitle": "Leave carry forward",
     "leaveCarryForwardSectionDescription": "Sync eligible carried forward leave balances of the entire organization to the next leave cycle.",
     "leaveCarryForwardSectionBtn": "Start the sync",

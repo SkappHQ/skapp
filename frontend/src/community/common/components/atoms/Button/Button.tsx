@@ -24,6 +24,7 @@ import StyledButton from "./StyledButton";
 export interface StyledButtonProps {
   id?: string;
   accessibility?: {
+    ariaDescription?: string;
     ariaDescribedBy?: string;
   };
   ariaLabel?: string;

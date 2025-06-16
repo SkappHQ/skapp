@@ -31,7 +31,11 @@
       "uploadProfilePicture": "Upload profile picture"
     },
     "dragAndDrop": {
-      "ariaLabel": "{{componentName}} File Upload"
+      "ariaLabel": "{{componentName}} File Upload",
+      "uploadedFiles": {
+        "label": "Uploaded File: {{fileName}}",
+        "description": "Click on me to change the uploaded file"
+      }
     },
     "drawer": {
       "drawer": "Drawer",
@@ -52,17 +56,10 @@
     },
     "table": {
       "tableHead": {
-        "tableHeadLabel": "{{tableName}} table head",
-        "tableHeadRowLabel": "{{tableName}} table head row",
-        "checkbox": "Check all the {{tableName}}",
-        "tableHeadCell": "{{tableName}} table head {{headerLabel}} cell",
-        "tableHeadActionCell": "{{tableName}} table head actions column cell"
+        "checkbox": "Check all the {{tableName}}"
       },
       "tableBody": {
-        "tableBodyLabel": "{{tableName}} table body",
-        "row": "{{tableName}} table {{ariaLabel}} record",
         "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",
-        "tableBodyCell": "{{tableName}} table body {{headerLabel}} cell {{rowId}}",
         "actionColumn": {
           "editButton": "Edit {{tableName}}",
           "deleteButton": "Delete {{tableName}}"

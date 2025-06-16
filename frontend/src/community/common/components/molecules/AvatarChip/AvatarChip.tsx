@@ -88,6 +88,7 @@ const AvatarChip: FC<Props> = ({
       />
     );
   }
+
   const chipComponent = (
     <Chip
       onMouseEnter={handleTooltipOpen}
