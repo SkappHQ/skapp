@@ -84,7 +84,7 @@ const AppBar = () => {
       <Stack
         sx={classes.wrapper}
         id="top-bar"
-        role="menubar"
+        role="banner"
         tabIndex={0}
         component="header"
         aria-label={translateAria(["appBar"])}

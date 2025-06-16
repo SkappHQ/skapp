@@ -1,23 +1,17 @@
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { appModes } from "~community/common/constants/configs";
-import { APP, LOCALHOST } from "~community/common/constants/stringConstants";
+import ROUTES from "~community/common/constants/routes";
 import { useRedirectHandler } from "~community/common/utils/hooks/useRedirectHandler";
 
 export default function Index() {
-  const tenant = window.location.host.split(".")[0];
-
   const isEnterprise = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
+  const router = useRouter();
 
   useEffect(() => {
-    if (
-      (tenant === APP || tenant.split(":")[0] === LOCALHOST) &&
-      isEnterprise
-    ) {
-      signOut({
-        redirect: false
-      });
+    if (isEnterprise) {
+      router.replace(ROUTES.DASHBOARD.BASE);
     }
   }, []);
 

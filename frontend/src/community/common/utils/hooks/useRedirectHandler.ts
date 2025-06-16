@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -42,23 +43,6 @@ export const useRedirectHandler = (options: SessionPropsOptions) => {
             }
           }
         }
-
-        if (session) {
-          const isPasswordChanged =
-            session?.user?.isPasswordChangedForTheFirstTime;
-
-          if (!isPasswordChanged) {
-            router.replace(ROUTES.AUTH.RESET_PASSWORD);
-            return;
-          }
-
-          router.replace(ROUTES.DASHBOARD.BASE);
-          return;
-        }
-
-        if (!isSignInPage) {
-          router.replace(ROUTES.AUTH.SIGNIN);
-        }
       } catch (error) {
         console.error("Error during redirect handling:", error);
         if (!session && !isSignInPage) {
@@ -67,6 +51,8 @@ export const useRedirectHandler = (options: SessionPropsOptions) => {
       }
     };
 
-    handleRedirect();
+    if (process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE) {
+      handleRedirect();
+    }
   }, [isSignInPage, router]);
 };

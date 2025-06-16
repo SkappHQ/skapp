@@ -120,7 +120,7 @@ const InputPhoneNumber: FC<Props> = ({
                 ? theme.palette.error.light
                 : theme.palette.grey[100],
             width: "4.0625rem",
-            color: theme.palette.grey[700],
+            color: theme.palette.text.secondary,
             fontSize: "1rem",
             fontWeight: 400,
             fontFamily: "Poppins",
