@@ -283,7 +283,7 @@ const ContentLayout = ({
               </IconButton>
             )}
             {!isTitleHidden && (
-              <div role="region" aria-label={translateAria(["pageHeader"])}>
+              <header aria-label={translateAria(["pageHeader"])}>
                 <Stack direction="row" spacing={2} alignItems="center">
                   <Typography variant="h1" component="h1" id="page-title">
                     {title}
@@ -294,7 +294,7 @@ const ContentLayout = ({
                     </div>
                   )}
                 </Stack>
-              </div>
+              </header>
             )}
             {subtitleNextToTitle && (
               <Typography
