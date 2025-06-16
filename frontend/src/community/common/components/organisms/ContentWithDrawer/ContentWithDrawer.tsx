@@ -40,7 +40,7 @@ const ContentWithDrawer = ({ children }: Props) => {
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={0}
-              role="section"
+              role="region"
               style={{
                 flexDirection: "column",
                 width: "100%",

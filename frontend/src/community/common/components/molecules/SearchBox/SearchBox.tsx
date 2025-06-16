@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import { SxProps, Theme, useTheme } from "@mui/material/styles";
 import { ChangeEvent, FC, useEffect, useState } from "react";
@@ -94,7 +94,7 @@ const SearchBox: FC<Props> = ({
   };
 
   return (
-    <>
+    <Box component="div" role="search" aria-label={placeHolder || "Search"}>
       {label && (
         <Typography lineHeight={1.5} sx={mergeSx([classes.label, labelStyles])}>
           {label}
@@ -105,7 +105,7 @@ const SearchBox: FC<Props> = ({
         inputProps={{
           "data-testid": testId,
           "aria-hidden": accessibility?.ariaHidden,
-          role: "search"
+          role: "searchbox"
         }}
         fullWidth={fullWidth}
         onChange={searchHandler}
@@ -118,7 +118,7 @@ const SearchBox: FC<Props> = ({
         }
         sx={mergeSx([classes.inputBase, searchBoxStyles])}
       />
-    </>
+    </Box>
   );
 };
 

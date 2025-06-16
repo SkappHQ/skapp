@@ -87,6 +87,7 @@
     }
   },
   "contentLayout": {
-    "backButton": "Back Button"
+    "backButton": "Back Button",
+    "pageHeader": "Page header"
   }
 }
