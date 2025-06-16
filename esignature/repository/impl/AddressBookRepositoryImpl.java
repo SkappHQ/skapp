@@ -77,19 +77,6 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		predicates.add(cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE)));
 		countPredicates.add(cb.isTrue(countRoot.get(AddressBook_.IS_ACTIVE)));
 
-		// User status filter
-		Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
-				cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
-		Predicate userStatusPredicate = cb.or(cb.isNull(internalUserJoin.get(User_.USER_ID)),
-				internalUserActivePredicate);
-		predicates.add(userStatusPredicate);
-
-		Predicate countInternalUserActivePredicate = cb.and(cb.isNotNull(countInternalUserJoin.get(User_.USER_ID)),
-				cb.equal(countEmployeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
-		Predicate countUserStatusPredicate = cb.or(cb.isNull(countInternalUserJoin.get(User_.USER_ID)),
-				countInternalUserActivePredicate);
-		countPredicates.add(countUserStatusPredicate);
-
 		// User type filter
 		List<UserType> userTypes = addressBookFilterDto.getUserType();
 		if (userTypes != null && userTypes.size() == 1) {
@@ -183,22 +170,13 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 			Predicate isActivePredicate = cb.isTrue(addressBookRoot.get(AddressBook_.IS_ACTIVE));
 
-			// For internal users, only include if Employee status is ACTIVE
-			Predicate internalUserActivePredicate = cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),
-					cb.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
-
-			// For external users, just check if external user is present
-			Predicate externalUserPredicate = cb.isNotNull(externalUserJoin.get(ExternalUser_.ID));
-
-			Predicate userTypePredicate = cb.or(internalUserActivePredicate, externalUserPredicate);
-
 			Predicate emailLike = cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate firstNameLike = cb.like(cb.lower(user.firstName().as(String.class)), keyword.toLowerCase() + "%");
 			Predicate lastNameLike = cb.like(cb.lower(user.lastName().as(String.class)), keyword.toLowerCase() + "%");
 
 			Predicate keywordCondition = cb.or(emailLike, firstNameLike, lastNameLike);
 
-			query.where(cb.and(isActivePredicate, userTypePredicate, keywordCondition));
+			query.where(cb.and(keywordCondition, isActivePredicate));
 
 			Order sortingOrder = cb.asc(cb.selectCase()
 				.when(cb.like(cb.lower(user.email().as(String.class)), keyword.toLowerCase() + "%"), 1)
