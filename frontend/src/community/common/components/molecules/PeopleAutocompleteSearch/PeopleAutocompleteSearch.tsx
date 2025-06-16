@@ -39,6 +39,7 @@ interface Props {
   customStyles?: {
     label?: SxProps<Theme>;
   };
+  clearInputValueAfterSelect?: boolean;
 }
 
 const PeopleAutocompleteSearch = ({
@@ -54,7 +55,8 @@ const PeopleAutocompleteSearch = ({
   isDisabled = false,
   required = false,
   label,
-  customStyles
+  customStyles,
+  clearInputValueAfterSelect = false
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -77,22 +79,51 @@ const PeopleAutocompleteSearch = ({
   }, [options]);
 
   const computedInputValue = useMemo(() => {
+    if (clearInputValueAfterSelect) {
+      return inputValue;
+    }
+
     if (value) {
       return `${value.firstName} ${value.lastName}`;
     }
 
     return inputValue;
-  }, [value, inputValue]);
+  }, [value, inputValue, clearInputValueAfterSelect]);
+
+  const computedValue = useMemo(() => {
+    if (clearInputValueAfterSelect) {
+      return null;
+    }
+
+    if (value) {
+      return {
+        ...value,
+        label: `${value.firstName} ${value.lastName}`,
+        id: value.employeeId
+      };
+    }
+
+    return null;
+  }, [value, clearInputValueAfterSelect]);
 
   return (
     <Autocomplete
       id={id.autocomplete}
       options={formattedOptions}
+      value={computedValue}
       inputValue={computedInputValue}
-      onInputChange={(_event, value, reason) => onInputChange(value, reason)}
-      onChange={(_event, value) => {
-        const { label, id, ...selectedOption } = value;
-        onChange(selectedOption);
+      onInputChange={(_event, newInputValue, reason) =>
+        onInputChange(newInputValue, reason)
+      }
+      onChange={(_event, selectedValue) => {
+        if (selectedValue !== null) {
+          const { label, id, ...selectedOption } = selectedValue;
+          onChange(selectedOption);
+
+          if (clearInputValueAfterSelect) {
+            onInputChange("", "reset");
+          }
+        }
       }}
       getOptionLabel={(option) => option.label}
       disabled={isDisabled}

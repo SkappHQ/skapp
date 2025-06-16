@@ -130,7 +130,9 @@ const AddTeamSelectMembers: FC<Props> = ({
                 >
                   <Checkbox
                     checked={usersChecked?.includes(user)}
-                    inputProps={{ "aria-label": "controlled" }}
+                    inputProps={{
+                      "aria-label": `${user?.firstName ?? ""} ${user?.lastName ?? ""} ${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`
+                    }}
                     sx={classes.checkBox}
                     onClick={handelToggle(user)}
                   />

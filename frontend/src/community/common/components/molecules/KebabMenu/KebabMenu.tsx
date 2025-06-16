@@ -34,7 +34,7 @@ interface KebabMenuProps {
 const KebabMenu: FC<KebabMenuProps> = ({
   menuItems,
   icon = <Icon name={IconName.THREE_DOTS_ICON} />,
-  ariaLabel = "menu button",
+  ariaLabel = "menu",
   menuAlign = {
     anchorOrigin: { vertical: "top", horizontal: "left" },
     transformOrigin: { vertical: "top", horizontal: "left" }
