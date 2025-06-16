@@ -421,7 +421,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
-		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}
