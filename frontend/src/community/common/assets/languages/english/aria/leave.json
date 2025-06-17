@@ -16,8 +16,20 @@
       "statusFilterSection": "Leave Status Filters",
       "typeFilterSection": "Leave Type Filters",
       "filterOption": "Filter Option, {{filterName}}",
-      "filterSelected": "{{filterName}} selected"
+      "filterSelected": "{{filterName}} selected",
+      "leaveDuration": "{{leaveType}} leave request record for {{days}}"
     }
+  },
+  "allLeaveRequests": {
+    "allLeaveRequestPage": "All Leave Requests Page",
+    "sortGroup": "Sort all leave requests",
+    "sortBy": "Selected Sort Option is {{sortBy}}",
+    "dateRangeFilter": "Date Range Filter, {{startDate}} to {{endDate}}",
+    "leaveDuration": "{{day}} leave on {{date}}",
+    "searchAllLeaveRequests": "Search All Leave Requests",
+    "allLeaveRequestTable": "Accessing All Leave Requests Table",
+    "employeeName": "Employee name, {{firstName}} {{lastName}}",
+    "leaveType": "Leave type, {{leaveType}}"
   },
   "applyLeave": {
     "comment": {

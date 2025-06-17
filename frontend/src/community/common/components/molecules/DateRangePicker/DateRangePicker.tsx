@@ -46,6 +46,9 @@ interface Props {
   chipStyles?: SxProps;
   tabIndex?: number;
   hasBorder?: boolean;
+  accessibility?: {
+    ariaLabel?: string;
+  };
 }
 
 const DateRangePicker: FC<Props> = ({
@@ -59,7 +62,8 @@ const DateRangePicker: FC<Props> = ({
   isRangePicker = true, // Default to range picker
   chipStyles,
   tabIndex = 0,
-  hasBorder = false
+  hasBorder = false,
+  accessibility
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -97,9 +101,11 @@ const DateRangePicker: FC<Props> = ({
             chipStyles
           ])}
           aria-label={
-            selectedDates[0]
-              ? `Selected date ${DateTime.fromJSDate(selectedDates[0]).toFormat("dd MMMM yyyy")}. Press enter to change selected date`
-              : "Press enter to select date"
+            accessibility?.ariaLabel
+              ? accessibility.ariaLabel
+              : selectedDates[0]
+                ? `Selected date ${DateTime.fromJSDate(selectedDates[0]).toFormat("dd MMMM yyyy")}. Press enter to change selected date`
+                : "Press enter to select date"
           }
           tabIndex={tabIndex}
           onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {

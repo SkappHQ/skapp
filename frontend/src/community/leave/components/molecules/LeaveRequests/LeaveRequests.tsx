@@ -3,12 +3,13 @@ import {
   Divider,
   SelectChangeEvent,
   Stack,
-  Typography
+  Theme,
+  Typography,
+  useTheme
 } from "@mui/material";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import Select from "~community/common/components/molecules/Select/Select";
 import Table from "~community/common/components/molecules/Table/Table";
@@ -20,7 +21,10 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
+import {
+  getEmoji,
+  pascalCaseFormatter
+} from "~community/common/utils/commonUtil";
 import {
   useGetEmployeeLeaveRequestData,
   useGetEmployeeLeaveRequests,
@@ -35,11 +39,12 @@ import LeaveRequestDates from "../LeaveRequestDates/LeaveRequestDates";
 import styles from "./styles";
 
 const LeaveRequests: FC = () => {
+  const theme: Theme = useTheme();
   const currentPage = useLeaveStore((state) => state.leaveRequestParams.page);
   const leaveRequestSort = useLeaveStore(
     (state) => state.leaveRequestParams.sortKey
   );
-  const classes = styles();
+  const classes = styles(theme);
   const {
     resetLeaveRequestParams,
     leaveRequestsFilter,
@@ -117,40 +122,20 @@ const LeaveRequests: FC = () => {
         />
       ),
       type: (
-        <Box width="100%">
-          <IconChip
-            accessibility={{
-              ariaLabel: employeeLeaveRequest.leaveType.name
-            }}
-            label={employeeLeaveRequest.leaveType.name}
-            icon={employeeLeaveRequest.leaveType.emojiCode}
-            isTruncated={false}
-            chipStyles={{
-              maxWidth: "100%",
-              "&:hover": {
-                backgroundColor: "inherit",
-                cursor: "default"
-              }
-            }}
-            tabIndex={-1}
-          />
-        </Box>
+        <div style={classes.iconStyles}>
+          <span role="img" aria-hidden="true">
+            {getEmoji(employeeLeaveRequest.leaveType.emojiCode || "")}
+          </span>
+          {employeeLeaveRequest.leaveType.name}
+        </div>
       ),
       status: (
-        <IconChip
-          accessibility={{
-            ariaLabel: employeeLeaveRequest.status.toLowerCase()
-          }}
-          label={employeeLeaveRequest.status.toLowerCase()}
-          icon={leaveStatusIconSelector(employeeLeaveRequest.status)}
-          chipStyles={{
-            "&:hover": {
-              backgroundColor: "inherit",
-              cursor: "default"
-            }
-          }}
-          tabIndex={-1}
-        />
+        <div style={{ ...classes.iconStyles, textTransform: "capitalize" }}>
+          <span role="img" aria-hidden="true">
+            {leaveStatusIconSelector(employeeLeaveRequest.status)}
+          </span>
+          {employeeLeaveRequest.status.toLowerCase()}
+        </div>
       )
     }));
   };

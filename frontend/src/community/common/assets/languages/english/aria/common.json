@@ -16,7 +16,7 @@
       "pickColor": "Select color {{color}}"
     },
     "backButton": "Click me to go to previous page",
-    "filterBtn": "Click me to open filter menu",
+    "filterBtn": "Filter all leave requests",
     "inputDate": {
       "tooltip": "tooltip",
       "calendarIcon": "Click me to open {{name}} calendar"

@@ -1,7 +1,6 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Theme, Typography, useTheme } from "@mui/material";
 import { FC } from "react";
 
-import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getAsDaysString } from "~community/common/utils/dateTimeUtils";
 import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
@@ -14,6 +13,12 @@ interface Props {
 
 const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
   const translateText = useTranslator("leaveModule", "myRequests");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveRequests"
+  );
+  const theme: Theme = useTheme();
 
   return (
     <Box
@@ -27,6 +32,15 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
         gap: "0.625rem",
         paddingLeft: "1.25rem"
       }}
+      aria-label={translateAria(["leaveDuration"], {
+        leaveType:
+          days == "1"
+            ? translateText(["myLeaveRequests", "fullDay"])
+            : days < "1"
+              ? translateText(["myLeaveRequests", "halfDay"])
+              : getAsDaysString(days),
+        days: getStartEndDate(startDate, endDate)
+      })}
     >
       <Typography
         variant="body2"
@@ -34,24 +48,24 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
           color: "common.black",
           whiteSpace: "nowrap"
         }}
+        aria-hidden="true"
       >
         {getStartEndDate(startDate, endDate)}
       </Typography>
-      <ReadOnlyChip
-        label={
-          days == "1"
-            ? translateText(["myLeaveRequests", "fullDay"])
-            : days < "1"
-              ? translateText(["myLeaveRequests", "halfDay"])
-              : getAsDaysString(days)
-        }
-        chipStyles={{
-          "&:hover": {
-            backgroundColor: "inherit",
-            cursor: "default"
-          }
+      <div
+        style={{
+          backgroundColor: theme.palette.common.white,
+          borderRadius: "9.375rem",
+          padding: "0.5rem 1rem"
         }}
-      />
+        aria-hidden="true"
+      >
+        {days == "1"
+          ? translateText(["myLeaveRequests", "fullDay"])
+          : days < "1"
+            ? translateText(["myLeaveRequests", "halfDay"])
+            : getAsDaysString(days)}
+      </div>
     </Box>
   );
 };

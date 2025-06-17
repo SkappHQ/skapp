@@ -35,14 +35,16 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         display: "flex",
         flexDirection: "column"
       }}
+      tabIndex={0}
     >
       <Typography
+        htmlFor={id}
+        component="label"
         variant="body1"
         sx={{
           marginBottom: "0.75rem",
           color: error ? theme.palette.error.contrastText : "black"
         }}
-        aria-hidden={true}
       >
         {label}
       </Typography>
