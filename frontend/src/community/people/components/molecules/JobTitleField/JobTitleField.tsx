@@ -125,7 +125,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
         </Stack>
       )}
       {values.jobTitles && (
-        <Box sx={classes.scrollContainer}>
+        <Box sx={classes.scrollContainer} tabIndex={0}>
           <Box sx={classes.valueContainer}>
             {values.jobTitles?.map((jobTitle: JobTitleType, index: number) => {
               const isOldValue = jobTitle.jobTitleId !== null;

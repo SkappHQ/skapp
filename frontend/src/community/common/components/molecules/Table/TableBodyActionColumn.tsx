@@ -18,6 +18,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
     right?: {
       iconName?: IconName;
@@ -25,6 +28,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
   };
 }
@@ -51,6 +57,22 @@ const TableBodyActionColumn: FC<
     "actionColumn"
   );
 
+  const recordName = actionBtns?.left?.accessibility?.rowKey
+    ? row?.[actionBtns?.left?.accessibility?.rowKey]
+    : "";
+
+  const editButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["editButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["editButton"]);
+
+  const deleteButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["deleteButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["deleteButton"]);
+
   return (
     isEnabled && (
       <TableCell sx={mergeSx([classes.tableBody.actionColumn.cell])}>
@@ -70,7 +92,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.left?.onClick(row.actionData)}
-            ariaLabel={translateAria(["editButton"])}
+            ariaLabel={editButtonAriaLabel}
           />
         )}
         {actionBtns?.right && (
@@ -91,7 +113,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.right?.onClick(row.actionData)}
-            ariaLabel={translateAria(["deleteButton"])}
+            ariaLabel={deleteButtonAriaLabel}
           />
         )}
       </TableCell>
