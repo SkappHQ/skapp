@@ -104,7 +104,6 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   })
                 }
               >
-                {" "}
                 <NotificationContent
                   isLeaveModuleDisabled={
                     item?.notificationType ===
