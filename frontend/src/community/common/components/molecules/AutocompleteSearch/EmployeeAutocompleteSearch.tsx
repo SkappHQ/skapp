@@ -47,7 +47,7 @@ interface Props {
   };
 }
 
-const AutocompleteSearch = ({
+const EmployeeAutocompleteSearch = ({
   id,
   options,
   name,
@@ -154,4 +154,4 @@ const AutocompleteSearch = ({
   );
 };
 
-export default AutocompleteSearch;
+export default EmployeeAutocompleteSearch;

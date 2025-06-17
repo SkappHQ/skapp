@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import { EmployeeType } from "~community/people/types/EmployeeTypes";
 
-import AutocompleteSearch from "./AutocompleteSearch";
+import EmployeeAutocompleteSearch from "./EmployeeAutocompleteSearch";
 
 interface Props {
   id: {
@@ -64,7 +64,7 @@ const PeopleAutocompleteSearch = ({
   }, [value]);
 
   return (
-    <AutocompleteSearch
+    <EmployeeAutocompleteSearch
       id={id}
       options={options}
       isLoading={isLoading}
