@@ -212,6 +212,7 @@ declare module "@mui/material/styles" {
     smallTitle: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue: React.CSSProperties;
+    documentStatusTitle: React.CSSProperties;
   }
   interface TypographyVariantsOptions {
     onboardingHeader?: React.CSSProperties;
@@ -221,6 +222,7 @@ declare module "@mui/material/styles" {
     smallTitle?: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue?: React.CSSProperties;
+    documentStatusTitle?: React.CSSProperties;
   }
 }
 declare module "@mui/material/Badge" {
@@ -262,6 +264,7 @@ declare module "@mui/material/Typography" {
     subtitle1: false;
     subtitle2: false;
     kpiValue: true;
+    documentStatusTitle: true;
     body1: true;
     body2: true;
     button: false;
@@ -523,6 +526,12 @@ export const theme = createTheme({
     kpiValue: {
       fontWeight: 700,
       fontSize: "2rem" //32px
+    },
+    //Document status title
+    documentStatusTitle: {
+      fontFamily: "'Poppins', sans-serif",
+      fontWeight: 600,
+      fontSize: "1.5rem" // 24px
     }
   },
   breakpoints: {
