@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { JSX } from "react";
 
 import { useMarkNotificationAsRead } from "~community/common/api/notificationsApi";
-import ROUTES from "~community/common/constants/routes";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -14,6 +13,7 @@ import {
   NotificationTypes,
   NotifyFilterButtonTypes
 } from "~community/common/types/notificationTypes";
+import { handleNotifyRow } from "~community/common/utils/notificationUtils";
 
 import NotificationContent from "../../molecules/NotificationContent/NotificationContent";
 import NotificationsFilter from "../../molecules/NotificationsFilter/NotificationsFilter";
@@ -30,41 +30,14 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
   const { notifyData, setNotifyData } = useCommonStore((state) => state);
   const router = useRouter();
   const translateText = useTranslator("notifications");
-
   const { mutate } = useMarkNotificationAsRead();
 
-  const { isLeaveEmployee, isAttendanceEmployee } = useSessionData();
-
-  const handelNotifyRow = (
-    id: number,
-    notificationType: NotificationItemsTypes | null,
-    isCausedByCurrentUser: boolean
-  ): void => {
-    if (
-      isCausedByCurrentUser &&
-      notificationType === NotificationItemsTypes.LEAVE_REQUEST &&
-      isLeaveEmployee
-    ) {
-      router.push(ROUTES.LEAVE.MY_REQUESTS);
-    } else if (
-      notificationType === NotificationItemsTypes.LEAVE_REQUEST &&
-      isLeaveEmployee
-    ) {
-      router.push(ROUTES.LEAVE.LEAVE_REQUESTS);
-    } else if (
-      isCausedByCurrentUser &&
-      notificationType === NotificationItemsTypes.TIME_ENTRY &&
-      isAttendanceEmployee
-    ) {
-      router.push(ROUTES.TIMESHEET.MY_TIMESHEET);
-    } else if (
-      notificationType === NotificationItemsTypes.TIME_ENTRY &&
-      isAttendanceEmployee
-    ) {
-      router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS);
-    }
-    mutate(id);
-  };
+  const {
+    isAttendanceEmployee,
+    isLeaveEmployee,
+    isLeaveManager,
+    isAttendanceManager
+  } = useSessionData();
 
   return (
     <Box>
@@ -118,13 +91,20 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
               <Box
                 sx={{ pt: "24px", pb: "16px" }}
                 onClick={() =>
-                  handelNotifyRow(
-                    item.id,
-                    item.notificationType,
-                    item.isCausedByCurrentUser
-                  )
+                  handleNotifyRow({
+                    id: item.id,
+                    notificationType: item.notificationType,
+                    isCausedByCurrentUser: item.isCausedByCurrentUser,
+                    router,
+                    mutate,
+                    isLeaveEmployee,
+                    isLeaveManager,
+                    isAttendanceManager,
+                    isAttendanceEmployee
+                  })
                 }
               >
+                {" "}
                 <NotificationContent
                   isLeaveModuleDisabled={
                     item?.notificationType ===
