@@ -47,7 +47,7 @@ const PeopleAutocompleteSearch = ({
   options,
   name,
   value,
-  isLoading = false,
+  isLoading = undefined,
   inputValue,
   onInputChange,
   onChange,
