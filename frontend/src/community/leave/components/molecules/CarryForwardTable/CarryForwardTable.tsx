@@ -32,7 +32,7 @@ const CarryForwardTable: React.FC<Props> = ({
   }, [headers, translateTexts]);
 
   const fromattedRows = useMemo(() => {
-    if (rows.length === 0) return [];
+    if (rows?.length === 0) return [];
 
     return rows;
   }, [rows]);

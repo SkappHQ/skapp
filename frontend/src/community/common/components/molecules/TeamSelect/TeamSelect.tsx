@@ -9,7 +9,7 @@ import {
   useGetAllTeams
 } from "~community/people/api/TeamApi";
 
-import Select from "../Select/Select";
+import RoundedSelect from "../RoundedSelect/RoundedSelect";
 
 const TeamSelect = ({
   value,
@@ -70,7 +70,7 @@ const TeamSelect = ({
   }, [allManagerTeamsData, allTeamsData, adminType]);
 
   return (
-    <Select
+    <RoundedSelect
       id="team-select"
       options={options}
       name="team"

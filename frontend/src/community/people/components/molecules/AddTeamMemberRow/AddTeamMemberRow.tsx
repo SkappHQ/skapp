@@ -11,7 +11,7 @@ import * as React from "react";
 import { FC, useEffect, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -144,7 +144,7 @@ const AddTeamMemberRow: FC<Props> = ({
           {`${employeeData?.jobLevel ?? ""} ${employeeData?.jobRole ?? ""}`}
         </Typography>
       </Stack>
-      <Select
+      <RoundedSelect
         id="add-team-member-type-select"
         onChange={setUserType}
         options={itemList}

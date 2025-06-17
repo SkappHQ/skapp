@@ -2,7 +2,7 @@ import { UseMutateFunction } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { ChangeEvent, SetStateAction } from "react";
 
-import { SelectOption } from "~community/common/components/molecules/Select/Select";
+import { SelectOption } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import {
   hasSpecialCharactersAndNumbers,
   matchesTwoOrMoreConsecutiveWhitespaceCharacters

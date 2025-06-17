@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { SelectOption } from "~community/common/components/molecules/Select/Select";
+import { SelectOption } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

@@ -10,9 +10,9 @@ import { FC, ReactNode, useEffect } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
-import Select, {
+import RoundedSelect, {
   SelectOption
-} from "~community/common/components/molecules/Select/Select";
+} from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import {
   ButtonStyle,
   ButtonTypes
@@ -142,7 +142,7 @@ const TransferMembersModal: FC<Props> = ({
                     </Typography>
                   </Box>
                   <Box sx={classes.dropDownCell}>
-                    <Select
+                    <RoundedSelect
                       id="job-family-select"
                       options={jobFamily ?? []}
                       value={
@@ -188,7 +188,7 @@ const TransferMembersModal: FC<Props> = ({
                     />
                   </Box>
                   <Box sx={classes.dropDownCell}>
-                    <Select
+                    <RoundedSelect
                       id="job-title-select"
                       name="jobTitle"
                       options={jobTitleOptions ?? []}
