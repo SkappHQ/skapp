@@ -23,14 +23,9 @@ import LeaveAllocationSkeleton from "./LeaveAllocationSkeleton";
 import styles from "./styles";
 
 const LeaveAllocation: FC = () => {
-  const translateAria = useTranslator(
-    "leaveAria",
-    "myRequests",
-    "myLeaveAllocation"
-  );
+  const translateAria = useTranslator("leaveAria");
   const theme: Theme = useTheme();
   const classes = styles(theme);
-  const translateAria = useTranslator("leaveAria", "applyLeave", "calendar");
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
@@ -67,9 +62,12 @@ const LeaveAllocation: FC = () => {
   return (
     <Box
       role="region"
-      aria-label={translateAria(["myLeaveAllocationSection"], {
-        year: selectedYear
-      })}
+      aria-label={translateAria(
+        ["myRequests", "myLeaveAllocation", "myLeaveAllocationSection"],
+        {
+          year: selectedYear
+        }
+      )}
     >
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
@@ -109,7 +107,7 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === 1 ? 0.5 : 1
             }}
             disabled={currentPage === 1}
-            ariaLabel={translateAria(["back"])}
+            ariaLabel={translateAria(["applyLeave", "calendar", "back"])}
           />
           <IconButton
             onClick={() => setCurrentPage(currentPage + 1)}
@@ -125,7 +123,7 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === totalPages ? 0.5 : 1
             }}
             disabled={currentPage === totalPages}
-            ariaLabel={translateAria(["next"])}
+            ariaLabel={translateAria(["applyLeave", "calendar", "next"])}
           />
         </Stack>
       )}
