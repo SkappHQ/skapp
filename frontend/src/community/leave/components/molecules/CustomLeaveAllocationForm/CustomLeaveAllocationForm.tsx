@@ -3,10 +3,10 @@ import { FormikErrors } from "formik";
 import { DateTime } from "luxon";
 import React, { useEffect, useMemo, useState } from "react";
 
+import PeopleAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/PeopleAutocompleteSearch";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import PeopleAutocompleteSearch from "~community/common/components/molecules/PeopleAutocompleteSearch/PeopleAutocompleteSearch";
 import SquareSelect from "~community/common/components/molecules/SquareSelect/SquareSelect";
 import { matchesNumberWithAtMostOneDecimalPlace } from "~community/common/regex/regexPatterns";
 import { getEmoji } from "~community/common/utils/commonUtil";

@@ -6,7 +6,7 @@ import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import TeamMemberAutocompleteSearch from "~community/common/components/molecules/TeamMemberAutocompleteSearch/TeamMemberAutocompleteSearch";
+import TeamMemberAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/TeamMemberAutocompleteSearch";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
