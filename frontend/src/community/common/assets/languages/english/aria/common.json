@@ -90,6 +90,10 @@
     }
   },
   "contentLayout": {
-    "backButton": "Back Button"
+    "backButton": "Back Button",
+    "pageHeader": "Page header"
+  },
+  "contentWithDrawer": {
+    "contentAreaWithDrawer": "Main content area with drawer"
   }
 }

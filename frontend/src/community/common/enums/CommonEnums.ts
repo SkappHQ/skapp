@@ -48,3 +48,8 @@ export enum AppVersionNotificationType {
   CRITICAL = "critical",
   INFO = "info"
 }
+
+export enum HalfDayType {
+  MORNING = "morning",
+  EVENING = "evening"
+}
