@@ -136,8 +136,9 @@ const SquareSelect = ({
           "&.MuiInputBase-root": {
             marginTop: "0.5rem"
           },
-          "focus-visible": {
-            outline: "1px solid #000"
+          "&:focus-visible": {
+            outline: "0.0625rem solid black",
+            outlineOffset: "-0.125rem"
           },
           ...customStyles?.select
         }}
