@@ -32,6 +32,7 @@ interface Props {
   onInputChange: (value: string, reason: string) => void;
   onChange: (value: EmployeeType) => void;
   placeholder: string;
+  isLoading?: boolean;
   error?: string;
   isDisabled: boolean;
   required: boolean;
@@ -39,7 +40,6 @@ interface Props {
   customStyles?: {
     label?: SxProps<Theme>;
   };
-  clearInputValueAfterSelect?: boolean;
 }
 
 const PeopleAutocompleteSearch = ({
@@ -47,6 +47,7 @@ const PeopleAutocompleteSearch = ({
   options,
   name,
   value,
+  isLoading = false,
   inputValue,
   onInputChange,
   onChange,
@@ -55,8 +56,7 @@ const PeopleAutocompleteSearch = ({
   isDisabled = false,
   required = false,
   label,
-  customStyles,
-  clearInputValueAfterSelect = false
+  customStyles
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -79,50 +79,24 @@ const PeopleAutocompleteSearch = ({
   }, [options]);
 
   const computedInputValue = useMemo(() => {
-    if (clearInputValueAfterSelect) {
-      return inputValue;
-    }
-
     if (value) {
       return `${value.firstName} ${value.lastName}`;
     }
 
     return inputValue;
-  }, [value, inputValue, clearInputValueAfterSelect]);
-
-  const computedValue = useMemo(() => {
-    if (clearInputValueAfterSelect) {
-      return null;
-    }
-
-    if (value) {
-      return {
-        ...value,
-        label: `${value.firstName} ${value.lastName}`,
-        id: value.employeeId
-      };
-    }
-
-    return null;
-  }, [value, clearInputValueAfterSelect]);
+  }, [value, inputValue]);
 
   return (
     <Autocomplete
       id={id.autocomplete}
       options={formattedOptions}
-      value={computedValue}
+      loading={isLoading}
       inputValue={computedInputValue}
-      onInputChange={(_event, newInputValue, reason) =>
-        onInputChange(newInputValue, reason)
-      }
-      onChange={(_event, selectedValue) => {
-        if (selectedValue !== null) {
-          const { label, id, ...selectedOption } = selectedValue;
+      onInputChange={(_event, value, reason) => onInputChange(value, reason)}
+      onChange={(_event, value) => {
+        if (value !== null) {
+          const { label, id, ...selectedOption } = value;
           onChange(selectedOption);
-
-          if (clearInputValueAfterSelect) {
-            onInputChange("", "reset");
-          }
         }
       }}
       getOptionLabel={(option) => option.label}

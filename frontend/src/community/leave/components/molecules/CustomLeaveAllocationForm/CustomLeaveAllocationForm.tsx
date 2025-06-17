@@ -94,9 +94,8 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
 
   const { data: leaveTypesData } = useGetLeaveTypes();
 
-  const { data: suggestions } = useGetSearchedEmployees(
-    searchTerm?.length > 0 ? searchTerm : ""
-  );
+  const { data: suggestions, isPending: isSuggestionsPending } =
+    useGetSearchedEmployees(searchTerm?.length > 0 ? searchTerm : "");
 
   const leaveTypesDropDownList = useMemo(() => {
     if (leaveTypesData === undefined) {
@@ -317,6 +316,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
           customLeaveAllocationModalType ===
           CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION
         }
+        isLoading={isSuggestionsPending}
       />
 
       <Stack spacing={2} sx={{ mt: 2 }}>
