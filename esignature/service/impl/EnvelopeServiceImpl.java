@@ -120,6 +120,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
+	@Value("${esign.envelope.allocated-free-tier-envelope-count}")
+	private long allocatedFreeTierEnvelopeCount;
+
+	@Value("${esign.envelope.allocated-per-user-envelope-count}")
+	private long allocatedPerUserEnvelopeCount;
+
 	private final EsignMapper eSignMapper;
 
 	private final EnvelopeDao envelopeDao;
@@ -160,15 +166,17 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final TenantDao tenantDao;
 
-	public static final int ALLOCATED_FREE_TIER_ENVELOPER_COUNT = 5;
-
-	public static final int ALLOCATED_PER_USER_ENVELOPE_COUNT = 5;
-
 	@Override
 	@Transactional
 	public ResponseEntityDto createNewEnvelope(@Valid EnvelopeDetailDto envelopeDetailDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
+
+		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = processEnvelopeTierLimitation();
+
+		if (envelopeTierLimitationResponseDto.isLimitedReached()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_LIMIT_REACHED);
+		}
 
 		Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
 
@@ -1069,6 +1077,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	public ResponseEntityDto getEnvelopeTierLimitations() {
+		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = processEnvelopeTierLimitation();
+		return new ResponseEntityDto(false, envelopeTierLimitationResponseDto);
+	}
+
+	private EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation() {
 		String currentTenant = TenantContext.getCurrentTenant();
 		try {
 			long employeeCount = epPeopleService.countActiveAndPendingEmployees();
@@ -1097,11 +1110,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
-				allocatedCount = ALLOCATED_FREE_TIER_ENVELOPER_COUNT;
+				allocatedCount = allocatedFreeTierEnvelopeCount;
 
 				responseDto.setAllocatedCount(allocatedCount);
 				responseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
-				responseDto.setLimitedReached(envelopeCount >= ALLOCATED_FREE_TIER_ENVELOPER_COUNT);
+				responseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
 			}
 			else if (tier == Tier.PRO) {
 
@@ -1118,15 +1131,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
 
-				allocatedCount = Math.max(envelopeCount, employeeCount * ALLOCATED_PER_USER_ENVELOPE_COUNT);
+				allocatedCount = Math.max(envelopeCount, employeeCount * allocatedPerUserEnvelopeCount);
 				long remainingCount = allocatedCount - envelopeCount;
 
 				responseDto.setAllocatedCount(allocatedCount);
 				responseDto.setRemainingCount(Math.max(remainingCount, 0));
-				responseDto.setLimitedReached(envelopeCount >= (employeeCount * ALLOCATED_PER_USER_ENVELOPE_COUNT));
+				responseDto.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
 			}
 
-			return new ResponseEntityDto(false, responseDto);
+			return responseDto;
 
 		}
 		catch (Exception e) {
