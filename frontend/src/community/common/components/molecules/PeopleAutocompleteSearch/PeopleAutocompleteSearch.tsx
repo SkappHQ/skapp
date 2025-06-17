@@ -118,7 +118,7 @@ const PeopleAutocompleteSearch = ({
           <Stack sx={classes.wrapper} ref={params.InputProps.ref}>
             {label && (
               <Typography
-                variant="h5"
+                variant="body1"
                 gutterBottom
                 color={getTextColor()}
                 sx={mergeSx([classes.label, customStyles?.label])}
