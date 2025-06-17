@@ -76,6 +76,12 @@ const TeamSelect = ({
       name="team"
       disabled={options.length === 0 && !isAdmin}
       value={value}
+      renderValue={(value) => {
+        const selectedOption = options.find((option) => option.value === value);
+        if (selectedOption) {
+          return selectedOption.label;
+        }
+      }}
       onChange={onChange}
     />
   );
