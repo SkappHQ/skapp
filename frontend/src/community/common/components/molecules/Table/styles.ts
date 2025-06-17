@@ -69,7 +69,8 @@ const styles = (theme: Theme): StylesType => ({
     width: "100%",
     backgroundColor: theme.palette.grey[100],
     borderRadius: "0.625rem",
-    minHeight: "28.1875rem"
+    minHeight: "28.1875rem",
+    maxWidth: "91rem"
   },
   container: {
     maxHeight: "28.1875rem",
