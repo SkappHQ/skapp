@@ -171,7 +171,8 @@ public class JwtServiceImpl implements JwtService {
 			String latestUserVersion = userVersionService.getUserVersion(userId);
 
 			if (userVersion != null && !userVersion.equals(latestUserVersion)) {
-				if (employeeDao.existsByEmployeeIdAndAccountStatusNot(userId, AccountStatus.ACTIVE)) {
+				if (employeeDao.existsByEmployeeIdAndAccountStatusNotIn(userId,
+						Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING))) {
 					throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 				}
 
