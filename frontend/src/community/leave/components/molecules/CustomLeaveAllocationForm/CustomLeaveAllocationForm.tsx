@@ -298,7 +298,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
   const leaveType =
     leaveTypesData?.find(
       (leaveType) => Number(leaveType.typeId) === values.typeId
-    )?.typeId || "";
+    )?.typeId ?? "";
 
   return (
     <Form onSubmit={onSubmit}>

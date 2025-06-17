@@ -31,10 +31,6 @@ interface Props {
   name?: string;
   required?: boolean;
   renderValue?: (value: string) => ReactNode;
-  accessibility?: {
-    label?: string;
-    description?: string;
-  };
   customStyles?: {
     select?: SxProps<Theme>;
     menuItem?: SxProps<Theme>;

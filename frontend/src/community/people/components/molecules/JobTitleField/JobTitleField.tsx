@@ -136,7 +136,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
               const error = getJobTitleNameError(errors, index);
 
               return (
-                <Box key={index} onFocus={() => setFocusedInputField(index)}>
+                <Box key={jobTitle.jobTitleId} onFocus={() => setFocusedInputField(index)}>
                   <InputField
                     focusOnText
                     isDisabled={!isEditing}

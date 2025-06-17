@@ -6,7 +6,7 @@ import {
   SxProps,
   Typography
 } from "@mui/material";
-import { FC, ReactNode, useEffect } from "react";
+import { FC, useEffect } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";

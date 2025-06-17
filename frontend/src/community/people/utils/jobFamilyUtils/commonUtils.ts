@@ -51,7 +51,7 @@ export const getJobTitlesWithJobFamilyId = (
   }));
 
   if (jobFamilyTransfer) {
-    return jobTitles || [];
+    return jobTitles ?? [];
   } else {
     return jobTitles?.filter((jobTitle) => jobTitle.value !== jobTitleId) || [];
   }
