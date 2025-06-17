@@ -23,6 +23,7 @@ interface Props {
   spanStyles?: CSSProperties;
   ariaLabel?: string;
   tabIndex?: number;
+  ariaDescription?: string;
 }
 
 const Tooltip: FC<Props> = ({
@@ -38,7 +39,8 @@ const Tooltip: FC<Props> = ({
   error,
   iconColor,
   spanStyles,
-  ariaLabel
+  ariaLabel,
+  ariaDescription
 }) => {
   const theme: Theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -75,6 +77,7 @@ const Tooltip: FC<Props> = ({
       TransitionComponent={Fade}
       PopperProps={PopperProps}
       aria-label={ariaLabel ?? ""}
+      aria-description={ariaDescription ?? ""}
       customstyles={{
         tooltip: {
           maxWidth: maxWidth,
@@ -85,7 +88,6 @@ const Tooltip: FC<Props> = ({
       <span
         tabIndex={isDisabled ? -1 : 0}
         role="button"
-        aria-haspopup="true"
         aria-expanded={isOpen}
         aria-disabled={isDisabled}
         onKeyDown={handleKeyDown}

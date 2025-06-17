@@ -14,15 +14,39 @@
       "icon": "Attach a file"
     },
     "calendar": {
-      "icon": "View leave entitlement balance"
+      "icon": "View leave entitlement balance",
+      "selectDateForLeave": "select the dates for leave",
+      "back": "Back",
+      "next": "Next",
+      "selectedStartDate": "Selected Date for Start Date, ",
+      "selectedEndDate": "Selected Date for End Date, ",
+      "currentSelectedDate": "Currently Selected Date, "
     },
     "teamAvailabilityCard": {
       "dropdown": "Select team to check team availability"
-    }
+    },
+    "confirmApplyLeave": "Confirm and Apply Leave"
+  },
+  "durationSelector": {
+    "selectDuration": "Select duration",
+    "mandatoryField": "Mandatory field",
+    "selectedDurationFullDay": "Selected Duration, Full day",
+    "selectDurationFullDay": "Select Duration, Full day",
+    "selectMorningOrEveningHalf": "Select, morning or evening half",
+    "selectedDurationHalfDay": "Selected Duration, Half day",
+    "selectDurationHalfDay": "Select Duration, Half day",
+    "selectedHalfMorning": "Selected half, Morning",
+    "selectHalfMorning": "Select half, Morning",
+    "selectedHalfEvening": "Selected half, Evening",
+    "selectHalfEvening": "Select half, Evening"
   },
   "entitlement": {
     "leaveEntitlementTable": {
       "select": "Leave entitlements by year"
     }
+  },
+  "leaveTypeCard": {
+    "entitlementOver": "{{name}} entitlements are over, please choose a different leave type",
+    "available": "available"
   }
 }
