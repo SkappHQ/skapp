@@ -61,5 +61,9 @@
       "janToDec": "January to December",
       "decToJan": "December to January"
     }
+  },
+  "directory": {
+    "userBulkUpload": " User Bulk",
+    "uploadPeople": "Upload People"
   }
 }
