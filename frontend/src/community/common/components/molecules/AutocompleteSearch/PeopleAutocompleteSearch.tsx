@@ -51,18 +51,6 @@ const PeopleAutocompleteSearch = ({
     return inputValue;
   }, [value, inputValue]);
 
-  const computedValue = useMemo(() => {
-    if (value) {
-      return {
-        ...value,
-        label: `${value.firstName} ${value.lastName}`,
-        id: value.employeeId
-      };
-    }
-
-    return null;
-  }, [value]);
-
   return (
     <EmployeeAutocompleteSearch
       id={id}
@@ -78,7 +66,6 @@ const PeopleAutocompleteSearch = ({
       required={required}
       label={label}
       name={name}
-      value={computedValue}
     />
   );
 };
