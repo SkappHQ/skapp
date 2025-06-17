@@ -14,10 +14,16 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -46,6 +52,7 @@ import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
@@ -73,6 +80,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.people.service.EpPeopleService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -145,6 +153,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final OrganizationDao organizationDao;
 
 	private final ScheduleService scheduleService;
+
+	private final EpPeopleService epPeopleService;
+
+	private final TenantContext tenantContext;
+
+	private final TenantDao tenantDao;
+
+	public static final int ALLOCATED_FREE_TIER_ENVELOPER_COUNT = 5;
+
+	public static final int ALLOCATED_PER_USER_ENVELOPE_COUNT = 5;
 
 	@Override
 	@Transactional
@@ -1047,6 +1065,78 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
 
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeTierLimitations() {
+		String currentTenant = TenantContext.getCurrentTenant();
+		try {
+			long employeeCount = epPeopleService.countActiveAndPendingEmployees();
+
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			Tenant tenant = tenantDao.findByTenantName(currentTenant);
+
+			if (tenant == null) {
+				log.error("getEnvelopeTierLimitations: Tenant not found: {}", currentTenant);
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
+						new String[] { currentTenant });
+			}
+
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+			EnvelopeTierLimitationResponseDto responseDto = new EnvelopeTierLimitationResponseDto();
+			Tier tier = tenant.getTier();
+
+			LocalDateTime startDateTime;
+			LocalDateTime endDateTime;
+			long allocatedCount;
+
+			if (tier == Tier.FREE) {
+				startDateTime = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate()).atStartOfDay();
+				endDateTime = startDateTime.plusYears(1);
+
+				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
+						endDateTime);
+				allocatedCount = ALLOCATED_FREE_TIER_ENVELOPER_COUNT;
+
+				responseDto.setAllocatedCount(allocatedCount);
+				responseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
+				responseDto.setLimitedReached(envelopeCount >= ALLOCATED_FREE_TIER_ENVELOPER_COUNT);
+			}
+			else if (tier == Tier.PRO) {
+
+				if (tenant.getStripeSubscription() == null
+						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
+					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+				}
+
+				startDateTime = DateTimeUtils
+					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate())
+					.atStartOfDay();
+				endDateTime = startDateTime.plusYears(1);
+
+				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
+						endDateTime);
+
+				allocatedCount = Math.max(envelopeCount, employeeCount * ALLOCATED_PER_USER_ENVELOPE_COUNT);
+				long remainingCount = allocatedCount - envelopeCount;
+
+				responseDto.setAllocatedCount(allocatedCount);
+				responseDto.setRemainingCount(Math.max(remainingCount, 0));
+				responseDto.setLimitedReached(envelopeCount >= (employeeCount * ALLOCATED_PER_USER_ENVELOPE_COUNT));
+			}
+
+			return new ResponseEntityDto(false, responseDto);
+
+		}
+		catch (Exception e) {
+			log.error("Error while fetching envelope tier limitations for tenant {}: {}", currentTenant, e.getMessage(),
+					e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS);
+		}
+		finally {
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
+		}
 	}
 
 }

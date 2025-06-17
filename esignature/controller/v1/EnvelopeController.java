@@ -172,4 +172,14 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@Operation(summary = "Retrieve envelope tier limitations for the current tenant/organization",
+			description = "Provides the remaining and allocated envelope limits for the organization, based on their subscription tier. "
+					+ "This endpoint returns information about envelope usage, allocation, and whether the organization has reached their envelope limit for the current tier.")
+	@GetMapping(value = "envelope-limitation", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeTierLimitations() {
+		ResponseEntityDto response = envelopeService.getEnvelopeTierLimitations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

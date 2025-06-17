@@ -417,7 +417,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}).toList();
 	}
 
-	private long countActiveAndPendingEmployees() {
+	@Override
+	public long countActiveAndPendingEmployees() {
 		return employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 	}
 

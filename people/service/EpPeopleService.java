@@ -12,6 +12,8 @@ public interface EpPeopleService {
 
 	boolean checkEmployeesLimit();
 
+	long countActiveAndPendingEmployees();
+
 	ResponseEntityDto getEmployeeRoleLimit();
 
 	ResponseEntityDto getEmployeesCount();
