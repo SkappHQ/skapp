@@ -6,7 +6,7 @@ import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import PeopleAutocompleteSearch from "~community/common/components/molecules/PeopleAutocompleteSearch/PeopleAutocompleteSearch";
+import TeamMemberAutocompleteSearch from "~community/common/components/molecules/TeamMemberAutocompleteSearch/TeamMemberAutocompleteSearch";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -337,7 +337,7 @@ const AddEditTeamModal = ({
       />
       {isPeopleAdmin && (
         <Box sx={{ mt: "0.5rem" }}>
-          <PeopleAutocompleteSearch
+          <TeamMemberAutocompleteSearch
             isDisabled={false}
             name="searchTeamMemberInput"
             required={true}
@@ -349,6 +349,7 @@ const AddEditTeamModal = ({
             label={translateText(["addMemberInputLabel"])}
             placeholder={translateText(["addMemberInputPlaceholder"])}
             options={(suggestions ?? []) as EmployeeType[]}
+            value={undefined}
             inputValue={searchTerm}
             onInputChange={(value) => setSearchTerm(value)}
             onChange={(value) => onSelectUser(value)}
