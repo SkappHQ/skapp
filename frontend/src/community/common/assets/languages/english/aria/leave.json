@@ -17,7 +17,8 @@
       "typeFilterSection": "Leave Type Filters",
       "filterOption": "Filter Option, {{filterName}}",
       "filterSelected": "{{filterName}} selected",
-      "leaveDuration": "{{leaveType}} leave request record for {{days}}"
+      "leaveDuration": "{{leaveType}} leave request record for {{days}}",
+      "downloadAttachment": "Download attachment"
     }
   },
   "allLeaveRequests": {

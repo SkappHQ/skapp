@@ -276,6 +276,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
               pt: "1rem",
               gap: 1
             }}
+            tabIndex={0}
           >
             <Typography variant="body2" sx={{ fontSize: "1rem" }}>
               {translateText(["attachments"])}
