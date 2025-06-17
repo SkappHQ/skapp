@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.repository;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
@@ -31,5 +32,9 @@ public interface EmployeeDao
 	long countByAccountStatus(AccountStatus accountStatus);
 
 	long countByAccountStatusIn(Set<AccountStatus> accountStatuses);
+
+	Long user(User user);
+
+	boolean existsByEmployeeIdAndAccountStatusNot(Long userId, AccountStatus accountStatus);
 
 }

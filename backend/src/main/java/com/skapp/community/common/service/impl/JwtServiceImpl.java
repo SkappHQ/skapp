@@ -8,6 +8,8 @@ import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -36,6 +38,8 @@ public class JwtServiceImpl implements JwtService {
 	private final SystemVersionService systemVersionService;
 
 	private final UserVersionService userVersionService;
+
+	private final EmployeeDao employeeDao;
 
 	@Value("${jwt.access-token.signing-key}")
 	private String jwtSigningKey;
@@ -167,6 +171,10 @@ public class JwtServiceImpl implements JwtService {
 			String latestUserVersion = userVersionService.getUserVersion(userId);
 
 			if (userVersion != null && !userVersion.equals(latestUserVersion)) {
+				if (employeeDao.existsByEmployeeIdAndAccountStatusNot(userId, AccountStatus.ACTIVE)) {
+					throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+				}
+
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_USER_VERSION_MISMATCH);
 			}
 		}
