@@ -8,7 +8,7 @@ import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveReques
 interface Props {
   startDate: string;
   endDate: string;
-  days: string;
+  days: number;
 }
 
 const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
@@ -34,9 +34,9 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
       }}
       aria-label={translateAria(["leaveDuration"], {
         leaveType:
-          days == "1"
+          days == 1
             ? translateText(["myLeaveRequests", "fullDay"])
-            : days < "1"
+            : days < 1
               ? translateText(["myLeaveRequests", "halfDay"])
               : getAsDaysString(days),
         days: getStartEndDate(startDate, endDate)
@@ -60,9 +60,9 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
         }}
         aria-hidden="true"
       >
-        {days == "1"
+        {days == 1
           ? translateText(["myLeaveRequests", "fullDay"])
-          : days < "1"
+          : days < 1
             ? translateText(["myLeaveRequests", "halfDay"])
             : getAsDaysString(days)}
       </div>

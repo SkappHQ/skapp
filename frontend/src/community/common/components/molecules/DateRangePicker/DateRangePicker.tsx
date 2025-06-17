@@ -22,8 +22,10 @@ import {
   useState
 } from "react";
 
+import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import PickersDay from "~community/common/components/molecules/DateRangePickersDay/DateRangePickersDay";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import {
@@ -68,6 +70,8 @@ const DateRangePicker: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
+  const translateAria = useTranslator("commonAria", "dateRangePicker");
+
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const open: boolean = Boolean(anchorEl);
@@ -104,8 +108,15 @@ const DateRangePicker: FC<Props> = ({
             accessibility?.ariaLabel
               ? accessibility.ariaLabel
               : selectedDates[0]
-                ? `Selected date ${DateTime.fromJSDate(selectedDates[0]).toFormat("dd MMMM yyyy")}. Press enter to change selected date`
-                : "Press enter to select date"
+                ? translateAria(["selectedDateLabel"], {
+                    startDate: DateTime.fromJSDate(selectedDates[0]).toFormat(
+                      DAY_MONTH_YEAR_FORMAT
+                    ),
+                    endDate: DateTime.fromJSDate(selectedDates[1]).toFormat(
+                      DAY_MONTH_YEAR_FORMAT
+                    )
+                  })
+                : translateAria(["noSelectedDateLabel"])
           }
           tabIndex={tabIndex}
           onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {

@@ -95,5 +95,9 @@
   },
   "contentWithDrawer": {
     "contentAreaWithDrawer": "Main content area with drawer"
+  },
+  "dateRangePicker": {
+    "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date",
+    "noSelectedDateLabel": "Press enter to select date"
   }
 }

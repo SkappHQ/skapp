@@ -1,6 +1,7 @@
 import { Box, Stack, Theme, useTheme } from "@mui/material";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
+import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
@@ -153,11 +154,7 @@ const ManagerLeaveRequest: FC<Props> = ({
       name: (
         <Box
           role="group"
-          aria-label={
-            employeeLeaveRequest?.employee?.firstName +
-            " " +
-            employeeLeaveRequest?.employee?.lastName
-          }
+          aria-label={`${employeeLeaveRequest?.employee?.firstName} ${employeeLeaveRequest?.employee?.lastName}`}
         >
           <Box aria-hidden={true}>
             <AvatarChip
@@ -309,10 +306,16 @@ const ManagerLeaveRequest: FC<Props> = ({
                   accessibility={{
                     ariaLabel: translateAria(["dateRangeFilter"], {
                       startDate: selectedDates[0]
-                        ? convertDateToFormat(selectedDates[0], "dd.MM.yyyy")
+                        ? convertDateToFormat(
+                            selectedDates[0],
+                            DAY_MONTH_YEAR_FORMAT
+                          )
                         : getDateForPeriod("year", "start"),
                       endDate: selectedDates[1]
-                        ? convertDateToFormat(selectedDates[1], "dd.MM.yyyy")
+                        ? convertDateToFormat(
+                            selectedDates[1],
+                            DAY_MONTH_YEAR_FORMAT
+                          )
                         : getDateForPeriod("year", "end")
                     })
                   }}
