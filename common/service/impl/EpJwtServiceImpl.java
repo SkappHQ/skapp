@@ -5,7 +5,6 @@ import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -41,8 +40,8 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	private String jwtSigningKey;
 
 	public EpJwtServiceImpl(SystemVersionService systemVersionService, UserVersionService userVersionService,
-			EmployeeDao employeeDao, TenantContext tenantContext, TenantDao tenantDao) {
-		super(systemVersionService, userVersionService, employeeDao);
+			TenantContext tenantContext, TenantDao tenantDao) {
+		super(systemVersionService, userVersionService);
 		this.tenantContext = tenantContext;
 		this.tenantDao = tenantDao;
 	}
