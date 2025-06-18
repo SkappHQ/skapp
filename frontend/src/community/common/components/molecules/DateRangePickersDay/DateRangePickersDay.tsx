@@ -38,6 +38,17 @@ const DateRangePickerDay = ({
     return classNames.join(" ");
   }, [day, isRangePicker, selectedDates]);
 
+  const isStart =
+    selectedDates.length > 0 &&
+    day.hasSame(DateTime.fromJSDate(selectedDates[0]), "day");
+  const isEnd =
+    selectedDates.length > 1 &&
+    day.hasSame(DateTime.fromJSDate(selectedDates[1]), "day");
+  const isInRange =
+    selectedDates.length > 1 &&
+    day > DateTime.fromJSDate(selectedDates[0]) &&
+    day < DateTime.fromJSDate(selectedDates[1]);
+
   return (
     <PickersDay
       className={muiClassNames}
@@ -45,6 +56,7 @@ const DateRangePickerDay = ({
       day={day}
       sx={classes.pickersDay}
       {...other}
+      aria-selected={isStart || isEnd || isInRange}
     />
   );
 };

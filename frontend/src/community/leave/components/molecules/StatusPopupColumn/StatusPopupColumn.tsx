@@ -26,7 +26,7 @@ const StatusPopupColumn: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
   return (
-    <Box sx={classes.outerBox}>
+    <Box sx={classes.outerBox} tabIndex={0}>
       <Typography
         htmlFor={id}
         component="label"

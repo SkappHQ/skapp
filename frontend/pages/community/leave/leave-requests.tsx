@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -26,6 +26,7 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 const LeaveRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveRequests");
+  const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const theme = useTheme();
   const router = useRouter();
   const { data } = useSession();
@@ -114,7 +115,7 @@ const LeaveRequests: NextPage = () => {
       title={translateText(["title"])}
       isDividerVisible={true}
     >
-      <>
+      <Box role="region" aria-label={translateAria(["allLeaveRequestPage"])}>
         <Search
           placeHolder={
             selectedUserName || selectedTeamName || translateText(["search"])
@@ -143,6 +144,7 @@ const LeaveRequests: NextPage = () => {
             boxShadow: `0rem 0.25rem 1.25rem ${theme.palette.grey.A200}`,
             width: "100%"
           }}
+          ariaLabel={translateAria(["searchAllLeaveRequests"])}
         />
 
         <ManagerLeaveRequest
@@ -159,7 +161,7 @@ const LeaveRequests: NextPage = () => {
             setToastMessage((state) => ({ ...state, open: false }));
           }}
         />
-      </>
+      </Box>
     </ContentLayout>
   );
 };

@@ -15,6 +15,11 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 const MyRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "myRequests");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveAllocation"
+  );
 
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
@@ -42,6 +47,9 @@ const MyRequests: NextPage = () => {
             value={selectedYear}
             options={getCurrentAndNextYear()}
             onChange={(event) => setSelectedYear(event?.target.value)}
+            accessibility={{
+              label: translateAria(["selectYear"])
+            }}
           />
         ) : (
           <></>
