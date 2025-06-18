@@ -265,8 +265,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		}
 
 		deactivateEmployees(employees);
-		epRolesService.downgradeUserRolesToEmployeeRole();
 		envelopeService.transferEmployeeEnvelopes(employees);
+		epRolesService.downgradeUserRolesToEmployeeRole();
 
 		List<User> users = employees.stream().map(Employee::getUser).toList();
 		applicationEventPublisher.publishEvent(new UsersDeactivatedEvent(this, users));

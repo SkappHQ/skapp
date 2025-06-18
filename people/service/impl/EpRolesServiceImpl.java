@@ -3,6 +3,7 @@ package com.skapp.enterprise.people.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
@@ -23,7 +24,9 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
+import com.skapp.enterprise.people.repository.EpEmployeeDao;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import com.skapp.enterprise.people.service.EpRolesService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Service
@@ -46,11 +50,18 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
+	private final EnvelopeService envelopeService;
+
+	private final EpEmployeeDao epEmployeeDao;
+
 	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
 			TeamDao teamDao, PeopleMapper peopleMapper, ModuleRoleRestrictionDao moduleRoleRestrictionDao,
-			MessageUtil messageUtil, EpEmployeeRoleDao epEmployeeRoleDao) {
+			MessageUtil messageUtil, EpEmployeeRoleDao epEmployeeRoleDao, EnvelopeService envelopeService,
+			EpEmployeeDao epEmployeeDao) {
 		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil);
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
+		this.envelopeService = envelopeService;
+		this.epEmployeeDao = epEmployeeDao;
 	}
 
 	@Override
@@ -168,6 +179,13 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		processRoleAdmins(rolesToUpdate);
 
 		if (!rolesToUpdate.isEmpty()) {
+
+			List<Employee> employees = epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(rolesToUpdate.stream()
+				.filter(role -> role.getEsignRole() == Role.ESIGN_ADMIN || role.getEsignRole() == Role.ESIGN_SENDER)
+				.map(role -> role.getEmployee().getEmployeeId())
+				.toList(), Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+
+			envelopeService.transferEmployeeEnvelopes(employees);
 			epEmployeeRoleDao.saveAll(rolesToUpdate);
 		}
 	}

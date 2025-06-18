@@ -378,7 +378,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			if (employeeCount > maxUserLimit) {
 				tenant.setTenantStatus(TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 				systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_CANCELLED;
-			}else{
+			}
+			else {
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				epRolesService.downgradeUserRolesToEmployeeRole();
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
