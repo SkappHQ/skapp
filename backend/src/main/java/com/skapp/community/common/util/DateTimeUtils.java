@@ -197,6 +197,19 @@ public class DateTimeUtils {
 	}
 
 	/**
+	 * Converts an Instant to a LocalDate in UTC.
+	 * @param instant the Instant to convert; must not be null
+	 * @return the corresponding LocalDate in UTC
+	 * @throws IllegalArgumentException if the instant is null
+	 */
+	public static LocalDate fromUtcInstantToLocaldate(Instant instant) {
+		if (instant == null) {
+			throw new IllegalArgumentException("Instant cannot be null");
+		}
+		return instant.atZone(UTC_ZONE_ID).toLocalDate();
+	}
+
+	/**
 	 * Convert a UTC date-time to another time zone.
 	 * @param dateTime LocalDateTime in UTC.
 	 * @param targetZoneId The target time zone ID.
