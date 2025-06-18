@@ -33,4 +33,7 @@ export type FilterButtonTypes = {
   isResetBtnDisabled: boolean;
   isAllFilterShown?: boolean;
   title?: string;
+  accessibility?: {
+    ariaLabel: string;
+  };
 };

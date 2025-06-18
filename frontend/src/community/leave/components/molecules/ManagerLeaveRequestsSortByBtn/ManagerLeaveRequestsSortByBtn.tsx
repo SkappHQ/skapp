@@ -1,57 +1,59 @@
-import { Box } from "@mui/material";
-import { MouseEvent, useState } from "react";
+import { Box, SelectChangeEvent, Typography } from "@mui/material";
 
-import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
-import LeaveRequestMenu from "~community/leave/components/molecules/LeaveRequestMenu/LeaveRequestMenu";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { SortKeyTypes } from "~community/common/types/CommonTypes";
+import { useLeaveStore } from "~community/leave/store/store";
 
-interface Props {
-  isDisabled: boolean;
-}
+const ManagerLeaveRequestsSortByBtn = () => {
+  const translateText = useTranslator(
+    "leaveModule",
+    "leaveRequests",
+    "leaveRequestSort"
+  );
+  const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
-const ManagerLeaveRequestsSortByBtn = ({ isDisabled }: Props) => {
-  const [sortEl, setSortEl] = useState<null | HTMLElement>(null);
-  const [sortOpen, setSortOpen] = useState<boolean>(false);
+  const leaveRequestSort = useLeaveStore(
+    (state) => state.leaveRequestParams.sortKey
+  );
 
-  const sortByOpen = sortOpen && Boolean(sortEl);
-  const sortId = sortByOpen ? "sortBy-popper" : undefined;
+  const { handleLeaveRequestsSort } = useLeaveStore((state) => state);
 
-  const handleSortClick = (event: MouseEvent<HTMLElement>): void => {
-    setSortEl(event.currentTarget);
-    setSortOpen((previousOpen) => !previousOpen);
+  const dropdownItems = [
+    {
+      label: translateText(["dateRequested"]),
+      value: SortKeyTypes.CREATED_DATE
+    },
+    {
+      label: translateText(["leaveDate"]),
+      value: SortKeyTypes.START_DATE
+    }
+  ];
+
+  const handleItemClick = (event: SelectChangeEvent) => {
+    handleLeaveRequestsSort("sortKey", event.target.value);
   };
 
-  const handleSortClose = (): void => {
-    setSortEl(null);
-    setSortOpen(false);
-  };
+  const selectedItem = dropdownItems.find(
+    (item) => item.value === leaveRequestSort
+  );
 
   return (
-    <Box>
-      <Button
-        label="Sort By"
-        buttonStyle={ButtonStyle.TERTIARY}
-        styles={{
-          border: "0.0625rem solid",
-          borderColor: "grey.500",
-          py: "0.5rem",
-          px: "1rem"
-        }}
-        endIcon={<DropDownArrow />}
-        onClick={handleSortClick}
-        disabled={isDisabled}
-        ariaLabel="Sort by: Pressing enter on this button opens a menu where you can choose to sort by date requested or urgency."
-        aria-describedby={sortId}
-      />
-      <LeaveRequestMenu
-        anchorEl={sortEl}
-        handleClose={handleSortClose}
-        position="bottom-start"
-        menuType={MenuTypes.SORT}
-        id={sortId}
-        open={sortOpen}
+    <Box role="group" aria-label={translateAria(["sortGroup"])}>
+      <RoundedSelect
+        id="all-leave-requests-filter"
+        onChange={handleItemClick}
+        value={selectedItem?.value ?? ""}
+        options={dropdownItems}
+        renderValue={(selectedValue: string) => (
+          <Typography
+            aria-label={translateAria(["sortBy"], {
+              sortBy: selectedValue
+            })}
+          >
+            {translateText(["sortBy"])}
+          </Typography>
+        )}
       />
     </Box>
   );

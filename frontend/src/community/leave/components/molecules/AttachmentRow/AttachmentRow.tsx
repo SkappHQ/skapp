@@ -13,6 +13,11 @@ interface Props {
 
 const AttachmentRow = ({ attachments }: Props) => {
   const translateText = useTranslator("leaveModule", "myRequests");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveRequests"
+  );
   const { handleDownloadAttachment } = useDownloadAttachment({
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
@@ -26,6 +31,7 @@ const AttachmentRow = ({ attachments }: Props) => {
       sx={{
         gap: 1
       }}
+      tabIndex={0}
     >
       <Typography variant="body2" sx={{ fontSize: "1rem" }}>
         {translateText(["myLeaveRequests", "attachments"])}
@@ -44,6 +50,9 @@ const AttachmentRow = ({ attachments }: Props) => {
             }}
             icon={<CopyIcon />}
             onClick={() => handleDownloadAttachment(attachment.url)}
+            accessibility={{
+              ariaLabel: `${translateAria(["downloadAttachment"])} ${index + 1}`
+            }}
           />
         ))}
       </Box>

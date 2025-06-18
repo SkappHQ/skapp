@@ -4,9 +4,33 @@
     "resourceAvailabilityTrendMonthlyPrevious": "previous month"
   },
   "myRequests": {
+    "myLeaveAllocation": {
+      "myLeaveAllocationSection": "My Leave Allocation for the year {{year}}",
+      "selectYear": "Select Year for My Leave Allocation, current year selected is"
+    },
     "myLeaveRequests": {
-      "sortBy": "Sort by {{sortBy}}"
+      "myLeaveRequestsSection": "Accessing My Leave Requests",
+      "sortGroup": "Sort my leave requests dropdown",
+      "sortBy": "Selected Sort Option is {{sortBy}}",
+      "filterSection": "Filter my leave requests",
+      "statusFilterSection": "Leave Status Filters",
+      "typeFilterSection": "Leave Type Filters",
+      "filterOption": "Filter Option, {{filterName}}",
+      "filterSelected": "{{filterName}} selected",
+      "leaveDuration": "{{leaveType}} leave request record for {{days}}",
+      "downloadAttachment": "Download attachment"
     }
+  },
+  "allLeaveRequests": {
+    "allLeaveRequestPage": "All Leave Requests Page",
+    "sortGroup": "Sort all leave requests",
+    "sortBy": "Selected Sort Option is {{sortBy}}",
+    "dateRangeFilter": "Date Range Filter, {{startDate}} to {{endDate}}",
+    "leaveDuration": "{{day}} leave on {{date}}",
+    "searchAllLeaveRequests": "Search All Leave Requests",
+    "allLeaveRequestTable": "Accessing All Leave Requests Table",
+    "employeeName": "Employee name, {{firstName}} {{lastName}}",
+    "leaveType": "Leave type, {{leaveType}}"
   },
   "applyLeave": {
     "comment": {

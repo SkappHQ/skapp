@@ -358,6 +358,7 @@
       "resetButtonText": "Reset Filters"
     },
     "leaveRequestSort": {
+      "sortBy": "Sort by",
       "dateRequested": "Date Requested",
       "leaveDate": "Leave Date"
     },

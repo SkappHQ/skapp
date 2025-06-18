@@ -44,6 +44,7 @@ const RequestFilterMenuItems = ({
     "leaveRequestFilters"
   );
   const theme: Theme = useTheme();
+  const translateAria = useTranslator("leaveAria", "myRequests");
   const queryMatches = useMediaQuery();
   const isSmallScreen = queryMatches(`(max-width: 1150px)`);
 
@@ -177,8 +178,12 @@ const RequestFilterMenuItems = ({
           <Box
             key={index}
             component="div"
-            tabIndex={0}
-            aria-label={"filter by " + item.title}
+            role="region"
+            aria-label={
+              item.type === "type"
+                ? translateAria(["myLeaveRequests", "typeFilterSection"])
+                : translateAria(["myLeaveRequests", "statusFilterSection"])
+            }
           >
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {item.title}
@@ -238,6 +243,22 @@ const RequestFilterMenuItems = ({
                           : "black",
                       padding: "8px 12px",
                       fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
+                    }}
+                    accessibility={{
+                      ariaLabel:
+                        filter?.status?.includes(button.text) ||
+                        filter?.type.includes(
+                          button.id ? button.id.toString() : ""
+                        )
+                          ? translateAria(
+                              ["myLeaveRequests", "filterSelected"],
+                              {
+                                filterName: button.text
+                              }
+                            )
+                          : translateAria(["myLeaveRequests", "filterOption"], {
+                              filterName: button.text
+                            })
                     }}
                   />
                 );
