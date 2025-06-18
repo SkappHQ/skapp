@@ -15,6 +15,8 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -160,11 +162,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final ScheduleService scheduleService;
 
-	private final EpPeopleService epPeopleService;
-
 	private final TenantContext tenantContext;
 
 	private final TenantDao tenantDao;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	@Transactional
@@ -1084,7 +1086,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation() {
 		String currentTenant = TenantContext.getCurrentTenant();
 		try {
-			long employeeCount = epPeopleService.countActiveAndPendingEmployees();
+			long employeeCount = employeeDao
+				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);

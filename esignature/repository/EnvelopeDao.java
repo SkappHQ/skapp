@@ -18,6 +18,6 @@ public interface EnvelopeDao extends JpaRepository<Envelope, Long>, EnvelopeRepo
 	@Query("SELECT e FROM Envelope e LEFT JOIN FETCH e.recipients WHERE e.id = :envelopeId")
 	Envelope findByIdWithRecipientsForUpdate(@Param("envelopeId") Long envelopeId);
 
-	long countBySentAtGreaterThanEqualAndSentAtLessThan(LocalDateTime start, LocalDateTime end);
+	long countBySentAtGreaterThanEqualAndSentAtLessThan(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
 }
