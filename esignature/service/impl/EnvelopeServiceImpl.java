@@ -1088,6 +1088,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
 			if (tenant == null) {
 				log.error("getEnvelopeTierLimitations: Tenant not found: {}", currentTenant);
@@ -1095,9 +1096,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 						new String[] { currentTenant });
 			}
 
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-
-			EnvelopeTierLimitationResponseDto responseDto = new EnvelopeTierLimitationResponseDto();
+			EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = new EnvelopeTierLimitationResponseDto();
 			Tier tier = tenant.getTier();
 
 			LocalDateTime startDateTime;
@@ -1112,9 +1111,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 						endDateTime);
 				allocatedCount = allocatedFreeTierEnvelopeCount;
 
-				responseDto.setAllocatedCount(allocatedCount);
-				responseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
-				responseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
+				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
+				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
+				envelopeTierLimitationResponseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
 			}
 			else if (tier == Tier.PRO) {
 
@@ -1134,13 +1133,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				allocatedCount = Math.max(envelopeCount, employeeCount * allocatedPerUserEnvelopeCount);
 				long remainingCount = allocatedCount - envelopeCount;
 
-				responseDto.setAllocatedCount(allocatedCount);
-				responseDto.setRemainingCount(Math.max(remainingCount, 0));
-				responseDto.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
+				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
+				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(remainingCount, 0));
+				envelopeTierLimitationResponseDto
+					.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
 			}
-
-			return responseDto;
-
+			return envelopeTierLimitationResponseDto;
 		}
 		catch (Exception e) {
 			log.error("Error while fetching envelope tier limitations for tenant {}: {}", currentTenant, e.getMessage(),
