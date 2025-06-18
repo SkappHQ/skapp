@@ -4,7 +4,6 @@ const styles = () => ({
     overflow: "auto"
   },
   headerContainer: {
-    pt: "0.75rem",
     pb: "1rem"
   },
   headerText: {

@@ -10,7 +10,7 @@ import { useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroupWithLabel from "~community/common/components/molecules/AvatarGroupWithLabel/AvatarGroupWithLabel";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
@@ -108,7 +108,7 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     >
       <Stack sx={classes.rowOne}>
         <Typography variant="h3">{translateText(["title"])}</Typography>
-        <Select
+        <RoundedSelect
           id="team-availability-card-team-select"
           onChange={handleTeamSelect}
           value={selectedTeam?.teamId?.toString() ?? ""}

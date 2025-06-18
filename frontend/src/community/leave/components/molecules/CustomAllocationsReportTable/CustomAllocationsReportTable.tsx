@@ -12,7 +12,7 @@ import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/Icon
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
@@ -191,7 +191,7 @@ const CustomAllocationsReportTable: FC = () => {
   };
 
   const yearFilter = (
-    <Select
+    <RoundedSelect
       id="custom-allocations-report-table-year-filter"
       onChange={handleYearClick}
       value={reportsParams.year}

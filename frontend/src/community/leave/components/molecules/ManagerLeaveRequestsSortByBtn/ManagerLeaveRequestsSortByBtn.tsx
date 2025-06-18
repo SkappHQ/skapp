@@ -1,6 +1,6 @@
 import { Box, SelectChangeEvent, Typography } from "@mui/material";
 
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { useLeaveStore } from "~community/leave/store/store";
@@ -40,7 +40,7 @@ const ManagerLeaveRequestsSortByBtn = () => {
 
   return (
     <Box role="group" aria-label={translateAria(["sortGroup"])}>
-      <Select
+      <RoundedSelect
         id="all-leave-requests-filter"
         onChange={handleItemClick}
         value={selectedItem?.value ?? ""}

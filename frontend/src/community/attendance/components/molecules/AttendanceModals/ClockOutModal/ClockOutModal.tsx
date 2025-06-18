@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { FC } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
@@ -23,6 +23,8 @@ interface Props {
 }
 
 const ClockOutModal: FC<Props> = ({ closeModal }) => {
+  const theme = useTheme();
+
   const { setSlotType, attendanceParams } = useAttendanceStore(
     (state) => state
   );
@@ -54,39 +56,45 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
     <>
       <Box component="div">
         <Box sx={classes.mainContainer}>
-          <Box sx={classes.headerContainer}>
-            <Stack
-              direction="row"
-              justifyContent="flex-start"
-              spacing={1}
-              alignItems="center"
-              component="div"
-              tabIndex={0}
-            >
-              <Typography variant="body2" sx={classes.headerText}>
-                {translateText(["clockOutTime"])}:
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                <IconChip
-                  icon={<Icon name={IconName.CLOCK_ICON} />}
-                  label={clockOutTime}
-                  chipStyles={classes.iconChipStyles}
-                />
+          <Box id="clock-out-description">
+            <Box sx={classes.headerContainer}>
+              <Stack
+                direction="row"
+                justifyContent="flex-start"
+                spacing={1}
+                alignItems="center"
+                component="div"
+              >
+                <Typography variant="body2" sx={classes.headerText}>
+                  {translateText(["clockOutTime"])}:
+                </Typography>
+                <div
+                  style={{
+                    backgroundColor: theme.palette.grey[100],
+                    borderRadius: "9.375rem",
+                    padding: "0.5rem 1rem"
+                  }}
+                >
+                  {clockOutTime}
+                </div>
+                <Typography variant="body2" sx={classes.headerText}>
+                  {translateText(["workedHours"])}:
+                </Typography>
+                <div
+                  style={{
+                    backgroundColor: theme.palette.grey[100],
+                    borderRadius: "9.375rem",
+                    padding: "0.5rem 1rem"
+                  }}
+                >
+                  {workedHours}
+                </div>
               </Stack>
-              <Typography variant="body2" sx={classes.headerText}>
-                {translateText(["workedHours"])}:
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                <BasicChip
-                  label={workedHours}
-                  chipStyles={classes.basicChipStyles}
-                />
-              </Stack>
-            </Stack>
+            </Box>
+            <Typography variant="body2" sx={classes.messageText}>
+              {translateText(["clockOutConfirmationMessage"])}
+            </Typography>
           </Box>
-          <Typography variant="body2" sx={classes.messageText}>
-            {translateText(["clockOutConfirmationMessage"])}
-          </Typography>
           <Stack spacing={2}>
             <Button
               label={translateText(["confirm"])}
@@ -95,6 +103,9 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               ariaLabel={translateText(["confirm"])}
               isLoading={isPending}
               buttonStyle={ButtonStyle.PRIMARY}
+              accessibility={{
+                ariaDescribedBy: "clock-out-description"
+              }}
             />
             <Button
               buttonStyle={ButtonStyle.TERTIARY}

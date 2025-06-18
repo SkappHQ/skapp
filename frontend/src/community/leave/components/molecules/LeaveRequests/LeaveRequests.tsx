@@ -11,7 +11,7 @@ import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import {
   ButtonSizes,
@@ -408,22 +408,31 @@ const LeaveRequests: FC = () => {
                 role="group"
                 aria-label={translateAria(["myLeaveRequests", "sortGroup"])}
               >
-                <Select
+                <RoundedSelect
                   id="leave-requests-filter"
                   onChange={handleItemClick}
                   value={selectedItem?.value ?? ""}
                   options={dropdownItems}
-                  renderValue={(selectedValue: string) => (
-                    <Typography
-                      aria-label={translateAria(["myLeaveRequests", "sortBy"], {
-                        sortBy: selectedValue
-                      })}
-                    >
-                      {translateText(["myLeaveRequests", "sortBy"], {
-                        sortBy: selectedValue
-                      })}
-                    </Typography>
-                  )}
+                  renderValue={(selectedValue: string) => {
+                    const selectedOption = dropdownItems.find(
+                      (item) => item.value === selectedValue
+                    );
+                    const displayLabel = selectedOption?.label || selectedValue;
+                    return (
+                      <Typography
+                        aria-label={translateAria(
+                          ["myLeaveRequests", "sortBy"],
+                          {
+                            sortBy: displayLabel
+                          }
+                        )}
+                      >
+                        {translateText(["myLeaveRequests", "sortBy"], {
+                          sortBy: displayLabel
+                        })}
+                      </Typography>
+                    );
+                  }}
                 />
               </Box>
             ),

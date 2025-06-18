@@ -1,6 +1,6 @@
 import { ChangeEvent, useMemo } from "react";
 
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -111,7 +111,7 @@ const LeaveEntitlementTable = ({
       actionToolbar={{
         firstRow: {
           leftButton: (
-            <Select
+            <RoundedSelect
               id="leave-entitlement-table-year-dropdown"
               value={leaveEntitlementTableSelectedYear}
               options={getAdjacentYearsWithCurrent()}

@@ -3,11 +3,11 @@ import { FormikErrors } from "formik";
 import { DateTime } from "luxon";
 import React, { useEffect, useMemo, useState } from "react";
 
-import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
+import PeopleAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/PeopleAutocompleteSearch";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import PeopleAutocompleteSearch from "~community/common/components/molecules/PeopleAutocompleteSearch/PeopleAutocompleteSearch";
+import SquareSelect from "~community/common/components/molecules/SquareSelect/SquareSelect";
 import { matchesNumberWithAtMostOneDecimalPlace } from "~community/common/regex/regexPatterns";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
@@ -94,9 +94,8 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
 
   const { data: leaveTypesData } = useGetLeaveTypes();
 
-  const { data: suggestions } = useGetSearchedEmployees(
-    searchTerm?.length > 0 ? searchTerm : ""
-  );
+  const { data: suggestions, isPending: isSuggestionsPending } =
+    useGetSearchedEmployees(searchTerm?.length > 0 ? searchTerm : "");
 
   const leaveTypesDropDownList = useMemo(() => {
     if (leaveTypesData === undefined) {
@@ -296,6 +295,11 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
 
   const isLeaveTypeSelected = !values.typeId;
 
+  const leaveType =
+    leaveTypesData?.find(
+      (leaveType) => Number(leaveType.typeId) === values.typeId
+    )?.typeId ?? "";
+
   return (
     <Form onSubmit={onSubmit}>
       <PeopleAutocompleteSearch
@@ -317,23 +321,19 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
           customLeaveAllocationModalType ===
           CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION
         }
+        isLoading={isSuggestionsPending}
       />
 
       <Stack spacing={2} sx={{ mt: 2 }}>
-        <DropdownList
+        <SquareSelect
+          id="leave-allocation-leave-type-select"
           label={translateText(["CustomLeaveAllocationTypeInputLabel"])}
           placeholder={translateText(["leaveTypePlaceholder"])}
-          id="leave-allocation-type-input"
-          inputName="type"
           error={errors.typeId}
-          value={
-            leaveTypesData?.find(
-              (leaveType) => Number(leaveType.typeId) === values.typeId
-            )?.typeId || ""
-          }
-          itemList={leaveTypesDropDownList}
+          value={leaveType.toString()}
+          options={leaveTypesDropDownList}
           onChange={handleLeaveTypeChange}
-          isDisabled={
+          disabled={
             customLeaveAllocationModalType ===
             CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION
           }
@@ -365,6 +365,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         direction="row"
         alignItems="flex-start"
         gap="16px"
+        marginTop="1rem"
         justifyContent={"space-between"}
       >
         <InputDate
