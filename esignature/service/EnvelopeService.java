@@ -42,4 +42,6 @@ public interface EnvelopeService {
 
 	void expireEnvelope(Long envelopeId);
 
+	ResponseEntityDto getEnvelopeTierLimitations();
+
 }

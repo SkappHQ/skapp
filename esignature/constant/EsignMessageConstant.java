@@ -137,7 +137,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_VALUE_NOT_FOUND("ep.esign.error.field.value.not-found"),
 	ESIGN_ERROR_DOWNLOAD_FILE_MAX_ATTEMPT_FAILED("ep.esign.error.download.file.max-attempt.failed"),
 	ESIGN_ERROR_NO_PREVIOUS_VERSION("ep.esign.error.no.previous.version"),
-	ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY("ep.esign.error.document.versions.empty");
+	ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY("ep.esign.error.document.versions.empty"),
+	ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS("ep.esign.error.fetching.envelope.tier-limitations"),
+	ESIGN_ERROR_ENVELOPE_LIMIT_REACHED("ep.esign.error.envelope.limit.reached");
 
 	private final String messageKey;
 
