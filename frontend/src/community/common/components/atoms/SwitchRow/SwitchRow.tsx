@@ -22,6 +22,7 @@ interface SwitchComponentProps {
   name?: string;
   icon?: IconName;
   labelId: string;
+  arialabel?: string;
 }
 
 const SwitchRow: FC<SwitchComponentProps> = ({
@@ -34,7 +35,8 @@ const SwitchRow: FC<SwitchComponentProps> = ({
   wrapperStyles,
   name,
   icon,
-  labelId
+  labelId,
+  arialabel
 }) => {
   const translateAria = useTranslator("commonAria", "components", "switch");
 
@@ -73,7 +75,8 @@ const SwitchRow: FC<SwitchComponentProps> = ({
         }}
         slotProps={{
           input: {
-            "aria-labelledby": labelId
+            "aria-labelledby": labelId,
+            "aria-label": arialabel ?? translateAria(["ariaLabel"])
           }
         }}
       />
