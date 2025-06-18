@@ -76,8 +76,19 @@ const useSessionData = () => {
     [sessionData?.user?.roles]
   );
 
+  const isLeaveManager = useMemo(
+    () => sessionData?.user?.roles?.includes(AuthManagerType.LEAVE_MANAGER),
+    [sessionData?.user?.roles]
+  );
+
   const isAttendanceEmployee = useMemo(
     () => sessionData?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
+    [sessionData?.user?.roles]
+  );
+
+  const isAttendanceManager = useMemo(
+    () =>
+      sessionData?.user?.roles?.includes(AuthManagerType.ATTENDANCE_MANAGER),
     [sessionData?.user?.roles]
   );
 
@@ -100,7 +111,9 @@ const useSessionData = () => {
     isPeopleManager,
     userId,
     isLeaveEmployee,
+    isLeaveManager,
     isAttendanceEmployee,
+    isAttendanceManager,
     tenantID
   };
 };

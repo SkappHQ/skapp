@@ -10,7 +10,7 @@ import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import {
   ButtonSizes,
@@ -376,7 +376,7 @@ const LeaveRequests: FC = () => {
         actionToolbar={{
           firstRow: {
             leftButton: (
-              <Select
+              <RoundedSelect
                 id="leave-requests-filter"
                 onChange={handleItemClick}
                 value={selectedItem?.value ?? ""}

@@ -1,7 +1,5 @@
 import { Box, MenuItem } from "@mui/material";
-import { rejects } from "assert";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { JSX, Key } from "react";
 
 import { useMarkNotificationAsRead } from "~community/common/api/notificationsApi";
@@ -10,13 +8,13 @@ import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   NotificationDataTypes,
   NotificationItemsTypes,
   NotifyFilterButtonTypes
 } from "~community/common/types/notificationTypes";
+import { handleNotifyRow } from "~community/common/utils/notificationUtils";
 
 import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
@@ -38,49 +36,18 @@ const NotificationsPopup = ({
   const router = useRouter();
 
   const handelAllNotification = (): void => {
-    router.push(ROUTES.NOTIFICATIONS).catch(rejects);
+    router.push(ROUTES.NOTIFICATIONS);
     handleCloseMenu();
   };
 
   const { mutate } = useMarkNotificationAsRead();
-  const { data: session } = useSession();
 
-  const { isLeaveEmployee, isAttendanceEmployee } = useSessionData();
-
-  const handelMenuRow = (
-    id: number,
-    notificationType: NotificationItemsTypes | null,
-    isCausedByCurrentUser: boolean
-  ): void => {
-    if (
-      isCausedByCurrentUser &&
-      notificationType === NotificationItemsTypes.LEAVE_REQUEST &&
-      session?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
-    ) {
-      router.push(ROUTES.LEAVE.MY_REQUESTS);
-      handleCloseMenu();
-    } else if (
-      notificationType === NotificationItemsTypes.LEAVE_REQUEST &&
-      session?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
-    ) {
-      router.push(ROUTES.LEAVE.LEAVE_REQUESTS);
-      handleCloseMenu();
-    } else if (
-      isCausedByCurrentUser &&
-      notificationType === NotificationItemsTypes.TIME_ENTRY &&
-      session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-    ) {
-      router.push(ROUTES.TIMESHEET.MY_TIMESHEET);
-      handleCloseMenu();
-    } else if (
-      notificationType === NotificationItemsTypes.TIME_ENTRY &&
-      session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-    ) {
-      router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS);
-      handleCloseMenu();
-    }
-    mutate(id);
-  };
+  const {
+    isAttendanceEmployee,
+    isLeaveEmployee,
+    isLeaveManager,
+    isAttendanceManager
+  } = useSessionData();
 
   return (
     <Box
@@ -120,11 +87,17 @@ const NotificationsPopup = ({
                 disableGutters
                 disableRipple
                 onClick={() => {
-                  handelMenuRow(
-                    item.id,
-                    item.notificationType,
-                    item.isCausedByCurrentUser
-                  );
+                  handleNotifyRow({
+                    id: item.id,
+                    notificationType: item.notificationType,
+                    isCausedByCurrentUser: item.isCausedByCurrentUser,
+                    router,
+                    mutate,
+                    isLeaveEmployee,
+                    isLeaveManager,
+                    isAttendanceManager,
+                    isAttendanceEmployee
+                  });
                 }}
                 tabIndex={0}
               >

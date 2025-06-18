@@ -117,7 +117,7 @@ const FullPageContainerLayout = ({
           </Stack>
           <Stack
             component="main"
-            aria-label={translateAria(["mainContent"])}
+            aria-label={translateAria(["skipToContent.mainContent"])}
             sx={mergeSx([customStyles?.body])}
           >
             {children}

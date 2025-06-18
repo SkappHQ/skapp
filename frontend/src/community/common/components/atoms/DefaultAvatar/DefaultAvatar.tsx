@@ -36,6 +36,7 @@ const DefaultAvatar = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       sx={mergeSx([classes.avatarContainer, containerStyles])}
+      aria-hidden="true"
     >
       {firstName && lastName ? (
         <Typography sx={mergeSx([classes.typography, typographyStyles])}>
