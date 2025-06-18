@@ -40,19 +40,20 @@ export const getJobTitlesWithJobFamilyId = (
   allJobFamilies: AllJobFamilyType[] | null,
   jobFamilyId: number | null,
   jobTitleId?: number | null
-): JobTitleType[] => {
+) => {
   const jobFamily = allJobFamilies?.find(
     (jobFamily) => jobFamily.jobFamilyId === jobFamilyId
   );
 
+  const jobTitles = jobFamily?.jobTitles?.map((title: JobTitleType) => ({
+    value: title.jobTitleId === null ? 0 : title.jobTitleId,
+    label: title.name
+  }));
+
   if (jobFamilyTransfer) {
-    return jobFamily?.jobTitles || [];
+    return jobTitles ?? [];
   } else {
-    return (
-      jobFamily?.jobTitles.filter(
-        (jobTitle) => jobTitle.jobTitleId !== jobTitleId
-      ) || []
-    );
+    return jobTitles?.filter((jobTitle) => jobTitle.value !== jobTitleId) || [];
   }
 };
 

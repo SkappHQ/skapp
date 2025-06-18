@@ -99,7 +99,22 @@ const Table: FC<Props & CommonTableProps & TableTypes> = ({
           stickyHeader
           sx={mergeSx([classes.table, customStyles?.table])}
         >
-          <caption style={{ display: "none" }}>{tableName}</caption>
+          <caption
+            style={{
+              position: "absolute",
+              width: "0.0625rem",
+              height: "0.0625rem",
+              padding: 0,
+              margin: "-0.0625rem",
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: 0
+            }}
+            tabIndex={0}
+          >
+            {tableName}
+          </caption>
           <TableHead
             headers={headers}
             rows={rows}

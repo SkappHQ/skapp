@@ -135,9 +135,13 @@ export const handleBinIconBtnClick = async (
   allJobFamilies: AllJobFamilyType[] | null = null,
   setJobFamilyModalType: (value: JobFamilyActionModalEnums) => void = () => {}
 ) => {
-  const noOfJobTitles = values?.jobTitles?.length ?? 0;
+  const existingJobTitles = values?.jobTitles?.filter(
+    (item) => item.jobTitleId !== null
+  );
 
-  if (noOfJobTitles === 1) {
+  const noOfExistingJobTitles = existingJobTitles?.length ?? 0;
+
+  if (noOfExistingJobTitles === 1) {
     setJobFamilyModalType(JobFamilyActionModalEnums.ADD_NEW_JOB_TITLE);
     return;
   }

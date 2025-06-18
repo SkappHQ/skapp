@@ -15,7 +15,7 @@ import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -234,7 +234,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
     <>
       <Stack sx={classes.headerStack}>
         <Box>
-          <Select
+          <RoundedSelect
             id="leave-entitlements-report-table-year-filter"
             onChange={handleYearClick}
             value={reportsParams.year}

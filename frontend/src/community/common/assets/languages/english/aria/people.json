@@ -1,6 +1,6 @@
 {
   "jobFamily": {
-    "addJobTitleButton": "Add job title button",
+    "addJobTitleButton": "Add job title",
     "jobTitleField": "{{jobTitleName}} job title field"
   },
   "teams": {
