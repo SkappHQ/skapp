@@ -2,6 +2,7 @@ import { UseMutateFunction } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { ChangeEvent, SetStateAction } from "react";
 
+import { SelectOption } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import {
   hasSpecialCharactersAndNumbers,
   matchesTwoOrMoreConsecutiveWhitespaceCharacters
@@ -10,7 +11,6 @@ import { ToastProps } from "~community/common/types/ToastTypes";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
 import {
   DeletingJobFamily,
-  JobFamilyDropDownType,
   TransferMemberFormType,
   TransferMembersWithJobFamilyMutationType,
   TransferMembersWithJobFamilyPayloadType
@@ -44,13 +44,20 @@ export const handleJobFamilyDeleteBackBtnClick = (
 
 export const handleJobFamilyDropDownItemClick = (
   employeeId: number | undefined,
-  item: JobFamilyDropDownType,
+  item: SelectOption,
   values: TransferMemberFormType[],
   setValues: (value: TransferMemberFormType[]) => void
 ) => {
   const updatedValues = values.map((value) =>
     value.employeeId === employeeId
-      ? { ...value, jobFamily: item, jobTitle: null }
+      ? {
+          ...value,
+          jobFamily: {
+            jobFamilyId: Number(item.value),
+            name: item.label
+          },
+          jobTitle: null
+        }
       : value
   );
 

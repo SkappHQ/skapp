@@ -1,19 +1,20 @@
-import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  SelectChangeEvent,
+  Stack,
+  Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useSession } from "next-auth/react";
 import * as React from "react";
 import { FC, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import MenuItem from "~community/common/components/atoms/MenuItem/MenuItem";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import Popper from "~community/common/components/molecules/Popper/Popper";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { IconName } from "~community/common/types/IconTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { MAX_NUM_OF_SUPERVISORS_PER_TEAM } from "~community/people/constants/configs";
 import { MemberTypes } from "~community/people/enums/TeamEnums";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
@@ -57,16 +58,19 @@ const AddTeamMemberRow: FC<Props> = ({
     { label: MemberTypes.MEMBER, value: MemberTypes.MEMBER },
     {
       label: MemberTypes.SUPERVISOR,
-      value: MemberTypes.SUPERVISOR
+      value: MemberTypes.SUPERVISOR,
+      disabled:
+        teamMembers?.supervisor?.length >= MAX_NUM_OF_SUPERVISORS_PER_TEAM
     }
   ];
 
-  const setUserType = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-    const newValue: MemberTypes = e.currentTarget.innerText as MemberTypes;
+  const setUserType = (e: SelectChangeEvent) => {
+    const newValue = e.target.value;
 
     const updatedMembers = teamMembers?.members?.filter(
       (user: EmployeeDataType) => user?.employeeId !== employeeData?.employeeId
     );
+
     const updatedSupervisors = teamMembers?.supervisor?.filter(
       (user: EmployeeDataType) => user?.employeeId !== employeeData?.employeeId
     );
@@ -140,53 +144,20 @@ const AddTeamMemberRow: FC<Props> = ({
           {`${employeeData?.jobLevel ?? ""} ${employeeData?.jobRole ?? ""}`}
         </Typography>
       </Stack>
-      <Button
-        label={selectedUserType}
-        buttonStyle={ButtonStyle.TERTIARY}
-        endIcon={<Icon name={IconName.DROPDOWN_ARROW_ICON} />}
-        isFullWidth={false}
-        styles={classes.dropDownBtn}
-        onClick={(event: React.MouseEvent<HTMLElement>) => {
-          setAnchorEl(event.currentTarget);
-          setShowOverlay(true);
-        }}
+      <RoundedSelect
+        id="add-team-member-type-select"
+        onChange={setUserType}
+        options={itemList}
+        value={selectedUserType}
         disabled={!isAdmin}
-      />
-      <Popper
-        anchorEl={anchorEl}
-        open={Boolean(showOverlay)}
-        position={"bottom-end"}
-        handleClose={() => {
-          setShowOverlay(false);
+        customStyles={{
+          select: {
+            "&.MuiInputBase-root": {
+              marginLeft: "0rem"
+            }
+          }
         }}
-        menuType={MenuTypes.SORT}
-        isManager={true}
-        id="popper"
-        isFlip={true}
-        timeout={300}
-        ariaLabel={translateAria(["teamMemberRoleDropdown"])}
-      >
-        <Box sx={{ backgroundColor: theme.palette.common.white }} role="menu">
-          {itemList?.map((item, index: number) => (
-            <MenuItem
-              id={"dropdown-button-id-"
-                .concat(id)
-                .concat("-button-")
-                .concat(index.toString())}
-              key={index}
-              text={item?.value}
-              selected={selectedUserType === item?.value}
-              onClick={setUserType}
-              isSoftDisabled={
-                teamMembers?.supervisor?.length >=
-                  MAX_NUM_OF_SUPERVISORS_PER_TEAM &&
-                selectedUserType !== MemberTypes.SUPERVISOR &&
-                item.value === MemberTypes.SUPERVISOR
-              }
-            />
-          ))}
-        </Box>
-      </Popper>
+      />
     </Stack>
   );
 };
