@@ -56,6 +56,7 @@ import FileUploadIcon from "~community/common/assets/Icons/FileUploadIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import FinanceModuleIcon from "~community/common/assets/Icons/FinanceModuleIcon";
 import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
+import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
@@ -275,7 +276,8 @@ export const IconMapping: Partial<
   [IconName.CRM_MODULE_ICON]: CRMModuleIcon,
   [IconName.HELP_DESK_MODULE_ICON]: HelpDeskModuleIcon,
   [IconName.PROJECT_MANAGEMENT_MODULE_ICON]: ProjectManagementModuleIcon,
-  [IconName.BLOCKED_ICON]: BlockedIcon
+  [IconName.BLOCKED_ICON]: BlockedIcon,
+  [IconName.GEM_ICON]: GemIcon
   // Add more icons here as needed
 };
 
