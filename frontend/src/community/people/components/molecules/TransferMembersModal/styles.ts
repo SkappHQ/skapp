@@ -5,7 +5,7 @@ const styles = (): StyleProps => ({
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    width: "100%",
+    width: "100%"
   },
   contentWrapper: {
     height: "max-content",
@@ -47,7 +47,7 @@ const styles = (): StyleProps => ({
     width: {
       xs: "calc(calc(100% - 6rem) / 2)",
       sm: "calc(calc(100% - 12.625rem) / 2)"
-    },
+    }
   },
   dropdownBtnStyles: {
     width: "100%",

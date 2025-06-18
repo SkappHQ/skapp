@@ -253,6 +253,11 @@ public class AuthServiceImpl implements AuthService {
 		}
 		User user = optionalUser.get();
 
+		if (employeeDao.existsByEmployeeIdAndAccountStatusIn(user.getUserId(),
+				Set.of(AccountStatus.TERMINATED, AccountStatus.DELETED))) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_TERMINATED_OR_DELETED);
+		}
+
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 
 		AccessTokenResponseDto accessTokenResponseDto = new AccessTokenResponseDto();
