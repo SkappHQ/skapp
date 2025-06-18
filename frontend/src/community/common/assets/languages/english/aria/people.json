@@ -37,8 +37,7 @@
       "selectEmploymentType": "Select employment type",
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
-      "selectCurrentEmploymentChecked": "Select current employment checkbox is checked",
-      "selectCurrentEmploymentUnChecked": "Select current employment checkbox is unchecked"
+      "selectCurrentEmploymentChecked": "Select current employment"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
