@@ -26,6 +26,7 @@ import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.people.service.EpRolesService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -64,6 +65,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final SpecialTenantConfig specialTenantConfig;
 
 	private final DashboardEmailService dashboardEmailService;
+
+	private final EpRolesService epRolesService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -375,6 +378,10 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			if (employeeCount > maxUserLimit) {
 				tenant.setTenantStatus(TenantStatus.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED);
 				systemVersionTypes = SystemVersionTypes.TIER_CHANGE_TO_SUSPENDED_FOR_CANCELLED;
+			}else{
+				tenantContext.setTenantAndSwitchSchema(tenantName);
+				epRolesService.downgradeUserRolesToEmployeeRole();
+				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			}
 
 			tenant.setSubscriptionStatus(SubscriptionStatus.CANCELED);
