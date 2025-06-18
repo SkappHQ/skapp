@@ -180,10 +180,9 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 		if (!rolesToUpdate.isEmpty()) {
 
-			List<Employee> employees = epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(rolesToUpdate.stream()
-				.filter(role -> role.getEsignRole() == Role.ESIGN_ADMIN || role.getEsignRole() == Role.ESIGN_SENDER)
-				.map(role -> role.getEmployee().getEmployeeId())
-				.toList(), Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			List<Employee> employees = epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(
+					rolesToUpdate.stream().map(role -> role.getEmployee().getEmployeeId()).toList(),
+					Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 			envelopeService.transferEmployeeEnvelopes(employees);
 			epEmployeeRoleDao.saveAll(rolesToUpdate);

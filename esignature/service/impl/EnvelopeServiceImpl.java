@@ -865,26 +865,36 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Transactional
 	@Override
 	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress) {
-		log.info("transferEnvelopeCustody: execution started");
+		return transferEnvelopeCustody(envelopeId, addressbookId, ipAddress, false);
+	}
 
-		User currentUser = userService.getCurrentUser();
-		if (currentUser == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		}
+	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress,
+			boolean isAuto) {
+		log.info("transferEnvelopeCustody: execution started");
 
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
-
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
 		Envelope envelope = envelopeOptional.get();
-
-		if (esignRole.equals(Role.ESIGN_SENDER)) {
-			AddressBook owner = envelope.getOwner();
-			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		AddressBook addressBook = null;
+		if (!isAuto) {
+			User currentUser = userService.getCurrentUser();
+			if (currentUser == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 			}
+
+			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+			if (esignRole.equals(Role.ESIGN_SENDER)) {
+				AddressBook owner = envelope.getOwner();
+				if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				}
+			}
+
+			addressBook = addressBookDao.findByInternalUser(currentUser)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 		}
 
 		Optional<AddressBook> addressBookOptional = addressBookDao.findById(addressbookId);
@@ -937,9 +947,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope.setOwner(newOwner);
 		envelopeDao.save(envelope);
-
-		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		ArrayNode metadata = objectMapper.createArrayNode();
@@ -1017,12 +1024,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 
 			for (Envelope envelope : employeeEnvelopes) {
-				try {
-					transferEnvelopeCustody(envelope.getId(), oldestSuperAdminAddressBook.getId(), null);
-				}
-				catch (Exception e) {
-					log.error("Error transferring envelope ID: {} - {}", envelope.getId(), e.getMessage());
-				}
+
+				transferEnvelopeCustody(envelope.getId(), oldestSuperAdminAddressBook.getId(), null, true);
+
 			}
 
 		}
