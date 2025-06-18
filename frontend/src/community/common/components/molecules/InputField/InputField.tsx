@@ -277,7 +277,12 @@ const InputField = ({
         </Typography>
       )}
       {!!error && (
-        <Box sx={{ mt: "0.5rem" }} aria-live="polite" aria-atomic={true}>
+        <Box
+          sx={{ mt: "0.5rem" }}
+          role="alert"
+          aria-live="assertive"
+          aria-atomic={true}
+        >
           <Typography
             variant="body2"
             sx={classes.errorTypography}

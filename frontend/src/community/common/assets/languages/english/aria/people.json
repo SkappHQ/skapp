@@ -66,7 +66,11 @@
     "userBulkUpload": " User Bulk",
     "uploadPeople": "Upload People",
     "addPeopleModal": {
-      "superAdminToggle": "Super Admin Toggle"
+      "superAdminToggle": "Super Admin Toggle",
+      "peoplePermissions": "People Permissions",
+      "leavePermissions": "Leave Permissions",
+      "attendancePermissions": "Attendance Permissions",
+      "eSignPermissions": "E-sign Permissions"
     }
   }
 }

@@ -7,8 +7,8 @@ import { ChangeEvent, useEffect, useState } from "react";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
-import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import SquareSelect from "~community/common/components/molecules/SquareSelect/SquareSelect";
 import ROUTES from "~community/common/constants/routes";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
@@ -549,23 +549,25 @@ const AddNewResourceModal = () => {
               <Typography variant="label">
                 {permissionTexts(["people"])}
               </Typography>
-              <DropdownList
-                inputName={"peopleRole"}
-                itemList={grantablePermission?.people || []}
+              <SquareSelect
+                id={"people-role-select"}
+                name={"peopleRole"}
+                options={grantablePermission?.people || []}
                 value={values.peopleRole}
-                componentStyle={{
-                  width: "200px",
-                  borderRadius: "100px",
-                  height: "50px"
-                }}
-                paperStyles={{
-                  width: "200px",
-                  borderRadius: "100px"
+                customStyles={{
+                  select: {
+                    width: "12.5rem",
+                    borderRadius: "6.25rem",
+                    height: "3.125rem"
+                  }
                 }}
                 onChange={(e) =>
                   handleRoleChange(e.target.name, e.target.value)
                 }
-                isDisabled={values.isSuperAdmin}
+                disabled={values.isSuperAdmin}
+                accessibility={{
+                  ariaLabel: translateAria(["peoplePermissions"])
+                }}
               />
             </Stack>
 
@@ -578,23 +580,25 @@ const AddNewResourceModal = () => {
                 <Typography variant="label">
                   {permissionTexts(["leave"])}
                 </Typography>
-                <DropdownList
-                  inputName={"leaveRole"}
-                  itemList={grantablePermission?.leave || []}
+                <SquareSelect
+                  id={"leave-role-select"}
+                  name={"leaveRole"}
+                  options={grantablePermission?.leave || []}
                   value={values.leaveRole}
-                  componentStyle={{
-                    width: "200px",
-                    borderRadius: "100px",
-                    height: "50px"
-                  }}
-                  paperStyles={{
-                    width: "200px",
-                    borderRadius: "100px"
+                  customStyles={{
+                    select: {
+                      width: "12.5rem",
+                      borderRadius: "6.25rem",
+                      height: "3.125rem"
+                    }
                   }}
                   onChange={(e) =>
                     handleRoleChange(e.target.name, e.target.value)
                   }
-                  isDisabled={values.isSuperAdmin}
+                  disabled={values.isSuperAdmin}
+                  accessibility={{
+                    ariaLabel: translateAria(["leavePermissions"])
+                  }}
                 />
               </Stack>
             )}
@@ -610,23 +614,25 @@ const AddNewResourceModal = () => {
                 <Typography variant="label">
                   {permissionTexts(["attendance"])}
                 </Typography>
-                <DropdownList
-                  inputName={"attendanceRole"}
-                  itemList={grantablePermission?.attendance || []}
+                <SquareSelect
+                  id={"attendance-role-select"}
+                  name={"attendanceRole"}
+                  options={grantablePermission?.attendance || []}
                   value={values.attendanceRole}
-                  componentStyle={{
-                    width: "200px",
-                    borderRadius: "100px",
-                    height: "50px"
-                  }}
-                  paperStyles={{
-                    width: "200px",
-                    borderRadius: "100px"
+                  customStyles={{
+                    select: {
+                      width: "12.5rem",
+                      borderRadius: "6.25rem",
+                      height: "3.125rem"
+                    }
                   }}
                   onChange={(e) =>
                     handleRoleChange(e.target.name, e.target.value)
                   }
-                  isDisabled={values.isSuperAdmin}
+                  disabled={values.isSuperAdmin}
+                  accessibility={{
+                    ariaLabel: translateAria(["attendancePermissions"])
+                  }}
                 />
               </Stack>
             )}
@@ -640,23 +646,25 @@ const AddNewResourceModal = () => {
                 <Typography variant="label">
                   {permissionTexts(["eSignature"])}
                 </Typography>
-                <DropdownList
-                  inputName={"esignRole"}
-                  itemList={grantablePermission?.esign || []}
+                <SquareSelect
+                  id={"esign-role-select"}
+                  name={"esignRole"}
+                  options={grantablePermission?.esign || []}
                   value={values.esignRole}
-                  componentStyle={{
-                    width: "200px",
-                    borderRadius: "100px",
-                    height: "50px"
-                  }}
-                  paperStyles={{
-                    width: "200px",
-                    borderRadius: "100px"
+                  customStyles={{
+                    select: {
+                      width: "12.5rem",
+                      borderRadius: "6.25rem",
+                      height: "3.125rem"
+                    }
                   }}
                   onChange={(e) =>
                     handleRoleChange(e.target.name, e.target.value)
                   }
-                  isDisabled={values.isSuperAdmin}
+                  disabled={values.isSuperAdmin}
+                  accessibility={{
+                    ariaLabel: translateAria(["eSignPermissions"])
+                  }}
                 />
               </Stack>
             )}
