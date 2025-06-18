@@ -526,6 +526,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.filter(recipient -> recipient.getAddressBook() != null
 						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId())
 						&& (envelopeStatus == EnvelopeStatus.VOIDED
+								|| (envelope.getSignType().equals(SignType.PARALLEL)
+										&& envelopeStatus == EnvelopeStatus.DECLINED)
 								|| (recipient.getStatus() != null && recipient.getStatus() != RecipientStatus.EMPTY)))
 				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
 				.toList();
