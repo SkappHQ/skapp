@@ -47,7 +47,7 @@ const JobFamilyTransferMembersModal = () => {
         )
         .map((jobFamily) => ({
           label: jobFamily.name,
-          value: jobFamily.jobFamilyId,
+          value: jobFamily.jobFamilyId
         })) ?? []
     );
   }, [allJobFamilies, currentDeletingJobFamily]);
