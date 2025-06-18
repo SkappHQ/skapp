@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import Select from "~community/common/components/molecules/Select/Select";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -136,7 +136,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   );
 
   const yearFilter = (
-    <Select
+    <RoundedSelect
       id="custom-leave-allocations-table-year-filter"
       onChange={(event) => setSelectedYear(event?.target?.value)}
       value={selectedYear}

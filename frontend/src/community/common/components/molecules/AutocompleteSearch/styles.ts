@@ -7,8 +7,6 @@ const styles = (theme: Theme): StyleProps => ({
     width: "100%"
   },
   label: {
-    fontWeight: "500",
-    fontSize: "1rem",
     mb: "0.625rem"
   },
   asterisk: {

@@ -126,12 +126,23 @@ export const handleJobTitleDeleteBackBtnClick = (
 
 export const handleJobTitleDropDownItemClick = (
   employeeId: number | undefined,
-  item: JobTitleType,
+  item: {
+    value: number;
+    label: string;
+  },
   values: TransferMemberFormType[],
   setValues: (value: TransferMemberFormType[]) => void
 ) => {
   const updatedValues = values.map((value) =>
-    value.employeeId === employeeId ? { ...value, jobTitle: item } : value
+    value.employeeId === employeeId
+      ? {
+          ...value,
+          jobTitle: {
+            jobTitleId: item.value === 0 ? null : item.value,
+            name: item.label
+          }
+        }
+      : value
   );
 
   setValues(updatedValues);

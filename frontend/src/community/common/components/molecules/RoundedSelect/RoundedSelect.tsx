@@ -2,7 +2,10 @@ import {
   MenuItem,
   Select as MuiSelect,
   SelectChangeEvent,
+  SxProps,
+  Theme,
   Typography,
+  TypographyProps,
   useTheme
 } from "@mui/material";
 import { ReactNode } from "react";
@@ -11,7 +14,7 @@ import { IconName } from "~community/common/types/IconTypes";
 
 import Icon from "../../atoms/Icon/Icon";
 
-interface DropdownOption {
+export interface SelectOption {
   label: string;
   value: string | number;
   disabled?: boolean;
@@ -19,8 +22,8 @@ interface DropdownOption {
 
 interface Props {
   id: string;
-  onChange: (event: SelectChangeEvent) => void;
-  options: DropdownOption[];
+  onChange: (event: SelectChangeEvent, child?: ReactNode) => void;
+  options: SelectOption[];
   value: string;
   disabled?: boolean;
   name?: string;
@@ -29,9 +32,21 @@ interface Props {
     label?: string;
     description?: string;
   };
+  customStyles?: {
+    label?: SxProps<Theme>;
+    select?: SxProps<Theme>;
+    menuItem?: SxProps<Theme>;
+    menuProps?: {
+      sx?: SxProps<Theme>;
+      paperProps?: {
+        sx?: SxProps<Theme>;
+      };
+    };
+  };
+  variant?: TypographyProps["variant"];
 }
 
-const Select = ({
+const RoundedSelect = ({
   id,
   value,
   options,
@@ -39,7 +54,9 @@ const Select = ({
   renderValue,
   disabled = false,
   name,
-  accessibility
+  accessibility,
+  customStyles = {},
+  variant = "body1"
 }: Props) => {
   const theme = useTheme();
 
@@ -48,25 +65,25 @@ const Select = ({
       id={id}
       value={value}
       renderValue={(selectedValue) => {
-        const selectedOption = options.find(
-          (option) => option.value.toString() === selectedValue
-        );
-
-        const label = selectedOption ? selectedOption?.label : "";
-
         if (renderValue === undefined) {
           return (
-            <Typography aria-label={`${accessibility?.label ?? ""} ${label}`}>
-              {label}
+            <Typography
+              variant={variant}
+              aria-label={`${accessibility?.label ?? ""} ${selectedValue}`}
+              sx={customStyles?.label}
+            >
+              {selectedValue}
             </Typography>
           );
         }
 
-        return renderValue?.(label);
+        return renderValue?.(selectedValue);
       }}
       disabled={disabled}
       name={name}
-      onChange={(event: SelectChangeEvent) => onChange(event)}
+      onChange={(event: SelectChangeEvent, child?: ReactNode) =>
+        onChange(event, child)
+      }
       MenuProps={{
         PaperProps: {
           sx: {
@@ -74,7 +91,8 @@ const Select = ({
           },
           "& .MuiMenu-list": {
             padding: "0rem"
-          }
+          },
+          ...customStyles?.menuProps?.paperProps?.sx
         },
         sx: {
           "& .MuiMenuItem-root": {
@@ -95,18 +113,20 @@ const Select = ({
               backgroundColor: theme.palette.grey[100],
               color: theme.palette.grey.A100
             }
-          }
+          },
+          ...customStyles?.menuProps?.sx
         }
       }}
       sx={{
         borderRadius: "2.1875rem",
         "& .MuiSelect-select": {
           padding: "0.75rem 2.5rem 0.75rem 1.25rem"
-        }
+        },
+        ...customStyles?.select
       }}
     >
       {options?.map((option) => {
-        const selected = value === option.value.toString();
+        const selected = value === option?.value?.toString();
 
         return (
           <MenuItem
@@ -116,7 +136,8 @@ const Select = ({
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              minWidth: "9.375rem"
+              minWidth: "9.375rem",
+              ...customStyles?.menuItem
             }}
             selected={selected}
           >
@@ -131,4 +152,4 @@ const Select = ({
   );
 };
 
-export default Select;
+export default RoundedSelect;

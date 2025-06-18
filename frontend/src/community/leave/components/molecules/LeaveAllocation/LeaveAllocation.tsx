@@ -9,6 +9,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import LeaveTypeCard from "~community/leave/components/molecules/LeaveTypeCard/LeaveTypeCard";
@@ -24,6 +25,7 @@ import styles from "./styles";
 const LeaveAllocation: FC = () => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+  const translateAria = useTranslator("leaveAria", "applyLeave", "calendar");
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
@@ -97,6 +99,7 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === 1 ? 0.5 : 1
             }}
             disabled={currentPage === 1}
+            ariaLabel={translateAria(["back"])}
           />
           <IconButton
             onClick={() => setCurrentPage(currentPage + 1)}
@@ -112,6 +115,7 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === totalPages ? 0.5 : 1
             }}
             disabled={currentPage === totalPages}
+            ariaLabel={translateAria(["next"])}
           />
         </Stack>
       )}
