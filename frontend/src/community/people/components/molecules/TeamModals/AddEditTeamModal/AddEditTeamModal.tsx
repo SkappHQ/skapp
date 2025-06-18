@@ -1,12 +1,12 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { useFormik } from "formik";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import PeopleSearch from "~community/common/components/molecules/PeopleSearch/PeopleSearch";
+import TeamMemberAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/TeamMemberAutocompleteSearch";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -77,7 +77,6 @@ const AddEditTeamModal = ({
     stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
   }));
 
-  const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchErrors, _setSearchErrors] = useState<string | undefined>(
     undefined
@@ -206,7 +205,6 @@ const AddEditTeamModal = ({
       )
     )
       setFieldValue("teamMembers", [...(values?.teamMembers || []), user]);
-    setIsPopperOpen(false);
     setSearchTerm("");
   };
 
@@ -215,9 +213,29 @@ const AddEditTeamModal = ({
     setFieldValue("teamSupervisors", teamMembers?.supervisor);
   };
 
-  const { data: suggestions } = useGetSearchedEmployees(
+  const { data: searchedEmployeesData } = useGetSearchedEmployees(
     searchTerm?.length > 0 ? searchTerm : ""
   );
+
+  const suggestions = useMemo(() => {
+    if (!searchedEmployeesData) return [];
+
+    const filteredEmployees = searchedEmployeesData?.filter(
+      (employee: EmployeeDataType) => {
+        if (allSelectedUsers?.length === 0) return true;
+
+        const isAlreadySelected = allSelectedUsers?.some((selectedUser) => {
+          const isSelected = selectedUser?.employeeId !== employee?.employeeId;
+
+          return !isSelected;
+        });
+
+        return !isAlreadySelected;
+      }
+    );
+
+    return filteredEmployees;
+  }, [searchedEmployeesData, allSelectedUsers]);
 
   const handleCancel = () => {
     if (
@@ -318,28 +336,33 @@ const AddEditTeamModal = ({
         isDisabled={!isPeopleAdmin}
       />
       {isPeopleAdmin && (
-        <PeopleSearch
-          id="search-team-member-input"
-          label={translateText(["addMemberInputLabel"])}
-          setIsPopperOpen={setIsPopperOpen}
-          isPopperOpen={isPopperOpen}
-          labelStyles={{ mb: "0.25rem" }}
-          componentStyles={{ my: 2 }}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          value={searchTerm}
-          error={searchErrors}
-          onSelectMember={(result) => onSelectUser(result)}
-          suggestions={suggestions as EmployeeType[]}
-          selectedUsers={allSelectedUsers as EmployeeType[]}
-          placeHolder={translateText(["addMemberInputPlaceholder"])}
-        />
+        <Box sx={{ mt: "0.5rem" }}>
+          <TeamMemberAutocompleteSearch
+            isDisabled={false}
+            name="searchTeamMemberInput"
+            required={true}
+            clearInputValueAfterSelect={true}
+            id={{
+              textField: "search-team-member-text-field",
+              autocomplete: "search-team-member-autocomplete"
+            }}
+            label={translateText(["addMemberInputLabel"])}
+            placeholder={translateText(["addMemberInputPlaceholder"])}
+            options={(suggestions ?? []) as EmployeeType[]}
+            value={undefined}
+            inputValue={searchTerm}
+            onInputChange={(value) => setSearchTerm(value)}
+            onChange={(value) => onSelectUser(value)}
+            error={searchErrors}
+          />
+        </Box>
       )}
       {!isSelectingMembers && allSelectedUsers?.length > 0 && (
         <Box>
           <Stack
             direction="row"
             justifyContent="space-between"
-            sx={{ mr: "1.25rem" }}
+            sx={{ mr: "1.25rem", mt: "0.5rem" }}
           >
             <Typography variant="body1" fontWeight={500} lineHeight="1.5rem">
               {translateText(["memberListTitle"])}
@@ -356,7 +379,7 @@ const AddEditTeamModal = ({
             )}
           </Stack>
           <Stack
-            sx={{ mr: "1.25rem", pr: "0.125rem", mt: "0.75rem" }}
+            sx={{ pr: "0.125rem", mt: "0.75rem" }}
             maxHeight={"20vh"}
             overflow="auto"
             spacing="0.75rem"

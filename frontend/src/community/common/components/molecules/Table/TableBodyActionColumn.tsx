@@ -3,6 +3,7 @@ import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -17,6 +18,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
     right?: {
       iconName?: IconName;
@@ -24,6 +28,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
   };
 }
@@ -41,6 +48,30 @@ const TableBodyActionColumn: FC<
 > = ({ row, isEnabled = false, actionBtns, isRowDisabled }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "table",
+    "tableBody",
+    "actionColumn"
+  );
+
+  const recordName = actionBtns?.left?.accessibility?.rowKey
+    ? row?.[actionBtns?.left?.accessibility?.rowKey]
+    : "";
+
+  const editButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["editButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["editButton"]);
+
+  const deleteButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["deleteButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["deleteButton"]);
 
   return (
     isEnabled && (
@@ -61,10 +92,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.left?.onClick(row.actionData)}
-            // ariaLabel={translateText(["editButton"], {
-            //   tableName: tableName
-            // ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-            // })}
+            ariaLabel={editButtonAriaLabel}
           />
         )}
         {actionBtns?.right && (
@@ -85,10 +113,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.right?.onClick(row.actionData)}
-            // ariaLabel={translateText(["deleteButton"], {
-            //   tableName: tableName
-            // ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-            // })}
+            ariaLabel={deleteButtonAriaLabel}
           />
         )}
       </TableCell>

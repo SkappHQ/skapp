@@ -1,11 +1,9 @@
 import { Box, Theme, useTheme } from "@mui/material";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -70,7 +68,6 @@ const JobFamilyTable: FC<Props> = ({
         )
         .map((jobFamilyData: AllJobFamilyType) => ({
           id: jobFamilyData.jobFamilyId,
-          ariaLabel: jobFamilyData.name,
           jobFamily: jobFamilyData.name,
           employees:
             ((jobFamilyData?.employees as JobFamilyEmployeeDataType[])?.length <
@@ -106,37 +103,15 @@ const JobFamilyTable: FC<Props> = ({
                 max={6}
               />
             )) || [],
-          actionData: jobFamilyData,
-          actions: (
-            <Button
-              label={translateText(["viewBtnText"])}
-              buttonStyle={ButtonStyle.TERTIARY}
-              styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
-              onClick={() =>
-                handleJobFamilyEditBtnClick(
-                  jobFamilyData,
-                  setCurrentEditingJobFamily,
-                  setJobFamilyModalType
-                )
-              }
-            />
-          )
+          actionData: jobFamilyData
         })) || []
     );
   };
 
-  const columns = [
-    { field: "jobFamily", headerName: translateText(["jobFamilyHeader"]) },
-    { field: "employees", headerName: translateText(["memberHeader"]) },
-    ...(!isPeopleAdmin
-      ? [{ field: "actions", headerName: translateText(["actionsHeader"]) }]
-      : [])
+  const tableHeaders = [
+    { id: "jobFamily", label: translateText(["jobFamilyHeader"]) },
+    { id: "employees", label: translateText(["memberHeader"]) }
   ];
-
-  const tableHeaders = columns.map((col) => ({
-    id: col.field,
-    label: col.headerName
-  }));
 
   return (
     <Box sx={classes.wrapper}>
@@ -152,15 +127,14 @@ const JobFamilyTable: FC<Props> = ({
         }}
         tableBody={{
           emptyState: {
+            isSearching: Boolean(jobFamilySearchTerm),
+            noSearchResults: {
+              title: translateText(["emptySearchResult", "title"]),
+              description: translateText(["emptySearchResult", "description"])
+            },
             noData: {
-              title:
-                allJobFamilies && allJobFamilies?.length > 0
-                  ? translateText(["emptyScreen", "title"])
-                  : translateText(["emptySearchResult", "title"]),
-              description:
-                allJobFamilies && allJobFamilies?.length > 0
-                  ? translateText(["emptyScreen", "description"])
-                  : translateText(["emptySearchResult", "description"]),
+              title: translateText(["emptyScreen", "title"]),
+              description: translateText(["emptyScreen", "description"]),
               button: {
                 id: "add-job-family-empty-table-screen-button",
                 label: translateText(["addJobFamily"]),

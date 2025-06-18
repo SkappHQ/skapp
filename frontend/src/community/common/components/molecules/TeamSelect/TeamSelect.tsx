@@ -9,7 +9,7 @@ import {
   useGetAllTeams
 } from "~community/people/api/TeamApi";
 
-import Select from "../Select/Select";
+import RoundedSelect from "../RoundedSelect/RoundedSelect";
 
 const TeamSelect = ({
   value,
@@ -70,12 +70,18 @@ const TeamSelect = ({
   }, [allManagerTeamsData, allTeamsData, adminType]);
 
   return (
-    <Select
+    <RoundedSelect
       id="team-select"
       options={options}
       name="team"
       disabled={options.length === 0 && !isAdmin}
       value={value}
+      renderValue={(value) => {
+        const selectedOption = options.find((option) => option.value === value);
+        if (selectedOption) {
+          return selectedOption.label;
+        }
+      }}
       onChange={onChange}
     />
   );

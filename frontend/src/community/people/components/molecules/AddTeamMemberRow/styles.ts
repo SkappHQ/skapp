@@ -4,7 +4,6 @@ import { StyleProps } from "~community/common/types/CommonTypes";
 
 const styles = (theme: Theme): StyleProps => ({
   jobTitle: {
-    ml: "0.75rem",
     fontSize: "0.75rem",
     fontWeight: 400,
     color: theme.palette.primary.dark,

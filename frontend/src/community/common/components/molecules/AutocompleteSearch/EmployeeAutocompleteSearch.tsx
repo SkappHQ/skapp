@@ -20,6 +20,11 @@ import Icon from "../../atoms/Icon/Icon";
 import AvatarChip from "../AvatarChip/AvatarChip";
 import styles from "./styles";
 
+export interface EmployeeOptionType extends EmployeeType {
+  label: string;
+  id: string | number;
+}
+
 interface Props {
   id: {
     autocomplete: string;
@@ -27,11 +32,12 @@ interface Props {
   };
   name: string;
   options: EmployeeType[];
-  value?: EmployeeType;
+  value?: EmployeeOptionType | null;
   inputValue: string;
   onInputChange: (value: string, reason: string) => void;
   onChange: (value: EmployeeType) => void;
   placeholder: string;
+  isLoading?: boolean;
   error?: string;
   isDisabled: boolean;
   required: boolean;
@@ -41,15 +47,16 @@ interface Props {
   };
 }
 
-const PeopleAutocompleteSearch = ({
+const EmployeeAutocompleteSearch = ({
   id,
   options,
   name,
   value,
+  isLoading = undefined,
   inputValue,
   onInputChange,
   onChange,
-  placeholder = "Search people",
+  placeholder = "",
   error,
   isDisabled = false,
   required = false,
@@ -58,6 +65,18 @@ const PeopleAutocompleteSearch = ({
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+
+  const formattedOptions = useMemo((): EmployeeOptionType[] => {
+    if (options && options.length > 0) {
+      return options.map((option: EmployeeType) => ({
+        ...option,
+        label: `${option.firstName} ${option.lastName}`,
+        id: option.employeeId
+      }));
+    }
+
+    return [];
+  }, [options]);
 
   const getTextColor = () => {
     if (error) {
@@ -68,33 +87,21 @@ const PeopleAutocompleteSearch = ({
     return theme.palette.common.black;
   };
 
-  const formattedOptions = useMemo(() => {
-    return options.map((option) => ({
-      ...option,
-      label: `${option.firstName} ${option.lastName}`,
-      id: option.employeeId
-    }));
-  }, [options]);
-
-  const computedInputValue = useMemo(() => {
-    if (value) {
-      return `${value.firstName} ${value.lastName}`;
-    }
-
-    return inputValue;
-  }, [value, inputValue]);
-
   return (
     <Autocomplete
       id={id.autocomplete}
       options={formattedOptions}
-      inputValue={computedInputValue}
+      value={value}
+      loading={isLoading}
+      inputValue={inputValue}
       onInputChange={(_event, value, reason) => onInputChange(value, reason)}
-      onChange={(_event, value) => {
-        const { label, id, ...selectedOption } = value;
-        onChange(selectedOption);
+      onChange={(_event, value: EmployeeOptionType | null) => {
+        if (value !== null) {
+          const { label, id, ...selectedOption } = value;
+          onChange(selectedOption);
+        }
       }}
-      getOptionLabel={(option) => option.label}
+      getOptionLabel={(option: EmployeeOptionType) => option.label}
       disabled={isDisabled}
       renderOption={(props, option) => {
         return (
@@ -113,7 +120,7 @@ const PeopleAutocompleteSearch = ({
           <Stack sx={classes.wrapper} ref={params.InputProps.ref}>
             {label && (
               <Typography
-                variant="h5"
+                variant="body1"
                 gutterBottom
                 color={getTextColor()}
                 sx={mergeSx([classes.label, customStyles?.label])}
@@ -147,4 +154,4 @@ const PeopleAutocompleteSearch = ({
   );
 };
 
-export default PeopleAutocompleteSearch;
+export default EmployeeAutocompleteSearch;
