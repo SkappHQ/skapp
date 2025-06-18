@@ -119,3 +119,13 @@ Must be one of the following:
 - Please use proper types and generics throughout your code.
 - Follow the [Atomic design](https://atomicdesign.bradfrost.com/)
 - Avoid using hardcoded English strings to display text on the screen, rather, update the JSON files in the [`english`](frontend/src/community/common/assets/languages/english) directory and read the value using the `useTranslator` hook.
+- **Linting & Formatting:**
+  - **TypeScript/JavaScript/React:**
+    - We use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/).
+    - Run `npm run check-lint` and `npm run format` before submitting your PR.
+  - **Java:**
+    - Run `mvn spring-javaformat:apply` before submitting your PR.
+  - PRs failing lint/format checks will not be merged.
+- **Testing:**
+  - Run all tests locally before pushing.
+  - Add or update tests as necessary to cover your changes.
