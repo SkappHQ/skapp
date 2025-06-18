@@ -173,6 +173,7 @@ const InputField = ({
         "aria-label": ariaLabel ? ariaLabel : label,
         "aria-invalid": !!error,
         "data-testid": testId,
+        "aria-required": required,
         ...(inputType === "number" && { min, max }),
         ...inputProps
       }}

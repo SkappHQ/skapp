@@ -64,6 +64,9 @@
   },
   "directory": {
     "userBulkUpload": " User Bulk",
-    "uploadPeople": "Upload People"
+    "uploadPeople": "Upload People",
+    "addPeopleModal": {
+      "superAdminToggle": "Super Admin Toggle"
+    }
   }
 }

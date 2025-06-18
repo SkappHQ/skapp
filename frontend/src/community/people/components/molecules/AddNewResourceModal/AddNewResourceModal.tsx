@@ -75,6 +75,12 @@ const AddNewResourceModal = () => {
 
   const roleLimitationTexts = useTranslator("peopleModule", "roleLimitation");
 
+  const translateAria = useTranslator(
+    "peopleAria",
+    "directory",
+    "addPeopleModal"
+  );
+
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
@@ -493,8 +499,11 @@ const AddNewResourceModal = () => {
         style={{
           marginTop: 24
         }}
+        role="region"
+        aria-labelledby="system-permission-section"
       >
         <Typography
+          id="system-permission-section"
           style={{
             fontWeight: "700"
           }}
@@ -526,6 +535,7 @@ const AddNewResourceModal = () => {
                 labelId="is-super-admin"
                 checked={values.isSuperAdmin}
                 onChange={(checked: boolean) => handleSuperAdminChange(checked)}
+                arialabel={translateAria(["superAdminToggle"])}
               />
             </Stack>
           </Stack>
