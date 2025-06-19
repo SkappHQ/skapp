@@ -96,6 +96,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             key={row.id}
             tabIndex={onRowClick ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
+            aria-label={onRowClick ? row?.ariaLabel : undefined}
             sx={mergeSx([
               classes.tableBody.row.default,
               classes.tableBody.row?.[

@@ -269,40 +269,43 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
               }) ?? ""
             }
             isDisabled={true}
-          />
-
-          <Stack
-            sx={{
-              pt: "1rem",
-              gap: 1
-            }}
             tabIndex={0}
-          >
-            <Typography variant="body2" sx={{ fontSize: "1rem" }}>
-              {translateText(["attachments"])}
-            </Typography>
+          />
+          {leaveRequestData.attachments &&
+            leaveRequestData.attachments.length > 0 && (
+              <Stack
+                sx={{
+                  pt: "1rem",
+                  gap: 1
+                }}
+                tabIndex={0}
+              >
+                <Typography variant="body2" sx={{ fontSize: "1rem" }}>
+                  {translateText(["attachments"])}
+                </Typography>
 
-            <Box>
-              {leaveRequestData.attachments &&
-                leaveRequestData.attachments.length > 0 &&
-                leaveRequestData.attachments.map((attachement, index) => (
-                  <IconChip
-                    accessibility={{
-                      ariaLabel: `Attachment ${index + 1}`
-                    }}
-                    key={index}
-                    label={`Attachment ${index}`}
-                    chipStyles={{
-                      backgroundColor: "grey.100",
-                      py: "0.75rem",
-                      px: "0.75rem"
-                    }}
-                    icon={<CopyIcon />}
-                    onClick={() => downloadAttachment(attachement.url)}
-                  />
-                ))}
-            </Box>
-          </Stack>
+                <Box>
+                  {leaveRequestData.attachments &&
+                    leaveRequestData.attachments.length > 0 &&
+                    leaveRequestData.attachments.map((attachement, index) => (
+                      <IconChip
+                        accessibility={{
+                          ariaLabel: `Attachment ${index + 1}`
+                        }}
+                        key={index}
+                        label={`Attachment ${index}`}
+                        chipStyles={{
+                          backgroundColor: "grey.100",
+                          py: "0.75rem",
+                          px: "0.75rem"
+                        }}
+                        icon={<CopyIcon />}
+                        onClick={() => downloadAttachment(attachement.url)}
+                      />
+                    ))}
+                </Box>
+              </Stack>
+            )}
         </Box>
       </Box>
 

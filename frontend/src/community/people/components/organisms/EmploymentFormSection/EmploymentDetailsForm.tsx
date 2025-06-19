@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -138,7 +139,7 @@ const EmploymentDetailsForm = ({
   }, [isCancelModalConfirmButtonClicked]);
 
   return (
-    <>
+    <Box role="region" aria-labelledby="page-title subtitle-next-to-title">
       <EmploymentDetailsSection
         ref={employmentDetailsRef}
         isUpdate={isUpdate}
@@ -196,7 +197,7 @@ const EmploymentDetailsForm = ({
             onSaveClick={onSave}
           />
         ))}
-    </>
+    </Box>
   );
 };
 

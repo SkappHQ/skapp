@@ -221,6 +221,7 @@ const InputField = ({
               title={tooltip}
               open={open}
               id={tooltipId}
+              ariaDescription={tooltip}
             />
           </Box>
         )}

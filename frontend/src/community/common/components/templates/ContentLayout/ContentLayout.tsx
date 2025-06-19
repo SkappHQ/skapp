@@ -300,6 +300,7 @@ const ContentLayout = ({
               <Typography
                 variant="body2"
                 component="h3"
+                id="subtitle-next-to-title"
                 sx={{
                   color: theme.palette.primary.dark
                 }}

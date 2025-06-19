@@ -128,6 +128,7 @@ const DropdownList: FC<Props> = ({
             maxWidth={toolTipWidth}
             id={toolTipId}
             isDisabled={isDisabled}
+            ariaDescription={tooltip as string}
           />
         )}
       </Stack>

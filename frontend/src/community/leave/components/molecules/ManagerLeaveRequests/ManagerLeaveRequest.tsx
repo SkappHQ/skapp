@@ -151,6 +151,13 @@ const ManagerLeaveRequest: FC<Props> = ({
   const transformToTableRows = () => {
     return employeeLeaveRequests?.map((employeeLeaveRequest) => ({
       id: employeeLeaveRequest.leaveRequestId,
+      ariaLabel: translateAria(["leaveRecordRow"], {
+        name: `${employeeLeaveRequest?.employee?.firstName} ${employeeLeaveRequest?.employee?.lastName}`,
+        duration: getAsDaysString(employeeLeaveRequest?.durationDays ?? ""),
+        date: employeeLeaveRequest?.leaveRequestDates,
+        leaveType: employeeLeaveRequest?.leaveType?.name,
+        leaveStatus: employeeLeaveRequest?.status.toLowerCase()
+      }),
       name: (
         <Box
           role="group"
