@@ -10,30 +10,21 @@ export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean) => ({
     display: { xs: "flex", sm: "none", lg: "flex" },
     position: "absolute",
-    top: { xs: "3.25rem", lg: "3.25rem" },
-    right: { xs: "2.25rem", lg: "-1.3125rem" },
+    top: { xs: "3.25rem", lg: isDrawerExpanded ? "2.875rem" : "1.875rem" },
+    right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "0.25rem" },
     height: "2.5rem",
     width: "2.5rem",
     zIndex: ZIndexEnums.MODAL,
-    backgroundColor: theme.palette.grey[100],
-    borderRadius: "100%",
-    border: `0.0625rem solid ${theme.palette.grey[300]}`,
-    overflowX: "hidden",
-    opacity: { xs: 1, lg: isDrawerExpanded ? 0 : 1 },
     visibility: {
       xs: "visible",
       lg: isDrawerExpanded ? "hidden" : "visible"
     },
-    transition: "opacity 0.3s ease, visibility 0.3s ease, transform 0.05s ease",
-    transform: isDrawerExpanded ? "rotate(-180deg)" : "rotate(0deg)",
-    "&:hover": {
-      backgroundColor: theme.palette.grey[200]
-    }
+    transition: "opacity 0.3s ease, visibility 0.3s ease, transform 0.05s ease"
   }),
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
     height: "100%",
-    padding: "2.5rem 0rem 5rem 5rem",
+    padding: "2.5rem 0rem 5rem 2.125rem",
     boxSizing: "border-box",
     transition: "opacity 0.1s ease, visibility 0.1s ease",
     opacity: isDrawerExpanded ? 1 : 0,

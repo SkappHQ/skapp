@@ -387,7 +387,11 @@ const Drawer = (): JSX.Element => {
         }
       >
         <Icon
-          name={IconName.CHEVRON_RIGHT_ICON}
+          name={
+            isDrawerExpanded
+              ? IconName.DRAWER_CLOSE_ICON
+              : IconName.DRAWER_OPEN_ICON
+          }
           fill={theme.palette.common.black}
         />
       </IconButton>
