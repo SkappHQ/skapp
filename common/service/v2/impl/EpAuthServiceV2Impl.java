@@ -38,7 +38,6 @@ import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
 import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
-import com.skapp.enterprise.common.payload.response.ValidationResult;
 import com.skapp.enterprise.common.payload.v2.GoogleUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
@@ -252,11 +251,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
-				ValidationResult validationResult = validationService.validateEmail(userEmail);
-
-				if (Boolean.FALSE.equals(validationResult.getIsValid())) {
-					throw new ModuleException(CommonMessageConstant.valueOf(validationResult.getMessageKey()));
-				}
+				validationService.checkBusinessEmailValidity(userEmail);
 
 				if (userEmail != null && !userEmail.isEmpty()) {
 					return getGoogleUserDetailsDto(profile, userEmail);
