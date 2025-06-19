@@ -1109,7 +1109,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			long allocatedCount;
 
 			if (tier == Tier.FREE) {
-				startDateTime = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate()).atStartOfDay();
+				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
+				startDateTime = getYearlyTierStartDate(tierStartedDate);
 				endDateTime = startDateTime.plusYears(1);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
@@ -1126,10 +1127,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 				}
+				LocalDate tierStartedDate = DateTimeUtils
+					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
 
-				startDateTime = DateTimeUtils
-					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate())
-					.atStartOfDay();
+				startDateTime = getYearlyTierStartDate(tierStartedDate);
 				endDateTime = startDateTime.plusYears(1);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
@@ -1153,6 +1154,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
 		}
+	}
+
+	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
+		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate thisYearStart = LocalDate.of(today.getYear(), tierStartedDate.getMonth(),
+				tierStartedDate.getDayOfMonth());
+		if (today.isBefore(thisYearStart)) {
+			thisYearStart = thisYearStart.minusYears(1);
+		}
+		return thisYearStart.atStartOfDay();
 	}
 
 }
