@@ -36,18 +36,21 @@ const ContentWithDrawer = ({ children }: Props) => {
               display: "flex",
               flexDirection: "column",
               width: "100%",
-              height: "100%"
+              height: "100%",
+              overflowX: "hidden"
             }}
           >
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={0}
-              role="region"
+              role="document"
               aria-label={translateAria(["contentAreaWithDrawer"])}
+              aria-hidden={true}
               style={{
                 flexDirection: "column",
                 width: "100%",
-                height: "100%"
+                height: "100%",
+                overflowX: "hidden"
               }}
             >
               {children}
