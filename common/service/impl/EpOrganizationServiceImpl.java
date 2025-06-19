@@ -352,6 +352,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, String companyDomain) {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
+		responseDto.setContactNo(organization.getContactNo());
 		responseDto.setUuid(generateUUID(companyDomain));
 		responseDto.setTenantId(companyDomain);
 
@@ -406,6 +407,11 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 		if (!organizationDto.getCompanyDomain().matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
+		}
+
+		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
+				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {

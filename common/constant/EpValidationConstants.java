@@ -26,4 +26,11 @@ public class EpValidationConstants {
 	 */
 	public static final String IPV6_VALIDATION_PATTERN = "^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$";
 
+	/**
+	 * Regular expression pattern to validate hexadecimal numbers. A hexadecimal number
+	 * consists of digits (0-9) and letters (A-F or a-f). Example of a valid hexadecimal
+	 * number: 1A3F
+	 */
+	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^.{7,15}$";
+
 }
