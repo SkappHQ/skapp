@@ -152,8 +152,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		Map<LocalDate, Double> dailyWorkedHours = timeRecords.stream()
 			.collect(Collectors.groupingBy(TimeRecord::getDate, Collectors.summingDouble(TimeRecord::getWorkedHours)));
 
-		Map<String, Double> dailyAverageHours = calculateDailyAverageHours(dailyWorkedHours, filterDto.getMonth(),
-				filterDto.getTeams(), false);
+		Map<String, Double> dailyAverageHours = calculateDailyAverageHoursForTeam(dailyWorkedHours,
+				filterDto.getMonth(), filterDto.getTeams());
 
 		log.info("averageHoursWorkedTrend: execution ended successfully");
 		return new ResponseEntityDto(false, dailyAverageHours);
@@ -261,8 +261,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		Map<LocalDate, Double> dailyWorkedHours = timeRecords.stream()
 			.collect(Collectors.groupingBy(TimeRecord::getDate, Collectors.summingDouble(TimeRecord::getWorkedHours)));
 
-		Map<String, Double> dailyAverageHours = calculateDailyAverageHours(dailyWorkedHours,
-				averageHoursWorkedTrendFilterDto.getMonth(), averageHoursWorkedTrendFilterDto.getTeams(), true);
+		Map<String, Double> dailyAverageHours = calculateDailyAverageHoursForEmployee(dailyWorkedHours,
+				averageHoursWorkedTrendFilterDto.getMonth());
 
 		log.info("averageEmployeeHoursWorkedTrend: execution ended successfully");
 		return new ResponseEntityDto(false, dailyAverageHours);
@@ -450,25 +450,34 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId());
 	}
 
-	private Map<String, Double> calculateDailyAverageHours(Map<LocalDate, Double> dailyWorkedHours, Month selectedMonth,
-			List<Long> teamIds, boolean isSingleEmployee) {
+	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,
+			Month selectedMonth, List<Long> teamIds) {
+		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
+		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), selectedMonth, 1);
+		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
+
+		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
+			long totalEmployeeCount = getTotalEmployeeCount(teamIds, date);
+
+			double totalWorkedHours = dailyWorkedHours.getOrDefault(date, 0.0);
+			double averageHoursWorked = totalEmployeeCount > 0 ? totalWorkedHours / totalEmployeeCount : 0;
+			String formattedDate = date.getDayOfMonth() + DateTimeUtils.getDayOfMonthSuffix(date.getDayOfMonth());
+			dailyAverageHours.put(formattedDate, averageHoursWorked);
+		}
+
+		return dailyAverageHours;
+	}
+
+	private Map<String, Double> calculateDailyAverageHoursForEmployee(Map<LocalDate, Double> dailyWorkedHours,
+			Month selectedMonth) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
 		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), selectedMonth, 1);
 		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 
 		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
 			double totalWorkedHours = dailyWorkedHours.getOrDefault(date, 0.0);
-			double averageHoursWorked;
-			if (!isSingleEmployee) {
-				long totalEmployeeCount = getTotalEmployeeCount(teamIds, date);
-				averageHoursWorked = totalEmployeeCount > 0 ? totalWorkedHours / totalEmployeeCount : 0;
-			}
-			else {
-				averageHoursWorked = totalWorkedHours;
-			}
-
 			String formattedDate = date.getDayOfMonth() + DateTimeUtils.getDayOfMonthSuffix(date.getDayOfMonth());
-			dailyAverageHours.put(formattedDate, averageHoursWorked);
+			dailyAverageHours.put(formattedDate, totalWorkedHours);
 		}
 
 		return dailyAverageHours;
