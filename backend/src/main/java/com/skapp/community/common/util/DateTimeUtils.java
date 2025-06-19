@@ -72,6 +72,8 @@ public class DateTimeUtils {
 
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
+	public static final String TIMESTAMP_POSTFIX = "_";
+
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
 	}
@@ -608,6 +610,10 @@ public class DateTimeUtils {
 		DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
 		String suffix = getDayOfMonthSuffix(dayOfMonth);
 		return dayOfMonth + suffix + " " + date.format(monthYearFormatter);
+	}
+
+	public static String concatPrefixWithTimestamp(String prefix) {
+		return prefix + localDateTimeToEpochMillis(getCurrentUtcDateTime()) + TIMESTAMP_POSTFIX;
 	}
 
 }

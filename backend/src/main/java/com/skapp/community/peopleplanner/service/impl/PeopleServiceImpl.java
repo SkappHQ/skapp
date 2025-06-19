@@ -2401,7 +2401,7 @@ public class PeopleServiceImpl implements PeopleService {
 		user.setIsActive(false);
 
 		if (isDelete) {
-			user.setEmail(PeopleConstants.DELETED_PREFIX + user.getEmail());
+			user.setEmail(DateTimeUtils.concatPrefixWithTimestamp(PeopleConstants.DELETED_PREFIX) + user.getEmail());
 		}
 		else {
 			peopleEmailService.sendUserTerminationEmail(user);
