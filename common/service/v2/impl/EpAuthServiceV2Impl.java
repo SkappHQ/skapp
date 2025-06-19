@@ -251,9 +251,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
-				validationService.checkBusinessEmailValidity(userEmail);
 
 				if (userEmail != null && !userEmail.isEmpty()) {
+					validationService.checkBusinessEmailValidity(userEmail);
 					return getGoogleUserDetailsDto(profile, userEmail);
 				}
 				else {
