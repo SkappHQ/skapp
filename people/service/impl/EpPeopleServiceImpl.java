@@ -2,6 +2,7 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
@@ -14,6 +15,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.event.UsersDeactivatedEvent;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
@@ -47,6 +49,7 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.enterprise.common.config.SpecialTenantConfig;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
@@ -54,6 +57,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.StripeService;
+import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
@@ -77,6 +81,7 @@ import com.skapp.enterprise.people.service.EpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -86,7 +91,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,6 +139,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final SpecialTenantConfig specialTenantConfig;
 
+	private final ValidationService validationService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
@@ -152,7 +158,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
-			SpecialTenantConfig specialTenantConfig) {
+			SpecialTenantConfig specialTenantConfig, ValidationService validationService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
@@ -178,6 +184,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.epRolesService = epRolesService;
 		this.epAsyncEmployeeTimelineServiceImpl = epAsyncEmployeeTimelineServiceImpl;
 		this.specialTenantConfig = specialTenantConfig;
+		this.validationService = validationService;
 	}
 
 	@Override
@@ -255,6 +262,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		deactivateEmployees(employees);
 		epRolesService.downgradeUserRolesToEmployeeRole();
 
+		List<User> users = employees.stream().map(Employee::getUser).toList();
+		applicationEventPublisher.publishEvent(new UsersDeactivatedEvent(this, users));
+
 		long userCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		String currentTenant = TenantContext.getCurrentTenant();
 		int maxCount = specialTenantConfig.getMaxEmployeeCountForTenant();
@@ -273,6 +283,11 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED));
+	}
+
+	@Override
+	protected void enterpriseValidations(String email) {
+		validationService.checkBusinessEmailValidity(email);
 	}
 
 	private void deactivateEmployees(List<Employee> employees) {
@@ -511,9 +526,12 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			deepCopiedDto.setEmployeeRole(new EmployeeRole(currentEmployee.getEmployeeRole()));
 		}
 
-		Optional<EmployeePeriod> employeePeriod = employeePeriodDao
-			.findEmployeePeriodByEmployee_EmployeeId(currentEmployee.getEmployeeId());
-		employeePeriod.ifPresent(period -> deepCopiedDto.setEmployeePeriod(new EmployeePeriod(period)));
+		List<EmployeePeriod> employeePeriod = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
+				currentEmployee.getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
+
+		if (!employeePeriod.isEmpty()) {
+			deepCopiedDto.setEmployeePeriod(new EmployeePeriod(employeePeriod.getFirst()));
+		}
 
 		return deepCopiedDto;
 	}

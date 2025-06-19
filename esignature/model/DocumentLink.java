@@ -1,7 +1,10 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -65,6 +68,13 @@ public class DocumentLink {
 	@Column(name = "is_resend", nullable = false)
 	private boolean isResend;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "permission_type")
+	private DocumentPermissionType permissionType;
+
+	@Column(name = "uuid", nullable = false)
+	private String uuid;
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.token == null) {
@@ -82,12 +92,12 @@ public class DocumentLink {
 	}
 
 	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(expiresAt) || clickCount >= maxClicks || !isActive;
+		return LocalDateTime.now().isAfter(expiresAt) || clickCount > maxClicks || !isActive;
 	}
 
 	public void incrementClickCount() {
 		this.clickCount++;
-		if (this.clickCount >= this.maxClicks) {
+		if (this.clickCount > this.maxClicks) {
 			this.isActive = false;
 		}
 	}

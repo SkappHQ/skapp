@@ -1,16 +1,16 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
-import jakarta.validation.constraints.NotNull;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.InputStream;
 import java.security.KeyPair;
@@ -25,11 +25,11 @@ public interface DocumentService {
 
 	SignedDocumentResponse signFirstVersionDocument(Envelope envelope, DocumentSignDto documentSignDto, String uuid);
 
-	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto);
+	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess, String ipAddress);
 
-	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto);
+	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess, String ipAddress);
 
-	ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto);
+	ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto, String ipAddress);
 
 	ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto);
 

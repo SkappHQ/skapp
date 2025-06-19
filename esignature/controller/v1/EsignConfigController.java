@@ -46,4 +46,15 @@ public class EsignConfigController {
 		return new ResponseEntity<>(esignConfig, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get eSign configuration settings for external document signing",
+			description = "Retrieves the current global eSign configuration settings required for the external document signing process.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
+	@GetMapping(value = "external", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getExternalEsignConfig() {
+
+		ResponseEntityDto esignConfig = esignConfigService.getExternalEsignConfig();
+
+		return new ResponseEntity<>(esignConfig, HttpStatus.OK);
+	}
+
 }

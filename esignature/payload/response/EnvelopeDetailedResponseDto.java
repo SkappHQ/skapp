@@ -27,8 +27,6 @@ public class EnvelopeDetailedResponseDto {
 
 	private LocalDateTime declinedAt;
 
-	private LocalDateTime expireAt;
-
 	private List<DocumentDetailResponseDto> documents;
 
 	private List<RecipientDetailResponseDto> recipients;

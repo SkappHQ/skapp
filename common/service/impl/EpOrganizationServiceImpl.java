@@ -46,6 +46,7 @@ import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.TenantService;
@@ -53,7 +54,6 @@ import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
@@ -106,6 +106,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final CacheService cacheService;
 
+	private final DashboardEmailService dashboardEmailService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -117,7 +119,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
 			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
 			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			EsignConfigService esignConfigService, @Qualifier("epCacheServiceImpl") CacheService cacheService) {
+			EsignConfigService esignConfigService, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -137,10 +140,12 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.esignConfigService = esignConfigService;
 		this.cacheService = cacheService;
+		this.dashboardEmailService = dashboardEmailService;
 	}
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
+		log.info("-------------------------------13");
 		validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
 		boolean tenantCreated = false;
@@ -149,14 +154,18 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 			SuperAdmin superAdmin = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+			log.info("-------------------------------14");
 
 			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 			tenantCreated = true;
+
 			log.info("Tenant created for: {}", companyDomain);
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 			epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
 			log.info("Organization saved for: {}", companyDomain);
+
+			log.info("-------------------------------15");
 
 			EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
@@ -172,11 +181,15 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getOrganizationName(),
+					organizationDto.getCompanyDomain(), superAdmin.getEmail(), "");
+
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
+			log.info("-------------------------------16");
 			return new ResponseEntityDto(false, responseDto);
 
 		}
@@ -414,7 +427,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
-		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

@@ -19,8 +19,6 @@ public interface EpAuthService {
 
 	ResponseEntityDto verifyOTP(String otp);
 
-	ResponseEntityDto resendOTP();
-
 	ResponseEntityDto verifySubDomain(String subDomainName);
 
 	ResponseEntityDto validateCaptcha(EpCaptchaVerificationDto epCaptchaVerificationDto);

@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.repository.projection;
 
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.type.RecipientStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +21,7 @@ public class EnvelopeInboxData {
 
 	private AddressBookBasicResponseDto sender;
 
-	private RecipientStatus status;
+	private InboxStatus status;
 
 	private LocalDate expiresAt;
 

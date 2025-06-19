@@ -8,7 +8,9 @@ import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.type.SignType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -64,17 +66,40 @@ public class DocumentController {
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto) {
+	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto,
+			HttpServletRequest request) {
 
 		Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
 
 		ResponseEntityDto response;
 
 		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
-			response = documentService.sequentialSignDocument(documentSignDto);
+			response = documentService.sequentialSignDocument(documentSignDto, true, EsignUtil.getClientIp(request));
 		}
 		else {
-			response = documentService.parallelSignDocument(documentSignDto);
+			response = documentService.parallelSignDocument(documentSignDto, true, EsignUtil.getClientIp(request));
+		}
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Digitally Sign Document Internally",
+			description = "Signs a document internally using either sequential or parallel signing based on the envelope's sign type. "
+					+ "Ensures the integrity and authenticity of the signed document version.")
+	@PostMapping(value = "/internal/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> signDocumentInternal(@Valid @RequestBody DocumentSignDto documentSignDto,
+			HttpServletRequest request) {
+
+		Document document = documentService.getDocumentById(documentSignDto.getDocumentId());
+
+		ResponseEntityDto response;
+
+		if (document.getEnvelope().getSignType().equals(SignType.SEQUENTIAL)) {
+			response = documentService.sequentialSignDocument(documentSignDto, false, EsignUtil.getClientIp(request));
+		}
+		else {
+			response = documentService.parallelSignDocument(documentSignDto, false, EsignUtil.getClientIp(request));
 		}
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -85,8 +110,9 @@ public class DocumentController {
 					+ "ensuring integrity and authenticity")
 	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto) {
-		ResponseEntityDto response = documentService.signField(documentFieldSignDto);
+	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto,
+			HttpServletRequest request) {
+		ResponseEntityDto response = documentService.signField(documentFieldSignDto, EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

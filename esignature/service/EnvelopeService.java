@@ -26,12 +26,17 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getEnvelopeForSender(Long id);
 
-	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId);
+	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress);
 
-	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto);
+	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto, String ipAddress);
 
-	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto);
+	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
+			boolean isDocAccess, String ipAddress);
 
 	ResponseEntityDto getSignatureCertificate(Long envelopeId);
+
+	void expireEnvelope(Long envelopeId);
+
+	ResponseEntityDto getEnvelopeTierLimitations();
 
 }

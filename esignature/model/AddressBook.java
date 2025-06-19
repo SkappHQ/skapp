@@ -48,6 +48,12 @@ public class AddressBook {
 	@Column(name = "my_signature_method")
 	private MySignatureMethods mySignatureMethod;
 
+	@Column(name = "font_family")
+	private String fontFamily;
+
+	@Column(name = "font_color")
+	private String fontColor;
+
 	public Long getUserId() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getId();

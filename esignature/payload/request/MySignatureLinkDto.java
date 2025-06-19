@@ -12,4 +12,8 @@ public class MySignatureLinkDto {
 
 	private MySignatureMethods mySignatureMethod;
 
+	private String fontFamily;
+
+	private String fontColor;
+
 }
