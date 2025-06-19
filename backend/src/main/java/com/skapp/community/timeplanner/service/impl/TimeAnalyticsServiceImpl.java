@@ -471,15 +471,13 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private Map<String, Double> calculateDailyAverageHoursForEmployee(Map<LocalDate, Double> dailyWorkedHours,
 			Month selectedMonth) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
-		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), selectedMonth, 1);
-		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
-
-		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
-			double totalWorkedHours = dailyWorkedHours.getOrDefault(date, 0.0);
-			String formattedDate = date.getDayOfMonth() + DateTimeUtils.getDayOfMonthSuffix(date.getDayOfMonth());
-			dailyAverageHours.put(formattedDate, totalWorkedHours);
+		int year = Year.now().getValue();
+		int daysInMonth = selectedMonth.length(Year.isLeap(year));
+		for (int day = 1; day <= daysInMonth; day++) {
+			LocalDate date = LocalDate.of(year, selectedMonth, day);
+			String formattedDate = day + DateTimeUtils.getDayOfMonthSuffix(day);
+			dailyAverageHours.put(formattedDate, dailyWorkedHours.getOrDefault(date, 0.0));
 		}
-
 		return dailyAverageHours;
 	}
 
