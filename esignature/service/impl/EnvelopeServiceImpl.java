@@ -898,13 +898,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress,
 			boolean isAuto) {
-		log.info("transferEnvelopeCustody: execution started");
+		log.info("transferEnvelopeCustody: execution started for envelope ID: {}", envelopeId);
 
-		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
-		if (envelopeOptional.isEmpty()) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		}
-		Envelope envelope = envelopeOptional.get();
+		Envelope envelope = envelopeDao.findById(envelopeId)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+
 		AddressBook addressBook = null;
 		if (!isAuto) {
 			User currentUser = userService.getCurrentUser();
@@ -925,10 +923,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 		}
 
-		Optional<AddressBook> addressBookOptional = addressBookDao.findById(addressbookId);
-		if (addressBookOptional.isEmpty()) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
-		}
+		AddressBook newOwner = addressBookDao.findById(addressbookId)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND));
 
 		if (envelope.getOwner().getId().equals(addressbookId)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE);
@@ -937,45 +933,41 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Document document = documentDao.findByEnvelopeId(envelope.getId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
-		AddressBook newOwner = addressBookOptional.get();
 		EnvelopeStatus status = envelope.getStatus();
 
-		if (status == EnvelopeStatus.WAITING || status == EnvelopeStatus.DECLINED || status == EnvelopeStatus.VOIDED) {
-			DocumentVersion firstVersion = documentVersionRepository
-				.findByVersionNumberAndDocumentId(1, document.getId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+		// First always process version 1 document
+		DocumentVersion firstVersion = documentVersionRepository.findByVersionNumberAndDocumentId(1, document.getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
-			// Update original version to -1
-			firstVersion.setVersionNumber(-1);
-			documentVersionRepository.save(firstVersion);
+		// Update version 1 to -1
+		firstVersion.setVersionNumber(-1);
+		documentVersionRepository.save(firstVersion);
 
-			processDocumentCustodyTransfer(firstVersion, newOwner, 1);
-		}
-		else {
-			DocumentVersion firstVersion = documentVersionRepository
-				.findByVersionNumberAndDocumentId(1, document.getId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+		processDocumentCustodyTransfer(firstVersion, newOwner, 1);
 
-			DocumentVersion currentVersion = documentVersionRepository
-				.findByVersionNumberAndDocumentId(document.getCurrentVersion(), document.getId())
-				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+		if (status != EnvelopeStatus.WAITING && status != EnvelopeStatus.DECLINED && status != EnvelopeStatus.VOIDED) {
+			int currentVersionNumber = document.getCurrentVersion();
 
-			firstVersion.setVersionNumber(-1);
-			documentVersionRepository.save(firstVersion);
+			if (currentVersionNumber > 1) {
+				DocumentVersion currentVersion = documentVersionRepository
+					.findByVersionNumberAndDocumentId(currentVersionNumber, document.getId())
+					.orElseThrow(
+							() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
-			if (!Objects.equals(currentVersion.getId(), firstVersion.getId())) {
-				currentVersion.setVersionNumber(-2);
-				documentVersionRepository.save(currentVersion);
-
-				processDocumentCustodyTransfer(currentVersion, newOwner, document.getCurrentVersion());
+				if (!Objects.equals(currentVersion.getId(), firstVersion.getId())) {
+					// Update last completed version to -2
+					currentVersion.setVersionNumber(-2);
+					documentVersionRepository.save(currentVersion);
+					processDocumentCustodyTransfer(currentVersion, newOwner, currentVersionNumber);
+				}
 			}
-
-			processDocumentCustodyTransfer(firstVersion, newOwner, 1);
 		}
 
+		// Update envelope owner
 		envelope.setOwner(newOwner);
 		envelopeDao.save(envelope);
 
+		// Create audit trail
 		ObjectMapper objectMapper = new ObjectMapper();
 		ArrayNode metadata = objectMapper.createArrayNode();
 		ObjectNode currentOwnerNode = objectMapper.createObjectNode();
@@ -987,7 +979,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
 		auditTrailDao.save(auditTrail);
 
-		log.info("transferEnvelopeCustody: execution ended");
+		log.info("transferEnvelopeCustody: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");
 	}
 
@@ -1045,16 +1037,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			log.info("Processing {} envelopes for employee ID: {}", employeeEnvelopes.size(),
 					employeeList.getEmployeeId());
 
-			// Skip transfer if no envelopes found
-			if (employeeEnvelopes.isEmpty()) {
-				log.info("No envelopes to transfer for employee ID: {}", employeeList.getEmployeeId());
-				continue;
-			}
-
-			for (Envelope envelope : employeeEnvelopes) {
-
-				transferEnvelopeCustody(envelope.getId(), oldestSuperAdminAddressBook.getId(), null, true);
-
+			if (!employeeEnvelopes.isEmpty()) {
+				for (Envelope envelope : employeeEnvelopes) {
+					transferEnvelopeCustody(envelope.getId(), oldestSuperAdminAddressBook.getId(), null, true);
+				}
 			}
 
 		}
