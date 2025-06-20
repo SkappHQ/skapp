@@ -34,7 +34,7 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    width: "calc(100% - 5rem)",
+    width: "calc(100% - 6rem)",
     padding: "0rem 0rem 1.875rem 0rem"
   },
 
