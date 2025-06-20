@@ -194,6 +194,12 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
           <Box sx={classes.kebabMenuBoxStyle}>
             {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
               <KebabMenu
+                ariaLabel={translateText(["kebabMenu.label"], {
+                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                })}
+                ariaDescription={translateText(["kebabMenu.description"], {
+                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                })}
                 id={timesheetRequest?.employee?.employeeId ?? 0}
                 menuItems={getKebabMenuOptions(timesheetRequest.timeRequestId)}
               />
