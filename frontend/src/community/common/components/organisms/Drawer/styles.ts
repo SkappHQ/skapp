@@ -105,7 +105,7 @@ export const styles = ({ theme }: stylesProps) => ({
     flexDirection: "row",
     width: "max-content",
     gap: "1rem",
-    padding: "0rem 0rem 0rem 4rem",
+    padding: "0rem 0rem 0rem 2.5rem",
     "&:hover": {
       backgroundColor: theme.palette.grey[100]
     }
