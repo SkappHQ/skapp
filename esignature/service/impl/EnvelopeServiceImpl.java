@@ -17,6 +17,9 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -63,7 +66,6 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
@@ -83,6 +85,7 @@ import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.people.service.EpPeopleService;
+import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -100,6 +103,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -152,8 +156,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final AuditTrailService auditTrailService;
 
-	private final DocumentRepository documentRepository;
-
 	private final RecipientRepository recipientRepository;
 
 	private final AuditTrailDao auditTrailDao;
@@ -167,6 +169,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final TenantDao tenantDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
 	@Override
 	@Transactional
@@ -891,32 +895,38 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Transactional
 	@Override
 	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress) {
-		log.info("transferEnvelopeCustody: execution started");
+		return transferEnvelopeCustody(envelopeId, addressbookId, ipAddress, false);
+	}
 
-		User currentUser = userService.getCurrentUser();
-		if (currentUser == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		}
+	public ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress,
+			boolean isAuto) {
+		log.info("transferEnvelopeCustody: execution started for envelope ID: {}", envelopeId);
 
-		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
-		if (envelopeOptional.isEmpty()) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		}
+		Envelope envelope = envelopeDao.findById(envelopeId)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
 
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
-		Envelope envelope = envelopeOptional.get();
-
-		if (esignRole.equals(Role.ESIGN_SENDER)) {
-			AddressBook owner = envelope.getOwner();
-			if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		AddressBook addressBook = null;
+		if (!isAuto) {
+			User currentUser = userService.getCurrentUser();
+			if (currentUser == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 			}
+
+			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+			if (esignRole.equals(Role.ESIGN_SENDER)) {
+				AddressBook owner = envelope.getOwner();
+				if (!owner.getInternalUser().getUserId().equals(currentUser.getUserId())) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				}
+			}
+
+			addressBook = addressBookDao.findByInternalUser(currentUser)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 		}
 
-		Optional<AddressBook> addressBookOptional = addressBookDao.findById(addressbookId);
-		if (addressBookOptional.isEmpty()) {
-			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND);
-		}
+		AddressBook newOwner = addressBookDao.findById(addressbookId)
+			.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_ID_NOT_FOUND));
 
 		if (envelope.getOwner().getId().equals(addressbookId)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE);
@@ -925,44 +935,41 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Document document = documentDao.findByEnvelopeId(envelope.getId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
-		DocumentVersion currentVersion = documentVersionRepository
-			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), document.getId())
+		EnvelopeStatus status = envelope.getStatus();
+
+		// First always process version 1 document
+		DocumentVersion firstVersion = documentVersionRepository.findByVersionNumberAndDocumentId(1, document.getId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
-		// Load and validate keys-load previous user keys
-		KeyPair keyPairVerify = documentService.loadKeyPair(currentVersion.getAddressBook().getId());
+		// Update version 1 to -1
+		firstVersion.setVersionNumber(-1);
+		documentVersionRepository.save(firstVersion);
 
-		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
+		processDocumentCustodyTransfer(firstVersion, newOwner, 1);
 
-		// Process document version and verify existing signature
-		documentService.verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
+		if (status != EnvelopeStatus.WAITING && status != EnvelopeStatus.DECLINED && status != EnvelopeStatus.VOIDED) {
+			int currentVersionNumber = document.getCurrentVersion();
 
-		// custody transfer Hash the document
-		String newHash = documentService.hashDocument(new ByteArrayInputStream(documentBytes));
+			if (currentVersionNumber > 1) {
+				DocumentVersion currentVersion = documentVersionRepository
+					.findByVersionNumberAndDocumentId(currentVersionNumber, document.getId())
+					.orElseThrow(
+							() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
-		// custody transfer user key pair for sign document
-		KeyPair keyPairSign = documentService.loadKeyPair(addressBookOptional.get().getId());
+				if (!Objects.equals(currentVersion.getId(), firstVersion.getId())) {
+					// Update last completed version to -2
+					currentVersion.setVersionNumber(-2);
+					documentVersionRepository.save(currentVersion);
+					processDocumentCustodyTransfer(currentVersion, newOwner, currentVersionNumber);
+				}
+			}
+		}
 
-		String signature = documentService.signDocument(Base64.getDecoder().decode(newHash), keyPairSign.getPrivate());
-
-		String fileUrl = currentVersion.getFilePath();
-
-		DocumentVersion newVersion = documentService.buildNewDocumentVersion(currentVersion, fileUrl, newHash,
-				signature, addressBookOptional.get());
-
-		documentVersionRepository.save(newVersion);
-
-		// save document on current version
-		document.setCurrentVersion(newVersion.getVersionNumber());
-		documentRepository.save(document);
-
-		AddressBook newOwner = addressBookOptional.get();
+		// Update envelope owner
 		envelope.setOwner(newOwner);
 		envelopeDao.save(envelope);
 
-		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
-
+		// Create audit trail
 		ObjectMapper objectMapper = new ObjectMapper();
 		ArrayNode metadata = objectMapper.createArrayNode();
 		ObjectNode currentOwnerNode = objectMapper.createObjectNode();
@@ -974,8 +981,73 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
 		auditTrailDao.save(auditTrail);
 
-		log.info("transferEnvelopeCustody: execution ended");
+		log.info("transferEnvelopeCustody: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");
+	}
+
+	private void processDocumentCustodyTransfer(DocumentVersion sourceVersion, AddressBook newOwner,
+			int newVersionNumber) {
+		KeyPair keyPairVerify = documentService.loadKeyPair(sourceVersion.getAddressBook().getId());
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, sourceVersion.getFilePath());
+
+		documentService.verifyDocumentSignature(documentBytes, sourceVersion, keyPairVerify.getPublic());
+
+		String newHash = documentService.hashDocument(new ByteArrayInputStream(documentBytes));
+
+		KeyPair keyPairSign = documentService.loadKeyPair(newOwner.getId());
+
+		String signature = documentService.signDocument(Base64.getDecoder().decode(newHash), keyPairSign.getPrivate());
+
+		String fileUrl = sourceVersion.getFilePath();
+
+		DocumentVersion newVersion = documentService.buildNewDocumentVersion(sourceVersion, fileUrl, newHash, signature,
+				newOwner);
+		newVersion.setVersionNumber(newVersionNumber);
+
+		documentVersionRepository.save(newVersion);
+
+	}
+
+	@Transactional
+	@Override
+	public void transferEmployeeEnvelopes(List<Employee> employees) {
+		log.info("transferEmployeeEnvelopes: execution started for {} employees", employees.size());
+
+		// Find the address book of the oldest active super admin in the tenant
+		List<AccountStatus> validStatuses = Arrays.asList(AccountStatus.PENDING, AccountStatus.ACTIVE);
+		List<EmployeeRole> superAdmins = epEmployeeRoleDao
+			.findEmployeeRoleByIsSuperAdminAndEmployeeAccountStatusIn(true, validStatuses);
+
+		// Sort by creation date (oldest first)
+		superAdmins.sort(Comparator.comparing(role -> role.getEmployee().getCreatedDate()));
+
+		// Get the oldest super admin's address book ID
+		AddressBook oldestSuperAdminAddressBook = addressBookDao
+			.findByInternalUserUserId(superAdmins.getFirst().getEmployee().getEmployeeId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		for (Employee employeeList : employees) {
+			// Find employee's address book
+			Optional<AddressBook> addressBookOptional = addressBookDao
+				.findByInternalUserUserId(employeeList.getEmployeeId());
+
+			AddressBook employeeAddressBook = addressBookOptional.get();
+
+			List<Envelope> employeeEnvelopes = envelopeDao.findByOwner(employeeAddressBook);
+
+			log.info("Processing {} envelopes for employee ID: {}", employeeEnvelopes.size(),
+					employeeList.getEmployeeId());
+
+			if (!employeeEnvelopes.isEmpty()) {
+				for (Envelope envelope : employeeEnvelopes) {
+					transferEnvelopeCustody(envelope.getId(), oldestSuperAdminAddressBook.getId(), null, true);
+				}
+			}
+
+		}
+
+		log.info("transferEmployeeEnvelopes: execution ended");
 	}
 
 	@Transactional
