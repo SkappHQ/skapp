@@ -21,7 +21,7 @@ export async function getServerSideProps() {
       );
 
       if (response.status === HTTP_OK) {
-        const orgSetupStatus = await response.data;
+        const orgSetupStatus = response.data;
 
         if (orgSetupStatus?.results[0]) {
           if (!orgSetupStatus?.results[0]?.isSignUpCompleted) {
