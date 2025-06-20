@@ -30,7 +30,6 @@ public class EpOrganizationController {
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> organizationSetup(
 			@Valid @RequestBody EpOrganizationDto epOrganizationDto) {
-		log.info("-------------------------------1");
 		ResponseEntityDto response = epOrganizationService.saveOrganization(epOrganizationDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}

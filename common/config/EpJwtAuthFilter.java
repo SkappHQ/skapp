@@ -78,19 +78,15 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
 
 		final String authHeader = request.getHeader(AuthConstants.AUTHORIZATION);
-		log.info("-------------------------------2");
 
 		if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, AuthConstants.BEARER)) {
-			log.info("-------------------------------3");
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
 		try {
 			final String accessToken = authHeader.substring(7);
-			log.info("-------------------------------4");
 
 			if (jwtService.isTokenExpired(accessToken)) {
-				log.info("-------------------------------5");
 				throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
 			}
 
@@ -105,7 +101,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 
 			if (tenantId == null && TenantContext.getCurrentTenant() == null) {
 				log.error("Token does not contain tenant ID");
-				log.info("-------------------------------6");
 				throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
 			}
 
@@ -113,18 +108,15 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 
 			if (StringUtils.isNotEmpty(userEmail) && userId != null
 					&& SecurityContextHolder.getContext().getAuthentication() == null) {
-				log.info("-------------------------------7");
 				authenticateUser(request, accessToken, userEmail, userId, tenantId);
 			}
 
 			filterChain.doFilter(request, response);
 		}
 		catch (ExpiredJwtException e) {
-			log.info("-------------------------------8");
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_TOKEN_EXPIRED);
 		}
 		catch (JwtException e) {
-			log.info("-------------------------------9");
 			throw new AuthenticationException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 	}
@@ -143,7 +135,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		}
 
 		if (!jwtService.isTokenValid(accessToken, userDetails)) {
-			log.info("-------------------------------10");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
@@ -151,7 +142,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		String tenantStatus = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));
 		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
-		log.info("-------------------------------11");
 
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		log.info("debug: EpJwtAuthFilter - Creating authentication token for user ID: {}", userId);
@@ -163,8 +153,6 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 
 		authToken.setDetails(authenticationDetails);
 		log.info("debug: EpJwtAuthFilter - Setting authentication in security context for user ID: {}", userId);
-
-		log.info("-------------------------------12");
 
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);
