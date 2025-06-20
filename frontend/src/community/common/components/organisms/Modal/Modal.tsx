@@ -32,6 +32,11 @@ interface Props {
   modalHeaderStyles?: SxProps;
   modalChildrenStyles?: SxProps;
   dividerStyles?: SxProps;
+  id?: {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  };
 }
 
 const Modal: FC<Props> = ({
@@ -49,7 +54,12 @@ const Modal: FC<Props> = ({
   customCloseIcon,
   modalHeaderStyles,
   modalChildrenStyles,
-  dividerStyles
+  dividerStyles,
+  id = {
+    title: "modal-title",
+    description: "modal-description",
+    closeButton: "modal-close-button"
+  }
 }) => {
   const translateAria = useTranslator("commonAria", "components", "modal");
 
@@ -57,6 +67,7 @@ const Modal: FC<Props> = ({
 
   return (
     <BasicModal
+      id={id}
       open={isModalOpen}
       onClose={onCloseModal}
       sx={mergeSx([classes.modalWrapper, modalWrapperStyles])}
@@ -69,7 +80,9 @@ const Modal: FC<Props> = ({
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
             {isIconVisible && <Box sx={classes.titleIcon}>{icon}</Box>}
-            <Typography sx={classes.modalHeaderTitle}>{title}</Typography>
+            <Typography sx={classes.modalHeaderTitle} id={id?.title}>
+              {title}
+            </Typography>
           </Stack>
           {isClosable && customCloseComponent ? (
             customCloseComponent
@@ -78,6 +91,8 @@ const Modal: FC<Props> = ({
               sx={classes.closeIconBtn}
               onClick={(event) => onCloseModal(event, "backdropClick")}
               aria-label={translateAria(["closeIconBtn"], { title })}
+              aria-hidden={true}
+              id={id?.closeButton}
             >
               {customCloseIcon ? (
                 customCloseIcon
@@ -87,7 +102,7 @@ const Modal: FC<Props> = ({
             </IconButton>
           ) : null}
         </Stack>
-        {isDividerVisible && <Divider sx={dividerStyles} />}
+        {isDividerVisible && <Divider sx={dividerStyles} aria-hidden={true} />}
         <Stack
           sx={mergeSx([
             classes.childrenWrapper,

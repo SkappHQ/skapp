@@ -148,7 +148,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           color: "grey.900",
           width: "100%"
         }}
-        id="leave-carry-forward-type-selection-description-title"
+        id="leave-carry-forward-modal-description"
       >
         {translateTexts(["leaveCarryForwardTypeSelectionModalDescription"]) ??
           ""}
@@ -220,8 +220,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           isLoading={loading}
           disabled={checkedList.length === 0}
           accessibility={{
-            ariaDescribedBy:
-              "leave-carry-forward-type-selection-description-title"
+            ariaHidden: true
           }}
         />
         <Button
@@ -237,6 +236,9 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
             setLeaveCarryForwardId([]);
             setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
             handleClose && handleClose();
+          }}
+          accessibility={{
+            ariaHidden: true
           }}
         />
       </Box>
