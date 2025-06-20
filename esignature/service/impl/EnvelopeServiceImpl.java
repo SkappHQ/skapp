@@ -19,7 +19,6 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -84,7 +83,6 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
-import com.skapp.enterprise.people.service.EpPeopleService;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -102,6 +100,8 @@ import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -171,6 +171,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final EmployeeDao employeeDao;
 
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
+
+	private static final int LEAP_DAY = 29;
+
+	private static final Month FEBRUARY = Month.FEBRUARY;
+
+	private static final Month MARCH = Month.MARCH;
+
+	private static final int FIRST_DAY = 1;
 
 	@Override
 	@Transactional
@@ -1181,8 +1189,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			long allocatedCount;
 
 			if (tier == Tier.FREE) {
-				startDateTime = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate()).atStartOfDay();
-				endDateTime = startDateTime.plusYears(1);
+				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
+				startDateTime = getYearlyTierStartDate(tierStartedDate);
+				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1198,11 +1207,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 				}
+				LocalDate tierStartedDate = DateTimeUtils
+					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
 
-				startDateTime = DateTimeUtils
-					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate())
-					.atStartOfDay();
-				endDateTime = startDateTime.plusYears(1);
+				startDateTime = getYearlyTierStartDate(tierStartedDate);
+				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1224,6 +1233,42 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
+		}
+	}
+
+	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
+		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		int year = today.getYear();
+		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
+		if (today.isBefore(thisYearStart)) {
+			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
+		}
+		return thisYearStart.atStartOfDay();
+	}
+
+	private LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
+		int month = tierStartedDate.getMonthValue();
+		int day = tierStartedDate.getDayOfMonth();
+		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
+			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
+		}
+		else {
+			return LocalDate.of(year, month, day);
+		}
+	}
+
+	private LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
+		int year = startDateTime.getYear() + 1;
+		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
+			if (Year.isLeap(year)) {
+				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
+			}
+			else {
+				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
+			}
+		}
+		else {
+			return startDateTime.plusYears(1);
 		}
 	}
 
