@@ -54,7 +54,10 @@ export async function getServerSideProps() {
   }
 
   return {
-    props: {}
+    redirect: {
+      destination: ROUTES.DASHBOARD.BASE,
+      permanent: false
+    }
   };
 }
 
