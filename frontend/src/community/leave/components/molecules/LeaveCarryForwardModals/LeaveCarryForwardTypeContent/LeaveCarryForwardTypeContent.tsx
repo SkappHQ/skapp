@@ -224,6 +224,9 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           }}
         />
         <Button
+          accessibility={{
+            ariaHidden: true
+          }}
           label={translateTexts(["leaveCarryForwardModalCancelBtn"])}
           endIcon={<CloseIcon />}
           buttonStyle={ButtonStyle.TERTIARY}
@@ -236,9 +239,6 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
             setLeaveCarryForwardId([]);
             setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
             handleClose && handleClose();
-          }}
-          accessibility={{
-            ariaHidden: true
           }}
         />
       </Box>

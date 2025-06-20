@@ -42,7 +42,7 @@ const ContentWithDrawer = ({ children }: Props) => {
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={0}
-              role="region"
+              role="document"
               aria-label={translateAria(["contentAreaWithDrawer"])}
               style={{
                 flexDirection: "column",

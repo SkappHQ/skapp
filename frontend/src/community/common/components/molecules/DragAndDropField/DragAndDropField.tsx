@@ -350,7 +350,7 @@ const DragAndDropField: FC<Props> = ({
         </Stack>
       </div>
 
-      <Typography variant="body2" sx={classes.errorText}>
+      <Typography variant="body2" sx={classes.errorText} aria-live="assertive">
         {getInlineErrorMessage}
       </Typography>
     </>
