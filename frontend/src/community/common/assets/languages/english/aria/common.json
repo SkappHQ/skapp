@@ -56,7 +56,7 @@
     },
     "table": {
       "tableHead": {
-        "checkbox": "Check all the {{tableName}}"
+        "checkbox": "Select all rows"
       },
       "tableBody": {
         "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",

@@ -92,7 +92,8 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.left?.onClick(row.actionData)}
-            ariaLabel={editButtonAriaLabel}
+            ariaLabel={row?.ariaLabel?.editButton ?? ""}
+            ariaDescription={row?.ariaDescription?.editButton ?? ""}
           />
         )}
         {actionBtns?.right && (
@@ -113,7 +114,8 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.right?.onClick(row.actionData)}
-            ariaLabel={deleteButtonAriaLabel}
+            ariaLabel={row?.ariaLabel?.deleteButton ?? ""}
+            ariaDescription={row?.ariaDescription?.deleteButton ?? ""}
           />
         )}
       </TableCell>

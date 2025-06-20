@@ -55,6 +55,7 @@ import {
   GetTeamPreProcessor,
   refactorTeamListData
 } from "~community/people/utils/PeopleDirectoryUtils";
+import { generatePeopleTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
@@ -213,33 +214,16 @@ const PeopleTable: FC<Props> = ({
       )
       .map((employee: AllEmployeeDataType) => ({
         id: employee?.employeeId,
-        ariaLabel: translateAria(
-          [
-            isPendingInvitationListOpen
-              ? "peopleTableRowPending"
-              : "peopleTableRow"
-          ],
-          {
-            name: `${employee?.firstName} ${employee?.lastName}`,
-            jobTitle: employee?.jobTitle
-              ? employee?.jobTitle
-              : translateAria(["null"]),
-            email: employee?.email,
-            teams:
-              employee?.teams && employee.teams.length > 0
-                ? employee.teams.map((team) => team.teamName).join(", ")
-                : translateAria(["null"]),
-            supervisor:
-              employee?.managers && employee.managers.length > 0
-                ? employee?.managers
-                    ?.map(
-                      (manager) => `${manager.firstName} ${manager.lastName}`
-                    )
-                    .join(", ")
-                : translateAria(["null"])
-          }
-        ),
-
+        ariaLabel: {
+          row: generatePeopleTableRowAriaLabel(
+            translateAria,
+            isPendingInvitationListOpen,
+            employee
+          ),
+          checkbox: translateAria(["selectEmployee"], {
+            employeeName: `${employee?.firstName ?? ""} ${employee?.lastName ?? ""}`
+          })
+        },
         name: (
           <Stack flexDirection={"row"} gap={1} alignItems={"center"}>
             <AvatarChip
@@ -382,7 +366,13 @@ const PeopleTable: FC<Props> = ({
     currentEmployeeDetails?.employeeId,
     employeeData,
     isPendingInvitationListOpen,
-    isRemovePeople
+    isRemovePeople,
+    theme.palette.amber.dark,
+    theme.palette.amber.light,
+    theme.palette.grey,
+    theme.palette.primary.dark,
+    translateAria,
+    translateText
   ]);
 
   useEffect(() => {

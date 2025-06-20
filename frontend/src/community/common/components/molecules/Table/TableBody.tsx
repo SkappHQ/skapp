@@ -96,7 +96,8 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             key={row.id}
             tabIndex={onRowClick ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
-            aria-label={onRowClick ? row?.ariaLabel : undefined}
+            aria-label={row?.ariaLabel?.row ?? ""}
+            aria-description={row?.ariaDescription?.row ?? ""}
             sx={mergeSx([
               classes.tableBody.row.default,
               classes.tableBody.row?.[
@@ -154,10 +155,9 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                       ])}
                       slotProps={{
                         input: {
-                          // "aria-label": translateText(["checkbox"], {
-                          //   tableName: tableName,
-                          //   ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-                          // })
+                          "aria-label": row?.ariaLabel?.checkbox ?? "",
+                          "aria-description":
+                            row?.ariaDescription?.checkbox ?? ""
                         }
                       }}
                       onKeyDown={(e) => {

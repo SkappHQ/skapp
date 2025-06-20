@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { FC, MutableRefObject } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TableHeaderTypes } from "~community/common/types/CommonTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -51,6 +52,12 @@ const TableHead: FC<
     }
   }
 }) => {
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "table",
+    "tableHead"
+  );
   const theme = useTheme();
   const classes = styles(theme);
 
@@ -80,9 +87,7 @@ const TableHead: FC<
                   ])}
                   slotProps={{
                     input: {
-                      // "aria-label": translateText(["checkbox"], {
-                      //   tableName: tableName.toLowerCase()
-                      // })
+                      "aria-label": translateAria(["checkbox"])
                     }
                   }}
                 />
