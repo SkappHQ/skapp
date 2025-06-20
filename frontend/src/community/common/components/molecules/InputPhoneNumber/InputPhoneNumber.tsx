@@ -33,6 +33,7 @@ interface Props {
   inputStyle?: SxProps;
   isDisabled?: boolean;
   readOnly?: boolean;
+  labelStyles?: SxProps;
 }
 const InputPhoneNumber: FC<Props> = ({
   label,
@@ -49,7 +50,8 @@ const InputPhoneNumber: FC<Props> = ({
   fullComponentStyle,
   isDisabled,
   inputStyle,
-  readOnly
+  readOnly,
+  labelStyles
 }) => {
   const translateText = useTranslator(
     "commonAria",
@@ -93,6 +95,7 @@ const InputPhoneNumber: FC<Props> = ({
         <Typography
           variant="placeholder"
           sx={{
+            ...labelStyles,
             color: isDisabled
               ? theme.palette.text.disabled
               : error
