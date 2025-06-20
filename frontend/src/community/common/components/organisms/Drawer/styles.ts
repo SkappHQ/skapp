@@ -24,7 +24,7 @@ export const styles = ({ theme }: stylesProps) => ({
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
     height: "100%",
-    padding: "2.5rem 0rem 5rem 2.125rem",
+    padding: "2.5rem 0rem 5rem 2rem",
     boxSizing: "border-box",
     transition: "opacity 0.1s ease, visibility 0.1s ease",
     opacity: isDrawerExpanded ? 1 : 0,
