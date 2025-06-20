@@ -124,6 +124,9 @@ const RoundedSelect = ({
         },
         ...customStyles?.select
       }}
+      inputProps={{
+        "aria-label": accessibility?.label
+      }}
     >
       {options?.map((option) => {
         const selected = value === option?.value?.toString();

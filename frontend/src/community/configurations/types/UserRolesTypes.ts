@@ -1,12 +1,12 @@
 import { JSX } from "react";
 
+import { SelectOption } from "~community/common/components/molecules/SquareSelect/SquareSelect";
 import { Modules } from "~community/common/enums/CommonEnums";
 import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
-import { DropdownListType } from "~community/common/types/CommonTypes";
 
 export interface AllUserRolesResponseType {
   module: string;
@@ -40,8 +40,8 @@ export interface AllowedGrantableRolesResponseType {
 }
 
 export interface AllowedGrantableRolesType {
-  leave: DropdownListType[];
-  people: DropdownListType[];
-  attendance: DropdownListType[];
-  esign: DropdownListType[];
+  leave: SelectOption[];
+  people: SelectOption[];
+  attendance: SelectOption[];
+  esign: SelectOption[];
 }

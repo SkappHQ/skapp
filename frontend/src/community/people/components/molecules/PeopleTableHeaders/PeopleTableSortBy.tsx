@@ -1,60 +1,70 @@
-import { Box } from "@mui/material";
-import { FormEvent, MouseEvent } from "react";
+import { Box, SelectChangeEvent, Typography } from "@mui/material";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import {
+  SortKeyTypes,
+  SortOrderTypes
+} from "~community/common/types/CommonTypes";
+import { usePeopleStore } from "~community/people/store/store";
 
-import EmployeeDataMenu from "../EmployeeDataMenu/EmployeeDataMenu";
-
-const PeopleTableSortBy = ({
-  sortEl,
-  handleSortClose,
-  scrollToTop,
-  sortOpen,
-  sortId,
-  sortType,
-  handleSortClick,
-  disabled
-}: {
-  sortEl: HTMLElement | null;
-  handleSortClose: () => void;
-  scrollToTop: () => void;
-  sortOpen: boolean;
-  sortId: string | undefined;
-  sortType: string;
-  handleSortClick: (
-    event: MouseEvent<HTMLElement> | FormEvent<HTMLFormElement>
-  ) => void;
-  disabled: boolean;
-}) => {
+const PeopleTableSortBy = ({ sortType }: { sortType: string }) => {
   const translateText = useTranslator("peopleModule", "peoples");
+  const translateAria = useTranslator("peopleAria", "directory");
+
+  const sortOrder = usePeopleStore(
+    (state) => state.employeeDataParams.sortOrder
+  );
+
+  const handleEmployeeDataSort = usePeopleStore(
+    (state) => state.handleEmployeeDataSort
+  );
+
+  const dropdownItems = [
+    {
+      label: translateText(["sortAlphabeticalAsc"]),
+      value: SortOrderTypes.ASC
+    },
+    {
+      label: translateText(["sortAlphabeticalDesc"]),
+      value: SortOrderTypes.DESC
+    }
+  ];
+
+  const handleItemClick = (event: SelectChangeEvent) => {
+    handleEmployeeDataSort("sortKey", SortKeyTypes.NAME);
+    handleEmployeeDataSort("sortOrder", event.target.value);
+  };
+
+  const selectedItem = dropdownItems.find((item) => item.value === sortOrder);
+
   return (
     <Box>
-      <Button
-        label={translateText(["sortBy"], { sortBy: sortType })}
-        buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-        size={ButtonSizes.MEDIUM}
-        endIcon={IconName.DROP_DOWN_ICON}
-        onClick={handleSortClick}
-        disabled={disabled}
-        aria-describedby={sortId}
-        data-testid={peopleDirectoryTestId.buttons.sortByBtn}
-      />
-      <EmployeeDataMenu
-        anchorEl={sortEl}
-        handleClose={handleSortClose}
-        position="bottom-start"
-        menuType={MenuTypes.SORT}
-        id={sortId}
-        open={sortOpen}
-        scrollToTop={scrollToTop}
+      <RoundedSelect
+        id="people-table-sort-by"
+        onChange={handleItemClick}
+        value={selectedItem?.value ?? ""}
+        options={dropdownItems}
+        renderValue={(selectedValue: string) => {
+          const selectedOption = dropdownItems.find(
+            (item) => item.value === selectedValue
+          );
+          const displayLabel = selectedOption?.label || selectedValue;
+          return (
+            <Typography
+              aria-label={translateAria(["sortBy"], {
+                sortBy: displayLabel
+              })}
+            >
+              {translateText(["sortBy"], {
+                sortBy: sortType
+              })}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["sortDropdown"])
+        }}
       />
     </Box>
   );

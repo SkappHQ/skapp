@@ -7,7 +7,11 @@ const styles = (theme: Theme): StyleProps => ({
     marginTop: "0.875rem",
     marginLeft: "0.75rem",
     ".MuiPaginationItem-root": {
-      backgroundColor: "common.white"
+      backgroundColor: "common.white",
+      "&:focus-visible": {
+        outline: `0.125rem solid ${theme.palette.common.black}`,
+        outlineOffset: "-0.125rem"
+      }
     },
     ".MuiPaginationItem-ellipsis": {
       borderRadius: "0.25rem",

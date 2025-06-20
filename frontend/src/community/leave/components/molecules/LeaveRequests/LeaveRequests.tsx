@@ -25,6 +25,7 @@ import {
   getEmoji,
   pascalCaseFormatter
 } from "~community/common/utils/commonUtil";
+import { getAsDaysString } from "~community/common/utils/dateTimeUtils";
 import {
   useGetEmployeeLeaveRequestData,
   useGetEmployeeLeaveRequests,
@@ -33,7 +34,10 @@ import {
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
-import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import {
+  getStartEndDate,
+  leaveStatusIconSelector
+} from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
 import LeaveRequestDates from "../LeaveRequestDates/LeaveRequestDates";
 import styles from "./styles";
@@ -114,6 +118,20 @@ const LeaveRequests: FC = () => {
   const transformToTableRows = () => {
     return leaveRequests?.items?.map((employeeLeaveRequest: any) => ({
       id: employeeLeaveRequest.leaveRequestId,
+      ariaLabel: translateAria(["myLeaveRequests", "leaveRecordRow"], {
+        duration:
+          employeeLeaveRequest.durationDays == 1
+            ? translateText(["myLeaveRequests", "fullDay"])
+            : employeeLeaveRequest.durationDays < 1
+              ? translateText(["myLeaveRequests", "halfDay"])
+              : getAsDaysString(employeeLeaveRequest.durationDays),
+        date: getStartEndDate(
+          employeeLeaveRequest.startDate,
+          employeeLeaveRequest.endDate
+        ),
+        leaveType: employeeLeaveRequest?.leaveType?.name,
+        leaveStatus: employeeLeaveRequest?.status.toLowerCase()
+      }),
       duration: (
         <LeaveRequestDates
           days={employeeLeaveRequest.durationDays}
@@ -432,6 +450,9 @@ const LeaveRequests: FC = () => {
                         })}
                       </Typography>
                     );
+                  }}
+                  accessibility={{
+                    label: translateAria(["myLeaveRequests", "sort"])
                   }}
                 />
               </Box>

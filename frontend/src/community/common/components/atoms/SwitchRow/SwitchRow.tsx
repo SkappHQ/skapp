@@ -76,7 +76,8 @@ const SwitchRow: FC<SwitchComponentProps> = ({
         slotProps={{
           input: {
             "aria-labelledby": labelId,
-            "aria-label": arialabel ?? translateAria(["ariaLabel"])
+            "aria-label": arialabel ?? translateAria(["ariaLabel"]),
+            role: "switch"
           }
         }}
       />

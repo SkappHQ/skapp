@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
@@ -99,18 +100,20 @@ const EntitlementsDetailsForm = (): JSX.Element => {
   }, [isSuccess]);
 
   return (
-    <PeopleLayout
-      title={translateText(["entitlements"])}
-      pageHead={translateText(["head"])}
-      containerStyles={classes.layoutContainerStyles}
-      dividerStyles={classes.layoutDividerStyles}
-    >
-      <>
-        <EntitlementsDetailsSection />
+    <Box role="region" aria-labelledby="page-title subtitle-next-to-title">
+      <PeopleLayout
+        title={translateText(["entitlements"])}
+        pageHead={translateText(["head"])}
+        containerStyles={classes.layoutContainerStyles}
+        dividerStyles={classes.layoutDividerStyles}
+      >
+        <>
+          <EntitlementsDetailsSection />
 
-        <AddSectionButtonWrapper setIsSuccess={setIsSuccess} />
-      </>
-    </PeopleLayout>
+          <AddSectionButtonWrapper setIsSuccess={setIsSuccess} />
+        </>
+      </PeopleLayout>
+    </Box>
   );
 };
 

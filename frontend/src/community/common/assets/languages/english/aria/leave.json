@@ -17,8 +17,9 @@
       "typeFilterSection": "Leave Type Filters",
       "filterOption": "Filter Option, {{filterName}}",
       "filterSelected": "{{filterName}} selected",
-      "leaveDuration": "{{leaveType}} leave request record for {{days}}",
-      "downloadAttachment": "Download attachment"
+      "downloadAttachment": "Download attachment",
+      "sort": "Sort by",
+      "leaveRecordRow": "{{duration}} leave request record for the {{date}} of the leave type {{leaveType}} and the current status of the request is {{leaveStatus}}. Click to open modal"
     }
   },
   "allLeaveRequests": {
@@ -30,7 +31,9 @@
     "searchAllLeaveRequests": "Search All Leave Requests",
     "allLeaveRequestTable": "Accessing All Leave Requests Table",
     "employeeName": "Employee name, {{firstName}} {{lastName}}",
-    "leaveType": "Leave type, {{leaveType}}"
+    "leaveType": "Leave type, {{leaveType}}",
+    "sort": "Sort by",
+    "leaveRecordRow": "Leave request record for {{name}}, {{duration}} leave on {{date}} for {{leaveType}} leave, current status is {{leaveStatus}}. Click to open modal"
   },
   "applyLeave": {
     "comment": {
