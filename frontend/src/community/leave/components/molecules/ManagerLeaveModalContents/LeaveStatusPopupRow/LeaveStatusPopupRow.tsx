@@ -20,7 +20,9 @@ interface Props {
   styles?: Record<string, string>;
   textStyles?: Record<string, string>;
   role?: string | undefined;
-  employee?: { empName: ""; avatarUrl: "" } | leaveRequestRowDataTypes;
+  employee?:
+    | { empName: ""; lastName: ""; avatarUrl: "" }
+    | leaveRequestRowDataTypes;
   reviewer?: Manager;
   addLabel?: boolean;
   ariaLabel?: string;
@@ -125,7 +127,7 @@ const LeaveStatusPopupRow: FC<Props> = ({
         {isRecipient && role === "member" && (
           <AvatarChip
             firstName={employee?.empName ?? ""}
-            lastName={employee?.empName ?? ""}
+            lastName={employee?.lastName ?? ""}
             avatarUrl={employee?.avatarUrl}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],

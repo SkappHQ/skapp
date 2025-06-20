@@ -50,6 +50,7 @@ const UserBulkCsvDownload = () => {
         }}
       >
         <Typography
+          id="download-csv-description"
           sx={{
             fontSize: "1rem",
             fontWeight: 400,
@@ -70,6 +71,7 @@ const UserBulkCsvDownload = () => {
             target="_blank"
             rel="noreferrer"
             onClick={handleDownloadClick}
+            tabIndex={-1}
           >
             <Button
               label={translateText(["downloadCsvButton"])}
@@ -84,6 +86,9 @@ const UserBulkCsvDownload = () => {
               }}
               endIcon={IconName.DOWNLOAD_ICON}
               shouldBlink={isDownloadBlinking}
+              accessibility={{
+                ariaDescribedBy: "download-csv-description"
+              }}
             />
           </a>
         </Box>

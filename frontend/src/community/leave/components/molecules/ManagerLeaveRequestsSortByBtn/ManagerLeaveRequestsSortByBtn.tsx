@@ -45,15 +45,23 @@ const ManagerLeaveRequestsSortByBtn = () => {
         onChange={handleItemClick}
         value={selectedItem?.value ?? ""}
         options={dropdownItems}
-        renderValue={(selectedValue: string) => (
-          <Typography
-            aria-label={translateAria(["sortBy"], {
-              sortBy: selectedValue
-            })}
-          >
-            {translateText(["sortBy"])}
-          </Typography>
-        )}
+        renderValue={(selectedValue) => {
+          const selectedOption = dropdownItems.find(
+            (option) => option.value === selectedValue
+          );
+          return (
+            <Typography
+              aria-label={translateAria(["sortBy"], {
+                sortBy: selectedOption?.label
+              })}
+            >
+              {translateText(["sortBy"])}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["sort"])
+        }}
       />
     </Box>
   );

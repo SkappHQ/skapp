@@ -42,6 +42,9 @@ interface Props {
     };
   };
   error?: string;
+  accessibility?: {
+    ariaLabel?: string;
+  };
 }
 
 const SquareSelect = ({
@@ -56,7 +59,8 @@ const SquareSelect = ({
   disabled = false,
   name,
   error,
-  customStyles = {}
+  customStyles = {},
+  accessibility
 }: Props) => {
   const theme = useTheme();
 
@@ -132,11 +136,15 @@ const SquareSelect = ({
           "&.MuiInputBase-root": {
             marginTop: "0.5rem"
           },
-          "&:focus-visible": {
-            outline: "0.0625rem solid black",
-            outlineOffset: "-0.125rem"
+          "& .MuiSelect-select:focus-visible": {
+            outline: `0.125rem solid ${theme.palette.common.black}`,
+            outlineOffset: "-0.125rem",
+            borderRadius: "0.5rem"
           },
           ...customStyles?.select
+        }}
+        inputProps={{
+          "aria-label": accessibility?.ariaLabel
         }}
       >
         {options?.map((option) => {

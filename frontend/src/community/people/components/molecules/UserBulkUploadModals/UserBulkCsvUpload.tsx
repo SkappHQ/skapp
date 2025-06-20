@@ -59,6 +59,7 @@ const UserBulkCsvUpload: FC<Props> = ({
   >([]);
   const [fileError, setFileError] = useState<string>("");
   const translateText = useTranslator("peopleModule", "peoples");
+  const translateAria = useTranslator("peopleAria", "directory");
   const { isCsvValid } = useUserBulkValidation();
   const { convertUsers } = useUserBulkConvert();
 
@@ -169,14 +170,19 @@ const UserBulkCsvUpload: FC<Props> = ({
         supportedFiles={".csv"}
         maxFileSize={1}
         isZeroFilesErrorRequired={false}
+        accessibility={{
+          componentName: translateAria(["userBulkUpload"])
+        }}
       />
       {bulkUserAttachment?.[0]?.file && !!fileError && (
-        <Typography
-          variant="body2"
-          sx={{ color: theme.palette.error.contrastText, mt: 1 }}
-        >
-          {fileError}
-        </Typography>
+        <Box role="alert">
+          <Typography
+            variant="body2"
+            sx={{ color: theme.palette.error.contrastText, mt: 1 }}
+          >
+            {fileError}
+          </Typography>
+        </Box>
       )}
       <Divider sx={{ mt: "1.5rem", mb: "1.5rem" }} />
       <Button
@@ -188,6 +194,7 @@ const UserBulkCsvUpload: FC<Props> = ({
         isLoading={isPending}
         disabled={bulkUserAttachment?.length === 0}
         shouldBlink={bulkUserAttachment?.length > 0}
+        ariaLabel={translateAria(["uploadPeople"])}
       />
 
       <Button
