@@ -35,7 +35,7 @@ export const styles = ({ theme }: stylesProps) => ({
     justifyContent: "flex-start",
     alignItems: "center",
     width: "calc(100% - 5rem)",
-    padding: "0rem 0rem 3.875rem 0rem"
+    padding: "0rem 0rem 1.875rem 0rem"
   },
 
   logoImage: {
@@ -53,7 +53,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowY: "auto",
     overflowX: "hidden",
     scrollbarWidth: "thin",
-    gap: "1.75rem"
+    gap: "1rem"
   },
   listItem: {
     display: "flex",
@@ -67,8 +67,9 @@ export const styles = ({ theme }: stylesProps) => ({
     justifyContent: "flex-start",
     width: "max-content",
     gap: "1rem",
-    padding: "0rem",
+    padding: "0.75rem 1rem 0.75rem 1rem",
     transition: "none",
+    backgroundColor: theme.palette.grey[100],
     "&:hover": {
       backgroundColor: theme.palette.grey[100]
     }
@@ -94,8 +95,8 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     flexDirection: "column",
     height: "auto",
-    gap: "1.75rem",
-    padding: "1.75rem 0rem 0rem 0rem"
+    gap: "0.25rem",
+    padding: "0.25rem 0rem 0rem 0rem"
   },
   subListItem: {
     padding: "0rem"
@@ -105,7 +106,8 @@ export const styles = ({ theme }: stylesProps) => ({
     flexDirection: "row",
     width: "max-content",
     gap: "1rem",
-    padding: "0rem 0rem 0rem 2.5rem",
+    padding: "0.5rem 1rem 0.5rem 2.5rem",
+    backgroundColor: theme.palette.grey[200],
     "&:hover": {
       backgroundColor: theme.palette.grey[100]
     }
