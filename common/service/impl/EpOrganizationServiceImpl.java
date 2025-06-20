@@ -174,7 +174,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getCompanyDomain(), superAdmin.getEmail());
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getCompanyDomain(),
+					superAdmin.getEmail());
 
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
