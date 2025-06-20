@@ -8,7 +8,6 @@ import ContentWithoutDrawer from "~community/common/components/organisms/Content
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { IsAProtectedUrlWithDrawer } from "~community/common/utils/authUtils";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import useFcmToken from "~enterprise/common/hooks/useFCMToken";
@@ -23,7 +22,7 @@ interface Props {
 const BaseLayout = ({ children }: Props) => {
   const { asPath } = useRouter();
 
-  const { sessionStatus } = useSessionData();
+  const { sessionStatus, tenantID } = useSessionData();
 
   const { token } = useFcmToken();
 

@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { useFormik } from "formik";
+import { useSession } from "next-auth/react";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -14,7 +15,6 @@ import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { generateTimezoneList } from "~community/common/utils/dateTimeUtils";
 import { organizationSetupValidation } from "~community/common/utils/validation";
 import useGetCountryList from "~community/people/hooks/useGetCountryList";
@@ -47,9 +47,11 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
 
   const { data: organizationDetails } = useGetOrganization();
 
+  const { data: session } = useSession();
+
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
-    tenantID as string
+    session?.user?.tenantId as string
   );
 
   const { setToastMessage } = useToast();
@@ -72,7 +74,7 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
         country: organizationDetails.results[0].country || "",
         organizationTimeZone:
           organizationDetails.results[0].organizationTimeZone || "",
-        companyDomain: tenantID as string,
+        companyDomain: session?.user?.tenantId as string,
         organizationGlobalLogin: globalLogin
       });
       setIsInitialLoadComplete(true);
