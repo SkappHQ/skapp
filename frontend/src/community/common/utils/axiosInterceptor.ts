@@ -4,6 +4,14 @@ import { getSession, signOut } from "next-auth/react";
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
 
+const getSubDomain = (url: string, multipleValues: boolean = false) => {
+  const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
+  return subdomain;
+};
+
+export const tenantID =
+  typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
+
 const authFetch = axios.create({
   baseURL: getApiUrl() + ApiVersions.V1
 });
@@ -26,8 +34,8 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
-  if (isEnterpriseMode && session?.user?.tenantId) {
-    config.headers["X-Tenant-ID"] = session?.user?.tenantId;
+  if (isEnterpriseMode && tenantID) {
+    config.headers["X-Tenant-ID"] = tenantID;
   }
   return config;
 };
