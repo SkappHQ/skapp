@@ -14,7 +14,8 @@ export const StyledDrawer = styled(Drawer)(({ theme, open }) => ({
       width: open ? "100%" : "0%",
       overflowY: "visible",
       transition: "width 0.3s ease",
-      boxShadow: "0px 4px 10px 0px #0000000F"
+      boxShadow:
+        "0px 4px 10px 0px rgba(0, 0, 0, 0.06), 0px 40px 24px 0px rgba(0, 0, 0, 0.03), 0px 71px 28px 0px rgba(0, 0, 0, 0.01), 0px 110px 31px 0px rgba(0, 0, 0, 0)"
     },
     [theme.breakpoints.up("sm")]: {
       width: open ? "22.5rem" : "0rem"
