@@ -24,4 +24,6 @@ public interface AddressBookDao extends JpaRepository<AddressBook, Long>, Addres
 
 	List<AddressBook> findByInternalUserIn(List<User> users);
 
+	Optional<AddressBook> findByInternalUserUserId(Long userId);
+
 }
