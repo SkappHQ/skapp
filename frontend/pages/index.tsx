@@ -7,8 +7,15 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 export async function getServerSideProps() {
   const isEnterprise = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 
-  try {
-    if (!isEnterprise) {
+  if (isEnterprise) {
+    return {
+      redirect: {
+        destination: ROUTES.DASHBOARD.BASE,
+        permanent: false
+      }
+    };
+  } else {
+    try {
       const response = await authFetch.get(
         organizationCreateEndpoints.CHECK_ORG_SETUP_STATUS
       );
@@ -36,23 +43,14 @@ export async function getServerSideProps() {
           }
         }
       }
+    } catch (error) {
+      return {
+        redirect: {
+          destination: ROUTES.DASHBOARD.BASE,
+          permanent: false
+        }
+      };
     }
-  } catch (error) {
-    return {
-      redirect: {
-        destination: ROUTES.DASHBOARD.BASE,
-        permanent: false
-      }
-    };
-  }
-
-  if (isEnterprise) {
-    return {
-      redirect: {
-        destination: ROUTES.DASHBOARD.BASE,
-        permanent: false
-      }
-    };
   }
 
   return {
