@@ -69,6 +69,11 @@ const ConfirmLeaveTypeStatusUpdateModal = ({ values, mutate }: Props) => {
       title={title}
       isClosable={false}
       isDividerVisible={true}
+      id={{
+        title: "user-prompt-modal-title",
+        description: "user-prompt-modal-description",
+        closeButton: "user-prompt-modal-close-button"
+      }}
     >
       <UserPromptModal
         description={description}

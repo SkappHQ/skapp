@@ -152,8 +152,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		Map<LocalDate, Double> dailyWorkedHours = timeRecords.stream()
 			.collect(Collectors.groupingBy(TimeRecord::getDate, Collectors.summingDouble(TimeRecord::getWorkedHours)));
 
-		Map<String, Double> dailyAverageHours = calculateDailyAverageHours(dailyWorkedHours, filterDto.getMonth(),
-				filterDto.getTeams());
+		Map<String, Double> dailyAverageHours = calculateDailyAverageHoursForTeam(dailyWorkedHours,
+				filterDto.getMonth(), filterDto.getTeams());
 
 		log.info("averageHoursWorkedTrend: execution ended successfully");
 		return new ResponseEntityDto(false, dailyAverageHours);
@@ -222,12 +222,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		User currentUser = userService.getCurrentUser();
 		log.info("getIndividualWorkUtilizationByAdmin: execution started by {}", currentUser.getUserId());
 
-		Boolean isAttendanceAdminOrManager = currentUser.getEmployee()
+		boolean isAttendanceAdminOrManager = currentUser.getEmployee()
 			.getEmployeeRole()
 			.getAttendanceRole()
 			.equals(Role.ATTENDANCE_ADMIN)
 				|| currentUser.getEmployee().getEmployeeRole().getAttendanceRole().equals(Role.ATTENDANCE_MANAGER);
-		if (Boolean.FALSE.equals(isAttendanceAdminOrManager)) {
+		if (!isAttendanceAdminOrManager) {
 			throw new ModuleException(TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
 		}
 
@@ -261,8 +261,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		Map<LocalDate, Double> dailyWorkedHours = timeRecords.stream()
 			.collect(Collectors.groupingBy(TimeRecord::getDate, Collectors.summingDouble(TimeRecord::getWorkedHours)));
 
-		Map<String, Double> dailyAverageHours = calculateDailyAverageHours(dailyWorkedHours,
-				averageHoursWorkedTrendFilterDto.getMonth(), averageHoursWorkedTrendFilterDto.getTeams());
+		Map<String, Double> dailyAverageHours = calculateDailyAverageHoursForEmployee(dailyWorkedHours,
+				averageHoursWorkedTrendFilterDto.getMonth());
 
 		log.info("averageEmployeeHoursWorkedTrend: execution ended successfully");
 		return new ResponseEntityDto(false, dailyAverageHours);
@@ -450,8 +450,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId());
 	}
 
-	private Map<String, Double> calculateDailyAverageHours(Map<LocalDate, Double> dailyWorkedHours, Month selectedMonth,
-			List<Long> teamIds) {
+	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,
+			Month selectedMonth, List<Long> teamIds) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
 		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), selectedMonth, 1);
 		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
@@ -465,6 +465,19 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			dailyAverageHours.put(formattedDate, averageHoursWorked);
 		}
 
+		return dailyAverageHours;
+	}
+
+	private Map<String, Double> calculateDailyAverageHoursForEmployee(Map<LocalDate, Double> dailyWorkedHours,
+			Month selectedMonth) {
+		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
+		int year = Year.now().getValue();
+		int daysInMonth = selectedMonth.length(Year.isLeap(year));
+		for (int day = 1; day <= daysInMonth; day++) {
+			LocalDate date = LocalDate.of(year, selectedMonth, day);
+			String formattedDate = day + DateTimeUtils.getDayOfMonthSuffix(day);
+			dailyAverageHours.put(formattedDate, dailyWorkedHours.getOrDefault(date, 0.0));
+		}
 		return dailyAverageHours;
 	}
 

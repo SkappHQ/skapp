@@ -30,6 +30,18 @@
       "title": "Time Entry Requests",
       "pageHead": "Time Entry Requests | Skapp"
     },
+    "approveButton": {
+      "label":"Approve {{recordName}} time entry request",
+      "description": ""
+    },
+    "declineButton": {
+      "label":"Decline {{recordName}} time entry request",
+      "description": ""
+    },
+    "kebabMenu": {
+      "label": "View more actions for {{recordName}} time entry request",
+      "description": ""
+    },
     "manualTimeEntryButtonTxt": "Add Time Entry",
     "addTimeEntrySuccessTitle": "Request Submitted",
     "addTimeEntrySuccessDes": "Your time log has has been submitted for approval successfully",

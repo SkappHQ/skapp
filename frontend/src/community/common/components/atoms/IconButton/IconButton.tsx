@@ -21,6 +21,7 @@ interface Props {
   isTextPermenent?: boolean;
   id?: string;
   ariaLabel?: string;
+  ariaDescription?: string;
   tabIndex?: number;
   title?: string;
 }
@@ -37,6 +38,7 @@ const IconButton = ({
   isTextPermenent = false,
   id,
   ariaLabel,
+  ariaDescription,
   tabIndex = 0,
   title
 }: Props): JSX.Element => {
@@ -61,6 +63,7 @@ const IconButton = ({
       {...dataProps}
       data-testid={id || ""}
       aria-label={ariaLabel}
+      aria-description={ariaDescription}
       title={title || ""}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {

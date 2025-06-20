@@ -41,6 +41,47 @@ const LeaveCarryForwardModalController: FC = () => {
     }
   }, [leaveCarryForwardModalType, translateText]);
 
+  const getIds = (): {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  } => {
+    switch (leaveCarryForwardModalType) {
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD:
+        return {
+          title: "leave-carry-forward-modal-title",
+          description: "leave-carry-forward-modal-description",
+          closeButton: "leave-carry-forward-modal-close-button"
+        };
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE:
+        return {
+          title: "no-carry-forward-leave-types-modal-title",
+          description: "no-carry-forward-leave-types-modal-description",
+          closeButton: "no-carry-forward-leave-types-modal-close-button"
+        };
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE:
+        return {
+          title: "leave-carry-forward-ineligible-modal-title",
+          description: "leave-carry-forward-ineligible-modal-description",
+          closeButton: "leave-carry-forward-ineligible-modal-close-button"
+        };
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_CONFIRM_SYNCHRONIZATION:
+        return {
+          title: "leave-carry-forward-confirm-synchronization-modal-title",
+          description:
+            "leave-carry-forward-confirm-synchronization-modal-description",
+          closeButton:
+            "leave-carry-forward-confirm-synchronization-modal-close-button"
+        };
+      default:
+        return {
+          title: "modal-title",
+          description: "modal-description",
+          closeButton: "modal-close-button"
+        };
+    }
+  };
+
   const handleClose = () => {
     setIsLeaveCarryForwardModalOpen(false);
     setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
@@ -48,6 +89,7 @@ const LeaveCarryForwardModalController: FC = () => {
 
   return (
     <ModalController
+      id={getIds()}
       isModalOpen={isLeaveCarryForwardModalOpen}
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}
