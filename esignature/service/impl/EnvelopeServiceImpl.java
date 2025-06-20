@@ -99,6 +99,8 @@ import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
@@ -167,6 +169,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final TenantDao tenantDao;
 
 	private final EmployeeDao employeeDao;
+
+	private static final int LEAP_DAY = 29;
+
+	private static final Month FEBRUARY = Month.FEBRUARY;
+
+	private static final Month MARCH = Month.MARCH;
+
+	private static final int FIRST_DAY = 1;
 
 	@Override
 	@Transactional
@@ -1111,7 +1121,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			if (tier == Tier.FREE) {
 				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
 				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = startDateTime.plusYears(1);
+				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1131,7 +1141,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
 
 				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = startDateTime.plusYears(1);
+				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1158,12 +1168,38 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-		LocalDate thisYearStart = LocalDate.of(today.getYear(), tierStartedDate.getMonth(),
-				tierStartedDate.getDayOfMonth());
+		int year = today.getYear();
+		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
 		if (today.isBefore(thisYearStart)) {
-			thisYearStart = thisYearStart.minusYears(1);
+			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
 		}
 		return thisYearStart.atStartOfDay();
+	}
+
+	private LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
+		int month = tierStartedDate.getMonthValue();
+		int day = tierStartedDate.getDayOfMonth();
+		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
+			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
+		}
+		else {
+			return LocalDate.of(year, month, day);
+		}
+	}
+
+	private LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
+		int year = startDateTime.getYear() + 1;
+		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
+			if (Year.isLeap(year)) {
+				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
+			}
+			else {
+				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
+			}
+		}
+		else {
+			return startDateTime.plusYears(1);
+		}
 	}
 
 }
