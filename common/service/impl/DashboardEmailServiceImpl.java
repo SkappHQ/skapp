@@ -28,8 +28,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 	private String organizationEmail;
 
 	@Override
-	public void sendNewOrganizationCreatedEmail(String companyName, String tenantId, String superAdminEmail,
-			String contactNumber) {
+	public void sendNewOrganizationCreatedEmail(String tenantId, String superAdminEmail) {
 		sendDashboardEmail(EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_CREATED, tenantId, superAdminEmail);
 	}
 
