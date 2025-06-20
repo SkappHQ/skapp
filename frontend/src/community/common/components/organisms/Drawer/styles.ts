@@ -69,9 +69,9 @@ export const styles = ({ theme }: stylesProps) => ({
     gap: "1rem",
     padding: "0.75rem 1rem 0.75rem 1rem",
     transition: "none",
-    // backgroundColor: theme.palette.grey[100],
+    borderRadius: "0.5rem",
     "&:hover": {
-      backgroundColor: theme.palette.grey[100]
+      backgroundColor: theme.palette.secondary.main
     }
   },
   listItemIcon: {
@@ -107,9 +107,9 @@ export const styles = ({ theme }: stylesProps) => ({
     width: "max-content",
     gap: "1rem",
     padding: "0.5rem 1rem 0.5rem 2.5rem",
-    backgroundColor: theme.palette.grey[200],
+    borderRadius: "0.5rem",
     "&:hover": {
-      backgroundColor: theme.palette.grey[100]
+      backgroundColor: theme.palette.secondary.main
     }
   },
   subListItemText: (color: string) => ({
