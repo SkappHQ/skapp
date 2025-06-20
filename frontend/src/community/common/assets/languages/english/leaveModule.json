@@ -155,6 +155,10 @@
     "durationsHeader": "ALLOWED DURATION",
     "carriedForwardHeader": "CARRY FORWARD",
     "actionsHeader": "ACTIONS",
+    "editButton": {
+      "label":"Edit {{recordName}} leave type",
+      "description": ""
+    },
     "activate": "Activate",
     "activateLeaveTooltipText": "Activate or inactivate the leave type, when inactivated, employees cannot request leaves of this type",
     "addLeaveType": "Add Leave Type",
@@ -229,6 +233,10 @@
     "addLeaveTypeTitle": "Add new leave type",
     "editLeaveTypeTitle": "Edit Leave Type",
     "saveBtn": "Save",
+    "editButton":{
+      "label": "Edit {{leaveType}} allocation for {{recordName}}", 
+      "description" : ""
+    },
     "saveChangesBtn": "Save Changes",
     "cancelBtn": "Cancel",
     "addLeaveAllocationBtn": "Add allocation",

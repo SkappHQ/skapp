@@ -152,7 +152,13 @@ const TeamsTable: FC<Props> = ({
               buttonStyles={classes.editIconBtn}
               onClick={() => handleEditTeam(teamDetails)}
               ariaLabel={ariaTranslateText(
-                ["table", "actionColumn", "editButton"],
+                ["table", "actionColumn", "editButton", "label"],
+                {
+                  teamName: teamDetails?.teamName?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "editButton", "description"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
                 }
@@ -171,7 +177,13 @@ const TeamsTable: FC<Props> = ({
               buttonStyles={classes.deleteIconBtn}
               onClick={() => handleDeleteTeam(teamDetails)}
               ariaLabel={ariaTranslateText(
-                ["table", "actionColumn", "deleteButton"],
+                ["table", "actionColumn", "deleteButton", "label"],
+                {
+                  teamName: teamDetails?.teamName?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "deleteButton", "description"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
                 }

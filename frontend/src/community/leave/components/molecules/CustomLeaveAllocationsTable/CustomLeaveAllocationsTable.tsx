@@ -193,7 +193,19 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
               {leaveAllocation.leaveType?.name}
             </div>
           ),
-          actionData: leaveAllocation
+          actionData: leaveAllocation,
+          ariaLabel: {
+            editButton: translateText(["editButton.label"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          },
+          ariaDescription: {
+            editButton: translateText(["editButton.description"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          }
         };
       }) || []
     );

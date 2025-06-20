@@ -58,17 +58,19 @@ const SkipToContentPopup = ({
       const focusedElement = document.querySelector(focusedItem);
 
       if (focusedElement) {
+        const htmlElement = focusedElement as HTMLElement;
+
         // Make the element keyboard focusable by adding tabindex
-        focusedElement.setAttribute("tabindex", "0");
+        htmlElement.setAttribute("tabindex", "0");
 
         // Focus the element without scrolling the page
-        focusedElement.focus({ preventScroll: true });
+        htmlElement.focus({ preventScroll: true });
 
         // Set up a one-time event listener to clean up when focus moves away
         // This removes the tabindex attribute when the element loses focus
-        focusedElement.addEventListener(
+        htmlElement.addEventListener(
           "blur",
-          () => focusedElement.removeAttribute("tabindex"),
+          () => htmlElement.removeAttribute("tabindex"),
           { once: true } // Ensures the listener runs only once
         );
       }

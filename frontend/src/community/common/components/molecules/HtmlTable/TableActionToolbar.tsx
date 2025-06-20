@@ -27,7 +27,7 @@ const TableActionToolbar: FC<TableHeadActionRowProps> = ({
     return firstRow || secondRow;
   }, [firstRow, secondRow]);
 
-  return (
+  return firstRow || secondRow ? (
     <div
       style={{
         backgroundColor: theme.palette.grey[100],
@@ -47,6 +47,8 @@ const TableActionToolbar: FC<TableHeadActionRowProps> = ({
         </div>
       )}
     </div>
+  ) : (
+    <></>
   );
 };
 

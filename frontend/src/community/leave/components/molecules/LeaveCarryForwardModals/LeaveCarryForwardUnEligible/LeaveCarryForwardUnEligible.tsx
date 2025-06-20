@@ -28,14 +28,14 @@ const LeaveCarryForwardUnEligible = (): JSX.Element => {
           width: "100%"
         }}
         variant="body1"
-        id="leave-carry-forward-uneligible-modal-description"
+        id="leave-carry-forward-ineligible-modal-description"
       >
         {translateTexts(["leaveCarryForwardUnEligibleModalDescription"]) ?? ""}
       </Typography>
       <Box>
         <Button
           accessibility={{
-            ariaDescribedBy: "leave-carry-forward-uneligible-modal-description"
+            ariaHidden: true
           }}
           label={translateTexts(["leaveCarryForwardUnEligibleModalButton"])}
           endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}

@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
+import { LeaveStates } from "~community/common/types/CommonTypes";
 
 export interface TimesheetEmployeeType {
   employeeId: number;
@@ -13,7 +14,7 @@ export interface TimeRecordType {
   date: string;
   timeRecordId: number;
   leaveRequest?: {
-    leaveState: string;
+    leaveState: LeaveStates;
     leaveType: {
       emojiCode: string;
       name: string;

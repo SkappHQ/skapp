@@ -45,6 +45,45 @@ const LeaveEntitlementModalController: FC = () => {
     }
   };
 
+  const getIds = (): {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  } => {
+    switch (leaveEntitlementModalType) {
+      case LeaveEntitlementModelTypes.DOWNLOAD_CSV:
+        return {
+          title: "download-csv-modal-title",
+          description: "download-csv-modal-description",
+          closeButton: "download-csv-modal-close-button"
+        };
+      case LeaveEntitlementModelTypes.UPLOAD_CSV:
+        return {
+          title: "upload-csv-modal-title",
+          description: "upload-csv-modal-description",
+          closeButton: "upload-csv-modal-close-button"
+        };
+      case LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION:
+        return {
+          title: "override-confirmation-modal-title",
+          description: "override-confirmation-modal-description",
+          closeButton: "override-confirmation-modal-close-button"
+        };
+      case LeaveEntitlementModelTypes.BULK_UPLOAD_SUMMARY:
+        return {
+          title: "bulk-upload-summary-modal-title",
+          description: "bulk-upload-summary-modal-description",
+          closeButton: "bulk-upload-summary-modal-close-button"
+        };
+      default:
+        return {
+          title: "modal-title",
+          description: "modal-description",
+          closeButton: "modal-close-button"
+        };
+    }
+  };
+
   const handleCloseModal = () => {
     setLeaveEntitlementModalType(LeaveEntitlementModelTypes.NONE);
 
@@ -58,6 +97,7 @@ const LeaveEntitlementModalController: FC = () => {
 
   return (
     <ModalController
+      id={getIds()}
       isModalOpen={isLeaveEntitlementModalOpen}
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}

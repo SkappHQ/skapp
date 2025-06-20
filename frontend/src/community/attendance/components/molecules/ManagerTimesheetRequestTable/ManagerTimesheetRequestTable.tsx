@@ -228,7 +228,12 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 backgroundColor: theme.palette.grey[100],
                 margin: "0rem 0.75rem 0rem auto"
               }}
-              aria-label="Decline request"
+              aria-label={translateText(["declineButton.label"], {
+                recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+              })}
+              aria-description={translateText(["declineButton.description"], {
+                recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+              })}
               onClick={() => {
                 declineTimesheetRequest(
                   timesheetRequest?.timeRequestId,
@@ -247,7 +252,12 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 border: `0.0625rem solid ${theme.palette.secondary.dark}`,
                 margin: "0rem auto 0rem 0rem"
               }}
-              aria-label="Approve request"
+              aria-label={translateText(["approveButton.label"], {
+                recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+              })}
+              aria-description={translateText(["approveButton.description"], {
+                recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+              })}
               onClick={() => {
                 approveTimesheetRequest(
                   timesheetRequest?.timeRequestId,
@@ -289,6 +299,12 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
             {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
               <Box sx={classes.kebabMenuBoxStyle}>
                 <KebabMenu
+                  ariaLabel={translateText(["kebabMenu.label"], {
+                    recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                  })}
+                  ariaDescription={translateText(["kebabMenu.description"], {
+                    recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                  })}
                   id={timesheetRequest?.employee?.employeeId ?? 0}
                   menuItems={getKebabMenuOptions(
                     timesheetRequest.timeRequestId

@@ -1,6 +1,8 @@
 import { FC } from "react";
 
-import { TableHeaderTypes } from "~community/common/types/CommonTypes";
+import { TableNames } from "~community/common/enums/Table";
+import { HTMLTableHeaderTypes } from "~community/common/types/CommonTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 import TableActionToolbar, {
   TableHeadActionRowProps
@@ -15,7 +17,8 @@ interface Props {
 }
 
 export interface CommonTableProps {
-  headers: TableHeaderTypes[];
+  tableName?: TableNames;
+  headers: HTMLTableHeaderTypes[];
   rows?: any[];
 }
 
@@ -23,26 +26,51 @@ const Table: FC<Props & CommonTableProps> = ({
   actionToolbar,
   headers,
   rows,
-  tableFoot
+  tableFoot,
+  tableName
 }) => {
   return (
-    <div style={{ width: "100%", borderRadius: "12px", overflow: "hidden" }}>
+    <div
+      aria-label={`${tableName} table`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        maxWidth: "100%",
+        borderRadius: "8px",
+        overflow: "hidden"
+      }}
+    >
       <TableActionToolbar
         firstRow={actionToolbar?.firstRow}
         secondRow={actionToolbar?.secondRow}
         customStyles={actionToolbar?.customStyles}
       />
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <TableHead headers={headers} rows={rows} />
-        <TableBody headers={headers} rows={rows} />
-        <TableFoot
-          headers={headers}
-          customStyles={tableFoot?.customStyles}
-          pagination={tableFoot?.pagination}
-          exportBtn={tableFoot?.exportBtn}
-          customElements={tableFoot?.customElements}
-        />
-      </table>
+      <div
+        className="table-container"
+        role="region"
+        style={{
+          height: "100%",
+          maxHeight: "463px"
+        }}
+      >
+        <table
+          className="sticky-table"
+          style={{
+            height: "100%"
+          }}
+        >
+          <TableHead headers={headers} rows={rows} />
+          <TableBody headers={headers} rows={rows} />
+        </table>
+      </div>
+      <TableFoot
+        headers={headers}
+        customStyles={tableFoot?.customStyles}
+        pagination={tableFoot?.pagination}
+        exportBtn={tableFoot?.exportBtn}
+        customElements={tableFoot?.customElements}
+      />
     </div>
   );
 };

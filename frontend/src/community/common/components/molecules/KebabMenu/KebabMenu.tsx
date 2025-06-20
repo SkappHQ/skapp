@@ -15,6 +15,7 @@ interface KebabMenuProps {
   menuItems: MenuItemTypes[];
   icon?: ReactNode;
   ariaLabel?: string;
+  ariaDescription?: string;
   menuAlign?: {
     anchorOrigin?: { vertical: "top" | "bottom"; horizontal: "left" | "right" }; // TODO: Use enum
     transformOrigin?: {
@@ -35,6 +36,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
   menuItems,
   icon = <Icon name={IconName.THREE_DOTS_ICON} />,
   ariaLabel = "menu",
+  ariaDescription,
   menuAlign = {
     anchorOrigin: { vertical: "top", horizontal: "left" },
     transformOrigin: { vertical: "top", horizontal: "left" }
@@ -78,6 +80,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
         onKeyDown={handleMenuBtnKeyDown}
         sx={{ ...classes.menuIcon, ...customStyles.menuIcon }}
         aria-label={ariaLabel}
+        aria-description={ariaDescription}
         role="button"
         tabIndex={0}
       >

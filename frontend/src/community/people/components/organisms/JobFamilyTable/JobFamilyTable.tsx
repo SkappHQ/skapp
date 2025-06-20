@@ -103,7 +103,23 @@ const JobFamilyTable: FC<Props> = ({
                 max={6}
               />
             )) || [],
-          actionData: jobFamilyData
+          actionData: jobFamilyData,
+          ariaLabel: {
+            editButton: translateText(["editButton.label"], {
+              recordName: jobFamilyData?.name
+            }),
+            deleteButton: translateText(["deleteButton.label"], {
+              recordName: jobFamilyData?.name
+            })
+          },
+          ariaDescription: {
+            editButton: translateText(["editButton.description"], {
+              recordName: jobFamilyData?.name
+            }),
+            deleteButton: translateText(["deleteButton.description"], {
+              recordName: jobFamilyData?.name
+            })
+          }
         })) || []
     );
   };

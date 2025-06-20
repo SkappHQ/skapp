@@ -101,7 +101,17 @@ const LeaveTypesTable = () => {
               : translateText(["disabled"])}
           </div>
         ),
-        actionData: leaveType
+        actionData: leaveType,
+        ariaLabel: {
+          editButton: translateText(["editButton.label"], {
+            recordName: leaveType?.name
+          })
+        },
+        ariaDescription: {
+          editButton: translateText(["editButton.description"], {
+            recordName: leaveType?.name
+          })
+        }
       })) || []
     );
   };

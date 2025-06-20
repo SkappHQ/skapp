@@ -7,6 +7,7 @@ import { StoreApi } from "zustand";
 import { TimeBlocksTypes } from "~community/configurations/types/TimeConfigurationsTypes";
 import { ManagerType } from "~community/people/types/EditEmployeeInfoTypes";
 import { EmployeeManagerType } from "~community/people/types/EmployeeTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 import { daysTypes } from "../constants/stringConstants";
 
@@ -269,6 +270,18 @@ export enum AnalyticsTypes {
 export type TableHeaderTypes = {
   id: string | number;
   label?: string;
+};
+
+export type HTMLTableHeaderTypes = {
+  id: string | number;
+  label: string;
+  sticky?: boolean;
+  subtitle?: {
+    text?: string;
+    emoji?: string;
+    isChip?: boolean;
+    duration?: HolidayDurationType;
+  };
 };
 
 export type TableTypes = {

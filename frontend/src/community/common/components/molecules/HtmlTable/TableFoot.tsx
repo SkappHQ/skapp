@@ -72,57 +72,62 @@ const TableFoot: FC<TableFootProps & CommonTableProps> = ({
     <tfoot
       style={{
         backgroundColor: theme.palette.grey[100],
-        height: "59px",
+        height: "88px",
         width: "100%"
       }}
     >
-      <tr>
-        <TableDataCell
-          colSpan={headers.length}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "24px 16px"
+        }}
+      >
+        <div
           style={{
-            border: "none",
-            padding: "16px"
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            width: "100%"
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-start",
-                alignItems: "center"
+          {customElements?.left && customElements.left}
+          {pagination?.isEnabled && (
+            <Pagination
+              totalPages={pagination?.totalPages}
+              currentPage={pagination?.currentPage || 0}
+              onChange={pagination?.onChange || (() => {})}
+              paginationStyles={{
+                margin: "0rem"
               }}
-            >
-              {pagination?.isEnabled && (
-                <Pagination
-                  totalPages={pagination?.totalPages}
-                  currentPage={pagination?.currentPage || 0}
-                  onChange={pagination?.onChange || (() => {})}
-                  paginationStyles={{
-                    margin: "0rem"
-                  }}
-                  isDisabled={pagination?.disabled}
-                />
-              )}
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              {customElements?.right && customElements.right}
-              {exportBtn.isVisible && exportBtn.label && (
-                <Button
-                  buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-                  size={ButtonSizes.MEDIUM}
-                  label={exportBtn.label}
-                  isFullWidth={false}
-                  isLoading={exportBtn.isLoading}
-                  disabled={exportBtn.disabled}
-                  styles={exportBtn.styles?.button}
-                  endIcon={IconName.DOWNLOAD_ICON}
-                  onClick={exportBtn.onClick}
-                />
-              )}
-            </div>
-          </div>
-        </TableDataCell>
-      </tr>
+              isDisabled={pagination?.disabled}
+            />
+          )}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            width: "100%"
+          }}
+        >
+          {customElements?.right && customElements.right}
+          {exportBtn.isVisible && exportBtn.label && (
+            <Button
+              buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
+              size={ButtonSizes.SMALL}
+              label={exportBtn.label}
+              isFullWidth={false}
+              isLoading={exportBtn.isLoading}
+              disabled={exportBtn.disabled}
+              styles={exportBtn.styles?.button}
+              endIcon={IconName.DOWNLOAD_ICON}
+              onClick={exportBtn.onClick}
+            />
+          )}
+        </div>
+      </div>
     </tfoot>
   );
 };
