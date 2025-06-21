@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { useEffect } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
@@ -21,13 +22,15 @@ interface Props {
 }
 
 const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
-  const { data: employee, isLoading } = useGetEmployee(employeeId);
+  const { data: employeeData, isLoading } = useGetEmployee(employeeId);
+  const translateAria = useTranslator("peopleAria", "directory");
 
   const {
     isUnsavedChangesModalOpen,
     currentStep,
     nextStep,
     isCancelChangesModalOpen,
+    employee,
     setIsUnsavedChangesModalOpen,
     setCurrentStep,
     setIsUnsavedModalSaveButtonClicked,
@@ -38,10 +41,10 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   } = usePeopleStore((state) => state);
 
   useEffect(() => {
-    if (employee) {
-      setEmployee(employee?.data?.results[0]);
+    if (employeeData) {
+      setEmployee(employeeData?.data?.results[0]);
     }
-  }, [employee, setEmployee]);
+  }, [employeeData, setEmployee]);
 
   const { hasChanged } = useFormChangeDetector();
 
@@ -62,7 +65,12 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   ]);
 
   return (
-    <>
+    <Box
+      role="region"
+      aria-label={translateAria(["userProfile"], {
+        name: `${employee?.personal?.general?.firstName} ${employee?.personal?.general?.lastName}`
+      })}
+    >
       <Box sx={{ mt: "0.75rem" }}>
         {isLoading ? <EditInfoCardSkeleton /> : <EditInfoCard />}
       </Box>
@@ -93,7 +101,7 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
         }}
       />
       <RouteChangeAreYouSureModal />
-    </>
+    </Box>
   );
 };
 

@@ -18,6 +18,7 @@ export interface SelectOption {
   label: string;
   value: string | number;
   disabled?: boolean;
+  ariaLabel?: string;
 }
 
 interface Props {
@@ -136,6 +137,7 @@ const RoundedSelect = ({
             key={option.value}
             value={option.value}
             disabled={option?.disabled ?? false}
+            aria-label={option.ariaLabel}
             sx={{
               display: "flex",
               justifyContent: "space-between",

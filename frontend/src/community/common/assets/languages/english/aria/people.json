@@ -17,7 +17,8 @@
   "addResource": {
     "generalDetails": {
       "selectGender": "Select gender",
-      "selectMaritalStatus": "Select marital status"
+      "selectMaritalStatus": "Select marital status",
+      "addProfileAvatar": "Add profile avatar"
     },
     "familyDetails": {
       "selectGender": "Select gender",
@@ -55,11 +56,14 @@
   },
   "holiday": {
     "sortByDropdown": {
-      "sort": "Sort : ",
+      "sort": "Sort",
       "chronologically": "Chronologically : ",
       "janToDec": "January to December",
-      "decToJan": "December to January"
-    }
+      "decToJan": "December to January",
+      "yearSelector": "Year selector",
+      "currentSelection": "Current selection: {{year}}"
+    },
+    "holidays": "Holidays"
   },
   "directory": {
     "userBulkUpload": "User Bulk",
@@ -77,6 +81,8 @@
     "sortDropdown": "Sort by Dropdown",
     "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
     "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
-    "null": "null"
+    "null": "null",
+    "userProfile": "User Profile of {{name}}",
+    "selectEmployee": "Select employee {{employeeName}}"
   }
 }

@@ -26,6 +26,7 @@ interface Props {
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   tabIndex?: number;
+  ariaHidden?: boolean;
 }
 
 const BasicChip = forwardRef<HTMLDivElement, Props>(
@@ -44,7 +45,8 @@ const BasicChip = forwardRef<HTMLDivElement, Props>(
       coloredCloseIcon = false,
       onMouseEnter,
       onMouseLeave,
-      tabIndex
+      tabIndex,
+      ariaHidden
     }: Props,
     ref
   ) => {
@@ -107,6 +109,7 @@ const BasicChip = forwardRef<HTMLDivElement, Props>(
           onMouseEnter={onMouseEnter ?? handleTooltipOpen}
           onMouseLeave={onMouseLeave ?? closeTooltip}
           tabIndex={tabIndex}
+          aria-hidden={ariaHidden}
         />
       );
     }, [
@@ -126,6 +129,7 @@ const BasicChip = forwardRef<HTMLDivElement, Props>(
       onMouseLeave,
       ref,
       tabIndex,
+      ariaHidden,
       theme.palette.primary.dark
     ]);
 
@@ -136,13 +140,14 @@ const BasicChip = forwardRef<HTMLDivElement, Props>(
             title={label ?? ""}
             placement={TooltipPlacement.BOTTOM}
             open={isTooltipOpen}
+            tabIndex={tabIndex}
           >
             {renderChip()}
           </Tooltip>
         );
       }
       return renderChip();
-    }, [isTooltipOpen, label, renderChip, withTooltip]);
+    }, [isTooltipOpen, label, renderChip, withTooltip, tabIndex]);
 
     return renderComponent();
   }

@@ -49,6 +49,7 @@ const AddCalendar: FC = () => {
     <Box>
       <Box>
         <Typography
+          id="download-csv-description"
           variant="body1"
           sx={{
             py: "1rem",
@@ -64,6 +65,9 @@ const AddCalendar: FC = () => {
           endIcon={<DownSideArrow />}
           onClick={downloadTemplateHandler}
           shouldBlink={isButtonBlinking.download}
+          accessibility={{
+            ariaDescribedBy: "download-csv-description"
+          }}
         />
       </Box>
       <Divider />

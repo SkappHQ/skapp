@@ -44,7 +44,13 @@ const BasicChipGroup: FC<Props> = ({
       <Stack direction={"row"} gap="0.25rem">
         {values?.map((item, index) =>
           index < max ? (
-            <BasicChip key={index} label={item} chipStyles={chipStyles} />
+            <BasicChip
+              key={index}
+              label={item}
+              chipStyles={chipStyles}
+              tabIndex={-1}
+              ariaHidden={true}
+            />
           ) : null
         )}
         {values?.length > max && (
@@ -57,6 +63,8 @@ const BasicChipGroup: FC<Props> = ({
               chipStyles={chipStyles}
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
+              tabIndex={-1}
+              ariaHidden={true}
             />
           </Box>
         )}

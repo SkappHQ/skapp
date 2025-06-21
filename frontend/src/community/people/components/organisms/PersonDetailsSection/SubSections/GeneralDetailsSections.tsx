@@ -256,6 +256,9 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                       cursor: "pointer",
                       zIndex: ZIndexEnums.DEFAULT
                     }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={translateAria(["addProfileAvatar"])}
                     onClick={handleImageClick}
                   >
                     {employee?.common?.authPic?.length ? (

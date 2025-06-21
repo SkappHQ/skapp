@@ -28,7 +28,8 @@
     "avatar": {
       "alt": "Employee avatar",
       "removeProfilePicture": "Remove profile picture",
-      "uploadProfilePicture": "Upload profile picture"
+      "uploadProfilePicture": "Upload profile picture",
+      "changeProfileAvatar": "Change profile avatar"
     },
     "dragAndDrop": {
       "ariaLabel": "{{componentName}} File Upload",
@@ -56,7 +57,7 @@
     },
     "table": {
       "tableHead": {
-        "checkbox": "Check all the {{tableName}}"
+        "checkbox": "Select all rows"
       },
       "tableBody": {
         "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",

@@ -147,6 +147,13 @@ const Avatar: FC<AvatarProps> = ({
           sx={classes.iconWrapper}
           onClick={imageUploaded ? handleUnselect : open}
           data-testid={testId}
+          role="button"
+          tabIndex={0}
+          aria-label={
+            imageUploaded
+              ? translateAria(["removeProfilePicture"])
+              : translateAria(["changeProfileAvatar"])
+          }
         >
           <Icon
             name={
