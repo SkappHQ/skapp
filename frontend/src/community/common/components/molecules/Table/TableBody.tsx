@@ -135,6 +135,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             {checkboxSelection?.isEnabled &&
               checkboxSelection?.isSelectAllVisible && (
                 <TableCell
+                  scope="col"
                   onClick={(e) => e.stopPropagation()}
                   sx={mergeSx([
                     classes.checkboxSelection.cell,
@@ -174,6 +175,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
               )}
             {headers?.map((header) => (
               <TableCell
+                scope="col"
                 key={header.id}
                 sx={mergeSx([
                   classes.tableBody.cell.wrapper,
@@ -184,6 +186,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   row[header?.id]()
                 ) : (
                   <Box
+                    component="span"
                     sx={mergeSx([
                       classes.tableBody.cell.container,
                       customStyles?.cell?.container

@@ -28,7 +28,8 @@
     "avatar": {
       "alt": "Employee avatar",
       "removeProfilePicture": "Remove profile picture",
-      "uploadProfilePicture": "Upload profile picture"
+      "uploadProfilePicture": "Upload profile picture",
+      "changeProfileAvatar": "Change profile avatar"
     },
     "dragAndDrop": {
       "ariaLabel": "{{componentName}} File Upload",

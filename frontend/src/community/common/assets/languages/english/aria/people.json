@@ -17,7 +17,8 @@
   "addResource": {
     "generalDetails": {
       "selectGender": "Select gender",
-      "selectMaritalStatus": "Select marital status"
+      "selectMaritalStatus": "Select marital status",
+      "addProfileAvatar": "Add profile avatar"
     },
     "familyDetails": {
       "selectGender": "Select gender",
