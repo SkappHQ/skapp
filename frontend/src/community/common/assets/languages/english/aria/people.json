@@ -56,11 +56,14 @@
   },
   "holiday": {
     "sortByDropdown": {
-      "sort": "Sort : ",
+      "sort": "Sort",
       "chronologically": "Chronologically : ",
       "janToDec": "January to December",
-      "decToJan": "December to January"
-    }
+      "decToJan": "December to January",
+      "yearSelector": "Year selector",
+      "currentSelection": "Current selection: {{year}}"
+    },
+    "holidays": "Holidays"
   },
   "directory": {
     "userBulkUpload": "User Bulk",

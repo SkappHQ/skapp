@@ -348,7 +348,7 @@ const DragAndDropField: FC<Props> = ({
         </Stack>
       </div>
 
-      <Typography variant="body2" sx={classes.errorText}>
+      <Typography variant="body2" role="alert" sx={classes.errorText}>
         {getInlineErrorMessage}
       </Typography>
     </>
