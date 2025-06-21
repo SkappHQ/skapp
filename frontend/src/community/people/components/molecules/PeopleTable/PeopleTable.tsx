@@ -366,13 +366,7 @@ const PeopleTable: FC<Props> = ({
     currentEmployeeDetails?.employeeId,
     employeeData,
     isPendingInvitationListOpen,
-    isRemovePeople,
-    theme.palette.amber.dark,
-    theme.palette.amber.light,
-    theme.palette.grey,
-    theme.palette.primary.dark,
-    translateAria,
-    translateText
+    isRemovePeople
   ]);
 
   useEffect(() => {
