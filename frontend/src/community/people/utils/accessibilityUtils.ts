@@ -40,3 +40,21 @@ export const generatePeopleTableRowAriaLabel = (
     }
   );
 };
+
+// Returns: "Row: Date 11th Feb 2025; Duration Full Day; Holiday Name: Independence Day; Delete holiday Disabled "
+export const generateHolidayTableRowAriaLabel = (
+  translateAria: (key: string[], params?: Record<string, any>) => string,
+  date: string,
+  duration: string,
+  holidayName: string,
+  isDisabled: boolean
+): string => {
+  return translateAria(["holidayTableRow"], {
+    date,
+    duration,
+    holidayName,
+    status: isDisabled
+      ? translateAria(["disabled"])
+      : translateAria(["enabled"])
+  });
+};

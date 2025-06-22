@@ -83,6 +83,9 @@ interface Props {
   isYearHidden?: boolean;
   myLeaveRequests?: MyLeaveRequestPayloadType[];
   initialMonthlyView?: DateTime | undefined;
+  accessibility?: {
+    ariaLabel?: string;
+  };
 }
 
 const InputDate: FC<Props> = ({
@@ -105,7 +108,8 @@ const InputDate: FC<Props> = ({
   isYearHidden,
   readOnly = false,
   myLeaveRequests,
-  initialMonthlyView
+  initialMonthlyView,
+  accessibility
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -339,9 +343,13 @@ const InputDate: FC<Props> = ({
         <Box
           role="button"
           tabIndex={disabled ? -1 : 0}
-          aria-label={translateAria(["calendarIcon"], {
-            name: lowerCaseLabel
-          })}
+          aria-label={
+            accessibility?.ariaLabel
+              ? accessibility?.ariaLabel
+              : translateAria(["calendarIcon"], {
+                  name: lowerCaseLabel
+                })
+          }
           onClick={(e: MouseEvent<HTMLElement>) =>
             !(disabled || readOnly) && handleClick(e)
           }
@@ -433,6 +441,7 @@ const InputDate: FC<Props> = ({
       {!!error && (
         <Typography
           variant="body2"
+          role="alert"
           sx={mergeSx([
             classes.errorText,
             { color: theme.palette.error.contrastText }

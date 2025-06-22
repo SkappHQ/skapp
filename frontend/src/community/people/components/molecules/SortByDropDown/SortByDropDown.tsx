@@ -81,7 +81,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         renderValue={(selectedValue: string) => {
           return (
             <Typography
-              aria-label={`${translateAria(["sort"])} : ${
+              aria-label={`${translateAria(["currentSelection"])} ${
                 selectedValue === SortOrderTypes.ASC
                   ? translateAria(["janToDec"])
                   : translateAria(["decToJan"])
@@ -107,9 +107,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         renderValue={(selectedValue: string) => {
           return (
             <Typography
-              aria-label={translateAria(["currentSelection"], {
-                year: selectedValue
-              })}
+              aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
             >
               {selectedValue}
             </Typography>

@@ -56,14 +56,21 @@
   },
   "holiday": {
     "sortByDropdown": {
-      "sort": "Sort",
+      "sort": "Sort by month",
       "chronologically": "Chronologically : ",
       "janToDec": "January to December",
       "decToJan": "December to January",
       "yearSelector": "Year selector",
-      "currentSelection": "Current selection: {{year}}"
+      "currentSelection": "Current selection is"
     },
-    "holidays": "Holidays"
+    "holidays": "Holidays",
+    "selectDateField": "Select the date field, required. Press Enter to open calendar",
+    "holidayTable": "Holidays table for the year {{year}}",
+    "selectHoliday": "Select holiday {{holidayName}}",
+    "holidayTableRow": "Row: Date {{date}}; Duration {{duration}}; Holiday Name: {{holidayName}}; Delete holiday {{status}}",
+    "deleteHoliday": "Delete {{holidayName}} holiday",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "directory": {
     "userBulkUpload": "User Bulk",
