@@ -242,36 +242,38 @@ const Drawer = (): JSX.Element => {
                         />
                       )}
                     </ListItemIcon>
-                    <ListItemText
-                      primary={route?.name}
-                      sx={classes.listItemText(
-                        getSelectedDrawerItemColor(
-                          theme,
-                          router.pathname,
-                          hoveredDrawerItemUrl,
-                          route?.url ?? null
-                        )
-                      )}
-                    />
-                    <ListItemIcon
-                      sx={classes.chevronIcons(
-                        expandedDrawerListItem,
-                        routeId,
-                        hasSubTree
-                      )}
-                    >
-                      <Icon
-                        name={IconName.EXPAND_ICON}
-                        width="0.625rem"
-                        height="0.3125rem"
-                        fill={getSelectedDrawerItemColor(
-                          theme,
-                          router.pathname,
-                          hoveredDrawerItemUrl,
-                          route?.url ?? ""
+                    <Box sx={classes.listItemContent}>
+                      <ListItemText
+                        primary={route?.name}
+                        sx={classes.listItemText(
+                          getSelectedDrawerItemColor(
+                            theme,
+                            router.pathname,
+                            hoveredDrawerItemUrl,
+                            route?.url ?? null
+                          )
                         )}
                       />
-                    </ListItemIcon>
+                      <ListItemIcon
+                        sx={classes.chevronIcons(
+                          expandedDrawerListItem,
+                          routeId,
+                          hasSubTree
+                        )}
+                      >
+                        <Icon
+                          name={IconName.EXPAND_ICON}
+                          width="0.625rem"
+                          height="0.3125rem"
+                          fill={getSelectedDrawerItemColor(
+                            theme,
+                            router.pathname,
+                            hoveredDrawerItemUrl,
+                            route?.url ?? ""
+                          )}
+                        />
+                      </ListItemIcon>
+                    </Box>
                   </ListItemButton>
 
                   {isExpanded && hasSubTree && (

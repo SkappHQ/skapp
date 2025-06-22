@@ -87,6 +87,11 @@ export const styles = ({ theme }: stylesProps) => ({
       color: color
     }
   }),
+  listItemContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem"
+  },
   collapse: {
     display: "flex",
     flexDirection: "column",
