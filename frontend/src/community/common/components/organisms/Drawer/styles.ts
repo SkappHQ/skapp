@@ -59,13 +59,13 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
-    width: "max-content"
+    width: "100%"
   },
   listItemButton: (isSelected: boolean) => ({
     display: "flex",
     flexDirection: "row",
     justifyContent: "flex-start",
-    width: "max-content",
+    width: "calc(100% - 1rem)",
     gap: "1rem",
     padding: "0.75rem 1rem 0.75rem 1rem",
     transition: "none",
@@ -90,7 +90,7 @@ export const styles = ({ theme }: stylesProps) => ({
   collapse: {
     display: "flex",
     flexDirection: "column",
-    width: "max-content"
+    width: "100%"
   },
   subList: {
     display: "flex",
@@ -105,7 +105,8 @@ export const styles = ({ theme }: stylesProps) => ({
   subListItemButton: (isSelected: boolean) => ({
     display: "flex",
     flexDirection: "row",
-    width: "max-content",
+    width: "100%",
+    marginRight: "1rem",
     gap: "1rem",
     padding: "0.5rem 1rem 0.5rem 2.5rem",
     borderRadius: "0.5rem",
