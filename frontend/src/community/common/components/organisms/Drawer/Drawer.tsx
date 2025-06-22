@@ -202,7 +202,9 @@ const Drawer = (): JSX.Element => {
                 >
                   <ListItemButton
                     disableRipple
-                    sx={classes.listItemButton}
+                    sx={classes.listItemButton(
+                      !hasSubTree && router.pathname.includes(route?.url ?? "")
+                    )}
                     onClick={() =>
                       handleListItemButtonClick(
                         routeId,
@@ -315,7 +317,11 @@ const Drawer = (): JSX.Element => {
                           >
                             <ListItemButton
                               disableRipple
-                              sx={classes.subListItemButton}
+                              sx={classes.subListItemButton(
+                                router.pathname.includes(
+                                  subTreeRoute?.url ?? ""
+                                )
+                              )}
                               tabIndex={0}
                             >
                               <ListItemText

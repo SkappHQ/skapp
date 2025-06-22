@@ -61,7 +61,7 @@ export const styles = ({ theme }: stylesProps) => ({
     alignItems: "flex-start",
     width: "max-content"
   },
-  listItemButton: {
+  listItemButton: (isSelected: boolean) => ({
     display: "flex",
     flexDirection: "row",
     justifyContent: "flex-start",
@@ -70,10 +70,11 @@ export const styles = ({ theme }: stylesProps) => ({
     padding: "0.75rem 1rem 0.75rem 1rem",
     transition: "none",
     borderRadius: "0.5rem",
+    backgroundColor: isSelected ? theme.palette.secondary.main : "transparent",
     "&:hover": {
       backgroundColor: theme.palette.secondary.main
     }
-  },
+  }),
   listItemIcon: {
     minWidth: "1.5rem"
   },
@@ -101,17 +102,18 @@ export const styles = ({ theme }: stylesProps) => ({
   subListItem: {
     padding: "0rem"
   },
-  subListItemButton: {
+  subListItemButton: (isSelected: boolean) => ({
     display: "flex",
     flexDirection: "row",
     width: "max-content",
     gap: "1rem",
     padding: "0.5rem 1rem 0.5rem 2.5rem",
     borderRadius: "0.5rem",
+    backgroundColor: isSelected ? theme.palette.secondary.main : "transparent",
     "&:hover": {
       backgroundColor: theme.palette.secondary.main
     }
-  },
+  }),
   subListItemText: (color: string) => ({
     "& .MuiTypography-root": {
       fontSize: "1rem",
