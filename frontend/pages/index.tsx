@@ -20,30 +20,30 @@ export default function Index() {
       const route = session ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
       await router.replace(route);
       return;
-    }
+    } else {
+      try {
+        const response = await authFetch.get(
+          organizationCreateEndpoints.CHECK_ORG_SETUP_STATUS
+        );
 
-    try {
-      const response = await authFetch.get(
-        organizationCreateEndpoints.CHECK_ORG_SETUP_STATUS
-      );
+        if (response.status !== HTTP_OK || !response.data?.results?.[0]) {
+          await router.replace(ROUTES.AUTH.SIGNIN);
+          return;
+        }
 
-      if (response.status !== HTTP_OK || !response.data?.results?.[0]) {
+        const orgData = response.data;
+        const setupStatus = orgData.results[0];
+
+        if (!setupStatus.isSignUpCompleted) {
+          await router.replace(ROUTES.AUTH.SIGNUP);
+        } else if (!setupStatus.isOrganizationSetupCompleted && session) {
+          await router.replace(ROUTES.ORGANIZATION.SETUP);
+        } else {
+          await router.replace(ROUTES.DASHBOARD.BASE);
+        }
+      } catch (error) {
         await router.replace(ROUTES.AUTH.SIGNIN);
-        return;
       }
-
-      const orgData = response.data;
-      const setupStatus = orgData.results[0];
-
-      if (!setupStatus.isSignUpCompleted) {
-        await router.replace(ROUTES.AUTH.SIGNUP);
-      } else if (!setupStatus.isOrganizationSetupCompleted && session) {
-        await router.replace(ROUTES.ORGANIZATION.SETUP);
-      } else {
-        await router.replace(ROUTES.DASHBOARD.BASE);
-      }
-    } catch (error) {
-      await router.replace(ROUTES.AUTH.SIGNIN);
     }
   }, [router, session]);
 
