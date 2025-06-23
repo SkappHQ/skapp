@@ -19,7 +19,7 @@ import {
   TeamResultsType
 } from "~community/people/types/EmployeeTypes";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 
 interface GetEmployeeParams {
   id?: number;
@@ -46,7 +46,7 @@ const useGetEmployee = ({ id }: GetEmployeeParams) => {
     setUserRoles
   } = usePeopleStore((state) => state);
 
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
   const [isRefetchingData, setIsRefetchingData] = useState<boolean>(false);
 
   const { data: employee, isSuccess, isLoading } = useGetEmployeeById(id);
