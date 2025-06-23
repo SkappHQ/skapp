@@ -10,6 +10,11 @@ import styles from "./styles";
 interface Props {
   customComponent?: ReactNode;
   description?: string | JSX.Element;
+  id?: {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  };
   primaryBtn: {
     label: string;
     onClick: () => void;
@@ -32,6 +37,7 @@ interface Props {
 
 const UserPromptModal = ({
   customComponent,
+  id,
   description,
   primaryBtn,
   secondaryBtn
@@ -41,7 +47,9 @@ const UserPromptModal = ({
   return (
     <Box component="div">
       {customComponent}
-      <Typography id="user-prompt-modal-description">{description}</Typography>
+      <Typography id={id?.description ?? "user-prompt-modal-description"}>
+        {description}
+      </Typography>
       <Button
         accessibility={{
           ariaHidden: true
