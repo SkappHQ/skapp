@@ -48,7 +48,11 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
 
   return (
     <Box>
-      <Typography variant="body2" sx={{ my: 1 }}>
+      <Typography
+        id="bulk-upload-summary-description"
+        variant="body2"
+        sx={{ my: 1 }}
+      >
         {totalEntries === 1 && data?.bulkStatusSummary?.failedCount === 1
           ? translateText(["oneEntryOneFailSummary"])
           : totalEntries === data?.bulkStatusSummary?.failedCount
@@ -79,6 +83,9 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
         buttonStyle={ButtonStyle.PRIMARY}
         styles={{ mt: "1rem" }}
         onClick={handleDownloadErrorLogCSV}
+        accessibility={{
+          ariaDescribedBy: "bulk-upload-summary-description"
+        }}
       />
     </Box>
   );

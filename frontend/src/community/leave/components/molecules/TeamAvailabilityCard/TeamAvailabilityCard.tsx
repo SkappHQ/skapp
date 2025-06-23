@@ -42,6 +42,8 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     "teamAvailabilityCard"
   );
 
+  const translateAria = useTranslator("leaveAria", "applyLeave");
+
   const {
     selectedDates,
     selectedTeam,
@@ -113,6 +115,17 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
           onChange={handleTeamSelect}
           value={selectedTeam?.teamId?.toString() ?? ""}
           options={teamsDropdownOptions}
+          renderValue={(value: string) => {
+            const selectedOption = teamsDropdownOptions.find(
+              (option) => option.value === Number(value)
+            );
+            if (selectedOption) {
+              return selectedOption.label;
+            }
+          }}
+          accessibility={{
+            label: translateAria(["teamAvailabilityCard", "dropdown"])
+          }}
         />
       </Stack>
       <Stack sx={classes.rowTwo}>

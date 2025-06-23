@@ -37,7 +37,7 @@ const EmployeeDataBanner = ({
           {startingIcon && (
             <Icon name={startingIcon} fill={theme.palette.primary.dark} />
           )}
-          <Typography sx={classes.bannerTextStyles}>
+          <Typography id="banner-title" sx={classes.bannerTextStyles}>
             {count === 1 ? titleForOne : `${count} ${title}`}
           </Typography>
         </Stack>
@@ -45,6 +45,9 @@ const EmployeeDataBanner = ({
           sx={classes.bannerPromptStyles}
           onClick={onClick}
           data-testid={peopleDirectoryTestId.employeeDataBanner}
+          role="link"
+          tabIndex={0}
+          aria-describedby="banner-title"
         >
           {prompt}
         </Typography>

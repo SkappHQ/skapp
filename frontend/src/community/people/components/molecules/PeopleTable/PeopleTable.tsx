@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import {
   FC,
-  FormEvent,
   MouseEvent,
   useCallback,
   useEffect,
@@ -15,7 +14,7 @@ import {
 
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import Button from "~community/common/components/atoms/Button/Button";
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
@@ -84,14 +83,13 @@ const PeopleTable: FC<Props> = ({
   const router = useRouter();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("peopleModule", "peoples");
+  const translateAria = useTranslator("peopleAria", "directory");
 
   const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
   );
 
-  const [sortOpen, setSortOpen] = useState<boolean>(false);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
-  const [sortEl, setSortEl] = useState<null | HTMLElement>(null);
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [sortType, setSortType] = useState<string>("A to Z");
   const [filter, setFilter] = useState<boolean>(false);
@@ -101,9 +99,6 @@ const PeopleTable: FC<Props> = ({
   const filterId: string | undefined = filterByOpen
     ? "filter-popper"
     : undefined;
-
-  const sortByOpen: boolean = sortOpen && Boolean(sortEl);
-  const sortId: string | undefined = sortByOpen ? "sortBy-popper" : undefined;
 
   const {
     isPendingInvitationListOpen,
@@ -158,21 +153,9 @@ const PeopleTable: FC<Props> = ({
     setSelectedEmployees(selectedPeople);
   }, [selectedPeople]);
 
-  const handleSortClick = (
-    event: MouseEvent<HTMLElement> | FormEvent<HTMLFormElement>
-  ): void => {
-    setSortEl(event.currentTarget);
-    setSortOpen((previousOpen) => !previousOpen);
-  };
-
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
     setFilterOpen((previousOpen) => !previousOpen);
-  };
-
-  const handleSortClose = (): void => {
-    setSortOpen(false);
-    scrollToTop();
   };
 
   const handleFilterClose = (value?: boolean): void => {
@@ -230,6 +213,33 @@ const PeopleTable: FC<Props> = ({
       )
       .map((employee: AllEmployeeDataType) => ({
         id: employee?.employeeId,
+        ariaLabel: translateAria(
+          [
+            isPendingInvitationListOpen
+              ? "peopleTableRowPending"
+              : "peopleTableRow"
+          ],
+          {
+            name: `${employee?.firstName} ${employee?.lastName}`,
+            jobTitle: employee?.jobTitle
+              ? employee?.jobTitle
+              : translateAria(["null"]),
+            email: employee?.email,
+            teams:
+              employee?.teams && employee.teams.length > 0
+                ? employee.teams.map((team) => team.teamName).join(", ")
+                : translateAria(["null"]),
+            supervisor:
+              employee?.managers && employee.managers.length > 0
+                ? employee?.managers
+                    ?.map(
+                      (manager) => `${manager.firstName} ${manager.lastName}`
+                    )
+                    .join(", ")
+                : translateAria(["null"])
+          }
+        ),
+
         name: (
           <Stack flexDirection={"row"} gap={1} alignItems={"center"}>
             <AvatarChip
@@ -289,7 +299,7 @@ const PeopleTable: FC<Props> = ({
               {refactorTeamListData(employee?.teams as EmployeeDataTeamType[])
                 ?.firstTeamName && (
                 <Box width="100%">
-                  <BasicChip
+                  <ReadOnlyChip
                     label={
                       refactorTeamListData(
                         employee?.teams as EmployeeDataTeamType[]
@@ -307,7 +317,7 @@ const PeopleTable: FC<Props> = ({
               {refactorTeamListData(employee?.teams as EmployeeDataTeamType[])
                 .otherTeamCount >= 1 && (
                 <Box width="100%">
-                  <BasicChip
+                  <ReadOnlyChip
                     chipStyles={{
                       color: theme.palette.primary.dark
                     }}
@@ -498,6 +508,8 @@ const PeopleTable: FC<Props> = ({
         borderRadius: "0.5rem",
         gap: "0.125rem"
       }}
+      role="region"
+      aria-label={translateAria(["directoryTable"])}
     >
       <Box ref={listInnerRef}>
         <Table
@@ -524,16 +536,7 @@ const PeopleTable: FC<Props> = ({
             firstRow: {
               leftButton:
                 isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
-                  <PeopleTableSortBy
-                    sortEl={sortEl}
-                    handleSortClose={handleSortClose}
-                    scrollToTop={scrollToTop}
-                    sortOpen={sortOpen}
-                    sortId={sortId}
-                    sortType={sortType}
-                    handleSortClick={handleSortClick}
-                    disabled={employeeData?.length === 0}
-                  />
+                  <PeopleTableSortBy sortType={sortType} />
                 ) : undefined,
               rightButton: isPendingInvitationListOpen ? (
                 <Button
