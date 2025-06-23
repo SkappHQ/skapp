@@ -95,7 +95,7 @@ const InputPhoneNumber: FC<Props> = ({
         <Typography
           variant="placeholder"
           sx={{
-            ...labelStyles,
+            ...(labelStyles || {}),
             color: isDisabled
               ? theme.palette.text.disabled
               : error
