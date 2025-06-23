@@ -141,7 +141,7 @@ export const styles = ({ theme }: stylesProps) => ({
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
   }),
   footer: {
-    width: "200px",
+    width: "12.5rem",
     marginTop: "auto",
     paddingTop: "1.25rem",
     gap: "1.5rem"
@@ -149,6 +149,7 @@ export const styles = ({ theme }: stylesProps) => ({
   applyLeaveBtn: {
     display: { xs: "none", sm: "flex" },
     flexDirection: "row",
+    padding: "1.25rem 2.085rem"
   },
   link: {
     width: "12.5rem",
