@@ -29,39 +29,11 @@ const styles = () => ({
     flexDirection: "row",
     alignItems: "center",
     gap: "0.75rem",
-    height: "4.5rem",
+    height: "3.75rem",
     width: "auto",
-    minWidth: { lg: "15.625rem" },
-    maxWidth: { lg: "25rem" },
     padding: "1rem",
     borderRadius: "3.3125rem",
     backgroundColor: "grey.100"
-  },
-  userInfo: {
-    display: { xs: "none", lg: "flex" },
-    flexDirection: "column",
-    alignItems: "flex-start",
-    transition: "none"
-  },
-  name: {
-    fontSize: "1.125rem",
-    fontWeight: 700,
-    lineHeight: "1.3613rem",
-    textAlign: "left",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "12rem"
-  },
-  userRole: {
-    fontSize: "0.8125rem",
-    fontWeight: 400,
-    lineHeight: "1.2188rem",
-    textAlign: "left",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "12rem"
   },
   menuIconBtn: {
     display: { xs: "flex", lg: "none" }
