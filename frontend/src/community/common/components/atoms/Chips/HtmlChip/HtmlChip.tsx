@@ -24,6 +24,7 @@ const HtmlChip = ({
 
   return (
     <span
+      role="status"
       style={{
         fontSize: "0.75rem",
         lineHeight: "1rem",

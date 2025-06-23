@@ -196,7 +196,14 @@ const EmployeeTimeRecordsTable = ({
     }
 
     return [];
-  }, [recordData, isRecordLoading, getHolidaysArrayByDate, translateText]);
+  }, [
+    recordData,
+    isRecordLoading,
+    theme,
+    timeConfigData,
+    getHolidaysArrayByDate,
+    translateText
+  ]);
 
   return (
     <Table
