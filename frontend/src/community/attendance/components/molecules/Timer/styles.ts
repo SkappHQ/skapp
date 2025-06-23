@@ -10,7 +10,8 @@ const styles = (theme: Theme) => ({
     borderRadius: "2.1875rem",
     zIndex: ZIndexEnums.DEFAULT,
     width: "fit-content",
-    padding: "0.5rem",
+    height: "2.25rem",
+    padding: "0.375rem",
     opacity: status === AttendanceSlotType.READY ? 0.5 : 1,
     pointerEvents:
       status === AttendanceSlotType.READY || status === AttendanceSlotType.END

@@ -28,7 +28,7 @@ const styles = () => ({
   userInfoPanelWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: "0.75rem",
+    gap: "1.5rem",
     height: "3.75rem",
     width: "auto",
     padding: "1rem",

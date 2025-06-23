@@ -67,6 +67,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
     <Button
       buttonStyle={ButtonStyle.PRIMARY}
       size={isBelow600 ? ButtonSizes.SMALL : ButtonSizes.MEDIUM}
+      styles={{ height: "2.25rem", padding: "0 1rem" }}
       label={label}
       endIcon={IconName.TIMER_ICON}
       isFullWidth={false}

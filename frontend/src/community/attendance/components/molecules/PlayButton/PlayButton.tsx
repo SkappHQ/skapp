@@ -93,9 +93,13 @@ const PlayButton = (): JSX.Element => {
     switch (status) {
       case AttendanceSlotType.RESUME:
       case AttendanceSlotType.START:
-        return <Icon name={IconName.PAUSE_ICON} />;
+        return (
+          <Icon name={IconName.PAUSE_ICON} width="0.625rem" height="0.625rem" />
+        );
       default:
-        return <Icon name={IconName.PLAY_ICON} />;
+        return (
+          <Icon name={IconName.PLAY_ICON} width="0.625rem" height="0.625rem" />
+        );
     }
   };
 
