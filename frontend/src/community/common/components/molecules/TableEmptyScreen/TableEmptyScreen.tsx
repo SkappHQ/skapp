@@ -42,7 +42,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
 
   const classes = styles(theme);
 
-  const descriptionId = `table-empty-desc-${Math.random().toString(36).substr(2, 9)}`;
+  const descriptionId = `table-empty-desc-${crypto.randomUUID()}`;
 
   return (
     <Stack sx={mergeSx([classes.wrapper, customStyles?.wrapper])}>
