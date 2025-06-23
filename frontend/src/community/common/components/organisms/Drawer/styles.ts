@@ -10,7 +10,7 @@ export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean) => ({
     display: { xs: "flex", sm: "none", lg: "flex" },
     position: "absolute",
-    top: { xs: "3.25rem", lg: isDrawerExpanded ? "2.75rem" : "1.875rem" },
+    top: { xs: "3.25rem", lg: isDrawerExpanded ? "2.65rem" : "1.875rem" },
     right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "0.25rem" },
     height: "2.5rem",
     width: "2.5rem",
@@ -148,7 +148,7 @@ export const styles = ({ theme }: stylesProps) => ({
   },
   applyLeaveBtn: {
     display: { xs: "none", sm: "flex" },
-    flexDirection: "row"
+    flexDirection: "row",
   },
   link: {
     width: "12.5rem",
