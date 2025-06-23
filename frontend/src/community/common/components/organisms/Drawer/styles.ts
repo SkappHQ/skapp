@@ -72,7 +72,7 @@ export const styles = ({ theme }: stylesProps) => ({
     borderRadius: "0.5rem",
     backgroundColor: isSelected ? theme.palette.secondary.main : "transparent",
     "&:hover": {
-      backgroundColor: theme.palette.secondary.main
+      backgroundColor: theme.palette.grey[100]
     }
   }),
   listItemIcon: {
@@ -117,7 +117,7 @@ export const styles = ({ theme }: stylesProps) => ({
     borderRadius: "0.5rem",
     backgroundColor: isSelected ? theme.palette.secondary.main : "transparent",
     "&:hover": {
-      backgroundColor: theme.palette.secondary.main
+      backgroundColor: theme.palette.grey[100]
     }
   }),
   subListItemText: (color: string) => ({
