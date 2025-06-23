@@ -114,6 +114,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
@@ -830,7 +831,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					&& dto.getAddressBook().getEmail().startsWith(PeopleConstants.DELETED_PREFIX)) {
 
 				String originalEmail = dto.getAddressBook().getEmail();
-				String cleanedEmail = originalEmail.replaceFirst(PeopleConstants.DELETED_PREFIX + "\\d+_", "");
+				String cleanedEmail = originalEmail.replaceFirst(Pattern.quote(PeopleConstants.DELETED_PREFIX) + "\\d+_", "");
 				dto.getAddressBook().setEmail(cleanedEmail);
 			}
 		});
