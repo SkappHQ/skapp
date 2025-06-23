@@ -15,10 +15,11 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -780,6 +781,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -802,6 +804,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -818,6 +821,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInboxInfoResponseDto;
+	}
+
+	private static void formatDeletedEmail(List<RecipientResponseDto> recipientResponseDtos) {
+		// Clean up deleted external user email addresses
+		recipientResponseDtos.forEach(dto -> {
+			if (dto.getAddressBook() != null && dto.getAddressBook().getEmail() != null
+					&& dto.getAddressBook().getEmail().startsWith(PeopleConstants.DELETED_PREFIX)) {
+
+				String originalEmail = dto.getAddressBook().getEmail();
+				String cleanedEmail = originalEmail.replaceFirst(PeopleConstants.DELETED_PREFIX + "\\d+_", "");
+				dto.getAddressBook().setEmail(cleanedEmail);
+			}
+		});
 	}
 
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
