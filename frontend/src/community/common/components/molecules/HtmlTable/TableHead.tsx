@@ -38,6 +38,7 @@ const TableHead: FC<CommonTableProps> = ({ headers, rows }) => {
               key={header.id}
               scope="col"
               className={header.sticky ? "sticky-col" : ""}
+              aria-label={header.ariaLabel}
             >
               <div
                 style={{
@@ -47,16 +48,14 @@ const TableHead: FC<CommonTableProps> = ({ headers, rows }) => {
                   alignItems: "center"
                 }}
               >
-                <span>{header.label}</span>
+                {header.label}
                 {header?.subtitle?.text ? (
                   <HtmlChip
                     className={getBorderClassName(header?.subtitle?.duration)}
                     emoji={header?.subtitle?.emoji || ""}
                     text={header?.subtitle?.text}
                   />
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </div>
             </TableHeadCell>
           );

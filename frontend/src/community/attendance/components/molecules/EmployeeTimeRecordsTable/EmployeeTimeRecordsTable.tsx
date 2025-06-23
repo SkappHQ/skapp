@@ -7,7 +7,11 @@ import {
   TimeRecordDataType,
   TimeRecordType
 } from "~community/attendance/types/timeSheetTypes";
-import { getHeadersWithSubtitles } from "~community/attendance/utils/AllTimeSheetTableUtils";
+import {
+  getBorderClassName,
+  getHeadersWithSubtitles,
+  getHolidayDurationType
+} from "~community/attendance/utils/AllTimeSheetTableUtils";
 import { formatDuration } from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
@@ -16,10 +20,10 @@ import Table from "~community/common/components/molecules/HtmlTable/Table";
 import { TableNames } from "~community/common/enums/Table";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { LeaveStates } from "~community/common/types/CommonTypes";
 import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
@@ -51,21 +55,6 @@ const EmployeeTimeRecordsTable = ({
 
   const { getHolidaysArrayByDate } = useGetHoliday();
 
-  const getBorderClassName = (duration?: LeaveStates): string => {
-    if (!duration) return "";
-
-    switch (duration) {
-      case LeaveStates.MORNING:
-        return "half-day-morning-border";
-      case LeaveStates.EVENING:
-        return "half-day-evening-border";
-      case LeaveStates.FULL_DAY:
-        return "full-day-border";
-      default:
-        return "";
-    }
-  };
-
   const headers = useMemo(() => {
     return getHeadersWithSubtitles({
       translateText,
@@ -81,113 +70,129 @@ const EmployeeTimeRecordsTable = ({
       recordData?.items !== undefined &&
       recordData?.items?.length > 0
     ) {
-      const data = recordData?.items.map(
-        (record: TimeRecordDataType, index: number) => {
-          const employeeData = record?.employee?.employee;
-          const timesheetData = record?.timeRecords;
+      const data = recordData?.items.map((record: TimeRecordDataType) => {
+        const employeeData = record?.employee?.employee;
+        const timesheetData = record?.timeRecords;
 
-          const totalWorkedHours = timeConfigData?.[0]?.totalHours ?? 0;
+        const totalWorkedHours = timeConfigData?.[0]?.totalHours ?? 0;
 
-          const columns = timesheetData.reduce(
-            (
-              acc: Record<string, JSX.Element | number | undefined>,
-              timeSheetRecord: TimeRecordType
-            ) => {
-              const hasNotWorkedAllHours =
-                timeSheetRecord?.workedHours < totalWorkedHours;
+        const columns = timesheetData.reduce(
+          (
+            acc: Record<string, JSX.Element | number | undefined>,
+            timeSheetRecord: TimeRecordType
+          ) => {
+            const hasNotWorkedAllHours =
+              timeSheetRecord?.workedHours < totalWorkedHours;
 
-              const dateAsISOString = convertYYYYMMDDToDateTime(
-                timeSheetRecord.date
-              ).toJSDate();
+            const dateAsISOString = convertYYYYMMDDToDateTime(
+              timeSheetRecord.date
+            ).toJSDate();
 
-              const hasHolidays =
-                getHolidaysArrayByDate(dateAsISOString).length > 0;
+            const isFutureDate = dateAsISOString > new Date();
 
-              const workedHours =
-                formatDuration(timeSheetRecord?.workedHours) ?? "";
+            const holidays = getHolidaysArrayByDate(dateAsISOString);
 
-              let data = (
-                <HtmlChip
-                  text={workedHours}
-                  customStyles={{
-                    text: {
-                      fontSize: "12px",
-                      lineHeight: "16px",
-                      border: "none",
-                      padding: "4px 16px",
-                      backgroundColor: hasNotWorkedAllHours
+            const hasHolidays =
+              getHolidaysArrayByDate(dateAsISOString).length > 0;
+
+            const holidayDuration = getHolidayDurationType(holidays);
+
+            const workedHours =
+              formatDuration(timeSheetRecord?.workedHours) ?? "";
+
+            let text = isFutureDate ? "-" : workedHours;
+
+            let data = (
+              <HtmlChip
+                text={text}
+                customStyles={{
+                  text: {
+                    border: "none",
+                    backgroundColor:
+                      !isFutureDate && hasNotWorkedAllHours
                         ? theme.palette.error.light
                         : ""
+                  }
+                }}
+              />
+            );
+
+            if (hasHolidays) {
+              const isHalfDayHoliday =
+                holidayDuration === HolidayDurationType.HALFDAY_EVENING ||
+                holidayDuration === HolidayDurationType.HALFDAY_MORNING;
+
+              if (isHalfDayHoliday) {
+                text = isFutureDate ? "-" : workedHours;
+              } else {
+                text = timeSheetRecord?.workedHours ? workedHours : "-";
+              }
+
+              data = (
+                <HtmlChip
+                  text={text}
+                  className={getBorderClassName(true, holidayDuration)}
+                  customStyles={{
+                    text: {
+                      border: "none",
+                      backgroundColor: theme.palette.grey[100]
                     }
                   }}
                 />
               );
+            }
 
-              if (hasHolidays) {
-                data = (
-                  <HtmlChip
-                    text={timeSheetRecord?.workedHours ? workedHours : "-"}
-                    customStyles={{
-                      text: {
-                        fontSize: "12px",
-                        lineHeight: "16px",
-                        border: "none",
-                        padding: "4px 16px",
-                        backgroundColor: theme.palette.grey[100]
-                      }
-                    }}
-                  />
-                );
+            if (timeSheetRecord.leaveRequest !== null) {
+              if (isFutureDate) {
+                text = timeSheetRecord.leaveRequest?.leaveType?.name ?? "-";
+              } else if (timeSheetRecord.leaveRequest?.leaveType?.name) {
+                text = timeSheetRecord?.workedHours
+                  ? workedHours
+                  : timeSheetRecord.leaveRequest.leaveType.name;
+              } else if (timeSheetRecord?.workedHours) {
+                text = workedHours;
+              } else {
+                text = "-";
               }
 
-              if (timeSheetRecord.leaveRequest !== null) {
-                data = (
-                  <HtmlChip
-                    text={timeSheetRecord.leaveRequest?.leaveType?.name ?? ""}
-                    emoji={getEmoji(
-                      timeSheetRecord.leaveRequest?.leaveType?.emojiCode ?? ""
-                    )}
-                    className={getBorderClassName(
-                      timeSheetRecord.leaveRequest?.leaveState
-                    )}
-                    customStyles={{
-                      text: {
-                        fontSize: "0.75rem",
-                        lineHeight: "1rem",
-                        padding: "4px 16px 4px 3px"
-                      }
-                    }}
-                  />
-                );
-              }
+              data = (
+                <HtmlChip
+                  text={text}
+                  emoji={getEmoji(
+                    timeSheetRecord.leaveRequest?.leaveType?.emojiCode ?? ""
+                  )}
+                  className={getBorderClassName(
+                    false,
+                    timeSheetRecord.leaveRequest?.leaveState
+                  )}
+                />
+              );
+            }
 
-              acc[timeSheetRecord.date] = data;
-              return acc;
-            },
-            {}
-          );
+            acc[timeSheetRecord.date] = data;
+            return acc;
+          },
+          {}
+        );
 
-          // console.log("columns", columns);
-
-          return {
-            name: (
-              <AvatarChip
-                firstName={employeeData?.firstName ?? ""}
-                lastName={employeeData?.lastName ?? ""}
-                avatarUrl={employeeData?.authPic}
-                isResponsiveLayout={true}
-                chipStyles={{
-                  maxWidth: "fit-content",
-                  justifyContent: "flex-start"
-                }}
-                mediumScreenWidth={1024}
-                smallScreenWidth={0}
-              />
-            ),
-            ...columns
-          };
-        }
-      );
+        return {
+          name: (
+            <AvatarChip
+              firstName={employeeData?.firstName ?? ""}
+              lastName={employeeData?.lastName ?? ""}
+              avatarUrl={employeeData?.authPic}
+              isResponsiveLayout={true}
+              chipStyles={{
+                maxWidth: "fit-content",
+                justifyContent: "flex-start"
+              }}
+              mediumScreenWidth={1024}
+              smallScreenWidth={0}
+            />
+          ),
+          ...columns
+        };
+      });
 
       return data;
     }

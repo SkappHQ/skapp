@@ -42,6 +42,7 @@
       "label": "View more actions for {{recordName}} time entry request",
       "description": ""
     },
+    "holiday": "Holiday",
     "manualTimeEntryButtonTxt": "Add Time Entry",
     "addTimeEntrySuccessTitle": "Request Submitted",
     "addTimeEntrySuccessDes": "Your time log has has been submitted for approval successfully",

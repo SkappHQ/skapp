@@ -275,6 +275,7 @@ export type TableHeaderTypes = {
 export type HTMLTableHeaderTypes = {
   id: string | number;
   label: string;
+  ariaLabel?: string;
   sticky?: boolean;
   subtitle?: {
     text?: string;

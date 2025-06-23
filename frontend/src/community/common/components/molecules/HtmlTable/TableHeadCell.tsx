@@ -4,10 +4,16 @@ import { ReactNode } from "react";
 interface TableHeadCellProps {
   children: ReactNode;
   scope?: "col" | "row" | "colgroup" | "rowgroup";
+  ariaLabel?: string;
   className?: string;
 }
 
-const TableHeadCell = ({ children, scope, className }: TableHeadCellProps) => {
+const TableHeadCell = ({
+  children,
+  scope,
+  className,
+  ariaLabel = ""
+}: TableHeadCellProps) => {
   const theme: Theme = useTheme();
 
   return (
@@ -21,9 +27,10 @@ const TableHeadCell = ({ children, scope, className }: TableHeadCellProps) => {
         padding: "12px 16px",
         minWidth: "100px",
         height: "48px",
-        textAlign: "center",
+        textAlign: "center"
       }}
       scope={scope}
+      aria-label={ariaLabel}
     >
       {children}
     </th>

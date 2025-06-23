@@ -31,7 +31,6 @@ const Table: FC<Props & CommonTableProps> = ({
 }) => {
   return (
     <div
-      aria-label={`${tableName} table`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -60,6 +59,21 @@ const Table: FC<Props & CommonTableProps> = ({
             height: "100%"
           }}
         >
+          <caption
+            style={{
+              position: "absolute",
+              width: "0.0625rem",
+              height: "0.0625rem",
+              padding: 0,
+              margin: "-0.0625rem",
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: 0
+            }}
+            tabIndex={0}
+            aria-label={`${tableName}`}
+          />
           <TableHead headers={headers} rows={rows} />
           <TableBody headers={headers} rows={rows} />
         </table>

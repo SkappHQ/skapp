@@ -25,9 +25,9 @@ const HtmlChip = ({
   return (
     <span
       style={{
-        fontSize: "0.625rem",
-        lineHeight: "0.9375rem",
-        padding: "0.1875rem 0.1875rem",
+        fontSize: "0.75rem",
+        lineHeight: "1rem",
+        padding: "0.25rem 1rem 0.25rem 0.1875rem",
         borderRadius: "6.25rem",
         backgroundColor: theme.palette.common.white,
         border: `0.0625rem solid ${theme.palette.grey[500]}`,
