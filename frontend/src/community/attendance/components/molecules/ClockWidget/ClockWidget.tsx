@@ -97,7 +97,7 @@ const ClockWidget = (): JSX.Element => {
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
     >
-      <Timer disabled={!isDisabled} />
+      <Timer disabled={isDisabled} />
       <ClockInButton disabled={isDisabled} />
     </Stack>
     // </Tooltip>
