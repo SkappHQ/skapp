@@ -73,7 +73,8 @@
     },
     "inputPhoneNumber": {
       "countryCode": "country code",
-      "phoneNumber": "phone number"
+      "phoneNumber": "phone number",
+      "countryCodeDescription": "Country code +{{countryCode}}"
     },
     "search": {
       "label": "Enter Search Keyword"
