@@ -87,7 +87,6 @@ const TimesheetAnalytics = ({
       <EmployeeTimeRecordsTable
         recordData={recordData}
         exportRecordData={exportRecordData}
-        selectedTab={selectedTab}
         isExportRecordDataLoading={isExportRecordDataLoading}
         isRecordLoading={isRecordLoading}
         teamName={selectedTeamName || timesheetAnalyticsSelectedTeamName}

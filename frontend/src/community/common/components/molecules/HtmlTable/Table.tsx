@@ -2,7 +2,6 @@ import { FC } from "react";
 
 import { TableNames } from "~community/common/enums/Table";
 import { HTMLTableHeaderTypes } from "~community/common/types/CommonTypes";
-import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 import TableActionToolbar, {
   TableHeadActionRowProps
@@ -10,6 +9,7 @@ import TableActionToolbar, {
 import TableBody from "./TableBody";
 import TableFoot, { TableFootProps } from "./TableFoot";
 import TableHead from "./TableHead";
+import { TableSkeletonProps } from "./TableSkeleton";
 
 interface Props {
   actionToolbar?: TableHeadActionRowProps;
@@ -22,7 +22,8 @@ export interface CommonTableProps {
   rows?: any[];
 }
 
-const Table: FC<Props & CommonTableProps> = ({
+const Table: FC<Props & CommonTableProps & TableSkeletonProps> = ({
+  loadingState,
   actionToolbar,
   headers,
   rows,
@@ -36,7 +37,7 @@ const Table: FC<Props & CommonTableProps> = ({
         flexDirection: "column",
         width: "100%",
         maxWidth: "100%",
-        borderRadius: "8px",
+        borderRadius: "0.5rem",
         overflow: "hidden"
       }}
     >
@@ -75,7 +76,11 @@ const Table: FC<Props & CommonTableProps> = ({
             aria-label={`${tableName}`}
           />
           <TableHead headers={headers} rows={rows} />
-          <TableBody headers={headers} rows={rows} />
+          <TableBody
+            loadingState={loadingState}
+            headers={headers}
+            rows={rows}
+          />
         </table>
       </div>
       <TableFoot

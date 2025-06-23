@@ -28,7 +28,6 @@ import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 interface Props {
   recordData: TimeRecordDataResponseType;
   exportRecordData: TimeRecordDataResponseType;
-  selectedTab: string;
   orgName?: string;
   teamName?: string;
   isRecordLoading?: boolean;
@@ -38,7 +37,6 @@ interface Props {
 const EmployeeTimeRecordsTable = ({
   recordData,
   exportRecordData,
-  selectedTab,
   orgName,
   teamName,
   isRecordLoading,
@@ -203,6 +201,9 @@ const EmployeeTimeRecordsTable = ({
   return (
     <Table
       tableName={TableNames.ALL_TIMESHEETS}
+      loadingState={{
+        isLoading: isRecordLoading
+      }}
       headers={headers}
       rows={rows}
       tableFoot={{
