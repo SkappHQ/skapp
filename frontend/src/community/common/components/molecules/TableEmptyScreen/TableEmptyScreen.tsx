@@ -42,6 +42,8 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
 
   const classes = styles(theme);
 
+  const descriptionId = `table-empty-desc-${Math.random().toString(36).substr(2, 9)}`;
+
   return (
     <Stack sx={mergeSx([classes.wrapper, customStyles?.wrapper])}>
       <Stack
@@ -60,6 +62,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         )}
 
         <Typography
+          id={descriptionId}
           component="div"
           variant="body2"
           sx={mergeSx([classes.description, customStyles?.description])}
@@ -72,6 +75,9 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
             id={button?.id}
             shouldBlink={button?.shouldBlink}
             label={button?.label}
+            accessibility={{
+              ariaDescribedBy: descriptionId
+            }}
             startIcon={
               button?.startIcon ? <Icon name={button?.startIcon} /> : <></>
             }
