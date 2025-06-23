@@ -14,7 +14,7 @@ import InputPhoneNumber from "~community/common/components/molecules/InputPhoneN
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidNamePattern } from "~community/common/utils/validation";
-import useGetDefaultConuntryCode from "~community/people/hooks/useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmergencyContactRelationshipList } from "~community/people/utils/data/employeeSetupStaticData";
 import { employeeSecondaryEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -42,7 +42,7 @@ const SecondaryDetailsSection = forwardRef<RefCallback, Props>(
       employeeEmergencyContactDetails,
       setEmployeeSecondaryEmergencyContactDetails
     } = usePeopleStore((state) => state);
-    const countryCode = useGetDefaultConuntryCode();
+    const countryCode = useGetDefaultCountryCode();
 
     const initialValues = useMemo(
       () => ({
