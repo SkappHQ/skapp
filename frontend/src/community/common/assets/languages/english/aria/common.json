@@ -7,6 +7,9 @@
     "sideBar": "Side bar"
   },
   "components": {
+    "pagination" :{
+      "label": "pagination"
+    },
     "emojiPicker": {
       "icon": "Click me to open the emoji picker"
     },
