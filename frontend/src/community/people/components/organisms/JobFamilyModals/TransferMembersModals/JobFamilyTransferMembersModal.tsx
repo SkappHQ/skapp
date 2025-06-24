@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { SelectOption } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -37,16 +38,18 @@ const JobFamilyTransferMembersModal = () => {
     }));
   }, [currentDeletingJobFamily]);
 
-  const jobFamily = useMemo(() => {
-    return allJobFamilies
-      ?.filter(
-        (jobFamily) =>
-          jobFamily.jobFamilyId !== currentDeletingJobFamily?.jobFamilyId
-      )
-      .map((jobFamily) => ({
-        jobFamilyId: jobFamily.jobFamilyId,
-        name: jobFamily.name
-      }));
+  const jobFamily: SelectOption[] = useMemo(() => {
+    return (
+      allJobFamilies
+        ?.filter(
+          (jobFamily) =>
+            jobFamily.jobFamilyId !== currentDeletingJobFamily?.jobFamilyId
+        )
+        .map((jobFamily) => ({
+          label: jobFamily.name,
+          value: jobFamily.jobFamilyId
+        })) ?? []
+    );
   }, [allJobFamilies, currentDeletingJobFamily]);
 
   const employees = useMemo(() => {

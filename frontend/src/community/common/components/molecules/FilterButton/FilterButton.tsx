@@ -31,12 +31,18 @@ const FilterButton = ({
   handleResetBtnClick,
   children,
   isResetBtnDisabled,
-  selectedFilters
+  selectedFilters,
+  accessibility
 }: FilterButtonTypes): JSX.Element => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
   const translateText = useTranslator("commonComponents", "filterButton");
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "filterButton"
+  );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
@@ -72,7 +78,11 @@ const FilterButton = ({
 
   return (
     <Stack sx={classes.wrapper}>
-      <Stack sx={classes.container}>
+      <Stack
+        sx={classes.container}
+        role="group"
+        aria-label={accessibility?.ariaLabel}
+      >
         {visibleFilters.map((filter) => (
           <Chip
             key={filter.label}
@@ -86,6 +96,9 @@ const FilterButton = ({
                 filter.handleFilterDelete(filter.label);
               }
             }}
+            aria-label={translateAria(["appliedFilter"], {
+              filterLabel: pascalCaseFormatter(filter.label)
+            })}
             deleteIcon={
               <Box>
                 <CloseIcon fill="black" />

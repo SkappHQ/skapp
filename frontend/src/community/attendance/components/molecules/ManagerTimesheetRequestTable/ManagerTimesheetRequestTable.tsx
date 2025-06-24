@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FC, JSX } from "react";
@@ -30,6 +30,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
@@ -132,13 +133,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       field: "workedHours",
       headerName: translateText(["workedHourHeaderTxt"])
     },
-    { field: "status", headerName: "" }
+    { field: "status", headerName: translateText(["actionHeaderTxt"]) }
   ];
 
   const tableHeaders = columns.map((col) => ({
     id: col.field,
     label: col.headerName
   }));
+
   const transformToTableRows = () => {
     return tableData?.map((timesheetRequest: TimeRequestDataType) => ({
       id: timesheetRequest.timeRequestId,
@@ -220,29 +222,13 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       ),
       status:
         timesheetRequest?.status === TimeSheetRequestStates.PENDING ? (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              flex: 1,
-              maxWidth: "auto",
-              gap: "0.5rem"
-            }}
-          >
-            <Box
+          <>
+            <IconButton
               sx={{
-                height: "3rem",
-                width: "3rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 backgroundColor: theme.palette.grey[100],
-                borderRadius: "1.5rem",
-                ":hover": theme.palette.grey[200],
-                pointerEvents: isApproveDenyLoading ? "none" : "auto"
+                margin: "0rem 0.75rem 0rem auto"
               }}
+              aria-label="Decline request"
               onClick={() => {
                 declineTimesheetRequest(
                   timesheetRequest?.timeRequestId,
@@ -254,26 +240,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
               }}
             >
               <CloseIcon fill={"black"} />
-            </Box>
-            <Box
+            </IconButton>
+            <IconButton
               sx={{
-                height: "3rem",
-                width: "3rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: theme.palette.secondary.main,
-                borderRadius: "1.5rem",
-                border: "0.0625rem solid",
-                borderColor: theme.palette.secondary.dark,
-                cursor: "pointer",
-                ":hover": {
-                  transition: "box-shadow 0.3s ease",
-                  border: "0.125rem solid",
-                  borderColor: theme.palette.primary.dark
-                },
-                pointerEvents: isApproveDenyLoading ? "none" : "auto"
+                backgroundColor: theme.palette.secondary.light,
+                border: `0.0625rem solid ${theme.palette.secondary.dark}`,
+                margin: "0rem auto 0rem 0rem"
               }}
+              aria-label="Approve request"
               onClick={() => {
                 approveTimesheetRequest(
                   timesheetRequest?.timeRequestId,
@@ -285,29 +259,44 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
               }}
             >
               <CheckIcon fill={theme.palette.primary.dark} />
-            </Box>
-          </Box>
+            </IconButton>
+          </>
         ) : (
-          <Box sx={classes.statusOuterBoxStyles}>
-            <IconChip
-              label={timesheetRequest?.status?.toLowerCase()}
-              icon={requestTypeSelector(timesheetRequest?.status)}
-              chipStyles={classes.iconChipStyles}
-              isResponsive={true}
-              isTruncated={false}
-              mediumScreenWidth={1024}
-            />
-            <Box sx={classes.kebabMenuBoxStyle}>
-              {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: "0.5rem",
+                alignItems: "center",
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                margin: "0rem auto",
+                padding: "0.5rem 1rem"
+              }}
+            >
+              <Box
+                sx={{
+                  width: "0.5rem",
+                  height: "0.5rem",
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.success.light
+                }}
+              />
+              {pascalCaseFormatter(timesheetRequest?.status)}
+            </Box>
+            {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
+              <Box sx={classes.kebabMenuBoxStyle}>
                 <KebabMenu
                   id={timesheetRequest?.employee?.employeeId ?? 0}
                   menuItems={getKebabMenuOptions(
                     timesheetRequest.timeRequestId
                   )}
                 />
-              )}
-            </Box>
-          </Box>
+              </Box>
+            )}
+          </>
         )
     }));
   };

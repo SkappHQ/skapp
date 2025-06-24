@@ -1,12 +1,18 @@
-import { Box, Theme, Typography, useTheme } from "@mui/material";
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Box,
+  SelectChangeEvent,
+  Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
@@ -180,16 +186,16 @@ const CustomAllocationsReportTable: FC = () => {
     [columns]
   );
 
-  const handleYearClick = (event: React.MouseEvent<HTMLElement>): void => {
-    setReportsParams("year", event.currentTarget.innerText);
+  const handleYearClick = (event: SelectChangeEvent): void => {
+    setReportsParams("year", event.target.value);
   };
 
   const yearFilter = (
-    <Dropdown
-      onItemClick={handleYearClick}
-      selectedItem={reportsParams.year}
-      title={reportsParams.year}
-      items={years}
+    <RoundedSelect
+      id="custom-allocations-report-table-year-filter"
+      onChange={handleYearClick}
+      value={reportsParams.year}
+      options={years}
     />
   );
   const transformToTableRows = useCallback(() => {

@@ -86,6 +86,10 @@ interface Props {
   customStyles?: {
     header?: SxProps<Theme>;
   };
+  ariaDescribedBy?: {
+    primaryButton?: string;
+    secondaryButton?: string;
+  };
 }
 
 const ContentLayout = ({
@@ -114,6 +118,7 @@ const ContentLayout = ({
   id,
   shouldBlink,
   customStyles,
+  ariaDescribedBy,
   showBackButtonTooltip = true
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
@@ -278,15 +283,24 @@ const ContentLayout = ({
               </IconButton>
             )}
             {!isTitleHidden && (
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="h1">{title}</Typography>
-                {titleAddon}
-              </Stack>
+              <header aria-label={translateAria(["pageHeader"])}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography variant="h1" component="h1" id="page-title">
+                    {title}
+                  </Typography>
+                  {titleAddon && (
+                    <div aria-live="polite" aria-atomic="true">
+                      {titleAddon}
+                    </div>
+                  )}
+                </Stack>
+              </header>
             )}
             {subtitleNextToTitle && (
               <Typography
                 variant="body2"
                 component="h3"
+                id="subtitle-next-to-title"
                 sx={{
                   color: theme.palette.primary.dark
                 }}
@@ -307,6 +321,9 @@ const ContentLayout = ({
                 dataTestId={contentLayoutTestId.buttons.secondaryButton}
                 shouldBlink={shouldBlink?.secondaryBtn}
                 id={id?.secondaryBtn}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.secondaryButton
+                }}
               />
             )}
             {primaryButtonText && (
@@ -322,6 +339,9 @@ const ContentLayout = ({
                 shouldBlink={shouldBlink?.primaryBtn}
                 id={id?.primaryBtn}
                 disabled={isPrimaryBtnDisabled}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.primaryButton
+                }}
               />
             )}
             {customRightContent}

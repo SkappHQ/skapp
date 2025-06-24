@@ -1,6 +1,6 @@
 {
   "jobFamily": {
-    "addJobTitleButton": "Add job title button",
+    "addJobTitleButton": "Add job title",
     "jobTitleField": "{{jobTitleName}} job title field"
   },
   "teams": {
@@ -24,7 +24,7 @@
       "selectRelationship": "Select relationship"
     },
     "healthAndOtherDetails": {
-      "selectBloodGroup": " Select blood group"
+      "selectBloodGroup": "Select blood group"
     },
     "emergencyDetails": {
       "selectRelationship": "Select relationship"
@@ -37,8 +37,7 @@
       "selectEmploymentType": "Select employment type",
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
-      "selectCurrentEmploymentChecked": "Select current employment checkbox is checked",
-      "selectCurrentEmploymentUnChecked": "Select current employment checkbox is unchecked"
+      "selectCurrentEmploymentChecked": "Select current employment"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
@@ -61,5 +60,23 @@
       "janToDec": "January to December",
       "decToJan": "December to January"
     }
+  },
+  "directory": {
+    "userBulkUpload": "User Bulk",
+    "uploadPeople": "Upload People",
+    "addPeopleModal": {
+      "superAdminToggle": "Super Admin Toggle",
+      "peoplePermissions": "People Permissions",
+      "leavePermissions": "Leave Permissions",
+      "attendancePermissions": "Attendance Permissions",
+      "eSignPermissions": "E-sign Permissions"
+    },
+    "directoryTable": "Directory Table",
+    "pendingInvitationsPage": "Pending Invitations Page",
+    "sortBy": "Sort by: {{sortBy}}",
+    "sortDropdown": "Sort by Dropdown",
+    "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "null": "null"
   }
 }

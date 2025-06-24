@@ -4,7 +4,6 @@ import { FC } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { TableTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -19,6 +18,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
     right?: {
       iconName?: IconName;
@@ -26,6 +28,9 @@ export interface TableBodyActionColumnProps {
       height?: string;
       styles?: SxProps<Theme>;
       onClick: (data: any) => void;
+      accessibility?: {
+        rowKey?: string;
+      };
     };
   };
 }
@@ -39,25 +44,38 @@ const DELETE_BUTTON_ICON_WIDTH = "10";
 const DELETE_BUTTON_ICON_HEIGHT = "12";
 
 const TableBodyActionColumn: FC<
-  TableTypes & TableBodyActionColumnProps & TableRowDataProps
-> = ({ row, isEnabled = false, actionBtns, tableName, isRowDisabled }) => {
-  const translateText = useTranslator(
+  TableBodyActionColumnProps & TableRowDataProps
+> = ({ row, isEnabled = false, actionBtns, isRowDisabled }) => {
+  const theme: Theme = useTheme();
+  const classes = styles(theme);
+
+  const translateAria = useTranslator(
     "commonAria",
     "components",
     "table",
     "tableBody",
     "actionColumn"
   );
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
+
+  const recordName = actionBtns?.left?.accessibility?.rowKey
+    ? row?.[actionBtns?.left?.accessibility?.rowKey]
+    : "";
+
+  const editButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["editButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["editButton"]);
+
+  const deleteButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
+    ? translateAria(["deleteButtonWithRecordIdentifier"], {
+        recordName: recordName
+      })
+    : translateAria(["deleteButton"]);
 
   return (
     isEnabled && (
-      <TableCell
-        sx={mergeSx([classes.tableBody.actionColumn.cell])}
-        role="cell"
-        aria-label={`${tableName}-table-body-action-column-cell-${row.id}`}
-      >
+      <TableCell sx={mergeSx([classes.tableBody.actionColumn.cell])}>
         {actionBtns?.left && (
           <IconButton
             icon={
@@ -67,7 +85,6 @@ const TableBodyActionColumn: FC<
                 height={actionBtns?.left?.height}
               />
             }
-            id={`${tableName}-table-body-action-column-icon-btn-left-${row.id}`}
             hoverEffect={false}
             buttonStyles={mergeSx([
               classes.tableBody.actionColumn.icons.left,
@@ -75,10 +92,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.left?.onClick(row.actionData)}
-            ariaLabel={translateText(["editButton"], {
-              tableName: tableName,
-              ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-            })}
+            ariaLabel={editButtonAriaLabel}
           />
         )}
         {actionBtns?.right && (
@@ -92,7 +106,6 @@ const TableBodyActionColumn: FC<
                 height={actionBtns?.right?.height ?? DELETE_BUTTON_ICON_HEIGHT}
               />
             }
-            id={`${tableName}-table-body-action-column-icon-btn-right-${row.id}`}
             hoverEffect={false}
             buttonStyles={mergeSx([
               classes.tableBody.actionColumn.icons.right,
@@ -100,10 +113,7 @@ const TableBodyActionColumn: FC<
             ])}
             disabled={isRowDisabled?.(row.id)}
             onClick={() => actionBtns?.right?.onClick(row.actionData)}
-            ariaLabel={translateText(["deleteButton"], {
-              tableName: tableName,
-              ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-            })}
+            ariaLabel={deleteButtonAriaLabel}
           />
         )}
       </TableCell>

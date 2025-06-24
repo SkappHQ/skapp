@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FC, JSX } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { EmployeeLeaveRequestType } from "~community/leave/types/EmployeeLeaveRequestTypes";
@@ -70,6 +70,9 @@ const StatusPopupRow: FC<Props> = ({
       >
         {iconName && (
           <IconChip
+            accessibility={{
+              ariaLabel: iconName
+            }}
             label={iconName}
             icon={icon}
             chipStyles={{
@@ -78,10 +81,11 @@ const StatusPopupRow: FC<Props> = ({
               py: "12px"
             }}
             isTruncated={false}
+            tabIndex={-1}
           />
         )}
         {durationByDays && (
-          <BasicChip
+          <ReadOnlyChip
             label={durationByDays}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],
@@ -90,7 +94,7 @@ const StatusPopupRow: FC<Props> = ({
           />
         )}
         {durationDate && (
-          <BasicChip
+          <ReadOnlyChip
             label={durationDate}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],

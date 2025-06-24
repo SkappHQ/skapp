@@ -1,7 +1,7 @@
 import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
 import { FC, JSX } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { LeaveTypes } from "~community/leave/types/CustomLeaveAllocationTypes";
@@ -20,7 +20,9 @@ interface Props {
   styles?: Record<string, string>;
   textStyles?: Record<string, string>;
   role?: string | undefined;
-  employee?: { empName: ""; avatarUrl: "" } | leaveRequestRowDataTypes;
+  employee?:
+    | { empName: ""; lastName: ""; avatarUrl: "" }
+    | leaveRequestRowDataTypes;
   reviewer?: Manager;
   addLabel?: boolean;
   ariaLabel?: string;
@@ -74,6 +76,9 @@ const LeaveStatusPopupRow: FC<Props> = ({
       >
         {iconType && (
           <IconChip
+            accessibility={{
+              ariaLabel: iconType
+            }}
             label={iconType}
             icon={icon ?? iconType}
             chipStyles={{
@@ -82,10 +87,11 @@ const LeaveStatusPopupRow: FC<Props> = ({
               py: "12px"
             }}
             isTruncated={false}
+            tabIndex={-1}
           />
         )}
         {durationByDays && (
-          <BasicChip
+          <ReadOnlyChip
             label={durationByDays}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],
@@ -94,7 +100,7 @@ const LeaveStatusPopupRow: FC<Props> = ({
           />
         )}
         {durationDate && (
-          <BasicChip
+          <ReadOnlyChip
             label={durationDate}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],
@@ -121,7 +127,7 @@ const LeaveStatusPopupRow: FC<Props> = ({
         {isRecipient && role === "member" && (
           <AvatarChip
             firstName={employee?.empName ?? ""}
-            lastName={employee?.empName ?? ""}
+            lastName={employee?.lastName ?? ""}
             avatarUrl={employee?.avatarUrl}
             chipStyles={{
               backgroundColor: theme.palette.grey[100],

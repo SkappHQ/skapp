@@ -29,7 +29,7 @@ import {
   TeamResultsType
 } from "~community/people/types/EmployeeTypes";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 
 interface GetEmployeeParams {
   id?: number;
@@ -51,7 +51,7 @@ const useDetectChange = ({ id, isProfile = false }: GetEmployeeParams) => {
     employeePreviousEmploymentDetails,
     employeeVisaDetails
   } = usePeopleStore((state) => state);
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
   const employeeRef = useRef<EmployeeDetails | undefined>();
 
   const getEmployeeById = useGetEmployeeById(id as number);

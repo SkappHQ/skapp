@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 
 import { useCommonStore } from "~community/common/stores/commonStore";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 
 jest.mock("~community/common/stores/commonStore", () => ({
   useCommonStore: jest.fn()
@@ -20,7 +20,7 @@ describe("useGetDefaultConuntryCode", () => {
   it("should return the correct country code when a matching country is found", () => {
     (useCommonStore as jest.Mock).mockReturnValue({ country: "Sri Lanka" });
 
-    const { result } = renderHook(() => useGetDefaultConuntryCode());
+    const { result } = renderHook(() => useGetDefaultCountryCode());
 
     expect(result.current).toBe("94");
   });
@@ -30,7 +30,7 @@ describe("useGetDefaultConuntryCode", () => {
       country: "Unknown Country"
     });
 
-    const { result } = renderHook(() => useGetDefaultConuntryCode());
+    const { result } = renderHook(() => useGetDefaultCountryCode());
 
     expect(result.current).toBe("94");
   });
@@ -38,7 +38,7 @@ describe("useGetDefaultConuntryCode", () => {
   it("should return the default country code '94' when no country is provided", () => {
     (useCommonStore as jest.Mock).mockReturnValue({ country: null });
 
-    const { result } = renderHook(() => useGetDefaultConuntryCode());
+    const { result } = renderHook(() => useGetDefaultCountryCode());
 
     expect(result.current).toBe("94");
   });
@@ -46,7 +46,7 @@ describe("useGetDefaultConuntryCode", () => {
   it("should handle case-insensitive country name matching", () => {
     (useCommonStore as jest.Mock).mockReturnValue({ country: "sri lanka" });
 
-    const { result } = renderHook(() => useGetDefaultConuntryCode());
+    const { result } = renderHook(() => useGetDefaultCountryCode());
 
     expect(result.current).toBe("94");
   });

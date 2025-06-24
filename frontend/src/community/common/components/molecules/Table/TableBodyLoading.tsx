@@ -1,7 +1,6 @@
 import { SxProps, TableCell, TableRow, Theme, useTheme } from "@mui/material";
 import { FC, JSX } from "react";
 
-import { TableTypes } from "~community/common/types/CommonTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import TableSkeleton from "./TableSkeleton";
@@ -23,8 +22,7 @@ export interface TableBodyLoadingStateProps {
   isCheckboxSelectionEnabled?: boolean;
 }
 
-const TableBodyLoadingState: FC<TableTypes & TableBodyLoadingStateProps> = ({
-  tableName,
+const TableBodyLoadingState: FC<TableBodyLoadingStateProps> = ({
   headers,
   loadingState,
   isActionColumnEnabled = false,
@@ -39,8 +37,6 @@ const TableBodyLoadingState: FC<TableTypes & TableBodyLoadingStateProps> = ({
         classes.tableBody.loadingState.row,
         loadingState?.customStyles?.row
       ])}
-      role="row"
-      aria-label={`${tableName}-table-body-loading-state-row`}
     >
       <TableCell
         colSpan={
@@ -52,10 +48,8 @@ const TableBodyLoadingState: FC<TableTypes & TableBodyLoadingStateProps> = ({
           classes.tableBody.loadingState.cell,
           loadingState?.customStyles?.cell
         ])}
-        role="cell"
-        aria-label={`${tableName}-table-body-loading-state-cell`}
       >
-        <TableSkeleton rows={loadingState?.skeleton?.rows || 4} />
+        <TableSkeleton rows={loadingState?.skeleton?.rows ?? 4} />
       </TableCell>
     </TableRow>
   );

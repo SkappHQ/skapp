@@ -89,47 +89,55 @@ const AvatarChip: FC<Props> = ({
     );
   }
 
-  return (
-    <Tooltip
-      title={`${firstName} ${lastName}`}
-      placement={TooltipPlacement.TOP}
-      open={isTooltipOpen}
-      ariaLabel={`${firstName} ${lastName}`}
-    >
-      <Chip
-        onMouseEnter={handleTooltipOpen}
-        onMouseLeave={handleTooltipClose}
-        avatar={
-          <Avatar
-            firstName={firstName}
-            lastName={lastName}
-            alt={`${firstName} ${lastName}`}
-            src={avatarUrl as string}
-            onClick={onClickChip}
-            sx={classes.avatar}
-          />
-        }
-        label={
-          isMediumScreen && isResponsiveLayout
-            ? firstName
-            : `${firstName} ${lastName}`
-        }
-        sx={mergeSx([
-          classes.chip(isNotEllipsis),
-          hasStyledBadge ? classes.avatarImage : {},
-          chipStyles
-        ])}
-        onClick={onClickChip}
-        onDelete={isDeleteAvailable && onDeleteChip ? onDeleteChip : undefined}
-        deleteIcon={
-          isDeleteAvailable ? (
-            <Icon name={IconName.CLOSE_ICON} width="10" height="10" />
-          ) : undefined
-        }
-        disabled={isDisabled}
-      />
-    </Tooltip>
+  const chipComponent = (
+    <Chip
+      onMouseEnter={handleTooltipOpen}
+      onMouseLeave={handleTooltipClose}
+      avatar={
+        <Avatar
+          firstName={firstName}
+          lastName={lastName}
+          alt={`${firstName} ${lastName}`}
+          src={avatarUrl as string}
+          onClick={onClickChip}
+          sx={classes.avatar}
+        />
+      }
+      label={
+        isMediumScreen && isResponsiveLayout
+          ? firstName
+          : `${firstName} ${lastName}`
+      }
+      sx={mergeSx([
+        classes.chip(isNotEllipsis),
+        hasStyledBadge ? classes.avatarImage : {},
+        chipStyles
+      ])}
+      onClick={onClickChip}
+      onDelete={isDeleteAvailable && onDeleteChip ? onDeleteChip : undefined}
+      deleteIcon={
+        isDeleteAvailable ? (
+          <Icon name={IconName.CLOSE_ICON} width="10" height="10" />
+        ) : undefined
+      }
+      disabled={isDisabled}
+    />
   );
+
+  if (onClickChip || isTooltipEnabled) {
+    return (
+      <Tooltip
+        title={`${firstName} ${lastName}`}
+        placement={TooltipPlacement.TOP}
+        open={isTooltipOpen}
+        ariaLabel={`${firstName} ${lastName}`}
+      >
+        {chipComponent}
+      </Tooltip>
+    );
+  }
+
+  return chipComponent;
 };
 
 export default AvatarChip;

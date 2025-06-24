@@ -22,7 +22,7 @@ import {
 } from "~community/common/utils/validation";
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "~community/people/constants/configs";
 import useGetCountryList from "~community/people/hooks/useGetCountryList";
-import useGetDefaultConuntryCode from "~community/people/hooks/useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { employeeContactDetailsValidation } from "~community/people/utils/peopleValidations";
 
@@ -48,7 +48,7 @@ const ContactDetailsSection = forwardRef<FormMethods, props>((props, ref) => {
     setEmployeeContactDetails,
     employeeDataChanges
   } = usePeopleStore((state) => state);
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
 
   const initialValues = useMemo(
     () => ({

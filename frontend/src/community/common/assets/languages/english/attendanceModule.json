@@ -78,6 +78,7 @@
     "fromHeaderTxt": "FROM",
     "toHeaderTxt": "TO",
     "statusHeaderTxt": "STATUS",
+    "actionHeaderTxt": "ACTION",
     "approveSuccessTitle": "Request Approved",
     "approveSuccessDes": "{{name}}'s time entry request has been approved successfully.",
     "approveFailTitle": "Oops! Something went wrong.l",

@@ -51,11 +51,18 @@ const DownloadCsv = () => {
   return (
     <Box>
       <Box sx={classes.wrapper}>
-        <Typography variant="body1" sx={classes.description}>
+        <Typography
+          variant="body1"
+          sx={classes.description}
+          id="download-csv-modal-description"
+        >
           {translateText(["downloadCsvModalDes"])}
         </Typography>
         <Button
           label={translateText(["downloadCsvButton"])}
+          accessibility={{
+            ariaDescribedBy: "download-csv-modal-description"
+          }}
           buttonStyle={ButtonStyle.SECONDARY}
           styles={classes.downloadBtn}
           endIcon={IconName.DOWNLOAD_ICON}

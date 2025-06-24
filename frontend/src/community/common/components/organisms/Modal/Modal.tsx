@@ -63,8 +63,8 @@ const Modal: FC<Props> = ({
     >
       <Stack
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
-        role="dialog"
-        aria-label={`${title} ${translateAria(["modal"])}`}
+        role="modal"
+        aria-label={translateAria(["modal"], { title })}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
@@ -77,7 +77,7 @@ const Modal: FC<Props> = ({
             <IconButton
               sx={classes.closeIconBtn}
               onClick={(event) => onCloseModal(event, "backdropClick")}
-              aria-label={translateAria(["closeIconBtn"])}
+              aria-label={translateAria(["closeIconBtn"], { title })}
             >
               {customCloseIcon ? (
                 customCloseIcon

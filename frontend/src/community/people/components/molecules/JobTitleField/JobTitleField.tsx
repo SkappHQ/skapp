@@ -137,8 +137,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
 
               return (
                 <Box
-                  key={index}
-                  tabIndex={0}
+                  key={jobTitle.jobTitleId}
                   onFocus={() => setFocusedInputField(index)}
                 >
                   <InputField

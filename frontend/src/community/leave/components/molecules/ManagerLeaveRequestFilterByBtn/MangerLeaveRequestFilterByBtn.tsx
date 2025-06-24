@@ -47,9 +47,10 @@ const ManagerLeaveRequestFilterByBtn = ({
 
   return (
     <>
+      {" "}
       <Stack direction="row" alignItems="center" gap={0.5}>
         {leaveRequestFilterOrder.length > 0 && (
-          <Typography>Filter :</Typography>
+          <Typography sx={{ whiteSpace: "nowrap" }}>Filter:</Typography>
         )}
         <ShowSelectedFilters
           filterOptions={leaveRequestFilterOrder}

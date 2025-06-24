@@ -6,7 +6,7 @@ import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
 import Button from "~community/common/components/atoms/Button/Button";
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appModes } from "~community/common/constants/configs";
@@ -49,6 +49,8 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
   );
 
   const commonTranslateText = useTranslator("words");
+
+  const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
   const handleApprove = (): void => {
     const requestData = {
@@ -176,29 +178,54 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
         justifyContent="space-between"
         sx={{ marginBottom: "0.75rem" }}
         component="div"
-        tabIndex={0}
-        aria-label={`${leaveRequestData?.empName ?? ""} requested a ${
-          leaveRequestData?.leaveType ?? ""
-        } leave`}
       >
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          <Avatar
-            firstName={leaveRequestData?.empName ?? ""}
-            lastName={leaveRequestData?.lastName ?? ""}
-            src={leaveRequestData.avatarUrl ?? ""}
-          />
-          <Typography variant="body2" sx={{ fontSize: "1rem" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1.5}
+          tabIndex={0}
+          role="group"
+          aria-label={translateAria(["employeeName"], {
+            firstName: leaveRequestData?.empName,
+            lastName: leaveRequestData?.lastName
+          })}
+        >
+          <Box aria-hidden="true">
+            <Avatar
+              firstName={leaveRequestData?.empName ?? ""}
+              lastName={leaveRequestData?.lastName ?? ""}
+              src={leaveRequestData.avatarUrl ?? ""}
+            />
+          </Box>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: "1rem" }}
+            aria-hidden="true"
+          >
             {translateText(["employeeName"], {
               employeeName: leaveRequestData?.empName
             }) ?? ""}
           </Typography>
         </Stack>
-        <IconChip
-          label={leaveRequestData?.leaveType ?? ""}
-          isTruncated={false}
-          icon={leaveRequestData?.leaveEmoji ?? ""}
-          chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
-        />
+        <Box
+          tabIndex={0}
+          role="group"
+          aria-label={translateAria(["leaveType"], {
+            leaveType: leaveRequestData?.leaveType
+          })}
+        >
+          <IconChip
+            accessibility={{
+              ariaLabel: leaveRequestData?.leaveType,
+              ariaHidden: true
+            }}
+            label={leaveRequestData?.leaveType ?? ""}
+            isTruncated={false}
+            icon={leaveRequestData?.leaveEmoji ?? ""}
+            chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
+            tabIndex={-1}
+          />
+        </Box>
       </Stack>
 
       <Box
@@ -215,15 +242,12 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
             sx={{ pb: "1rem" }}
             component="div"
             tabIndex={0}
-            aria-label={`Duration is ${leaveRequestData?.days ?? ""} leave on ${
-              leaveRequestData?.dates ?? ""
-            }`}
           >
             <Typography variant="body2" sx={{ fontSize: "1rem" }}>
               {translateText(["duration"])}:
             </Typography>
             <Stack direction="row" spacing={1}>
-              <BasicChip
+              <ReadOnlyChip
                 label={
                   typeof leaveRequestData?.days === "number"
                     ? `${leaveRequestData.days} ${commonTranslateText(["days"])}`
@@ -231,7 +255,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                 }
                 chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
               />
-              <BasicChip
+              <ReadOnlyChip
                 label={leaveRequestData?.dates ?? ""}
                 chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
               />
@@ -245,36 +269,43 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
               }) ?? ""
             }
             isDisabled={true}
+            tabIndex={0}
           />
+          {leaveRequestData.attachments &&
+            leaveRequestData.attachments.length > 0 && (
+              <Stack
+                sx={{
+                  pt: "1rem",
+                  gap: 1
+                }}
+                tabIndex={0}
+              >
+                <Typography variant="body2" sx={{ fontSize: "1rem" }}>
+                  {translateText(["attachments"])}
+                </Typography>
 
-          <Stack
-            sx={{
-              pt: "1rem",
-              gap: 1
-            }}
-          >
-            <Typography variant="body2" sx={{ fontSize: "1rem" }}>
-              {translateText(["attachments"])}
-            </Typography>
-
-            <Box>
-              {leaveRequestData.attachments &&
-                leaveRequestData.attachments.length > 0 &&
-                leaveRequestData.attachments.map((attachement, index) => (
-                  <IconChip
-                    key={index}
-                    label={`Attachment ${index}`}
-                    chipStyles={{
-                      backgroundColor: "grey.100",
-                      py: "0.75rem",
-                      px: "0.75rem"
-                    }}
-                    icon={<CopyIcon />}
-                    onClick={() => downloadAttachment(attachement.url)}
-                  />
-                ))}
-            </Box>
-          </Stack>
+                <Box>
+                  {leaveRequestData.attachments &&
+                    leaveRequestData.attachments.length > 0 &&
+                    leaveRequestData.attachments.map((attachement, index) => (
+                      <IconChip
+                        accessibility={{
+                          ariaLabel: `Attachment ${index + 1}`
+                        }}
+                        key={index}
+                        label={`Attachment ${index}`}
+                        chipStyles={{
+                          backgroundColor: "grey.100",
+                          py: "0.75rem",
+                          px: "0.75rem"
+                        }}
+                        icon={<CopyIcon />}
+                        onClick={() => downloadAttachment(attachement.url)}
+                      />
+                    ))}
+                </Box>
+              </Stack>
+            )}
         </Box>
       </Box>
 

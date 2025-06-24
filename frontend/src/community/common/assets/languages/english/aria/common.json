@@ -16,7 +16,7 @@
       "pickColor": "Select color {{color}}"
     },
     "backButton": "Click me to go to previous page",
-    "filterBtn": "Click me to open filter menu",
+    "filterBtn": "Filter all leave requests",
     "inputDate": {
       "tooltip": "tooltip",
       "calendarIcon": "Click me to open {{name}} calendar"
@@ -31,7 +31,11 @@
       "uploadProfilePicture": "Upload profile picture"
     },
     "dragAndDrop": {
-      "ariaLabel": "Drag and Drop your file here"
+      "ariaLabel": "{{componentName}} File Upload",
+      "uploadedFiles": {
+        "label": "Uploaded File: {{fileName}}",
+        "description": "Click on me to change the uploaded file"
+      }
     },
     "drawer": {
       "drawer": "Drawer",
@@ -44,28 +48,23 @@
       "left": "Previous"
     },
     "modal": {
-      "modal": "modal",
-      "closeIconBtn": "Close modal"
+      "modal": "{{title}} modal",
+      "closeIconBtn": "Close {{title}} modal"
     },
     "switch": {
       "ariaLabel": "Switch on"
     },
     "table": {
       "tableHead": {
-        "tableHeadLabel": "{{tableName}} table head",
-        "tableHeadRowLabel": "{{tableName}} table head row",
-        "checkbox": "Check all the {{tableName}}",
-        "tableHeadCell": "{{tableName}} table head {{headerLabel}} cell",
-        "tableHeadActionCell": "{{tableName}} table head actions column cell"
+        "checkbox": "Check all the {{tableName}}"
       },
       "tableBody": {
-        "tableBodyLabel": "{{tableName}} table body",
-        "row": "{{tableName}} table {{ariaLabel}} record",
         "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",
-        "tableBodyCell": "{{tableName}} table body {{headerLabel}} cell {{rowId}}",
         "actionColumn": {
-          "editButton": "Edit {{tableName}}",
-          "deleteButton": "Delete {{tableName}}"
+          "editButton": "Edit",
+          "deleteButton": "Delete",
+          "editButtonWithRecordIdentifier": "Edit {{recordName}}",
+          "deleteButtonWithRecordIdentifier": "Delete {{recordName}}"
         }
       }
     },
@@ -81,6 +80,9 @@
     },
     "iconChip": {
       "label": "icon chip"
+    },
+    "filterButton": {
+      "appliedFilter": "Applied filter {{filterLabel}}"
     }
   },
   "modals": {
@@ -90,6 +92,14 @@
     }
   },
   "contentLayout": {
-    "backButton": "Back Button"
+    "backButton": "Back Button",
+    "pageHeader": "Page header"
+  },
+  "contentWithDrawer": {
+    "contentAreaWithDrawer": "Main content area with drawer"
+  },
+  "dateRangePicker": {
+    "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date",
+    "noSelectedDateLabel": "Press enter to select date"
   }
 }

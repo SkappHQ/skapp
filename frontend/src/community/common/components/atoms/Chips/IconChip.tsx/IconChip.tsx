@@ -11,6 +11,12 @@ import {
 import styles from "./styles";
 
 interface Props {
+  accessibility: {
+    ariaLabel?: string;
+    ariaDescription?: string;
+    ariaHidden?: boolean;
+    ariaDescribedBy?: string;
+  };
   label?: string;
   icon?: JSX.Element | string;
   chipStyles?: SxProps;
@@ -29,6 +35,11 @@ interface Props {
 const IconChip = forwardRef<HTMLDivElement, Props>(
   (
     {
+      accessibility = {
+        ariaHidden: false,
+        ariaLabel: "",
+        ariaDescription: ""
+      },
       icon,
       label: originalLabel,
       chipStyles,
@@ -85,6 +96,9 @@ const IconChip = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         component="div"
         icon={renderIcon()}
+        aria-hidden={accessibility?.ariaHidden}
+        aria-description={accessibility?.ariaDescription}
+        aria-describedby={accessibility?.ariaDescribedBy}
         deleteIcon={endIcon}
         onDelete={endIcon ? onDelete : undefined}
         data-testid={dataTestId}
@@ -98,7 +112,10 @@ const IconChip = forwardRef<HTMLDivElement, Props>(
           emojiSize,
           chipStyles
         })}
-        aria-label={`${originalLabel} ${translateAria(["label"])}`}
+        aria-label={
+          accessibility?.ariaLabel ??
+          `${originalLabel} ${translateAria(["label"])}`
+        }
         tabIndex={tabIndex}
       />
     );

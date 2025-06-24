@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FC, useMemo, useState } from "react";
 
@@ -40,6 +40,8 @@ const LeaveTypeCard: FC<Props> = ({ entitlement, managers }: Props) => {
     "myRequests",
     "leaveAllocation"
   );
+
+  const translateAria = useTranslator("leaveAria", "leaveTypeCard");
 
   const { setToastMessage } = useToast();
 
@@ -100,7 +102,7 @@ const LeaveTypeCard: FC<Props> = ({ entitlement, managers }: Props) => {
     <Stack
       role="button"
       tabIndex={0}
-      aria-disabled={!balanceInDays || !managers || isExpired}
+      aria-disabled={!managers}
       sx={
         !balanceInDays || !managers || isExpired
           ? mergeSx([classes.activeCard, classes.disabledCard])
@@ -115,8 +117,13 @@ const LeaveTypeCard: FC<Props> = ({ entitlement, managers }: Props) => {
           handleClick();
         }
       }}
+      aria-label={
+        !balanceInDays || isExpired
+          ? translateAria(["entitlementOver"], { name })
+          : `${name}  ${balanceInDays} / ${totalDaysAllocated} ${translateAria(["available"])}  `
+      }
     >
-      <Stack sx={classes.leftContent}>
+      <Stack sx={classes.leftContent} aria-hidden={isExpired || !balanceInDays}>
         <Typography variant="body1">
           {name} &nbsp;
           {isMouseOn &&
@@ -136,8 +143,9 @@ const LeaveTypeCard: FC<Props> = ({ entitlement, managers }: Props) => {
         </Stack>
       </Stack>
       <Stack sx={classes.rightContent}>
-        {(!isMouseOn || !balanceInDays || !managers || isExpired) &&
-          getEmoji(emojiCode)}
+        {(!isMouseOn || !balanceInDays || !managers || isExpired) && (
+          <Box aria-hidden="true">{getEmoji(emojiCode)}</Box>
+        )}
         {isMouseOn && !!balanceInDays && managers && !isExpired && (
           <Button
             label={translateText(["applyBtn"])}

@@ -16,6 +16,8 @@ export const MONTH_YEAR_FORMAT = "MMM yyyy"; //eg: Oct 2024
 
 export const WEEKDAY_DAY_MONTH_YEAR_FORMAT = "EEE, dd LLL yyyy"; //Thu, 05 Oct 2023
 
+export const MONTH_YEAR_FULL = "LLLL yyyy"; //eg: June 2025
+
 export const TIME_LENGTH = 8;
 
 export const durationSelector: Record<string, string> = {

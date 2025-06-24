@@ -1,7 +1,6 @@
 import { Box, Stack, SxProps, Theme, useTheme } from "@mui/material";
 import { FC, JSX, useMemo } from "react";
 
-import { TableTypes } from "~community/common/types/CommonTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import styles from "./styles";
@@ -21,11 +20,10 @@ export interface TableHeadActionRowProps {
   };
 }
 
-const TableHeadActionToolbar: FC<TableTypes & TableHeadActionRowProps> = ({
+const TableHeadActionToolbar: FC<TableHeadActionRowProps> = ({
   firstRow,
   secondRow,
-  customStyles,
-  tableName
+  customStyles
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -44,25 +42,15 @@ const TableHeadActionToolbar: FC<TableTypes & TableHeadActionRowProps> = ({
           },
           customStyles?.wrapper
         ])}
-        role="toolbar"
-        aria-label={`${tableName}-table-head-action-toolbar`}
       >
         {firstRow && (
-          <Stack
-            sx={mergeSx([classes.actionToolbar.row, customStyles?.row])}
-            role="group"
-            aria-label={`${tableName}-table-head-action-toolbar-primary-actions`}
-          >
+          <Stack sx={mergeSx([classes.actionToolbar.row, customStyles?.row])}>
             <Box>{firstRow.leftButton}</Box>
             <Box>{firstRow.rightButton}</Box>
           </Stack>
         )}
         {secondRow && (
-          <Stack
-            sx={mergeSx([classes.actionToolbar.row, customStyles?.row])}
-            role="group"
-            aria-label={`${tableName}-table-head-action-toolbar-secondary-actions`}
-          >
+          <Stack sx={mergeSx([classes.actionToolbar.row, customStyles?.row])}>
             <Box>{secondRow.leftButton}</Box>
             <Box>{secondRow.rightButton}</Box>
           </Stack>
