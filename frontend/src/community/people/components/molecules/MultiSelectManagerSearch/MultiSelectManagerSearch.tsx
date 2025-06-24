@@ -145,7 +145,6 @@ const MultiSelectManagerSearch = ({
         break;
 
       case KeyboardKeys.ESCAPE:
-      case KeyboardKeys.TAB:
         event.preventDefault();
         setIsExpanded(false);
         setFocusedIndex(-1);
