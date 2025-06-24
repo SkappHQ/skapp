@@ -644,3 +644,7 @@ export const formatDateByTemplate = (date: Date, rawFormat: string): string => {
 
   return format.replace(/YYYY/g, yyyy).replace(/MM/g, mm).replace(/DD/g, dd);
 };
+
+export const isPastYear = (year: number): boolean => {
+  return year < DateTime.local().year;
+};
