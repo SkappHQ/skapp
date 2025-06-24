@@ -30,6 +30,13 @@ public class AmazonS3Controller {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/files/organization-setup/signed-url")
+	public ResponseEntity<ResponseEntityDto> getOrganizationSetUpSignedUrl(
+			@Valid @RequestBody AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
+		ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@DeleteMapping("/files")
 	public ResponseEntity<ResponseEntityDto> deleteFileFromS3(
 			@Valid @RequestBody AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto) {

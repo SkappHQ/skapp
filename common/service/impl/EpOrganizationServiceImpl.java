@@ -102,8 +102,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
-	private final EsignConfigService esignConfigService;
-
 	private final CacheService cacheService;
 
 	private final DashboardEmailService dashboardEmailService;
@@ -138,7 +136,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.objectMapper = objectMapper;
 		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
-		this.esignConfigService = esignConfigService;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
 	}
@@ -177,8 +174,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 			tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getOrganizationName(),
-					organizationDto.getCompanyDomain(), superAdmin.getEmail(), "");
+			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getCompanyDomain(),
+					superAdmin.getEmail());
 
 			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -347,6 +344,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	private EpOrganizationResponseDto buildOrganizationResponse(EpOrganization organization, String companyDomain) {
 		EpOrganizationResponseDto responseDto = epCommonMapper.epOrganizationToEpOrganizationResponseDto(organization);
 		responseDto.setCompanyDomain(companyDomain + "." + parentDomain);
+		responseDto.setContactNo(organization.getContactNo());
 		responseDto.setUuid(generateUUID(companyDomain));
 		responseDto.setTenantId(companyDomain);
 
@@ -403,6 +401,11 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
 		}
 
+		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
+				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
+		}
+
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
 			log.error("Attempted to create restricted subdomain: {}", organizationDto.getCompanyDomain());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN);
@@ -416,7 +419,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
-		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

@@ -16,4 +16,7 @@ public class EpOrganization extends Organization {
 	@Column(name = "company_domain")
 	private String companyDomain;
 
+	@Column(name = "contact_no")
+	private String contactNo;
+
 }

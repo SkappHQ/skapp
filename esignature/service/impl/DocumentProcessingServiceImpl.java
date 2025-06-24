@@ -50,7 +50,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 5.0f;
+	private static final float BORDER_IMAGE_PADDING = 1.0f; // 1.0f to match the front end
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
@@ -271,9 +271,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private BorderDimensions calculateBorderDimensions(float imageX, float imageY, float imageWidth,
 			float imageHeight) {
-		float borderWidth = imageWidth + (BORDER_IMAGE_PADDING * 2);
+		float borderWidth = imageWidth;
 		float borderHeight = imageHeight + (BORDER_IMAGE_PADDING * 2);
-		float borderX = imageX - BORDER_IMAGE_PADDING;
+		float borderX = imageX;
 		float borderY = imageY - BORDER_IMAGE_PADDING;
 
 		return new BorderDimensions(borderX, borderY, borderWidth, borderHeight);
@@ -363,14 +363,28 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float imageWidth = image.getWidth();
 			float imageHeight = image.getHeight();
 
-			float scale = Math.min(width / imageWidth, height / imageHeight);
+			// Define a pixel to point conversion factor (typically 72 DPI for PDFs)
+			float pixelToPoint = 72f / 77f;
+
+			// Convert dimensions from pixels to points
+			float adjustedWidth = width * pixelToPoint;
+			// Reduce height to account for border padding (top and bottom)
+			float adjustedHeight = (height - (BORDER_IMAGE_PADDING * 2)) * pixelToPoint;
+
+			// Maintain aspect ratio while fitting within the bounds
+			float scale = Math.min(adjustedWidth / imageWidth, adjustedHeight / imageHeight);
 			float scaledWidth = imageWidth * scale;
 			float scaledHeight = imageHeight * scale;
 
+			// Center the image horizontally and vertically within available space
 			float imageX = x + (width - scaledWidth) / 2;
-			float imageY = y + (height - scaledHeight) / 2;
+			// Position image with padding adjustment
+			float imageY = y + BORDER_IMAGE_PADDING + (height - BORDER_IMAGE_PADDING * 2 - scaledHeight) / 2;
 
+			// Draw the image with exact dimensions
 			contentStream.drawImage(image, imageX, imageY, scaledWidth, scaledHeight);
+
+			log.debug("Drawing image at ({}, {}) with dimensions: {}x{}", imageX, imageY, scaledWidth, scaledHeight);
 		}
 		catch (IOException e) {
 			log.error("Error processing: drawInputImage : {}", e.getMessage());

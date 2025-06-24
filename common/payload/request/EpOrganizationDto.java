@@ -10,4 +10,6 @@ public class EpOrganizationDto extends OrganizationDto {
 
 	private String companyDomain;
 
+	private String contactNo;
+
 }

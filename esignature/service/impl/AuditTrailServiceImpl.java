@@ -191,7 +191,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		AddressBook addressBook = envelope.getOwner();
 		checkAuthorization(isInbox, currentUser, envelope, addressBook);
 
-		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
+		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByIdDesc(envelopeId);
 
 		if (auditTrails.isEmpty()) {
 			log.error("No audit trails found for envelopeId: {}", envelopeId);

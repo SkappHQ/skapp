@@ -126,6 +126,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		UserDetails userDetails;
 
 		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			log.info("debug: EpJwtAuthFilter - Authenticating super admin user with ID: {}", userId);
 			userDetails = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 		}
@@ -143,6 +144,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
 
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		log.info("debug: EpJwtAuthFilter - Creating authentication token for user ID: {}", userId);
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
 
@@ -150,6 +152,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		AuthenticationDetailsDto authenticationDetails = new AuthenticationDetailsDto(webDetails, additionalDetails);
 
 		authToken.setDetails(authenticationDetails);
+		log.info("debug: EpJwtAuthFilter - Setting authentication in security context for user ID: {}", userId);
 
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);

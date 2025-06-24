@@ -7,7 +7,7 @@ import java.util.Set;
 @UtilityClass
 public class EpValidationConstants {
 
-	public static final String VALID_COMPANY_DOMAIN_NAME_REGEXP = "^[a-z]+(-[a-z]+)*$";
+	public static final String VALID_COMPANY_DOMAIN_NAME_REGEXP = "^[a-z0-9]+(-[a-z0-9]+)*$";
 
 	public static final Set<String> RESTRICTED_SUBDOMAINS = Set.of("skapp", "skapp-dev", "skapp-qa", "skapp-stage",
 			"skapp-prod", "skapp-test", "admin", "api", "mail", "smtp", "pop", "ftp", "www", "hello", "no-reply");
@@ -25,5 +25,12 @@ public class EpValidationConstants {
 	 * IPv6 address: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
 	 */
 	public static final String IPV6_VALIDATION_PATTERN = "^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$";
+
+	/**
+	 * Regular expression pattern to validate hexadecimal numbers. A hexadecimal number
+	 * consists of digits (0-9) and letters (A-F or a-f). Example of a valid hexadecimal
+	 * number: 1A3F
+	 */
+	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^.{7,15}$";
 
 }

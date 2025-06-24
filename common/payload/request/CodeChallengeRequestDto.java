@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class CodeChallengeRequestDto {
 
-	private String uuid;
+	private String code;
 
 }
