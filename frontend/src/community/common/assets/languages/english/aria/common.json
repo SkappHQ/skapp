@@ -57,15 +57,6 @@
     "table": {
       "tableHead": {
         "checkbox": "Check all the {{tableName}}"
-      },
-      "tableBody": {
-        "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",
-        "actionColumn": {
-          "editButton": "Edit",
-          "deleteButton": "Delete",
-          "editButtonWithRecordIdentifier": "Edit {{recordName}}",
-          "deleteButtonWithRecordIdentifier": "Delete {{recordName}}"
-        }
       }
     },
     "itemSelector": {
