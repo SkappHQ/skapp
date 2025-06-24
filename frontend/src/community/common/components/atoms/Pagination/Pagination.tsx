@@ -9,6 +9,7 @@ import { type SxProps } from "@mui/system";
 import { ChangeEvent, JSX } from "react";
 
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import styles from "./styles";
@@ -33,6 +34,8 @@ const Pagination = ({
   const queryMatches = useMediaQuery();
   const isBelow1280 = queryMatches(1280);
 
+  const translateAria = useTranslator("commonAria", "components", "pagination");
+
   const theme = useTheme();
   const classes = styles(theme);
 
@@ -41,6 +44,7 @@ const Pagination = ({
 
   return (
     <MuiPagination
+      aria-label={translateAria(["label"])}
       count={totalPages}
       variant="outlined"
       boundaryCount={isBelow1280 ? 0 : 1}

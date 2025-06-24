@@ -105,7 +105,7 @@ const LeaveEntitlementTable = ({
 
   return (
     <Table
-      tableName={TableNames.LEAVE_ENTITLEMENTS}
+      tableName={`${TableNames.LEAVE_ENTITLEMENTS} ${leaveEntitlementTableSelectedYear}`}
       headers={headers}
       rows={rows}
       actionToolbar={{
