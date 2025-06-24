@@ -151,9 +151,9 @@ const LeaveEntitlementTable = ({
             }),
             description: translateText(["emptyScreen", "description"]),
             button: {
-              label: isPastYear(Number(leaveEntitlementTableSelectedYear))
-                ? ""
-                : translateText(["emptyScreen", "buttonText"]),
+              label: !isPastYear(Number(leaveEntitlementTableSelectedYear))
+                ? translateText(["emptyScreen", "buttonText"])
+                : undefined,
               onClick: () => {
                 setLeaveEntitlementModalType(
                   LeaveEntitlementModelTypes.DOWNLOAD_CSV
