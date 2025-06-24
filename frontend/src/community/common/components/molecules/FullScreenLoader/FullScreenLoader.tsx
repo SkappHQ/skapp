@@ -1,6 +1,7 @@
 import { Box, CircularProgress, useTheme } from "@mui/material";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { theme } from "~community/common/theme/theme";
 
 const FullScreenLoader = () => {
   const theme = useTheme();
