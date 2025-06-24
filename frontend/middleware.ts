@@ -115,6 +115,19 @@ const employeeRoutes = {
   ]
 };
 
+const senderRoutes = {
+  [SenderTypes.ESIGN_SENDER]: [
+    ROUTES.SIGN.CONTACTS,
+    ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.FOLDERS,
+    ROUTES.SIGN.INBOX,
+    ROUTES.SIGN.SENT,
+    ROUTES.SIGN.SIGN,
+    ROUTES.SIGN.INFO,
+    ROUTES.SIGN.COMPLETE
+  ]
+};
+
 // Merging all routes into one allowedRoutes object
 const allowedRoutes: Record<
   AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes,
@@ -124,17 +137,8 @@ const allowedRoutes: Record<
   ...adminRoutes,
   ...managerRoutes,
   ...employeeRoutes,
-  [SenderTypes.ESIGN_SENDER]: [
-    ROUTES.SIGN.CONTACTS,
-    ROUTES.SIGN.CREATE_DOCUMENT,
-    ROUTES.SIGN.FOLDERS,
-    ROUTES.SIGN.INBOX,
-    ROUTES.SIGN.SENT,
-    ROUTES.SIGN.SIGN,
-    ROUTES.SIGN.INFO,
-    ROUTES.SIGN.COMPLETE,
-    ...commonRoutes
-  ]
+  ...senderRoutes,
+  ...commonRoutes
 };
 
 export default withAuth(

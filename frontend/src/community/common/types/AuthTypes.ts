@@ -45,3 +45,8 @@ export type AuthEmployeeType = {
   accountStatus?: string;
   email?: string;
 };
+
+export interface OrganizationSetupStatus {
+  isSignUpCompleted: boolean;
+  isOrganizationSetupCompleted: boolean;
+}
