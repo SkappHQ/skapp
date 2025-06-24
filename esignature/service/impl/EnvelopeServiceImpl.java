@@ -831,7 +831,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					&& dto.getAddressBook().getEmail().startsWith(PeopleConstants.DELETED_PREFIX)) {
 
 				String originalEmail = dto.getAddressBook().getEmail();
-				String cleanedEmail = originalEmail.replaceFirst(Pattern.quote(PeopleConstants.DELETED_PREFIX) + "\\d+_", "");
+				String cleanedEmail = originalEmail
+					.replaceFirst(Pattern.quote(PeopleConstants.DELETED_PREFIX) + "\\d+_", "");
 				dto.getAddressBook().setEmail(cleanedEmail);
 			}
 		});
