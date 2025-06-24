@@ -95,7 +95,7 @@ const PeopleAndTeamAutocompleteSearch = ({
         paper: {
           sx: {
             "& .MuiAutocomplete-option": {
-              padding: "0.5rem 0.25rem"
+              padding: "8px 4px"
             }
           }
         }
