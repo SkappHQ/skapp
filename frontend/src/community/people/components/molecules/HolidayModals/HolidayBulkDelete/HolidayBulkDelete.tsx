@@ -152,6 +152,7 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
       <Box>
         {type === HolidayDeleteType.ALL && (
           <Typography
+            id="delete-all-holidays"
             variant="body2"
             sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
           >
@@ -160,6 +161,7 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
         )}
         {type === HolidayDeleteType.SELECTED && (
           <Typography
+            id="delete-selected-holidays"
             variant="body2"
             sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
           >
@@ -168,6 +170,7 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
         )}
         {type === HolidayDeleteType.INDIVIDUAL && (
           <Typography
+            id="delete-individual-holiday"
             variant="body2"
             sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
           >
@@ -184,6 +187,14 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
           buttonStyle={ButtonStyle.ERROR}
           styles={{ mt: "1rem" }}
           onClick={() => handleBulkDelete()}
+          accessibility={{
+            ariaDescribedBy:
+              type === HolidayDeleteType.ALL
+                ? "delete-all-holidays"
+                : type === HolidayDeleteType.SELECTED
+                  ? "delete-selected-holidays"
+                  : "delete-individual-holiday"
+          }}
         />
         <Button
           label={translateText(["cancelBtnText"])}
