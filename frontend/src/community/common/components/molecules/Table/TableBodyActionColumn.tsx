@@ -3,7 +3,6 @@ import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -48,30 +47,6 @@ const TableBodyActionColumn: FC<
 > = ({ row, isEnabled = false, actionBtns, isRowDisabled }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
-
-  const translateAria = useTranslator(
-    "commonAria",
-    "components",
-    "table",
-    "tableBody",
-    "actionColumn"
-  );
-
-  const recordName = actionBtns?.left?.accessibility?.rowKey
-    ? row?.[actionBtns?.left?.accessibility?.rowKey]
-    : "";
-
-  const editButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
-    ? translateAria(["editButtonWithRecordIdentifier"], {
-        recordName: recordName
-      })
-    : translateAria(["editButton"]);
-
-  const deleteButtonAriaLabel = actionBtns?.left?.accessibility?.rowKey
-    ? translateAria(["deleteButtonWithRecordIdentifier"], {
-        recordName: recordName
-      })
-    : translateAria(["deleteButton"]);
 
   return (
     isEnabled && (

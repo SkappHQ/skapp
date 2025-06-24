@@ -95,7 +95,7 @@ const SearchBox: FC<Props> = ({
   };
 
   return (
-    <Box component="div" role="search" aria-label={placeHolder}>
+    <Box component="div" role="search">
       {label && (
         <Typography lineHeight={1.5} sx={mergeSx([classes.label, labelStyles])}>
           {label}

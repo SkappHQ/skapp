@@ -383,6 +383,7 @@ const InputDate: FC<Props> = ({
         disablePortal
         sx={mergeSx([classes.popper, popperStyles])}
         tabIndex={0}
+        aria-hidden={true}
       >
         <ClickAwayListener onClickAway={handleClose}>
           <Paper>

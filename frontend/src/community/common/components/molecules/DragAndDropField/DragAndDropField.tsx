@@ -31,6 +31,7 @@ interface Props {
   accessibility?: {
     componentName?: string;
     ariaDescribedBy?: string;
+    ariaHidden?: boolean;
   };
   setAttachmentErrors?: (errors: FileRejectionType[]) => void;
   setAttachments: (acceptedFiles: FileUploadType[]) => void;
@@ -264,7 +265,8 @@ const DragAndDropField: FC<Props> = ({
             "aria-label": translateAria(["ariaLabel"], {
               componentName: accessibility?.componentName
             }),
-            "aria-describedby": accessibility?.ariaDescribedBy
+            "aria-describedby": accessibility?.ariaDescribedBy,
+            "aria-hidden": accessibility?.ariaHidden
           })}
         />
         {isDragActive ? (
@@ -348,7 +350,7 @@ const DragAndDropField: FC<Props> = ({
         </Stack>
       </div>
 
-      <Typography variant="body2" role="alert" sx={classes.errorText}>
+      <Typography variant="body2" sx={classes.errorText} aria-live="assertive">
         {getInlineErrorMessage}
       </Typography>
     </>

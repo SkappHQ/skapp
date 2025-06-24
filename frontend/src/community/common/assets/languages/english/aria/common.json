@@ -7,6 +7,9 @@
     "sideBar": "Side bar"
   },
   "components": {
+    "pagination": {
+      "label": "pagination"
+    },
     "emojiPicker": {
       "icon": "Click me to open the emoji picker"
     },
@@ -58,15 +61,6 @@
     "table": {
       "tableHead": {
         "checkbox": "Select all rows"
-      },
-      "tableBody": {
-        "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",
-        "actionColumn": {
-          "editButton": "Edit",
-          "deleteButton": "Delete",
-          "editButtonWithRecordIdentifier": "Edit {{recordName}}",
-          "deleteButtonWithRecordIdentifier": "Delete {{recordName}}"
-        }
       }
     },
     "itemSelector": {

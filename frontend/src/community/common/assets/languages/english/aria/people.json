@@ -6,8 +6,14 @@
   "teams": {
     "table": {
       "actionColumn": {
-        "editButton": "Edit team {{teamName}} button",
-        "deleteButton": "Delete team {{teamName}} button"
+        "editButton": {
+          "label": "Edit {{teamName}} team",
+          "description": ""
+        },
+        "deleteButton": {
+          "label": "Delete {{teamName}} team",
+          "description": ""
+        }
       }
     },
     "modal": {

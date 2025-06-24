@@ -494,8 +494,10 @@ export const theme = createTheme({
     button: undefined,
     overline: undefined,
     onboardingHeader: {
-      fontWeight: 700,
-      fontSize: "2.25rem" //36px
+      fontFamily: "'Poppins', sans-serif",
+      fontWeight: 600,
+      fontSize: "2rem", //32px
+      lineHeight: "100%"
     },
     // Table heading
     tableHeader: {

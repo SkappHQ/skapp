@@ -1,31 +1,21 @@
-import { Theme, useTheme } from "@mui/material";
 import { FC } from "react";
 
 import { CommonTableProps } from "./Table";
-import TableDataCell from "./TableDataCell";
+import TableRows from "./TableRows";
+import TableSkeleton, { TableSkeletonProps } from "./TableSkeleton";
 
-const TableBody: FC<CommonTableProps> = ({ headers, rows }) => {
-  const theme: Theme = useTheme();
-
+const TableBody: FC<TableSkeletonProps & CommonTableProps> = ({
+  loadingState,
+  headers,
+  rows
+}) => {
   return (
-    <tbody>
-      {rows?.map((row) => (
-        <tr
-          key={row.id}
-          style={{
-            height: "79px",
-            background: theme.palette.grey[50]
-          }}
-        >
-          {headers.map((header) => (
-            <TableDataCell key={header.id}>
-              {typeof row[header?.id] === "function"
-                ? row[header?.id]()
-                : row[header?.id]}
-            </TableDataCell>
-          ))}
-        </tr>
-      ))}
+    <tbody style={{ height: "100%", maxHeight: "24.6875rem" }}>
+      {loadingState && loadingState.isLoading ? (
+        <TableSkeleton loadingState={loadingState} />
+      ) : (
+        <TableRows headers={headers} rows={rows} />
+      )}
     </tbody>
   );
 };

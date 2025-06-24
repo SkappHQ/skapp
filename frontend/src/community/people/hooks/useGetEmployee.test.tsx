@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 import useGetEmployee from "./useGetEmployee";
 
 jest.mock("~community/people/api/PeopleApi", () => ({
@@ -107,7 +107,7 @@ describe("useGetEmployee", () => {
       isSuccess: true,
       isLoading: false
     });
-    (useGetDefaultConuntryCode as jest.Mock).mockReturnValue("1");
+    (useGetDefaultCountryCode as jest.Mock).mockReturnValue("1");
   });
 
   it("should reset employee data when loading starts", () => {

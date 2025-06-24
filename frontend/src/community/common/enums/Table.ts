@@ -25,5 +25,6 @@ export enum TableNames {
   CUSTOM_LEAVE_ALLOCATIONS = "Custom leave allocations",
   CARRY_FORWARD_BALANCES = "Carry forward balances",
   CUSTOM_ALLOCATIONS_REPORT = "Custom allocations report",
-  ON_LEAVE_MODAL = "On leave modal"
+  ON_LEAVE_MODAL = "On leave modal",
+  ALL_TIMESHEETS = "All timesheets",
 }
