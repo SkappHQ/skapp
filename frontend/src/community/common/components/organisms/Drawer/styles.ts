@@ -19,7 +19,8 @@ export const styles = ({ theme }: stylesProps) => ({
       xs: "visible",
       lg: isDrawerExpanded ? "hidden" : "visible"
     },
-    transition: "opacity 0.3s ease, visibility 0.3s ease, transform 0.05s ease"
+    transition:
+      "right 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, transform 0.05s ease"
   }),
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
