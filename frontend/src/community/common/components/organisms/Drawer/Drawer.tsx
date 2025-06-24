@@ -383,7 +383,7 @@ const Drawer = (): JSX.Element => {
             </MuiLink>
           </Stack>
         )}
-      </Stack>
+      </Stack>{" "}
       <IconButton
         sx={{ ...classes.iconBtn(isDrawerExpanded), visibility: "visible" }} // TO DO: Need to verify why this style affects other places which use this icon
         onClick={handleDrawer}
@@ -394,14 +394,37 @@ const Drawer = (): JSX.Element => {
             : translateAria(["expand"])
         }
       >
-        <Icon
-          name={
-            isDrawerExpanded
-              ? IconName.DRAWER_CLOSE_ICON
-              : IconName.DRAWER_OPEN_ICON
-          }
-          fill={theme.palette.common.black}
-        />
+        <Box
+          sx={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          {[IconName.DRAWER_CLOSE_ICON, IconName.DRAWER_OPEN_ICON].map(
+            (icon, index) => {
+              const isCloseIcon = index === 0;
+              const isVisible = isDrawerExpanded === isCloseIcon;
+              return (
+                <Icon
+                  key={icon}
+                  name={icon}
+                  fill={theme.palette.common.black}
+                  svgProps={{
+                    style: {
+                      position: "absolute",
+                      display: "flex",
+                      transition: "opacity 0.3s ease",
+                      opacity: isVisible ? 1 : 0,
+                      zIndex: isVisible ? 2 : 1
+                    }
+                  }}
+                />
+              );
+            }
+          )}
+        </Box>
       </IconButton>
     </StyledDrawer>
   );
