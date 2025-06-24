@@ -91,7 +91,6 @@ const TableBodyActionColumn: FC<
             onClick={() => actionBtns?.right?.onClick(row.actionData)}
             ariaLabel={row?.ariaLabel?.deleteButton ?? ""}
             ariaDescription={row?.ariaDescription?.deleteButton ?? ""}
-
           />
         )}
       </TableCell>

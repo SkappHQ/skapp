@@ -180,7 +180,11 @@
     "HALFDAY_EVENING": "HALFDAY_EVENING",
     "HALFDAY_MORNING": "HALFDAY_MORNING",
     "noRecordCSVTitle": "No Records Found",
-    "noRecordCSVDes": "No records have been found. Please try again."
+    "noRecordCSVDes": "No records have been found. Please try again.",
+    "sort": "Sort : ",
+    "chronologically": "Chronologically :",
+    "janToDec": "Jan to Dec",
+    "decToJan": "Dec to Jan"
   },
 
   "editAllInfo": {

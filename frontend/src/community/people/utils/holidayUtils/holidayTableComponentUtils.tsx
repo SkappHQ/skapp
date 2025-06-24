@@ -1,10 +1,11 @@
 import { Box, Typography } from "@mui/material";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import {
   Holiday,
   HolidayDurationType
 } from "~community/people/types/HolidayTypes";
+import { generateHolidayTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
 
 import { getFormattedDate } from "./commonUtils";
 
@@ -35,6 +36,7 @@ export const getTableHeaders = (translateText: (key: string[]) => string) => [
 export const transformToTableRows = (
   holidayData: Holiday[] | undefined,
   translateText: (key: string[]) => string,
+  translateAria: (key: string[], params?: Record<string, any>) => string,
   isRowDisabled: (id: number) => boolean,
   dateWrapperStyles: any
 ) => {
@@ -42,13 +44,30 @@ export const transformToTableRows = (
     (Array.isArray(holidayData) &&
       holidayData.map((holiday) => ({
         id: holiday.id,
-        ariaLabel: holiday?.name,
+        ariaLabel: {
+          checkbox: translateAria(["selectHoliday"], {
+            holidayName: holiday.name
+          }),
+          row: generateHolidayTableRowAriaLabel(
+            translateAria,
+            getFormattedDate(holiday?.date || "", true),
+            returnDurationLabel(
+              holiday?.holidayDuration || HolidayDurationType.NONE,
+              translateText
+            ),
+            holiday.name,
+            isRowDisabled(holiday.id)
+          ),
+          deleteButton: translateAria(["deleteHoliday"], {
+            holidayName: holiday.name
+          })
+        },
         date: (
           <Box sx={dateWrapperStyles}>
             <Typography variant="body1">
               {getFormattedDate(holiday?.date || "", true)}
             </Typography>
-            <BasicChip
+            <ReadOnlyChip
               label={returnDurationLabel(
                 holiday?.holidayDuration || HolidayDurationType.NONE,
                 translateText
