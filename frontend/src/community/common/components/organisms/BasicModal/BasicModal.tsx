@@ -9,18 +9,18 @@ interface Props {
   onClose: (_event: MouseEvent<HTMLButtonElement>, reason: string) => void;
   children: ReactElement;
   sx?: SxProps<Theme>;
-  id?: {
+  ids?: {
     title?: string;
     description?: string;
     closeButton?: string;
   };
 }
 
-const BasicModal: FC<Props> = ({ open = false, onClose, children, sx, id }) => {
+const BasicModal: FC<Props> = ({ open = false, onClose, children, sx, ids }) => {
   return (
     <Modal
-      aria-labelledby={id?.title}
-      aria-describedby={id?.description}
+      aria-labelledby={ids?.title}
+      aria-describedby={ids?.description}
       open={open}
       onClose={(event, reason) => {
         if (reason === "backdropClick") return;

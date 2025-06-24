@@ -89,7 +89,7 @@ const LeaveCarryForwardModalController: FC = () => {
 
   return (
     <ModalController
-      id={getIds()}
+      ids={getIds()}
       isModalOpen={isLeaveCarryForwardModalOpen}
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}

@@ -30,7 +30,7 @@ const ReinviteConfirmationModal: React.FC<ReinviteConfirmationModalProps> = ({
       onCloseModal={onCancel}
       title={title}
       isClosable={false}
-      id={{
+      ids={{
         title: "user-prompt-modal-title",
         description: "user-prompt-modal-description",
         closeButton: "user-prompt-modal-close-button"

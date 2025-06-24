@@ -13,7 +13,7 @@ interface props {
   setModalType?: (value: any) => void;
   modalContentStyles?: SxProps;
   modalWrapperStyles?: SxProps;
-  id?: {
+  ids?: {
     title?: string;
     description?: string;
     closeButton?: string;
@@ -30,7 +30,7 @@ const ModalController: FC<props> = ({
   setModalType,
   modalContentStyles,
   modalWrapperStyles,
-  id
+  ids
 }) => {
   const onCloseModal = (
     _event: MouseEvent<HTMLButtonElement>,
@@ -46,7 +46,7 @@ const ModalController: FC<props> = ({
     <Modal
       isModalOpen={isModalOpen}
       onCloseModal={onCloseModal}
-      id={id}
+      ids={ids}
       title={modalTitle}
       isClosable={isClosable}
       isDividerVisible={isDividerVisible}

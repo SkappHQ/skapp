@@ -32,7 +32,7 @@ interface Props {
   modalHeaderStyles?: SxProps;
   modalChildrenStyles?: SxProps;
   dividerStyles?: SxProps;
-  id?: {
+  ids?: {
     title?: string;
     description?: string;
     closeButton?: string;
@@ -55,7 +55,7 @@ const Modal: FC<Props> = ({
   modalHeaderStyles,
   modalChildrenStyles,
   dividerStyles,
-  id = {
+  ids = {
     title: "modal-title",
     description: "modal-description",
     closeButton: "modal-close-button"
@@ -67,7 +67,7 @@ const Modal: FC<Props> = ({
 
   return (
     <BasicModal
-      id={id}
+      ids={ids}
       open={isModalOpen}
       onClose={onCloseModal}
       sx={mergeSx([classes.modalWrapper, modalWrapperStyles])}
@@ -80,7 +80,7 @@ const Modal: FC<Props> = ({
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
             {isIconVisible && <Box sx={classes.titleIcon}>{icon}</Box>}
-            <Typography sx={classes.modalHeaderTitle} id={id?.title}>
+            <Typography sx={classes.modalHeaderTitle} id={ids?.title}>
               {title}
             </Typography>
           </Stack>
@@ -92,7 +92,7 @@ const Modal: FC<Props> = ({
               onClick={(event) => onCloseModal(event, "backdropClick")}
               aria-label={translateAria(["closeIconBtn"], { title })}
               aria-hidden={true}
-              id={id?.closeButton}
+              id={ids?.closeButton}
             >
               {customCloseIcon ? (
                 customCloseIcon

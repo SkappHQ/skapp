@@ -29,7 +29,7 @@ const UserDeletionWarningModal: React.FC<Props> = ({
       onCloseModal={onClose}
       title={translateText(["deleteWarningTitle"])}
       icon={<Icon name={IconName.CLOSE_STATUS_POPUP_ICON} />}
-      id={{
+      ids={{
         title: "user-prompt-modal-title",
         description: "user-prompt-modal-description",
         closeButton: "user-prompt-modal-close-button"

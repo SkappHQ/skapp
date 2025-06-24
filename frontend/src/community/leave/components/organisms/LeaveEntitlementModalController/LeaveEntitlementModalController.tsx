@@ -97,7 +97,7 @@ const LeaveEntitlementModalController: FC = () => {
 
   return (
     <ModalController
-      id={getIds()}
+      ids={getIds()}
       isModalOpen={isLeaveEntitlementModalOpen}
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}
