@@ -117,6 +117,7 @@ const FilterButton = ({
             handleFilterBtnClick(event)
           }
           size={ButtonSizes.MEDIUM}
+          id="filter-button"
         />
       </Stack>
       <Popper
@@ -126,6 +127,7 @@ const FilterButton = ({
         id={id}
         handleClose={() => setIsPopperOpen(false)}
         containerStyles={classes.popperContainer}
+        ariaLabelledBy="filter-button"
       >
         <Stack sx={classes.popperBody}>{children}</Stack>
         <Divider />
