@@ -5,7 +5,8 @@ import { TimeRequestDataType } from "~community/attendance/types/timeSheetTypes"
 const styles = (theme: Theme) => ({
   tableContainerStyles: {
     borderTopLeftRadius: "0",
-    borderTopRightRadius: "0"
+    borderTopRightRadius: "0",
+    maxHeight: "60rem"
   },
   tableHeaderStyles: {
     textAlign: "center"
@@ -39,8 +40,8 @@ const styles = (theme: Theme) => ({
     justifyContent: "center",
     gap: "0.5rem",
     bgcolor: "white",
-    paddingX: "1.875rem",
-    paddingY: "0.9375rem",
+    paddingX: "1.25rem",
+    paddingY: "0.625rem",
     borderRadius: "4rem",
     [theme.breakpoints.down("md")]: {
       flexDirection: "column"

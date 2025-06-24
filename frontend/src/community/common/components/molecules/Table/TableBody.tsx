@@ -96,7 +96,8 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             key={row.id}
             tabIndex={onRowClick ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
-            aria-label={onRowClick ? row?.ariaLabel?.row : undefined}
+            aria-label={row?.ariaLabel?.row ?? ""}
+            aria-description={row?.ariaDescription?.row ?? ""}
             sx={mergeSx([
               classes.tableBody.row.default,
               classes.tableBody.row?.[
@@ -134,6 +135,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             {checkboxSelection?.isEnabled &&
               checkboxSelection?.isSelectAllVisible && (
                 <TableCell
+                  scope="col"
                   onClick={(e) => e.stopPropagation()}
                   sx={mergeSx([
                     classes.checkboxSelection.cell,
@@ -154,10 +156,9 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                       ])}
                       slotProps={{
                         input: {
-                          // "aria-label": translateText(["checkbox"], {
-                          //   tableName: tableName,
-                          //   ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
-                          // })
+                          "aria-label": row?.ariaLabel?.checkbox ?? "",
+                          "aria-description":
+                            row?.ariaDescription?.checkbox ?? ""
                         }
                       }}
                       onKeyDown={(e) => {
@@ -174,6 +175,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
               )}
             {headers?.map((header) => (
               <TableCell
+                scope="col"
                 key={header.id}
                 sx={mergeSx([
                   classes.tableBody.cell.wrapper,
@@ -184,6 +186,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   row[header?.id]()
                 ) : (
                   <Box
+                    component="span"
                     sx={mergeSx([
                       classes.tableBody.cell.container,
                       customStyles?.cell?.container

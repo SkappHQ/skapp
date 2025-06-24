@@ -63,6 +63,7 @@ const TableHead: FC<
           checkboxSelection?.isSelectAllVisible && (
             <TableCell
               scope="col"
+              component="th"
               sx={mergeSx([
                 classes.checkboxSelection.cell,
                 classes.tableHead.checkboxSelection.cell,
@@ -92,10 +93,13 @@ const TableHead: FC<
 
         {headers?.map((header) => (
           <TableCell
+            scope="col"
+            component="th"
             key={header?.id}
             sx={mergeSx([classes.tableHead.cell, customStyles?.cell])}
           >
             <Typography
+              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography
@@ -108,12 +112,15 @@ const TableHead: FC<
 
         {actionColumn.isEnabled && (
           <TableCell
+            scope="col"
+            component="th"
             sx={mergeSx([
               classes.tableHead.actionColumn?.cell,
               customStyles?.cell
             ])}
           >
             <Typography
+              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography
