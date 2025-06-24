@@ -82,7 +82,12 @@
       "appliedFilter": "Applied filter {{filterLabel}}"
     },
     "avatarSearch": {
-      "currentlySelected": "Currently selected:"
+      "currentlySelected": "currently selected:"
+    },
+    "multiSelectManagerSearch": {
+      "searchManagers": "Search for managers",
+      "managerOptions": "Manager options",
+      "selected": "selected"
     }
   },
   "modals": {
