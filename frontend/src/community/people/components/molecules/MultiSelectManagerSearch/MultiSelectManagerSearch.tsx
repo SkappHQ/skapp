@@ -16,6 +16,7 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { KeyboardKeys } from "~community/common/enums/KeyboardEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { shouldNavigateForward } from "~community/common/utils/keyboardUtils";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 import { L4ManagerType } from "~community/people/types/PeopleTypes";
@@ -31,6 +32,8 @@ interface Props {
   ) => Promise<void>;
   managerSearchTerm: string;
   isSearchResultsLoading?: boolean;
+  filterOpen?: boolean;
+  setFilterOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
 const MultiSelectManagerSearch = ({
@@ -39,7 +42,9 @@ const MultiSelectManagerSearch = ({
   managerSuggestions,
   onManagerSearchChange,
   managerSearchTerm,
-  isSearchResultsLoading
+  isSearchResultsLoading,
+  filterOpen,
+  setFilterOpen
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -174,9 +179,21 @@ const MultiSelectManagerSearch = ({
       ? `manager-option-${displayItems[focusedIndex].employeeId}`
       : undefined;
   };
+  const handleContainerKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>
+  ): void => {
+    if (filterOpen && shouldNavigateForward(event.key)) {
+      setFilterOpen?.(false);
+      setIsExpanded(false);
+      setFocusedIndex(-1);
+    }
+  };
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.grey[100], height: "100%" }}>
+    <Box
+      sx={{ backgroundColor: theme.palette.grey[100], height: "100%" }}
+      onKeyDown={handleContainerKeyDown}
+    >
       <Box sx={{ p: "0.5rem" }}>
         <SearchBox
           label={""}

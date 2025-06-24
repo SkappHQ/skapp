@@ -294,6 +294,8 @@ const SupervisorSelector = ({
           onManagerSearchChange={onmanagerSearchChange}
           managerSearchTerm={managerSearchTerm}
           isSearchResultsLoading={isSearchResultsLoading}
+          filterOpen={filterOpen}
+          setFilterOpen={setFilterOpen}
         />
       </Popper>
     </>
