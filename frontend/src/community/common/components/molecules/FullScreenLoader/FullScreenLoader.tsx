@@ -1,6 +1,7 @@
 import { Box, CircularProgress } from "@mui/material";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { theme } from "~community/common/theme/theme";
 
 const FullScreenLoader = () => {
   return (
@@ -18,7 +19,7 @@ const FullScreenLoader = () => {
         zIndex: ZIndexEnums.MAX
       }}
     >
-      <CircularProgress />
+      <CircularProgress sx={{ color: theme.palette.primary.light }} />
     </Box>
   );
 };
