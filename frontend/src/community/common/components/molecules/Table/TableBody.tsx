@@ -154,7 +154,10 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                       ])}
                       slotProps={{
                         input: {
-                          "aria-label": row?.ariaLabel?.checkbox
+                          // "aria-label": translateText(["checkbox"], {
+                          //   tableName: tableName,
+                          //   ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
+                          // })
                         }
                       }}
                       onKeyDown={(e) => {
