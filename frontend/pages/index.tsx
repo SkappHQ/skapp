@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
@@ -7,19 +7,28 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
+import { APP } from "~community/common/constants/stringConstants";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 export default function Index() {
   const router = useRouter();
   const { data: session } = useSession();
 
+  const tenantId = window.location.host.split(".")[0];
+
   const handleNavigation = useCallback(async () => {
     const isEnterprise = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 
     if (isEnterprise) {
-      const route = session ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
-      await router.replace(route);
-      return;
+      if (tenantId === APP) {
+        signOut({
+          redirect: false
+        });
+        await router.replace(ROUTES.AUTH.SIGNIN);
+      } else {
+        const route = session ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+        await router.replace(route);
+      }
     } else {
       try {
         const response = await authFetch.get(
@@ -45,11 +54,11 @@ export default function Index() {
         await router.replace(ROUTES.AUTH.SIGNIN);
       }
     }
-  }, [router, session]);
+  }, []);
 
   useEffect(() => {
     handleNavigation();
-  }, [handleNavigation]);
+  }, []);
 
   return <FullScreenLoader />;
 }

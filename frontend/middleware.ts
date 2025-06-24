@@ -117,21 +117,34 @@ const employeeRoutes = {
 
 // Merging all routes into one allowedRoutes object
 const allowedRoutes: Record<
-  AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType,
+  AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes,
   string[]
 > = {
   ...superAdminRoutes,
   ...adminRoutes,
   ...managerRoutes,
-  ...employeeRoutes
+  ...employeeRoutes,
+  [SenderTypes.ESIGN_SENDER]: [
+    ROUTES.SIGN.CONTACTS,
+    ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.FOLDERS,
+    ROUTES.SIGN.INBOX,
+    ROUTES.SIGN.SENT,
+    ROUTES.SIGN.SIGN,
+    ROUTES.SIGN.INFO,
+    ROUTES.SIGN.COMPLETE,
+    ...commonRoutes
+  ]
 };
 
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
+    const currentPath = request.nextUrl.pathname;
+
     if (
-      request.nextUrl.pathname === ROUTES.SIGN.DOCUMENT_ACCESS ||
-      request.nextUrl.pathname.startsWith(ROUTES.SIGN.SIGN) ||
-      request.nextUrl.pathname.startsWith(ROUTES.SIGN.INFO)
+      currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
+      currentPath.startsWith(ROUTES.SIGN.SIGN) ||
+      currentPath.startsWith(ROUTES.SIGN.INFO)
     ) {
       return NextResponse.next();
     }
@@ -142,30 +155,22 @@ export default withAuth(
       | ManagerTypes
       | EmployeeTypes
       | SuperAdminType
+      | SenderTypes
     )[] = token?.roles || [];
 
-    let isPasswordChangedForTheFirstTime;
-
-    if (typeof token?.isPasswordChangedForTheFirstTime === "string") {
-      isPasswordChangedForTheFirstTime =
-        token?.isPasswordChangedForTheFirstTime === "true" ? true : false;
-    } else {
-      isPasswordChangedForTheFirstTime =
-        token?.isPasswordChangedForTheFirstTime;
-    }
+    const isPasswordChangedForTheFirstTime =
+      token?.isPasswordChangedForTheFirstTime;
 
     if (
-      !(
-        isPasswordChangedForTheFirstTime ||
-        request.nextUrl.pathname === ROUTES.AUTH.RESET_PASSWORD
-      )
+      !isPasswordChangedForTheFirstTime &&
+      currentPath !== ROUTES.AUTH.RESET_PASSWORD
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
       );
     } else if (
       isPasswordChangedForTheFirstTime &&
-      request.nextUrl.pathname === ROUTES.AUTH.RESET_PASSWORD
+      currentPath === ROUTES.AUTH.RESET_PASSWORD
     ) {
       return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
     }
@@ -173,8 +178,7 @@ export default withAuth(
     if (
       roles.includes(ManagerTypes.LEAVE_MANAGER) &&
       !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-      request.nextUrl.pathname ===
-        `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
+      currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
@@ -182,7 +186,7 @@ export default withAuth(
     }
 
     if (
-      request.nextUrl.pathname.startsWith(ROUTES.DASHBOARD.BASE) &&
+      currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
       !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
       !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
       !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
@@ -239,10 +243,13 @@ export default withAuth(
 
       return NextResponse.next();
     }
+
     // Redirect to /unauthorized if no access
-    return NextResponse.redirect(
-      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-    );
+    if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
   },
   {
     callbacks: {
