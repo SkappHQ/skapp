@@ -1,5 +1,7 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.MigrationToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -28,32 +31,32 @@ public class MigrationToolServiceImpl implements MigrationToolService {
 	private String apiKey;
 
 	@Override
-	public boolean createMySqlTenantDatabase(String tenantId) {
-		return createTenantDatabase(tenantId, mySqlTenantCreationUrl, "MySQL");
+	public void createMySqlTenantDatabase(String tenantId) {
+		createTenantDatabase(tenantId, mySqlTenantCreationUrl, "MySQL");
 	}
 
 	@Override
-	public boolean createPostgresqlTenantDatabase(String tenantId) {
-		return createTenantDatabase(tenantId, postgresqlTenantCreationUrl, "Postgresql");
+	public void createPostgresqlTenantDatabase(String tenantId) {
+		createTenantDatabase(tenantId, postgresqlTenantCreationUrl, "Postgresql");
 	}
 
-	private boolean createTenantDatabase(String tenantId, String baseUrl, String databaseType) {
+	private void createTenantDatabase(String tenantId, String baseUrl, String databaseType) {
 		String url = baseUrl + "/" + tenantId;
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("x-api-key", apiKey);
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
-		ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-		if (responseEntity.getStatusCode().is2xxSuccessful()) {
-			log.info("Successfully created tenant in {} for tenantId: {}, response: {}", databaseType, tenantId,
-					responseEntity.getBody());
-			return true;
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+			if (responseEntity.getStatusCode().is2xxSuccessful()) {
+				log.info("createTenantDatabase: Successfully created tenant in {} for tenantId: {}, response: {}",
+						databaseType, tenantId, responseEntity.getBody());
+			}
 		}
-
-		log.error("Failed to create tenant in {} for tenantId: {}, status: {}, response: {}", databaseType, tenantId,
-				responseEntity.getStatusCode(), responseEntity.getBody());
-		return false;
+		catch (RestClientException e) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE,
+					new String[] { e.getMessage() });
+		}
 	}
 
 }

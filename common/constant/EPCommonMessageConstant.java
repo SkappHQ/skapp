@@ -152,7 +152,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL("ep.common.error.personal-temp-or-disposable-email"),
 	EP_COMMON_ERROR_INVALID_S3_ACTION_TYPE("ep.common.error.invalid-s3-action-type"),
 	EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED("ep.common.error.signed-url-generation-failed"),
-	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),;
+	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),
+	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),;
 
 	private final String messageKey;
 

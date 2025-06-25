@@ -32,36 +32,23 @@ public class TenantServiceImpl implements TenantService {
 
 	@Transactional
 	public void createTenant(String tenantName, LoginMethod loginMethod, String email) {
-		boolean isTenantCreated = migrationToolService.createMySqlTenantDatabase(tenantName);
-		if (isTenantCreated) {
-			Tenant tenant = new Tenant();
+		migrationToolService.createMySqlTenantDatabase(tenantName);
 
-			StripeSubscription stripeSubscription = new StripeSubscription();
-			stripeSubscription.setTenantName(tenantName);
-			stripeSubscription.setTenant(tenant);
+		Tenant tenant = new Tenant();
 
-			tenant.setTenantName(tenantName);
-			tenant.setTenantStatus(TenantStatus.ACTIVE);
-			tenant.setLoginMethod(loginMethod);
-			tenant.setCreatedByEmail(email);
-			tenant.setTier(Tier.FREE);
-			tenant.setStripeSubscription(stripeSubscription);
+		StripeSubscription stripeSubscription = new StripeSubscription();
+		stripeSubscription.setTenantName(tenantName);
+		stripeSubscription.setTenant(tenant);
 
-			tenantDao.save(tenant);
-		}
-	}
+		tenant.setTenantName(tenantName);
+		tenant.setTenantStatus(TenantStatus.ACTIVE);
+		tenant.setLoginMethod(loginMethod);
+		tenant.setCreatedByEmail(email);
+		tenant.setTier(Tier.FREE);
+		tenant.setStripeSubscription(stripeSubscription);
 
-	@Override
-	public void deleteTenant(String companyDomain) {
-		Tenant tenant = tenantDao.findByTenantName(companyDomain);
-		if (tenant == null) {
-			log.error("deleteTenant: Tenant not found: {}", companyDomain);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-					new String[] { companyDomain });
-		}
+		tenantDao.save(tenant);
 
-		tenantDao.delete(tenant);
-		TenantContext.clearCurrentTenant();
 	}
 
 	@Override
