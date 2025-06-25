@@ -64,7 +64,9 @@ const InputPhoneNumber: FC<Props> = ({
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
       e.preventDefault();
-      phoneInputRef.current?.setOpen(true);
+      if (phoneInputRef.current) {
+        phoneInputRef.current.setOpen(true);
+      }
     }
     if (shouldCloseDialog(e.key) && phoneInputRef.current?.state.open) {
       e.preventDefault();
@@ -110,6 +112,7 @@ const InputPhoneNumber: FC<Props> = ({
         input.setAttribute("aria-activedescendant", selectedId);
       }
     };
+
     const interval = setInterval(handleDropdownAccessibility, 300);
     return () => clearInterval(interval);
   }, [countryCodeValue]);
