@@ -130,13 +130,55 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
-					contentStream.beginText();
 					PDType0Font font = loadFont(document);
+					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
+					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * UUID_FONT_SIZE;
 
+					// Set different paddings for horizontal and vertical sides
+					float verticalPadding = 1.0f;
+					float horizontalPadding = 6.0f; // Increased horizontal padding
+					float borderRadius = 4.0f; // Border radius of 4px
+
+					float rectWidth = textWidth + (horizontalPadding * 2);
+					float rectHeight = textHeight + (verticalPadding * 2);
+
+					// Calculate positions for centered text in rectangle
+					float rectY = adjustedY - rectHeight;
+					float rectX = UUID_X_POSITION - horizontalPadding;
+
+					// Calculate text position to center it within the rectangle
+					float textY = rectY + verticalPadding + (textHeight * 0.25f);
+					float textX = UUID_X_POSITION;
+
+					// Add white background box with rounded corners
+					contentStream.setNonStrokingColor(1f, 1f, 1f); // White color
+
+					// Draw rounded rectangle
+					contentStream.moveTo(rectX + borderRadius, rectY);
+					contentStream.lineTo(rectX + rectWidth - borderRadius, rectY);
+					contentStream.curveTo(rectX + rectWidth - borderRadius/2, rectY,
+					                     rectX + rectWidth, rectY + borderRadius/2,
+					                     rectX + rectWidth, rectY + borderRadius);
+					contentStream.lineTo(rectX + rectWidth, rectY + rectHeight - borderRadius);
+					contentStream.curveTo(rectX + rectWidth, rectY + rectHeight - borderRadius/2,
+					                     rectX + rectWidth - borderRadius/2, rectY + rectHeight,
+					                     rectX + rectWidth - borderRadius, rectY + rectHeight);
+					contentStream.lineTo(rectX + borderRadius, rectY + rectHeight);
+					contentStream.curveTo(rectX + borderRadius/2, rectY + rectHeight,
+					                     rectX, rectY + rectHeight - borderRadius/2,
+					                     rectX, rectY + rectHeight - borderRadius);
+					contentStream.lineTo(rectX, rectY + borderRadius);
+					contentStream.curveTo(rectX, rectY + borderRadius/2,
+					                     rectX + borderRadius/2, rectY,
+					                     rectX + borderRadius, rectY);
+					contentStream.closePath();
+					contentStream.fill();
+
+					// Reset to default color for text
+					contentStream.setNonStrokingColor(0, 0, 0); // Black color for text
+					contentStream.beginText();
 					contentStream.setFont(font, UUID_FONT_SIZE);
-
-					// take co-ordinated from bottom-left
-					contentStream.newLineAtOffset(UUID_X_POSITION, adjustedY);
+					contentStream.newLineAtOffset(textX, textY);
 					contentStream.showText(value);
 					contentStream.endText();
 				}
