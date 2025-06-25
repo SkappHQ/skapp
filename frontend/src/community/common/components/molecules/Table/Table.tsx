@@ -23,7 +23,6 @@ import TableHeadActionToolbar, {
 import styles from "./styles";
 
 interface Props {
-  tableName: string;
   actionToolbar?: TableHeadActionRowProps;
   tableHead?: TableHeadProps;
   tableBody?: TableBodyProps;
@@ -34,6 +33,10 @@ interface Props {
     table?: SxProps<Theme>;
   };
   tableContainerRef?: RefObject<HTMLDivElement>;
+}
+
+export interface TableProps {
+  tableName: string;
 }
 
 export interface CommonTableProps {
@@ -54,7 +57,7 @@ export interface CommonTableProps {
   };
 }
 
-const Table: FC<Props & CommonTableProps & TableTypes> = ({
+const Table: FC<Props & CommonTableProps & TableProps & TableTypes> = ({
   tableName,
   isLoading,
   headers,
@@ -143,6 +146,7 @@ const Table: FC<Props & CommonTableProps & TableTypes> = ({
       </TableContainer>
 
       <TableFoot
+        tableName={tableName}
         customStyles={tableFoot?.customStyles}
         pagination={tableFoot?.pagination}
         exportBtn={tableFoot?.exportBtn}

@@ -6,12 +6,13 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
-import { ChangeEvent, JSX } from "react";
+import { ChangeEvent, FC, JSX } from "react";
 
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
+import { TableProps } from "../../molecules/Table/Table";
 import styles from "./styles";
 
 interface Props {
@@ -23,14 +24,15 @@ interface Props {
   isNumbersVisible?: boolean;
 }
 
-const Pagination = ({
+const Pagination: FC<TableProps & Props> = ({
   totalPages = 1,
   onChange,
   currentPage,
   paginationStyles,
   isDisabled = false,
-  isNumbersVisible = true
-}: Props): JSX.Element => {
+  isNumbersVisible = true,
+  tableName
+}): JSX.Element => {
   const queryMatches = useMediaQuery();
   const isBelow1280 = queryMatches(1280);
 
@@ -44,7 +46,7 @@ const Pagination = ({
 
   return (
     <MuiPagination
-      aria-label={translateAria(["label"])}
+      aria-label={`${tableName} ${translateAria(["label"])}`}
       count={totalPages}
       variant="outlined"
       boundaryCount={isBelow1280 ? 0 : 1}

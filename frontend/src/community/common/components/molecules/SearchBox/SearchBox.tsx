@@ -117,7 +117,7 @@ const SearchBox: FC<Props> = ({
         inputProps={{
           "data-testid": testId,
           "aria-hidden": accessibility?.ariaHidden,
-          role: "search",
+          role: "searchbox",
           autoComplete: "off",
           ...inputProps
         }}
