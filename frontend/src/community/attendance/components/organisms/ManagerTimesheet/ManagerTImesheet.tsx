@@ -25,7 +25,8 @@ const ManagerTimesheet = ({
   const { data: recordData, isLoading: isRecordLoading } =
     useGetManagerTimeRecords();
   const { data: workSummaryData } = useGetManagerWorkSummary();
-  const { data: exportRecordData, isPending: isExportRecordDataLoading } = useGetManagerTimeRecords(true);
+  const { data: exportRecordData, isPending: isExportRecordDataLoading } =
+    useGetManagerTimeRecords(true);
 
   const {
     approveTimesheetRequest,
