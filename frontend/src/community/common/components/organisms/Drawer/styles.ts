@@ -35,8 +35,9 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
+    height: "2.8225rem",
     width: "calc(100% - 7rem)",
-    padding: "0rem 0rem 1.875rem 0rem"
+    marginBottom: "1.875rem"
   },
 
   logoImage: {
