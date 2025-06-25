@@ -17,7 +17,8 @@ const styles = (theme: Theme): StyleProps => ({
     gap: "1rem"
   },
   title: {
-    fontWeight: 700
+    fontWeight: 700,
+    fontSize: "1.125rem"
   },
   description: {
     color: theme.palette.common.black

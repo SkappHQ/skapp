@@ -54,7 +54,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
 
         {title && (
           <Typography
-            variant="h3"
+            variant="body2"
             sx={mergeSx([classes.title, customStyles?.title])}
           >
             {title}
