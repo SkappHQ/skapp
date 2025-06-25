@@ -7,6 +7,7 @@ import {
   KeyboardEvent,
   SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -62,20 +63,23 @@ const MultiSelectManagerSearch = ({
     (state) => state
   );
 
-  const displayItems =
-    managerSearchTerm?.trim() === ""
-      ? selectedManagers.map((manager) => ({
-          employeeId: manager.employeeId,
-          firstName: manager.firstName,
-          lastName: manager.lastName,
-          authPic: manager.authPic
-        }))
-      : (managerSuggestions || []).filter(
-          (suggestion) =>
-            !selectedManagers.some(
-              (manager) => manager.employeeId === suggestion.employeeId
-            )
-        );
+  const displayItems = useMemo(() => {
+    if (managerSearchTerm?.trim() === "") {
+      return selectedManagers.map((manager) => ({
+        employeeId: manager.employeeId,
+        firstName: manager.firstName,
+        lastName: manager.lastName,
+        authPic: manager.authPic
+      }));
+    } else {
+      return (managerSuggestions || []).filter(
+        (suggestion) =>
+          !selectedManagers.some(
+            (manager) => manager.employeeId === suggestion.employeeId
+          )
+      );
+    }
+  }, [managerSearchTerm, selectedManagers, managerSuggestions]);
 
   useEffect(() => {
     setFocusedIndex(-1);
