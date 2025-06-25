@@ -95,11 +95,9 @@ const InputPhoneNumber: FC<Props> = ({
           el.setAttribute("id", id);
           el.setAttribute("aria-label", `${countryName} ${dialCode}`);
 
-          el.addEventListener("mouseenter", () => {
-            const all = document.querySelectorAll('[aria-selected="true"]');
-            all.forEach((a) => a.removeAttribute("aria-selected"));
-            el.setAttribute("aria-selected", "true");
-          });
+          const cleanDialCode = dialCode.replace("+", "");
+          const isSelected = cleanDialCode === countryCodeValue;
+          el.setAttribute("aria-selected", isSelected ? "true" : "false");
         }
       });
 
@@ -112,10 +110,9 @@ const InputPhoneNumber: FC<Props> = ({
         input.setAttribute("aria-activedescendant", selectedId);
       }
     };
-
     const interval = setInterval(handleDropdownAccessibility, 300);
     return () => clearInterval(interval);
-  }, []);
+  }, [countryCodeValue]);
 
   return (
     // TODO: move styles to styles.ts
