@@ -50,9 +50,8 @@ const LeaveRequests: NextPage = () => {
 
   const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
     if (
-      data?.user.roles?.includes(
-        ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
-      )
+      data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
+      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN)
     ) {
       setSelectedEmployeeId(employeeId);
       const url = `${ROUTES.PEOPLE.EDIT(employeeId)}?tab=leave`;
