@@ -1,6 +1,6 @@
-import { Stack, SxProps, Typography } from "@mui/material";
-import { Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
+import { Stack, type SxProps, Typography } from "@mui/material";
+import { type Theme, useTheme } from "@mui/material/styles";
+import { type ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 
