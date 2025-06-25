@@ -161,12 +161,14 @@ export const styles = ({ theme }: stylesProps) => ({
     width: "12.5rem",
     marginTop: "auto",
     paddingTop: "1.25rem",
-    gap: "1.5rem"
+    gap: "1.5rem",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
   },
   applyLeaveBtn: {
     display: { xs: "none", sm: "flex" },
-    flexDirection: "row",
-    padding: "1.25rem 2.085rem"
+    flexDirection: "row"
   },
   link: {
     width: "12.5rem",

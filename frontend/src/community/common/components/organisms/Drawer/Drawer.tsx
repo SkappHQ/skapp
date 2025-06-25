@@ -23,7 +23,10 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import {
+  ButtonSizes,
+  ButtonStyle
+} from "~community/common/enums/ComponentEnums";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
@@ -347,6 +350,7 @@ const Drawer = (): JSX.Element => {
             ) && (
               <Button
                 styles={classes.applyLeaveBtn}
+                size={ButtonSizes.MEDIUM}
                 isFullWidth={false}
                 label={translateText(["applyLeaveBtn"])}
                 buttonStyle={ButtonStyle.PRIMARY}
