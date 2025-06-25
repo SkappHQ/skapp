@@ -878,11 +878,11 @@
     "memberHeader": "MEMBERS",
     "actionsHeader": "ACTIONS",
     "editButton": {
-      "label":"Edit {{recordName}} job family",
+      "label": "Edit {{recordName}} job family",
       "description": ""
     },
     "deleteButton": {
-      "label":"Delete {{recordName}} job family",
+      "label": "Delete {{recordName}} job family",
       "description": ""
     },
     "addJobFamilyModalTitle": "Add job family",
