@@ -100,7 +100,6 @@ const Drawer = (): JSX.Element => {
   }));
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
-  const [hoveredDrawerItemUrl, setHoveredDrawerItemUrl] = useState<string>("");
 
   const isEnterprise = environment === appModes.ENTERPRISE;
 
@@ -212,10 +211,6 @@ const Drawer = (): JSX.Element => {
                         route?.url ?? null
                       )
                     }
-                    onMouseEnter={() =>
-                      setHoveredDrawerItemUrl(route?.url ?? "")
-                    }
-                    onMouseLeave={() => setHoveredDrawerItemUrl("")}
                     onKeyDown={(e) => {
                       if (shouldActivateLink(e.key)) {
                         e.preventDefault();
@@ -236,7 +231,6 @@ const Drawer = (): JSX.Element => {
                           fill={getSelectedDrawerItemColor(
                             theme,
                             router.pathname,
-                            hoveredDrawerItemUrl,
                             route.url
                           )}
                         />
@@ -249,7 +243,6 @@ const Drawer = (): JSX.Element => {
                           getSelectedDrawerItemColor(
                             theme,
                             router.pathname,
-                            hoveredDrawerItemUrl,
                             route?.url ?? null
                           )
                         )}
@@ -268,7 +261,6 @@ const Drawer = (): JSX.Element => {
                           fill={getSelectedDrawerItemColor(
                             theme,
                             router.pathname,
-                            hoveredDrawerItemUrl,
                             route?.url ?? ""
                           )}
                         />
@@ -309,10 +301,6 @@ const Drawer = (): JSX.Element => {
                                 );
                               }
                             }}
-                            onMouseEnter={() =>
-                              setHoveredDrawerItemUrl(subTreeRoute.url)
-                            }
-                            onMouseLeave={() => setHoveredDrawerItemUrl("")}
                             data-testid={
                               appDrawerTestId.subRoutes + subTreeRoute.id
                             }
@@ -332,7 +320,6 @@ const Drawer = (): JSX.Element => {
                                   getSelectedDrawerItemColor(
                                     theme,
                                     router.pathname,
-                                    hoveredDrawerItemUrl,
                                     subTreeRoute.url
                                   )
                                 )}

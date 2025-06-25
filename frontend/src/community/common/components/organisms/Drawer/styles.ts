@@ -163,20 +163,16 @@ export const styles = ({ theme }: stylesProps) => ({
 export const getSelectedDrawerItemColor = (
   theme: Theme,
   currentPageUrl: string,
-  hoveredItemUrl: string | null,
   itemUrl: string | null
 ) => {
   if (itemUrl === null) {
     return theme.palette.common.black;
   }
 
-  const isHovered = hoveredItemUrl === itemUrl;
   const isSelected = currentPageUrl.includes(itemUrl);
 
   if (isSelected) {
     return theme.palette.primary.dark;
-  } else if (isHovered) {
-    return theme.palette.primary.main;
   } else {
     return theme.palette.common.black;
   }
