@@ -214,12 +214,13 @@ const MultiSelectManagerSearch = ({
           autoFocus={true}
           onKeyDown={handleKeyDown}
           onFocus={handleSearchFocus}
-          accessibility={{
-            ariaLabel: translateAria(["searchManagers"]),
+          inputProps={{
+            "aria-label": translateAria(["searchManagers"]),
+            "aria-expanded": isExpanded,
+            "aria-activedescendant": getActiveDescendant(),
+            "aria-autocomplete": "list",
             role: "combobox"
           }}
-          isExpanded={isExpanded}
-          activeDescendant={getActiveDescendant()}
         />
       </Box>
 
