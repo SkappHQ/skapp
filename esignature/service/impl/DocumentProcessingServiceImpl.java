@@ -118,6 +118,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				PDDocument document = Loader.loadPDF(randomAccessRead);
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
+			// Handle encrypted documents by removing security
+			if (document.isEncrypted()) {
+				document.setAllSecurityToBeRemoved(true);
+			}
+
 			for (int i = 0; i < numOfPages; i++) {
 				PDPage page = document.getPage(i);
 				float pageHeight = page.getMediaBox().getHeight();
