@@ -151,28 +151,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					float textY = rectY + verticalPadding + (textHeight * 0.25f);
 					float textX = UUID_X_POSITION;
 
-					// Add white background box with rounded corners
-					contentStream.setNonStrokingColor(1f, 1f, 1f); // White color
+					// Draw rounded rectangle with white background
+					drawRoundedRectangle(contentStream, rectX, rectY, rectWidth, rectHeight, borderRadius,
+							new Color(1f, 1f, 1f)); // White color
 
-					// Draw rounded rectangle
-					contentStream.moveTo(rectX + borderRadius, rectY);
-					contentStream.lineTo(rectX + rectWidth - borderRadius, rectY);
-					contentStream.curveTo(rectX + rectWidth - borderRadius / 2, rectY, rectX + rectWidth,
-							rectY + borderRadius / 2, rectX + rectWidth, rectY + borderRadius);
-					contentStream.lineTo(rectX + rectWidth, rectY + rectHeight - borderRadius);
-					contentStream.curveTo(rectX + rectWidth, rectY + rectHeight - borderRadius / 2,
-							rectX + rectWidth - borderRadius / 2, rectY + rectHeight, rectX + rectWidth - borderRadius,
-							rectY + rectHeight);
-					contentStream.lineTo(rectX + borderRadius, rectY + rectHeight);
-					contentStream.curveTo(rectX + borderRadius / 2, rectY + rectHeight, rectX,
-							rectY + rectHeight - borderRadius / 2, rectX, rectY + rectHeight - borderRadius);
-					contentStream.lineTo(rectX, rectY + borderRadius);
-					contentStream.curveTo(rectX, rectY + borderRadius / 2, rectX + borderRadius / 2, rectY,
-							rectX + borderRadius, rectY);
-					contentStream.closePath();
-					contentStream.fill();
-
-					// Reset to default color for text
+					// Add text in black color
 					contentStream.setNonStrokingColor(0, 0, 0); // Black color for text
 					contentStream.beginText();
 					contentStream.setFont(font, UUID_FONT_SIZE);
@@ -190,6 +173,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			log.error("Error processing envelop Uuid PDF document: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
+	}
+
+	// Draws a filled rounded rectangle with the specified parameters.
+	private void drawRoundedRectangle(PDPageContentStream contentStream, float x, float y, float width, float height,
+			float radius, Color color) throws IOException {
+		contentStream.setNonStrokingColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f);
+
+		// Draw rounded rectangle
+		contentStream.moveTo(x + radius, y);
+		contentStream.lineTo(x + width - radius, y);
+		contentStream.curveTo(x + width - radius / 2, y, x + width, y + radius / 2, x + width, y + radius);
+		contentStream.lineTo(x + width, y + height - radius);
+		contentStream.curveTo(x + width, y + height - radius / 2, x + width - radius / 2, y + height,
+				x + width - radius, y + height);
+		contentStream.lineTo(x + radius, y + height);
+		contentStream.curveTo(x + radius / 2, y + height, x, y + height - radius / 2, x, y + height - radius);
+		contentStream.lineTo(x, y + radius);
+		contentStream.curveTo(x, y + radius / 2, x + radius / 2, y, x + radius, y);
+		contentStream.closePath();
+		contentStream.fill();
 	}
 
 	@Override
