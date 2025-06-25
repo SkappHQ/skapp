@@ -132,7 +132,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					float adjustedY = pageHeight - UUID_Y_POSITION;
 					PDType0Font font = loadFont(document);
 					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
-					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * UUID_FONT_SIZE;
+					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000
+							* UUID_FONT_SIZE;
 
 					// Set different paddings for horizontal and vertical sides
 					float verticalPadding = 1.0f;
@@ -156,21 +157,18 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					// Draw rounded rectangle
 					contentStream.moveTo(rectX + borderRadius, rectY);
 					contentStream.lineTo(rectX + rectWidth - borderRadius, rectY);
-					contentStream.curveTo(rectX + rectWidth - borderRadius/2, rectY,
-					                     rectX + rectWidth, rectY + borderRadius/2,
-					                     rectX + rectWidth, rectY + borderRadius);
+					contentStream.curveTo(rectX + rectWidth - borderRadius / 2, rectY, rectX + rectWidth,
+							rectY + borderRadius / 2, rectX + rectWidth, rectY + borderRadius);
 					contentStream.lineTo(rectX + rectWidth, rectY + rectHeight - borderRadius);
-					contentStream.curveTo(rectX + rectWidth, rectY + rectHeight - borderRadius/2,
-					                     rectX + rectWidth - borderRadius/2, rectY + rectHeight,
-					                     rectX + rectWidth - borderRadius, rectY + rectHeight);
+					contentStream.curveTo(rectX + rectWidth, rectY + rectHeight - borderRadius / 2,
+							rectX + rectWidth - borderRadius / 2, rectY + rectHeight, rectX + rectWidth - borderRadius,
+							rectY + rectHeight);
 					contentStream.lineTo(rectX + borderRadius, rectY + rectHeight);
-					contentStream.curveTo(rectX + borderRadius/2, rectY + rectHeight,
-					                     rectX, rectY + rectHeight - borderRadius/2,
-					                     rectX, rectY + rectHeight - borderRadius);
+					contentStream.curveTo(rectX + borderRadius / 2, rectY + rectHeight, rectX,
+							rectY + rectHeight - borderRadius / 2, rectX, rectY + rectHeight - borderRadius);
 					contentStream.lineTo(rectX, rectY + borderRadius);
-					contentStream.curveTo(rectX, rectY + borderRadius/2,
-					                     rectX + borderRadius/2, rectY,
-					                     rectX + borderRadius, rectY);
+					contentStream.curveTo(rectX, rectY + borderRadius / 2, rectX + borderRadius / 2, rectY,
+							rectX + borderRadius, rectY);
 					contentStream.closePath();
 					contentStream.fill();
 
