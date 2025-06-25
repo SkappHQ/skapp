@@ -5,7 +5,10 @@ import RoundedSelect from "~community/common/components/molecules/RoundedSelect/
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { getAdjacentYearsWithCurrent } from "~community/common/utils/dateTimeUtils";
+import {
+  getAdjacentYearsWithCurrent,
+  isPastYear
+} from "~community/common/utils/dateTimeUtils";
 import { useGetAllLeaveEntitlements } from "~community/leave/api/LeaveEntitlementApi";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { LeaveEntitlementModelTypes } from "~community/leave/enums/LeaveEntitlementEnums";
@@ -148,7 +151,9 @@ const LeaveEntitlementTable = ({
             }),
             description: translateText(["emptyScreen", "description"]),
             button: {
-              label: translateText(["emptyScreen", "buttonText"]),
+              label: !isPastYear(Number(leaveEntitlementTableSelectedYear))
+                ? translateText(["emptyScreen", "buttonText"])
+                : undefined,
               onClick: () => {
                 setLeaveEntitlementModalType(
                   LeaveEntitlementModelTypes.DOWNLOAD_CSV
