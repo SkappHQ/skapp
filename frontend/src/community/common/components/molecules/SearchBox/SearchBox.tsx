@@ -121,8 +121,7 @@ const SearchBox: FC<Props> = ({
         inputProps={{
           "data-testid": testId,
           "aria-hidden": accessibility?.ariaHidden,
-          "aria-label":
-            accessibility?.ariaLabel || (label ? undefined : placeHolder),
+          "aria-label": accessibility?.ariaLabel,
           "aria-labelledby": label ? `search-label-${name}` : undefined,
           "aria-expanded": isExpanded,
           "aria-activedescendant": activeDescendant,
