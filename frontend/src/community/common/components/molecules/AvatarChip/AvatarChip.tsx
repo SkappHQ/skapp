@@ -29,6 +29,7 @@ interface Props {
   onDeleteChip?: () => void;
   isNotEllipsis?: boolean;
   isDisabled?: boolean;
+  tabIndex?: number;
 }
 
 const AvatarChip: FC<Props> = ({
@@ -47,7 +48,8 @@ const AvatarChip: FC<Props> = ({
   isDeleteAvailable = false,
   onDeleteChip,
   isNotEllipsis = false,
-  isDisabled = false
+  isDisabled = false,
+  tabIndex
 }) => {
   const theme = useTheme();
   const classes = styles(theme);
@@ -121,6 +123,7 @@ const AvatarChip: FC<Props> = ({
         ) : undefined
       }
       disabled={isDisabled}
+      tabIndex={tabIndex}
     />
   );
 
@@ -131,6 +134,7 @@ const AvatarChip: FC<Props> = ({
         placement={TooltipPlacement.TOP}
         open={isTooltipOpen}
         ariaLabel={`${firstName} ${lastName}`}
+        tabIndex={tabIndex}
       >
         {chipComponent}
       </Tooltip>

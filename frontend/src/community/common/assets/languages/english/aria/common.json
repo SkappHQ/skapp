@@ -72,13 +72,22 @@
       "countryCodeDescription": "Country code +{{countryCode}}"
     },
     "search": {
-      "label": "Enter Search Keyword"
+      "label": "Enter Search Keyword",
+      "searchSuggestions": "Search suggestions"
     },
     "iconChip": {
       "label": "icon chip"
     },
     "filterButton": {
       "appliedFilter": "Applied filter {{filterLabel}}"
+    },
+    "avatarSearch": {
+      "currentlySelected": "currently selected:"
+    },
+    "multiSelectManagerSearch": {
+      "searchManagers": "Search for managers",
+      "managerOptions": "Manager options",
+      "selected": "selected"
     }
   },
   "modals": {
