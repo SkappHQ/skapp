@@ -26,6 +26,7 @@ export interface StyledButtonProps {
   accessibility?: {
     ariaDescription?: string;
     ariaDescribedBy?: string;
+    ariaHidden?: boolean;
   };
   ariaLabel?: string;
   ariaDisabled?: boolean;
@@ -139,6 +140,7 @@ const Button = ({
       data-testid={dataTestId}
       aria-label={ariaLabel}
       aria-describedby={accessibility?.ariaDescribedBy}
+      aria-hidden={accessibility?.ariaHidden}
       aria-disabled={ariaDisabled}
       title={title}
       disableElevation

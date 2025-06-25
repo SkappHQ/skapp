@@ -39,6 +39,8 @@ interface Props {
     body?: SxProps;
   };
   children?: ReactNode;
+  id?: string;
+  tabIndex?: number;
 }
 
 const FullPageContainerLayout = ({
@@ -47,7 +49,9 @@ const FullPageContainerLayout = ({
   title,
   stepText,
   customStyles,
-  children
+  children,
+  id,
+  tabIndex
 }: Props): JSX.Element => {
   const router = useRouter();
 
@@ -82,6 +86,8 @@ const FullPageContainerLayout = ({
       <Stack
         component="div"
         sx={mergeSx([classes.wrapper, customStyles?.wrapper])}
+        id={id}
+        tabIndex={tabIndex}
       >
         <Stack
           component="div"

@@ -15,7 +15,7 @@ const styles = (theme: Theme): StyleProps => ({
       fontWeight: 400,
       fontSize: ".875rem",
       lineHeight: "1rem",
-      color: theme.palette.grey.A100,
+      color: theme.palette.text.secondary,
       "&.Mui-active": {
         color: theme.palette.primary.dark
       },

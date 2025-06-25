@@ -42,7 +42,7 @@ const BulkUploadSummary: FC<Props> = ({
         styles={{ mt: "1rem" }}
         onClick={onClick}
         accessibility={{
-          ariaDescribedBy: "bulk-upload-summary-description"
+          ariaHidden: true
         }}
       />
     </Stack>

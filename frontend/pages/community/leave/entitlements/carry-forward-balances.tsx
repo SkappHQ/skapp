@@ -27,7 +27,7 @@ const CarryForwardBalances: NextPage = () => {
 
   const translateText = useTranslator("leaveModule", "leaveCarryForward");
 
-  useBlockPageReload();
+  const shouldRender = useBlockPageReload();
 
   const {
     leaveCarryForwardSyncBtnStatus,
@@ -109,6 +109,8 @@ const CarryForwardBalances: NextPage = () => {
       GoogleAnalyticsTypes.GA4_LEAVE_CARRY_FORWARD_BALANCE_VIEWED,
     triggerOnMount: true
   });
+
+  if (!shouldRender) return null;
 
   return (
     <>

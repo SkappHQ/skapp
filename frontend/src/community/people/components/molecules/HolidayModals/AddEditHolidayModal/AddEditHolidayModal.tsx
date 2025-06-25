@@ -47,6 +47,7 @@ const AddEditHolidayModal = ({
   holidayRefetch
 }: Props): JSX.Element => {
   const translateText = useTranslator("peopleModule", "holidays");
+  const translateAria = useTranslator("peopleAria", "holiday");
 
   const { setToastMessage } = useToast();
 
@@ -296,6 +297,11 @@ const AddEditHolidayModal = ({
           error={errors.holidayReason}
           required
           inputProps={{ maxLength: 50 }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
         />
         <InputDate
           value={
@@ -340,6 +346,9 @@ const AddEditHolidayModal = ({
           placeHolder={translateText(["SelectADate"])}
           setSelectedDate={setSelectedDate}
           selectedDate={selectedDate}
+          accessibility={{
+            ariaLabel: translateAria(["selectDateField"])
+          }}
         />
         <DurationSelector
           label={translateText(["duration"])}
@@ -357,6 +366,7 @@ const AddEditHolidayModal = ({
           error={errors.duration}
           commonButtonStyles={{ height: "3.1875rem" }}
           value={duration}
+          isRequired={true}
         />
 
         <Button

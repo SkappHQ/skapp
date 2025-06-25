@@ -28,6 +28,7 @@ interface Props<T> {
     textArea?: string;
   };
   isErrorTopicColor?: boolean;
+  textColor?: string;
 }
 
 const TextArea = <T,>({
@@ -43,7 +44,8 @@ const TextArea = <T,>({
   iconName,
   ariaLabel,
   onIconClick,
-  isErrorTopicColor = true
+  isErrorTopicColor = true,
+  textColor
 }: Props<T>) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -77,6 +79,7 @@ const TextArea = <T,>({
             placeholder={placeholder}
             value={value}
             onChange={onChange}
+            textColor={textColor}
           />
           {iconName && (
             <Box

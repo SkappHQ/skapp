@@ -30,6 +30,7 @@ const BoxStepper: FC<Props> = ({
   const theme = useTheme();
   return (
     <Box
+      role="tablist"
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -42,6 +43,8 @@ const BoxStepper: FC<Props> = ({
     >
       {steps.map((step, index) => (
         <Box
+          role="tab"
+          aria-selected={activeStep === index || activeStep === step}
           key={index}
           onClick={() => onStepClick(useStringIdentifier ? step : index)}
           data-testid={`${testId}-step-${index}`}
