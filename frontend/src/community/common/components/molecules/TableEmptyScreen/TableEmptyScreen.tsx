@@ -53,10 +53,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         <Icon name={IconName.MAGNIFYING_GLASS_ICON} />
 
         {title && (
-          <Typography
-            variant="body2"
-            sx={mergeSx([classes.title, customStyles?.title])}
-          >
+          <Typography sx={mergeSx([classes.title, customStyles?.title])}>
             {title}
           </Typography>
         )}

@@ -100,7 +100,7 @@ const SearchBox: FC<Props> = ({
   };
 
   return (
-    <Box component="div">
+    <Box component="div" role="search" aria-label={placeHolder}>
       {label && (
         <Typography
           id={`search-label-${name}`}
