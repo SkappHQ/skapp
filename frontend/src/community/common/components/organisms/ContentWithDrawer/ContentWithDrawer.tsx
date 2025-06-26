@@ -45,7 +45,6 @@ const ContentWithDrawer = ({ children }: Props) => {
               tabIndex={0}
               role="document"
               aria-label={translateAria(["contentAreaWithDrawer"])}
-              aria-hidden={true}
               style={{
                 flexDirection: "column",
                 width: "100%",

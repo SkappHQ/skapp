@@ -497,7 +497,8 @@ public class AuthServiceImpl implements AuthService {
 
 	protected void createNewPassword(String newPassword, User user) {
 		String tempPassword = user.getTempPassword();
-		if (tempPassword != null && Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+		if (tempPassword != null
+				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 

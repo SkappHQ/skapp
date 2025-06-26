@@ -28,13 +28,10 @@ interface Props {
   isSearchIconVisible?: boolean;
   accessibility?: {
     ariaHidden?: boolean;
-    ariaLabel?: string;
-    role?: string;
   };
   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: () => void;
-  isExpanded?: boolean;
-  activeDescendant?: string;
+  inputProps?: object;
 }
 
 const SearchBox: FC<Props> = ({
@@ -52,8 +49,7 @@ const SearchBox: FC<Props> = ({
   accessibility,
   onKeyDown,
   onFocus,
-  isExpanded,
-  activeDescendant
+  inputProps = {}
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -104,7 +100,7 @@ const SearchBox: FC<Props> = ({
   };
 
   return (
-    <Box component="div" role="search">
+    <Box component="div" role="search" aria-label={placeHolder}>
       {label && (
         <Typography
           id={`search-label-${name}`}
@@ -121,14 +117,9 @@ const SearchBox: FC<Props> = ({
         inputProps={{
           "data-testid": testId,
           "aria-hidden": accessibility?.ariaHidden,
-          "aria-label":
-            accessibility?.ariaLabel || (label ? undefined : placeHolder),
-          "aria-labelledby": label ? `search-label-${name}` : undefined,
-          "aria-expanded": isExpanded,
-          "aria-activedescendant": activeDescendant,
-          "aria-autocomplete": "list",
-          role: accessibility?.role || "searchbox",
-          autoComplete: "off"
+          role: "searchbox",
+          autoComplete: "off",
+          ...inputProps
         }}
         fullWidth={fullWidth}
         onChange={searchHandler}

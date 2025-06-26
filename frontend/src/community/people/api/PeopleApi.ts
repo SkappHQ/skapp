@@ -78,7 +78,7 @@ export const useGetAllEmployeeData = (): UseQueryResult<EmployeeDataType> => {
   );
 
   return useQuery({
-    queryKey: peopleQueryKeys.EMPLOYEE_DATA_TABLE(params),
+    queryKey: peopleQueryKeys.ALL_EMPLOYEE_DATA(params),
     queryFn: async ({ pageParam = 0 }) =>
       authFetch.get(peoplesEndpoints.GET_EMPLOYEES, {
         params: {
