@@ -70,19 +70,6 @@ const ToastMessage = ({
     }
   }, [toastType]);
 
-  // Determine the appropriate ARIA role based on toast type
-  const getAriaRole = () => {
-    switch (toastType) {
-      case ToastType.ERROR:
-      case ToastType.WARN:
-        return "alert";
-      case ToastType.SUCCESS:
-      case ToastType.INFO:
-      default:
-        return "status";
-    }
-  };
-
   return (
     <Snackbar
       key={key}
@@ -95,53 +82,47 @@ const ToastMessage = ({
         onClose?.();
       }}
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      sx={
-        handleToastClick
-          ? { ...classes.stackStyle, cursor: "pointer" }
-          : classes.stackStyle
+      sx={{
+        ...classes.stackStyle,
+        cursor: handleToastClick ? "pointer" : "default"
+      }}
+      action={
+        <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
+          {/* Vertical Divider */}
+          <Divider
+            orientation="vertical"
+            flexItem
+            sx={classes.verticalDividerStyle(color)}
+          />
+
+          {/* Icon Section */}
+          {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
+
+          {/* Text Section */}
+          <Box sx={classes.textSection}>
+            <Typography variant="body1" sx={classes.titleStyle}>
+              {title}
+            </Typography>
+            <Typography variant="body2" sx={classes.descriptionStyle}>
+              {description}
+            </Typography>
+          </Box>
+
+          {/* Close Button */}
+          <Box>
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={onClose}
+              sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
+            >
+              <Icon name={IconName.CLOSE_ICON} />
+            </IconButton>
+          </Box>
+        </Box>
       }
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <Box
-        onClick={handleToastClick}
-        sx={classes.toastContainer(bgColor)}
-        role={getAriaRole()}
-      >
-        {/* Vertical Divider */}
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={classes.verticalDividerStyle(color)}
-        />
-
-        {/* Icon Section */}
-        {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
-
-        {/* Text Section */}
-        <Box sx={classes.textSection}>
-          <Typography variant="body1" sx={classes.titleStyle}>
-            {title}
-          </Typography>
-          <Typography variant="body2" sx={classes.descriptionStyle}>
-            {description}
-          </Typography>
-        </Box>
-
-        {/* Close Button */}
-        <Box>
-          <IconButton
-            aria-label="close"
-            color="inherit"
-            size="small"
-            onClick={onClose}
-            sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
-          >
-            <Icon name={IconName.CLOSE_ICON} />
-          </IconButton>
-        </Box>
-      </Box>
-    </Snackbar>
+    />
   );
 };
 
