@@ -52,7 +52,7 @@ export const styles = ({ theme }: stylesProps) => ({
     alignItems: "center",
     height: "2.8225rem",
     width: "calc(100% - 7rem)",
-    marginBottom: "1.875rem"
+    marginBottom: "0.25rem"
   },
 
   logoImage: {
@@ -70,7 +70,8 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowY: "auto",
     overflowX: "hidden",
     scrollbarWidth: "thin",
-    gap: "1rem"
+    gap: "1rem",
+    paddingTop: "1.625rem"
   },
   listItem: {
     display: "flex",
