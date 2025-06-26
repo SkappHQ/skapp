@@ -32,6 +32,8 @@
     "averageHoursWorkedNextMonth": "next month",
     "averageHoursWorkedPreviousMonth": "previous month",
     "averageHoursWorkedNextDates": "next dates",
-    "averageHoursWorkedPreviousDates": "previous dates"
+    "averageHoursWorkedPreviousDates": "previous dates",
+    "clockChart": "{{type}} chart - use arrow keys to navigate",
+    "lateArrivalChart": "{{type}} late arrival trend - use arrow keys to navigate"
   }
 }
