@@ -22,7 +22,7 @@ const EmployeeFilterSection = ({
   accessibilityKey?: string;
   data: { label: string; value: string }[];
   filterKey: string;
-  currentFilter: string[];
+  currentFilter: any;
   handleFilterChange: (
     value: string,
     filterKey: string,
