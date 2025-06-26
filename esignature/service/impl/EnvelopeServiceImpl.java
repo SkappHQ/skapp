@@ -777,6 +777,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
 		envelopeInfoResponseDto.setId(envelope.getId());
 		envelopeInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInfoResponseDto.setStatus(envelope.getStatus());
 		envelopeInfoResponseDto.setSignType(envelope.getSignType());
 
@@ -800,6 +801,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInboxInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInboxInfoResponseDto.setStatus(recipient.getInboxStatus());
 		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
 
