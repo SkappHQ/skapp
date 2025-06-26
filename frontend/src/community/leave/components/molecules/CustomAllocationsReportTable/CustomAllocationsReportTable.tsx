@@ -198,6 +198,7 @@ const CustomAllocationsReportTable: FC = () => {
       options={years}
     />
   );
+
   const transformToTableRows = useCallback(() => {
     return (
       customAllocations?.data?.results[0]?.items?.map(

@@ -72,6 +72,8 @@ public class DateTimeUtils {
 
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
+	public static final String TIMESTAMP_POSTFIX = "_";
+
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
 	}
@@ -194,6 +196,19 @@ public class DateTimeUtils {
 			throw new IllegalArgumentException("Instant cannot be null");
 		}
 		return Date.from(instant);
+	}
+
+	/**
+	 * Converts an Instant to a LocalDate in UTC.
+	 * @param instant the Instant to convert; must not be null
+	 * @return the corresponding LocalDate in UTC
+	 * @throws IllegalArgumentException if the instant is null
+	 */
+	public static LocalDate fromUtcInstantToLocaldate(Instant instant) {
+		if (instant == null) {
+			throw new IllegalArgumentException("Instant cannot be null");
+		}
+		return instant.atZone(UTC_ZONE_ID).toLocalDate();
 	}
 
 	/**
@@ -595,6 +610,10 @@ public class DateTimeUtils {
 		DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
 		String suffix = getDayOfMonthSuffix(dayOfMonth);
 		return dayOfMonth + suffix + " " + date.format(monthYearFormatter);
+	}
+
+	public static String concatPrefixWithTimestamp(String prefix) {
+		return prefix + localDateTimeToEpochMillis(getCurrentUtcDateTime()) + TIMESTAMP_POSTFIX;
 	}
 
 }

@@ -33,6 +33,7 @@ import {
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
+import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
 import LeaveRequestDates from "../LeaveRequestDates/LeaveRequestDates";
@@ -114,6 +115,13 @@ const LeaveRequests: FC = () => {
   const transformToTableRows = () => {
     return leaveRequests?.items?.map((employeeLeaveRequest: any) => ({
       id: employeeLeaveRequest.leaveRequestId,
+      ariaLabel: {
+        row: generateMyLeaveRequestAriaLabel(
+          translateAria,
+          translateText,
+          employeeLeaveRequest
+        )
+      },
       duration: (
         <LeaveRequestDates
           days={employeeLeaveRequest.durationDays}
@@ -432,6 +440,9 @@ const LeaveRequests: FC = () => {
                         })}
                       </Typography>
                     );
+                  }}
+                  accessibility={{
+                    label: translateAria(["myLeaveRequests", "sort"])
                   }}
                 />
               </Box>

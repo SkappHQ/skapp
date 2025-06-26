@@ -18,6 +18,7 @@ export interface SelectOption {
   label: string;
   value: string | number;
   disabled?: boolean;
+  ariaLabel?: string;
 }
 
 interface Props {
@@ -124,6 +125,9 @@ const RoundedSelect = ({
         },
         ...customStyles?.select
       }}
+      inputProps={{
+        "aria-label": accessibility?.label
+      }}
     >
       {options?.map((option) => {
         const selected = value === option?.value?.toString();
@@ -133,6 +137,7 @@ const RoundedSelect = ({
             key={option.value}
             value={option.value}
             disabled={option?.disabled ?? false}
+            aria-label={option.ariaLabel}
             sx={{
               display: "flex",
               justifyContent: "space-between",

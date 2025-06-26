@@ -21,11 +21,13 @@ interface Props {
   isRecordLoading?: boolean;
   isTeamSelectionAvailable?: boolean;
   selectedTeamName?: string;
+  isExportRecordDataLoading?: boolean;
 }
 
 const TimesheetAnalytics = ({
   recordData,
   workSummaryData,
+  isExportRecordDataLoading,
   exportRecordData,
   isManager,
   isRecordLoading,
@@ -85,7 +87,7 @@ const TimesheetAnalytics = ({
       <EmployeeTimeRecordsTable
         recordData={recordData}
         exportRecordData={exportRecordData}
-        selectedTab={selectedTab}
+        isExportRecordDataLoading={isExportRecordDataLoading}
         isRecordLoading={isRecordLoading}
         teamName={selectedTeamName || timesheetAnalyticsSelectedTeamName}
       />

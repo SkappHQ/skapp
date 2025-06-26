@@ -1,6 +1,6 @@
 import { Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { type ChangeEvent, FC, KeyboardEvent, useRef } from "react";
+import { type ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 
@@ -33,6 +33,7 @@ interface Props {
   inputStyle?: SxProps;
   isDisabled?: boolean;
   readOnly?: boolean;
+  labelStyles?: SxProps;
 }
 const InputPhoneNumber: FC<Props> = ({
   label,
@@ -49,7 +50,8 @@ const InputPhoneNumber: FC<Props> = ({
   fullComponentStyle,
   isDisabled,
   inputStyle,
-  readOnly
+  readOnly,
+  labelStyles
 }) => {
   const translateText = useTranslator(
     "commonAria",
@@ -76,6 +78,45 @@ const InputPhoneNumber: FC<Props> = ({
     }
   };
 
+  useEffect(() => {
+    const handleDropdownAccessibility = () => {
+      const list = document.querySelector(".country-list");
+      const options = document.querySelectorAll(".country-list .country");
+
+      if (list) {
+        list.setAttribute("role", "listbox");
+      }
+
+      options.forEach((el: any, index) => {
+        const countryName = el?.querySelector(".country-name")?.textContent;
+        const dialCode = el?.querySelector(".dial-code")?.textContent;
+        const id = `country-option-${index}`;
+
+        if (countryName && dialCode) {
+          el.setAttribute("role", "option");
+          el.setAttribute("id", id);
+          el.setAttribute("aria-label", `${countryName} ${dialCode}`);
+
+          const cleanDialCode = dialCode.replace("+", "");
+          const isSelected = cleanDialCode === countryCodeValue;
+          el.setAttribute("aria-selected", isSelected ? "true" : "false");
+        }
+      });
+
+      const input = document.querySelector(".flag-dropdown input");
+      const selected = document.querySelector(".country.highlight");
+
+      if (input && selected) {
+        const selectedIndex = Array.from(options).indexOf(selected);
+        const selectedId = `country-option-${selectedIndex}`;
+        input.setAttribute("aria-activedescendant", selectedId);
+      }
+    };
+
+    const interval = setInterval(handleDropdownAccessibility, 300);
+    return () => clearInterval(interval);
+  }, [countryCodeValue]);
+
   return (
     // TODO: move styles to styles.ts
     <>
@@ -93,6 +134,7 @@ const InputPhoneNumber: FC<Props> = ({
         <Typography
           variant="placeholder"
           sx={{
+            ...(labelStyles || {}),
             color: isDisabled
               ? theme.palette.text.disabled
               : error
@@ -104,13 +146,25 @@ const InputPhoneNumber: FC<Props> = ({
         </Typography>
         {tooltip && <Tooltip title={tooltip} />}
       </Stack>
-      <Stack direction="row" alignItems="flex-start" gap={1}>
+      <Stack
+        direction="row"
+        alignItems="flex-start"
+        gap={1}
+        role="group"
+        aria-label={`${label} ${translateText(["countryCode"])}`}
+      >
         <PhoneInput
           value={countryCodeValue}
           onChange={onChangeCountry}
           inputProps={{
             readOnly: true,
-            "aria-label": `${label} ${translateText(["countryCode"])}`
+            "aria-label": `${label} ${translateText(["countryCode"])}`,
+            role: "combobox",
+            "aria-expanded": phoneInputRef.current?.state.open
+              ? "true"
+              : "false",
+            "aria-haspopup": "listbox",
+            tabIndex: -1
           }}
           disableDropdown={isDisabled}
           inputStyle={{

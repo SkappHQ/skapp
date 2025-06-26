@@ -30,6 +30,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("peopleModule", "holidays");
+  const translateAria = useTranslator("peopleAria", "holiday");
 
   const {
     newCalenderDetails,
@@ -187,6 +188,9 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
         supportedFiles={".csv"}
         maxFileSize={1}
         customError={calendarErrors}
+        accessibility={{
+          componentName: translateAria(["holidays"])
+        }}
       />
 
       <Button

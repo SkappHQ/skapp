@@ -11,6 +11,7 @@ import {
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
+import { TableProps } from "./Table";
 import styles from "./styles";
 
 export interface TableFootProps {
@@ -43,7 +44,7 @@ export interface TableFootProps {
   };
 }
 
-const TableFoot: FC<TableFootProps> = ({
+const TableFoot: FC<TableProps & TableFootProps> = ({
   pagination = {
     disabled: false,
     isEnabled: true,
@@ -64,7 +65,8 @@ const TableFoot: FC<TableFootProps> = ({
     isVisible: false
   },
   customElements,
-  customStyles
+  customStyles,
+  tableName
 }) => {
   const theme = useTheme();
   const classes = styles(theme);
@@ -73,6 +75,7 @@ const TableFoot: FC<TableFootProps> = ({
     <Stack sx={mergeSx([classes?.tableFoot?.wrapper, customStyles?.wrapper])}>
       {pagination?.isEnabled && (
         <Pagination
+          tableName={tableName}
           totalPages={pagination?.totalPages}
           currentPage={pagination?.currentPage || 0}
           onChange={pagination?.onChange || (() => {})}

@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 
 import { usePeopleStore } from "~community/people/store/store";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 import usePrimaryContactDetailsFormHandlers from "./usePrimaryContactDetailsFormHandlers";
 
 jest.mock("~community/people/store/store", () => ({
@@ -30,7 +30,7 @@ describe("usePrimaryContactDetailsFormHandlers", () => {
       employee: mockEmployee,
       setEmergencyDetails: mockSetEmergencyDetails
     });
-    (useGetDefaultConuntryCode as jest.Mock).mockReturnValue("1");
+    (useGetDefaultCountryCode as jest.Mock).mockReturnValue("1");
   });
 
   it("should initialize form values correctly", () => {

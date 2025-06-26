@@ -6,8 +6,14 @@
   "teams": {
     "table": {
       "actionColumn": {
-        "editButton": "Edit team {{teamName}} button",
-        "deleteButton": "Delete team {{teamName}} button"
+        "editButton": {
+          "label": "Edit {{teamName}} team",
+          "description": ""
+        },
+        "deleteButton": {
+          "label": "Delete {{teamName}} team",
+          "description": ""
+        }
       }
     },
     "modal": {
@@ -17,14 +23,15 @@
   "addResource": {
     "generalDetails": {
       "selectGender": "Select gender",
-      "selectMaritalStatus": "Select marital status"
+      "selectMaritalStatus": "Select marital status",
+      "addProfileAvatar": "Add profile avatar"
     },
     "familyDetails": {
       "selectGender": "Select gender",
       "selectRelationship": "Select relationship"
     },
     "healthAndOtherDetails": {
-      "selectBloodGroup": " Select blood group"
+      "selectBloodGroup": "Select blood group"
     },
     "emergencyDetails": {
       "selectRelationship": "Select relationship"
@@ -37,8 +44,7 @@
       "selectEmploymentType": "Select employment type",
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
-      "selectCurrentEmploymentChecked": "Select current employment checkbox is checked",
-      "selectCurrentEmploymentUnChecked": "Select current employment checkbox is unchecked"
+      "selectCurrentEmploymentChecked": "Select current employment"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
@@ -56,10 +62,40 @@
   },
   "holiday": {
     "sortByDropdown": {
-      "sort": "Sort : ",
+      "sort": "Sort by month",
       "chronologically": "Chronologically : ",
       "janToDec": "January to December",
-      "decToJan": "December to January"
-    }
+      "decToJan": "December to January",
+      "yearSelector": "Year selector",
+      "currentSelection": "Current selection is"
+    },
+    "holidays": "Holidays",
+    "selectDateField": "Select the date field, required. Press Enter to open calendar",
+    "holidayTable": "Holidays table for the year {{year}}",
+    "selectHoliday": "Select holiday {{holidayName}}",
+    "holidayTableRow": "Row: Date {{date}}; Duration {{duration}}; Holiday Name: {{holidayName}}; Delete holiday {{status}}",
+    "deleteHoliday": "Delete {{holidayName}} holiday",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "directory": {
+    "userBulkUpload": "User Bulk",
+    "uploadPeople": "Upload People",
+    "addPeopleModal": {
+      "superAdminToggle": "Super Admin Toggle",
+      "peoplePermissions": "People Permissions",
+      "leavePermissions": "Leave Permissions",
+      "attendancePermissions": "Attendance Permissions",
+      "eSignPermissions": "E-sign Permissions"
+    },
+    "directoryTable": "Directory Table",
+    "pendingInvitationsPage": "Pending Invitations Page",
+    "sortBy": "Sort by: {{sortBy}}",
+    "sortDropdown": "Sort by Dropdown",
+    "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "null": "null",
+    "userProfile": "User Profile of {{name}}",
+    "selectEmployee": "Select employee {{employeeName}}"
   }
 }

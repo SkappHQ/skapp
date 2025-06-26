@@ -5,7 +5,7 @@ import { ChangeEvent, useCallback, useMemo } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidNamePattern } from "~community/common/utils/validation";
 import { RelationshipTypes } from "~community/people/enums/PeopleEnums";
-import useGetDefaultConuntryCode from "~community/people/hooks/useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3EmergencyContactType } from "~community/people/types/PeopleTypes";
 import { employeePrimaryEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -17,7 +17,7 @@ const usePrimaryContactDetailsFormHandlers = () => {
     "emergencyDetails"
   );
 
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
 
   const { employee, setEmergencyDetails } = usePeopleStore((state) => state);
 

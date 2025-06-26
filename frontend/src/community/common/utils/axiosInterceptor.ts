@@ -1,5 +1,5 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
@@ -29,6 +29,8 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
     !config.url?.includes("/app-setup-status")
   ) {
     config.headers.Authorization = `Bearer ${session?.user.accessToken}`;
+  } else if (session && !session?.user.accessToken) {
+    signOut();
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";

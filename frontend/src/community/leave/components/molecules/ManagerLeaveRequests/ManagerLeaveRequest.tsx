@@ -31,6 +31,7 @@ import {
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
+import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 
 interface Props {
   employeeLeaveRequests: LeaveRequestItemsType[];
@@ -151,6 +152,12 @@ const ManagerLeaveRequest: FC<Props> = ({
   const transformToTableRows = () => {
     return employeeLeaveRequests?.map((employeeLeaveRequest) => ({
       id: employeeLeaveRequest.leaveRequestId,
+      ariaLabel: {
+        row: generateManagerLeaveRequestAriaLabel(
+          translateAria,
+          employeeLeaveRequest
+        )
+      },
       name: (
         <Box
           role="group"

@@ -174,6 +174,7 @@ const Drawer = (): JSX.Element => {
           visibility: "visible"
         }}
         id="side-bar"
+        role="document"
       >
         <Box sx={classes.imageWrapper}>
           {!isLoading && (

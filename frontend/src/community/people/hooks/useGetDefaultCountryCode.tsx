@@ -2,7 +2,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 
 import { countryCodeList } from "../data/countryCodes";
 
-const useGetDefaultConuntryCode = () => {
+const useGetDefaultCountryCode = () => {
   const { country } = useCommonStore((state) => state);
 
   const getCountryCode = () => {
@@ -17,4 +17,4 @@ const useGetDefaultConuntryCode = () => {
 
   return getCountryCode();
 };
-export default useGetDefaultConuntryCode;
+export default useGetDefaultCountryCode;

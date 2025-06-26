@@ -8,11 +8,11 @@ interface Props {
   noOfRows: number;
 }
 
-const TImesheetTableRowFill: FC<Props> = ({ noOfRows }) => {
+const TimesheetTableRowFill: FC<Props> = ({ noOfRows }) => {
   const theme: Theme = useTheme();
 
   return (
-    <Box>
+    <Box sx={{ position: "relative" }}>
       {[...Array(noOfRows)].map((_item, index) => (
         <Stack
           direction="row"
@@ -35,4 +35,4 @@ const TImesheetTableRowFill: FC<Props> = ({ noOfRows }) => {
   );
 };
 
-export default TImesheetTableRowFill;
+export default TimesheetTableRowFill;

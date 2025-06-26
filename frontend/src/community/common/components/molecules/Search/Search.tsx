@@ -39,6 +39,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { removeSpecialCharacters } from "~community/common/utils/commonUtil";
+import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import {
   EmployeeDataType,
   EmployeeDetails,
@@ -97,6 +98,7 @@ interface Props {
   needSearchIcon?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   ariaLabel?: string;
+  selectedIndex?: number;
 }
 
 const Search: FC<Props> = ({
@@ -139,13 +141,28 @@ const Search: FC<Props> = ({
   required = false,
   needSearchIcon = true,
   onKeyDown,
-  ariaLabel
+  ariaLabel,
+  selectedIndex = -1
 }) => {
   const translateAria = useTranslator("commonAria", "components", "search");
   const theme: Theme = useTheme();
   const ref = useRef<HTMLHeadingElement | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [selectedTab, setSelectedTab] = useState("Individual");
+
+  useEffect(() => {
+    if (selectedIndex >= 0) {
+      const selectedElement = document.getElementById(
+        `suggestion-${selectedIndex}`
+      );
+      if (selectedElement) {
+        selectedElement.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+      }
+    }
+  }, [selectedIndex]);
 
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -296,7 +313,13 @@ const Search: FC<Props> = ({
               name={inputName}
               onKeyDown={onKeyDown}
               inputProps={{
-                "aria-label": ariaLabel ?? translateAria(["label"])
+                "aria-label": ariaLabel ?? translateAria(["label"]),
+                "aria-expanded": isPopperOpen,
+                "aria-haspopup": "listbox",
+                "aria-autocomplete": "list",
+                role: "combobox",
+                "aria-activedescendant":
+                  selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined
               }}
             />
             {needSearchIcon && <SearchIcon />}
@@ -329,6 +352,8 @@ const Search: FC<Props> = ({
           containerStyles={popperStyles}
         >
           <Box
+            role="listbox"
+            aria-label={translateAria(["searchSuggestions"])}
             sx={{
               backgroundColor:
                 suggestions?.length === 0
@@ -354,25 +379,44 @@ const Search: FC<Props> = ({
             )}
             {!isEmployeeAndUserSearch &&
               suggestions &&
-              (suggestions as EmployeeDataType[])?.map((user) => {
+              (suggestions as EmployeeDataType[])?.map((user, index) => {
+                const isSelected = index === selectedIndex;
                 return (
                   <Box
                     key={user.employeeId}
+                    id={`suggestion-${index}`}
+                    role="option"
+                    aria-selected={isSelected}
+                    tabIndex={-1}
                     sx={{
                       display: "flex",
                       flexDirection: "row",
                       justifyContent: "space-between",
                       py: "0.5rem",
+                      backgroundColor: isSelected
+                        ? theme.palette.action.hover
+                        : "transparent",
                       "&:hover": {
                         cursor: "pointer",
+                        borderRadius: "0.75rem",
+                        backgroundColor: theme.palette.action.hover
+                      },
+                      "&:focus": {
+                        outline: `0.125rem solid ${theme.palette.primary.main}`,
+                        outlineOffset: "-0.125rem",
                         borderRadius: "0.75rem"
                       },
-
                       ...suggestionStyles
                     }}
                     onClick={
                       onSelectMember ? () => onSelectMember(user) : undefined
                     }
+                    onKeyDown={(e) => {
+                      if (shouldActivateButton(e.key)) {
+                        e.preventDefault();
+                        onSelectMember && onSelectMember(user);
+                      }
+                    }}
                   >
                     <Box width="100%">
                       <AvatarChip

@@ -42,6 +42,8 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
 
   const classes = styles(theme);
 
+  const descriptionId = `table-empty-desc-${crypto.randomUUID()}`;
+
   return (
     <Stack sx={mergeSx([classes.wrapper, customStyles?.wrapper])}>
       <Stack
@@ -51,15 +53,13 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         <Icon name={IconName.MAGNIFYING_GLASS_ICON} />
 
         {title && (
-          <Typography
-            variant="h3"
-            sx={mergeSx([classes.title, customStyles?.title])}
-          >
+          <Typography sx={mergeSx([classes.title, customStyles?.title])}>
             {title}
           </Typography>
         )}
 
         <Typography
+          id={descriptionId}
           component="div"
           variant="body2"
           sx={mergeSx([classes.description, customStyles?.description])}
@@ -72,6 +72,9 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
             id={button?.id}
             shouldBlink={button?.shouldBlink}
             label={button?.label}
+            accessibility={{
+              ariaDescribedBy: descriptionId
+            }}
             startIcon={
               button?.startIcon ? <Icon name={button?.startIcon} /> : <></>
             }

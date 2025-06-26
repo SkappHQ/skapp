@@ -13,6 +13,7 @@ interface Props {
   setInputTextAndKey?: (label: string, value: string) => void;
   ariaLabel?: string;
   isReadOnly?: boolean;
+  tabIndex?: number;
 }
 
 const LeaveStatusPopupColumn: FC<Props> = ({
@@ -26,7 +27,8 @@ const LeaveStatusPopupColumn: FC<Props> = ({
   isForAForm = false,
   setInputTextAndKey,
   ariaLabel,
-  isReadOnly = false
+  isReadOnly = false,
+  tabIndex
 }) => {
   const theme: Theme = useTheme();
   return (
@@ -35,7 +37,7 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         display: "flex",
         flexDirection: "column"
       }}
-      tabIndex={0}
+      tabIndex={tabIndex}
     >
       <Typography
         htmlFor={id}

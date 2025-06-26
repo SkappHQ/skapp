@@ -69,6 +69,7 @@ const HolidayTable: FC<Props> = ({
   const { destroyDriverObj } = useProductTour();
 
   const translateText = useTranslator("peopleModule", "holidays");
+  const translateAria = useTranslator("peopleAria", "holiday");
 
   const {
     setIsHolidayModalOpen,
@@ -148,6 +149,7 @@ const HolidayTable: FC<Props> = ({
       transformToTableRows(
         holidayData,
         translateText,
+        translateAria,
         isRowDisabled,
         classes.dateWrapper
       ),
@@ -171,7 +173,14 @@ const HolidayTable: FC<Props> = ({
 
   return (
     <Stack sx={classes.wrapper}>
-      <Box sx={classes.container} ref={listInnerRef}>
+      <Box
+        role="region"
+        aria-label={translateAria(["holidayTable"], {
+          year: holidaySelectedYear
+        })}
+        sx={classes.container}
+        ref={listInnerRef}
+      >
         <Table
           tableName={TableNames.HOLIDAYS}
           headers={tableHeaders}
@@ -279,7 +288,8 @@ const HolidayTable: FC<Props> = ({
               skeleton: {
                 rows: 5
               }
-            }
+            },
+            onRowClick: () => {}
           }}
           tableFoot={{
             pagination: {

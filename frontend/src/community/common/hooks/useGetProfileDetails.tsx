@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
-import useGetDefaultConuntryCode from "~community/people/hooks/useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import {
   EmergencyContactDetailsType,
@@ -40,7 +40,7 @@ const useGetProfileDetails = () => {
     reinitializeFormik,
     resetEmployeeDataChanges
   } = usePeopleStore((state) => state);
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
   const [isRefetchingData, setIsRefetchingData] = useState<boolean>(false);
 
   const { data: employee, isSuccess, isLoading } = useGetUserPersonalDetails();
