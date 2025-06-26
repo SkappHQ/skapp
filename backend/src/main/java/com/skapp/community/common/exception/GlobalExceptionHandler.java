@@ -19,6 +19,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.IOException;
@@ -49,6 +50,18 @@ public class GlobalExceptionHandler {
 		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), message, status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true, errorResponse), status);
+	}
+
+	@ExceptionHandler(HttpClientErrorException.class)
+	public ResponseEntity<ResponseEntityDto> handleHttpClientErrorException(HttpClientErrorException e) {
+		HttpStatus status = HttpStatus.UNAUTHORIZED;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS.name(), message, status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS)),
+				status);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
