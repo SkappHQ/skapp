@@ -48,7 +48,9 @@ import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.service.EpGoogleCalenderService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
+import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
@@ -105,6 +107,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final DashboardEmailService dashboardEmailService;
 
+	private final ModuleService moduleService;
+
+	private final EpGoogleCalenderService epGoogleCalenderService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -116,7 +122,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
 			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
 			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			CacheService cacheService, DashboardEmailService dashboardEmailService) {
+			CacheService cacheService, DashboardEmailService dashboardEmailService, ModuleService moduleService,
+			EpGoogleCalenderService epGoogleCalenderService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -136,6 +143,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
+		this.moduleService = moduleService;
+		this.epGoogleCalenderService = epGoogleCalenderService;
 	}
 
 	@Override
@@ -375,6 +384,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		moduleService.setDefaultModules();
+		epGoogleCalenderService.setupOrganizationCalendar();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

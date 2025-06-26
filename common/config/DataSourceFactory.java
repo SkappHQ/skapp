@@ -61,6 +61,17 @@ public class DataSourceFactory {
 	@Value("${spring.datasource.driver-class-name}")
 	private String driverClassName;
 
+	public DataSource getDataSource(String tenantId, boolean readOnly) {
+		if (tenantId == null || tenantId.isEmpty()) {
+			return readOnly ? createMasterReadDataSource() : createMasterWriteDataSource();
+		}
+		return readOnly ? createTenantReadDataSource(tenantId) : createTenantWriteDataSource(tenantId);
+	}
+
+	public DataSource getDataSource(boolean readOnly) {
+		return getDataSource(null, readOnly);
+	}
+
 	public DataSource createMasterWriteDataSource() {
 		HikariConfig config = createBaseHikariConfig(masterWriteUrl, masterUsername, masterPassword,
 				"Master-Write-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,

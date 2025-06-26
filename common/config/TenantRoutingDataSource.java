@@ -10,6 +10,7 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
@@ -43,12 +44,24 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 
 		if (lookupKey != null && lookupKey.contains("-")) {
 			TenantDataSourceKey key = TenantKeyExtractor.extractTenantKey(lookupKey);
+			if (Objects.equals(key.getTenantId(), EpCommonConstants.MASTER_DATABASE)) {
+				if (key.isRead()) {
+					dataSource = dataSourceFactory.getDataSource(true);
+				}
+				else {
+					dataSource = dataSourceFactory.getDataSource(false);
+				}
 
-			if (key.isRead()) {
-				dataSource = dataSourceFactory.createTenantReadDataSource(key.getTenantId());
+				dataSources.put(lookupKey, dataSource);
+				return dataSource;
 			}
 			else {
-				dataSource = dataSourceFactory.createTenantWriteDataSource(key.getTenantId());
+				if (key.isRead()) {
+					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), true);
+				}
+				else {
+					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), false);
+				}
 			}
 
 			dataSources.put(lookupKey, dataSource);

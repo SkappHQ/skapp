@@ -10,7 +10,6 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -19,7 +18,7 @@ import java.sql.SQLException;
 @RequiredArgsConstructor
 public class MultiTenantConnectionProviderConfig implements MultiTenantConnectionProvider<String> {
 
-	private final DataSource dataSource;
+	private final DataSourceConfig dataSourceConfig;
 
 	@Bean
 	public MultiTenantConnectionProvider<String> multiTenantConnectionProvider() {
@@ -28,7 +27,7 @@ public class MultiTenantConnectionProviderConfig implements MultiTenantConnectio
 
 	@Override
 	public Connection getAnyConnection() throws SQLException {
-		return dataSource.getConnection();
+		return dataSourceConfig.dataSource().getConnection();
 	}
 
 	@Override

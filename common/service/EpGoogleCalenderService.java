@@ -26,4 +26,6 @@ public interface EpGoogleCalenderService {
 
 	void deleteOutOfOfficeEvent(String eventId, String accessToken);
 
+	void setupOrganizationCalendar();
+
 }

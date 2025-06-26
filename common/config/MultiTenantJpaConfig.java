@@ -15,7 +15,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +29,7 @@ import java.util.Map;
 @EnableTransactionManagement
 public class MultiTenantJpaConfig {
 
-	private final DataSource dataSource;
+	private final DataSourceConfig dataSourceConfig;
 
 	@Bean
 	@Primary
@@ -39,7 +38,7 @@ public class MultiTenantJpaConfig {
 			CurrentTenantIdentifierResolver<String> currentTenantIdentifierResolver) {
 
 		LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-		entityManagerFactoryBean.setDataSource(dataSource);
+		entityManagerFactoryBean.setDataSource(dataSourceConfig.dataSource());
 		entityManagerFactoryBean.setPackagesToScan("com.skapp.enterprise.common.model",
 				"com.skapp.enterprise.common.model.master", "com.skapp.community.common.model",
 				"com.skapp.community.peopleplanner.model", "com.skapp.community.leaveplanner.model",

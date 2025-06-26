@@ -119,6 +119,17 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private String backendRedirectURI;
 
 	@Override
+	public void setupOrganizationCalendar() {
+		log.info("setupOrganizationCalendar: execution started");
+
+		OrganizationCalendar organizationCalendar = new OrganizationCalendar();
+		organizationCalendar.setIsGoogleCalendarEnabled(false);
+		epOrganizationCalenderDao.save(organizationCalendar);
+
+		log.info("setupOrganizationCalendar: execution ended");
+	}
+
+	@Override
 	public String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
 		log.info("connectGoogleCalendar: execution started");
 
@@ -310,7 +321,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
 		if (organizationCalendars.isEmpty() || organizationCalendars.getFirst().getIsGoogleCalendarEnabled() == null
-				|| Boolean.TRUE.equals(!organizationCalendars.getFirst().getIsGoogleCalendarEnabled())) {
+				|| !organizationCalendars.getFirst().getIsGoogleCalendarEnabled()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
 
