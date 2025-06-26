@@ -112,6 +112,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
+	public static final String HTTPS_PROTOCOL = "https://";
+
 	private final DocumentRepository documentRepository;
 
 	private final AddressBookDao addressBookDao;
@@ -161,6 +163,9 @@ public class DocumentServiceImpl implements DocumentService {
 	@Getter
 	@Value("${retry.backoff-delay}")
 	private Long retryBackoffDelay;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -336,7 +341,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -375,7 +381,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -534,7 +540,7 @@ public class DocumentServiceImpl implements DocumentService {
 			recipientService.sendDocumentCompletedEmailNotifications(envelope);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
-			documentCompleteResponseDto.setAccessLink(finalVersion.getFilePath());
+			documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + finalVersion.getFilePath());
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
@@ -544,7 +550,7 @@ public class DocumentServiceImpl implements DocumentService {
 		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}

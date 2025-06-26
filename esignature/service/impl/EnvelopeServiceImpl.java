@@ -132,6 +132,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Value("${esign.envelope.allocated-per-user-envelope-count}")
 	private long allocatedPerUserEnvelopeCount;
 
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	public static final String HTTPS_PROTOCOL = "https://";
+
 	private final EsignMapper eSignMapper;
 
 	private final EnvelopeDao envelopeDao;
@@ -787,6 +792,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(
+					HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/" + addressBook.getMySignatureLink());
+		}
 		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		envelopeInfoResponseDto.setDocuments(documentDetails);
@@ -810,10 +819,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(
+					HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/" + addressBook.getMySignatureLink());
+		}
+
 		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		AddressBookBasicResponseDto senderAddressBookResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(senderAddressBook);
+
+		senderAddressBookResponseDto.setMySignatureLink(null);
+
 		envelopeInboxInfoResponseDto.setSenderAddressBook(senderAddressBookResponseDto);
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
@@ -830,7 +847,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 			dto.setId(document.getId());
 			dto.setName(document.getName());
-			dto.setFilePath(documentVersion.getFilePath());
+			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/" + documentVersion.getFilePath());
 
 			return dto;
 		}).toList();
