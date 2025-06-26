@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { JSX, useEffect, useMemo, useState } from "react";
+import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -387,14 +387,7 @@ const Drawer = (): JSX.Element => {
             : translateAria(["expand"])
         }
       >
-        <Box
-          sx={{
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
+        <Box sx={classes.iconToggleBox}>
           {[IconName.DRAWER_CLOSE_ICON, IconName.DRAWER_OPEN_ICON].map(
             (icon, index) => {
               const isCloseIcon = index === 0;
@@ -405,13 +398,7 @@ const Drawer = (): JSX.Element => {
                   name={icon}
                   fill={theme.palette.common.black}
                   svgProps={{
-                    style: {
-                      position: "absolute",
-                      display: "flex",
-                      transition: "opacity 0.3s ease",
-                      opacity: isVisible ? 1 : 0,
-                      zIndex: isVisible ? 2 : 1
-                    }
+                    style: classes.iconToggle(isVisible) as CSSProperties
                   }}
                 />
               );

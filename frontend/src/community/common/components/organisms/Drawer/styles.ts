@@ -6,6 +6,9 @@ type stylesProps = {
   theme: Theme;
 };
 
+// Animation duration constant
+export const ANIMATION_DURATION = "0.3s";
+
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean) => ({
     display: { xs: "flex", sm: "none", lg: "flex" },
@@ -19,8 +22,20 @@ export const styles = ({ theme }: stylesProps) => ({
       xs: "visible",
       lg: isDrawerExpanded ? "hidden" : "visible"
     },
-    transition:
-      "right 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, transform 0.05s ease"
+    transition: `right ${ANIMATION_DURATION} ease, opacity ${ANIMATION_DURATION} ease, visibility ${ANIMATION_DURATION} ease, transform 0.05s ease`
+  }),
+  iconToggleBox: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  iconToggle: (isVisible: boolean) => ({
+    position: "absolute",
+    display: "flex",
+    transition: `opacity ${ANIMATION_DURATION} ease`,
+    opacity: isVisible ? 1 : 0,
+    zIndex: isVisible ? 2 : 1
   }),
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
@@ -102,7 +117,7 @@ export const styles = ({ theme }: stylesProps) => ({
   subListWrapper: {
     opacity: 0,
     transform: "translateY(-10px)",
-    animation: "fadeInSlide 0.3s ease forwards",
+    animation: `fadeInSlide ${ANIMATION_DURATION} ease forwards`,
     "@keyframes fadeInSlide": {
       from: {
         opacity: 0,
@@ -152,7 +167,7 @@ export const styles = ({ theme }: stylesProps) => ({
   ) => ({
     color: theme.palette.common.black,
     minWidth: "max-content",
-    transition: "transform 0.3s ease",
+    transition: `transform ${ANIMATION_DURATION} ease`,
     visibility: hasSubTree ? "visible" : "hidden",
     transform:
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
