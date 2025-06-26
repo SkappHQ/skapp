@@ -27,6 +27,7 @@ interface Props {
   icon?: JSX.Element;
   modalContentStyles?: SxProps;
   modalWrapperStyles?: SxProps;
+  role?: string;
   customCloseComponent?: JSX.Element;
   customCloseIcon?: JSX.Element;
   modalHeaderStyles?: SxProps;
@@ -54,6 +55,7 @@ const Modal: FC<Props> = ({
   customCloseIcon,
   modalHeaderStyles,
   modalChildrenStyles,
+  role = "modal",
   dividerStyles,
   ids = {
     title: "modal-title",
@@ -74,7 +76,7 @@ const Modal: FC<Props> = ({
     >
       <Stack
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
-        role="modal"
+        role={role}
         aria-label={translateAria(["modal"], { title })}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
