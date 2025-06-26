@@ -54,6 +54,7 @@ import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -111,6 +112,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpGoogleCalenderService epGoogleCalenderService;
 
+	private final EsignConfigService esignConfigService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -123,7 +126,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
 			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
 			CacheService cacheService, DashboardEmailService dashboardEmailService, ModuleService moduleService,
-			EpGoogleCalenderService epGoogleCalenderService) {
+			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
 		this.epOrganizationDao = epOrganizationDao;
@@ -145,6 +148,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.dashboardEmailService = dashboardEmailService;
 		this.moduleService = moduleService;
 		this.epGoogleCalenderService = epGoogleCalenderService;
+		this.esignConfigService = esignConfigService;
 	}
 
 	@Override
@@ -386,6 +390,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		leaveCycleService.setLeaveCycleDefaultConfigs();
 		moduleService.setDefaultModules();
 		epGoogleCalenderService.setupOrganizationCalendar();
+		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}
