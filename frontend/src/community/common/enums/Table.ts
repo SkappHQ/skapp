@@ -1,7 +1,7 @@
 export enum TableNames {
   // Community People Module
   TEAMS = "Teams",
-  PEOPLE = "People",
+  PEOPLE = "Directory",
   HOLIDAYS = "Holidays",
   JOB_FAMILY = "Job family",
 

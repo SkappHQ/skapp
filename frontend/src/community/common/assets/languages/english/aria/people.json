@@ -88,8 +88,6 @@
       "attendancePermissions": "Attendance Permissions",
       "eSignPermissions": "E-sign Permissions"
     },
-    "directoryTable": "Directory Table",
-    "pendingInvitationsPage": "Pending Invitations Page",
     "sortBy": "Sort by: {{sortBy}}",
     "sortDropdown": "Sort by Dropdown",
     "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",

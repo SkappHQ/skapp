@@ -492,8 +492,6 @@ const PeopleTable: FC<Props> = ({
         borderRadius: "0.5rem",
         gap: "0.125rem"
       }}
-      role="region"
-      aria-label={translateAria(["directoryTable"])}
     >
       <Box ref={listInnerRef}>
         <Table
