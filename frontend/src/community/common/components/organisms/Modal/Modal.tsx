@@ -38,6 +38,7 @@ interface Props {
     description?: string;
     closeButton?: string;
   };
+  role?: string;
 }
 
 const Modal: FC<Props> = ({
@@ -61,7 +62,8 @@ const Modal: FC<Props> = ({
     title: "modal-title",
     description: "modal-description",
     closeButton: "modal-close-button"
-  }
+  },
+  role = "modal"
 }) => {
   const translateAria = useTranslator("commonAria", "components", "modal");
 

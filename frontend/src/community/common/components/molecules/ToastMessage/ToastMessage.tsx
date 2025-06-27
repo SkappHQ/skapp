@@ -109,7 +109,7 @@ const ToastMessage = ({
           </Box>
 
           {/* Close Button */}
-          <Box>
+          <Box aria-hidden={true}>
             <IconButton
               aria-label="close"
               color="inherit"
