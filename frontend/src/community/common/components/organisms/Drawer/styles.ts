@@ -71,13 +71,16 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: "1.625rem"
+    paddingTop: "1.625rem",
+    transition: `all ${ANIMATION_DURATION} ease`
   },
   listItem: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
-    width: "100%"
+    width: "100%",
+    transition: `all ${ANIMATION_DURATION} ease-in-out`,
+    transformOrigin: "top"
   },
   listItemButton: (isSelected: boolean) => ({
     display: "flex",
@@ -113,12 +116,14 @@ export const styles = ({ theme }: stylesProps) => ({
   collapse: {
     display: "flex",
     flexDirection: "column",
-    width: "100%"
+    width: "100%",
+    overflow: "hidden",
+    transition: `all ${ANIMATION_DURATION} ease-in-out`
   },
   subListWrapper: {
     opacity: 0,
     transform: "translateY(-10px)",
-    animation: `fadeInSlide ${ANIMATION_DURATION} ease forwards`,
+    animation: `fadeInSlide ${ANIMATION_DURATION} ease-in-out forwards`,
     "@keyframes fadeInSlide": {
       from: {
         opacity: 0,
@@ -135,10 +140,13 @@ export const styles = ({ theme }: stylesProps) => ({
     flexDirection: "column",
     height: "auto",
     gap: "0.25rem",
-    padding: "0.25rem 0rem 0rem 0rem"
+    padding: "0.25rem 0rem 0rem 0rem",
+    transition: `all ${ANIMATION_DURATION} ease-in-out`
   },
   subListItem: {
-    padding: "0rem"
+    padding: "0rem",
+    transition: `all ${ANIMATION_DURATION} ease-in-out`,
+    transformOrigin: "top"
   },
   subListItemButton: (isSelected: boolean) => ({
     display: "flex",

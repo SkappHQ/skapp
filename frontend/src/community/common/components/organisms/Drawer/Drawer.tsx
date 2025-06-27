@@ -272,7 +272,7 @@ const Drawer = (): JSX.Element => {
                     </Box>
                   </ListItemButton>
 
-                  {isExpanded && hasSubTree && (
+                  {hasSubTree && (
                     <Collapse
                       in={isExpanded}
                       collapsedSize="0rem"
