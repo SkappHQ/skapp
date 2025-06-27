@@ -152,7 +152,11 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL("ep.common.error.personal-temp-or-disposable-email"),
 	EP_COMMON_ERROR_INVALID_S3_ACTION_TYPE("ep.common.error.invalid-s3-action-type"),
 	EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED("ep.common.error.signed-url-generation-failed"),
-	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),;
+	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),
+	EP_COMMON_ERROR_CLOUD_FRONT_PRIVATE_KEY_FAILED_TO_LOAD("ep.common.error.cloud-front-private-key-failed-to-load"),
+	EP_COMMON_ERROR_CLOUD_FRONT_SIGNED_COOKIES_GENERATION_FAILED(
+			"api.error.common.cloud-front-signed-cookies-generation-failed"),
+	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_T0_PARSE_PRIVATE_KEY("api.error.common.cloud-front-failed-to-parse-private-key");
 
 	private final String messageKey;
 
