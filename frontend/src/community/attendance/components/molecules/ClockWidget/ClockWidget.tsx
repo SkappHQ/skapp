@@ -92,7 +92,7 @@ const ClockWidget = (): JSX.Element => {
       direction="row"
       alignItems="center"
       justifyContent="space-between"
-      spacing={2}
+      spacing={1.5}
       component="div"
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}

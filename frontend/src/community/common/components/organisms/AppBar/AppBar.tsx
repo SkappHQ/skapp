@@ -84,12 +84,12 @@ const AppBar = () => {
         <Stack
           sx={{
             ...classes.container,
-            justifyContent: showClockWidget ? "space-between" : "flex-end"
+            justifyContent: "flex-end"
           }}
         >
-          {showClockWidget && <ClockWidget />}
           {employee ? (
             <Stack sx={classes.userInfoPanelWrapper} ref={userInfoRef}>
+              {showClockWidget && <ClockWidget />}
               <Box
                 sx={{ cursor: "pointer", mr: "0.25rem" }}
                 onClick={() => handleOpenMenu(AppBarItemTypes.NOTIFICATION)}
