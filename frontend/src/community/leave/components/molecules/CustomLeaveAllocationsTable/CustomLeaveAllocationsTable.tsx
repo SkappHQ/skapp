@@ -276,6 +276,9 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
             tabIndex={0}
             role="button"
             label={leaveType.name}
+            aria-label={translateAria(["filterOption"], {
+              filterName: leaveType.name
+            })}
             onClick={() =>
               handleLeaveTypeFilter({
                 id: leaveType.id.toString(),

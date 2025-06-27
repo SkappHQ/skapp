@@ -9,6 +9,7 @@ export enum TableNames {
   EMPLOYEE_TIMESHEET_REQUEST = "Employee timesheet request",
   MANAGER_TIMESHEET_REQUEST = "Manager timesheet request",
   CLOCK_IN = "Clock in",
+  TIME_ENTRY_REQUEST = "Time entry request",
 
   // Community Configurations Module
   MODULE_ROLES = "Module roles",

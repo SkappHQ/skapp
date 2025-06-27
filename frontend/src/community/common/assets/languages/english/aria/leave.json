@@ -72,7 +72,9 @@
       "select": "Leave entitlements by year"
     },
     "customLeaveAllocationTable": {
-      "selectYear": "Custom leave allocations by year"
+      "selectYear": "Custom leave allocations by year",
+      "filterButton": "Filter options",
+      "filterOption": "{{filterName}} option"
     }
   },
   "leaveTypeCard": {

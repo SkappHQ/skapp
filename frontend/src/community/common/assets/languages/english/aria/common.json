@@ -79,7 +79,8 @@
       "label": "icon chip"
     },
     "filterButton": {
-      "appliedFilter": "Applied filter {{filterLabel}}"
+      "appliedFilter": "Applied filter {{filterLabel}}",
+      "label": "Filter options"
     },
     "avatarSearch": {
       "currentlySelected": "currently selected:"
