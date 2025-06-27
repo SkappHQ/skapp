@@ -206,6 +206,8 @@ const DropdownSearch: FC<Props> = ({
       {!!error && (
         <Typography
           variant="body2"
+          role="alert"
+          aria-live="assertive"
           sx={{
             color: theme.palette.error.contrastText,
             fontSize: "0.875rem",

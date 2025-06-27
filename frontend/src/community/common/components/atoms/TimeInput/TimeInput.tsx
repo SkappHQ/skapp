@@ -104,6 +104,8 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
       </LocalizationProvider>
       {!!error && (
         <Typography
+          role="alert"
+          aria-live="assertive"
           variant="body2"
           sx={{ color: theme.palette.error.contrastText, marginTop: "0.3rem" }}
         >
