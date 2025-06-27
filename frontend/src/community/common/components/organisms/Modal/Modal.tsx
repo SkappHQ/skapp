@@ -56,7 +56,6 @@ const Modal: FC<Props> = ({
   customCloseIcon,
   modalHeaderStyles,
   modalChildrenStyles,
-  role = "modal",
   dividerStyles,
   ids = {
     title: "modal-title",
