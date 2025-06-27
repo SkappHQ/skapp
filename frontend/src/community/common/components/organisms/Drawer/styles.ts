@@ -120,21 +120,6 @@ export const styles = ({ theme }: stylesProps) => ({
     overflow: "hidden",
     transition: `all ${ANIMATION_DURATION} ease-in-out`
   },
-  subListWrapper: {
-    opacity: 0,
-    transform: "translateY(-10px)",
-    animation: `fadeInSlide ${ANIMATION_DURATION} ease-in-out forwards`,
-    "@keyframes fadeInSlide": {
-      from: {
-        opacity: 0,
-        transform: "translateY(-10px)"
-      },
-      to: {
-        opacity: 1,
-        transform: "translateY(0px)"
-      }
-    }
-  },
   subList: {
     display: "flex",
     flexDirection: "column",

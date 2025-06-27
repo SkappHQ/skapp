@@ -278,62 +278,60 @@ const Drawer = (): JSX.Element => {
                       collapsedSize="0rem"
                       sx={classes.collapse}
                     >
-                      <Box sx={classes.subListWrapper}>
-                        <List
-                          sx={classes.subList}
-                          id={`sub-list-${routeId}`}
-                          role="list"
-                        >
-                          {route?.subTree?.map((subTreeRoute) => (
-                            <ListItem
-                              key={subTreeRoute.id}
-                              role="listitem"
-                              sx={classes.subListItem}
-                              onClick={() =>
+                      <List
+                        sx={classes.subList}
+                        id={`sub-list-${routeId}`}
+                        role="list"
+                      >
+                        {route?.subTree?.map((subTreeRoute) => (
+                          <ListItem
+                            key={subTreeRoute.id}
+                            role="listitem"
+                            sx={classes.subListItem}
+                            onClick={() =>
+                              handleListItemButtonClick(
+                                subTreeRoute.id,
+                                subTreeRoute.hasSubTree,
+                                subTreeRoute.url
+                              )
+                            }
+                            onKeyDown={(e) => {
+                              if (shouldActivateLink(e.key)) {
+                                e.preventDefault();
                                 handleListItemButtonClick(
                                   subTreeRoute.id,
                                   subTreeRoute.hasSubTree,
                                   subTreeRoute.url
+                                );
+                              }
+                            }}
+                            data-testid={
+                              appDrawerTestId.subRoutes + subTreeRoute.id
+                            }
+                          >
+                            <ListItemButton
+                              disableRipple
+                              sx={classes.subListItemButton(
+                                router.pathname.includes(
+                                  subTreeRoute?.url ?? ""
                                 )
-                              }
-                              onKeyDown={(e) => {
-                                if (shouldActivateLink(e.key)) {
-                                  e.preventDefault();
-                                  handleListItemButtonClick(
-                                    subTreeRoute.id,
-                                    subTreeRoute.hasSubTree,
-                                    subTreeRoute.url
-                                  );
-                                }
-                              }}
-                              data-testid={
-                                appDrawerTestId.subRoutes + subTreeRoute.id
-                              }
+                              )}
+                              tabIndex={0}
                             >
-                              <ListItemButton
-                                disableRipple
-                                sx={classes.subListItemButton(
-                                  router.pathname.includes(
-                                    subTreeRoute?.url ?? ""
+                              <ListItemText
+                                primary={subTreeRoute.name}
+                                sx={classes.subListItemText(
+                                  getSelectedDrawerItemColor(
+                                    theme,
+                                    router.pathname,
+                                    subTreeRoute.url
                                   )
                                 )}
-                                tabIndex={0}
-                              >
-                                <ListItemText
-                                  primary={subTreeRoute.name}
-                                  sx={classes.subListItemText(
-                                    getSelectedDrawerItemColor(
-                                      theme,
-                                      router.pathname,
-                                      subTreeRoute.url
-                                    )
-                                  )}
-                                />
-                              </ListItemButton>
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        ))}
+                      </List>
                     </Collapse>
                   )}
                 </ListItem>
