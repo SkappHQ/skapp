@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Box,
-  IconButton,
-  Skeleton,
-  Stack,
-  Typography
-} from "@mui/material";
+import { Badge, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
@@ -121,7 +114,11 @@ const AppBar = () => {
                   max={100}
                   aria-atomic={true}
                 >
-                  <Icon name={IconName.BELL_ICON} width="2rem" height="2rem" />
+                  <Icon
+                    name={IconName.BELL_ICON}
+                    width="1.5rem"
+                    height="1.5rem"
+                  />
                 </Badge>
               </Box>
               <Box
@@ -145,17 +142,9 @@ const AppBar = () => {
                       ? employee.authPic
                       : ""
                   }
+                  avatarStyles={{ width: "2rem", height: "2rem" }}
                 />
               </Box>
-              <Stack sx={classes.userInfo}>
-                <Typography sx={classes.name}>
-                  {status !== "loading" &&
-                    `${employee?.firstName} ${employee?.lastName}`}
-                </Typography>
-                <Typography sx={classes.userRole}>
-                  {employee?.jobTitle?.name}
-                </Typography>
-              </Stack>
             </Stack>
           ) : (
             <Skeleton
