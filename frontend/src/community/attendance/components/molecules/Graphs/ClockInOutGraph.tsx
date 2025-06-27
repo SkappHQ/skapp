@@ -221,6 +221,13 @@ const ClockInOutGraph = ({
               ) : (
                 <Box
                   tabIndex={0}
+                  role="application"
+                  aria-label={translateTextAria(["clockChart"], {
+                    type:
+                      dataCategory === clockInOutGraphTypes.CLOCKIN.value
+                        ? clockInOutGraphTypes.CLOCKIN.label
+                        : clockInOutGraphTypes.CLOCKOUT.label
+                  })}
                   onKeyDown={(event) =>
                     handleGraphKeyboardNavigation({
                       event,
