@@ -98,6 +98,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
           {menuItems?.map((item: MenuItemTypes) => (
             <MenuItem
               key={item?.id}
+              aria-label={item?.ariaLabel}
               sx={{
                 ...classes.menuItem,
                 ...customStyles.menuItem,

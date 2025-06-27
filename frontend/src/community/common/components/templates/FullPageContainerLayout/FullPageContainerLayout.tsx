@@ -121,11 +121,7 @@ const FullPageContainerLayout = ({
               </Typography>
             </Stack>
           </Stack>
-          <Stack
-            component="main"
-            aria-label={translateAria(["skipToContent.mainContent"])}
-            sx={mergeSx([customStyles?.body])}
-          >
+          <Stack component="main" sx={mergeSx([customStyles?.body])}>
             {children}
           </Stack>
         </Stack>
