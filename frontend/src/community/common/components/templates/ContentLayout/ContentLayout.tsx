@@ -90,6 +90,7 @@ interface Props {
     primaryButton?: string;
     secondaryButton?: string;
   };
+  isCloseButton?: boolean;
 }
 
 const ContentLayout = ({
@@ -119,7 +120,8 @@ const ContentLayout = ({
   shouldBlink,
   customStyles,
   ariaDescribedBy,
-  showBackButtonTooltip = true
+  showBackButtonTooltip = true,
+  isCloseButton = false
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -273,7 +275,11 @@ const ContentLayout = ({
                   })
                 }
                 data-testid={contentLayoutTestId.buttons.backButton}
-                aria-label={translateAria(["backButton"])}
+                aria-label={
+                  isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
+                }
                 {...(showBackButtonTooltip && {
                   title: translateAria(["backButton"])
                 })}
