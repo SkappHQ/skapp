@@ -80,7 +80,7 @@ const SwitchRow: FC<SwitchComponentProps> = ({
         name={name}
         onKeyDown={(e: KeyboardEvent<HTMLButtonElement>) => {
           if (shouldActivateButton(e.key)) {
-            onChange?.(e.target.checked, type);
+            onChange?.(!checked, type);
           }
         }}
         slotProps={{
