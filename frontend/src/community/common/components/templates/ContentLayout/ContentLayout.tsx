@@ -281,7 +281,9 @@ const ContentLayout = ({
                     : translateAria(["backButton"])
                 }
                 {...(showBackButtonTooltip && {
-                  title: translateAria(["backButton"])
+                  title: isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
                 })}
                 tabIndex={0}
               >
