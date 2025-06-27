@@ -11,7 +11,7 @@ import {
 import styles from "./styles";
 
 interface Props {
-  accessibility: {
+  accessibility?: {
     ariaLabel?: string;
     ariaDescription?: string;
     ariaHidden?: boolean;

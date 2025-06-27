@@ -66,7 +66,7 @@ const FilterTypeSection = ({
       requestAnimationFrame(() => {
         const getFirstChildKey = (filterValue: PeopleFilterHeadings) => {
           if (filterValue === PeopleFilterHeadings.EMPLOYMENTS) {
-            return `${filterValue}employmentTypes0`;
+            return `${filterValue}employmentType0`;
           } else if (filterValue === PeopleFilterHeadings.USER_ROLES) {
             return `${filterValue}attendance0`;
           } else {

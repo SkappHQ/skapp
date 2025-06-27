@@ -443,6 +443,7 @@ const InputDate: FC<Props> = ({
         <Typography
           variant="body2"
           role="alert"
+          aria-live="assertive"
           sx={mergeSx([
             classes.errorText,
             { color: theme.palette.error.contrastText }

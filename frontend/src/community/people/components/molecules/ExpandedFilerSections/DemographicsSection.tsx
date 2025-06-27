@@ -31,12 +31,9 @@ const DemographicsSection = ({
     "peoples.filters.demographicsFilters"
   );
 
-  const {
-    employeeDataFilter,
-    setEmployeeDataFilter,
-    removeGenderFilter,
-    removeEmployeeFilter
-  } = usePeopleStore((state) => state);
+  const { employeeDataFilter, setEmployeeDataFilter, removeGenderFilter } =
+    usePeopleStore((state) => state);
+
   const genderFilters = [
     {
       label: translateText(["male"]),

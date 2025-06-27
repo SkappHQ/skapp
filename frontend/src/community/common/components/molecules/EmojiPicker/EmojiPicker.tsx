@@ -179,7 +179,12 @@ const EmojiPicker = ({
         )}
       </Popper>
       {!!error && (
-        <Typography variant="body2" sx={classes.error}>
+        <Typography
+          role="alert"
+          aria-live="assertive"
+          variant="body2"
+          sx={classes.error}
+        >
           {error}
         </Typography>
       )}

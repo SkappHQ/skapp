@@ -92,7 +92,12 @@ const SwitchRow: FC<SwitchComponentProps> = ({
         }}
       />
       {!!error && (
-        <Typography variant="body2" sx={classes.error}>
+        <Typography
+          variant="body2"
+          sx={classes.error}
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </Typography>
       )}
