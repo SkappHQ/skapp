@@ -136,6 +136,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
       setFieldValue("employeeId", Number(user.employeeId));
       const fullName = `${user.firstName} ${user.lastName}`.trim();
       setFieldValue("name", fullName);
+      setFieldValue("assignedTo", user);
       setSearchTerm(fullName);
     }
   };
