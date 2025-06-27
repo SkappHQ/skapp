@@ -155,8 +155,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),
 	EP_COMMON_ERROR_CLOUD_FRONT_PRIVATE_KEY_FAILED_TO_LOAD("ep.common.error.cloud-front-private-key-failed-to-load"),
 	EP_COMMON_ERROR_CLOUD_FRONT_SIGNED_COOKIES_GENERATION_FAILED(
-			"api.error.common.cloud-front-signed-cookies-generation-failed"),
-	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_T0_PARSE_PRIVATE_KEY("api.error.common.cloud-front-failed-to-parse-private-key");
+			"ep.common.error.cloud-front-signed-cookies-generation-failed"),
+	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_T0_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key");
 
 	private final String messageKey;
 
