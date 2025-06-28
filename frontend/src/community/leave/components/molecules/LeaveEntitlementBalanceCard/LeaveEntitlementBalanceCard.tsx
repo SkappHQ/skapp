@@ -70,11 +70,17 @@ const LeaveEntitlementBalanceCard = ({ leaveEntitlementBalance }: Props) => {
             )}
         </Stack>
       }
+      tabIndex={-1}
     >
       <Typography
         component="span"
+        role="button"
+        tabIndex={0}
+        aria-label={translateAria(["icon"])}
         onMouseEnter={() => setIsTooltipOpen(true)}
         onMouseLeave={() => setIsTooltipOpen(false)}
+        onFocus={() => setIsTooltipOpen(true)}
+        onBlur={() => setIsTooltipOpen(false)}
       >
         <Icon name={IconName.INFORMATION_ICON} />
       </Typography>

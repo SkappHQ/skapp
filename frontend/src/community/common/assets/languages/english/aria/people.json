@@ -24,7 +24,9 @@
     "generalDetails": {
       "selectGender": "Select gender",
       "selectMaritalStatus": "Select marital status",
-      "addProfileAvatar": "Add profile avatar"
+      "addProfileAvatar": "Add profile avatar",
+      "enterNIN": "National Identification Number",
+      "passportNumber": "Passport Number"
     },
     "familyDetails": {
       "selectGender": "Select gender",

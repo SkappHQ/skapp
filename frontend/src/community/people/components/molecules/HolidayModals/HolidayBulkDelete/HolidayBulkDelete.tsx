@@ -187,14 +187,6 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
           buttonStyle={ButtonStyle.ERROR}
           styles={{ mt: "1rem" }}
           onClick={() => handleBulkDelete()}
-          accessibility={{
-            ariaDescribedBy:
-              type === HolidayDeleteType.ALL
-                ? "delete-all-holidays"
-                : type === HolidayDeleteType.SELECTED
-                  ? "delete-selected-holidays"
-                  : "delete-individual-holiday"
-          }}
         />
         <Button
           label={translateText(["cancelBtnText"])}
