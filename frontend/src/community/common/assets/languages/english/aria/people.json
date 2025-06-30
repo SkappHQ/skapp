@@ -40,7 +40,8 @@
     },
     "employmentDetails": {
       "selectEmploymentAllocation": "Select employment allocation",
-      "selectMultipleTeams": "Select multiple teams dropdown"
+      "selectMultipleTeams": "Select multiple teams dropdown",
+      "enterEmployeeNo": "Employee number"
     },
     "careerProgression": {
       "selectEmploymentType": "Select employment type",
