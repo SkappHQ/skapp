@@ -71,6 +71,14 @@ const ClockWidget = (): JSX.Element => {
   //   }
   // }, [isDisabled, status, translateText]);
 
+  const showTimer = useMemo(
+    () =>
+      status === AttendanceSlotType.START ||
+      status === AttendanceSlotType.RESUME ||
+      status === AttendanceSlotType.PAUSE,
+    [status]
+  );
+
   useEffect(() => {
     void getEmployeeStatusRefetch();
     void refetchLeaveStatusData();
@@ -97,7 +105,7 @@ const ClockWidget = (): JSX.Element => {
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
     >
-      <Timer disabled={isDisabled} />
+      {showTimer && <Timer disabled={isDisabled} />}
       <ClockInButton disabled={isDisabled} />
     </Stack>
     // </Tooltip>
