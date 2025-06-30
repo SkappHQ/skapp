@@ -79,7 +79,7 @@ public class EmailServiceImpl implements EmailService {
 			Map<String, String> placeholders = convertDtoToMap(dynamicFieldsObject);
 			placeholders.replaceAll(this::getLocalizedEnumValue);
 
-			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails);
+			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
 
 			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
 
@@ -96,7 +96,7 @@ public class EmailServiceImpl implements EmailService {
 	 * @param placeholders Placeholders to replace.
 	 */
 	protected void setTemplatePlaceholderData(EmailTemplates emailTemplate, Map<String, String> placeholders,
-			EmailTemplateMetadata templateDetails) {
+			EmailTemplateMetadata templateDetails, String module) {
 		placeholders.put("subject", templateDetails.getSubject());
 	}
 
