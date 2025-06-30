@@ -116,8 +116,8 @@ const AppBar = () => {
                 >
                   <Icon
                     name={IconName.BELL_ICON}
-                    width="1.5rem"
-                    height="1.5rem"
+                    width="1.75rem"
+                    height="1.75rem"
                   />
                 </Badge>
               </Box>
