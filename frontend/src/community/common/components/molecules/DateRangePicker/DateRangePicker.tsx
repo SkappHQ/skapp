@@ -32,6 +32,7 @@ import {
   getChipLabel,
   handleDateChange
 } from "~community/common/utils/dateRangePickerUtils";
+import { getLocaleDateString } from "~community/common/utils/dateTimeUtils";
 import { shouldCollapseDropdown } from "~community/common/utils/keyboardUtils";
 
 import styles from "./styles";
@@ -76,6 +77,17 @@ const DateRangePicker: FC<Props> = ({
 
   const open: boolean = Boolean(anchorEl);
 
+  const chipLabel = getChipLabel({
+    selectedDates,
+    isRangePicker,
+    startDate,
+    endDate
+  });
+
+  const currentYear = new Date().getFullYear();
+  const startDateOfYear = new Date(currentYear, 0, 1); // Jan 1
+  const endDateOfYear = new Date(currentYear, 11, 31); // Dec 31
+
   return (
     <Stack sx={classes.wrapper}>
       {label && <Typography variant="body2">{label}</Typography>}
@@ -89,12 +101,7 @@ const DateRangePicker: FC<Props> = ({
           onClick={(event: MouseEvent<HTMLElement>) =>
             setAnchorEl(event.currentTarget)
           }
-          label={getChipLabel({
-            selectedDates,
-            isRangePicker,
-            startDate,
-            endDate
-          })}
+          label={chipLabel}
           sx={mergeSx([
             classes.chip,
             {
@@ -116,7 +123,10 @@ const DateRangePicker: FC<Props> = ({
                       DAY_MONTH_YEAR_FORMAT
                     )
                   })
-                : translateAria(["noSelectedDateLabel"])
+                : translateAria(["noSelectedDateLabel"], {
+                    startDate: getLocaleDateString(startDateOfYear),
+                    endDate: getLocaleDateString(endDateOfYear)
+                  })
           }
           tabIndex={tabIndex}
           onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {

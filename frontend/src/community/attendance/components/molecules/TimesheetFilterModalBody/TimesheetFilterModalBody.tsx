@@ -111,6 +111,7 @@ const TimesheetFilterModalBody = ({
               isFullWidth={false}
               dataAttr={{ [dataAttributeKey]: status?.value }}
               label={status?.label}
+              ariaLabel={`${status.label} filter`}
               buttonStyle={
                 selectedFilterLabels.includes(status?.label)
                   ? ButtonStyle.SECONDARY
