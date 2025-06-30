@@ -66,7 +66,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
   return (
     <Button
       buttonStyle={ButtonStyle.PRIMARY}
-      size={isBelow600 ? ButtonSizes.SMALL : ButtonSizes.SMALL}
+      size={ButtonSizes.SMALL}
       label={label}
       endIcon={IconName.TIMER_ICON}
       isFullWidth={false}

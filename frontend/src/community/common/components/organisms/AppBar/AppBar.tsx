@@ -91,7 +91,7 @@ const AppBar = () => {
             <Stack sx={classes.userInfoPanelWrapper} ref={userInfoRef}>
               {showClockWidget && <ClockWidget />}
               <Box
-                sx={{ cursor: "pointer", mr: "0.25rem" }}
+                sx={{ cursor: "pointer" }}
                 onClick={() => handleOpenMenu(AppBarItemTypes.NOTIFICATION)}
                 tabIndex={0}
                 role="button"

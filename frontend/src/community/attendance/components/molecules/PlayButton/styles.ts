@@ -4,8 +4,8 @@ const styles = (): StyleProps => ({
   buttonComponent: {
     border: "none",
     borderRadius: "50%",
-    width: "1.5rem",
-    height: "1.5rem",
+    width: "1.75rem",
+    height: "1.75rem",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
