@@ -129,7 +129,7 @@ const TimesheetFilterModalBody = ({
           ))}
         </Box>
       </Box>
-      <Divider />
+      <Divider aria-hidden={true} />
       <Stack direction="row" spacing="0.75rem" sx={classes.stackStyles}>
         <Button
           styles={classes.buttonStyles}

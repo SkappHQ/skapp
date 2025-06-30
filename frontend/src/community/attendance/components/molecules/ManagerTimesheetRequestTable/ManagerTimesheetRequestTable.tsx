@@ -19,7 +19,6 @@ import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import Button from "~community/common/components/atoms/Button/Button";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
@@ -326,7 +325,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       )}
       {hasFullList && <TimesheetRequestsFilters isManager={true} />}
       <Table
-        tableName={TableNames.MANAGER_TIMESHEET_REQUEST}
+        tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         headers={tableHeaders}
         rows={transformToTableRows() || []}
         tableHead={{
