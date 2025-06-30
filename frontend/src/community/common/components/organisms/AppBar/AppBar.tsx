@@ -142,7 +142,7 @@ const AppBar = () => {
                       ? employee.authPic
                       : ""
                   }
-                  avatarStyles={{ width: "2rem", height: "2rem" }}
+                  avatarStyles={{ width: "2.5rem", height: "2.5rem" }}
                 />
               </Box>
             </Stack>
