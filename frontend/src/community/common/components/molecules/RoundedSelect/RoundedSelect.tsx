@@ -32,7 +32,6 @@ interface Props {
   accessibility?: {
     label?: string;
     description?: string;
-    ariaLabel?: string;
   };
   customStyles?: {
     label?: SxProps<Theme>;

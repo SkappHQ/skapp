@@ -962,8 +962,8 @@
     "member": "Member",
     "jobFamily": "Job Family",
     "jobTitle": "Job Title",
-    "jobFamilyDropDownPlaceholder": "Set new job family",
-    "jobTitleDropDownPlaceholder": "Set new title",
+    "jobFamilyDropDownPlaceholder": "Set new job family for {{memberName}}",
+    "jobTitleDropDownPlaceholder": "Set new title for {{memberName}}",
     "emptySearchResult": {
       "title": "No results found",
       "description": "We couldn't find any matches for your search. Please try using a different term."
