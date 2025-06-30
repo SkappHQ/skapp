@@ -123,8 +123,20 @@ public class EPSecurityConfig {
 		configuration.setAllowedHeaders(
 				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
+		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
+	}
+
+	private CorsConfiguration getCorsConfigurationCookies(String[] origins) {
+		CorsConfiguration credentialedConfig = new CorsConfiguration();
+		credentialedConfig.setAllowedOriginPatterns(Arrays.asList(origins));
+		credentialedConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		credentialedConfig.setAllowedHeaders(
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
+		credentialedConfig.setAllowCredentials(true);
+		return credentialedConfig;
 	}
 
 }
