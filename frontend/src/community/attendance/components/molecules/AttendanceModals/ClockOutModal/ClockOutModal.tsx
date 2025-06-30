@@ -56,45 +56,43 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
     <>
       <Box component="div">
         <Box sx={classes.mainContainer}>
-          <Box id="clock-out-description">
-            <Box sx={classes.headerContainer}>
-              <Stack
-                direction="row"
-                justifyContent="flex-start"
-                spacing={1}
-                alignItems="center"
-                component="div"
+          <Box sx={classes.headerContainer}>
+            <Stack
+              direction="row"
+              justifyContent="flex-start"
+              spacing={1}
+              alignItems="center"
+              component="div"
+            >
+              <Typography variant="body2" sx={classes.headerText}>
+                {translateText(["clockOutTime"])}:
+              </Typography>
+              <div
+                style={{
+                  backgroundColor: theme.palette.grey[100],
+                  borderRadius: "9.375rem",
+                  padding: "0.5rem 1rem"
+                }}
               >
-                <Typography variant="body2" sx={classes.headerText}>
-                  {translateText(["clockOutTime"])}:
-                </Typography>
-                <div
-                  style={{
-                    backgroundColor: theme.palette.grey[100],
-                    borderRadius: "9.375rem",
-                    padding: "0.5rem 1rem"
-                  }}
-                >
-                  {clockOutTime}
-                </div>
-                <Typography variant="body2" sx={classes.headerText}>
-                  {translateText(["workedHours"])}:
-                </Typography>
-                <div
-                  style={{
-                    backgroundColor: theme.palette.grey[100],
-                    borderRadius: "9.375rem",
-                    padding: "0.5rem 1rem"
-                  }}
-                >
-                  {workedHours}
-                </div>
-              </Stack>
-            </Box>
-            <Typography variant="body2" sx={classes.messageText}>
-              {translateText(["clockOutConfirmationMessage"])}
-            </Typography>
+                {clockOutTime}
+              </div>
+              <Typography variant="body2" sx={classes.headerText}>
+                {translateText(["workedHours"])}:
+              </Typography>
+              <div
+                style={{
+                  backgroundColor: theme.palette.grey[100],
+                  borderRadius: "9.375rem",
+                  padding: "0.5rem 1rem"
+                }}
+              >
+                {workedHours}
+              </div>
+            </Stack>
           </Box>
+          <Typography variant="body2" sx={classes.messageText}>
+            {translateText(["clockOutConfirmationMessage"])}
+          </Typography>
           <Stack spacing={2}>
             <Button
               label={translateText(["confirm"])}
@@ -104,7 +102,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               isLoading={isPending}
               buttonStyle={ButtonStyle.PRIMARY}
               accessibility={{
-                ariaDescribedBy: "clock-out-description"
+                ariaHidden: true
               }}
             />
             <Button
@@ -113,6 +111,9 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               endIcon={IconName.CLOSE_ICON}
               onClick={handleUndoClockOut}
               ariaLabel={translateText(["cancel"])}
+              accessibility={{
+                ariaHidden: true
+              }}
             />
           </Stack>
         </Box>
