@@ -63,7 +63,7 @@ const DeleteConfirmModal = () => {
   };
   return (
     <Box>
-      <Typography sx={{ mt: "1rem" }} id="reassign-members-description">
+      <Typography sx={{ mt: "1rem" }} >
         {translateText(["confirmDeleteModalDes"])}
       </Typography>
       <Box>
@@ -76,7 +76,7 @@ const DeleteConfirmModal = () => {
           endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           onClick={handleReassignClick}
           accessibility={{
-            ariaDescribedBy: "reassign-members-description"
+            ariaHidden: true
           }}
         />
         <Button
@@ -87,6 +87,9 @@ const DeleteConfirmModal = () => {
           buttonStyle={ButtonStyle.ERROR}
           endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
           onClick={handleDeleteClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
       </Box>
     </Box>

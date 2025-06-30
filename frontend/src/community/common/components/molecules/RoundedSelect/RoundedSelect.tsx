@@ -32,6 +32,7 @@ interface Props {
   accessibility?: {
     label?: string;
     description?: string;
+    ariaLabel?: string;
   };
   customStyles?: {
     label?: SxProps<Theme>;
@@ -55,7 +56,10 @@ const RoundedSelect = ({
   renderValue,
   disabled = false,
   name,
-  accessibility,
+  accessibility = {
+    label: "",
+    description: ""
+  },
   customStyles = {},
   variant = "body1"
 }: Props) => {
