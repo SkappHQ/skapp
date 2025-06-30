@@ -16,6 +16,7 @@ import com.skapp.community.common.exception.TooManyRequestsException;
 import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpApiUriConstants;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpAsyncEmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -41,13 +43,23 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 	@Override
 	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
 		try {
-			Email from = new Email(organizationEmail);
+			String senderName = EpCommonConstants.APPLICATION_NAME;
+			if (placeholders != null) {
+				String module = placeholders.get(EpCommonConstants.MODULE);
+				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
+					if (!sender.isEmpty()) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
+			}
+			Email from = new Email(organizationEmail, senderName);
 			Email toEmail = new Email(to);
 			Content content = new Content("text/html", htmlBody);
 
 			Mail mail = new Mail();
 			mail.setFrom(from);
-			mail.setSubject(placeholders.containsKey("envelopeSubject")
+			mail.setSubject(Objects.requireNonNull(placeholders).containsKey("envelopeSubject")
 					&& !placeholders.get("envelopeSubject").equalsIgnoreCase("null")
 							? subject + " " + placeholders.get("envelopeSubject") : subject);
 			mail.addContent(content);
