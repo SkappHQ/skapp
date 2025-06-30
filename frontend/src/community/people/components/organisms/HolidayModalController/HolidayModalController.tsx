@@ -1,9 +1,7 @@
-import { FC, Fragment, useState } from "react";
+import { FC, Fragment, useEffect, useRef, useState } from "react";
 
-import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
 import AddEditHolidayModal from "~community/people/components/molecules/HolidayModals/AddEditHolidayModal/AddEditHolidayModal";
@@ -24,8 +22,6 @@ import styles from "./styles";
 
 const HolidayModalController: FC = () => {
   const classes = styles();
-
-  const { toastMessage } = useToast();
 
   const translateText = useTranslator("peopleModule", "holidays");
 
@@ -64,6 +60,14 @@ const HolidayModalController: FC = () => {
   >();
 
   const { data: holidays, refetch } = useGetAllHolidaysInfinite(selectedYear);
+
+  const summaryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (holidayModalType === holidayModalTypes.UPLOAD_SUMMARY) {
+      summaryRef.current?.focus();
+    }
+  }, [holidayModalType]);
 
   const getModalTitle = (): string => {
     switch (holidayModalType) {
@@ -160,7 +164,7 @@ const HolidayModalController: FC = () => {
           {bulkUploadData &&
             holidayModalType === holidayModalTypes.UPLOAD_SUMMARY &&
             bulkUploadData?.bulkStatusSummary?.failedCount > 0 && (
-              <BulkUploadSummary data={bulkUploadData} />
+              <BulkUploadSummary ref={summaryRef} data={bulkUploadData} />
             )}
 
           {holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE && (
@@ -189,15 +193,6 @@ const HolidayModalController: FC = () => {
           )}
         </Fragment>
       </ModalController>
-
-      <ToastMessage
-        open={toastMessage.open}
-        onClose={toastMessage.onClose}
-        title={toastMessage.title}
-        description={toastMessage.description}
-        toastType={toastMessage.toastType}
-        autoHideDuration={toastMessage.autoHideDuration}
-      />
     </>
   );
 };
