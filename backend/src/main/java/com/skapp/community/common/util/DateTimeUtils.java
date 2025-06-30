@@ -74,9 +74,11 @@ public class DateTimeUtils {
 
 	public static final String TIMESTAMP_POSTFIX = "_";
 
-	private static final DateTimeFormatter ESIGN_CERT_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy | hh:mm:ss a");
+	private static final DateTimeFormatter ESIGN_CERT_FORMATTER = DateTimeFormatter
+		.ofPattern("MM/dd/yyyy | hh:mm:ss a");
 
-	private static final DateTimeFormatter INSTANT_ESIGN_CERT_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss a");
+	private static final DateTimeFormatter INSTANT_ESIGN_CERT_FORMATTER = DateTimeFormatter
+		.ofPattern("MM/dd/yyyy hh:mm:ss a");
 
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
@@ -620,7 +622,7 @@ public class DateTimeUtils {
 		return prefix + localDateTimeToEpochMillis(getCurrentUtcDateTime()) + TIMESTAMP_POSTFIX;
 	}
 
-/**
+	/**
 	 * Formats a LocalDateTime to a string with pattern "MM/dd/yyyy | hh:mm:ss a".
 	 * @param dateTime The LocalDateTime to format. Cannot be null.
 	 * @return The formatted date-time string.
@@ -633,19 +635,18 @@ public class DateTimeUtils {
 		return dateTime.format(ESIGN_CERT_FORMATTER);
 	}
 
-		/**
-		 * Formats an Instant to a string with pattern "MM/dd/yyyy hh:mm:ss a".
-		 * @param instant The Instant to format. Cannot be null.
-		 * @return The formatted date-time string.
-		 * @throws ModuleException If the instant is null.
-		 */
-		public static String formatInstantEsignCert(Instant instant) {
-			if (instant == null) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
-			}
-			LocalDateTime dateTime = LocalDateTime.ofInstant(instant, DateTimeUtils.UTC_ZONE_ID);
-				return dateTime.format(INSTANT_ESIGN_CERT_FORMATTER);
+	/**
+	 * Formats an Instant to a string with pattern "MM/dd/yyyy hh:mm:ss a".
+	 * @param instant The Instant to format. Cannot be null.
+	 * @return The formatted date-time string.
+	 * @throws ModuleException If the instant is null.
+	 */
+	public static String formatInstantEsignCert(Instant instant) {
+		if (instant == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
 		}
-
+		LocalDateTime dateTime = LocalDateTime.ofInstant(instant, DateTimeUtils.UTC_ZONE_ID);
+		return dateTime.format(INSTANT_ESIGN_CERT_FORMATTER);
+	}
 
 }
