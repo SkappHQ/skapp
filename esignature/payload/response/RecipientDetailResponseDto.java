@@ -17,6 +17,8 @@ public class RecipientDetailResponseDto {
 
 	private String name;
 
+	private AddressBookBasicResponseDto addressBook;
+
 	private String email;
 
 	private MemberRole memberRole;

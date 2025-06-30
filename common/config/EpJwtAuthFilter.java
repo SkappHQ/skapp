@@ -56,7 +56,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v2/ep/auth/sso/google/redirect", "/v2/ep/auth/signin/sso/google",
 			"/v2/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/code-challenge/verify",
 			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field", "/v1/ep/esign/envelopes/decline",
-			"/v1/ep/esign/envelopes/signature-certificate", "/v1/ep/esign/recipients/consent",
+			"/v1/ep/esign/envelopes/external/signature-certificate", "/v1/ep/esign/recipients/consent",
 			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trial/create",
 			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
 			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status");

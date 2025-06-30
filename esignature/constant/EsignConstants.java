@@ -44,4 +44,5 @@ public class EsignConstants {
 	public static final Pattern ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME = Pattern.compile(
 			"^[\\p{L}\\p{M}'\\-\\/\\u00AF\\u02DA\\u00D8\\u00F8\\u0142\\u0060\\u005E\\u007E\\u00E7\\u00C7\\u00A8\\u00B4\\s]+$");
 
+	public static final String DOCUMENT_HISTORY_PREFIX = "Document History - ";
 }

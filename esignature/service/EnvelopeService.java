@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
+import org.springframework.http.HttpHeaders;
 
 import java.util.List;
 
@@ -38,7 +39,7 @@ public interface EnvelopeService {
 	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
 			boolean isDocAccess, String ipAddress);
 
-	ResponseEntityDto getSignatureCertificate(Long envelopeId);
+	byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers,boolean isDocAccess);
 
 	void expireEnvelope(Long envelopeId);
 
