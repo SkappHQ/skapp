@@ -479,8 +479,9 @@ public class RolesServiceImpl implements RolesService {
 		roles.add(RoleLevel.ADMIN.getDisplayName());
 		if(moduleType == ModuleType.ESIGN) {
 			roles.add(RoleLevel.SENDER.getDisplayName());
+		} else {
+			roles.add(RoleLevel.MANAGER.getDisplayName());
 		}
-		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 
 		roleResponseDto.setRoles(roles);
