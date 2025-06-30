@@ -91,7 +91,7 @@ public class EpCommonConstants {
 
 	public static final String SENDER = "sender";
 
-	public static final String VIA = "via ";
+	public static final String VIA = " via ";
 
 	public static final String ESIGNATURE = "esignature";
 
