@@ -29,7 +29,7 @@ const styles = () => ({
     flexDirection: "row",
     alignItems: "center",
     gap: "1.5rem",
-    height: "3.75rem",
+    height: "4rem",
     width: "auto",
     padding: "1rem",
     borderRadius: "3.3125rem",
