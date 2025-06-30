@@ -114,14 +114,14 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-		@Operation(summary = "Get Signature Certificate (PDF)",
+	@Operation(summary = "Get Signature Certificate (PDF)",
 			description = "This endpoint retrieves the signature certificate PDF for a given envelope ID.")
 	@GetMapping(value = "/internal/signature-certificate", produces = MediaType.APPLICATION_PDF_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<byte[]> getSignatureCertificateInternal(@RequestParam Long envelopeId) {
-			HttpHeaders headers = new HttpHeaders();
-			byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers,false);
-			return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+		HttpHeaders headers = new HttpHeaders();
+		byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers, false);
+		return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get Signature Certificate (PDF)",
@@ -130,11 +130,9 @@ public class EnvelopeController {
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<byte[]> getSignatureCertificateExternal(@RequestParam Long envelopeId) {
 		HttpHeaders headers = new HttpHeaders();
-		byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers,true);
+		byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers, true);
 		return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 	}
-
-
 
 	@Operation(summary = "Custody Transfer of Envelope",
 			description = "This endpoint updates the owner of an envelope (custody transfer) to a new owner.")

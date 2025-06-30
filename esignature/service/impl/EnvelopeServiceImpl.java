@@ -716,31 +716,29 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	@Override
-	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers,boolean isDocAccess) {
-	    log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
+	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess) {
+		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
-	    Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
-	        log.error("Envelope with ID {} not found", envelopeId);
-	        return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-	    });
-
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
 
 		validateUser(envelopeId, isDocAccess);
 
-
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
-	    SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
+		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
 
-	    List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
-	        AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
-	        auditTrailResponseDto.setAuditId(auditTrail.getId());
-	        auditTrailResponseDto.setAction(auditTrail.getAction());
-	        auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
-	                new TypeReference<List<MetadataResponseDto>>() {
-	                }));
-	        auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
-	        auditTrailResponseDto.setHash(auditTrail.getHash());
+		List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
+			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
+			auditTrailResponseDto.setAuditId(auditTrail.getId());
+			auditTrailResponseDto.setAction(auditTrail.getAction());
+			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
+					new TypeReference<List<MetadataResponseDto>>() {
+					}));
+			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
+			auditTrailResponseDto.setHash(auditTrail.getHash());
 			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
 				auditTrailResponseDto.setActionDoneByName("");
 				log.debug("Action done by: null (both recipient and address book user are null)");
@@ -753,327 +751,338 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
-	        auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
-	        return auditTrailResponseDto;
-	    }).toList();
+			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
+			return auditTrailResponseDto;
+		}).toList();
 
-	    organizationDao.findTopByOrderByOrganizationIdDesc()
-	            .ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
-	    responseDto.setAuditTrails(responseDtoList);
+		organizationDao.findTopByOrderByOrganizationIdDesc()
+			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
+		responseDto.setAuditTrails(responseDtoList);
 
-	    log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
+		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
 
-	    try {
-	        // Generate HTML content for the certificate
-	        String html = generateSignatureCertificateHtml(responseDto);
+		try {
+			// Generate HTML content for the certificate
+			String html = generateSignatureCertificateHtml(responseDto);
 
-	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	        PdfRendererBuilder builder = new PdfRendererBuilder();
-	        builder.withHtmlContent(html, null);
-	        builder.toStream(baos);
-	        builder.run();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.toStream(baos);
+			builder.run();
 
-	        byte[] pdfBytes = baos.toByteArray();
+			byte[] pdfBytes = baos.toByteArray();
 
-	        // Set appropriate headers for PDF response
-	        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
-	        headers.setContentLength(pdfBytes.length);
-	        headers.add("Content-Disposition", "inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + responseDto.getName() + ".pdf\"");
+			// Set appropriate headers for PDF response
+			headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+			headers.setContentLength(pdfBytes.length);
+			headers.add("Content-Disposition",
+					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + responseDto.getName() + ".pdf\"");
 
-	        return pdfBytes;
-	    } catch (IOException e) {
-	        log.error("Error generating signature certificate PDF", e);
-	        throw new RuntimeException("Error generating PDF", e);
-	    }
+			return pdfBytes;
+		}
+		catch (IOException e) {
+			log.error("Error generating signature certificate PDF", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
+		}
 	}
 
-private void validateUser(Long envelopeId, boolean isDocAccess) {
-	if (isDocAccess) {
-		// Document access via token validation
-		DocumentLink documentLinkFromToken = documentLinkService.getDocumentLinkFromToken();
-		Long addressBookId = documentLinkFromToken.getRecipientId().getAddressBook().getId();
+	private void validateUser(Long envelopeId, boolean isDocAccess) {
+		if (isDocAccess) {
+			// Document access via token validation
+			DocumentLink documentLinkFromToken = documentLinkService.getDocumentLinkFromToken();
+			Long addressBookId = documentLinkFromToken.getRecipientId().getAddressBook().getId();
 
-		if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		}
-	} else {
-		// Internal user access validation
-		User currentUser = userService.getCurrentUser();
-		if (currentUser == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		}
-
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
-		boolean isAdmin = esignRole.equals(Role.ESIGN_ADMIN);
-
-		// Admins have automatic access, other users need validation
-		if (!isAdmin) {
-			// Check if user is a recipient
-			AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(currentUser.getEmail());
-			if (currentAddressBookUser == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
-			}
-
-			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId()).isEmpty()) {
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
+		}
+		else {
+			// Internal user access validation
+			User currentUser = userService.getCurrentUser();
+			if (currentUser == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+			}
 
-			// Check if user is the envelope owner
-			AddressBook ownerAddressBook = envelopeDao.findById(envelopeId)
+			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+			boolean isAdmin = esignRole.equals(Role.ESIGN_ADMIN);
+
+			// Admins have automatic access, other users need validation
+			if (!isAdmin) {
+				// Check if user is a recipient
+				AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(currentUser.getEmail());
+				if (currentAddressBookUser == null) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+				}
+
+				if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
+					.isEmpty()) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				}
+
+				// Check if user is the envelope owner
+				AddressBook ownerAddressBook = envelopeDao.findById(envelopeId)
 					.map(Envelope::getOwner)
-					.orElseThrow(() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+					.orElseThrow(
+							() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
 
-			boolean isEnvelopeOwner = Optional.ofNullable(ownerAddressBook)
+				boolean isEnvelopeOwner = Optional.ofNullable(ownerAddressBook)
 					.map(AddressBook::getInternalUser)
 					.map(User::getUserId)
 					.filter(userId -> userId.equals(currentUser.getUserId()))
 					.isPresent();
 
-			if (!isEnvelopeOwner) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				if (!isEnvelopeOwner) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				}
 			}
 		}
 	}
-}
 
 	private String generateSignatureCertificateHtml(SignatureCertificateResponseDto responseDto) {
-	StringBuilder htmlBuilder = new StringBuilder();
+		StringBuilder htmlBuilder = new StringBuilder();
 
-	// HTML structure with proper XML formatting for OpenHTMLToPDF
-	htmlBuilder.append("<!DOCTYPE html>");
-	htmlBuilder.append("<html><head>");
-	htmlBuilder.append("<meta charset='UTF-8'/>");
-	htmlBuilder.append("<link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap' rel='stylesheet' />");
-	htmlBuilder.append("<style>");
+		// HTML structure with proper XML formatting for OpenHTMLToPDF
+		htmlBuilder.append("<!DOCTYPE html>");
+		htmlBuilder.append("<html><head>");
+		htmlBuilder.append("<meta charset='UTF-8'/>");
+		htmlBuilder.append(
+				"<link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap' rel='stylesheet' />");
+		htmlBuilder.append("<style>");
 
-	// CSS Styles optimized for OpenHTMLToPDF
-	htmlBuilder.append("@page { ");
-	htmlBuilder.append("  size: A4; ");
-	htmlBuilder.append("  margin: 40px; ");
-	htmlBuilder.append("  @bottom-right { ");
-	htmlBuilder.append("    content: 'Page ' counter(page) '/' counter(pages); ");
-	htmlBuilder.append("    font-size: 11px; ");
-	htmlBuilder.append("    font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("    color: #666; ");
-	htmlBuilder.append("  } ");
-	htmlBuilder.append("} ");
+		// CSS Styles optimized for OpenHTMLToPDF
+		htmlBuilder.append("@page { ");
+		htmlBuilder.append("  size: A4; ");
+		htmlBuilder.append("  margin: 40px; ");
+		htmlBuilder.append("  @bottom-right { ");
+		htmlBuilder.append("    content: 'Page ' counter(page) '/' counter(pages); ");
+		htmlBuilder.append("    font-size: 11px; ");
+		htmlBuilder.append("    font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("    color: #666; ");
+		htmlBuilder.append("  } ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append("body { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  margin: 0; ");
-	htmlBuilder.append("  padding: 20px; ");
-	htmlBuilder.append("  font-size: 14px; ");
-	htmlBuilder.append("  line-height: 1.4; ");
-	htmlBuilder.append("  color: #333; ");
-	htmlBuilder.append("  background: white; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append("body { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("  padding: 20px; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  line-height: 1.4; ");
+		htmlBuilder.append("  color: #333; ");
+		htmlBuilder.append("  background: white; ");
+		htmlBuilder.append("} ");
 
-	// Header styles
-	htmlBuilder.append(".header { ");
-	htmlBuilder.append("  width: 100%; ");
-	htmlBuilder.append("  margin-bottom: 40px; ");
-	htmlBuilder.append("  position: relative; ");
-	htmlBuilder.append("} ");
+		// Header styles
+		htmlBuilder.append(".header { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  margin-bottom: 40px; ");
+		htmlBuilder.append("  position: relative; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".header-table { ");
-	htmlBuilder.append("  width: 100%; ");
-	htmlBuilder.append("  border-collapse: collapse; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".header-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".title { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-size: 20px; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  color: #000; ");
-	htmlBuilder.append("  margin: 0; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".title { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 20px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".logo { ");
-	htmlBuilder.append("  text-align: right; ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-size: 14px; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  color: #f97316; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".logo { ");
+		htmlBuilder.append("  text-align: right; ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #f97316; ");
+		htmlBuilder.append("} ");
 
-	// Document info styles
-	htmlBuilder.append(".doc-section { ");
-	htmlBuilder.append("  margin-bottom: 5px; ");
-	htmlBuilder.append("  position: relative; ");
-	htmlBuilder.append("} ");
+		// Document info styles
+		htmlBuilder.append(".doc-section { ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("  position: relative; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".doc-header-table { ");
-	htmlBuilder.append("  width: 100%; ");
-	htmlBuilder.append("  border-collapse: collapse; ");
-	htmlBuilder.append("  margin-bottom: 5px; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".doc-header-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".doc-name { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-size: 18px; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  margin: 0 0 5px 0; ");
-	htmlBuilder.append("  color: #000; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".doc-name { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 18px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  margin: 0 0 5px 0; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".doc-id { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-size: 12px; ");
-	htmlBuilder.append("  color: #666; ");
-	htmlBuilder.append("  margin: 0; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".doc-id { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 12px; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("} ");
 
-// Status badge styles
-htmlBuilder.append(".status-badge { ");
-htmlBuilder.append("  text-align: right; ");
-htmlBuilder.append("  vertical-align: top; ");
-htmlBuilder.append("} ");
+		// Status badge styles
+		htmlBuilder.append(".status-badge { ");
+		htmlBuilder.append("  text-align: right; ");
+		htmlBuilder.append("  vertical-align: top; ");
+		htmlBuilder.append("} ");
 
-htmlBuilder.append(".status-content { ");
-htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-htmlBuilder.append("  display: inline-block; ");
-htmlBuilder.append("  width: 130px; ");
-htmlBuilder.append("  padding: 8px 12px; ");
-htmlBuilder.append("  box-sizing: border-box; ");
-htmlBuilder.append("  background: #f0f0f0; ");
-htmlBuilder.append("  border-radius: 16px; ");
-htmlBuilder.append("  font-size: 12px; ");
-htmlBuilder.append("  color: #333; ");
-htmlBuilder.append("  text-align: center; ");
-htmlBuilder.append("  line-height: 1.2; ");
-htmlBuilder.append("  display: flex; ");
-htmlBuilder.append("  align-items: center; ");
-htmlBuilder.append("  justify-content: center; ");
-htmlBuilder.append("} ");
+		htmlBuilder.append(".status-content { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  width: 130px; ");
+		htmlBuilder.append("  padding: 8px 12px; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
+		htmlBuilder.append("  background: #f0f0f0; ");
+		htmlBuilder.append("  border-radius: 16px; ");
+		htmlBuilder.append("  font-size: 12px; ");
+		htmlBuilder.append("  color: #333; ");
+		htmlBuilder.append("  text-align: center; ");
+		htmlBuilder.append("  line-height: 1.2; ");
+		htmlBuilder.append("  display: flex; ");
+		htmlBuilder.append("  align-items: center; ");
+		htmlBuilder.append("  justify-content: center; ");
+		htmlBuilder.append("} ");
 
-htmlBuilder.append(".status-dot { ");
-htmlBuilder.append("  display: inline-block; ");
-htmlBuilder.append("  width: 8px; ");
-htmlBuilder.append("  height: 8px; ");
-htmlBuilder.append("  border-radius: 50%; ");
-htmlBuilder.append("  margin-right: 6px; ");
-htmlBuilder.append("  flex-shrink: 0; ");
-htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot { ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  width: 8px; ");
+		htmlBuilder.append("  height: 8px; ");
+		htmlBuilder.append("  border-radius: 50%; ");
+		htmlBuilder.append("  margin-right: 6px; ");
+		htmlBuilder.append("  flex-shrink: 0; ");
+		htmlBuilder.append("} ");
 
-	// Status-specific dot styles
-	htmlBuilder.append(".status-dot.completed { ");
-	htmlBuilder.append("  background: #22c55e; ");
-	htmlBuilder.append("} ");
+		// Status-specific dot styles
+		htmlBuilder.append(".status-dot.completed { ");
+		htmlBuilder.append("  background: #22c55e; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".status-dot.waiting { ");
-	htmlBuilder.append("  border: 2px solid #f59e0b; ");
-	htmlBuilder.append("  background: transparent; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot.waiting { ");
+		htmlBuilder.append("  border: 2px solid #f59e0b; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".status-dot.need-to-sign { ");
-	htmlBuilder.append("  border: 2px solid #22c55e; ");
-	htmlBuilder.append("  background: transparent; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot.need-to-sign { ");
+		htmlBuilder.append("  border: 2px solid #22c55e; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".status-dot.declined { ");
-	htmlBuilder.append("  border: 2px solid #ef4444; ");
-	htmlBuilder.append("  background: transparent; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot.declined { ");
+		htmlBuilder.append("  border: 2px solid #ef4444; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".status-dot.expired { ");
-	htmlBuilder.append("  background: #ef4444; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot.expired { ");
+		htmlBuilder.append("  background: #ef4444; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".status-dot.voided { ");
-	htmlBuilder.append("  background: #374151; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".status-dot.voided { ");
+		htmlBuilder.append("  background: #374151; ");
+		htmlBuilder.append("} ");
 
-	// Meta information styles
-	htmlBuilder.append(".meta-section { ");
-	htmlBuilder.append("  margin-bottom: 10px; ");
-	htmlBuilder.append("} ");
+		// Meta information styles
+		htmlBuilder.append(".meta-section { ");
+		htmlBuilder.append("  margin-bottom: 10px; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".meta-table { ");
-	htmlBuilder.append("  width: 100%; ");
-	htmlBuilder.append("  border-collapse: collapse; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".meta-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".meta-table td { ");
-	htmlBuilder.append("  padding: 8px 0; ");
-	htmlBuilder.append("  vertical-align: top; ");
-	htmlBuilder.append("  width: 50%; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".meta-table td { ");
+		htmlBuilder.append("  padding: 8px 0; ");
+		htmlBuilder.append("  vertical-align: top; ");
+		htmlBuilder.append("  width: 50%; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".meta-label { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  color: #000; ");
-	htmlBuilder.append("  font-size: 14px; ");
-	htmlBuilder.append("  margin-bottom: 4px; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".meta-label { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  margin-bottom: 4px; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".meta-value { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-weight: 400; ");
-	htmlBuilder.append("  color: #666; ");
-	htmlBuilder.append("  font-size: 14px; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".meta-value { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 400; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("} ");
 
-	// Activities section styles
-	htmlBuilder.append(".activities-title { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  font-size: 16px; ");
-	htmlBuilder.append("  margin-bottom: 5px; ");
-	htmlBuilder.append("  color: #000; ");
-	htmlBuilder.append("} ");
+		// Activities section styles
+		htmlBuilder.append(".activities-title { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  font-size: 16px; ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".activities-table { ");
-	htmlBuilder.append("  width: 100%; ");
-	htmlBuilder.append("  border-collapse: collapse; ");
-	htmlBuilder.append("  font-size: 13px; ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  -fs-table-paginate: paginate; "); // OpenHTMLToPDF specific property for table pagination
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".activities-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  -fs-table-paginate: paginate; "); // OpenHTMLToPDF specific
+																// property for table
+																// pagination
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".activities-table thead { ");
-	htmlBuilder.append("  background: #f8f9fa; ");
-	htmlBuilder.append("  display: table-header-group; "); // Ensures header repeats on each page
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".activities-table thead { ");
+		htmlBuilder.append("  background: #f8f9fa; ");
+		htmlBuilder.append("  display: table-header-group; "); // Ensures header repeats
+																// on each page
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".activities-table th { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  text-align: left; ");
-	htmlBuilder.append("  padding: 10px 8px; ");
-	htmlBuilder.append("  font-weight: 600; ");
-	htmlBuilder.append("  color: #000; ");
-	htmlBuilder.append("  border-bottom: 1px solid #e0e0e0; ");
-	htmlBuilder.append("  font-size: 13px; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".activities-table th { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  text-align: left; ");
+		htmlBuilder.append("  padding: 10px 8px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  border-bottom: 1px solid #e0e0e0; ");
+		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".activities-table tbody { ");
-	htmlBuilder.append("  display: table-row-group; "); // Ensures proper tbody behavior for pagination
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".activities-table tbody { ");
+		htmlBuilder.append("  display: table-row-group; "); // Ensures proper tbody
+															// behavior for pagination
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append(".activities-table td { ");
-	htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-	htmlBuilder.append("  padding: 8px; ");
-	htmlBuilder.append("  border-bottom: 1px solid #f0f0f0; ");
-	htmlBuilder.append("  color: #666; ");
-	htmlBuilder.append("  font-size: 13px; ");
-	htmlBuilder.append("  font-weight: 400; ");
-	htmlBuilder.append("} ");
+		htmlBuilder.append(".activities-table td { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  padding: 8px; ");
+		htmlBuilder.append("  border-bottom: 1px solid #f0f0f0; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("  font-weight: 400; ");
+		htmlBuilder.append("} ");
 
-	htmlBuilder.append("</style>");
-	htmlBuilder.append("</head><body>");
+		htmlBuilder.append("</style>");
+		htmlBuilder.append("</head><body>");
 
-	// Header
-	htmlBuilder.append("<div class='header'>");
-	htmlBuilder.append("<table class='header-table'>");
-	htmlBuilder.append("<tr>");
-	htmlBuilder.append("<td><h1 class='title'>Document History</h1></td>");
-		htmlBuilder.append("<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 81px; height: 35'/></td>");
-	htmlBuilder.append("</tr>");
-	htmlBuilder.append("</table>");
-	htmlBuilder.append("</div>");
+		// Header
+		htmlBuilder.append("<div class='header'>");
+		htmlBuilder.append("<table class='header-table'>");
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td><h1 class='title'>Document History</h1></td>");
+		htmlBuilder.append(
+				"<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 81px; height: 35'/></td>");
+		htmlBuilder.append("</tr>");
+		htmlBuilder.append("</table>");
+		htmlBuilder.append("</div>");
 
-	// Document info section
-		htmlBuilder.append("<div class='doc-section'>");  // Reduced margin
+		// Document info section
+		htmlBuilder.append("<div class='doc-section'>"); // Reduced margin
 		htmlBuilder.append("<table class='doc-header-table'>");
 		htmlBuilder.append("<tr>");
 		htmlBuilder.append("<td>");
@@ -1086,7 +1095,10 @@ htmlBuilder.append("} ");
 		String statusLabel = getStatusLabel(responseDto.getStatus());
 		htmlBuilder.append("<div class='status-content'>");
 		htmlBuilder.append("<span class='status-dot ").append(statusClass).append("'></span>");
-		htmlBuilder.append("<span style='display: inline-block; vertical-align: middle; font-size: 14px; position: relative; top: -1px;'>").append(statusLabel).append("</span>");
+		htmlBuilder.append(
+				"<span style='display: inline-block; vertical-align: middle; font-size: 14px; position: relative; top: -1px;'>")
+			.append(statusLabel)
+			.append("</span>");
 		htmlBuilder.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("</tr>");
@@ -1094,117 +1106,142 @@ htmlBuilder.append("} ");
 		htmlBuilder.append("</div>");
 
 		// Add horizontal line between document info and meta information sections
-		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");  // Reduced margin
+		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />"); // Reduced
+																										// margin
 
-	// Meta information section
-	htmlBuilder.append("<div class='meta-section'>");
-	htmlBuilder.append("<table class='meta-table'>");
+		// Meta information section
+		htmlBuilder.append("<div class='meta-section'>");
+		htmlBuilder.append("<table class='meta-table'>");
 
-	// First row: Sender and Enclosed Documents
-	htmlBuilder.append("<tr>");
-	htmlBuilder.append("<td>");
-	htmlBuilder.append("<div class='meta-label'>Sender</div>");
-	htmlBuilder.append("<div class='meta-value'>").append(escapeHtml(responseDto.getOwner().getName())).append("</div>");
-	htmlBuilder.append("</td>");
-	htmlBuilder.append("<td>");
-	htmlBuilder.append("<div class='meta-label'>Enclosed Documents</div>");
-	htmlBuilder.append("<div class='meta-value'>").append(escapeHtml(responseDto.getDocuments().getFirst().getName())).append("</div>");
-	htmlBuilder.append("</td>");
-	htmlBuilder.append("</tr>");
+		// First row: Sender and Enclosed Documents
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Sender</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(escapeHtml(responseDto.getOwner().getName()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Enclosed Documents</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(escapeHtml(responseDto.getDocuments().getFirst().getName()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
 
-	// Second row: Date Created and Time Zone
-	htmlBuilder.append("<tr>");
-	htmlBuilder.append("<td>");
-	htmlBuilder.append("<div class='meta-label'>Date Created</div>");
-	htmlBuilder.append("<div class='meta-value'>").append(formatDate(responseDto.getSentAt())).append("</div>");
-	htmlBuilder.append("</td>");
-	htmlBuilder.append("<td>");
-	htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
-	htmlBuilder.append("<div class='meta-value'>").append(escapeHtml(responseDto.getOrganizationTimeZone())).append("</div>");
-	htmlBuilder.append("</td>");
-	htmlBuilder.append("</tr>");
+		// Second row: Date Created and Time Zone
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Date Created</div>");
+		htmlBuilder.append("<div class='meta-value'>").append(formatDate(responseDto.getSentAt())).append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(escapeHtml(responseDto.getOrganizationTimeZone()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
 
-	// Third row: Recipients (spans both columns)
-	htmlBuilder.append("<tr>");
-	htmlBuilder.append("<td colspan='2'>");
-	htmlBuilder.append("<div class='meta-label'>Recipients</div>");
-	htmlBuilder.append("<div class='meta-value'>");
-	String recipients = responseDto.getRecipients().stream()
-			.map(recipient -> recipient.getAddressBook().getFirstName() + " " + recipient.getAddressBook().getLastName())
+		// Third row: Recipients (spans both columns)
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td colspan='2'>");
+		htmlBuilder.append("<div class='meta-label'>Recipients</div>");
+		htmlBuilder.append("<div class='meta-value'>");
+		String recipients = responseDto.getRecipients()
+			.stream()
+			.map(recipient -> recipient.getAddressBook().getFirstName() + " "
+					+ recipient.getAddressBook().getLastName())
 			.collect(Collectors.joining(", "));
-	htmlBuilder.append(escapeHtml(recipients));
-	htmlBuilder.append("</div>");
-	htmlBuilder.append("</td>");
-	htmlBuilder.append("</tr>");
+		htmlBuilder.append(escapeHtml(recipients));
+		htmlBuilder.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
 
-	htmlBuilder.append("</table>");
-	htmlBuilder.append("</div>");
+		htmlBuilder.append("</table>");
+		htmlBuilder.append("</div>");
 
-	// Activities section
-	htmlBuilder.append("<h3 class='activities-title'>Activities</h3>");
+		// Activities section
+		htmlBuilder.append("<h3 class='activities-title'>Activities</h3>");
 
-	// Add horizontal line between document info and meta information sections
-	htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
+		// Add horizontal line between document info and meta information sections
+		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
 
-	htmlBuilder.append("<table class='activities-table'>");
-	htmlBuilder.append("<thead>");
-	htmlBuilder.append("<tr>");
-	htmlBuilder.append("<th style='width: 28%;'>Time</th>");
-	htmlBuilder.append("<th style='width: 35%;'>User</th>");
-	htmlBuilder.append("<th style='width: 40%;'>Activity</th>");
-	htmlBuilder.append("</tr>");
-	htmlBuilder.append("</thead>");
-	htmlBuilder.append("<tbody>");
+		htmlBuilder.append("<table class='activities-table'>");
+		htmlBuilder.append("<thead>");
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<th style='width: 28%;'>Time</th>");
+		htmlBuilder.append("<th style='width: 35%;'>User</th>");
+		htmlBuilder.append("<th style='width: 40%;'>Activity</th>");
+		htmlBuilder.append("</tr>");
+		htmlBuilder.append("</thead>");
+		htmlBuilder.append("<tbody>");
 
-	if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
-		for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
-			htmlBuilder.append("<tr>");
-			htmlBuilder.append("<td>").append(escapeHtml(formatTimestamp(audit.getTimestamp()))).append("</td>");
-			htmlBuilder.append("<td>").append(escapeHtml(audit.getActionDoneByName())).append("</td>");
-			htmlBuilder.append("<td>").append(escapeHtml(getFormattedActionText(audit))).append("</td>");
-			htmlBuilder.append("</tr>");
+		if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
+			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
+				htmlBuilder.append("<tr>");
+				htmlBuilder.append("<td>").append(escapeHtml(formatTimestamp(audit.getTimestamp()))).append("</td>");
+				htmlBuilder.append("<td>").append(escapeHtml(audit.getActionDoneByName())).append("</td>");
+				htmlBuilder.append("<td>").append(escapeHtml(getFormattedActionText(audit))).append("</td>");
+				htmlBuilder.append("</tr>");
+			}
 		}
+
+		htmlBuilder.append("</tbody>");
+		htmlBuilder.append("</table>");
+
+		htmlBuilder.append("</body></html>");
+
+		return htmlBuilder.toString();
 	}
 
-	htmlBuilder.append("</tbody>");
-	htmlBuilder.append("</table>");
-
-	htmlBuilder.append("</body></html>");
-
-	return htmlBuilder.toString();
-}
 	// Helper methods to match the design
 	private String getStatusClass(EnvelopeStatus status) {
 		switch (status) {
-			case COMPLETED: return "completed";        // Green filled dot
-			case WAITING: return "waiting";            // Orange outlined dot
-			case NEED_TO_SIGN: return "need-to-sign";  // Green outlined dot
-			case VOIDED: return "voided";              // Dark filled dot
-			case DECLINED: return "declined";          // Red outlined dot
-			case EXPIRED: return "expired";            // Red filled dot
-			default: return "completed";
+			case COMPLETED:
+				return "completed"; // Green filled dot
+			case WAITING:
+				return "waiting"; // Orange outlined dot
+			case NEED_TO_SIGN:
+				return "need-to-sign"; // Green outlined dot
+			case VOIDED:
+				return "voided"; // Dark filled dot
+			case DECLINED:
+				return "declined"; // Red outlined dot
+			case EXPIRED:
+				return "expired"; // Red filled dot
+			default:
+				return "completed";
 		}
 	}
 
 	private String getStatusLabel(EnvelopeStatus status) {
 		switch (status) {
-			case COMPLETED: return "Completed";
-			case WAITING: return "Waiting";
-			case NEED_TO_SIGN: return "Need to sign";
-			case VOIDED: return "Voided";
-			case DECLINED: return "Declined";
-			case EXPIRED: return "Expired";
-			default: return status.name();
+			case COMPLETED:
+				return "Completed";
+			case WAITING:
+				return "Waiting";
+			case NEED_TO_SIGN:
+				return "Need to sign";
+			case VOIDED:
+				return "Voided";
+			case DECLINED:
+				return "Declined";
+			case EXPIRED:
+				return "Expired";
+			default:
+				return status.name();
 		}
 	}
 
 	private String escapeHtml(String text) {
-		if (text == null) return "";
+		if (text == null)
+			return "";
 		return text.replace("&", "&amp;")
-				.replace("<", "&lt;")
-				.replace(">", "&gt;")
-				.replace("\"", "&quot;")
-				.replace("'", "&#39;");
+			.replace("<", "&lt;")
+			.replace(">", "&gt;")
+			.replace("\"", "&quot;")
+			.replace("'", "&#39;");
 	}
 
 	private String getFormattedActionText(AuditTrailResponseDto audit) {
@@ -1230,15 +1267,15 @@ htmlBuilder.append("} ");
 			case ENVELOPE_DOWNLOADED:
 				return actionBy + " downloaded the document";
 			case ENVELOPE_CUSTODY_TRANSFERRED:
-			String newOwner = "";
-			if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
-			    for (MetadataResponseDto metadata : audit.getMetadata()) {
-			        if ("currentOwner".equals(metadata.getName())) {
-			            newOwner = metadata.getValue();
-			            break;
-			        }
-			    }
-			}
+				String newOwner = "";
+				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
+					for (MetadataResponseDto metadata : audit.getMetadata()) {
+						if ("currentOwner".equals(metadata.getName())) {
+							newOwner = metadata.getValue();
+							break;
+						}
+					}
+				}
 				return actionBy + " transferred ownership to " + newOwner;
 			default:
 				return audit.getAction().toString();
@@ -1254,15 +1291,6 @@ htmlBuilder.append("} ");
 		// Format according to your requirements
 		return DateTimeUtils.formatInstantEsignCert(instant);
 	}
-
-
-
-
-
-
-
-
-
 
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();

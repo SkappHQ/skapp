@@ -39,7 +39,7 @@ public interface EnvelopeService {
 	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
 			boolean isDocAccess, String ipAddress);
 
-	byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers,boolean isDocAccess);
+	byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess);
 
 	void expireEnvelope(Long envelopeId);
 
