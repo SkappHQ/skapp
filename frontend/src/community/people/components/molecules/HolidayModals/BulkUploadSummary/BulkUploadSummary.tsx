@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { forwardRef } from "react";
+import { FC } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
@@ -17,7 +17,7 @@ interface Props {
   data: holidayBulkUploadResponse | undefined;
 }
 
-const BulkUploadSummary = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
+const BulkUploadSummary: FC<Props> = ({ data }) => {
   const translateText = useTranslator("peopleModule", "holidays");
   const { setHolidayModalType, setIsHolidayModalOpen, resetFailedCount } =
     usePeopleStore((state) => state);
@@ -34,7 +34,7 @@ const BulkUploadSummary = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
   };
 
   return (
-    <Box ref={ref}>
+    <Box>
       <Typography
         id="status-summary-description"
         variant="body1"
@@ -59,9 +59,12 @@ const BulkUploadSummary = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         buttonStyle={ButtonStyle.PRIMARY}
         styles={{ mt: "1rem" }}
         onClick={handleDownloadErrorLogCSV}
+        accessibility={{
+          ariaDescribedBy: "status-summary-description"
+        }}
       />
     </Box>
   );
-});
-BulkUploadSummary.displayName = "BulkUploadSummary";
+};
+
 export default BulkUploadSummary;

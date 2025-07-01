@@ -1,4 +1,4 @@
-import { FC, Fragment, useEffect, useRef, useState } from "react";
+import { FC, Fragment, useState } from "react";
 
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -60,14 +60,6 @@ const HolidayModalController: FC = () => {
   >();
 
   const { data: holidays, refetch } = useGetAllHolidaysInfinite(selectedYear);
-
-  const summaryRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (holidayModalType === holidayModalTypes.UPLOAD_SUMMARY) {
-      summaryRef.current?.focus();
-    }
-  }, [holidayModalType]);
 
   const getModalTitle = (): string => {
     switch (holidayModalType) {
@@ -164,7 +156,7 @@ const HolidayModalController: FC = () => {
           {bulkUploadData &&
             holidayModalType === holidayModalTypes.UPLOAD_SUMMARY &&
             bulkUploadData?.bulkStatusSummary?.failedCount > 0 && (
-              <BulkUploadSummary ref={summaryRef} data={bulkUploadData} />
+              <BulkUploadSummary data={bulkUploadData} />
             )}
 
           {holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE && (
