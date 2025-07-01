@@ -83,6 +83,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -793,8 +794,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
 		if (addressBook.getMySignatureLink() != null) {
-			addressBookBasicResponseDto.setMySignatureLink(
-					HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/" + addressBook.getMySignatureLink());
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 		}
 		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
@@ -820,8 +821,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
 		if (addressBook.getMySignatureLink() != null) {
-			addressBookBasicResponseDto.setMySignatureLink(
-					HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/" + addressBook.getMySignatureLink());
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 		}
 
 		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
@@ -847,7 +848,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 			dto.setId(document.getId());
 			dto.setName(document.getName());
-			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/" + documentVersion.getFilePath());
+			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 			return dto;
 		}).toList();

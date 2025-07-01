@@ -33,6 +33,8 @@ public class EsignUtil {
 
 	private static final String DEFAULT_PATH = "/";
 
+	private static final String E_SIGN = "eSign/";
+
 	private EsignUtil() {
 	}
 
@@ -93,6 +95,22 @@ public class EsignUtil {
 		sb.append(SAME_SITE_ATTR);
 
 		return sb.toString();
+	}
+
+	public static String removeEsignPrefix(String path) {
+		String prefix = E_SIGN;
+		if (path != null && path.startsWith(prefix)) {
+			return path.substring(prefix.length());
+		}
+		return path;
+	}
+
+	public static String removeBucketAndEsignPrefix(String bucketName, String path) {
+		String prefix = bucketName + "/" + E_SIGN;
+		if (path != null && path.startsWith(prefix)) {
+			return path.substring(prefix.length());
+		}
+		return path;
 	}
 
 }

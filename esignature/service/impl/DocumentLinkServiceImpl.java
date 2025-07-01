@@ -325,8 +325,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);
 
 		recipientResponseDto.getAddressBook()
-			.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/"
-					+ recipient.getAddressBook().getMySignatureLink());
+			.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(recipient.getAddressBook().getMySignatureLink()));
 
 		int versionNumber = document.getCurrentVersion();
 		DocumentVersion documentVersion;
@@ -559,7 +559,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 		dto.setId(document.getId());
 		dto.setName(document.getName());
-		dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/" + documentVersion.getFilePath());
+		dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 		dto.setNumOfPages(document.getNumOfPages());
 		return dto;
 	}

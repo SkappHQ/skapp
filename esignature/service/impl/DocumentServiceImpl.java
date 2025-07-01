@@ -342,7 +342,8 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 
-		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -381,7 +382,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -540,8 +542,8 @@ public class DocumentServiceImpl implements DocumentService {
 			recipientService.sendDocumentCompletedEmailNotifications(envelope);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
-			documentCompleteResponseDto
-				.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + finalVersion.getFilePath());
+			documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
@@ -551,7 +553,8 @@ public class DocumentServiceImpl implements DocumentService {
 		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/" + newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}

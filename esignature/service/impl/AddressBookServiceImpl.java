@@ -25,6 +25,7 @@ import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -165,8 +166,8 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setFirstName(addressBook.getFirstName());
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
-		mySignatureLinkResponseDto.setMySignatureLink(
-				HTTPS_PROTOCOL + cloudFrontDomain + "/" + bucketName + "/" + addressBook.getMySignatureLink());
+		mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
