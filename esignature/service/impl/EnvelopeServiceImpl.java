@@ -15,10 +15,11 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -114,6 +115,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
@@ -781,11 +783,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
 		envelopeInfoResponseDto.setId(envelope.getId());
 		envelopeInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInfoResponseDto.setStatus(envelope.getStatus());
 		envelopeInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -807,11 +811,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInboxInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInboxInfoResponseDto.setStatus(recipient.getInboxStatus());
 		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -836,6 +842,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInboxInfoResponseDto;
+	}
+
+	private static void formatDeletedEmail(List<RecipientResponseDto> recipientResponseDtos) {
+		// Clean up deleted external user email addresses
+		recipientResponseDtos.forEach(dto -> {
+			if (dto.getAddressBook() != null && dto.getAddressBook().getEmail() != null
+					&& dto.getAddressBook().getEmail().startsWith(PeopleConstants.DELETED_PREFIX)) {
+
+				String originalEmail = dto.getAddressBook().getEmail();
+				String cleanedEmail = originalEmail
+					.replaceFirst(Pattern.quote(PeopleConstants.DELETED_PREFIX) + "\\d+_", "");
+				dto.getAddressBook().setEmail(cleanedEmail);
+			}
+		});
 	}
 
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
