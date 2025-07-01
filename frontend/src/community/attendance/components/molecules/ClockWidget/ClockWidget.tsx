@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, Tooltip } from "@mui/material";
 import { type NextRouter, useRouter } from "next/router";
 import { JSX, useEffect, useMemo } from "react";
 
@@ -11,6 +11,7 @@ import ClockInButton from "~community/attendance/components/molecules/ClockInBut
 import Timer from "~community/attendance/components/molecules/Timer/Timer";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
+import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { DefaultDayCapacityType } from "~community/configurations/types/TimeConfigurationsTypes";
@@ -39,7 +40,7 @@ const ClockWidget = (): JSX.Element => {
   // NOTE: The Tooltip component is commented out because to address the accessibility issue,
   // "Ensure interactive controls are not nested"
   // This component will be redesigned in the future.
-  // const translateText = useTranslator("attendanceModule", "timeWidget");
+  const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const isDisabled = useMemo(
     () =>
@@ -55,21 +56,21 @@ const ClockWidget = (): JSX.Element => {
   // NOTE: The Tooltip component is commented out because to address the accessibility issue,
   // "Ensure interactive controls are not nested"
   // This component will be redesigned in the future.
-  // const title = useMemo(() => {
-  //   if (!isDisabled) return "";
-  //   switch (status) {
-  //     case AttendanceSlotType.END:
-  //       return translateText(["youHaveAlreadyLoggedTime"]);
-  //     case AttendanceSlotType.HOLIDAY:
-  //       return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
-  //     case AttendanceSlotType.NON_WORKING_DAY:
-  //       return translateText(["notAllowedToClockInOnNonWorkingDaysTooltip"]);
-  //     case AttendanceSlotType.LEAVE_DAY:
-  //       return translateText(["notAllowedToClockInOnLeaveDaysTooltip"]);
-  //     default:
-  //       return "";
-  //   }
-  // }, [isDisabled, status, translateText]);
+  const title = useMemo(() => {
+    if (!isDisabled) return "";
+    switch (status) {
+      case AttendanceSlotType.END:
+        return translateText(["youHaveAlreadyLoggedTime"]);
+      case AttendanceSlotType.HOLIDAY:
+        return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
+      case AttendanceSlotType.NON_WORKING_DAY:
+        return translateText(["notAllowedToClockInOnNonWorkingDaysTooltip"]);
+      case AttendanceSlotType.LEAVE_DAY:
+        return translateText(["notAllowedToClockInOnLeaveDaysTooltip"]);
+      default:
+        return "";
+    }
+  }, [isDisabled, status, translateText]);
 
   const showTimer = useMemo(
     () =>
@@ -106,7 +107,15 @@ const ClockWidget = (): JSX.Element => {
       aria-label={translateAria(["widget"])}
     >
       {showTimer && <Timer disabled={isDisabled} />}
-      <ClockInButton disabled={isDisabled} />
+      <Tooltip title={title} placement={TooltipPlacement.BOTTOM} arrow>
+        <span
+          style={{
+            display: "inline-block"
+          }}
+        >
+          <ClockInButton disabled={isDisabled} />
+        </span>
+      </Tooltip>
     </Stack>
     // </Tooltip>
   );
