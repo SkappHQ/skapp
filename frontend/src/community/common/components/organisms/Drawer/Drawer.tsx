@@ -259,7 +259,7 @@ const Drawer = (): JSX.Element => {
                         )}
                       >
                         <Icon
-                          name={IconName.EXPAND_ICON}
+                          name={IconName.DROPDOWN_ARROW_ICON}
                           width="0.625rem"
                           height="0.3125rem"
                           fill={getSelectedDrawerItemColor(
@@ -267,6 +267,15 @@ const Drawer = (): JSX.Element => {
                             router.pathname,
                             route?.url ?? ""
                           )}
+                          svgProps={{
+                            style: {
+                              fill: getSelectedDrawerItemColor(
+                                theme,
+                                router.pathname,
+                                route?.url ?? ""
+                              )
+                            }
+                          }}
                         />
                       </ListItemIcon>
                     </Box>
