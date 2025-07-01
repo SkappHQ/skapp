@@ -1,4 +1,4 @@
-import { Stack, Tooltip } from "@mui/material";
+import { Stack } from "@mui/material";
 import { type NextRouter, useRouter } from "next/router";
 import { JSX, useEffect, useMemo } from "react";
 
@@ -11,6 +11,7 @@ import ClockInButton from "~community/attendance/components/molecules/ClockInBut
 import Timer from "~community/attendance/components/molecules/Timer/Timer";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
+import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -107,12 +108,8 @@ const ClockWidget = (): JSX.Element => {
       aria-label={translateAria(["widget"])}
     >
       {showTimer && <Timer disabled={isDisabled} />}
-      <Tooltip title={title} placement={TooltipPlacement.BOTTOM} arrow>
-        <span
-          style={{
-            display: "inline-block"
-          }}
-        >
+      <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>
+        <span>
           <ClockInButton disabled={isDisabled} />
         </span>
       </Tooltip>
