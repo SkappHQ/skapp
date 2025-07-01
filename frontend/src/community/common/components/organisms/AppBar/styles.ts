@@ -10,7 +10,7 @@ const styles = () => ({
     flexWrap: "wrap",
     padding: {
       xs: "1.875rem 2rem",
-      lg: "1.875rem 3rem"
+      lg: "1.875rem 3rem 0.1875rem 3rem"
     },
     boxSizing: "border-box",
     width: "100%",
