@@ -49,7 +49,8 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 			handleMigrationError(tenantId, e);
 		}
 		finally {
-			cleanup(tenantId);
+			TenantContext.clearCurrentTenant();
+			RequestMethodContext.clear();
 			tenantDataSourceManager.closeTenantDataSource(tenantId);
 		}
 	}
@@ -78,16 +79,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 					}
 				}
 			}
-		}
-	}
-
-	private void cleanup(String tenantId) {
-		try {
-			TenantContext.clearCurrentTenant();
-			RequestMethodContext.clear();
-		}
-		catch (Exception e) {
-			log.error("Error removing tenant: {}", tenantId, e);
 		}
 	}
 

@@ -12,7 +12,6 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,20 +79,18 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 	}
 
 	public void closeTenantDataSource(String tenantId) {
-		List<String> keysToRemove = new ArrayList<>();
+		if (tenantId == null || tenantId.trim().isEmpty()) {
+			return;
+		}
 
-		dataSources.entrySet().removeIf(entry -> {
-			String key = entry.getKey().toString();
+		for (Object keyObj : new ArrayList<>(dataSources.keySet())) {
+			String key = keyObj.toString();
 			if (key.startsWith(tenantId + "-")) {
-				closeDataSource(entry.getValue());
-				keysToRemove.add(key);
-				return true;
+				DataSource dataSource = dataSources.remove(key);
+				if (dataSource != null) {
+					closeDataSource(dataSource);
+				}
 			}
-			return false;
-		});
-
-		if (!keysToRemove.isEmpty()) {
-			log.debug("Closed {} datasource(s) for tenant: {}", keysToRemove.size(), tenantId);
 		}
 	}
 
