@@ -43,7 +43,8 @@ interface Props {
   hasFullList?: boolean;
   approveTimesheetRequest: (timeRequestId: number, name: string) => void;
   declineTimesheetRequest: (timeRequestId: number, name: string) => void;
-  isApproveDenyLoading: boolean;
+  isApproveDenyLoading?: boolean;
+  tableName: TableNames;
 }
 
 const ManagerTimesheetRequestTable: FC<Props> = ({
@@ -53,7 +54,8 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   hasFullList = false,
   approveTimesheetRequest,
   declineTimesheetRequest,
-  isApproveDenyLoading
+  isApproveDenyLoading,
+  tableName
 }) => {
   const theme: Theme = useTheme();
   const { setToastMessage } = useToast();
@@ -325,7 +327,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       )}
       {hasFullList && <TimesheetRequestsFilters isManager={true} />}
       <Table
-        tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
+        tableName={tableName}
         headers={tableHeaders}
         rows={transformToTableRows() || []}
         tableHead={{

@@ -9,6 +9,7 @@ import ManagerTimesheetRequestTable from "~community/attendance/components/molec
 import TimesheetAnalytics from "~community/attendance/components/molecules/TimesheetAnalytics/TimesheetAnalytics";
 import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDenyTimeRequest";
 import { TimeRecordDataResponseType } from "~community/attendance/types/timeSheetTypes";
+import { TableNames } from "~community/common/enums/Table";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
 interface ManagerTimesheetProps {
@@ -60,6 +61,7 @@ const ManagerTimesheet = ({
           approveTimesheetRequest={approveTimesheetRequest}
           declineTimesheetRequest={declineTimesheetRequest}
           isApproveDenyLoading={isApproveDenyLoading}
+          tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         />
       )}
     </>
