@@ -24,6 +24,14 @@ const styles = (theme: Theme): StyleProps => ({
     padding: "0rem",
     backgroundColor: theme.palette.grey[100]
   },
+  optionWrapperWithoutBg: {
+    padding: "0rem"
+  },
+  group: { padding: "0.5rem 0rem 0.25rem 0rem" },
+  groupHeader: {
+    color: theme.palette.primary.dark
+  },
+  children: {},
   chip: {
     cursor: "pointer",
     maxWidth: "fit-content"

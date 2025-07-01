@@ -340,6 +340,8 @@ const DurationSelector = <T,>({
       {!!error && (
         <Typography
           variant="caption"
+          role="alert"
+          aria-live="assertive"
           sx={{ color: theme.palette.error.contrastText }}
         >
           {error}

@@ -7,6 +7,9 @@
     "sideBar": "Side bar"
   },
   "components": {
+    "pagination": {
+      "label": "pagination"
+    },
     "emojiPicker": {
       "icon": "Click me to open the emoji picker"
     },
@@ -16,6 +19,7 @@
       "pickColor": "Select color {{color}}"
     },
     "backButton": "Click me to go to previous page",
+    "closeButton": "Click me to quit signing",
     "filterBtn": "Filter all leave requests",
     "inputDate": {
       "tooltip": "tooltip",
@@ -28,7 +32,8 @@
     "avatar": {
       "alt": "Employee avatar",
       "removeProfilePicture": "Remove profile picture",
-      "uploadProfilePicture": "Upload profile picture"
+      "uploadProfilePicture": "Upload profile picture",
+      "changeProfileAvatar": "Change profile avatar"
     },
     "dragAndDrop": {
       "ariaLabel": "{{componentName}} File Upload",
@@ -56,16 +61,7 @@
     },
     "table": {
       "tableHead": {
-        "checkbox": "Check all the {{tableName}}"
-      },
-      "tableBody": {
-        "checkbox": "Check {{tableName}} table {{ariaLabel}} checkbox",
-        "actionColumn": {
-          "editButton": "Edit",
-          "deleteButton": "Delete",
-          "editButtonWithRecordIdentifier": "Edit {{recordName}}",
-          "deleteButtonWithRecordIdentifier": "Delete {{recordName}}"
-        }
+        "checkbox": "Select all rows"
       }
     },
     "itemSelector": {
@@ -73,16 +69,27 @@
     },
     "inputPhoneNumber": {
       "countryCode": "country code",
-      "phoneNumber": "phone number"
+      "phoneNumber": "phone number",
+      "countryCodeDescription": "Country code +{{countryCode}}"
     },
     "search": {
-      "label": "Enter Search Keyword"
+      "label": "Enter Search Keyword",
+      "searchSuggestions": "Search suggestions"
     },
     "iconChip": {
       "label": "icon chip"
     },
     "filterButton": {
-      "appliedFilter": "Applied filter {{filterLabel}}"
+      "appliedFilter": "Applied filter {{filterLabel}}",
+      "label": "Filter options"
+    },
+    "avatarSearch": {
+      "currentlySelected": "currently selected:"
+    },
+    "multiSelectManagerSearch": {
+      "searchManagers": "Search for managers",
+      "managerOptions": "Manager options",
+      "selected": "selected"
     }
   },
   "modals": {

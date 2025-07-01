@@ -155,7 +155,12 @@ const CalendarDateRangePicker: FC<Props> = ({
         </Typography>
       </Stack>
       {!!error && (
-        <Typography variant="caption" sx={classes.error}>
+        <Typography
+          role="alert"
+          aria-live="assertive"
+          variant="caption"
+          sx={classes.error}
+        >
           {error}
         </Typography>
       )}

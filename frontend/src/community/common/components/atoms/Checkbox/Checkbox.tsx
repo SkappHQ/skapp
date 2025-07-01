@@ -16,6 +16,7 @@ interface Props {
   labelStyles?: SxProps;
   customStyles?: SxProps;
   ariaLabel?: string;
+  tabIndex?: number;
 }
 
 const Checkbox = ({
@@ -27,7 +28,8 @@ const Checkbox = ({
   size = "medium",
   labelStyles,
   customStyles,
-  ariaLabel
+  ariaLabel,
+  tabIndex
 }: Props) => {
   const theme = useTheme();
 
@@ -49,6 +51,7 @@ const Checkbox = ({
               "aria-label": ariaLabel
             }
           }}
+          tabIndex={tabIndex}
         />
       }
       label={label}

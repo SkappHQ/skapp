@@ -504,6 +504,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                 <Typography variant="body2">{getDate()}</Typography>
                 <BasicChip
                   label={getTimeElapsedSinceDate(cardData?.joinedDate)}
+                  tabIndex={-1}
+                  ariaHidden={true}
                   chipStyles={{
                     color: "common.black",
                     fontWeight: 400,
@@ -586,19 +588,26 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                     </Box>
                   )}
               </Stack>
-              <BasicChip
-                label={toPascalCase(employmentStatus)}
-                chipStyles={{
-                  color: statusStyle?.color || "common.black",
-                  fontWeight: 400,
-                  fontSize: "0.75rem",
-                  lineHeight: "1rem",
-                  padding: "0.25rem 0.5rem",
-                  backgroundColor:
-                    statusStyle?.backgroundColor || theme.palette.grey[200],
-                  borderRadius: "4rem"
-                }}
-              />
+              <Box
+                tabIndex={0}
+                aria-label={`${translateTerminationText(["status"])} : ${toPascalCase(employmentStatus)}`}
+              >
+                <BasicChip
+                  label={toPascalCase(employmentStatus)}
+                  tabIndex={-1}
+                  ariaHidden={true}
+                  chipStyles={{
+                    color: statusStyle?.color || "common.black",
+                    fontWeight: 400,
+                    fontSize: "0.75rem",
+                    lineHeight: "1rem",
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor:
+                      statusStyle?.backgroundColor || theme.palette.grey[200],
+                    borderRadius: "4rem"
+                  }}
+                />
+              </Box>
             </Stack>
             {supervisor && (
               <Stack

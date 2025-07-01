@@ -23,6 +23,8 @@ interface SwitchComponentProps {
   icon?: IconName;
   labelId: string;
   arialabel?: string;
+  arialabelChecked?: string;
+  arialabelUnchecked?: string;
 }
 
 const SwitchRow: FC<SwitchComponentProps> = ({
@@ -36,12 +38,20 @@ const SwitchRow: FC<SwitchComponentProps> = ({
   name,
   icon,
   labelId,
-  arialabel
+  arialabel,
+  arialabelChecked,
+  arialabelUnchecked
 }) => {
   const translateAria = useTranslator("commonAria", "components", "switch");
 
   const theme: Theme = useTheme();
   const classes = styles(theme);
+
+  const getAriaLabel = () => {
+    if (checked && arialabelChecked) return arialabelChecked;
+    if (!checked && arialabelUnchecked) return arialabelUnchecked;
+    return arialabel ?? translateAria(["ariaLabel"]);
+  };
 
   return (
     <Stack sx={mergeSx([classes.wrapper, wrapperStyles])}>
@@ -76,13 +86,18 @@ const SwitchRow: FC<SwitchComponentProps> = ({
         slotProps={{
           input: {
             "aria-labelledby": labelId,
-            "aria-label": arialabel ?? translateAria(["ariaLabel"]),
+            "aria-label": getAriaLabel(),
             role: "switch"
           }
         }}
       />
       {!!error && (
-        <Typography variant="body2" sx={classes.error}>
+        <Typography
+          variant="body2"
+          sx={classes.error}
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </Typography>
       )}

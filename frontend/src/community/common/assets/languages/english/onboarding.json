@@ -2,8 +2,8 @@
   "organizationCreate": {
     "pageHeading": "Setup super admin account",
     "pageSubHeading": "Start your journey with us. Sign up effortlessly for a streamlined experience.",
-    "firstNameLabel": "First name",
-    "lastNameLabel": "Last name",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
     "emailLabel": "Work Email",
     "passwordLabel": "Password",
     "firstNameRequiredError": "Please enter the first name",

@@ -1,7 +1,7 @@
 export enum TableNames {
   // Community People Module
   TEAMS = "Teams",
-  PEOPLE = "People",
+  PEOPLE = "Directory",
   HOLIDAYS = "Holidays",
   JOB_FAMILY = "Job family",
 
@@ -9,6 +9,7 @@ export enum TableNames {
   EMPLOYEE_TIMESHEET_REQUEST = "Employee timesheet request",
   MANAGER_TIMESHEET_REQUEST = "Manager timesheet request",
   CLOCK_IN = "Clock in",
+  TIME_ENTRY_REQUEST = "Time entry request",
 
   // Community Configurations Module
   MODULE_ROLES = "Module roles",
@@ -25,5 +26,6 @@ export enum TableNames {
   CUSTOM_LEAVE_ALLOCATIONS = "Custom leave allocations",
   CARRY_FORWARD_BALANCES = "Carry forward balances",
   CUSTOM_ALLOCATIONS_REPORT = "Custom allocations report",
-  ON_LEAVE_MODAL = "On leave modal"
+  ON_LEAVE_MODAL = "On leave modal",
+  ALL_TIMESHEETS = "All timesheets"
 }

@@ -1,10 +1,14 @@
 import { ChangeEvent, useMemo } from "react";
 
+import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { getAdjacentYearsWithCurrent } from "~community/common/utils/dateTimeUtils";
+import {
+  getAdjacentYearsWithCurrent,
+  isPastYear
+} from "~community/common/utils/dateTimeUtils";
 import { useGetAllLeaveEntitlements } from "~community/leave/api/LeaveEntitlementApi";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { LeaveEntitlementModelTypes } from "~community/leave/enums/LeaveEntitlementEnums";
@@ -78,16 +82,33 @@ const LeaveEntitlementTable = ({
     return tableData.items.map((entitlement) => {
       const row: {
         id: number;
-        name: string;
-        [key: string]: number | string;
+        name: JSX.Element;
+        [key: string]: number | JSX.Element | string;
       } = {
         id: entitlement.employeeId,
-        name: `${entitlement.firstName} ${entitlement.lastName}`
+        name: (
+          <AvatarChip
+            firstName={entitlement?.firstName}
+            lastName={entitlement?.lastName}
+            avatarUrl={entitlement?.authPic}
+            isResponsiveLayout={true}
+            chipStyles={{
+              maxWidth: "100%",
+              justifyContent: "flex-start"
+            }}
+            mediumScreenWidth={1024}
+            smallScreenWidth={0}
+          />
+        )
       };
 
       activeLeaveTypes.forEach((leaveType) => {
         const columnKey = leaveType.name.toLowerCase();
-        row[columnKey] = "-";
+        row[columnKey] = (
+          <span aria-label="empty">
+            <span aria-hidden={true}>-</span>
+          </span>
+        );
       });
 
       entitlement.entitlements.forEach((ent) => {
@@ -95,7 +116,11 @@ const LeaveEntitlementTable = ({
         const columnKey = ent.name.toLowerCase();
 
         if (Object.hasOwn(row, columnKey)) {
-          row[columnKey] = days;
+          row[columnKey] = (
+            <span aria-label={`${days}`}>
+              <span aria-hidden={true}>{days}</span>
+            </span>
+          );
         }
       });
 
@@ -105,7 +130,7 @@ const LeaveEntitlementTable = ({
 
   return (
     <Table
-      tableName={TableNames.LEAVE_ENTITLEMENTS}
+      tableName={`${TableNames.LEAVE_ENTITLEMENTS} ${leaveEntitlementTableSelectedYear}`}
       headers={headers}
       rows={rows}
       actionToolbar={{
@@ -134,7 +159,9 @@ const LeaveEntitlementTable = ({
             }),
             description: translateText(["emptyScreen", "description"]),
             button: {
-              label: translateText(["emptyScreen", "buttonText"]),
+              label: !isPastYear(Number(leaveEntitlementTableSelectedYear))
+                ? translateText(["emptyScreen", "buttonText"])
+                : undefined,
               onClick: () => {
                 setLeaveEntitlementModalType(
                   LeaveEntitlementModelTypes.DOWNLOAD_CSV

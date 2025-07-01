@@ -36,7 +36,8 @@ const ContentWithDrawer = ({ children }: Props) => {
               display: "flex",
               flexDirection: "column",
               width: "100%",
-              height: "100%"
+              height: "100%",
+              overflowX: "hidden"
             }}
           >
             <Stack
@@ -47,7 +48,8 @@ const ContentWithDrawer = ({ children }: Props) => {
               style={{
                 flexDirection: "column",
                 width: "100%",
-                height: "100%"
+                height: "100%",
+                overflowX: "hidden"
               }}
             >
               {children}

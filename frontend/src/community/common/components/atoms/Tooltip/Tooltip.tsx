@@ -39,6 +39,7 @@ const Tooltip: FC<Props> = ({
   error,
   iconColor,
   spanStyles,
+  tabIndex,
   ariaLabel,
   ariaDescription
 }) => {
@@ -86,7 +87,7 @@ const Tooltip: FC<Props> = ({
       }}
     >
       <span
-        tabIndex={isDisabled ? -1 : 0}
+        tabIndex={tabIndex !== undefined ? tabIndex : isDisabled ? -1 : 0}
         aria-disabled={isDisabled}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}

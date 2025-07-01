@@ -144,6 +144,8 @@ const InteractiveInputTrigger = ({
         <Box sx={{ mt: ".5rem" }} aria-live="polite" aria-atomic={true}>
           <Typography
             variant="body2"
+            role="alert"
+            aria-live="assertive"
             sx={{
               color: theme.palette.error.contrastText,
               lineHeight: "1rem"

@@ -9,7 +9,12 @@ const styles = (theme: Theme) => ({
     zIndex: ZIndexEnums.TOAST,
     position: "fixed",
     top: "1.25rem",
-    right: "1.25rem"
+    right: "1.25rem",
+    "& .MuiPaper-root": { padding: 0, backgroundColor: "transparent" },
+    "& .MuiSnackbarContent-action": {
+      padding: 0,
+      marginRight: 0
+    }
   },
   toastContainer: (bgColor: string): SxProps<Theme> => ({
     flexDirection: "row",

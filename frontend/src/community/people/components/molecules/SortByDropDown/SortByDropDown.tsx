@@ -1,22 +1,13 @@
-import { Stack } from "@mui/material";
-import { MouseEvent, MutableRefObject, useEffect, useState } from "react";
+import { SelectChangeEvent, Stack, Typography } from "@mui/material";
+import { MutableRefObject, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import ItemSelector from "~community/common/components/molecules/ItemSelector/ItemSelector";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import {
-  OptionType,
-  SortOrderTypes
-} from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
-import { currentYear, options } from "~community/common/utils/dateTimeUtils";
-import HolidayDataMenu from "~community/people/components/molecules/HolidayDataMenu/HolidayDataMenu";
+  currentYear,
+  getCurrentAndNextYear
+} from "~community/common/utils/dateTimeUtils";
 import { usePeopleStore } from "~community/people/store/store";
 import { holiday } from "~community/people/types/HolidayTypes";
 
@@ -28,6 +19,7 @@ interface Props {
 }
 
 const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
+  const translateText = useTranslator("peopleModule", "holidays");
   const translateAria = useTranslator(
     "peopleAria",
     "holiday",
@@ -43,16 +35,6 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
     })
   );
 
-  const [sortEl, setSortEl] = useState<null | HTMLElement>(null);
-  const [sortOpen, setSortOpen] = useState<boolean>(false);
-  const [selectedOption, setSelectedOption] = useState<OptionType>({
-    id: 1,
-    name: selectedYear
-  });
-
-  const sortByOpen = sortOpen && Boolean(sortEl);
-  const sortId = sortByOpen ? "sortBy-popper" : undefined;
-
   useEffect(() => {
     setSelectedYear(currentYear.toString());
   }, [currentYear]);
@@ -63,54 +45,77 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
     }
   };
 
-  const handleSortClose = (): void => {
-    setSortOpen(false);
+  const handleHolidayDataSort = usePeopleStore(
+    (state) => state.handleHolidayDataSort
+  );
+
+  const dropdownItems = [
+    {
+      label: `${translateText(["chronologically"])} ${translateText(["janToDec"])}`,
+      value: SortOrderTypes.ASC,
+      ariaLabel: `${translateAria(["chronologically"])} ${translateAria(["janToDec"])}`
+    },
+    {
+      label: `${translateText(["chronologically"])} ${translateText(["decToJan"])}`,
+      value: SortOrderTypes.DESC,
+      ariaLabel: `${translateAria(["chronologically"])} ${translateAria(["decToJan"])}`
+    }
+  ];
+
+  const handleItemClick = (event: SelectChangeEvent) => {
+    handleHolidayDataSort("sortOrder", event.target.value);
+    scrollToTop && scrollToTop();
   };
 
-  const handleSortClick = (event: MouseEvent<HTMLElement>): void => {
-    setSortEl(event.currentTarget);
-    setSortOpen((previousOpen) => !previousOpen);
-  };
+  const selectedItem = dropdownItems.find(
+    (item) => item.value === holidayDataSort
+  );
 
   return (
     <Stack sx={classes.wrapper}>
-      <Stack>
-        <Button
-          label={`Sort : ${
-            holidayDataSort === SortOrderTypes.ASC ? "Jan to Dec" : "Dec to Jan"
-          }`}
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          size={ButtonSizes.MEDIUM}
-          endIcon={
-            holidayData?.length !== 0 ? (
-              <Icon name={IconName.DROPDOWN_ARROW_ICON} />
-            ) : null
-          }
-          onClick={handleSortClick}
-          disabled={holidayData?.length === 0}
-          aria-describedby={sortId}
-          ariaLabel={`${translateAria(["sort"])} ${
-            holidayDataSort === SortOrderTypes.ASC
-              ? translateAria(["janToDec"])
-              : translateAria(["decToJan"])
-          }`}
-        />
-        <HolidayDataMenu
-          anchorEl={sortEl}
-          handleClose={handleSortClose}
-          position="bottom-start"
-          menuType={MenuTypes.SORT}
-          id={sortId}
-          open={sortOpen}
-          scrollToTop={scrollToTop}
-        />
-      </Stack>
-      <ItemSelector
-        options={options}
-        selectedOption={selectedOption}
-        setSelectedOption={setSelectedOption}
-        setOptionName={(year: string) => setSelectedYear(year)}
-        popperStyles={{ width: "9.375rem" }}
+      <RoundedSelect
+        id="holiday-table-sort"
+        onChange={handleItemClick}
+        value={selectedItem?.value ?? ""}
+        options={dropdownItems}
+        renderValue={(selectedValue: string) => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${
+                selectedValue === SortOrderTypes.ASC
+                  ? translateAria(["janToDec"])
+                  : translateAria(["decToJan"])
+              }`}
+            >
+              {translateText(["sort"])}
+              {selectedValue === SortOrderTypes.ASC
+                ? translateText(["janToDec"])
+                : translateText(["decToJan"])}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["sort"])
+        }}
+        disabled={holidayData?.length === 0}
+      />
+      <RoundedSelect
+        id="holiday-year-sort"
+        value={selectedYear}
+        options={getCurrentAndNextYear()}
+        onChange={(event) => setSelectedYear(event?.target.value)}
+        renderValue={(selectedValue: string) => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+            >
+              {selectedValue}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["yearSelector"])
+        }}
       />
     </Stack>
   );

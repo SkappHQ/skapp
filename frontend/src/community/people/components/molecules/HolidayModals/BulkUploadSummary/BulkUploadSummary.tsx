@@ -35,7 +35,11 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
 
   return (
     <Box>
-      <Typography variant="body1" sx={{ my: 1 }}>
+      <Typography
+        id="status-summary-description"
+        variant="body1"
+        sx={{ my: 1 }}
+      >
         {totalEntries &&
         data?.bulkStatusSummary?.failedCount <= 1 &&
         data?.bulkStatusSummary?.successCount <= 1
@@ -55,6 +59,9 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
         buttonStyle={ButtonStyle.PRIMARY}
         styles={{ mt: "1rem" }}
         onClick={handleDownloadErrorLogCSV}
+        accessibility={{
+          ariaDescribedBy: "status-summary-description"
+        }}
       />
     </Box>
   );
