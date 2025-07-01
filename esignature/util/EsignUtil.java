@@ -29,7 +29,7 @@ public class EsignUtil {
 
 	private static final String MAX_AGE_ATTR = "; Max-Age=";
 
-	private static final String SAME_SITE_ATTR = "; SameSite=Lax";
+	private static final String SAME_SITE_ATTR = "; SameSite=None";
 
 	private static final String DEFAULT_PATH = "/";
 

@@ -29,7 +29,7 @@ public class AmazonCloudFrontController {
 
 	public static final String SIGNATURE_PATH = "/envelop/document/signature/original";
 
-	public static final String COOKIE_DOMAIN = ".skapp.dev";
+	private static final String FAILED_TO_SET_SIGNED_COOKIES = "Failed to set signed cookies";
 
 	private final AmazonCloudFrontService amazonCloudFrontService;
 
@@ -39,7 +39,33 @@ public class AmazonCloudFrontController {
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;
 
+	@Value("${aws.cloudfront.cookie-domain}")
+	private String cookieDomain;
+
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@GetMapping(value = "/cookies/internal/document", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesDocumentInternal(HttpServletResponse response) {
+		try {
+
+			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontDocumentSignedCookies();
+
+			cookies.forEach((name, value) -> {
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, DOCUMENT_PATH);
+				response.addHeader(SET_COOKIE, cookieHeader);
+			});
+
+			CfSignedCookieResponseDto cfSignedCookieResponseDto = new CfSignedCookieResponseDto();
+			cfSignedCookieResponseDto.setExpiresAt(signCookiesExpiration);
+
+			return new ResponseEntity<>(new ResponseEntityDto(false, cfSignedCookieResponseDto), HttpStatus.OK);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<>(new ResponseEntityDto(true, FAILED_TO_SET_SIGNED_COOKIES),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	@GetMapping(value = "/cookies/document", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesDocument(HttpServletResponse response) {
 		try {
@@ -47,7 +73,7 @@ public class AmazonCloudFrontController {
 			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontDocumentSignedCookies();
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, COOKIE_DOMAIN, DOCUMENT_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, DOCUMENT_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
@@ -57,12 +83,35 @@ public class AmazonCloudFrontController {
 			return new ResponseEntity<>(new ResponseEntityDto(false, cfSignedCookieResponseDto), HttpStatus.OK);
 		}
 		catch (Exception e) {
-			return new ResponseEntity<>(new ResponseEntityDto(true, "Failed to set signed cookies"),
+			return new ResponseEntity<>(new ResponseEntityDto(true, FAILED_TO_SET_SIGNED_COOKIES),
 					HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE')")
+	@GetMapping(value = "/cookies/internal/signature", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesMySignatureInternal(HttpServletResponse response) {
+		try {
+
+			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies();
+
+			cookies.forEach((name, value) -> {
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
+				response.addHeader(SET_COOKIE, cookieHeader);
+			});
+
+			CfSignedCookieResponseDto cfSignedCookieResponseDto = new CfSignedCookieResponseDto();
+			cfSignedCookieResponseDto.setExpiresAt(signCookiesExpiration);
+
+			return new ResponseEntity<>(new ResponseEntityDto(false, cfSignedCookieResponseDto), HttpStatus.OK);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<>(new ResponseEntityDto(true, FAILED_TO_SET_SIGNED_COOKIES),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	@GetMapping(value = "/cookies/signature", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesMySignature(HttpServletResponse response) {
 		try {
@@ -70,7 +119,7 @@ public class AmazonCloudFrontController {
 			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies();
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, COOKIE_DOMAIN, SIGNATURE_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
@@ -80,7 +129,7 @@ public class AmazonCloudFrontController {
 			return new ResponseEntity<>(new ResponseEntityDto(false, cfSignedCookieResponseDto), HttpStatus.OK);
 		}
 		catch (Exception e) {
-			return new ResponseEntity<>(new ResponseEntityDto(true, "Failed to set signed cookies"),
+			return new ResponseEntity<>(new ResponseEntityDto(true, FAILED_TO_SET_SIGNED_COOKIES),
 					HttpStatus.BAD_REQUEST);
 		}
 	}
