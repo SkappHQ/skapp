@@ -124,6 +124,7 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     flexDirection: "column",
     height: "auto",
+    width: "calc(100% - 1rem)",
     gap: "0.25rem",
     padding: "0.25rem 0rem 0rem 0rem",
     transition: `all ${ANIMATION_DURATION} ease-in-out`
