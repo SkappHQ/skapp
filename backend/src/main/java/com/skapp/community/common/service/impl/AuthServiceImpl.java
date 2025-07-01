@@ -495,8 +495,14 @@ public class AuthServiceImpl implements AuthService {
 		return employeeRoleDao.existsByIsSuperAdminTrue();
 	}
 
-	private void createNewPassword(String newPassword, User user) {
-		if (user.getPreviousPasswordsList()
+	protected void createNewPassword(String newPassword, User user) {
+		String tempPassword = user.getTempPassword();
+		if (tempPassword != null
+				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
+		}
+
+		if (passwordEncoder.matches(newPassword, user.getPassword()) || user.getPreviousPasswordsList()
 			.stream()
 			.anyMatch(prevPassword -> passwordEncoder.matches(newPassword, prevPassword))) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);

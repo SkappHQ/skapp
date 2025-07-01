@@ -75,14 +75,14 @@ const LeaveCarryForwardSyncConfirmation = ({
       <Typography
         sx={classes.title}
         variant="body1"
-        id="confirm-synchronization-modal-description"
+        id="leave-carry-forward-confirm-synchronization-modal-description"
       >
         {translateTexts(["leaveCarryForwardModalDescription"]) ?? ""}
       </Typography>
       <Box>
         <Button
           accessibility={{
-            ariaDescribedBy: "confirm-synchronization-modal-description"
+            ariaHidden: true
           }}
           label={translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}
           endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
@@ -90,6 +90,9 @@ const LeaveCarryForwardSyncConfirmation = ({
           onClick={() => mutate(leaveCarryForwardId)}
         />
         <Button
+          accessibility={{
+            ariaHidden: true
+          }}
           buttonStyle={ButtonStyle.TERTIARY}
           styles={{ mt: "1rem" }}
           type={ButtonTypes.BUTTON}

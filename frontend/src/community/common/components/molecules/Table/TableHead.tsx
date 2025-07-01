@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { FC, MutableRefObject } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TableHeaderTypes } from "~community/common/types/CommonTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -51,6 +52,12 @@ const TableHead: FC<
     }
   }
 }) => {
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "table",
+    "tableHead"
+  );
   const theme = useTheme();
   const classes = styles(theme);
 
@@ -63,6 +70,7 @@ const TableHead: FC<
           checkboxSelection?.isSelectAllVisible && (
             <TableCell
               scope="col"
+              component="th"
               sx={mergeSx([
                 classes.checkboxSelection.cell,
                 classes.tableHead.checkboxSelection.cell,
@@ -80,9 +88,7 @@ const TableHead: FC<
                   ])}
                   slotProps={{
                     input: {
-                      // "aria-label": translateText(["checkbox"], {
-                      //   tableName: tableName.toLowerCase()
-                      // })
+                      "aria-label": translateAria(["checkbox"])
                     }
                   }}
                 />
@@ -92,10 +98,13 @@ const TableHead: FC<
 
         {headers?.map((header) => (
           <TableCell
+            scope="col"
+            component="th"
             key={header?.id}
             sx={mergeSx([classes.tableHead.cell, customStyles?.cell])}
           >
             <Typography
+              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography
@@ -108,12 +117,15 @@ const TableHead: FC<
 
         {actionColumn.isEnabled && (
           <TableCell
+            scope="col"
+            component="th"
             sx={mergeSx([
               classes.tableHead.actionColumn?.cell,
               customStyles?.cell
             ])}
           >
             <Typography
+              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography

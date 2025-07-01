@@ -1,7 +1,8 @@
 {
   "dashboard": {
     "resourceAvailabilityTrendMonthlyNext": "next month",
-    "resourceAvailabilityTrendMonthlyPrevious": "previous month"
+    "resourceAvailabilityTrendMonthlyPrevious": "previous month",
+    "leaveUtilizationChart": "Leave utilization chart - use arrow keys to navigate"
   },
   "myRequests": {
     "myLeaveAllocation": {
@@ -70,6 +71,11 @@
   "entitlement": {
     "leaveEntitlementTable": {
       "select": "Leave entitlements by year"
+    },
+    "customLeaveAllocationTable": {
+      "selectYear": "Custom leave allocations by year",
+      "filterButton": "Filter options",
+      "filterOption": "{{filterName}} option"
     }
   },
   "leaveTypeCard": {

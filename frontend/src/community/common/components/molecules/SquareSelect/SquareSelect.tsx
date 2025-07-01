@@ -167,7 +167,9 @@ const SquareSelect = ({
           );
         })}
       </MuiSelect>
-      <FormHelperText>{error}</FormHelperText>
+      <FormHelperText role="alert" aria-live="assertive">
+        {error}
+      </FormHelperText>
     </FormControl>
   );
 };

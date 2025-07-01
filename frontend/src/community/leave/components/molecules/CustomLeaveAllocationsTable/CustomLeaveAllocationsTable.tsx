@@ -41,6 +41,11 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   setHasEmptyFilterResults
 }) => {
   const translateText = useTranslator("leaveModule", "customLeave");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "entitlement",
+    "customLeaveAllocationTable"
+  );
   const theme: Theme = useTheme();
 
   const {
@@ -141,6 +146,9 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
       onChange={(event) => setSelectedYear(event?.target?.value)}
       value={selectedYear}
       options={getAdjacentYearsWithCurrent()}
+      accessibility={{
+        label: translateAria(["selectYear"])
+      }}
     />
   );
 
@@ -193,7 +201,19 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
               {leaveAllocation.leaveType?.name}
             </div>
           ),
-          actionData: leaveAllocation
+          actionData: leaveAllocation,
+          ariaLabel: {
+            editButton: translateText(["editButton.label"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          },
+          ariaDescription: {
+            editButton: translateText(["editButton.description"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          }
         };
       }) || []
     );
@@ -256,6 +276,9 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
             tabIndex={0}
             role="button"
             label={leaveType.name}
+            aria-label={translateAria(["filterOption"], {
+              filterName: leaveType.name
+            })}
             onClick={() =>
               handleLeaveTypeFilter({
                 id: leaveType.id.toString(),

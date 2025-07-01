@@ -82,7 +82,7 @@ const LeaveEntitlements: NextPage = () => {
               leaveEntitlementTableData?.items.length !== 0)) && (
             <SearchBox
               accessibility={{
-                ariaHidden: true
+                ariaHidden: false
               }}
               placeHolder={translateText(["searchBoxPlaceholder"])}
               value={searchTerm}

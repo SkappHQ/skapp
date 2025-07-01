@@ -104,7 +104,11 @@ const LeaveEntitlementTable = ({
 
       activeLeaveTypes.forEach((leaveType) => {
         const columnKey = leaveType.name.toLowerCase();
-        row[columnKey] = "-";
+        row[columnKey] = (
+          <span aria-label="empty">
+            <span aria-hidden={true}>-</span>
+          </span>
+        );
       });
 
       entitlement.entitlements.forEach((ent) => {
@@ -112,7 +116,11 @@ const LeaveEntitlementTable = ({
         const columnKey = ent.name.toLowerCase();
 
         if (Object.hasOwn(row, columnKey)) {
-          row[columnKey] = days;
+          row[columnKey] = (
+            <span aria-label={`${days}`}>
+              <span aria-hidden={true}>{days}</span>
+            </span>
+          );
         }
       });
 
@@ -122,7 +130,7 @@ const LeaveEntitlementTable = ({
 
   return (
     <Table
-      tableName={TableNames.LEAVE_ENTITLEMENTS}
+      tableName={`${TableNames.LEAVE_ENTITLEMENTS} ${leaveEntitlementTableSelectedYear}`}
       headers={headers}
       rows={rows}
       actionToolbar={{

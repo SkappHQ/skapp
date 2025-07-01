@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import useBlockPageReload from "~community/common/hooks/useBlockPageReload/useBlockPageReload";
@@ -27,7 +28,7 @@ const CarryForwardBalances: NextPage = () => {
 
   const translateText = useTranslator("leaveModule", "leaveCarryForward");
 
-  useBlockPageReload();
+  const shouldRender = useBlockPageReload();
 
   const {
     leaveCarryForwardSyncBtnStatus,
@@ -67,14 +68,26 @@ const CarryForwardBalances: NextPage = () => {
     ) {
       return carryForwardEntitlementItems.map(
         (entitlement: carryForwardLeaveEntitlementsType) => {
-          const tableData: Array<Record<string, string | number>> = [];
+          const tableData: Array<
+            Record<string, string | number | JSX.Element>
+          > = [];
 
-          const tableRow: Record<string, string | number> = {
+          const tableRow: Record<string, string | number | JSX.Element> = {
             employeeId: entitlement.employee.employeeId,
-            name:
-              entitlement.employee.firstName +
-              " " +
-              entitlement.employee.lastName
+            name: (
+              <AvatarChip
+                firstName={entitlement?.employee?.firstName}
+                lastName={entitlement?.employee?.lastName}
+                avatarUrl={entitlement?.employee?.authPic}
+                isResponsiveLayout={true}
+                chipStyles={{
+                  maxWidth: "100%",
+                  justifyContent: "flex-start"
+                }}
+                mediumScreenWidth={1024}
+                smallScreenWidth={0}
+              />
+            )
           };
 
           headers.forEach((header) => {
@@ -109,6 +122,8 @@ const CarryForwardBalances: NextPage = () => {
       GoogleAnalyticsTypes.GA4_LEAVE_CARRY_FORWARD_BALANCE_VIEWED,
     triggerOnMount: true
   });
+
+  if (!shouldRender) return null;
 
   return (
     <>
