@@ -38,9 +38,6 @@ const ClockWidget = (): JSX.Element => {
     isLoading: isAvailabilityLoading
   } = useGetTodaysTimeRequestAvailability();
 
-  // NOTE: The Tooltip component is commented out because to address the accessibility issue,
-  // "Ensure interactive controls are not nested"
-  // This component will be redesigned in the future.
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const isDisabled = useMemo(
@@ -54,9 +51,6 @@ const ClockWidget = (): JSX.Element => {
     [status, isTimeRequestAvailableToday, isAvailabilityLoading]
   );
 
-  // NOTE: The Tooltip component is commented out because to address the accessibility issue,
-  // "Ensure interactive controls are not nested"
-  // This component will be redesigned in the future.
   const title = useMemo(() => {
     if (!isDisabled) return "";
     switch (status) {
@@ -87,17 +81,6 @@ const ClockWidget = (): JSX.Element => {
   }, [router, getEmployeeStatusRefetch, refetchLeaveStatusData]);
 
   return (
-    // NOTE: The Tooltip component is commented out because to address the accessibility issue,
-    // "Ensure interactive controls are not nested"
-    // This component will be redesigned in the future.
-    // <Tooltip
-    //   id="play-button"
-    //   title={title}
-    //   placement={TooltipPlacement.BOTTOM}
-    //   spanStyles={{
-    //     borderRadius: "3.3125rem"
-    //   }}
-    // >
     <Stack
       direction="row"
       alignItems="center"
@@ -114,7 +97,6 @@ const ClockWidget = (): JSX.Element => {
         </span>
       </Tooltip>
     </Stack>
-    // </Tooltip>
   );
 };
 
