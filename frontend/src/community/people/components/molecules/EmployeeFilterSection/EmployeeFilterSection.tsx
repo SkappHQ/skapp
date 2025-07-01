@@ -12,20 +12,18 @@ const EmployeeFilterSection = ({
   title,
   accessibilityKey,
   data,
-  filterKey,
   currentFilter,
   handleFilterChange
 }: {
   selected: string;
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
   title: string;
-  accessibilityKey?: string;
+  accessibilityKey: string;
   data: { label: string; value: string }[];
-  filterKey: string;
   currentFilter: string[];
   handleFilterChange: (
     value: string,
-    filterKey: string,
+    accessibilityKey: string,
     currentFilter: string[]
   ) => void;
 }) => {
@@ -57,7 +55,7 @@ const EmployeeFilterSection = ({
               }}
               label={item.label}
               onClick={() =>
-                handleFilterChange(item.value, filterKey, currentFilter)
+                handleFilterChange(item.value, accessibilityKey, currentFilter)
               }
               icon={
                 currentFilter.includes(item.value) ? (
