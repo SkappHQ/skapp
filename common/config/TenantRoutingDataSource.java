@@ -5,23 +5,17 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.type.OperationType;
 import com.skapp.enterprise.common.util.TenantKeyExtractor;
-import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RequiredArgsConstructor
 public class TenantRoutingDataSource extends AbstractRoutingDataSource {
-
-	private final Map<Object, DataSource> dataSources = new ConcurrentHashMap<>();
 
 	private final DataSourceFactory dataSourceFactory;
 
@@ -41,33 +35,26 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 	@NonNull
 	protected DataSource determineTargetDataSource() {
 		String lookupKey = (String) determineCurrentLookupKey();
-		DataSource dataSource = dataSources.get(lookupKey);
-		if (dataSource != null) {
-			return dataSource;
-		}
 
 		if (lookupKey != null && lookupKey.contains("-")) {
 			TenantDataSourceKey key = TenantKeyExtractor.extractTenantKey(lookupKey);
 			if (Objects.equals(key.getTenantId(), EpCommonConstants.MASTER_DATABASE)) {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getMasterDataSource(OperationType.READ);
+					return dataSourceFactory.getMasterDataSource(OperationType.READ);
 				}
 				else {
-					dataSource = dataSourceFactory.getMasterDataSource(OperationType.WRITE);
+					return dataSourceFactory.getMasterDataSource(OperationType.WRITE);
 				}
 
 			}
 			else {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getTenantDataSource(OperationType.READ, key.getTenantId());
+					return dataSourceFactory.getTenantDataSource(OperationType.READ, key.getTenantId());
 				}
 				else {
-					dataSource = dataSourceFactory.getTenantDataSource(OperationType.WRITE, key.getTenantId());
+					return dataSourceFactory.getTenantDataSource(OperationType.WRITE, key.getTenantId());
 				}
 			}
-
-			dataSources.put(lookupKey, dataSource);
-			return dataSource;
 		}
 
 		DataSource defaultDataSource = getResolvedDefaultDataSource();
@@ -77,36 +64,6 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 					new String[] { lookupKey });
 		}
 		return defaultDataSource;
-	}
-
-	public void closeTenantDataSource(String tenantId) {
-		if (tenantId == null || tenantId.isEmpty()) {
-			return;
-		}
-
-		for (Object keyObj : new ArrayList<>(dataSources.keySet())) {
-			String key = keyObj.toString();
-			if (key.startsWith(tenantId + "-")) {
-				DataSource dataSource = dataSources.remove(key);
-				if (dataSource != null) {
-					closeDataSource(dataSource);
-				}
-			}
-		}
-	}
-
-	private void closeDataSource(DataSource dataSource) {
-		if (dataSource instanceof HikariDataSource hikariDataSource) {
-			if (!hikariDataSource.isClosed()) {
-				try {
-					hikariDataSource.close();
-					log.debug("Closed HikariDataSource: {}", hikariDataSource.getPoolName());
-				}
-				catch (Exception e) {
-					log.error("Error closing HikariDataSource: {}", hikariDataSource.getPoolName(), e);
-				}
-			}
-		}
 	}
 
 }

@@ -36,4 +36,8 @@ public class DataSourceConfig {
 		return tenantRoutingDataSource;
 	}
 
+	public void closeTenantDataSource(String tenantId) {
+		dataSourceFactory.closeTenantDataSource(tenantId);
+	}
+
 }
