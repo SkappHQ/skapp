@@ -104,7 +104,7 @@ const FullPageContainerLayout = ({
               tabIndex={0}
               data-testid={icon?.dataTestId}
               aria-label={icon?.ariaLabel ?? translateAria(["backButton"])}
-              title={icon?.title ?? translateAria(["closeCreateDocument"])}
+              title={icon?.title ?? translateAria(["backButton"])}
               onClick={onIconClick}
               sx={classes.iconBtn}
             >
