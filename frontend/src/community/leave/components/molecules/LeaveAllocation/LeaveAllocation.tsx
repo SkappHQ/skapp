@@ -1,7 +1,15 @@
 import { Box, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  KeyboardEvent,
+  MouseEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
@@ -35,8 +43,7 @@ const LeaveAllocation: FC = () => {
   const [allocationsPerPage, setAllocationsPerPage] =
     useState(ALLOCATION_PER_PAGE);
 
-  const shouldFocusFirstCard = useRef(false);
-  const firstCardRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const firstCardRef = useRef<HTMLDivElement | null>(null);
 
   const { data: entitlement, isLoading } = useGetLeaveAllocation(selectedYear);
 
@@ -58,41 +65,33 @@ const LeaveAllocation: FC = () => {
     return entitlement?.slice(indexOfFirstAllocation, indexOfLastAllocation);
   }, [currentPage, allocationsPerPage, entitlement]);
 
-  useEffect(() => {
-    if (
-      shouldFocusFirstCard.current &&
-      currentAllocations &&
-      currentAllocations.length > 0
-    ) {
-      const firstCardId = currentAllocations[0]?.leaveType?.typeId;
-      if (firstCardId && firstCardRefs.current[firstCardId]) {
-        firstCardRefs.current[firstCardId]?.focus();
-        shouldFocusFirstCard.current = false;
-      }
-    }
-  }, [currentPage, currentAllocations]);
-
   const totalPages = useMemo(() => {
     return Math.ceil(entitlement?.length / allocationsPerPage);
   }, [entitlement, allocationsPerPage]);
 
-  const handleNextPage = () => {
+  const handleNextPage = (
+    event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>
+  ): void => {
+    event.preventDefault();
     if (currentPage < totalPages) {
-      shouldFocusFirstCard.current = true;
-      setCurrentPage(currentPage + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = (
+    event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>
+  ): void => {
+    event.preventDefault();
     if (currentPage > 1) {
-      shouldFocusFirstCard.current = true;
-      setCurrentPage(currentPage - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
-  const setFirstCardRef = (typeId: number, element: HTMLElement | null) => {
-    firstCardRefs.current[typeId] = element;
-  };
+  useEffect(() => {
+    if (firstCardRef.current) {
+      firstCardRef.current?.focus();
+    }
+  }, [currentPage]);
 
   return (
     <Box
@@ -119,12 +118,7 @@ const LeaveAllocation: FC = () => {
                   <LeaveTypeCard
                     entitlement={entitlement}
                     managers={managerAvailability ?? false}
-                    ref={
-                      isFirstCard
-                        ? (el: HTMLElement | null) =>
-                            setFirstCardRef(entitlement?.leaveType?.typeId, el)
-                        : undefined
-                    }
+                    ref={isFirstCard ? firstCardRef : undefined}
                   />
                 </Grid>
               );
