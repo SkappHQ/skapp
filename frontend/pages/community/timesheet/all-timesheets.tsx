@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ManagerTimesheet from "~community/attendance/components/organisms/ManagerTimesheet/ManagerTImesheet";
+import { TimeSheetSearchBarCategories } from "~community/attendance/enums/timesheetEnums";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
@@ -53,7 +54,7 @@ const AllTimesheetsPage: NextPage = () => {
         return {
           value: employee.employeeId,
           label: `${employee.firstName} ${employee.lastName}`,
-          category: "Individuals",
+          category: TimeSheetSearchBarCategories.INDIVIDUALS,
           firstName: employee.firstName,
           lastName: employee.lastName,
           authPic: employee.authPic
@@ -65,7 +66,7 @@ const AllTimesheetsPage: NextPage = () => {
       return {
         value: team.teamId,
         label: team.teamName,
-        category: "Teams",
+        category: TimeSheetSearchBarCategories.TEAMS,
         teamName: team.teamName
       };
     });
@@ -74,15 +75,17 @@ const AllTimesheetsPage: NextPage = () => {
   }, [suggestions]);
 
   const onSearchChange = async (value: OptionType | null) => {
-    if (value?.category === "Individuals") {
+    if (value?.category === TimeSheetSearchBarCategories.INDIVIDUALS) {
       await handleRowClick({ employeeId: value.value });
     }
 
-    if (value?.category === "Teams") {
+    if (value?.category === TimeSheetSearchBarCategories.TEAMS) {
       await router.push(
         `${ROUTES.TIMESHEET.TIMESHEET_ANALYTICS}/${value.value}?teamName=${encodeURIComponent(value.label)}`
       );
     }
+
+    setSearchTerm("");
   };
 
   return (
@@ -95,7 +98,7 @@ const AllTimesheetsPage: NextPage = () => {
         <PeopleAndTeamAutocompleteSearch
           id={{
             autocomplete: "all-timesheets-autocomplete",
-            textField: "all-timeheets-text-field"
+            textField: "all-timesheets-text-field"
           }}
           name="allTimesheetsSearch"
           options={options}

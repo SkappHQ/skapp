@@ -42,3 +42,8 @@ export enum TimeSheetRequestTypes {
   MANUAL_ENTRY_REQUEST = "MANUAL_ENTRY_REQUEST",
   EDIT_RECORD_REQUEST = "EDIT_RECORD_REQUEST"
 }
+
+export enum TimeSheetSearchBarCategories {
+  INDIVIDUALS = "Individuals",
+  TEAMS = "Teams"
+}
