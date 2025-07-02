@@ -155,7 +155,7 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 			throw new IllegalArgumentException("CloudFront key pair ID must be configured");
 		}
 		if (!StringUtils.hasText(privateKey)) {
-			throw new IllegalArgumentException("CloudFront private key path must be configured");
+			throw new IllegalArgumentException("CloudFront private key must be configured");
 		}
 		if (signCookiesExpiration <= 0) {
 			throw new IllegalArgumentException("CloudFront cookies expiration must be positive");
