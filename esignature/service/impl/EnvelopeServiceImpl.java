@@ -1130,7 +1130,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipientData.setStatus(RecipientStatus.EMPTY);
 			}
 
-			recipientData.setInboxStatus(InboxStatus.DECLINED);
+			if (envelope.getSignType().equals(SignType.PARALLEL) || (envelope.getSignType().equals(SignType.SEQUENTIAL)
+					&& !recipientData.getStatus().equals(RecipientStatus.EMPTY))) {
+				recipientData.setInboxStatus(InboxStatus.DECLINED);
+			}
 		});
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
