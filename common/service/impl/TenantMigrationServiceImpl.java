@@ -59,26 +59,12 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		TenantContext.setCurrentTenant(tenantId);
 		RequestMethodContext.setReadOnly(false);
 
-		Database database;
-		Liquibase liquibase = null;
 		try (Connection connection = dataSource.getConnection()) {
-			try {
-				database = DatabaseFactory.getInstance()
-					.findCorrectDatabaseImplementation(new JdbcConnection(connection));
-				liquibase = new Liquibase("enterprise/db/changelog/db.changelog.yml", new ClassLoaderResourceAccessor(),
-						database);
-				liquibase.update();
-			}
-			finally {
-				if (liquibase != null) {
-					try {
-						liquibase.close();
-					}
-					catch (LiquibaseException e) {
-						log.error("Error closing Liquibase for tenant: {}", tenantId, e);
-					}
-				}
-			}
+			Database database = DatabaseFactory.getInstance()
+				.findCorrectDatabaseImplementation(new JdbcConnection(connection));
+			Liquibase liquibase = new Liquibase("enterprise/db/changelog/db.changelog.yml",
+					new ClassLoaderResourceAccessor(), database);
+			liquibase.update();
 		}
 	}
 

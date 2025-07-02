@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
+import java.util.Collections;
 import java.util.Objects;
 
 @Slf4j
@@ -18,6 +19,12 @@ import java.util.Objects;
 public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 
 	private final DataSourceFactory dataSourceFactory;
+
+	@Override
+	public void afterPropertiesSet() {
+		setTargetDataSources(Collections.emptyMap());
+		super.afterPropertiesSet();
+	}
 
 	@Override
 	protected Object determineCurrentLookupKey() {
