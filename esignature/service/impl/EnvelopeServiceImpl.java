@@ -1249,34 +1249,34 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		switch (audit.getAction()) {
 			case ENVELOPE_CREATED:
-				return actionBy + " created the document";
+				return actionBy + EsignConstants.AUDIT_ACTION_CREATED_DOCUMENT;
 			case ENVELOPE_SENT:
-				return actionBy + " sent the document";
+				return actionBy + EsignConstants.AUDIT_ACTION_SENT_DOCUMENT;
 			case ENVELOPE_VIEWED:
-				return actionBy + " viewed the document";
+				return actionBy + EsignConstants.AUDIT_ACTION_VIEWED_DOCUMENT;
 			case ENVELOPE_SIGNED:
-				return actionBy + " signed the document";
+				return actionBy + EsignConstants.AUDIT_ACTION_SIGNED_DOCUMENT;
 			case ENVELOPE_COMPLETED:
-				return "Document is completed";
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_COMPLETED;
 			case ENVELOPE_VOIDED:
-				return "Document made void";
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_VOIDED;
 			case ENVELOPE_DECLINED:
-				return actionBy + " declined to sign";
+				return actionBy + EsignConstants.AUDIT_ACTION_DECLINED_TO_SIGN;
 			case ENVELOPE_EXPIRED:
-				return "Document expired";
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_EXPIRED;
 			case ENVELOPE_DOWNLOADED:
-				return actionBy + " downloaded the document";
+				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
 			case ENVELOPE_CUSTODY_TRANSFERRED:
 				String newOwner = "";
 				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
 					for (MetadataResponseDto metadata : audit.getMetadata()) {
-						if ("currentOwner".equals(metadata.getName())) {
+						if (EsignConstants.CURRENT_OWNER_METADATA_NAME.equals(metadata.getName())) {
 							newOwner = metadata.getValue();
 							break;
 						}
 					}
 				}
-				return actionBy + " transferred ownership to " + newOwner;
+				return actionBy + EsignConstants.AUDIT_ACTION_TRANSFERRED_OWNERSHIP + newOwner;
 			default:
 				return audit.getAction().toString();
 		}
