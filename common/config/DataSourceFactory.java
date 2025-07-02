@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.config;
 
+import com.skapp.enterprise.common.type.OperationType;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,15 +62,16 @@ public class DataSourceFactory {
 	@Value("${spring.datasource.driver-class-name}")
 	private String driverClassName;
 
-	public DataSource getDataSource(String tenantId, boolean readOnly) {
+	public DataSource getTenantDataSource(OperationType operationType, String tenantId) {
 		if (tenantId == null || tenantId.isEmpty()) {
-			return readOnly ? createMasterReadDataSource() : createMasterWriteDataSource();
+			return operationType == OperationType.READ ? createMasterReadDataSource() : createMasterWriteDataSource();
 		}
-		return readOnly ? createTenantReadDataSource(tenantId) : createTenantWriteDataSource(tenantId);
+		return operationType == OperationType.READ ? createTenantReadDataSource(tenantId)
+				: createTenantWriteDataSource(tenantId);
 	}
 
-	public DataSource getDataSource(boolean readOnly) {
-		return getDataSource(null, readOnly);
+	public DataSource getMasterDataSource(OperationType operationType) {
+		return getTenantDataSource(operationType, null);
 	}
 
 	public DataSource createMasterWriteDataSource() {

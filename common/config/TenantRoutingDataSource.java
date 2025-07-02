@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.type.OperationType;
 import com.skapp.enterprise.common.util.TenantKeyExtractor;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.NonNull;
@@ -49,19 +50,19 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 			TenantDataSourceKey key = TenantKeyExtractor.extractTenantKey(lookupKey);
 			if (Objects.equals(key.getTenantId(), EpCommonConstants.MASTER_DATABASE)) {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getDataSource(true);
+					dataSource = dataSourceFactory.getMasterDataSource(OperationType.READ);
 				}
 				else {
-					dataSource = dataSourceFactory.getDataSource(false);
+					dataSource = dataSourceFactory.getMasterDataSource(OperationType.WRITE);
 				}
 
 			}
 			else {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), true);
+					dataSource = dataSourceFactory.getTenantDataSource(OperationType.READ, key.getTenantId());
 				}
 				else {
-					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), false);
+					dataSource = dataSourceFactory.getTenantDataSource(OperationType.WRITE, key.getTenantId());
 				}
 			}
 
@@ -79,7 +80,7 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 	}
 
 	public void closeTenantDataSource(String tenantId) {
-		if (tenantId == null || tenantId.trim().isEmpty()) {
+		if (tenantId == null || tenantId.isEmpty()) {
 			return;
 		}
 
