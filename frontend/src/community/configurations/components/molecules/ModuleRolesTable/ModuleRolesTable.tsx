@@ -8,6 +8,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import attendanceModuleRolesTableData from "~community/configurations/data/attendanceModuleRolesTableData.json";
+import esignatureModuleRolesTableData from "~community/configurations/data/esignatureModuleRolesTableData.json";
 import leaveModuleRolesTableData from "~community/configurations/data/leaveModuleRolesTableData.json";
 import peopleModuleRolesTableData from "~community/configurations/data/peopleModuleRolesTableData.json";
 
@@ -30,6 +31,8 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         return leaveModuleRolesTableData;
       case Modules.PEOPLE:
         return peopleModuleRolesTableData;
+      case Modules.ESIGNATURE:
+        return esignatureModuleRolesTableData;
       default:
         return [];
     }
@@ -73,7 +76,13 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
   const headers = [
     { id: "permission", label: "" },
     { id: "admin", label: translateText(["adminHeader"]) },
-    { id: "manager", label: translateText(["managerHeader"]) },
+    {
+      id: "manager",
+      label:
+        module === Modules.ESIGNATURE
+          ? translateText(["senderHeader"])
+          : translateText(["managerHeader"])
+    },
     { id: "employee", label: translateText(["employeeHeader"]) }
   ];
 

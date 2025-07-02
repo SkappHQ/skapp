@@ -34,7 +34,7 @@ const EmploymentSection = ({
     title: string;
     data: { label: string; value: string }[];
     filterKey: FilterKey;
-    accessibilityKey?: string;
+    accessibilityKey: string;
   }[] = [
     {
       title: "Employment Type",
@@ -47,7 +47,7 @@ const EmploymentSection = ({
         { label: translateText(["contract"]), value: EmploymentTypes.CONTRACT }
       ],
       filterKey: "employmentTypes",
-      accessibilityKey: "employmentType"
+      accessibilityKey: "employmentTypes"
     },
     {
       title: "Employment Allocation",
@@ -83,14 +83,14 @@ const EmploymentSection = ({
 
   const handleFilterChange = (
     value: string,
-    filterKey: string,
+    accessibilityKey: string,
     currentFilter: string[]
   ) => {
     if (!currentFilter.includes(value)) {
-      setEmployeeDataFilter(filterKey, [...currentFilter, value]);
+      setEmployeeDataFilter(accessibilityKey, [...currentFilter, value]);
     } else {
       setEmployeeDataFilter(
-        filterKey,
+        accessibilityKey,
         currentFilter.filter((currentItem) => currentItem !== value)
       );
     }
@@ -113,9 +113,8 @@ const EmploymentSection = ({
             title={filter.title}
             accessibilityKey={filter.accessibilityKey}
             data={filter.data}
-            filterKey={filter.filterKey}
             handleFilterChange={handleFilterChange}
-            currentFilter={employeeDataFilter[filter.filterKey]}
+            currentFilter={employeeDataFilter[filter.accessibilityKey] ?? []}
           />
         );
       })}

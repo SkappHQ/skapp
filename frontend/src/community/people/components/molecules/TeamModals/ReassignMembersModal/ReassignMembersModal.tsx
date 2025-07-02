@@ -79,7 +79,7 @@ const ReassignMembersModal = () => {
 
   return (
     <Box>
-      <Typography sx={{ my: "1rem" }} id="reassign-members-description">
+      <Typography sx={{ my: "1rem" }} >
         {translateText(["reassignModalDes"])}
       </Typography>
       <Stack gap={"0.5rem"} sx={{ maxHeight: "14.5rem", overflow: "auto" }}>
@@ -112,7 +112,7 @@ const ReassignMembersModal = () => {
           endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
           onClick={reassignAndDeleteClick}
           accessibility={{
-            ariaDescribedBy: "reassign-members-description"
+            ariaHidden: true
           }}
         />
         <Button
@@ -123,6 +123,9 @@ const ReassignMembersModal = () => {
           buttonStyle={ButtonStyle.TERTIARY}
           endIcon={<Icon name={IconName.CLOSE_ICON} />}
           onClick={cancelClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
       </Box>
     </Box>
