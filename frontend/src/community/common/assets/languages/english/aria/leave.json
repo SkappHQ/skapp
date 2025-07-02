@@ -43,7 +43,7 @@
       "icon": "Attach a file"
     },
     "calendar": {
-      "icon": "View leave entitlement balance",
+      "viewLeaveEntitlementBalance": "View leave entitlement balance",
       "selectDateForLeave": "select the dates for leave",
       "back": "Back",
       "next": "Next",

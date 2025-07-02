@@ -29,7 +29,7 @@ const LeaveEntitlementBalanceCard = ({ leaveEntitlementBalance }: Props) => {
 
   return (
     <Tooltip
-      ariaLabel={translateAria(["icon"])}
+      ariaLabel={translateAria(["viewLeaveEntitlementBalance"])}
       open={isTooltipOpen}
       id="leave-entitlement-balance-tooltip"
       dataTestId="leave-entitlement-balance-tooltip"
@@ -76,7 +76,7 @@ const LeaveEntitlementBalanceCard = ({ leaveEntitlementBalance }: Props) => {
         component="span"
         role="button"
         tabIndex={0}
-        aria-label={translateAria(["icon"])}
+        aria-label={translateAria(["viewLeaveEntitlementBalance"])}
         onMouseEnter={() => setIsTooltipOpen(true)}
         onMouseLeave={() => setIsTooltipOpen(false)}
         onFocus={() => setIsTooltipOpen(true)}

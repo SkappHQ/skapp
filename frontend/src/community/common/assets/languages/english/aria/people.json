@@ -95,7 +95,7 @@
     "sortDropdown": "Sort by Dropdown",
     "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
     "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
-    "null": "null",
+    "empty": "empty",
     "userProfile": "User Profile of {{name}}",
     "selectEmployee": "Select employee {{employeeName}}"
   }
