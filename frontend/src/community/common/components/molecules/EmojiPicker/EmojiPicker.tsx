@@ -94,6 +94,7 @@ const EmojiPicker = ({
           <Tooltip
             id="emoji-field"
             title={tooltip}
+            ariaLabel={tooltip}
             iconColor={
               error
                 ? theme.palette.error.contrastText

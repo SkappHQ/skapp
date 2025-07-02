@@ -55,7 +55,10 @@ const RoundedSelect = ({
   renderValue,
   disabled = false,
   name,
-  accessibility,
+  accessibility = {
+    label: "",
+    description: ""
+  },
   customStyles = {},
   variant = "body1"
 }: Props) => {
