@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.type;
 
 import com.skapp.community.common.type.CacheKey;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -10,7 +11,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public enum EpCacheKeys implements CacheKey {
 
-	CODE_CHALLENGE_CACHE_KEY("code_challenge_cache:%s", 5, TimeUnit.MINUTES);
+	CODE_CHALLENGE_CACHE_KEY("code_challenge_cache:%s", EpCommonConstants.REDIS_TTL_CODE_CHALLENGE_CACHE_KEY,
+			TimeUnit.MINUTES),
+	EMPLOYEE_DATA_CACHE_KEY("employee_data_cache:%s:employee_data", EpCommonConstants.REDIS_TTL_EMPLOYEE_DATA_CACHE_KEY,
+			TimeUnit.DAYS);
 
 	private final String key;
 
