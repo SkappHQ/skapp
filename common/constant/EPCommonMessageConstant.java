@@ -156,7 +156,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_CLOUD_FRONT_PRIVATE_KEY_FAILED_TO_LOAD("ep.common.error.cloud-front-private-key-failed-to-load"),
 	EP_COMMON_ERROR_CLOUD_FRONT_SIGNED_COOKIES_GENERATION_FAILED(
 			"ep.common.error.cloud-front-signed-cookies-generation-failed"),
-	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_T0_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key");
+	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key");
 
 	private final String messageKey;
 
