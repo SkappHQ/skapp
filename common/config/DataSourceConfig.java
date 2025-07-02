@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.config;
 
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.type.OperationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,20 +20,20 @@ public class DataSourceConfig {
 	@Bean
 	@Primary
 	public DataSource dataSource() {
-		TenantRoutingDataSource routingDataSource = new TenantRoutingDataSource(dataSourceFactory);
+		TenantRoutingDataSource tenantRoutingDataSource = new TenantRoutingDataSource(dataSourceFactory);
 
-		DataSource masterWriteDS = dataSourceFactory.createMasterWriteDataSource();
-		DataSource masterReadDS = dataSourceFactory.createMasterReadDataSource();
+		DataSource masterWriteDS = dataSourceFactory.getMasterDataSource(OperationType.WRITE);
+		DataSource masterReadDS = dataSourceFactory.getMasterDataSource(OperationType.READ);
 
 		Map<Object, Object> targetDataSources = new HashMap<>();
 		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + "-write", masterWriteDS);
 		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + "-read", masterReadDS);
 
-		routingDataSource.setDefaultTargetDataSource(masterWriteDS);
-		routingDataSource.setTargetDataSources(targetDataSources);
-		routingDataSource.afterPropertiesSet();
+		tenantRoutingDataSource.setDefaultTargetDataSource(masterWriteDS);
+		tenantRoutingDataSource.setTargetDataSources(targetDataSources);
+		tenantRoutingDataSource.afterPropertiesSet();
 
-		return routingDataSource;
+		return tenantRoutingDataSource;
 	}
 
 }
