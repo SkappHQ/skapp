@@ -19,20 +19,20 @@ public class DataSourceConfig {
 	@Bean
 	@Primary
 	public DataSource dataSource() {
-		TenantRoutingDataSource routingDataSource = new TenantRoutingDataSource(dataSourceFactory);
+		TenantRoutingDataSource tenantRoutingDataSource = new TenantRoutingDataSource(dataSourceFactory);
 
-		DataSource masterWriteDS = dataSourceFactory.createMasterWriteDataSource();
-		DataSource masterReadDS = dataSourceFactory.createMasterReadDataSource();
+		DataSource masterWriteDS = dataSourceFactory.getDataSource(false);
+		DataSource masterReadDS = dataSourceFactory.getDataSource(true);
 
 		Map<Object, Object> targetDataSources = new HashMap<>();
 		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + "-write", masterWriteDS);
 		targetDataSources.put(EpCommonConstants.MASTER_DATABASE + "-read", masterReadDS);
 
-		routingDataSource.setDefaultTargetDataSource(masterWriteDS);
-		routingDataSource.setTargetDataSources(targetDataSources);
-		routingDataSource.afterPropertiesSet();
+		tenantRoutingDataSource.setDefaultTargetDataSource(masterWriteDS);
+		tenantRoutingDataSource.setTargetDataSources(targetDataSources);
+		tenantRoutingDataSource.afterPropertiesSet();
 
-		return routingDataSource;
+		return tenantRoutingDataSource;
 	}
 
 }
