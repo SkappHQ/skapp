@@ -648,3 +648,11 @@ export const formatDateByTemplate = (date: Date, rawFormat: string): string => {
 export const isPastYear = (year: number): boolean => {
   return year < DateTime.local().year;
 };
+
+export const getLocaleDateString = (date: Date) => {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+};

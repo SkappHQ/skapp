@@ -90,7 +90,6 @@ const AttendanceCard: FC<Props> = ({
           <Stack direction="row" justifyContent="left">
             <div style={{ display: "flex", alignItems: "baseline" }}>
               <Typography
-                variant="h4"
                 style={{ fontSize: "2.5rem", fontWeight: 600 }}
               >
                 {analytic1 ?? "--"}

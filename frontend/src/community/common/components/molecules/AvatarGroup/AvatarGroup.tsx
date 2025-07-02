@@ -65,6 +65,12 @@ const AvatarGroup: FC<Props> = ({
     if (isHoverModal) setAnchorEl(null);
   };
 
+  const ariaLabel = avatars
+    .map((avatar) =>
+      `${avatar.firstName || ""} ${avatar.lastName || ""}`.trim()
+    )
+    .join(", ");
+
   return (
     <>
       <MuiAvatarGroup
@@ -76,6 +82,7 @@ const AvatarGroup: FC<Props> = ({
         onMouseLeave={handleMouseLeave}
         ref={anchorElement}
         data-cy="avatar-group"
+        aria-label={ariaLabel}
       >
         {avatars.map(({ firstName, image, lastName, leaveState }, index) => (
           <AvatarGroupAvatar
