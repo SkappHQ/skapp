@@ -146,7 +146,7 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 		}
 		catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			log.error("Failed to parse private key", e);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CLOUD_FRONT_FAILED_T0_PARSE_PRIVATE_KEY);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY);
 		}
 	}
 
