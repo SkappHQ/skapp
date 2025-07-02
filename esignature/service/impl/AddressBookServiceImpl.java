@@ -60,9 +60,6 @@ public class AddressBookServiceImpl implements AddressBookService {
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;
 
-	@Value("${aws.s3.bucket-name}")
-	private String bucketName;
-
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
 		validateRequest(externalUserDto);
