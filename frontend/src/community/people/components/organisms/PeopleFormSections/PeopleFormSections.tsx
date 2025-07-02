@@ -1,3 +1,5 @@
+import { Box } from "@mui/material";
+
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
@@ -95,7 +97,11 @@ const PeopleFormSections = ({ employeeId, isAddFlow = false }: Props) => {
     }
   };
 
-  return <>{isAddFlow ? getAddFlowSection() : getEditFlowSection()}</>;
+  return (
+    <Box id="people-form-section">
+      {isAddFlow ? getAddFlowSection() : getEditFlowSection()}
+    </Box>
+  );
 };
 
 export default PeopleFormSections;

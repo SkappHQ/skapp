@@ -96,6 +96,17 @@ const DirectorySteppers = ({
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
     setNextStep(step);
+    setTimeout(() => {
+      const container = document.getElementById("people-form-section");
+      if (container) {
+        const focusableElements = container.querySelectorAll(
+          'button, input, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          (focusableElements[0] as HTMLElement).focus();
+        }
+      }
+    }, 100);
   };
 
   return (
