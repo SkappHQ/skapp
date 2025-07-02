@@ -117,6 +117,7 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
         setSearchTerm={setSearchTerm}
         placeHolder={translateText(["employeeSearchPlaceholder"])}
         data-testid={peopleDirectoryTestId.searchInput}
+        name="contactSearch"
       />
       {bannerData &&
       !isRemovePeople &&
