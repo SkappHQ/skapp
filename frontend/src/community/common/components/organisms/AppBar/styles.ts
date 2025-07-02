@@ -14,11 +14,13 @@ const styles = () => ({
     },
     boxSizing: "border-box",
     width: "100%",
+    maxWidth: "103.125rem",
     height: "min-content",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     alignItems: "center",
     gap: "1.5rem",
-    zIndex: ZIndexEnums.APP_BAR
+    zIndex: ZIndexEnums.APP_BAR,
+    margin: "0 auto"
   },
   container: {
     flexDirection: "row",
