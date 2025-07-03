@@ -163,8 +163,10 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setFirstName(addressBook.getFirstName());
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
-		mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		if (addressBook.getMySignatureLink() != null) {
+			mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}
