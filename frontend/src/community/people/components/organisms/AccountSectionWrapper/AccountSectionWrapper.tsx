@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
@@ -15,6 +15,8 @@ interface Props {
 }
 const AccountSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData } = useGetEmployee(employeeId);
+
+  const accountSectionsRef = useRef<HTMLDivElement>(null);
 
   const {
     currentStep,
@@ -64,8 +66,12 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
           enableEdit={true}
         />
       )}
-      <DirectorySteppers employeeId={employeeId} isAccountView />
-      <PeopleAccountSection />
+      <DirectorySteppers
+        employeeId={employeeId}
+        formRef={accountSectionsRef}
+        isAccountView
+      />
+      <PeopleAccountSection formRef={accountSectionsRef} />
       <UnsavedChangesModal
         isOpen={isUnsavedChangesModalOpen}
         onDiscard={() => {
