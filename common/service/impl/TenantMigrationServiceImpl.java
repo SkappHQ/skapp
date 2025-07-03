@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.config.TenantDataSourceManager;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
@@ -34,6 +35,8 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 
 	private final DataSource dataSource;
 
+	private final TenantDataSourceManager tenantDataSourceManager;
+
 	@Override
 	public void runMigration(String tenantId) {
 		log.debug("Starting migration for tenant: {}", tenantId);
@@ -46,7 +49,9 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 			handleMigrationError(tenantId, e);
 		}
 		finally {
-			cleanup(tenantId);
+			TenantContext.clearCurrentTenant();
+			RequestMethodContext.clear();
+			tenantDataSourceManager.closeTenantDataSource(tenantId);
 		}
 	}
 
@@ -74,16 +79,6 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 					}
 				}
 			}
-		}
-	}
-
-	private void cleanup(String tenantId) {
-		try {
-			TenantContext.clearCurrentTenant();
-			RequestMethodContext.clear();
-		}
-		catch (Exception e) {
-			log.error("Error removing tenant: {}", tenantId, e);
 		}
 	}
 
