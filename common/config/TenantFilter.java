@@ -57,6 +57,8 @@ public class TenantFilter extends OncePerRequestFilter {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_HEADER_MISSING);
 		}
 
+		tenantId = tenantId.strip();
+
 		try {
 			TenantContext.setCurrentTenant(tenantId.toLowerCase());
 			filterChain.doFilter(request, response);
