@@ -153,7 +153,7 @@ const useSystemPermissionFormHandlers = () => {
       if (checked) {
         newSuperAdminCount++;
       } else {
-        if (newSuperAdminCount > 0) {
+        if (newSuperAdminCount > 1) {
           newSuperAdminCount--;
         }
       }
