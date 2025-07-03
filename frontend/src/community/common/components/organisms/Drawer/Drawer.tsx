@@ -384,7 +384,7 @@ const Drawer = (): JSX.Element => {
             </MuiLink>
           </Stack>
         )}
-      </Stack>{" "}
+      </Stack>
       <IconButton
         sx={{ ...classes.iconBtn(isDrawerExpanded), visibility: "visible" }} // TO DO: Need to verify why this style affects other places which use this icon
         onClick={handleDrawer}
