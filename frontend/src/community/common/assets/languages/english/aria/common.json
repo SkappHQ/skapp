@@ -107,6 +107,6 @@
   },
   "dateRangePicker": {
     "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date",
-    "noSelectedDateLabel": "Press enter to select date"
+    "noSelectedDateLabel": "Selected date range is from {{startDate}} to {{endDate}}. Press enter to select date"
   }
 }

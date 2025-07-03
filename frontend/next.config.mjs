@@ -201,6 +201,10 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/people"
       },
       {
+        source: "/configurations/user-roles/esignature",
+        destination: "/community/configurations/user-roles/esignature"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },

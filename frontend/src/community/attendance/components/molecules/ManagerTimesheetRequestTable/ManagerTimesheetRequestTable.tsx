@@ -19,7 +19,6 @@ import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import Button from "~community/common/components/atoms/Button/Button";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
@@ -44,7 +43,8 @@ interface Props {
   hasFullList?: boolean;
   approveTimesheetRequest: (timeRequestId: number, name: string) => void;
   declineTimesheetRequest: (timeRequestId: number, name: string) => void;
-  isApproveDenyLoading: boolean;
+  isApproveDenyLoading?: boolean;
+  tableName: TableNames;
 }
 
 const ManagerTimesheetRequestTable: FC<Props> = ({
@@ -54,7 +54,8 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   hasFullList = false,
   approveTimesheetRequest,
   declineTimesheetRequest,
-  isApproveDenyLoading
+  isApproveDenyLoading,
+  tableName
 }) => {
   const theme: Theme = useTheme();
   const { setToastMessage } = useToast();
@@ -326,7 +327,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       )}
       {hasFullList && <TimesheetRequestsFilters isManager={true} />}
       <Table
-        tableName={TableNames.MANAGER_TIMESHEET_REQUEST}
+        tableName={tableName}
         headers={tableHeaders}
         rows={transformToTableRows() || []}
         tableHead={{

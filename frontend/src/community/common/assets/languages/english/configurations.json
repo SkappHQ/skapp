@@ -44,7 +44,15 @@
     "manageJobFamilies": "Manage Job Families",
     "manageTeams": "Manage Teams",
     "manageHolidays": "Manage Holidays",
-    "accessDirectory": "Access Directory"
+    "accessDirectory": "Access Directory",
+    "esignatureTitle": "E-Signature Module Roles",
+    "senderHeader": "SENDER",
+    "manageSignConfigurations": "Manage Sign Configurations",
+    "accessAllDocuments": "Access All Documents throughout the organization",
+    "createDocuments": "Create Documents",
+    "manageContacts": "Manage the Contacts",
+    "signOrDeclineDocuments": "Sign or Decline Documents",
+    "viewReceivedDocuments": "View Received Documents (Inbox)"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
