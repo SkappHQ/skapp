@@ -76,7 +76,7 @@ const EmojiPicker = ({
       <Stack sx={classes.labelWrapper}>
         <Typography
           component="label"
-          id="label"
+          id="emoji-picker-label"
           sx={{
             color: error
               ? theme.palette.error.contrastText
