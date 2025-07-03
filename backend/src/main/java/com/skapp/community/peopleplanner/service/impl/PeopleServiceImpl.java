@@ -748,8 +748,8 @@ public class PeopleServiceImpl implements PeopleService {
 		processPrimarySupervisor(requestDto.getEmploymentDetails().getPrimarySupervisor(), employee, existingManagers,
 				result);
 
-		processOtherSupervisors(requestDto.getEmploymentDetails().getOtherSupervisors(),
-				requestDto.getEmploymentDetails().getPrimarySupervisor(), employee, existingManagers, result);
+		processOtherSupervisors(requestDto.getEmploymentDetails().getOtherSupervisors(), employee, existingManagers,
+				result);
 
 		return result;
 	}
@@ -757,31 +757,42 @@ public class PeopleServiceImpl implements PeopleService {
 	private void processPrimarySupervisor(EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor,
 			Employee employee, Set<EmployeeManager> existingManagers, Set<EmployeeManager> result) {
 
+		// If primary supervisor is null, we will keep existing primary managers
 		if (primarySupervisor == null) {
 			existingManagers.stream().filter(em -> em.getManagerType() == ManagerType.PRIMARY).forEach(result::add);
 			return;
 		}
 
+		// If primary supervisor is empty, we will delete existing primary managers
 		if (primarySupervisor.getEmployeeId() == null) {
 			existingManagers.stream()
 				.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
 				.map(EmployeeManager::getId)
-				.filter(Objects::nonNull)
 				.forEach(employeeManagerDao::deleteById);
 			return;
 		}
 
+		// If primary supervisor is present, we will either update or create a new primary
+		// manager
 		Long newPrimaryId = primarySupervisor.getEmployeeId();
 
+		// Check if the new primary supervisor already exists in the existing managers
 		Optional<EmployeeManager> existingPrimary = existingManagers.stream()
-			.filter(em -> em.getManagerType() == ManagerType.PRIMARY && em.getManager() != null
+			.filter(em -> em.getManagerType() == ManagerType.PRIMARY
 					&& newPrimaryId.equals(em.getManager().getEmployeeId()))
 			.findFirst();
 
+		// If it exists, we will add it to the result
 		if (existingPrimary.isPresent()) {
 			result.add(existingPrimary.get());
 		}
 		else {
+			existingManagers.stream()
+				.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
+				.map(EmployeeManager::getId)
+				.forEach(employeeManagerDao::deleteById);
+
+			// If it does not exist, we will create a new primary manager
 			Employee manager = employeeDao.findEmployeeByEmployeeId(newPrimaryId);
 			if (manager != null) {
 				EmployeeManager primary = new EmployeeManager();
@@ -791,25 +802,19 @@ public class PeopleServiceImpl implements PeopleService {
 				primary.setIsPrimaryManager(true);
 				result.add(primary);
 			}
-
-			existingManagers.stream()
-				.filter(em -> em.getManagerType() == ManagerType.PRIMARY
-						&& (em.getManager() == null || !newPrimaryId.equals(em.getManager().getEmployeeId())))
-				.map(EmployeeManager::getId)
-				.filter(Objects::nonNull)
-				.forEach(employeeManagerDao::deleteById);
 		}
 	}
 
 	private void processOtherSupervisors(List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors,
-			EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor, Employee employee,
-			Set<EmployeeManager> existingManagers, Set<EmployeeManager> result) {
+			Employee employee, Set<EmployeeManager> existingManagers, Set<EmployeeManager> result) {
 
+		// If other supervisors are null, we will keep existing secondary managers
 		if (otherSupervisors == null) {
 			existingManagers.stream().filter(em -> em.getManagerType() == ManagerType.SECONDARY).forEach(result::add);
 			return;
 		}
 
+		// If other supervisors are empty, we will delete existing secondary managers
 		if (otherSupervisors.isEmpty()) {
 			existingManagers.stream()
 				.filter(em -> em.getManagerType() == ManagerType.SECONDARY)
@@ -817,22 +822,33 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		Long primaryId = primarySupervisor != null ? primarySupervisor.getEmployeeId() : null;
+		// If other supervisors are present, we will process them
 		Set<Long> otherSupervisorIds = otherSupervisors.stream()
 			.map(EmployeeEmploymentBasicDetailsManagerDetailsDto::getEmployeeId)
-			.filter(Objects::nonNull)
-			.filter(id -> !id.equals(primaryId))
 			.collect(Collectors.toSet());
 
-		Map<Long, EmployeeManager> existingSecondaryManagers = existingManagers.stream()
-			.filter(em -> em.getManagerType() == ManagerType.SECONDARY && em.getManager() != null)
-			.collect(Collectors.toMap(em -> em.getManager().getEmployeeId(), em -> em, (a, b) -> a));
+		Set<EmployeeManager> existingSecondaryManagers = existingManagers.stream()
+			.filter(em -> em.getManagerType() == ManagerType.SECONDARY)
+			.collect(Collectors.toSet());
 
-		otherSupervisorIds.forEach(id -> {
-			if (existingSecondaryManagers.containsKey(id)) {
-				result.add(existingSecondaryManagers.get(id));
-			}
-			else {
+		Set<Long> existingSecondaryManagerIds = existingSecondaryManagers.stream()
+			.map(em -> em.getManager() != null ? em.getManager().getEmployeeId() : null)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
+
+		if (existingSecondaryManagerIds.equals(otherSupervisorIds)) {
+			// If existing secondary managers are the same as the new ones, we will keep
+			// them
+			result.addAll(existingSecondaryManagers);
+		}
+		else {
+			existingManagers.stream()
+				.filter(em -> em.getManagerType() == ManagerType.SECONDARY)
+				.map(EmployeeManager::getId)
+				.forEach(employeeManagerDao::deleteById);
+
+			// If they are different, we will create new secondary managers
+			otherSupervisorIds.forEach(id -> {
 				Employee manager = employeeDao.findEmployeeByEmployeeId(id);
 				if (manager != null) {
 					EmployeeManager secondary = new EmployeeManager();
@@ -842,15 +858,8 @@ public class PeopleServiceImpl implements PeopleService {
 					secondary.setIsPrimaryManager(false);
 					result.add(secondary);
 				}
-			}
-		});
-
-		existingManagers.stream()
-			.filter(em -> em.getManagerType() == ManagerType.SECONDARY
-					&& (em.getManager() == null || !otherSupervisorIds.contains(em.getManager().getEmployeeId())))
-			.map(EmployeeManager::getId)
-			.filter(Objects::nonNull)
-			.forEach(employeeManagerDao::deleteById);
+			});
+		}
 	}
 
 	private List<EmployeeEmergency> processEmergencyContacts(CreateEmployeeRequestDto requestDto, Employee employee) {
