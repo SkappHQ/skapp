@@ -314,8 +314,8 @@ public class RolesServiceImpl implements RolesService {
 		}
 
 		if (user.getEmployee() != null && user.getEmployee().getEmployeeRole() != null
-                && user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
-                && Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
+				&& user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
+				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
 				&& (userRoles.getPeopleRole() != Role.PEOPLE_ADMIN || userRoles.getLeaveRole() != Role.LEAVE_ADMIN
 						|| userRoles.getAttendanceRole() != Role.ATTENDANCE_ADMIN)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_ROLES_CANNOT_BE_CHANGED);
@@ -477,9 +477,10 @@ public class RolesServiceImpl implements RolesService {
 
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
-		if(moduleType == ModuleType.ESIGN) {
+		if (moduleType == ModuleType.ESIGN) {
 			roles.add(RoleLevel.SENDER.getDisplayName());
-		} else {
+		}
+		else {
 			roles.add(RoleLevel.MANAGER.getDisplayName());
 		}
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
