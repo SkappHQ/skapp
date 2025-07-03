@@ -194,6 +194,8 @@ const Drawer = (): JSX.Element => {
               const isExpanded = route?.id === expandedDrawerListItem;
               const hasSubTree = route?.hasSubTree ?? false;
               const routeId = route?.id ?? "";
+              const isActiveRoute =
+                !hasSubTree && router.pathname.includes(route?.url ?? "");
 
               return (
                 <ListItem
@@ -205,9 +207,7 @@ const Drawer = (): JSX.Element => {
                 >
                   <ListItemButton
                     disableRipple
-                    sx={classes.listItemButton(
-                      !hasSubTree && router.pathname.includes(route?.url ?? "")
-                    )}
+                    sx={classes.listItemButton(isActiveRoute)}
                     onClick={() =>
                       handleListItemButtonClick(
                         routeId,
