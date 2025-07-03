@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -16,12 +16,14 @@ interface Props {
   employeeId: number;
   isIndividualView?: boolean;
   isAccountView?: boolean;
+  formRef?: RefObject<HTMLDivElement>;
 }
 
 const DirectorySteppers = ({
   employeeId,
   isIndividualView,
-  isAccountView
+  isAccountView,
+  formRef
 }: Props) => {
   const [isLeaveTabVisible, setIsLeaveTabVisible] = useState(false);
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
@@ -30,6 +32,8 @@ const DirectorySteppers = ({
   const { data: session } = useSession();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
+
+  const [prevStep, setPrevStep] = useState<EditPeopleFormTypes | null>(null);
 
   const { data: supervisedData, isLoading: supervisorDataLoading } =
     useGetSupervisedByMe(Number(employeeId));
@@ -99,16 +103,16 @@ const DirectorySteppers = ({
   };
 
   useEffect(() => {
-    const container = document.getElementById("people-form-section");
-    if (container) {
-      const focusableElements = container.querySelectorAll(
+    if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
+      const focusableElements = formRef.current.querySelectorAll(
         'button, input, [tabindex]:not([tabindex="-1"])'
       );
       if (focusableElements.length > 0) {
         (focusableElements[0] as HTMLElement).focus();
       }
     }
-  }, [currentStep]);
+    setPrevStep(currentStep);
+  }, [currentStep, formRef, prevStep]);
 
   return (
     <BoxStepper

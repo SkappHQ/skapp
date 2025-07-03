@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { RefObject } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -16,9 +17,14 @@ import SystemPermissionFormSection from "../SystemPermissionFormSection/SystemPe
 interface Props {
   employeeId?: number;
   isAddFlow?: boolean;
+  formRef?: RefObject<HTMLDivElement>;
 }
 
-const PeopleFormSections = ({ employeeId, isAddFlow = false }: Props) => {
+const PeopleFormSections = ({
+  employeeId,
+  isAddFlow = false,
+  formRef
+}: Props) => {
   const { currentStep, activeStep, employee } = usePeopleStore(
     (state) => state
   );
@@ -98,7 +104,7 @@ const PeopleFormSections = ({ employeeId, isAddFlow = false }: Props) => {
   };
 
   return (
-    <Box id="people-form-section">
+    <Box ref={formRef}>
       {isAddFlow ? getAddFlowSection() : getEditFlowSection()}
     </Box>
   );
