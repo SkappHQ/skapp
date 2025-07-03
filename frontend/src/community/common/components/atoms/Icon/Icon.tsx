@@ -43,6 +43,8 @@ import DocumentsIcon from "~community/common/assets/Icons/DocumentsIcon";
 import DottedClockIcon from "~community/common/assets/Icons/DottedClockIcon";
 import DownloadIcon from "~community/common/assets/Icons/DownloadIcon";
 import DragIcon from "~community/common/assets/Icons/DragIcon";
+import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
+import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
@@ -277,6 +279,8 @@ export const IconMapping: Partial<
   [IconName.HELP_DESK_MODULE_ICON]: HelpDeskModuleIcon,
   [IconName.PROJECT_MANAGEMENT_MODULE_ICON]: ProjectManagementModuleIcon,
   [IconName.BLOCKED_ICON]: BlockedIcon,
+  [IconName.DRAWER_CLOSE_ICON]: DrawerCloseIcon,
+  [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
   [IconName.GEM_ICON]: GemIcon
   // Add more icons here as needed
 };
