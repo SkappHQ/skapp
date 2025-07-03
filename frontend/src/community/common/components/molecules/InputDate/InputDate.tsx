@@ -384,6 +384,10 @@ const InputDate: FC<Props> = ({
         sx={mergeSx([classes.popper, popperStyles])}
         tabIndex={0}
         aria-hidden={true}
+        onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+          if (shouldCollapseDropdown(e.key))
+            !(disabled || readOnly) && handleClose();
+        }}
       >
         <ClickAwayListener onClickAway={handleClose}>
           <Paper>

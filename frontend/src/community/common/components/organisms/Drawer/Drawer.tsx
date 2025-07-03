@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { JSX, useEffect, useMemo, useState } from "react";
+import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -23,7 +23,10 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import {
+  ButtonSizes,
+  ButtonStyle
+} from "~community/common/enums/ComponentEnums";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
@@ -100,7 +103,6 @@ const Drawer = (): JSX.Element => {
   }));
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
-  const [hoveredDrawerItemUrl, setHoveredDrawerItemUrl] = useState<string>("");
 
   const isEnterprise = environment === appModes.ENTERPRISE;
 
@@ -192,6 +194,8 @@ const Drawer = (): JSX.Element => {
               const isExpanded = route?.id === expandedDrawerListItem;
               const hasSubTree = route?.hasSubTree ?? false;
               const routeId = route?.id ?? "";
+              const isActiveRoute =
+                !hasSubTree && router.pathname.includes(route?.url ?? "");
 
               return (
                 <ListItem
@@ -203,7 +207,7 @@ const Drawer = (): JSX.Element => {
                 >
                   <ListItemButton
                     disableRipple
-                    sx={classes.listItemButton}
+                    sx={classes.listItemButton(isActiveRoute)}
                     onClick={() =>
                       handleListItemButtonClick(
                         routeId,
@@ -211,10 +215,6 @@ const Drawer = (): JSX.Element => {
                         route?.url ?? null
                       )
                     }
-                    onMouseEnter={() =>
-                      setHoveredDrawerItemUrl(route?.url ?? "")
-                    }
-                    onMouseLeave={() => setHoveredDrawerItemUrl("")}
                     onKeyDown={(e) => {
                       if (shouldActivateLink(e.key)) {
                         e.preventDefault();
@@ -235,45 +235,53 @@ const Drawer = (): JSX.Element => {
                           fill={getSelectedDrawerItemColor(
                             theme,
                             router.pathname,
-                            hoveredDrawerItemUrl,
                             route.url
                           )}
                         />
                       )}
                     </ListItemIcon>
-                    <ListItemText
-                      primary={route?.name}
-                      sx={classes.listItemText(
-                        getSelectedDrawerItemColor(
-                          theme,
-                          router.pathname,
-                          hoveredDrawerItemUrl,
-                          route?.url ?? null
-                        )
-                      )}
-                    />
-                    <ListItemIcon
-                      sx={classes.chevronIcons(
-                        expandedDrawerListItem,
-                        routeId,
-                        hasSubTree
-                      )}
-                    >
-                      <Icon
-                        name={IconName.EXPAND_ICON}
-                        width="0.625rem"
-                        height="0.3125rem"
-                        fill={getSelectedDrawerItemColor(
-                          theme,
-                          router.pathname,
-                          hoveredDrawerItemUrl,
-                          route?.url ?? ""
+                    <Box sx={classes.listItemContent}>
+                      <ListItemText
+                        primary={route?.name}
+                        sx={classes.listItemText(
+                          getSelectedDrawerItemColor(
+                            theme,
+                            router.pathname,
+                            route?.url ?? null
+                          )
                         )}
                       />
-                    </ListItemIcon>
+                      <ListItemIcon
+                        sx={classes.chevronIcons(
+                          expandedDrawerListItem,
+                          routeId,
+                          hasSubTree
+                        )}
+                      >
+                        <Icon
+                          name={IconName.DROPDOWN_ARROW_ICON}
+                          width="0.625rem"
+                          height="0.3125rem"
+                          fill={getSelectedDrawerItemColor(
+                            theme,
+                            router.pathname,
+                            route?.url ?? ""
+                          )}
+                          svgProps={{
+                            style: {
+                              fill: getSelectedDrawerItemColor(
+                                theme,
+                                router.pathname,
+                                route?.url ?? ""
+                              )
+                            }
+                          }}
+                        />
+                      </ListItemIcon>
+                    </Box>
                   </ListItemButton>
 
-                  {isExpanded && hasSubTree && (
+                  {hasSubTree && (
                     <Collapse
                       in={isExpanded}
                       collapsedSize="0rem"
@@ -306,17 +314,17 @@ const Drawer = (): JSX.Element => {
                                 );
                               }
                             }}
-                            onMouseEnter={() =>
-                              setHoveredDrawerItemUrl(subTreeRoute.url)
-                            }
-                            onMouseLeave={() => setHoveredDrawerItemUrl("")}
                             data-testid={
                               appDrawerTestId.subRoutes + subTreeRoute.id
                             }
                           >
                             <ListItemButton
                               disableRipple
-                              sx={classes.subListItemButton}
+                              sx={classes.subListItemButton(
+                                router.pathname.includes(
+                                  subTreeRoute?.url ?? ""
+                                )
+                              )}
                               tabIndex={0}
                             >
                               <ListItemText
@@ -325,7 +333,6 @@ const Drawer = (): JSX.Element => {
                                   getSelectedDrawerItemColor(
                                     theme,
                                     router.pathname,
-                                    hoveredDrawerItemUrl,
                                     subTreeRoute.url
                                   )
                                 )}
@@ -351,6 +358,7 @@ const Drawer = (): JSX.Element => {
             ) && (
               <Button
                 styles={classes.applyLeaveBtn}
+                size={ButtonSizes.MEDIUM}
                 isFullWidth={false}
                 label={translateText(["applyLeaveBtn"])}
                 buttonStyle={ButtonStyle.PRIMARY}
@@ -387,10 +395,23 @@ const Drawer = (): JSX.Element => {
             : translateAria(["expand"])
         }
       >
-        <Icon
-          name={IconName.CHEVRON_RIGHT_ICON}
-          fill={theme.palette.common.black}
-        />
+        <Box sx={classes.iconToggleBox}>
+          {[IconName.DRAWER_CLOSE_ICON, IconName.DRAWER_OPEN_ICON].map(
+            (icon, index) => {
+              const isVisible = isDrawerExpanded === (index === 0);
+              return (
+                <Icon
+                  key={icon}
+                  name={icon}
+                  fill={theme.palette.common.black}
+                  svgProps={{
+                    style: classes.iconToggle(isVisible) as CSSProperties
+                  }}
+                />
+              );
+            }
+          )}
+        </Box>
       </IconButton>
     </StyledDrawer>
   );

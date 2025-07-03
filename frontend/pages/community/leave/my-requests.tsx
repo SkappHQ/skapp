@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { type NextPage } from "next";
 
@@ -47,6 +48,15 @@ const MyRequests: NextPage = () => {
             value={selectedYear}
             options={getCurrentAndNextYear()}
             onChange={(event) => setSelectedYear(event?.target.value)}
+            renderValue={(selectedValue: string) => {
+              return (
+                <Typography
+                  aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+                >
+                  {selectedValue}
+                </Typography>
+              );
+            }}
             accessibility={{
               label: translateAria(["selectYear"])
             }}
