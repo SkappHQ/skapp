@@ -22,12 +22,12 @@ export const generatePeopleTableRowAriaLabel = (
       name: `${employee?.firstName || ""} ${employee?.lastName || ""}`,
       jobTitle: employee?.jobTitle
         ? employee?.jobTitle
-        : translateAria(["null"]),
+        : translateAria(["empty"]),
       email: employee?.email || "",
       teams:
         employee?.teams && employee.teams.length > 0
           ? employee.teams.map((team) => team.teamName).join(", ")
-          : translateAria(["null"]),
+          : translateAria(["empty"]),
       supervisor:
         employee?.managers && employee.managers.length > 0
           ? employee?.managers
@@ -36,7 +36,7 @@ export const generatePeopleTableRowAriaLabel = (
                   `${manager.firstName || ""} ${manager.lastName || ""}`
               )
               .join(", ")
-          : translateAria(["null"])
+          : translateAria(["empty"])
     }
   );
 };
