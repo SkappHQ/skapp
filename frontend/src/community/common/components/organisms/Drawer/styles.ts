@@ -6,8 +6,8 @@ type stylesProps = {
   theme: Theme;
 };
 
-// Animation duration constant
-export const ANIMATION_DURATION = "0.3s";
+export const DRAWER_ANIMATION_DURATION = "0.3s";
+export const DRAWER_TRANSFORM_DURATION = "0.05s";
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean) => ({
@@ -22,7 +22,7 @@ export const styles = ({ theme }: stylesProps) => ({
       xs: "visible",
       lg: isDrawerExpanded ? "hidden" : "visible"
     },
-    transition: `right ${ANIMATION_DURATION} ease, opacity ${ANIMATION_DURATION} ease, visibility ${ANIMATION_DURATION} ease, transform 0.05s ease`
+    transition: `right ${DRAWER_ANIMATION_DURATION} ease, opacity ${DRAWER_ANIMATION_DURATION} ease, visibility ${DRAWER_ANIMATION_DURATION} ease, transform ${DRAWER_TRANSFORM_DURATION} ease`
   }),
   iconToggleBox: {
     position: "relative",
@@ -33,7 +33,7 @@ export const styles = ({ theme }: stylesProps) => ({
   iconToggle: (isVisible: boolean) => ({
     position: "absolute",
     display: "flex",
-    transition: `opacity ${ANIMATION_DURATION} ease`,
+    transition: `opacity ${DRAWER_ANIMATION_DURATION} ease`,
     opacity: isVisible ? 1 : 0,
     zIndex: isVisible ? 2 : 1
   }),
@@ -42,7 +42,7 @@ export const styles = ({ theme }: stylesProps) => ({
     height: "100%",
     padding: "2.5rem 0rem 2.5rem 2rem",
     boxSizing: "border-box",
-    transition: `opacity ${ANIMATION_DURATION} ease, visibility ${ANIMATION_DURATION} ease`,
+    transition: `opacity ${DRAWER_ANIMATION_DURATION} ease, visibility ${DRAWER_ANIMATION_DURATION} ease`,
     opacity: isDrawerExpanded ? 1 : 0,
     visibility: isDrawerExpanded ? "visible" : "hidden"
   }),
@@ -72,14 +72,14 @@ export const styles = ({ theme }: stylesProps) => ({
     scrollbarWidth: "thin",
     gap: "1rem",
     paddingTop: "1.625rem",
-    transition: `all ${ANIMATION_DURATION} ease`
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease`
   },
   listItem: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
     width: "100%",
-    transition: `all ${ANIMATION_DURATION} ease-in-out`,
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease-in-out`,
     transformOrigin: "top"
   },
   listItemButton: (isSelected: boolean) => ({
@@ -118,7 +118,7 @@ export const styles = ({ theme }: stylesProps) => ({
     flexDirection: "column",
     width: "100%",
     overflow: "hidden",
-    transition: `all ${ANIMATION_DURATION} ease-in-out`
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease-in-out`
   },
   subList: {
     display: "flex",
@@ -127,11 +127,11 @@ export const styles = ({ theme }: stylesProps) => ({
     width: "calc(100% - 1rem)",
     gap: "0.25rem",
     padding: "0.25rem 0rem 0rem 0rem",
-    transition: `all ${ANIMATION_DURATION} ease-in-out`
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease-in-out`
   },
   subListItem: {
     padding: "0rem",
-    transition: `all ${ANIMATION_DURATION} ease-in-out`,
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease-in-out`,
     transformOrigin: "top"
   },
   subListItemButton: (isSelected: boolean) => ({
@@ -162,7 +162,7 @@ export const styles = ({ theme }: stylesProps) => ({
   ) => ({
     color: theme.palette.common.black,
     minWidth: "max-content",
-    transition: `transform ${ANIMATION_DURATION} ease`,
+    transition: `transform ${DRAWER_ANIMATION_DURATION} ease`,
     visibility: hasSubTree ? "visible" : "hidden",
     transform:
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
