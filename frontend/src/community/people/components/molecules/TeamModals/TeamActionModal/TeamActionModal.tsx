@@ -85,9 +85,7 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
       title={translateText(["teamActionModalTitle"])}
     >
       <Box>
-        <Typography >
-          {translateText(["teamActionModalDes"])}
-        </Typography>
+        <Typography>{translateText(["teamActionModalDes"])}</Typography>
         <Stack spacing={2} mt={4}>
           <Button
             label={translateText(["teamActionModalBtnText"])}

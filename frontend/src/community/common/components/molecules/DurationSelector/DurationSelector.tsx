@@ -335,7 +335,11 @@ const DurationSelector = <T,>({
             <Stack
               ref={halfDayButtonRef}
               role="button"
-              tabIndex={disabledOptions.halfDayMorning && disabledOptions.halfDayEvening ? -1 : 0}
+              tabIndex={
+                disabledOptions.halfDayMorning && disabledOptions.halfDayEvening
+                  ? -1
+                  : 0
+              }
               className={muiHalfDayClasses}
               aria-label={getHalfDayAriaLabel()}
               sx={mergeSx([classes.btn, commonButtonStyles])}
