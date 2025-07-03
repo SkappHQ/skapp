@@ -1,14 +1,24 @@
 package com.skapp.enterprise.common.config;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.type.OperationType;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 public class DataSourceFactory {
+
+	private final Map<Object, DataSource> dataSources = new ConcurrentHashMap<>();
 
 	@Value("${spring.datasource.master.write.url}")
 	private String masterWriteUrl;
@@ -61,47 +71,48 @@ public class DataSourceFactory {
 	@Value("${spring.datasource.driver-class-name}")
 	private String driverClassName;
 
-	public DataSource getDataSource(String tenantId, boolean readOnly) {
+	public DataSource getTenantDataSource(OperationType operationType, String tenantId) {
 		if (tenantId == null || tenantId.isEmpty()) {
-			return readOnly ? createMasterReadDataSource() : createMasterWriteDataSource();
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_REQUIRED);
 		}
-		return readOnly ? createTenantReadDataSource(tenantId) : createTenantWriteDataSource(tenantId);
+		return operationType == OperationType.READ ? createTenantReadDataSource(tenantId)
+				: createTenantWriteDataSource(tenantId);
 	}
 
-	public DataSource getDataSource(boolean readOnly) {
-		return getDataSource(null, readOnly);
+	public DataSource getMasterDataSource(OperationType operationType) {
+		return operationType == OperationType.READ ? createMasterReadDataSource() : createMasterWriteDataSource();
 	}
 
 	public DataSource createMasterWriteDataSource() {
-		HikariConfig config = createBaseHikariConfig(masterWriteUrl, masterUsername, masterPassword,
-				"Master-Write-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,
-				masterConnectionTimeout, masterValidationTimeout, false);
-		return new HikariDataSource(config);
+		return dataSources.computeIfAbsent("master-write",
+				k -> new HikariDataSource(createBaseHikariConfig(masterWriteUrl, masterUsername, masterPassword,
+						"Master-Write-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,
+						masterConnectionTimeout, masterValidationTimeout, false)));
 	}
 
 	public DataSource createMasterReadDataSource() {
-		HikariConfig config = createBaseHikariConfig(masterReadUrl, masterUsername, masterPassword, "Master-Read-Pool",
-				masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime, masterConnectionTimeout,
-				masterValidationTimeout, true);
-		return new HikariDataSource(config);
+		return dataSources.computeIfAbsent("master-read",
+				k -> new HikariDataSource(createBaseHikariConfig(masterReadUrl, masterUsername, masterPassword,
+						"Master-Read-Pool", masterMaxPoolSize, masterMinIdle, masterIdleTimeout, masterMaxLifetime,
+						masterConnectionTimeout, masterValidationTimeout, true)));
 	}
 
 	public DataSource createTenantWriteDataSource(String tenantId) {
 		String dbUrl = extractBaseDbUrl(masterWriteUrl) + tenantId;
 
-		HikariConfig config = createBaseHikariConfig(dbUrl, masterUsername, masterPassword,
-				"Tenant-" + tenantId + "-Write-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
-				tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, false);
-		return new HikariDataSource(config);
+		return dataSources.computeIfAbsent(tenantId + "-write",
+				k -> new HikariDataSource(createBaseHikariConfig(dbUrl, masterUsername, masterPassword,
+						"Tenant-" + tenantId + "-Write-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
+						tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, false)));
 	}
 
 	public DataSource createTenantReadDataSource(String tenantId) {
 		String dbUrl = extractBaseDbUrl(masterReadUrl) + tenantId;
 
-		HikariConfig config = createBaseHikariConfig(dbUrl, masterUsername, masterPassword,
-				"Tenant-" + tenantId + "-Read-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
-				tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, true);
-		return new HikariDataSource(config);
+		return dataSources.computeIfAbsent(tenantId + "-read",
+				k -> new HikariDataSource(createBaseHikariConfig(dbUrl, masterUsername, masterPassword,
+						"Tenant-" + tenantId + "-Read-Pool", tenantMaxPoolSize, tenantMinIdle, tenantIdleTimeout,
+						tenantMaxLifetime, tenantConnectionTimeout, tenantValidationTimeout, true)));
 	}
 
 	private HikariConfig createBaseHikariConfig(String jdbcUrl, String username, String password, String poolName,
@@ -123,6 +134,36 @@ public class DataSourceFactory {
 		config.setReadOnly(readOnly);
 
 		return config;
+	}
+
+	public void closeTenantDataSource(String tenantId) {
+		if (tenantId == null || tenantId.isEmpty()) {
+			return;
+		}
+
+		for (Object keyObj : new ArrayList<>(dataSources.keySet())) {
+			String key = keyObj.toString();
+			if (key.startsWith(tenantId + "-")) {
+				DataSource dataSource = dataSources.remove(key);
+				if (dataSource != null) {
+					closeDataSource(dataSource);
+				}
+			}
+		}
+	}
+
+	private void closeDataSource(DataSource dataSource) {
+		if (dataSource instanceof HikariDataSource hikariDataSource) {
+			if (!hikariDataSource.isClosed()) {
+				try {
+					hikariDataSource.close();
+					log.debug("Closed HikariDataSource: {}", hikariDataSource.getPoolName());
+				}
+				catch (Exception e) {
+					log.error("Error closing HikariDataSource: {}", hikariDataSource.getPoolName(), e);
+				}
+			}
+		}
 	}
 
 	private String extractBaseDbUrl(String url) {
