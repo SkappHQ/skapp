@@ -398,8 +398,7 @@ const Drawer = (): JSX.Element => {
         <Box sx={classes.iconToggleBox}>
           {[IconName.DRAWER_CLOSE_ICON, IconName.DRAWER_OPEN_ICON].map(
             (icon, index) => {
-              const isCloseIcon = index === 0;
-              const isVisible = isDrawerExpanded === isCloseIcon;
+              const isVisible = isDrawerExpanded === (index === 0);
               return (
                 <Icon
                   key={icon}
