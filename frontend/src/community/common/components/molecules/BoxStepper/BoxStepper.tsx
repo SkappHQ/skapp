@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { type SxProps } from "@mui/system";
-import { FC, KeyboardEvent, useRef } from "react";
+import { FC, type KeyboardEvent, useRef } from "react";
 
 import { KeyboardKeys } from "~community/common/enums/KeyboardEnums";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";

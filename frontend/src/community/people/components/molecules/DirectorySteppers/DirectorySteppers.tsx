@@ -96,7 +96,7 @@ const DirectorySteppers = ({
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
     setNextStep(step);
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       const container = document.getElementById("people-form-section");
       if (container) {
         const focusableElements = container.querySelectorAll(
@@ -106,7 +106,7 @@ const DirectorySteppers = ({
           (focusableElements[0] as HTMLElement).focus();
         }
       }
-    }, 100);
+    });
   };
 
   return (
