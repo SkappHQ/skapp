@@ -328,9 +328,7 @@ const nextConfig = {
   },
   images: {
     domains: [
-      "dev-app-storage-bucket.s3.ap-southeast-1.amazonaws.com",
-      "document-test.skapp.dev"
-    ],
+      "dev-app-storage-bucket.s3.ap-southeast-1.amazonaws.com"],
   },
   eslint: {
     ignoreDuringBuilds: true
