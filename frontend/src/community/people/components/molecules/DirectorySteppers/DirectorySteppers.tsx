@@ -104,12 +104,10 @@ const DirectorySteppers = ({
 
   useEffect(() => {
     if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
-      const focusableElements = formRef.current.querySelectorAll(
+      const focusableElement = formRef.current.querySelector(
         'button, input, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length > 0) {
-        (focusableElements[0] as HTMLElement).focus();
-      }
+      ) as HTMLElement | null;
+      focusableElement?.focus();
     }
     setPrevStep(currentStep);
   }, [currentStep, formRef, prevStep]);
