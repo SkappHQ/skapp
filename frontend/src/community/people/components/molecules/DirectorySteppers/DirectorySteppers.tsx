@@ -96,18 +96,19 @@ const DirectorySteppers = ({
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
     setNextStep(step);
-    requestAnimationFrame(() => {
-      const container = document.getElementById("people-form-section");
-      if (container) {
-        const focusableElements = container.querySelectorAll(
-          'button, input, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length > 0) {
-          (focusableElements[0] as HTMLElement).focus();
-        }
-      }
-    });
   };
+
+  useEffect(() => {
+    const container = document.getElementById("people-form-section");
+    if (container) {
+      const focusableElements = container.querySelectorAll(
+        'button, input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      }
+    }
+  }, [currentStep]);
 
   return (
     <BoxStepper
