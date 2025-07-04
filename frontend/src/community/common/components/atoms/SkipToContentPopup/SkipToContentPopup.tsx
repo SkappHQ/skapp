@@ -40,6 +40,8 @@ const SkipToContentPopup = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
+  const [isQuickSetupButtonPresent, setIsQuickSetupButtonPresent] =
+    useState<boolean>(false);
 
   const handleOpenPopper = () => {
     setAnchorEl(buttonRef.current);
@@ -80,13 +82,47 @@ const SkipToContentPopup = ({
     }
   }, [isPopperOpen, focusedItem]); // Re-run when popup state or focused item changes
 
+  useEffect(() => {
+    const quickSetupItem = signedInUserSkipToContentList.find(
+      (item) => item.label === "quickSetup"
+    );
+    const quickSetupSelector = quickSetupItem?.id || "";
+
+    // Set up a mutation observer to detect if the button is available or not
+    const observer = new MutationObserver(() => {
+      const quickSetupButton = document.querySelector(quickSetupSelector);
+      setIsQuickSetupButtonPresent(!!quickSetupButton);
+
+      // If button is found, disconnect the observer as it's no longer needed
+      if (quickSetupButton) {
+        observer.disconnect();
+      }
+    });
+
+    // Check before setting up the observer
+    const quickSetupButton = document.querySelector(quickSetupSelector);
+    setIsQuickSetupButtonPresent(!!quickSetupButton);
+
+    // If button is not found yet, start observing for DOM changes
+    if (!quickSetupButton) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const listItems = useMemo(() => {
     if (signedInUser) {
-      return signedInUserSkipToContentList;
+      return signedInUserSkipToContentList.filter(
+        (item) => item.label !== "quickSetup" || isQuickSetupButtonPresent
+      );
     } else {
       return unsignedInUserSkipToContentList;
     }
-  }, [signedInUser]);
+  }, [signedInUser, isQuickSetupButtonPresent]);
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
