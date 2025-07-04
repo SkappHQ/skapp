@@ -264,7 +264,14 @@ const PeopleTable: FC<Props> = ({
           </Stack>
         ),
         jobTitle: (
-          <Typography sx={{ wordBreak: "break-all" }} variant="body2">
+          <Typography
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+            variant="body2"
+          >
             {employee?.jobTitle}
           </Typography>
         ),
