@@ -63,7 +63,7 @@ const DeleteConfirmModal = () => {
   };
   return (
     <Box>
-      <Typography sx={{ mt: "1rem" }} >
+      <Typography sx={{ mt: "1rem" }}>
         {translateText(["confirmDeleteModalDes"])}
       </Typography>
       <Box>

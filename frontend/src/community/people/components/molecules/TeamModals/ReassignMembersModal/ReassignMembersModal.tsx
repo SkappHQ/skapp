@@ -79,7 +79,7 @@ const ReassignMembersModal = () => {
 
   return (
     <Box>
-      <Typography sx={{ my: "1rem" }} >
+      <Typography sx={{ my: "1rem" }}>
         {translateText(["reassignModalDes"])}
       </Typography>
       <Stack gap={"0.5rem"} sx={{ maxHeight: "14.5rem", overflow: "auto" }}>
