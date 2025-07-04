@@ -83,24 +83,33 @@ const SkipToContentPopup = ({
   }, [isPopperOpen, focusedItem]); // Re-run when popup state or focused item changes
 
   useEffect(() => {
-    // Check if the quick setup floating button exists in the DOM
-    const checkForQuickSetupButton = () => {
-      const quickSetupButton = document.querySelector(
-        "#quick-setup-floating-button"
-      );
-      setIsQuickSetupButtonPresent(!!quickSetupButton);
-    };
-
-    checkForQuickSetupButton();
+    const quickSetupItem = signedInUserSkipToContentList.find(
+      (item) => item.label === "quickSetup"
+    );
+    const quickSetupSelector = quickSetupItem?.id || "";
 
     // Set up a mutation observer to detect if the button is available or not
-    const observer = new MutationObserver(checkForQuickSetupButton);
+    const observer = new MutationObserver(() => {
+      const quickSetupButton = document.querySelector(quickSetupSelector);
+      setIsQuickSetupButtonPresent(!!quickSetupButton);
 
-    // Start observing the document body for DOM changes
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
+      // If button is found, disconnect the observer as it's no longer needed
+      if (quickSetupButton) {
+        observer.disconnect();
+      }
     });
+
+    // Check before setting up the observer
+    const quickSetupButton = document.querySelector(quickSetupSelector);
+    setIsQuickSetupButtonPresent(!!quickSetupButton);
+
+    // If button is not found yet, start observing for DOM changes
+    if (!quickSetupButton) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
 
     return () => observer.disconnect();
   }, []);
