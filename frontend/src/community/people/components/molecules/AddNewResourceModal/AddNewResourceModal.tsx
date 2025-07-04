@@ -130,7 +130,7 @@ const AddNewResourceModal = () => {
     }
   };
 
-  const { mutate } = useQuickAddEmployeeMutation(handleSuccess);
+  const { mutate, isPending } = useQuickAddEmployeeMutation(handleSuccess);
 
   const onSubmit = async (values: any) => {
     const payload: QuickAddEmployeePayload = {
@@ -692,6 +692,7 @@ const AddNewResourceModal = () => {
           values.firstName !== "" &&
           values.lastName !== ""
         }
+        isLoading={isPending}
       />
       <Button
         buttonStyle={ButtonStyle.TERTIARY}
