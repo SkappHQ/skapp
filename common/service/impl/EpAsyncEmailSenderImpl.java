@@ -20,6 +20,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpAsyncEmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 				String module = placeholders.get(EpCommonConstants.MODULE);
 				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
 					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
-					if (!sender.isEmpty()) {
+					if (!StringUtils.isBlank(sender)) {
 						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
 					}
 				}
