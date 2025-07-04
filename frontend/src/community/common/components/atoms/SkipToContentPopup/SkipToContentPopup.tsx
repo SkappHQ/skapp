@@ -40,6 +40,8 @@ const SkipToContentPopup = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
+  const [isQuickSetupButtonPresent, setIsQuickSetupButtonPresent] =
+    useState<boolean>(false);
 
   const handleOpenPopper = () => {
     setAnchorEl(buttonRef.current);
@@ -80,13 +82,38 @@ const SkipToContentPopup = ({
     }
   }, [isPopperOpen, focusedItem]); // Re-run when popup state or focused item changes
 
+  useEffect(() => {
+    // Check if the quick setup floating button exists in the DOM
+    const checkForQuickSetupButton = () => {
+      const quickSetupButton = document.querySelector(
+        "#quick-setup-floating-button"
+      );
+      setIsQuickSetupButtonPresent(!!quickSetupButton);
+    };
+
+    checkForQuickSetupButton();
+
+    // Set up a mutation observer to detect if the button is available or not
+    const observer = new MutationObserver(checkForQuickSetupButton);
+
+    // Start observing the document body for DOM changes
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const listItems = useMemo(() => {
     if (signedInUser) {
-      return signedInUserSkipToContentList;
+      return signedInUserSkipToContentList.filter(
+        (item) => item.label !== "quickSetup" || isQuickSetupButtonPresent
+      );
     } else {
       return unsignedInUserSkipToContentList;
     }
-  }, [signedInUser]);
+  }, [signedInUser, isQuickSetupButtonPresent]);
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {

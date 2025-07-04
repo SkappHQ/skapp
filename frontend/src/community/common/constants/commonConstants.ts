@@ -12,6 +12,10 @@ export const signedInUserSkipToContentList = [
   {
     label: "topBar",
     id: "#top-bar"
+  },
+  {
+    label: "quickSetup",
+    id: "#quick-setup-floating-button"
   }
 ];
 
