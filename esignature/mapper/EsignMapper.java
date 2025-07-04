@@ -133,6 +133,7 @@ public interface EsignMapper {
 	@Mapping(source = "firstName", target = "firstName")
 	@Mapping(source = "lastName", target = "lastName")
 	@Mapping(source = "internalUser.employee.authPic", target = "profilePic")
+	@Mapping(target = "mySignatureLink", ignore = true)
 	AddressBookBasicResponseDto addressBookToAddressBookBasicResponseDto(AddressBook addressBook);
 
 	List<RecipientResponseDto> recipientToRecipinetResponseDtoList(List<Recipient> recipients);
@@ -145,6 +146,7 @@ public interface EsignMapper {
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
 
 	@Mapping(source = "id", target = "addressBookId")
+	@Mapping(target = "mySignatureLink", ignore = true)
 	MySignatureLinkResponseDto addressBookToMySignatureLinkResponseDto(AddressBook addressBook);
 
 	SignatureCertificateResponseDto envelopeToSignatureCertificateResponseDto(Envelope envelope);

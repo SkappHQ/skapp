@@ -84,6 +84,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -133,6 +134,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Value("${esign.envelope.allocated-per-user-envelope-count}")
 	private long allocatedPerUserEnvelopeCount;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	public static final String HTTPS_PROTOCOL = "https://";
 
 	private final EsignMapper eSignMapper;
 
@@ -791,6 +797,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
 		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		envelopeInfoResponseDto.setDocuments(documentDetails);
@@ -816,10 +826,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
+
 		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		AddressBookBasicResponseDto senderAddressBookResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(senderAddressBook);
+
+		senderAddressBookResponseDto.setMySignatureLink(null);
+
 		envelopeInboxInfoResponseDto.setSenderAddressBook(senderAddressBookResponseDto);
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
@@ -850,7 +868,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 			dto.setId(document.getId());
 			dto.setName(document.getName());
-			dto.setFilePath(documentVersion.getFilePath());
+			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 			return dto;
 		}).toList();
