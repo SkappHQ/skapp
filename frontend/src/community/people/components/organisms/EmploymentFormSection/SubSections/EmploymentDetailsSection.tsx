@@ -245,6 +245,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                   readOnly={isReadOnly || isProfileView || isInputsDisabled}
                   maxLength={10}
                   isDisabled={isInputsDisabled}
+                  ariaLabel={translateAria(["enterEmployeeNo"])}
                 />
               </Grid>
             )}

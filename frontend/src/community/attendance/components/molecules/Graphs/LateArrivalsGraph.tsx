@@ -234,6 +234,7 @@ const LateArrivalsGraph = ({
               )}
             </Box>
             <ChartNavigationArrows
+              tabIndex={0}
               hasData={chartData?.preProcessedData?.length !== 0}
               handleClick={handleClick}
               handleChevronVisibility={handleChevronVisibility}

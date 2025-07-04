@@ -7,11 +7,9 @@ import { useEffect, useMemo, useState } from "react";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
-import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { useGetManagerAssignedLeaveRequests } from "~community/leave/api/LeaveApi";
 import ManagerLeaveRequest from "~community/leave/components/molecules/ManagerLeaveRequests/ManagerLeaveRequest";
@@ -27,7 +25,6 @@ const LeaveRequests: NextPage = () => {
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();
   const { data } = useSession();
-  const { toastMessage, setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchErrors] = useState<string | undefined>(undefined);
@@ -151,13 +148,6 @@ const LeaveRequests: NextPage = () => {
         />
 
         <LeaveManagerModalController />
-        <ToastMessage
-          {...toastMessage}
-          open={toastMessage.open}
-          onClose={() => {
-            setToastMessage((state) => ({ ...state, open: false }));
-          }}
-        />
       </Box>
     </ContentLayout>
   );

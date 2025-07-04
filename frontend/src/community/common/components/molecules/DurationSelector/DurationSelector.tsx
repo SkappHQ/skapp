@@ -131,8 +131,12 @@ const DurationSelector = <T,>({
 
   const onOptionClick = (
     value: T,
-    elementRef?: { current: HTMLDivElement | null }
+    elementRef?: { current: HTMLDivElement | null },
+    isDisabled?: boolean
   ) => {
+    if (isDisabled) {
+      return;
+    }
     if (elementRef?.current) {
       setLastFocusedElement(elementRef.current);
     }
@@ -140,6 +144,10 @@ const DurationSelector = <T,>({
   };
 
   const handleHalfDayClick = () => {
+    if (disabledOptions.halfDayMorning && disabledOptions.halfDayEvening) {
+      return;
+    }
+
     setIsHalfDaySelected(true);
 
     const halfDayOptionToSelect = disabledOptions.halfDayMorning
@@ -209,13 +217,23 @@ const DurationSelector = <T,>({
             ref={fullDayButtonRef}
             className={muiFullDayClasses}
             role="button"
-            tabIndex={0}
+            tabIndex={disabledOptions.fullDay ? -1 : 0}
             aria-label={getFullDayAriaLabel()}
             sx={mergeSx([classes.btn, commonButtonStyles])}
-            onClick={() => onOptionClick(options.fullDay, fullDayButtonRef)}
+            onClick={() =>
+              onOptionClick(
+                options.fullDay,
+                fullDayButtonRef,
+                disabledOptions.fullDay
+              )
+            }
             onKeyDown={(event) => {
               if (shouldActivateButton(event.key)) {
-                onOptionClick(options.fullDay, fullDayButtonRef);
+                onOptionClick(
+                  options.fullDay,
+                  fullDayButtonRef,
+                  disabledOptions.fullDay
+                );
               }
             }}
           >
@@ -236,7 +254,7 @@ const DurationSelector = <T,>({
                 ref={morningButtonRef}
                 className={muiHalfDayMorningClasses}
                 role="button"
-                tabIndex={0}
+                tabIndex={disabledOptions.halfDayMorning ? -1 : 0}
                 aria-label={getHalfDayMorningAriaLabel()}
                 sx={mergeSx([
                   classes.halfBtn,
@@ -244,11 +262,19 @@ const DurationSelector = <T,>({
                   commonButtonStyles
                 ])}
                 onClick={() =>
-                  onOptionClick(options.halfDayMorning, morningButtonRef)
+                  onOptionClick(
+                    options.halfDayMorning,
+                    morningButtonRef,
+                    disabledOptions.halfDayMorning
+                  )
                 }
                 onKeyDown={(event) => {
                   if (shouldActivateButton(event.key)) {
-                    onOptionClick(options.halfDayMorning, morningButtonRef);
+                    onOptionClick(
+                      options.halfDayMorning,
+                      morningButtonRef,
+                      disabledOptions.halfDayMorning
+                    );
                   }
                 }}
               >
@@ -268,7 +294,7 @@ const DurationSelector = <T,>({
                 ref={eveningButtonRef}
                 className={muiHalfDayEveningClasses}
                 role="button"
-                tabIndex={0}
+                tabIndex={disabledOptions.halfDayEvening ? -1 : 0}
                 aria-label={getHalfDayEveningAriaLabel()}
                 sx={mergeSx([
                   classes.halfBtn,
@@ -276,11 +302,19 @@ const DurationSelector = <T,>({
                   commonButtonStyles
                 ])}
                 onClick={() =>
-                  onOptionClick(options.halfDayEvening, eveningButtonRef)
+                  onOptionClick(
+                    options.halfDayEvening,
+                    eveningButtonRef,
+                    disabledOptions.halfDayEvening
+                  )
                 }
                 onKeyDown={(event) => {
                   if (shouldActivateButton(event.key)) {
-                    onOptionClick(options.halfDayEvening, eveningButtonRef);
+                    onOptionClick(
+                      options.halfDayEvening,
+                      eveningButtonRef,
+                      disabledOptions.halfDayEvening
+                    );
                   }
                 }}
               >
@@ -301,7 +335,11 @@ const DurationSelector = <T,>({
             <Stack
               ref={halfDayButtonRef}
               role="button"
-              tabIndex={0}
+              tabIndex={
+                disabledOptions.halfDayMorning && disabledOptions.halfDayEvening
+                  ? -1
+                  : 0
+              }
               className={muiHalfDayClasses}
               aria-label={getHalfDayAriaLabel()}
               sx={mergeSx([classes.btn, commonButtonStyles])}

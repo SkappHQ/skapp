@@ -1,4 +1,6 @@
+import { Box } from "@mui/material";
 import { useSession } from "next-auth/react";
+import { RefObject } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import {
@@ -17,9 +19,10 @@ import GeneralDetailsSection from "../PersonDetailsSection/SubSections/GeneralDe
 
 interface Props {
   employeeId: number;
+  formRef?: RefObject<HTMLDivElement>;
 }
 
-const PeopleIndividualSection = ({ employeeId }: Props) => {
+const PeopleIndividualSection = ({ employeeId, formRef }: Props) => {
   const { currentStep, employee } = usePeopleStore((state) => state);
 
   const { data } = useSession();
@@ -75,7 +78,7 @@ const PeopleIndividualSection = ({ employeeId }: Props) => {
     }
   };
 
-  return <>{getSections()}</>;
+  return <Box ref={formRef}>{getSections()}</Box>;
 };
 
 export default PeopleIndividualSection;

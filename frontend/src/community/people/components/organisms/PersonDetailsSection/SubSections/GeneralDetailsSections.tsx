@@ -455,6 +455,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                 }}
                 isDisabled={isInputsDisabled}
                 maxLength={PASSPORT_AND_NIN_MAX_CHARACTER_LENGTH}
+                ariaLabel={translateAria(["enterNIN"])}
               />
             </Grid>
 
@@ -475,6 +476,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                 }}
                 isDisabled={isInputsDisabled}
                 maxLength={PASSPORT_AND_NIN_MAX_CHARACTER_LENGTH}
+                ariaLabel={translateAria(["passportNumber"])}
               />
             </Grid>
             <Grid
