@@ -14,13 +14,13 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.TooManyRequestsException;
 import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpApiUriConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpAsyncEmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 				String module = placeholders.get(EpCommonConstants.MODULE);
 				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
 					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
-					if (!StringUtils.isBlank(sender)) {
+					if (!StringUtils.isNullOrBlank(sender)) {
 						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
 					}
 				}
