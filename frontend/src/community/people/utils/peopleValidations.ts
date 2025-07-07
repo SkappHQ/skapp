@@ -454,7 +454,14 @@ export const employeeContactDetailsValidation = (
   Yup.object({
     personalEmail: Yup.string()
       .trim()
-      .email(translator(["validEmailError"]))
+      .max(EMAIL_MAX_LENGTH, translator(["maxLengthError"]))
+      .test(
+        "valid-email-format",
+        translator(["validEmailError"]),
+        function (value) {
+          return value ? isValidEmailPattern(value) : true;
+        }
+      )
       .nullable(),
     contactNo: Yup.string()
       .max(
