@@ -140,6 +140,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY("ep.esign.error.document.versions.empty"),
 	ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS("ep.esign.error.fetching.envelope.tier-limitations"),
 	ESIGN_ERROR_ENVELOPE_LIMIT_REACHED("ep.esign.error.envelope.limit.reached"),
+	ESIGN_ERROR_ADDRESS_BOOK_MY_SIGNATURE_LINK_NOT_FOUND("ep.esign.error.address-book.my-signature-link.not-found"),
 	ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF("ep.esign.error.generate.signature.certificate.pdf");
 
 	private final String messageKey;

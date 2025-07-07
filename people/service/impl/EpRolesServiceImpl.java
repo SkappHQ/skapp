@@ -3,7 +3,6 @@ package com.skapp.enterprise.people.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
