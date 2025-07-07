@@ -29,6 +29,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -222,7 +224,8 @@ public class RolesServiceImpl implements RolesService {
 	public ResponseEntityDto getSuperAdminCount() {
 		log.info("getSuperAdminCount: execution started");
 
-		long superAdminCount = employeeRoleDao.countByIsSuperAdminTrue();
+		long superAdminCount = employeeRoleDao
+			.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		log.info("getSuperAdminCount: execution ended");
 		return new ResponseEntityDto(false, superAdminCount);
@@ -266,7 +269,9 @@ public class RolesServiceImpl implements RolesService {
 
 		if (userRoles != null && user.getEmployee() != null
 				&& Boolean.TRUE.equals(user.getEmployee().getEmployeeRole().getIsSuperAdmin())
-				&& employeeRoleDao.countByIsSuperAdminTrue() == 1 && isUserRoleDowngraded(userRoles)) {
+				&& employeeRoleDao.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(
+						Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)) == 1
+				&& isUserRoleDowngraded(userRoles)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_ONLY_ONE_SUPER_ADMIN);
 		}
 
