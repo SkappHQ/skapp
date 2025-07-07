@@ -1,9 +1,8 @@
-import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import { usePeopleStore } from "~community/people/store/store";
-import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
 import UserDetailsCentered from "../../molecules/UserDetailsCentered/UserDetailsCentered";
@@ -14,35 +13,14 @@ interface Props {
 }
 
 const IndividualSectionWrapper = ({ employeeId }: Props) => {
-  const router = useRouter();
-  const { tab } = router.query;
-
   const { data: employeeData } = useGetEmployee(employeeId);
 
-  const {
-    currentStep,
-    nextStep,
-    employee,
-    setCurrentStep,
-    setNextStep,
-    setEmployee
-  } = usePeopleStore((state) => state);
+  const { currentStep, nextStep, employee, setCurrentStep, setEmployee } =
+    usePeopleStore((state) => state);
 
   const individualSectionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (
-      tab === EditPeopleFormTypes.leave.toLowerCase() &&
-      nextStep !== EditPeopleFormTypes.leave
-    ) {
-      setNextStep(EditPeopleFormTypes.leave);
-    } else if (
-      tab === EditPeopleFormTypes.timesheet.toLowerCase() &&
-      nextStep !== EditPeopleFormTypes.timesheet
-    ) {
-      setNextStep(EditPeopleFormTypes.timesheet);
-    }
-  }, []);
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {
