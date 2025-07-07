@@ -85,9 +85,7 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
       title={translateText(["teamActionModalTitle"])}
     >
       <Box>
-        <Typography id="team-action-description">
-          {translateText(["teamActionModalDes"])}
-        </Typography>
+        <Typography>{translateText(["teamActionModalDes"])}</Typography>
         <Stack spacing={2} mt={4}>
           <Button
             label={translateText(["teamActionModalBtnText"])}
@@ -95,7 +93,7 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
             endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
             onClick={handleAddNewTeam}
             accessibility={{
-              ariaDescribedBy: "team-action-description"
+              ariaHidden: true
             }}
           />
 
@@ -104,6 +102,9 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
             buttonStyle={ButtonStyle.ERROR}
             endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
             onClick={handleDeleteTeam}
+            accessibility={{
+              ariaHidden: true
+            }}
           />
         </Stack>
       </Box>

@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
@@ -24,6 +24,8 @@ interface Props {
 const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData, isLoading } = useGetEmployee(employeeId);
   const translateAria = useTranslator("peopleAria", "directory");
+
+  const peopleFormSectionsRef = useRef<HTMLDivElement>(null);
 
   const {
     isUnsavedChangesModalOpen,
@@ -74,11 +76,17 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
       <Box sx={{ mt: "0.75rem" }}>
         {isLoading ? <EditInfoCardSkeleton /> : <EditInfoCard />}
       </Box>
-      <DirectorySteppers employeeId={Number(employeeId)} />
+      <DirectorySteppers
+        employeeId={Number(employeeId)}
+        formRef={peopleFormSectionsRef}
+      />
       {isLoading ? (
         <EditAllInfoSkeleton />
       ) : (
-        <PeopleFormSections employeeId={Number(employeeId)} />
+        <PeopleFormSections
+          employeeId={Number(employeeId)}
+          formRef={peopleFormSectionsRef}
+        />
       )}
       <TerminationModalController />
       <UserDeletionModalController />

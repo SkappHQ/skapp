@@ -5,6 +5,7 @@ import { useGetManagerTimeSheetRequests } from "~community/attendance/api/attend
 import ManagerTimesheetRequestTable from "~community/attendance/components/molecules/ManagerTimesheetRequestTable/ManagerTimesheetRequestTable";
 import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDenyTimeRequest";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
@@ -29,6 +30,7 @@ const TimesheetRequestsPage: NextPage = () => {
       onBackClick={router.back}
     >
       <ManagerTimesheetRequestTable
+        tableName={TableNames.TIME_ENTRY_REQUEST}
         requestData={requestData}
         isRequestLoading={isRequestLoading}
         totalHours={timeConfigData?.[0]?.totalHours}

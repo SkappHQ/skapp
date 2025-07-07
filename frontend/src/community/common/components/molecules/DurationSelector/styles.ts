@@ -45,7 +45,8 @@ const styles = (theme: Theme) => ({
     },
     "&.Mui-disabled-button": {
       backgroundColor: theme.palette.grey[100],
-      cursor: "not-allowed"
+      cursor: "not-allowed",
+      pointerEvents: "none"
     }
   },
   btnText: {
@@ -63,7 +64,8 @@ const styles = (theme: Theme) => ({
     },
     "&.Mui-disabled-button": {
       color: theme.palette.grey.A100,
-      cursor: "not-allowed"
+      cursor: "not-allowed",
+      pointerEvents: "none"
     }
   },
   btnGroup: {
@@ -98,7 +100,8 @@ const styles = (theme: Theme) => ({
     },
     "&.Mui-disabled-button": {
       backgroundColor: theme.palette.grey[100],
-      cursor: "not-allowed"
+      cursor: "not-allowed",
+      pointerEvents: "none"
     }
   },
   firstHalfBtn: {

@@ -86,9 +86,6 @@ const UserBulkCsvDownload = () => {
               }}
               endIcon={IconName.DOWNLOAD_ICON}
               shouldBlink={isDownloadBlinking}
-              accessibility={{
-                ariaDescribedBy: "download-csv-description"
-              }}
             />
           </a>
         </Box>
