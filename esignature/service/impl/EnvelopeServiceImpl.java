@@ -15,10 +15,11 @@ import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -83,6 +84,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -113,6 +115,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
@@ -131,6 +134,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Value("${esign.envelope.allocated-per-user-envelope-count}")
 	private long allocatedPerUserEnvelopeCount;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	public static final String HTTPS_PROTOCOL = "https://";
 
 	private final EsignMapper eSignMapper;
 
@@ -775,11 +783,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInfoResponseDto envelopeInfoResponseDto = new EnvelopeInfoResponseDto();
 		envelopeInfoResponseDto.setId(envelope.getId());
 		envelopeInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInfoResponseDto.setStatus(envelope.getStatus());
 		envelopeInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -787,6 +797,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
 		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		envelopeInfoResponseDto.setDocuments(documentDetails);
@@ -797,11 +811,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeInboxInfoResponseDto envelopeInboxInfoResponseDto = new EnvelopeInboxInfoResponseDto();
 		envelopeInboxInfoResponseDto.setId(envelope.getId());
 		envelopeInboxInfoResponseDto.setSubject(envelope.getSubject());
+		envelopeInboxInfoResponseDto.setMessage(envelope.getMessage());
 		envelopeInboxInfoResponseDto.setStatus(recipient.getInboxStatus());
 		envelopeInboxInfoResponseDto.setSignType(envelope.getSignType());
 
 		List<Recipient> recipients = envelope.getRecipients();
 		List<RecipientResponseDto> recipientResponseDtos = eSignMapper.recipientToRecipinetResponseDtoList(recipients);
+		formatDeletedEmail(recipientResponseDtos);
 		envelopeInboxInfoResponseDto.setRecipients(recipientResponseDtos);
 
 		List<DocumentDetailResponseDto> documentDetails = getDocumentDetails(envelope);
@@ -810,14 +826,36 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
+		if (addressBook.getMySignatureLink() != null) {
+			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
+
 		envelopeInboxInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
 
 		AddressBookBasicResponseDto senderAddressBookResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(senderAddressBook);
+
+		senderAddressBookResponseDto.setMySignatureLink(null);
+
 		envelopeInboxInfoResponseDto.setSenderAddressBook(senderAddressBookResponseDto);
 
 		envelopeInboxInfoResponseDto.setDocuments(documentDetails);
 		return envelopeInboxInfoResponseDto;
+	}
+
+	private static void formatDeletedEmail(List<RecipientResponseDto> recipientResponseDtos) {
+		// Clean up deleted external user email addresses
+		recipientResponseDtos.forEach(dto -> {
+			if (dto.getAddressBook() != null && dto.getAddressBook().getEmail() != null
+					&& dto.getAddressBook().getEmail().startsWith(PeopleConstants.DELETED_PREFIX)) {
+
+				String originalEmail = dto.getAddressBook().getEmail();
+				String cleanedEmail = originalEmail
+					.replaceFirst(Pattern.quote(PeopleConstants.DELETED_PREFIX) + "\\d+_", "");
+				dto.getAddressBook().setEmail(cleanedEmail);
+			}
+		});
 	}
 
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
@@ -830,7 +868,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 			dto.setId(document.getId());
 			dto.setName(document.getName());
-			dto.setFilePath(documentVersion.getFilePath());
+			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 			return dto;
 		}).toList();
@@ -1110,7 +1149,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipientData.setStatus(RecipientStatus.EMPTY);
 			}
 
-			recipientData.setInboxStatus(InboxStatus.DECLINED);
+			if (SignType.PARALLEL.equals(envelope.getSignType()) || (envelope.getSignType().equals(SignType.SEQUENTIAL)
+					&& !recipientData.getStatus().equals(RecipientStatus.EMPTY))) {
+				recipientData.setInboxStatus(InboxStatus.DECLINED);
+			}
 		});
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);

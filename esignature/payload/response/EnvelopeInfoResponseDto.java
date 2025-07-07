@@ -15,6 +15,8 @@ public class EnvelopeInfoResponseDto {
 
 	private String subject;
 
+	private String message;
+
 	private EnvelopeStatus status;
 
 	private SignType signType;

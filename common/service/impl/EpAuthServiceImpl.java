@@ -577,9 +577,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto resetPassword(EpPasswordResetNewPasswordDto epPasswordResetNewPasswordDto) {
 		User user = validateDomainAndEmail(epPasswordResetNewPasswordDto.getTenantId(),
 				epPasswordResetNewPasswordDto.getEmail());
-
-		user.setPassword(passwordEncoder.encode(epPasswordResetNewPasswordDto.getNewPassword()));
-		userDao.save(user);
+		createNewPassword(epPasswordResetNewPasswordDto.getNewPassword(), user);
 
 		return new ResponseEntityDto(false, "Password reset successfully");
 

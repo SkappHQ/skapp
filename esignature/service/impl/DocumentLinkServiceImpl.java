@@ -94,6 +94,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String STATE_STRING = "&state=";
 
+	public static final String HTTPS_PROTOCOL = "https://";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -130,6 +132,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
@@ -315,6 +323,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		validateTokenFlows(isDocAccess, recipient, documentId);
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);
+
+		if (recipient.getAddressBook().getMySignatureLink() != null) {
+			recipientResponseDto.getAddressBook()
+				.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+						+ EsignUtil.removeEsignPrefix(recipient.getAddressBook().getMySignatureLink()));
+		}
 
 		int versionNumber = document.getCurrentVersion();
 		DocumentVersion documentVersion;
@@ -547,7 +561,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 		dto.setId(document.getId());
 		dto.setName(document.getName());
-		dto.setFilePath(documentVersion.getFilePath());
+		dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 		dto.setNumOfPages(document.getNumOfPages());
 		return dto;
 	}

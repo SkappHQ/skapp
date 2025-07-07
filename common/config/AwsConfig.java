@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.retries.StandardRetryStrategy;
+import software.amazon.awssdk.services.cloudfront.CloudFrontUtilities;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
@@ -47,6 +48,11 @@ public class AwsConfig {
 			.region(Region.of(s3Region))
 			.credentialsProvider(StaticCredentialsProvider.create(credentials))
 			.build();
+	}
+
+	@Bean
+	public CloudFrontUtilities cloudFrontUtilities() {
+		return CloudFrontUtilities.create();
 	}
 
 }

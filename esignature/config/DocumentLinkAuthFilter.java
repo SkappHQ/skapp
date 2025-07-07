@@ -64,9 +64,14 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	public static final String S3_PRE_SIGNED_URL = "/v1/ep/s3/esign/files/signed-url";
 
+	public static final String SIGNATURE_COOKIES_URL = "/v1/ep/cf/cookies/signature";
+
+	public static final String DOCUMENT_COOKIES_URL = "/v1/ep/cf/cookies/document";
+
 	private static final Set<String> DOCUMENT_LINK_URLS = Set.of(DOCUMENT_LINK_ACCESS_URL, DOCUMENT_LINK_SIGN_URL,
 			DOCUMENT_LINK_SIGN_FIELD_URL, DOCUMENT_RECIPIENT_DECLINE_URL, DOCUMENT_RECIPIENT_CONSENT_URL,
-			ENVELOPE_SIGNATURE_CERTIFICATE_URL, AUDIT_TRIAL_CREATE_URL, CONFIG_URL, S3_PRE_SIGNED_URL);
+			ENVELOPE_SIGNATURE_CERTIFICATE_URL, AUDIT_TRIAL_CREATE_URL, CONFIG_URL, S3_PRE_SIGNED_URL,
+			SIGNATURE_COOKIES_URL, DOCUMENT_COOKIES_URL);
 
 	public static final String TOKEN = "token";
 
