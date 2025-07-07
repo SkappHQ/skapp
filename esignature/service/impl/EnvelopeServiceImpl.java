@@ -930,61 +930,71 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		// Status badge styles
 		htmlBuilder.append(".status-badge { ");
 		htmlBuilder.append("  text-align: right; ");
-		htmlBuilder.append("  vertical-align: top; ");
+		htmlBuilder.append("  vertical-align: middle; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-content { ");
 		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
 		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  width: 130px; ");
-		htmlBuilder.append("  padding: 8px 12px; ");
+		htmlBuilder.append("  min-width: 148px; ");
+		htmlBuilder.append("  padding: 8px 16px; ");
 		htmlBuilder.append("  box-sizing: border-box; ");
-		htmlBuilder.append("  background: #f0f0f0; ");
-		htmlBuilder.append("  border-radius: 16px; ");
-		htmlBuilder.append("  font-size: 12px; ");
-		htmlBuilder.append("  color: #333; ");
+		htmlBuilder.append("  background: #F4F4F5; ");
+		htmlBuilder.append("  border-radius: 32px; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  color: #52525C; ");
 		htmlBuilder.append("  text-align: center; ");
-		htmlBuilder.append("  line-height: 1.2; ");
-		htmlBuilder.append("  display: flex; ");
-		htmlBuilder.append("  align-items: center; ");
-		htmlBuilder.append("  justify-content: center; ");
+		htmlBuilder.append("  line-height: 24px; ");
+		htmlBuilder.append("  height: 36px; ");
+		htmlBuilder.append("  white-space: nowrap; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot { ");
 		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  width: 8px; ");
-		htmlBuilder.append("  height: 8px; ");
+		htmlBuilder.append("  width: 10px; ");
+		htmlBuilder.append("  height: 10px; ");
 		htmlBuilder.append("  border-radius: 50%; ");
-		htmlBuilder.append("  margin-right: 6px; ");
-		htmlBuilder.append("  flex-shrink: 0; ");
+		htmlBuilder.append("  margin-right: 8px; ");
+		htmlBuilder.append("  margin-top: -2px; ");
+		htmlBuilder.append("  vertical-align: middle; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-text { ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  vertical-align: middle; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  color: #52525C; ");
 		htmlBuilder.append("} ");
 
 		// Status-specific dot styles
 		htmlBuilder.append(".status-dot.completed { ");
-		htmlBuilder.append("  background: #22c55e; ");
+		htmlBuilder.append("  background: #4EA500; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot.waiting { ");
-		htmlBuilder.append("  border: 2px solid #f59e0b; ");
+		htmlBuilder.append("  border: 2px solid #FF9900; ");
 		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot.need-to-sign { ");
-		htmlBuilder.append("  border: 2px solid #22c55e; ");
+		htmlBuilder.append("  border: 2px solid #4EA500; ");
 		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot.declined { ");
-		htmlBuilder.append("  border: 2px solid #ef4444; ");
+		htmlBuilder.append("  border: 2px solid #F00011; ");
 		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot.expired { ");
-		htmlBuilder.append("  background: #ef4444; ");
+		htmlBuilder.append("  background: #F00011; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".status-dot.voided { ");
-		htmlBuilder.append("  background: #374151; ");
+		htmlBuilder.append("  background: #000000; ");
 		htmlBuilder.append("} ");
 
 		// Meta information styles
@@ -1089,18 +1099,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<h2 class='doc-name'>").append(escapeHtml(responseDto.getName())).append("</h2>");
 		htmlBuilder.append("<p class='doc-id'>").append(escapeHtml(responseDto.getUuid())).append("</p>");
 		htmlBuilder.append("</td>");
-		htmlBuilder.append("<td class='status-badge'>");
 
+		htmlBuilder.append("<td class='status-badge'>");
 		String statusClass = getStatusClass(responseDto.getStatus());
 		String statusLabel = getStatusLabel(responseDto.getStatus());
 		htmlBuilder.append("<div class='status-content'>");
 		htmlBuilder.append("<span class='status-dot ").append(statusClass).append("'></span>");
-		htmlBuilder.append(
-				"<span style='display: inline-block; vertical-align: middle; font-size: 14px; position: relative; top: -1px;'>")
-			.append(statusLabel)
-			.append("</span>");
+		htmlBuilder.append("<span class='status-text'>").append(statusLabel).append("</span>");
 		htmlBuilder.append("</div>");
 		htmlBuilder.append("</td>");
+
 		htmlBuilder.append("</tr>");
 		htmlBuilder.append("</table>");
 		htmlBuilder.append("</div>");
