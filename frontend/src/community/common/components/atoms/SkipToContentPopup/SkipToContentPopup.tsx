@@ -14,6 +14,7 @@ import {
   signedInUserSkipToContentList,
   unsignedInUserSkipToContentList
 } from "~community/common/constants/commonConstants";
+import { appModes } from "~community/common/constants/configs";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -22,6 +23,8 @@ import {
   shouldCollapseDropdown,
   shouldNavigateBackward
 } from "~community/common/utils/keyboardUtils";
+import { useGetEnterpriseSkipToContentItems } from "~enterprise/common/hooks/useGetEnterpriseSkipToContentItems";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import styles from "./styles";
 
@@ -32,6 +35,10 @@ const SkipToContentPopup = ({
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+  const environment = useGetEnvironment();
+  const isEnterprise = environment === appModes.ENTERPRISE;
+
+  const enterpriseSkipToContentItems = useGetEnterpriseSkipToContentItems();
 
   const translateAria = useTranslator("commonAria", "skipToContent");
 
@@ -40,8 +47,6 @@ const SkipToContentPopup = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
-  const [isQuickSetupButtonPresent, setIsQuickSetupButtonPresent] =
-    useState<boolean>(false);
 
   const handleOpenPopper = () => {
     setAnchorEl(buttonRef.current);
@@ -82,47 +87,15 @@ const SkipToContentPopup = ({
     }
   }, [isPopperOpen, focusedItem]); // Re-run when popup state or focused item changes
 
-  useEffect(() => {
-    const quickSetupItem = signedInUserSkipToContentList.find(
-      (item) => item.label === "quickSetup"
-    );
-    const quickSetupSelector = quickSetupItem?.id || "";
-
-    // Set up a mutation observer to detect if the button is available or not
-    const observer = new MutationObserver(() => {
-      const quickSetupButton = document.querySelector(quickSetupSelector);
-      setIsQuickSetupButtonPresent(!!quickSetupButton);
-
-      // If button is found, disconnect the observer as it's no longer needed
-      if (quickSetupButton) {
-        observer.disconnect();
-      }
-    });
-
-    // Check before setting up the observer
-    const quickSetupButton = document.querySelector(quickSetupSelector);
-    setIsQuickSetupButtonPresent(!!quickSetupButton);
-
-    // If button is not found yet, start observing for DOM changes
-    if (!quickSetupButton) {
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   const listItems = useMemo(() => {
     if (signedInUser) {
-      return signedInUserSkipToContentList.filter(
-        (item) => item.label !== "quickSetup" || isQuickSetupButtonPresent
-      );
+      return isEnterprise
+        ? enterpriseSkipToContentItems
+        : signedInUserSkipToContentList;
     } else {
       return unsignedInUserSkipToContentList;
     }
-  }, [signedInUser, isQuickSetupButtonPresent]);
+  }, [signedInUser, isEnterprise, enterpriseSkipToContentItems]);
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
