@@ -93,7 +93,7 @@ public class AmazonCloudFrontController {
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesMySignatureInternal(HttpServletResponse response) {
 		try {
 
-			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies();
+			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies(true);
 
 			cookies.forEach((name, value) -> {
 				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
@@ -116,7 +116,7 @@ public class AmazonCloudFrontController {
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesMySignature(HttpServletResponse response) {
 		try {
 
-			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies();
+			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies(false);
 
 			cookies.forEach((name, value) -> {
 				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
