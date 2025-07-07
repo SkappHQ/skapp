@@ -96,6 +96,43 @@ export const handleDateChange = ({
   }
 };
 
+interface HasAtLeastOneNonHolidayDateProps {
+  selectedDates: DateTime[];
+  allHolidays: Holiday[] | undefined;
+}
+
+export const hasAtLeastOneNonHolidayDate = ({
+  selectedDates,
+  allHolidays
+}: HasAtLeastOneNonHolidayDateProps): boolean => {
+  if (!selectedDates || selectedDates.length === 0) return false;
+  if (!allHolidays || allHolidays.length === 0) return true;
+
+  const datesToCheck: DateTime[] = [];
+
+  if (selectedDates.length === 1) {
+    datesToCheck.push(selectedDates[0]);
+  } else if (selectedDates.length === 2) {
+    const startDate = selectedDates[0];
+    const endDate = selectedDates[1];
+
+    let currentDate = startDate;
+    while (currentDate <= endDate) {
+      datesToCheck.push(currentDate);
+      currentDate = currentDate.plus({ days: 1 });
+    }
+  }
+
+  return datesToCheck.some((date) => {
+    const holidaysForDay = getHolidaysForDay({
+      allHolidays,
+      date
+    });
+
+    return !holidaysForDay || holidaysForDay.length === 0;
+  });
+};
+
 interface HandleDateValidationProps {
   allowedDuration: LeaveDurationTypes;
   selectedDates: DateTime[];
@@ -142,39 +179,41 @@ export const handleDateValidation = ({
       allHolidays
     });
 
-    if (holidays !== undefined) {
-      const holidayCount = holidays.length;
+    if (holidays.length > 0) {
+      const hasNonHolidayDate = hasAtLeastOneNonHolidayDate({
+        selectedDates,
+        allHolidays
+      });
 
-      if (holidayCount > 0) {
-        isApplyLeaveModalBtnDisabled = true;
+      isApplyLeaveModalBtnDisabled = !hasNonHolidayDate;
 
-        const hasMultipleHolidays = holidayCount > 1;
+      const hasMultipleHolidays = holidays.length > 1;
 
-        const toastType = ToastType.WARN;
+      const toastType = ToastType.WARN;
 
-        const titleKey = hasMultipleHolidays
-          ? "multipleHolidaysExistsError"
-          : "holidayExistsError";
+      const titleKey = hasMultipleHolidays
+        ? "multipleHolidaysExistsError"
+        : "holidayExistsError";
 
-        const title =
-          translateText([titleKey, "title"], {
-            holidayName: holidays[0].name,
-            holidayCount: holidayCount - 1
-          }) ?? "";
-        const description = translateText([titleKey, "description"]) ?? "";
+      const title =
+        translateText([titleKey, "title"], {
+          holidayName: holidays[0]?.name,
+          holidayCount: holidays.length - 1
+        }) ?? "";
 
-        const key = hasMultipleHolidays
-          ? MyRequestsToastMsgKeyEnums.MULTIPLE_HOLIDAYS_EXIST
-          : MyRequestsToastMsgKeyEnums.HOLIDAY_EXISTS;
+      const description = translateText([titleKey, "description"]) ?? "";
 
-        setToastMessage({
-          key,
-          open: true,
-          toastType,
-          title,
-          description
-        });
-      }
+      const key = hasMultipleHolidays
+        ? MyRequestsToastMsgKeyEnums.MULTIPLE_HOLIDAYS_EXIST
+        : MyRequestsToastMsgKeyEnums.HOLIDAY_EXISTS;
+
+      setToastMessage({
+        key,
+        open: true,
+        toastType,
+        title,
+        description
+      });
     }
   }
 
