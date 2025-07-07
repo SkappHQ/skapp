@@ -83,9 +83,6 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
         buttonStyle={ButtonStyle.PRIMARY}
         styles={{ mt: "1rem" }}
         onClick={handleDownloadErrorLogCSV}
-        accessibility={{
-          ariaDescribedBy: "bulk-upload-summary-description"
-        }}
       />
     </Box>
   );

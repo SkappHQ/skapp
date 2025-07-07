@@ -18,6 +18,7 @@ interface props {
     description?: string;
     closeButton?: string;
   };
+  role?: string;
 }
 
 const ModalController: FC<props> = ({
@@ -30,7 +31,8 @@ const ModalController: FC<props> = ({
   setModalType,
   modalContentStyles,
   modalWrapperStyles,
-  ids
+  ids,
+  role
 }) => {
   const onCloseModal = (
     _event: MouseEvent<HTMLButtonElement>,
@@ -51,6 +53,7 @@ const ModalController: FC<props> = ({
       isClosable={isClosable}
       isDividerVisible={isDividerVisible}
       modalWrapperStyles={modalWrapperStyles}
+      role={role}
       modalContentStyles={modalContentStyles}
     >
       {children}

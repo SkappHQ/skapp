@@ -24,7 +24,9 @@
     "generalDetails": {
       "selectGender": "Select gender",
       "selectMaritalStatus": "Select marital status",
-      "addProfileAvatar": "Add profile avatar"
+      "addProfileAvatar": "Add profile avatar",
+      "enterNIN": "National Identification Number",
+      "passportNumber": "Passport Number"
     },
     "familyDetails": {
       "selectGender": "Select gender",
@@ -38,7 +40,8 @@
     },
     "employmentDetails": {
       "selectEmploymentAllocation": "Select employment allocation",
-      "selectMultipleTeams": "Select multiple teams dropdown"
+      "selectMultipleTeams": "Select multiple teams dropdown",
+      "enterEmployeeNo": "Employee number"
     },
     "careerProgression": {
       "selectEmploymentType": "Select employment type",
@@ -92,7 +95,7 @@
     "sortDropdown": "Sort by Dropdown",
     "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
     "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
-    "null": "null",
+    "empty": "empty",
     "userProfile": "User Profile of {{name}}",
     "selectEmployee": "Select employee {{employeeName}}"
   }

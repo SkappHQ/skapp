@@ -300,7 +300,12 @@ const DropdownList: FC<Props> = ({
       </Paper>
 
       {!!error && (
-        <Typography variant="body2" sx={classes.errorTextStyle}>
+        <Typography
+          role="alert"
+          aria-live="assertive"
+          variant="body2"
+          sx={classes.errorTextStyle}
+        >
           {error}
         </Typography>
       )}

@@ -70,6 +70,7 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
       isModalOpen={isEmployeeTimesheetModalOpen}
       handleCloseModal={handelCloseModal}
       modalTitle={getModalTitle()}
+      role="dialog"
     >
       <Box>
         {(employeeTimesheetModalType ===

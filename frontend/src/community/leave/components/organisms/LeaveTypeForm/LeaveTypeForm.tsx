@@ -325,6 +325,7 @@ const LeaveTypeForm = () => {
               id="leave-duration-preferences-section"
               title={translateText(["leaveDurationPreferencesTooltip"])}
               error={Boolean(errors.leaveDuration)}
+              ariaLabel={translateText(["leaveDurationPreferencesTooltip"])}
             />
           </Stack>
 
@@ -403,6 +404,7 @@ const LeaveTypeForm = () => {
               <Tooltip
                 id="activate-leave-tooltip"
                 title={translateText(["leaveTypeSettingsTooltip"])}
+                ariaLabel={translateText(["leaveTypeSettingsTooltip"])}
               />
             </Stack>
 

@@ -1,88 +1,91 @@
-import { useTheme } from "@mui/material";
+import { Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
+import { useMemo, useState } from "react";
 
 import ManagerTimesheet from "~community/attendance/components/organisms/ManagerTimesheet/ManagerTImesheet";
-import Search from "~community/common/components/molecules/Search/Search";
+import { TimeSheetSearchBarCategories } from "~community/attendance/enums/timesheetEnums";
+import PeopleAndTeamAutocompleteSearch, {
+  OptionType
+} from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
-import {
-  EmployeeSearchResultType,
-  TeamSearchResultType
-} from "~community/common/types/CommonTypes";
 import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
 const AllTimesheetsPage: NextPage = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const theme = useTheme();
   const router = useRouter();
+
   const { data } = useSession();
-  const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
+
   const [searchTerm, setSearchTerm] = useState<string>("");
+
   const [searchErrors] = useState<string | undefined>(undefined);
-  const [selectedUserName, setSelectedUserName] = useState<string>("");
-  const [selectedTeamName, setSelectedTeamName] = useState<string>("");
 
   const { setIsFromPeopleDirectory, setViewEmployeeId, setSelectedEmployeeId } =
     usePeopleStore((state) => state);
-  const { data: suggestions } = useGetEmployeesAndTeamsForAnalytics(
-    searchTerm || " "
-  );
 
-  const onSearchChange = (
-    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ): void => {
-    e.target.value = e.target.value.replace(/^\s+/g, "");
-    setSearchTerm(e.target.value);
-  };
+  const { data: suggestions, isPending: isSuggestionsPending } =
+    useGetEmployeesAndTeamsForAnalytics(searchTerm || " ");
 
-  const onSelectResult = async (
-    result: EmployeeSearchResultType | TeamSearchResultType
-  ): Promise<void> => {
-    if ((result as EmployeeSearchResultType)?.employeeId) {
-      const employeeId = (result as EmployeeSearchResultType)?.employeeId;
-      const employeeName = `${(result as EmployeeSearchResultType)?.firstName} ${
-        (result as EmployeeSearchResultType)?.lastName
-      }`;
-
-      setSelectedUserName(employeeName);
-      setSelectedTeamName("");
-
-      await handleRowClick({
-        id: employeeId
-      });
-    } else {
-      const teamId = (result as TeamSearchResultType)?.teamId;
-      await router.push(
-        `${ROUTES.TIMESHEET.TIMESHEET_ANALYTICS}/${teamId}?teamName=${encodeURIComponent((result as TeamSearchResultType)?.teamName)}`
-      );
-      setSelectedTeamName((result as TeamSearchResultType)?.teamName);
-      setSelectedUserName("");
-    }
-    setIsPopperOpen(false);
-    setSearchTerm("");
-  };
-
-  const handleRowClick = async (employee: { id: number }) => {
+  const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
     if (
-      data?.user.roles?.includes(
-        ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
-      )
+      data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
+      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN)
     ) {
-      setSelectedEmployeeId(employee.id);
-      const url = `${ROUTES.PEOPLE.EDIT(employee.id)}?tab=timesheet`;
+      setSelectedEmployeeId(employeeId);
+      const url = `${ROUTES.PEOPLE.EDIT(employeeId)}?tab=timesheet`;
       await router.push(url);
     } else {
       setIsFromPeopleDirectory(true);
-      setViewEmployeeId(employee.id);
-      const url = `${ROUTES.PEOPLE.INDIVIDUAL}/${employee.id}?tab=timesheet`;
+      setViewEmployeeId(employeeId);
+      const url = `${ROUTES.PEOPLE.INDIVIDUAL}/${employeeId}?tab=timesheet`;
       await router.push(url);
     }
+  };
+
+  const options = useMemo(() => {
+    const individualSuggestions = suggestions?.employeeResponseDtoList?.map(
+      (employee) => {
+        return {
+          value: employee.employeeId,
+          label: `${employee.firstName} ${employee.lastName}`,
+          category: TimeSheetSearchBarCategories.INDIVIDUALS,
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          authPic: employee.authPic
+        };
+      }
+    );
+
+    const teamSuggestions = suggestions?.teamResponseDtoList?.map((team) => {
+      return {
+        value: team.teamId,
+        label: team.teamName,
+        category: TimeSheetSearchBarCategories.TEAMS,
+        teamName: team.teamName
+      };
+    });
+
+    return [...(individualSuggestions || []), ...(teamSuggestions || [])];
+  }, [suggestions]);
+
+  const onSearchChange = async (value: OptionType | null) => {
+    if (value?.category === TimeSheetSearchBarCategories.INDIVIDUALS) {
+      await handleRowClick({ employeeId: value.value });
+    }
+
+    if (value?.category === TimeSheetSearchBarCategories.TEAMS) {
+      await router.push(
+        `${ROUTES.TIMESHEET.TIMESHEET_ANALYTICS}/${value.value}?teamName=${encodeURIComponent(value.label)}`
+      );
+    }
+
+    setSearchTerm("");
   };
 
   return (
@@ -91,38 +94,30 @@ const AllTimesheetsPage: NextPage = () => {
       isDividerVisible={true}
       pageHead={translateText(["allTimesheets.pageHead"])}
     >
-      <>
-        <Search
-          placeHolder={
-            selectedUserName || selectedTeamName || translateText(["search"])
-          }
-          label=""
-          setIsPopperOpen={setIsPopperOpen}
-          isPopperOpen={isPopperOpen}
-          labelStyles={{ mb: "0.25rem" }}
+      <Stack sx={{ gap: 2 }}>
+        <PeopleAndTeamAutocompleteSearch
+          id={{
+            autocomplete: "all-timesheets-autocomplete",
+            textField: "all-timesheets-text-field"
+          }}
+          name="allTimesheetsSearch"
+          options={options}
+          value={null}
+          inputValue={searchTerm}
           onChange={onSearchChange}
-          value={searchTerm}
+          onInputChange={(value) => {
+            const formattedValue = value.replace(/^\s+/g, "");
+            setSearchTerm(formattedValue);
+          }}
+          placeholder={translateText(["search"])}
+          isLoading={isSuggestionsPending}
           error={searchErrors}
-          onSelectMember={(result) =>
-            onSelectResult(
-              result as EmployeeSearchResultType | TeamSearchResultType
-            )
-          }
-          isAutoFocus={true}
-          filterSearchResult={true}
-          isEmployeeAndUserSearch={true}
-          employeeAndUserSearchResult={suggestions}
-          suggestionBoxStyles={{
-            maxHeight: "15.625rem",
-            backgroundColor: theme.palette.notifyBadge.contrastText
-          }}
-          popperStyles={{
-            boxShadow: `0rem 0.25rem 1.25rem ${theme.palette.grey.A200}`,
-            width: "100%"
-          }}
+          isDisabled={false}
+          required={false}
+          label=""
         />
         <ManagerTimesheet />
-      </>
+      </Stack>
     </ContentLayout>
   );
 };

@@ -27,6 +27,7 @@ interface Props {
   icon?: JSX.Element;
   modalContentStyles?: SxProps;
   modalWrapperStyles?: SxProps;
+  role?: string;
   customCloseComponent?: JSX.Element;
   customCloseIcon?: JSX.Element;
   modalHeaderStyles?: SxProps;

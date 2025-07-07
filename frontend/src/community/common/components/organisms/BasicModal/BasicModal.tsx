@@ -25,6 +25,7 @@ const BasicModal: FC<Props> = ({
 }) => {
   return (
     <Modal
+      disablePortal
       aria-labelledby={ids?.title}
       aria-describedby={ids?.description}
       open={open}
