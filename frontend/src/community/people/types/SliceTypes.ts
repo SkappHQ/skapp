@@ -241,4 +241,6 @@ export interface PeopleSliceTypes
     | "isCancelModalConfirmButtonClicked"
     | "setIsCancelChangesModalOpen"
     | "setIsCancelModalConfirmButtonClicked"
+    | "superAdminCount"
+    | "setSuperAdminCount"
   > {}

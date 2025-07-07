@@ -265,6 +265,7 @@ interface actionsTypes {
   setEntitlementDetails: (entitlement: EntitlementDetailType[]) => void;
   setIsCancelChangesModalOpen: (status: boolean) => void;
   setIsCancelModalConfirmButtonClicked: (status: boolean) => void;
+  setSuperAdminCount: (count: number) => void;
 }
 
 export interface Store extends actionsTypes {
@@ -400,4 +401,5 @@ export interface Store extends actionsTypes {
   entitlementDetails: EntitlementDetailType[];
   isCancelChangesModalOpen: boolean;
   isCancelModalConfirmButtonClicked: boolean;
+  superAdminCount: number;
 }
