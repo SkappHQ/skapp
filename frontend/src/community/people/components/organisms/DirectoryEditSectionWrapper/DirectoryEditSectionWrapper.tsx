@@ -1,10 +1,12 @@
 import { Box } from "@mui/material";
+import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
+import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
 import CancelChangesModal from "../../molecules/CancelChangesModal/CancelChangesModal";
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
@@ -24,6 +26,8 @@ interface Props {
 const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData, isLoading } = useGetEmployee(employeeId);
   const translateAria = useTranslator("peopleAria", "directory");
+  const router = useRouter();
+  const { tab } = router.query;
 
   const peopleFormSectionsRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +39,7 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
     employee,
     setIsUnsavedChangesModalOpen,
     setCurrentStep,
+    setNextStep,
     setIsUnsavedModalSaveButtonClicked,
     setIsUnsavedModalDiscardButtonClicked,
     setEmployee,
@@ -47,6 +52,20 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
       setEmployee(employeeData?.data?.results[0]);
     }
   }, [employeeData, setEmployee]);
+
+  useEffect(() => {
+    if (
+      tab === EditPeopleFormTypes.leave.toLowerCase() &&
+      nextStep !== EditPeopleFormTypes.leave
+    ) {
+      setNextStep(EditPeopleFormTypes.leave);
+    } else if (
+      tab === EditPeopleFormTypes.timesheet.toLowerCase() &&
+      nextStep !== EditPeopleFormTypes.timesheet
+    ) {
+      setNextStep(EditPeopleFormTypes.timesheet);
+    }
+  }, []);
 
   const { hasChanged } = useFormChangeDetector();
 
