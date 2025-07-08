@@ -25,9 +25,11 @@ import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +38,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AddressBookServiceImpl implements AddressBookService {
+
+	public static final String HTTPS_PROTOCOL = "https://";
 
 	private final ExternalUserService externalUserService;
 
@@ -52,6 +56,9 @@ public class AddressBookServiceImpl implements AddressBookService {
 	private final TenantMigrationService tenantMigrationService;
 
 	private final TenantContext tenantContext;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
 
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
@@ -135,6 +142,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
 			.addressBookToMySignatureLinkResponseDto(addressBook);
+		mySignatureLinkResponseDto.setMySignatureLink(addressBook.getMySignatureLink());
 		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
@@ -154,6 +162,11 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
 		mySignatureLinkResponseDto.setFirstName(addressBook.getFirstName());
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
+
+		if (addressBook.getMySignatureLink() != null) {
+			mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}

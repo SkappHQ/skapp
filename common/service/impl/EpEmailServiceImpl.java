@@ -83,8 +83,9 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 	@Override
 	protected void setTemplatePlaceholderData(EmailTemplates emailTemplate, Map<String, String> placeholders,
-			EmailTemplateMetadata templateDetails) {
-		super.setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails);
+			EmailTemplateMetadata templateDetails, String module) {
+		super.setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
+		placeholders.put("module", module);
 		if (emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_EMAIL_VERIFY
 				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_SSO_CREATION_TENANT_URL
 				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL
