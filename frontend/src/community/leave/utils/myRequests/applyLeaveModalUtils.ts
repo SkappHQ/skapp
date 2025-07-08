@@ -104,7 +104,7 @@ export const getDurationSelectorDisabledOptions = ({
     const holidayOptions =
       selectedDates.length === 1
         ? handleHolidayDuration(holidays[0])
-        : { fullDay: true, halfDayMorning: true, halfDayEvening: true };
+        : { fullDay: false, halfDayMorning: true, halfDayEvening: true };
 
     return applyDurationConstraints(holidayOptions);
   }
