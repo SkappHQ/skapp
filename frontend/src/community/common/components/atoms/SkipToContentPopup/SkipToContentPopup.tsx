@@ -14,6 +14,7 @@ import {
   signedInUserSkipToContentList,
   unsignedInUserSkipToContentList
 } from "~community/common/constants/commonConstants";
+import { appModes } from "~community/common/constants/configs";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -22,6 +23,8 @@ import {
   shouldCollapseDropdown,
   shouldNavigateBackward
 } from "~community/common/utils/keyboardUtils";
+import { useGetEnterpriseSkipToContentItems } from "~enterprise/common/hooks/useGetEnterpriseSkipToContentItems";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import styles from "./styles";
 
@@ -32,6 +35,10 @@ const SkipToContentPopup = ({
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+  const environment = useGetEnvironment();
+  const isEnterprise = environment === appModes.ENTERPRISE;
+
+  const enterpriseSkipToContentItems = useGetEnterpriseSkipToContentItems();
 
   const translateAria = useTranslator("commonAria", "skipToContent");
 
@@ -82,11 +89,13 @@ const SkipToContentPopup = ({
 
   const listItems = useMemo(() => {
     if (signedInUser) {
-      return signedInUserSkipToContentList;
+      return isEnterprise
+        ? enterpriseSkipToContentItems
+        : signedInUserSkipToContentList;
     } else {
       return unsignedInUserSkipToContentList;
     }
-  }, [signedInUser]);
+  }, [signedInUser, isEnterprise, enterpriseSkipToContentItems]);
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
