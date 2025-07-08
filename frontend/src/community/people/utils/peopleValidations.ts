@@ -26,6 +26,23 @@ type TranslatorFunctionType = (
   interpolationValues?: Record<string, string>
 ) => string;
 
+const conditionalRequired = (
+  dependentFields: string[]
+): Yup.TestFunction<any> => {
+  return function (value) {
+    const shouldRequire = dependentFields.some((field) => {
+      const fieldValue = this.parent[field];
+      return fieldValue && fieldValue.trim() !== "";
+    });
+
+    if (shouldRequire) {
+      return value && value.trim() !== "";
+    }
+
+    return true;
+  };
+};
+
 export const employeePrimaryEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
@@ -34,16 +51,7 @@ export const employeePrimaryEmergencyContactDetailsValidation = (
       .test(
         "conditional-required",
         translator(["requireNameError"]),
-        function (value) {
-          const { contactNo, relationship } = this.parent;
-          if (
-            (contactNo && contactNo.trim() !== "") ||
-            (relationship && relationship.trim() !== "")
-          ) {
-            return !!value && value.trim() !== "";
-          }
-          return true;
-        }
+        conditionalRequired(["contactNo", "relationship"])
       )
       .matches(
         allowsLettersAndSpecialCharactersForNames(),
@@ -54,16 +62,7 @@ export const employeePrimaryEmergencyContactDetailsValidation = (
       .test(
         "conditional-required",
         translator(["requirePhoneError"]),
-        function (value) {
-          const { name, relationship } = this.parent;
-          if (
-            (name && name.trim() !== "") ||
-            (relationship && relationship.trim() !== "")
-          ) {
-            return !!value && value.trim() !== "";
-          }
-          return true;
-        }
+        conditionalRequired(["name", "relationship"])
       )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
@@ -83,16 +82,7 @@ export const employeeSecondaryEmergencyContactDetailsValidation = (
       .test(
         "conditional-required",
         translator(["requireNameError"]),
-        function (value) {
-          const { contactNo, relationship } = this.parent;
-          if (
-            (contactNo && contactNo.trim() !== "") ||
-            (relationship && relationship.trim() !== "")
-          ) {
-            return !!value && value.trim() !== "";
-          }
-          return true;
-        }
+        conditionalRequired(["contactNo", "relationship"])
       )
       .matches(
         allowsLettersAndSpecialCharactersForNames(),
@@ -103,16 +93,7 @@ export const employeeSecondaryEmergencyContactDetailsValidation = (
       .test(
         "conditional-required",
         translator(["requirePhoneError"]),
-        function (value) {
-          const { name, relationship } = this.parent;
-          if (
-            (name && name.trim() !== "") ||
-            (relationship && relationship.trim() !== "")
-          ) {
-            return !!value && value.trim() !== "";
-          }
-          return true;
-        }
+        conditionalRequired(["name", "relationship"])
       )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
