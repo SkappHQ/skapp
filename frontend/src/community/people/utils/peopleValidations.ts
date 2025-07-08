@@ -43,41 +43,10 @@ const conditionalRequired = (
   };
 };
 
-export const employeePrimaryEmergencyContactDetailsValidation = (
+export const employeeEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    name: Yup.string()
-      .test(
-        "conditional-required",
-        translator(["requireNameError"]),
-        conditionalRequired(["contactNo", "relationship"])
-      )
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
-      ),
-    relationship: Yup.string().nullable(),
-    contactNo: Yup.string()
-      .test(
-        "conditional-required",
-        translator(["requirePhoneError"]),
-        conditionalRequired(["name", "relationship"])
-      )
-      .max(
-        characterLengths.PHONE_NUMBER_LENGTH_MAX,
-        translator(["validPhoneError"])
-      )
-      .min(
-        characterLengths.PHONE_NUMBER_LENGTH_MIN,
-        translator(["validPhoneError"])
-      )
-  });
-
-export const employeeSecondaryEmergencyContactDetailsValidation = (
-  translator: TranslatorFunctionType
-) =>
-  Yup.object().shape({
     name: Yup.string()
       .test(
         "conditional-required",
