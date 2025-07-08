@@ -90,6 +90,10 @@ const PeopleTable: FC<Props> = ({
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
   );
 
+  const isPeopleAdminOrSuperAdmin = data?.user.roles?.includes(
+    AdminTypes.PEOPLE_ADMIN || AdminTypes.SUPER_ADMIN
+  );
+
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [sortType, setSortType] = useState<string>("A to Z");
@@ -508,8 +512,12 @@ const PeopleTable: FC<Props> = ({
           isLoading={isFetching && !isFetchingNextPage}
           selectedRows={selectedPeople}
           checkboxSelection={{
-            isEnabled: isPendingInvitationListOpen || isRemovePeople,
-            isSelectAllEnabled: isPendingInvitationListOpen || !isRemovePeople,
+            isEnabled:
+              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
+              isRemovePeople,
+            isSelectAllEnabled:
+              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
+              !isRemovePeople,
             isSelectAllVisible: true,
             isSelectAllChecked: isSelectAllCheckboxChecked,
             handleIndividualSelectClick: handleCheckBoxClick,
@@ -527,37 +535,38 @@ const PeopleTable: FC<Props> = ({
                 isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
                   <PeopleTableSortBy sortType={sortType} />
                 ) : undefined,
-              rightButton: isPendingInvitationListOpen ? (
-                <Button
-                  label={translateText(["reinviteButtonTitle"])}
-                  buttonStyle={ButtonStyle.SECONDARY}
-                  size={ButtonSizes.MEDIUM}
-                  endIcon={<InviteIcon />}
-                  onClick={() => {
-                    setIsReinviteConfirmationModalOpen(true);
-                  }}
-                  isStrokeAvailable={true}
-                  disabled={selectedPeople.length === 0}
-                />
-              ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
-                <PeopleTableFilterBy
-                  filterEl={filterEl}
-                  handleFilterClose={handleFilterClose}
-                  handleFilterClick={handleFilterClick}
-                  disabled={isPendingInvitationListOpen}
-                  filterId={filterId}
-                  filterOpen={filterOpen}
-                  scrollToTop={scrollToTop}
-                  teams={
-                    teamData && !isLoading && GetTeamPreProcessor(teamData)
-                  }
-                  jobFamilies={
-                    jobFamilyData &&
-                    !jobFamilyLoading &&
-                    GetFamilyFilterPreProcessor(jobFamilyData)
-                  }
-                />
-              ) : undefined
+              rightButton:
+                isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin ? (
+                  <Button
+                    label={translateText(["reinviteButtonTitle"])}
+                    buttonStyle={ButtonStyle.SECONDARY}
+                    size={ButtonSizes.MEDIUM}
+                    endIcon={<InviteIcon />}
+                    onClick={() => {
+                      setIsReinviteConfirmationModalOpen(true);
+                    }}
+                    isStrokeAvailable={true}
+                    disabled={selectedPeople.length === 0}
+                  />
+                ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
+                  <PeopleTableFilterBy
+                    filterEl={filterEl}
+                    handleFilterClose={handleFilterClose}
+                    handleFilterClick={handleFilterClick}
+                    disabled={isPendingInvitationListOpen}
+                    filterId={filterId}
+                    filterOpen={filterOpen}
+                    scrollToTop={scrollToTop}
+                    teams={
+                      teamData && !isLoading && GetTeamPreProcessor(teamData)
+                    }
+                    jobFamilies={
+                      jobFamilyData &&
+                      !jobFamilyLoading &&
+                      GetFamilyFilterPreProcessor(jobFamilyData)
+                    }
+                  />
+                ) : undefined
             }
           }}
           tableHead={{
