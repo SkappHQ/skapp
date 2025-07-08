@@ -3,22 +3,28 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.type.OperationType;
 import com.skapp.enterprise.common.util.TenantKeyExtractor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @RequiredArgsConstructor
 public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 
-	private final Map<Object, DataSource> dataSources = new ConcurrentHashMap<>();
-
 	private final DataSourceFactory dataSourceFactory;
+
+	@Override
+	public void afterPropertiesSet() {
+		setTargetDataSources(Collections.emptyMap());
+		super.afterPropertiesSet();
+	}
 
 	@Override
 	protected Object determineCurrentLookupKey() {
@@ -37,35 +43,25 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 	protected DataSource determineTargetDataSource() {
 		String lookupKey = (String) determineCurrentLookupKey();
 
-		DataSource dataSource = dataSources.get(lookupKey);
-		if (dataSource != null) {
-			return dataSource;
-		}
-
 		if (lookupKey != null && lookupKey.contains("-")) {
 			TenantDataSourceKey key = TenantKeyExtractor.extractTenantKey(lookupKey);
 			if (Objects.equals(key.getTenantId(), EpCommonConstants.MASTER_DATABASE)) {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getDataSource(true);
+					return dataSourceFactory.getMasterDataSource(OperationType.READ);
 				}
 				else {
-					dataSource = dataSourceFactory.getDataSource(false);
+					return dataSourceFactory.getMasterDataSource(OperationType.WRITE);
 				}
 
-				dataSources.put(lookupKey, dataSource);
-				return dataSource;
 			}
 			else {
 				if (key.isRead()) {
-					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), true);
+					return dataSourceFactory.getTenantDataSource(OperationType.READ, key.getTenantId());
 				}
 				else {
-					dataSource = dataSourceFactory.getDataSource(key.getTenantId(), false);
+					return dataSourceFactory.getTenantDataSource(OperationType.WRITE, key.getTenantId());
 				}
 			}
-
-			dataSources.put(lookupKey, dataSource);
-			return dataSource;
 		}
 
 		DataSource defaultDataSource = getResolvedDefaultDataSource();
@@ -74,7 +70,6 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 					EPCommonMessageConstant.EP_COMMON_ERROR_CANNOT_DETERMINE_TARGET_DATASOURCE_FOR_LOOKUP_KEY,
 					new String[] { lookupKey });
 		}
-
 		return defaultDataSource;
 	}
 

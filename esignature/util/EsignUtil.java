@@ -19,6 +19,22 @@ public class EsignUtil {
 
 	private static final String UNKNOWN = "unknown";
 
+	private static final String PATH_ATTR = "; Path=";
+
+	private static final String DOMAIN_ATTR = "; Domain=";
+
+	private static final String SECURE_ATTR = "; Secure";
+
+	private static final String HTTP_ONLY_ATTR = "; HttpOnly";
+
+	private static final String MAX_AGE_ATTR = "; Max-Age=";
+
+	private static final String SAME_SITE_ATTR = "; SameSite=None";
+
+	private static final String DEFAULT_PATH = "/";
+
+	private static final String E_SIGN = "eSign/";
+
 	private EsignUtil() {
 	}
 
@@ -48,6 +64,53 @@ public class EsignUtil {
 		long epochMillis = now.toEpochMilli();
 
 		return generatedUUID + "_" + epochMillis;
+	}
+
+	public static String buildSetCookieHeader(String nameValue, int maxAge, String domain, String path) {
+		String[] parts = nameValue.split("=", 2);
+		String name = parts[0];
+		String value = parts.length > 1 ? parts[1] : "";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(name).append("=").append(value);
+
+		if (path != null && !path.isEmpty()) {
+			sb.append(PATH_ATTR).append(path);
+		}
+		else {
+			sb.append(PATH_ATTR).append(DEFAULT_PATH);
+		}
+
+		if (domain != null && !domain.isEmpty()) {
+			sb.append(DOMAIN_ATTR).append(domain);
+		}
+
+		sb.append(SECURE_ATTR);
+		sb.append(HTTP_ONLY_ATTR);
+
+		if (maxAge > 0) {
+			sb.append(MAX_AGE_ATTR).append(maxAge);
+		}
+
+		sb.append(SAME_SITE_ATTR);
+
+		return sb.toString();
+	}
+
+	public static String removeEsignPrefix(String path) {
+		String prefix = E_SIGN;
+		if (path != null && path.startsWith(prefix)) {
+			return path.substring(prefix.length());
+		}
+		return path;
+	}
+
+	public static String removeBucketAndEsignPrefix(String bucketName, String path) {
+		String prefix = bucketName + "/" + E_SIGN;
+		if (path != null && path.startsWith(prefix)) {
+			return path.substring(prefix.length());
+		}
+		return path;
 	}
 
 }
