@@ -91,6 +91,9 @@
       "searchManagers": "Search for managers",
       "managerOptions": "Other supervisors options",
       "selected": "selected"
+    },
+    "toggleSwitch": {
+      "label": "Toggle switch, {{option}} selected"
     }
   },
   "modals": {
