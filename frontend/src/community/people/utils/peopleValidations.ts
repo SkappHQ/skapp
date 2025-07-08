@@ -31,14 +31,40 @@ export const employeePrimaryEmergencyContactDetailsValidation = (
 ) =>
   Yup.object({
     name: Yup.string()
-      .required(translator(["requireNameError"]))
+      .test(
+        "conditional-required",
+        translator(["requireNameError"]),
+        function (value) {
+          const { contactNo, relationship } = this.parent;
+          if (
+            (contactNo && contactNo.trim() !== "") ||
+            (relationship && relationship.trim() !== "")
+          ) {
+            return !!value && value.trim() !== "";
+          }
+          return true;
+        }
+      )
       .matches(
         allowsLettersAndSpecialCharactersForNames(),
         translator(["validNameError"])
       ),
-    relationship: Yup.string(),
+    relationship: Yup.string().nullable(),
     contactNo: Yup.string()
-      .required(translator(["requirePhoneError"]))
+      .test(
+        "conditional-required",
+        translator(["requirePhoneError"]),
+        function (value) {
+          const { name, relationship } = this.parent;
+          if (
+            (name && name.trim() !== "") ||
+            (relationship && relationship.trim() !== "")
+          ) {
+            return !!value && value.trim() !== "";
+          }
+          return true;
+        }
+      )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
         translator(["validPhoneError"])
@@ -54,14 +80,40 @@ export const employeeSecondaryEmergencyContactDetailsValidation = (
 ) =>
   Yup.object().shape({
     name: Yup.string()
-      .required(translator(["requireNameError"]))
+      .test(
+        "conditional-required",
+        translator(["requireNameError"]),
+        function (value) {
+          const { contactNo, relationship } = this.parent;
+          if (
+            (contactNo && contactNo.trim() !== "") ||
+            (relationship && relationship.trim() !== "")
+          ) {
+            return !!value && value.trim() !== "";
+          }
+          return true;
+        }
+      )
       .matches(
         allowsLettersAndSpecialCharactersForNames(),
         translator(["validNameError"])
       ),
     relationship: Yup.string().nullable(),
     contactNo: Yup.string()
-      .required(translator(["requirePhoneError"]))
+      .test(
+        "conditional-required",
+        translator(["requirePhoneError"]),
+        function (value) {
+          const { name, relationship } = this.parent;
+          if (
+            (name && name.trim() !== "") ||
+            (relationship && relationship.trim() !== "")
+          ) {
+            return !!value && value.trim() !== "";
+          }
+          return true;
+        }
+      )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
         translator(["validPhoneError"])
