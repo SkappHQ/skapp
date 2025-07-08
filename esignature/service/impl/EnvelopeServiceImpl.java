@@ -747,14 +747,17 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			auditTrailResponseDto.setHash(auditTrail.getHash());
 			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
 				auditTrailResponseDto.setActionDoneByName("");
+				auditTrailResponseDto.setActionDoneByEmail("");
 				log.debug("Action done by: null (both recipient and address book user are null)");
 			}
 			else if (auditTrail.getRecipient() == null) {
 				auditTrailResponseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
+				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getAddressBookUser().getEmail());
 				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
 			else {
 				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
+				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getRecipient().getAddressBook().getEmail());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
 			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
@@ -942,7 +945,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append(".status-content { ");
 		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
 		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  min-width: 148px; ");
+		htmlBuilder.append("  min-width: 130px; ");
 		htmlBuilder.append("  padding: 8px 16px; ");
 		htmlBuilder.append("  box-sizing: border-box; ");
 		htmlBuilder.append("  background: #F4F4F5; ");
@@ -951,7 +954,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  color: #52525C; ");
 		htmlBuilder.append("  text-align: center; ");
 		htmlBuilder.append("  line-height: 24px; ");
-		htmlBuilder.append("  height: 36px; ");
+		htmlBuilder.append("  height: 34px; ");
 		htmlBuilder.append("  white-space: nowrap; ");
 		htmlBuilder.append("} ");
 
@@ -961,7 +964,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  height: 10px; ");
 		htmlBuilder.append("  border-radius: 50%; ");
 		htmlBuilder.append("  margin-right: 8px; ");
-		htmlBuilder.append("  margin-top: -2px; ");
+		htmlBuilder.append("  margin-top: -4px; ");
 		htmlBuilder.append("  vertical-align: middle; ");
 		htmlBuilder.append("} ");
 
@@ -969,6 +972,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  display: inline-block; ");
 		htmlBuilder.append("  vertical-align: middle; ");
 		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  margin-top: -2px; ");
 		htmlBuilder.append("  color: #52525C; ");
 		htmlBuilder.append("} ");
 
@@ -1031,7 +1035,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
 		htmlBuilder.append("  font-weight: 400; ");
 		htmlBuilder.append("  color: #666; ");
-		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  font-size: 11px; ");
 		htmlBuilder.append("} ");
 
 		// Activities section styles
@@ -1048,15 +1052,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  border-collapse: collapse; ");
 		htmlBuilder.append("  font-size: 13px; ");
 		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  -fs-table-paginate: paginate; "); // OpenHTMLToPDF specific
-																// property for table
-																// pagination
+		htmlBuilder.append("  -fs-table-paginate: paginate; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".activities-table thead { ");
 		htmlBuilder.append("  background: #f8f9fa; ");
-		htmlBuilder.append("  display: table-header-group; "); // Ensures header repeats
-																// on each page
+		htmlBuilder.append("  display: table-header-group; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".activities-table th { ");
@@ -1070,8 +1071,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".activities-table tbody { ");
-		htmlBuilder.append("  display: table-row-group; "); // Ensures proper tbody
-															// behavior for pagination
+		htmlBuilder.append("  display: table-row-group; ");
 		htmlBuilder.append("} ");
 
 		htmlBuilder.append(".activities-table td { ");
@@ -1079,7 +1079,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("  padding: 8px; ");
 		htmlBuilder.append("  border-bottom: 1px solid #f0f0f0; ");
 		htmlBuilder.append("  color: #666; ");
-		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("  font-size: 11px; ");
 		htmlBuilder.append("  font-weight: 400; ");
 		htmlBuilder.append("} ");
 
@@ -1092,7 +1092,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<tr>");
 		htmlBuilder.append("<td><h1 class='title'>Document History</h1></td>");
 		htmlBuilder.append(
-				"<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 81px; height: 35'/></td>");
+				"<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/></td>");
 		htmlBuilder.append("</tr>");
 		htmlBuilder.append("</table>");
 		htmlBuilder.append("</div>");
@@ -1120,8 +1120,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("</div>");
 
 		// Add horizontal line between document info and meta information sections
-		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />"); // Reduced
-																										// margin
+		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
 
 		// Meta information section
 		htmlBuilder.append("<div class='meta-section'>");
@@ -1195,7 +1194,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
 				htmlBuilder.append("<tr>");
 				htmlBuilder.append("<td>").append(escapeHtml(formatTimestamp(audit.getTimestamp()))).append("</td>");
-				htmlBuilder.append("<td>").append(escapeHtml(audit.getActionDoneByName())).append("</td>");
+				htmlBuilder.append("<td>").append(escapeHtml(audit.getActionDoneByEmail())).append("</td>");
 				htmlBuilder.append("<td>").append(escapeHtml(getFormattedActionText(audit))).append("</td>");
 				htmlBuilder.append("</tr>");
 			}
