@@ -30,12 +30,15 @@ export const employeePrimaryEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    name: Yup.string().matches(
-      allowsLettersAndSpecialCharactersForNames(),
-      translator(["validNameError"])
-    ),
+    name: Yup.string()
+      .required(translator(["requireNameError"]))
+      .matches(
+        allowsLettersAndSpecialCharactersForNames(),
+        translator(["validNameError"])
+      ),
     relationship: Yup.string(),
     contactNo: Yup.string()
+      .required(translator(["requirePhoneError"]))
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
         translator(["validPhoneError"])
@@ -50,12 +53,15 @@ export const employeeSecondaryEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object().shape({
-    name: Yup.string().matches(
-      allowsLettersAndSpecialCharactersForNames(),
-      translator(["validNameError"])
-    ),
+    name: Yup.string()
+      .required(translator(["requireNameError"]))
+      .matches(
+        allowsLettersAndSpecialCharactersForNames(),
+        translator(["validNameError"])
+      ),
     relationship: Yup.string().nullable(),
     contactNo: Yup.string()
+      .required(translator(["requirePhoneError"]))
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
         translator(["validPhoneError"])
