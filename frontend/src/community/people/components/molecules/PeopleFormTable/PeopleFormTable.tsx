@@ -77,6 +77,7 @@ const PeopleFormTable: FC<Props> = ({
         }),
         ...tableStyles
       }}
+      tabIndex={0}
     >
       <TableHead
         sx={{

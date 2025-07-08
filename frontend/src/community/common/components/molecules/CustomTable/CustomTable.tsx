@@ -10,6 +10,7 @@ import {
 import { Stack, type SxProps } from "@mui/system";
 import { FC, ReactNode } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { capitalizeFirstLetter } from "~community/common/utils/commonUtil";
 
@@ -56,6 +57,7 @@ const CustomTable: FC<CustomTableProps> = ({
   isResponsive = true
 }) => {
   const theme = useTheme();
+  const translateAria = useTranslator("peopleAria", "customTable");
 
   const renderCellContent = (content: any) => {
     if (!content) {
@@ -76,6 +78,7 @@ const CustomTable: FC<CustomTableProps> = ({
         }),
         ...tableStyles
       }}
+      tabIndex={0}
     >
       <TableHead
         sx={{
@@ -214,6 +217,7 @@ const CustomTable: FC<CustomTableProps> = ({
                         fill={theme.palette.grey[700]}
                       />
                     }
+                    ariaLabel={translateAria(["edit"])}
                     onClick={() => onEdit && onEdit(rowIndex)}
                   />
                   <IconButton
@@ -223,6 +227,7 @@ const CustomTable: FC<CustomTableProps> = ({
                         fill={theme.palette.grey[700]}
                       />
                     }
+                    ariaLabel={translateAria(["delete"])}
                     onClick={() => onDelete && onDelete(rowIndex)}
                   />
                 </Stack>

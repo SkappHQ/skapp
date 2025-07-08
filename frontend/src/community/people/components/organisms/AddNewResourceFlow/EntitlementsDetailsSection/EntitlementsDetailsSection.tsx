@@ -1,10 +1,15 @@
-import { Grid2 as Grid, type Theme, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Grid2 as Grid,
+  type Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import CustomTable from "~community/common/components/molecules/CustomTable/CustomTable";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
@@ -20,6 +25,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
   getDateFromTimeStamp,
@@ -264,13 +270,22 @@ const EntitlementsDetailsSection = (): JSX.Element => {
           (item: LeaveEntitlementDropdownListType) => item.value === output
         );
       return (
-        <IconChip
-          label={leaveType?.label as string}
-          // chipType={leaveType?.emoji}
-          isResponsive={true}
-          chipStyles={classes.iconChipStyles}
-          isTruncated={!theme.breakpoints.up("xl")}
-        />
+        <Box
+          style={{
+            width: "fit-content",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            backgroundColor: theme.palette.common.white,
+            borderRadius: "9.375rem",
+            padding: "0.5rem 1rem"
+          }}
+        >
+          <span role="img" aria-hidden="true">
+            {getEmoji(leaveType?.emoji || "")}
+          </span>
+          {leaveType?.label}
+        </Box>
       );
     } else {
       return <Typography sx={classes.tableTypography}>{output}</Typography>;

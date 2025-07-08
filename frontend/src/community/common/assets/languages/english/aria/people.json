@@ -1,7 +1,11 @@
 {
   "jobFamily": {
     "addJobTitleButton": "Add job title",
-    "jobTitleField": "{{jobTitleName}} job title field"
+    "jobTitleField": "{{jobTitleName}} job title field",
+    "edit": "Edit",
+    "delete": "Delete",
+    "check": "Check",
+    "cancel": "Cancel"
   },
   "teams": {
     "table": {
@@ -27,6 +31,9 @@
       "addProfileAvatar": "Add profile avatar",
       "enterNIN": "National Identification Number",
       "passportNumber": "Passport Number"
+    },
+    "contactDetails": {
+      "contactNumber": "Contact number"
     },
     "familyDetails": {
       "selectGender": "Select gender",
@@ -98,5 +105,9 @@
     "empty": "empty",
     "userProfile": "User Profile of {{name}}",
     "selectEmployee": "Select employee {{employeeName}}"
+  },
+  "customTable": {
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }

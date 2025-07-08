@@ -95,6 +95,14 @@ const MultiSelectManagerSearch = ({
     }
   }, [focusedIndex]);
 
+  useEffect(() => {
+    if (managerSearchTerm?.trim() !== "") {
+      setIsExpanded(displayItems.length > 0);
+    } else if (managerSearchTerm?.trim() === "" && displayItems.length === 0) {
+      setIsExpanded(false);
+    }
+  }, [displayItems.length, managerSearchTerm, isSearchResultsLoading]);
+
   const toggleManagerSelection = (
     employee: EmployeeDataType | L4ManagerType
   ) => {
