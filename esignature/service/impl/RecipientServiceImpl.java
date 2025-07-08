@@ -506,19 +506,21 @@ public class RecipientServiceImpl implements RecipientService {
 			});
 
 			// Send the mail to the Sender
-			String documentName = concatDocumentNames(envelope.getDocuments());
+			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
+				String documentName = concatDocumentNames(envelope.getDocuments());
 
-			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
-					documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
-			epEsignEnvelopeRecipientEmailDynamicFields
-				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
+				EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
+						envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
+						documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 
-			epEsignEnvelopeRecipientEmailDynamicFields
-				.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
 
-			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
-					epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
+				sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
+						epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
+			}
 
 			envelopeDetailedResponseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
 
