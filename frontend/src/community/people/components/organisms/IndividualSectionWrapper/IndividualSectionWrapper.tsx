@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import { usePeopleStore } from "~community/people/store/store";
 
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
@@ -18,6 +19,8 @@ const IndividualSectionWrapper = ({ employeeId }: Props) => {
     usePeopleStore((state) => state);
 
   const individualSectionsRef = useRef<HTMLDivElement>(null);
+
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {

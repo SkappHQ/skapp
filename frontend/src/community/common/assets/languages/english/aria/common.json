@@ -4,7 +4,8 @@
     "skipTo": "Skip to:",
     "mainContent": "Main content",
     "topBar": "Top bar",
-    "sideBar": "Side bar"
+    "sideBar": "Side bar",
+    "quickSetup": "Quick Setup"
   },
   "components": {
     "pagination": {
