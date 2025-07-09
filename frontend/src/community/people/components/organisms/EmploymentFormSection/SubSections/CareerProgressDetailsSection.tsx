@@ -446,6 +446,7 @@ const CareerProgressDetailsSection = ({
               tableStyles={{
                 mt: "2rem"
               }}
+              tableName={translateAria(["careerProgressionTable"])}
             />
           )}
         </Grid>

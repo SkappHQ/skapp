@@ -40,6 +40,11 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
     "addResource",
     "entitlementDetails"
   );
+  const translateAria = useTranslator(
+    "peopleAria",
+    "addResource",
+    "educationDetails"
+  );
 
   const { employee } = usePeopleStore((state) => state);
 
@@ -234,6 +239,7 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
             tableStyles={{
               mt: "2rem"
             }}
+            tableName={translateAria(["educationalDetailsTable"])}
           />
         )}
       </Grid>

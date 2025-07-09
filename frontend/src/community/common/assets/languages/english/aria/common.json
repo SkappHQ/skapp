@@ -89,8 +89,11 @@
     },
     "multiSelectManagerSearch": {
       "searchManagers": "Search for managers",
-      "managerOptions": "Manager options",
+      "managerOptions": "Other supervisors options",
       "selected": "selected"
+    },
+    "toggleSwitch": {
+      "label": "Toggle switch, {{option}} selected"
     }
   },
   "modals": {

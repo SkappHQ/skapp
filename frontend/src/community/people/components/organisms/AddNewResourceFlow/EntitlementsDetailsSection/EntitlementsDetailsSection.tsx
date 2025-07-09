@@ -1,11 +1,15 @@
-import { Grid2 as Grid, type Theme, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Grid2 as Grid,
+  type Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import CustomTable from "~community/common/components/molecules/CustomTable/CustomTable";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -20,6 +24,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
   getDateFromTimeStamp,
@@ -28,6 +33,7 @@ import {
 import { useGetLeaveCycle } from "~community/leave/api/LeaveApi";
 import { useGetPreProcessedLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { LeaveEntitlementDropdownListType } from "~community/leave/types/LeaveTypes";
+import PeopleFormTable from "~community/people/components/molecules/PeopleFormTable/PeopleFormTable";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeEntitlementsDetailType } from "~community/people/types/AddNewResourceTypes";
 import { employeeEntitlementsDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -40,6 +46,11 @@ const EntitlementsDetailsSection = (): JSX.Element => {
   const { setToastMessage } = useToast();
   const translateText = useTranslator(
     "peopleModule",
+    "addResource",
+    "entitlementDetails"
+  );
+  const translateAria = useTranslator(
+    "peopleAria",
     "addResource",
     "entitlementDetails"
   );
@@ -264,13 +275,22 @@ const EntitlementsDetailsSection = (): JSX.Element => {
           (item: LeaveEntitlementDropdownListType) => item.value === output
         );
       return (
-        <IconChip
-          label={leaveType?.label as string}
-          // chipType={leaveType?.emoji}
-          isResponsive={true}
-          chipStyles={classes.iconChipStyles}
-          isTruncated={!theme.breakpoints.up("xl")}
-        />
+        <Box
+          style={{
+            width: "fit-content",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            backgroundColor: theme.palette.common.white,
+            borderRadius: "9.375rem",
+            padding: "0.5rem 1rem"
+          }}
+        >
+          <span role="img" aria-hidden="true">
+            {getEmoji(leaveType?.emoji || "")}
+          </span>
+          {leaveType?.label}
+        </Box>
       );
     } else {
       return <Typography sx={classes.tableTypography}>{output}</Typography>;
@@ -488,7 +508,7 @@ const EntitlementsDetailsSection = (): JSX.Element => {
       </Grid>
 
       {employeeEntitlementsDetails?.length > 0 && (
-        <CustomTable
+        <PeopleFormTable
           data={employeeEntitlementsDetails}
           renderCustomCellContent={getProperty}
           headings={tableHeadings}
@@ -497,6 +517,7 @@ const EntitlementsDetailsSection = (): JSX.Element => {
           hoverNeeded={false}
           actionsNeeded
           excludedColumns={["leaveName"]}
+          tableName={translateAria(["entitlementsTable"])}
         />
       )}
     </>

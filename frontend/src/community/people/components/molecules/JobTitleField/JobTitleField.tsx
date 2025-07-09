@@ -197,6 +197,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                   );
                                 }
                               }}
+                              aria-label={ariaTranslateText(["edit"])}
                             >
                               <Icon
                                 name={IconName.EDIT_ICON}
@@ -230,6 +231,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                   );
                                 }
                               }}
+                              aria-label={ariaTranslateText(["delete"])}
                             >
                               <Icon
                                 name={IconName.BIN_ICON}
@@ -268,6 +270,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                       );
                                   }
                                 }}
+                                aria-label={ariaTranslateText(["check"])}
                               >
                                 <Icon
                                   name={IconName.TICK_ICON}
@@ -304,6 +307,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                     );
                                   }
                                 }}
+                                aria-label={ariaTranslateText(["cancel"])}
                               >
                                 <Icon
                                   name={IconName.ROUNDED_CLOSE_ICON}
