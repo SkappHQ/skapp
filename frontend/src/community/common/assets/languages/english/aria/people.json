@@ -70,6 +70,9 @@
     },
     "educationDetails": {
       "educationalDetailsTable": "Educational details table"
+    },
+    "entitlementDetails": {
+      "entitlementsTable": "Entitlements table"
     }
   },
   "individualLeaveAnalytics": {
@@ -116,9 +119,5 @@
     "empty": "empty",
     "userProfile": "User Profile of {{name}}",
     "selectEmployee": "Select employee {{employeeName}}"
-  },
-  "customTable": {
-    "edit": "Edit",
-    "delete": "Delete"
   }
 }

@@ -10,7 +10,6 @@ import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
-import CustomTable from "~community/common/components/molecules/CustomTable/CustomTable";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -34,6 +33,7 @@ import {
 import { useGetLeaveCycle } from "~community/leave/api/LeaveApi";
 import { useGetPreProcessedLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { LeaveEntitlementDropdownListType } from "~community/leave/types/LeaveTypes";
+import PeopleFormTable from "~community/people/components/molecules/PeopleFormTable/PeopleFormTable";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeEntitlementsDetailType } from "~community/people/types/AddNewResourceTypes";
 import { employeeEntitlementsDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -46,6 +46,11 @@ const EntitlementsDetailsSection = (): JSX.Element => {
   const { setToastMessage } = useToast();
   const translateText = useTranslator(
     "peopleModule",
+    "addResource",
+    "entitlementDetails"
+  );
+  const translateAria = useTranslator(
+    "peopleAria",
     "addResource",
     "entitlementDetails"
   );
@@ -503,7 +508,7 @@ const EntitlementsDetailsSection = (): JSX.Element => {
       </Grid>
 
       {employeeEntitlementsDetails?.length > 0 && (
-        <CustomTable
+        <PeopleFormTable
           data={employeeEntitlementsDetails}
           renderCustomCellContent={getProperty}
           headings={tableHeadings}
@@ -512,6 +517,7 @@ const EntitlementsDetailsSection = (): JSX.Element => {
           hoverNeeded={false}
           actionsNeeded
           excludedColumns={["leaveName"]}
+          tableName={translateAria(["entitlementsTable"])}
         />
       )}
     </>

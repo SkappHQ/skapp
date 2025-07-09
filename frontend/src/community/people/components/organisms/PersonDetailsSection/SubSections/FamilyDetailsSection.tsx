@@ -74,7 +74,7 @@ const FamilyDetailsSection = ({
     translateText(["gender"]),
     translateText(["relationship"]),
     translateText(["parentName"]),
-    translateText(["dateOfBirth"]),
+    translateText(["birthDate"]),
     translateText(["age"])
   ];
 
@@ -126,7 +126,7 @@ const FamilyDetailsSection = ({
           getLabelByValue(RelationshipList, member?.relationship as string) ??
           "",
         parentName: member?.parentName ?? "",
-        dateOfBirth: member?.dateOfBirth,
+        dateOfBirth: member?.dateOfBirth?.split("T")[0],
         age: member?.dateOfBirth
           ? new Date().getFullYear() -
             new Date(member.dateOfBirth).getFullYear()
