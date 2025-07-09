@@ -101,7 +101,7 @@ const MultiSelectManagerSearch = ({
     } else if (managerSearchTerm?.trim() === "" && displayItems.length === 0) {
       setIsExpanded(false);
     }
-  }, [displayItems.length, managerSearchTerm, isSearchResultsLoading]);
+  }, [displayItems.length, managerSearchTerm]);
 
   const toggleManagerSelection = (
     employee: EmployeeDataType | L4ManagerType
