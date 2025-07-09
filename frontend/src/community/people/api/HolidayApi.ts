@@ -24,7 +24,7 @@ import {
 export const useGetAllHolidays = (
   year?: string,
   isExport?: boolean,
-  sortOrder?: string,
+  sortOrder?: string
 ): UseQueryResult<Holiday[]> => {
   return useQuery({
     queryKey: [holidayQueryKeys.ALL_HOLIDAYS, year, sortOrder, isExport],
