@@ -86,12 +86,14 @@ const PeopleTable: FC<Props> = ({
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
+  const isPeopleManagerOrSuperAdmin = data?.user.roles?.some(
+    (role) =>
+      role === ManagerTypes.PEOPLE_MANAGER || role === AdminTypes.SUPER_ADMIN
   );
 
-  const isPeopleAdminOrSuperAdmin = data?.user.roles?.includes(
-    AdminTypes.PEOPLE_ADMIN || AdminTypes.SUPER_ADMIN
+  const isPeopleAdminOrSuperAdmin = data?.user.roles?.some(
+    (role) =>
+      role === AdminTypes.PEOPLE_ADMIN || role === AdminTypes.SUPER_ADMIN
   );
 
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
