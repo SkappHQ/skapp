@@ -1,9 +1,16 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonCloudFrontService;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
+import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -44,8 +51,6 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 
 	public static final String DOCUMENT_S3_PATH_URL = "/envelop/process/documents/";
 
-	public static final String MY_SIGNATURE_S3_PATH_URL = "/envelop/document/signature/original/";
-
 	public static final String WILDCARD_PATH = "/*";
 
 	@Value("${aws.cloudfront.s3-default.key-pair-id}")
@@ -62,6 +67,12 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 
 	private final CloudFrontUtilities cloudFrontUtilities;
 
+	private final UserService userService;
+
+	private final DocumentService documentService;
+
+	private final AddressBookDao addressBookDao;
+
 	@Override
 	public Map<String, String> generateCloudFrontDocumentSignedCookies() {
 		String tenant = TenantContext.getCurrentTenant();
@@ -71,9 +82,31 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 	}
 
 	@Override
-	public Map<String, String> generateCloudFrontSignatureSignedCookies() {
-		String tenant = TenantContext.getCurrentTenant();
-		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + MY_SIGNATURE_S3_PATH_URL + tenant + WILDCARD_PATH;
+	public Map<String, String> generateCloudFrontSignatureSignedCookies(boolean isInternal) {
+		AddressBook addressBook;
+		if (isInternal) {
+			User currentUser = userService.getCurrentUser();
+
+			if (currentUser == null) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
+			}
+
+			addressBook = addressBookDao.findByInternalUser(currentUser)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+		}
+		else {
+			String currentUsername = documentService.getCurrentUsername();
+			addressBook = addressBookDao.findByInternalUserEmail(currentUsername)
+				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+		}
+
+		if (addressBook.getMySignatureLink() == null || addressBook.getMySignatureLink().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_MY_SIGNATURE_LINK_NOT_FOUND);
+		}
+
+		String signatureObjectKey = addressBook.getMySignatureLink();
+		String resourceUrlPath = EsignUtil.removeEsignPrefix(signatureObjectKey);
+		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + "/" + resourceUrlPath;
 		return generateCloudFrontSignedCookies(resourceUrl);
 	}
 

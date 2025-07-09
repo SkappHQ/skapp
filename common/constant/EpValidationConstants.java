@@ -10,7 +10,8 @@ public class EpValidationConstants {
 	public static final String VALID_COMPANY_DOMAIN_NAME_REGEXP = "^[a-z0-9]+(-[a-z0-9]+)*$";
 
 	public static final Set<String> RESTRICTED_SUBDOMAINS = Set.of("skapp", "skapp-dev", "skapp-qa", "skapp-stage",
-			"skapp-prod", "skapp-test", "admin", "api", "mail", "smtp", "pop", "ftp", "www", "hello", "no-reply");
+			"skapp-prod", "skapp-test", "admin", "api", "mail", "smtp", "pop", "ftp", "www", "hello", "no-reply",
+			"document", "docs");
 
 	/**
 	 * Regular expression pattern to validate IPv4 addresses. An IPv4 address consists of

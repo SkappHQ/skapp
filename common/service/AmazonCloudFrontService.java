@@ -6,6 +6,6 @@ public interface AmazonCloudFrontService {
 
 	Map<String, String> generateCloudFrontDocumentSignedCookies();
 
-	Map<String, String> generateCloudFrontSignatureSignedCookies();
+	Map<String, String> generateCloudFrontSignatureSignedCookies(boolean isInternal);
 
 }
