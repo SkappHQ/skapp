@@ -307,6 +307,7 @@ const FamilyDetailsSection = ({
             tableStyles={{
               mt: "2rem"
             }}
+            tableName={translateAria(["familyDetailsTable"])}
           />
         )}
       </Grid>

@@ -34,6 +34,7 @@ interface Props {
   renderCustomCellContent?: <T, K extends keyof T>(obj: T, key: K) => ReactNode;
   excludedColumns?: string[];
   isResponsive?: boolean;
+  tableName?: string;
 }
 
 const PeopleFormTable: FC<Props> = ({
@@ -53,7 +54,8 @@ const PeopleFormTable: FC<Props> = ({
   bottomRowNeeded = false,
   renderCustomCellContent,
   excludedColumns = [],
-  isResponsive = true
+  isResponsive = true,
+  tableName
 }) => {
   const translateText = useTranslator("peopleAria", "peopleFormTable");
   const theme = useTheme();
@@ -77,8 +79,23 @@ const PeopleFormTable: FC<Props> = ({
         }),
         ...tableStyles
       }}
-      tabIndex={0}
     >
+      <caption
+        style={{
+          position: "absolute",
+          width: "0.0625rem",
+          height: "0.0625rem",
+          padding: 0,
+          margin: "-0.0625rem",
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          border: 0
+        }}
+        tabIndex={0}
+      >
+        {tableName}
+      </caption>
       <TableHead
         sx={{
           height: "3.25rem",
