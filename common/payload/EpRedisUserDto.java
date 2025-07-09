@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EpRedisEmployeeDto {
+public class EpRedisUserDto {
 
 	private Long userId;
 

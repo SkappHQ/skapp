@@ -16,9 +16,9 @@ public class EpRedisController {
 
 	private final EpRedisService epRedisService;
 
-	@GetMapping("/load-all-employees")
-	public ResponseEntity<ResponseEntityDto> loadAllEmployeeData() {
-		ResponseEntityDto response = epRedisService.loadAllEmployeeData();
+	@GetMapping("/load-all-users")
+	public ResponseEntity<ResponseEntityDto> loadAllUserData() {
+		ResponseEntityDto response = epRedisService.loadAllUserDataToRedis();
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

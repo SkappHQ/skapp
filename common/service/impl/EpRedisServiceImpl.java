@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.CacheService;
@@ -10,7 +11,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.service.EpRedisService;
-import com.skapp.enterprise.common.payload.EpRedisEmployeeDto;
+import com.skapp.enterprise.common.payload.EpRedisUserDto;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,25 +34,28 @@ public class EpRedisServiceImpl implements EpRedisService {
 	private final EpCommonMapper epCommonMapper;
 
 	@Override
-	public ResponseEntityDto loadAllEmployeeData() {
+	public ResponseEntityDto loadAllUserDataToRedis() {
 		List<Employee> employees = employeeDao
 			.findByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
+		List<EpRedisUserDto> response = new java.util.ArrayList<>();
+
 		for (Employee employee : employees) {
-			EpRedisEmployeeDto epRedisEmployeeDto = epCommonMapper.employeeToEpRedisEmployeeDto(employee);
+			EpRedisUserDto epRedisUserDto = epCommonMapper.employeeToEpRedisEmployeeDto(employee);
+			response.add(epRedisUserDto);
 			try {
-				CacheKey cacheKey = EpCacheKeys.EMPLOYEE_DATA_CACHE_KEY;
-				String value = objectMapper.writeValueAsString(epRedisEmployeeDto);
-				cacheService.put(cacheKey.format(epRedisEmployeeDto.getUserId()), value, cacheKey.getTtl(),
+				CacheKey cacheKey = EpCacheKeys.USER_DATA_CACHE_KEY;
+				String value = objectMapper.writeValueAsString(epRedisUserDto);
+				cacheService.put(cacheKey.format(epRedisUserDto.getUserId()), value, cacheKey.getTtl(),
 						cacheKey.getTimeUnit());
 			}
-			catch (Exception e) {
-				log.error("Failed to cache employee {}", epRedisEmployeeDto.getUserId(), e);
+			catch (JsonProcessingException exception) {
+				log.error("Failed to cache employee {}", epRedisUserDto.getUserId(), exception);
 			}
 		}
 
-		log.info("All users and employees loaded to Redis for tenant {}", TenantContext.getCurrentTenant());
-		return new ResponseEntityDto(false, "All users and employees loaded to Redis");
+		log.info("All users loaded to Redis for tenant {}", TenantContext.getCurrentTenant());
+		return new ResponseEntityDto(false, response);
 	}
 
 }

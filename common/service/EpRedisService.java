@@ -4,6 +4,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 
 public interface EpRedisService {
 
-	ResponseEntityDto loadAllEmployeeData();
+	ResponseEntityDto loadAllUserDataToRedis();
 
 }

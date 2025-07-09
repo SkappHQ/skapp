@@ -6,7 +6,7 @@ import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
-import com.skapp.enterprise.common.payload.EpRedisEmployeeDto;
+import com.skapp.enterprise.common.payload.EpRedisUserDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.DeviceTokenResponseDto;
@@ -33,6 +33,6 @@ public interface EpCommonMapper {
 
 	@Mapping(target = "userId", source = "employee.user.userId")
 	@Mapping(target = "email", source = "employee.user.email")
-	EpRedisEmployeeDto employeeToEpRedisEmployeeDto(Employee employee);
+	EpRedisUserDto employeeToEpRedisEmployeeDto(Employee employee);
 
 }

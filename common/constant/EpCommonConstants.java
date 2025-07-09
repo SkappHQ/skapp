@@ -102,6 +102,6 @@ public class EpCommonConstants {
 	// Redis TTL Constants
 	public static final int REDIS_TTL_CODE_CHALLENGE_CACHE_KEY = 5;
 
-	public static final int REDIS_TTL_EMPLOYEE_DATA_CACHE_KEY = 7;
+	public static final int REDIS_TTL_USER_DATA_CACHE_KEY = 7;
 
 }
