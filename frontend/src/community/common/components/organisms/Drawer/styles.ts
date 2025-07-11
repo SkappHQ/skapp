@@ -50,8 +50,7 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    height: "2.8225rem",
-    width: "calc(100% - 7rem)",
+    width: "8.75rem",
     marginBottom: "0.25rem"
   },
 
