@@ -86,8 +86,14 @@ const PeopleTable: FC<Props> = ({
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
+  const isPeopleManagerOrSuperAdmin = data?.user.roles?.some(
+    (role) =>
+      role === ManagerTypes.PEOPLE_MANAGER || role === AdminTypes.SUPER_ADMIN
+  );
+
+  const isPeopleAdminOrSuperAdmin = data?.user.roles?.some(
+    (role) =>
+      role === AdminTypes.PEOPLE_ADMIN || role === AdminTypes.SUPER_ADMIN
   );
 
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
@@ -508,8 +514,12 @@ const PeopleTable: FC<Props> = ({
           isLoading={isFetching && !isFetchingNextPage}
           selectedRows={selectedPeople}
           checkboxSelection={{
-            isEnabled: isPendingInvitationListOpen || isRemovePeople,
-            isSelectAllEnabled: isPendingInvitationListOpen || !isRemovePeople,
+            isEnabled:
+              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
+              isRemovePeople,
+            isSelectAllEnabled:
+              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
+              !isRemovePeople,
             isSelectAllVisible: true,
             isSelectAllChecked: isSelectAllCheckboxChecked,
             handleIndividualSelectClick: handleCheckBoxClick,
@@ -527,37 +537,38 @@ const PeopleTable: FC<Props> = ({
                 isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
                   <PeopleTableSortBy sortType={sortType} />
                 ) : undefined,
-              rightButton: isPendingInvitationListOpen ? (
-                <Button
-                  label={translateText(["reinviteButtonTitle"])}
-                  buttonStyle={ButtonStyle.SECONDARY}
-                  size={ButtonSizes.MEDIUM}
-                  endIcon={<InviteIcon />}
-                  onClick={() => {
-                    setIsReinviteConfirmationModalOpen(true);
-                  }}
-                  isStrokeAvailable={true}
-                  disabled={selectedPeople.length === 0}
-                />
-              ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
-                <PeopleTableFilterBy
-                  filterEl={filterEl}
-                  handleFilterClose={handleFilterClose}
-                  handleFilterClick={handleFilterClick}
-                  disabled={isPendingInvitationListOpen}
-                  filterId={filterId}
-                  filterOpen={filterOpen}
-                  scrollToTop={scrollToTop}
-                  teams={
-                    teamData && !isLoading && GetTeamPreProcessor(teamData)
-                  }
-                  jobFamilies={
-                    jobFamilyData &&
-                    !jobFamilyLoading &&
-                    GetFamilyFilterPreProcessor(jobFamilyData)
-                  }
-                />
-              ) : undefined
+              rightButton:
+                isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin ? (
+                  <Button
+                    label={translateText(["reinviteButtonTitle"])}
+                    buttonStyle={ButtonStyle.SECONDARY}
+                    size={ButtonSizes.MEDIUM}
+                    endIcon={<InviteIcon />}
+                    onClick={() => {
+                      setIsReinviteConfirmationModalOpen(true);
+                    }}
+                    isStrokeAvailable={true}
+                    disabled={selectedPeople.length === 0}
+                  />
+                ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
+                  <PeopleTableFilterBy
+                    filterEl={filterEl}
+                    handleFilterClose={handleFilterClose}
+                    handleFilterClick={handleFilterClick}
+                    disabled={isPendingInvitationListOpen}
+                    filterId={filterId}
+                    filterOpen={filterOpen}
+                    scrollToTop={scrollToTop}
+                    teams={
+                      teamData && !isLoading && GetTeamPreProcessor(teamData)
+                    }
+                    jobFamilies={
+                      jobFamilyData &&
+                      !jobFamilyLoading &&
+                      GetFamilyFilterPreProcessor(jobFamilyData)
+                    }
+                  />
+                ) : undefined
             }
           }}
           tableHead={{
