@@ -6,7 +6,7 @@ type stylesProps = {
   theme: Theme;
 };
 
-export const DRAWER_ANIMATION_DURATION = "1.3s";
+export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
 
 export const styles = ({ theme }: stylesProps) => ({
