@@ -218,6 +218,18 @@ const TeamsTable: FC<Props> = ({
     setIsTeamModalOpen(true);
   };
 
+  const addTeamsButton = isAdmin
+    ? {
+        id: "add-teams-empty-table-screen-button",
+        label: teamAddButtonText,
+        onClick: () => {
+          teamAddButtonButtonClick?.();
+          destroyDriverObj();
+        },
+        shouldBlink: ongoingQuickSetup.DEFINE_TEAMS
+      }
+    : undefined;
+
   return (
     <Box sx={classes.tableWrapper}>
       <Table
@@ -241,15 +253,7 @@ const TeamsTable: FC<Props> = ({
                 allTeams && allTeams?.length > 0
                   ? translateText(["emptyScreen", "description"])
                   : translateText(["emptySearchResult", "description"]),
-              button: {
-                id: "add-teams-empty-table-screen-button",
-                label: teamAddButtonText,
-                onClick: () => {
-                  teamAddButtonButtonClick?.();
-                  destroyDriverObj();
-                },
-                shouldBlink: ongoingQuickSetup.DEFINE_TEAMS
-              }
+              button: addTeamsButton
             }
           },
           loadingState: {
