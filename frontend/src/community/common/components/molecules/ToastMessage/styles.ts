@@ -5,7 +5,6 @@ import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 const styles = (theme: Theme) => ({
   stackStyle: {
     cursor: "default",
-    width: "100%",
     zIndex: ZIndexEnums.TOAST,
     position: "fixed",
     top: "1.25rem",
