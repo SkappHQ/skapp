@@ -6,7 +6,7 @@ type stylesProps = {
   theme: Theme;
 };
 
-export const DRAWER_ANIMATION_DURATION = "0.3s";
+export const DRAWER_ANIMATION_DURATION = "1.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
 
 export const styles = ({ theme }: stylesProps) => ({
@@ -167,7 +167,7 @@ export const styles = ({ theme }: stylesProps) => ({
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
   }),
   footer: {
-    width: "12.5rem",
+    width: "calc(100% - 2rem)",
     marginTop: "auto",
     paddingTop: "1.25rem",
     gap: "1.5rem",
