@@ -86,15 +86,11 @@ const PeopleTable: FC<Props> = ({
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManagerOrSuperAdmin = data?.user.roles?.some(
-    (role) =>
-      role === ManagerTypes.PEOPLE_MANAGER || role === AdminTypes.SUPER_ADMIN
+  const isPeopleManager = data?.user.roles?.includes(
+    ManagerTypes.PEOPLE_MANAGER
   );
 
-  const isPeopleAdminOrSuperAdmin = data?.user.roles?.some(
-    (role) =>
-      role === AdminTypes.PEOPLE_ADMIN || role === AdminTypes.SUPER_ADMIN
-  );
+  const isPeopleAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
@@ -391,7 +387,7 @@ const PeopleTable: FC<Props> = ({
     resetPeopleSlice();
     if (
       currentEmployeeDetails?.employeeId === employee.id.toString() &&
-      !isPeopleManagerOrSuperAdmin
+      !isPeopleManager
     ) {
       resetEmployeeDataChanges();
       resetEmployeeData();
@@ -399,7 +395,7 @@ const PeopleTable: FC<Props> = ({
       setCurrentStep(EditPeopleFormTypes.personal);
       setNextStep(EditPeopleFormTypes.personal);
       router.push(ROUTES.PEOPLE.ACCOUNT);
-    } else if (isPeopleManagerOrSuperAdmin) {
+    } else if (isPeopleManager) {
       setSelectedEmployeeId(employee.id);
       setCurrentStep(EditPeopleFormTypes.personal);
       setNextStep(EditPeopleFormTypes.personal);
@@ -515,11 +511,9 @@ const PeopleTable: FC<Props> = ({
           selectedRows={selectedPeople}
           checkboxSelection={{
             isEnabled:
-              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
-              isRemovePeople,
+              (isPendingInvitationListOpen && isPeopleAdmin) || isRemovePeople,
             isSelectAllEnabled:
-              (isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin) ||
-              !isRemovePeople,
+              (isPendingInvitationListOpen && isPeopleAdmin) || !isRemovePeople,
             isSelectAllVisible: true,
             isSelectAllChecked: isSelectAllCheckboxChecked,
             handleIndividualSelectClick: handleCheckBoxClick,
@@ -534,11 +528,11 @@ const PeopleTable: FC<Props> = ({
           actionToolbar={{
             firstRow: {
               leftButton:
-                isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
+                isPeopleManager && !isRemovePeople ? (
                   <PeopleTableSortBy sortType={sortType} />
                 ) : undefined,
               rightButton:
-                isPendingInvitationListOpen && isPeopleAdminOrSuperAdmin ? (
+                isPendingInvitationListOpen && isPeopleAdmin ? (
                   <Button
                     label={translateText(["reinviteButtonTitle"])}
                     buttonStyle={ButtonStyle.SECONDARY}
@@ -550,7 +544,7 @@ const PeopleTable: FC<Props> = ({
                     isStrokeAvailable={true}
                     disabled={selectedPeople.length === 0}
                   />
-                ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
+                ) : isPeopleManager && !isRemovePeople ? (
                   <PeopleTableFilterBy
                     filterEl={filterEl}
                     handleFilterClose={handleFilterClose}
