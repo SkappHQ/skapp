@@ -51,6 +51,7 @@ import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.common.util.BypassTokenValidator;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -125,6 +126,8 @@ public class AuthServiceImpl implements AuthService {
 	private final OrganizationConfigDao organizationConfigDao;
 
 	private final ObjectMapper objectMapper;
+
+	private final BypassTokenValidator bypassTokenValidator;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
