@@ -263,6 +263,7 @@ const InputPhoneNumber: FC<Props> = ({
               e.preventDefault();
             }
           }}
+          ariaLabel={ariaLabel}
           isDisabled={isDisabled}
         />
       </Stack>
