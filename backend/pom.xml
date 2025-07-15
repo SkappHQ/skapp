@@ -119,7 +119,7 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>6.6.13.Final</version>
+            <version>6.6.17.Final</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
