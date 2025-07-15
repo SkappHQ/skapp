@@ -1,7 +1,11 @@
 {
   "jobFamily": {
     "addJobTitleButton": "Add job title",
-    "jobTitleField": "{{jobTitleName}} job title field"
+    "jobTitleField": "{{jobTitleName}} job title field",
+    "edit": "Edit",
+    "delete": "Delete",
+    "check": "Check",
+    "cancel": "Cancel"
   },
   "teams": {
     "table": {
@@ -28,9 +32,13 @@
       "enterNIN": "National Identification Number",
       "passportNumber": "Passport Number"
     },
+    "contactDetails": {
+      "contactNumber": "Contact number"
+    },
     "familyDetails": {
       "selectGender": "Select gender",
-      "selectRelationship": "Select relationship"
+      "selectRelationship": "Select relationship",
+      "familyDetailsTable": "Family details table"
     },
     "healthAndOtherDetails": {
       "selectBloodGroup": "Select blood group"
@@ -47,11 +55,24 @@
       "selectEmploymentType": "Select employment type",
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
-      "selectCurrentEmploymentChecked": "Select current employment"
+      "selectCurrentEmploymentChecked": "Select current employment",
+      "careerProgressionTable": "Career progression table"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
       "selectEEOJobCategory": "Select EEO job category"
+    },
+    "previousEmploymentDetails": {
+      "previousEmploymentTable": "Previous employment details table"
+    },
+    "visaDetails": {
+      "visaDetailsTable": "Visa details table"
+    },
+    "educationDetails": {
+      "educationalDetailsTable": "Educational details table"
+    },
+    "entitlementDetails": {
+      "entitlementsTable": "Entitlements table"
     }
   },
   "individualLeaveAnalytics": {
