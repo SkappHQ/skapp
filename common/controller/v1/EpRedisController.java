@@ -16,10 +16,22 @@ public class EpRedisController {
 
 	private final EpRedisService epRedisService;
 
+	@GetMapping("/load-system-version")
+	public ResponseEntity<ResponseEntityDto> loadSystemVersion() {
+		ResponseEntityDto response = epRedisService.loadSystemVersionToRedis();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/load-all-user-versions")
+	public ResponseEntity<ResponseEntityDto> loadAllUserVersions() {
+		ResponseEntityDto response = epRedisService.loadAllUserVersionsToRedis();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@GetMapping("/load-all-users")
 	public ResponseEntity<ResponseEntityDto> loadAllUserData() {
 		ResponseEntityDto response = epRedisService.loadAllUserDataToRedis();
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

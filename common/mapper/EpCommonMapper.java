@@ -6,7 +6,7 @@ import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
-import com.skapp.enterprise.common.payload.EpRedisUserDto;
+import com.skapp.enterprise.common.payload.redis.EpRedisUserDto;
 import com.skapp.enterprise.common.payload.request.EpOrganizationDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.DeviceTokenResponseDto;

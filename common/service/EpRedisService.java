@@ -6,4 +6,8 @@ public interface EpRedisService {
 
 	ResponseEntityDto loadAllUserDataToRedis();
 
+	ResponseEntityDto loadSystemVersionToRedis();
+
+	ResponseEntityDto loadAllUserVersionsToRedis();
+
 }

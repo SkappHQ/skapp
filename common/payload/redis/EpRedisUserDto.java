@@ -1,4 +1,4 @@
-package com.skapp.enterprise.common.payload;
+package com.skapp.enterprise.common.payload.redis;
 
 import lombok.Getter;
 import lombok.Setter;
