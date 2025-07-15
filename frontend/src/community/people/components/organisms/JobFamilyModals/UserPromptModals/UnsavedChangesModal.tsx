@@ -17,7 +17,9 @@ const UnsavedChangesModal = () => {
 
   const handleCancelBtnClick = () => {
     const modalTypeMap = {
-      [JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY]:
+      [JobFamilyActionModalEnums.UNSAVED_CHANGES_ADD_JOB_FAMILY]:
+        JobFamilyActionModalEnums.ADD_JOB_FAMILY,
+      [JobFamilyActionModalEnums.UNSAVED_CHANGES_EDIT_JOB_FAMILY]:
         JobFamilyActionModalEnums.EDIT_JOB_FAMILY,
       [JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS]:
         JobFamilyActionModalEnums.JOB_FAMILY_TRANSFER_MEMBERS,

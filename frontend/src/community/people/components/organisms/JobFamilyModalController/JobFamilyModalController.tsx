@@ -150,7 +150,9 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
         )}
 
         {(jobFamilyModalType ===
-          JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY ||
+          JobFamilyActionModalEnums.UNSAVED_CHANGES_ADD_JOB_FAMILY ||
+          jobFamilyModalType ===
+            JobFamilyActionModalEnums.UNSAVED_CHANGES_EDIT_JOB_FAMILY ||
           jobFamilyModalType ===
             JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS ||
           jobFamilyModalType ===
