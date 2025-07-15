@@ -50,8 +50,7 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    height: "2.8225rem",
-    width: "calc(100% - 7rem)",
+    width: "8.75rem",
     marginBottom: "0.25rem"
   },
 
@@ -168,7 +167,7 @@ export const styles = ({ theme }: stylesProps) => ({
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
   }),
   footer: {
-    width: "12.5rem",
+    width: "calc(100% - 2rem)",
     marginTop: "auto",
     paddingTop: "1.25rem",
     gap: "1.5rem",
