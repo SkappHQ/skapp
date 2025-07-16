@@ -29,6 +29,11 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
     "addResource",
     "contactDetails"
   );
+  const translateAria = useTranslator(
+    "peopleAria",
+    "addResource",
+    "contactDetails"
+  );
 
   const countryCode = useGetDefaultCountryCode();
 
@@ -144,6 +149,7 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
               placeHolder={translateText(["enterContactNo"])}
               isDisabled={isInputsDisabled}
               readOnly={isReadOnly}
+              ariaLabel={translateAria(["contactNumber"])}
             />
           </Grid>
           <Grid

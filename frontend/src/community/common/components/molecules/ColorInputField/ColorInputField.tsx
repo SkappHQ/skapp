@@ -85,7 +85,12 @@ const ColorInputField: FC<Props> = ({
         ))}
       </Box>
       {!!error && (
-        <Typography variant="body2" sx={classes.errorText}>
+        <Typography
+          role="alert"
+          aria-live="assertive"
+          variant="body2"
+          sx={classes.errorText}
+        >
           {error}
         </Typography>
       )}

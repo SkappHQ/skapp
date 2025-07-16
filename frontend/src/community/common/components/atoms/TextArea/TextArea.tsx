@@ -111,7 +111,7 @@ const TextArea = <T,>({
         </Stack>
       </Stack>
       {!!error && (
-        <Typography variant="caption" sx={classes.error}>
+        <Typography role="alert" variant="caption" sx={classes.error}>
           {error.comment || error.attachment}
         </Typography>
       )}

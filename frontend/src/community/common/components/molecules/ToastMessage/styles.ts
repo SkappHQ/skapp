@@ -5,11 +5,15 @@ import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 const styles = (theme: Theme) => ({
   stackStyle: {
     cursor: "default",
-    width: "100%",
     zIndex: ZIndexEnums.TOAST,
     position: "fixed",
     top: "1.25rem",
-    right: "1.25rem"
+    right: "1.25rem",
+    "& .MuiPaper-root": { padding: 0, backgroundColor: "transparent" },
+    "& .MuiSnackbarContent-action": {
+      padding: 0,
+      marginRight: 0
+    }
   },
   toastContainer: (bgColor: string): SxProps<Theme> => ({
     flexDirection: "row",

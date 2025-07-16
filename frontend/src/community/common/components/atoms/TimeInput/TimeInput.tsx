@@ -20,10 +20,6 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
   const theme: Theme = useTheme();
   const [open, setOpen] = useState(false);
 
-  const handleIconClick = () => {
-    setOpen(true);
-  };
-
   return (
     <Box sx={{ width: "100%" }}>
       {label && (
@@ -52,8 +48,9 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
               <TextField
                 {...params}
                 helperText={null}
-                InputProps={{
-                  ...params.InputProps,
+                inputProps={{
+                  ...params.inputProps,
+                  "aria-label": `Choose ${label} time, selected time is ${DateTime.fromJSDate(time).toFormat("h:mm a")}`,
                   endAdornment: <Icon name={IconName.TIME_SHEET_ICON} />
                 }}
                 style={{
@@ -107,6 +104,8 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
       </LocalizationProvider>
       {!!error && (
         <Typography
+          role="alert"
+          aria-live="assertive"
           variant="body2"
           sx={{ color: theme.palette.error.contrastText, marginTop: "0.3rem" }}
         >

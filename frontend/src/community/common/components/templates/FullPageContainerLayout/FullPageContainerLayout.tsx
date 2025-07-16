@@ -27,6 +27,8 @@ interface Props {
     dataTestId?: string;
     onClick?: () => void | Promise<void>;
     styles?: SxProps;
+    ariaLabel?: string;
+    title?: string;
   };
   title: string;
   stepText: string;
@@ -39,6 +41,8 @@ interface Props {
     body?: SxProps;
   };
   children?: ReactNode;
+  id?: string;
+  tabIndex?: number;
 }
 
 const FullPageContainerLayout = ({
@@ -47,7 +51,9 @@ const FullPageContainerLayout = ({
   title,
   stepText,
   customStyles,
-  children
+  children,
+  id,
+  tabIndex
 }: Props): JSX.Element => {
   const router = useRouter();
 
@@ -82,6 +88,8 @@ const FullPageContainerLayout = ({
       <Stack
         component="div"
         sx={mergeSx([classes.wrapper, customStyles?.wrapper])}
+        id={id}
+        tabIndex={tabIndex}
       >
         <Stack
           component="div"
@@ -95,8 +103,8 @@ const FullPageContainerLayout = ({
             <IconButton
               tabIndex={0}
               data-testid={icon?.dataTestId}
-              aria-label={translateAria(["backButton"])}
-              title={translateAria(["backButton"])}
+              aria-label={icon?.ariaLabel ?? translateAria(["backButton"])}
+              title={icon?.title ?? translateAria(["backButton"])}
               onClick={onIconClick}
               sx={classes.iconBtn}
             >
@@ -115,11 +123,7 @@ const FullPageContainerLayout = ({
               </Typography>
             </Stack>
           </Stack>
-          <Stack
-            component="main"
-            aria-label={translateAria(["skipToContent.mainContent"])}
-            sx={mergeSx([customStyles?.body])}
-          >
+          <Stack component="main" sx={mergeSx([customStyles?.body])}>
             {children}
           </Stack>
         </Stack>

@@ -844,6 +844,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			predicates.add(findByEmailName(leaveRequestFilterDto.getSearchKeyword(), criteriaBuilder, employee, user));
 		}
 
+		if (leaveRequestFilterDto.getTeamIds() != null && !leaveRequestFilterDto.getTeamIds().isEmpty()
+				&& leaveRequestFilterDto.getTeamIds().getFirst() != -1) {
+			Join<Employee, EmployeeTeam> employeeTeamJoin = employee.join(Employee_.employeeTeams);
+			predicates
+				.add(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(leaveRequestFilterDto.getTeamIds()));
+		}
+
 		Predicate[] predArray = predicates.toArray(new Predicate[0]);
 		criteriaQuery.where(predArray);
 		criteriaQuery.select(root).distinct(true);

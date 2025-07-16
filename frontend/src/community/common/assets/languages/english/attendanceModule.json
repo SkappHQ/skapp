@@ -31,11 +31,11 @@
       "pageHead": "Time Entry Requests | Skapp"
     },
     "approveButton": {
-      "label":"Approve {{recordName}} time entry request",
+      "label": "Approve {{recordName}} time entry request",
       "description": ""
     },
     "declineButton": {
-      "label":"Decline {{recordName}} time entry request",
+      "label": "Decline {{recordName}} time entry request",
       "description": ""
     },
     "kebabMenu": {

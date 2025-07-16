@@ -1,9 +1,8 @@
 import { Box, Typography } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import { SxProps, Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, KeyboardEvent, useEffect, useState } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   mergeSx,
@@ -30,6 +29,9 @@ interface Props {
   accessibility?: {
     ariaHidden?: boolean;
   };
+  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: () => void;
+  inputProps?: object;
 }
 
 const SearchBox: FC<Props> = ({
@@ -44,7 +46,10 @@ const SearchBox: FC<Props> = ({
   name = "search",
   "data-testid": testId,
   isSearchIconVisible = true,
-  accessibility
+  accessibility,
+  onKeyDown,
+  onFocus,
+  inputProps = {}
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -95,24 +100,33 @@ const SearchBox: FC<Props> = ({
   };
 
   return (
-    <Box component="div" role="search">
+    <Box component="div" role="search" aria-label={placeHolder}>
       {label && (
-        <Typography lineHeight={1.5} sx={mergeSx([classes.label, labelStyles])}>
+        <Typography
+          id={`search-label-${name}`}
+          lineHeight={1.5}
+          sx={mergeSx([classes.label, labelStyles])}
+        >
           {label}
         </Typography>
       )}
+
       <InputBase
+        id={`search-input-${name}`}
         placeholder={placeHolder}
         inputProps={{
           "data-testid": testId,
           "aria-hidden": accessibility?.ariaHidden,
-          role: "searchbox"
+          role: "searchbox",
+          autoComplete: "off",
+          ...inputProps
         }}
         fullWidth={fullWidth}
         onChange={searchHandler}
+        onKeyDown={onKeyDown}
+        onFocus={onFocus}
         value={searchValue}
         autoFocus={autoFocus}
-        autoComplete="off"
         name={name}
         endAdornment={
           isSearchIconVisible ? <Icon name={IconName.SEARCH_ICON} /> : null

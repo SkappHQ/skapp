@@ -112,6 +112,7 @@ const FilterButton = ({
         <Button
           buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
           label={translateText(["placeholder"])}
+          ariaLabel={translateAria(["label"])}
           endIcon={<FilterIcon />}
           onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)

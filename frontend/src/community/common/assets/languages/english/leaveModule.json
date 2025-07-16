@@ -156,7 +156,7 @@
     "carriedForwardHeader": "CARRY FORWARD",
     "actionsHeader": "ACTIONS",
     "editButton": {
-      "label":"Edit {{recordName}} leave type",
+      "label": "Edit {{recordName}} leave type",
       "description": ""
     },
     "activate": "Activate",
@@ -233,9 +233,9 @@
     "addLeaveTypeTitle": "Add new leave type",
     "editLeaveTypeTitle": "Edit Leave Type",
     "saveBtn": "Save",
-    "editButton":{
-      "label": "Edit {{leaveType}} allocation for {{recordName}}", 
-      "description" : ""
+    "editButton": {
+      "label": "Edit {{leaveType}} allocation for {{recordName}}",
+      "description": ""
     },
     "saveChangesBtn": "Save Changes",
     "cancelBtn": "Cancel",

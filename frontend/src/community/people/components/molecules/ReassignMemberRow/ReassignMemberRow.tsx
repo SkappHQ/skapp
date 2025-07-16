@@ -1,19 +1,15 @@
-import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
-import * as React from "react";
+import {
+  SelectChangeEvent,
+  Stack,
+  Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
 import { useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import MenuItem from "~community/common/components/atoms/MenuItem/MenuItem";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import Popper from "~community/common/components/molecules/Popper/Popper";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/EmployeeTypes";
@@ -32,27 +28,49 @@ const ReassignMemberRow = ({ teamMember, setTeamId }: Props) => {
   const classes = styles();
 
   const translateText = useTranslator("peopleModule", "teams");
+
   const { currentDeletingTeam } = usePeopleStore((state) => state);
 
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamNamesType | undefined>();
-  const [teamIds, setTeamIds] = useState<number[]>([]);
-
-  const handleMenuItemClick = (team: TeamNamesType) => {
-    setSelectedTeam(team);
-    setShowOverlay(false);
-    setTeamIds((prevTeamIds) => [...prevTeamIds, Number(team.teamId)]);
-    setTeamId && setTeamId(Number(team.teamId));
-  };
 
   const { data: allTeams } = useGetAllTeams();
+
   const filteredTeams = allTeams?.filter(
     (team) => team?.teamId !== currentDeletingTeam?.teamId
   );
 
+  const teamOptions =
+    filteredTeams?.map((team) => ({
+      label: team?.teamName,
+      value: team.teamId,
+      disabled: false,
+      ariaLabel: team?.teamName
+    })) ?? [];
+
+  const handleTeamSelectChange = (event: SelectChangeEvent) => {
+    const selectedTeamId = event.target.value;
+
+    const team = filteredTeams?.find(
+      (team) => team.teamId.toString() === selectedTeamId.toString()
+    );
+
+    if (team !== undefined) {
+      setSelectedTeam({
+        teamId: team?.teamId ?? "",
+        teamName: team?.teamName ?? ""
+      });
+
+      setTeamId && setTeamId(Number(selectedTeamId));
+    }
+  };
+
   return (
-    <Stack direction="row" justifyContent="space-between" alignItems="center">
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      alignItems="center"
+      aria-hidden={true}
+    >
       <AvatarChip
         firstName={teamMember?.firstName}
         lastName={teamMember?.lastName}
@@ -72,46 +90,28 @@ const ReassignMemberRow = ({ teamMember, setTeamId }: Props) => {
       >
         {`${teamMember?.jobLevel?.name ?? ""} ${teamMember?.jobRole?.name ?? ""}`}
       </Typography>
-      <Box sx={classes.btnWrapper}>
-        <Button
-          label={selectedTeam?.teamName || translateText(["notAssigned"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.DROPDOWN_ARROW_ICON} />}
-          isFullWidth={false}
-          styles={classes.dropDownBtn}
-          onClick={(event: React.MouseEvent<HTMLElement>) => {
-            setAnchorEl(event.currentTarget);
-            setShowOverlay(true);
-          }}
-          size={ButtonSizes.MEDIUM}
-          disabled={filteredTeams?.length === 0}
-        />
-      </Box>
-      <Popper
-        anchorEl={anchorEl}
-        open={Boolean(showOverlay)}
-        position={"bottom-end"}
-        handleClose={() => {
-          setShowOverlay(false);
+      <RoundedSelect
+        id={`${teamMember.firstName}-team-select`}
+        onChange={handleTeamSelectChange}
+        options={teamOptions}
+        value={
+          selectedTeam?.teamId.toString() ?? translateText(["notAssigned"])
+        }
+        accessibility={{
+          label: `${teamMember?.firstName} ${teamMember?.lastName}`
         }}
-        menuType={MenuTypes.SORT}
-        isManager={true}
-        id={"popper"}
-        isFlip={true}
-        timeout={300}
-        containerStyles={classes.popper}
-      >
-        <Box sx={{ backgroundColor: theme.palette.common.white }}>
-          {filteredTeams?.map((team, index: number) => (
-            <MenuItem
-              key={index}
-              text={team?.teamName}
-              selected={selectedTeam?.teamId === team?.teamId}
-              onClick={() => handleMenuItemClick(team)}
-            />
-          ))}
-        </Box>
-      </Popper>
+        renderValue={(selectedValue) => {
+          const team = filteredTeams?.find(
+            (team) => team.teamId.toString() === selectedValue.toString()
+          );
+
+          if (team !== undefined) {
+            return team?.teamName;
+          }
+
+          return translateText(["notAssigned"]);
+        }}
+      />
     </Stack>
   );
 };

@@ -189,11 +189,11 @@ input[type="number"] {
   left: 0;
   z-index: 2; /* stay above scrolling cells */
   box-shadow: 2px 0 2px -2px #eee;
-  background: #FAFAFA; /* header background */
+  background: #fafafa; /* header background */
 }
 
 /* Optional: give the header a higher stacking context */
 thead .sticky-col {
   z-index: 3;
-  background: #F4F4F5;
+  background: #f4f4f5;
 }

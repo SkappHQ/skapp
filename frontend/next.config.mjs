@@ -201,6 +201,10 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/people"
       },
       {
+        source: "/configurations/user-roles/esignature",
+        destination: "/community/configurations/user-roles/esignature"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },
@@ -321,9 +325,6 @@ const nextConfig = {
         destination: "/community/user-account"
       }
     ];
-  },
-  images: {
-    domains: ["dev-app-storage-bucket.s3.ap-southeast-1.amazonaws.com"]
   },
   eslint: {
     ignoreDuringBuilds: true

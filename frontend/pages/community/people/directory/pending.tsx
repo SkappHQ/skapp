@@ -16,7 +16,6 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const translateAria = useTranslator("peopleAria", "directory");
   const { data } = useSession();
   const router = useRouter();
 
@@ -75,10 +74,7 @@ const Pending = () => {
         isDividerVisible
         isBackButtonVisible={true}
       >
-        <Box
-          role="region"
-          aria-label={translateAria(["pendingInvitationsPage"])}
-        >
+        <Box>
           <EmployeeData isRemovePeople={false} />
           <DirectoryPopupController />
         </Box>

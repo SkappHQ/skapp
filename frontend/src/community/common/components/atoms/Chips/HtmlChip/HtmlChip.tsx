@@ -28,7 +28,7 @@ const HtmlChip = ({
       style={{
         fontSize: "0.75rem",
         lineHeight: "1rem",
-        padding: "0.25rem 1rem 0.25rem 0.1875rem",
+        padding: emoji ? "0.25rem 1rem 0.25rem 0.1875rem" : "0.25rem 1rem",
         borderRadius: "6.25rem",
         backgroundColor: theme.palette.common.white,
         border: `0.0625rem solid ${theme.palette.grey[500]}`,
@@ -38,6 +38,7 @@ const HtmlChip = ({
         maxWidth: "100%",
         display: "inline-block",
         verticalAlign: "middle",
+        fontFamily: theme.typography.fontFamily,
         ...customStyles.text
       }}
     >

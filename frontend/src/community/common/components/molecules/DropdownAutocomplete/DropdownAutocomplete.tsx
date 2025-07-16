@@ -138,6 +138,10 @@ const DropdownAutocomplete: FC<Props> = ({
             mr: ".3125rem",
             display: readOnly ? "none" : "block"
           },
+          "&.Mui-focused, &:focus-visible": {
+            outline: `0.125rem solid ${theme.palette.common.black}`,
+            outlineOffset: "-0.125rem"
+          },
           ...selectStyles
         }}
         renderInput={(params) => {
@@ -224,6 +228,8 @@ const DropdownAutocomplete: FC<Props> = ({
       {!!error && (
         <Typography
           variant="body2"
+          role="alert"
+          aria-live="assertive"
           sx={{
             color: theme.palette.error.contrastText,
             fontSize: "0.875rem",

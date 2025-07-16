@@ -76,6 +76,7 @@ const EmojiPicker = ({
       <Stack sx={classes.labelWrapper}>
         <Typography
           component="label"
+          id="emoji-picker-label"
           sx={{
             color: error
               ? theme.palette.error.contrastText
@@ -93,6 +94,7 @@ const EmojiPicker = ({
           <Tooltip
             id="emoji-field"
             title={tooltip}
+            ariaLabel={tooltip}
             iconColor={
               error
                 ? theme.palette.error.contrastText
@@ -179,7 +181,12 @@ const EmojiPicker = ({
         )}
       </Popper>
       {!!error && (
-        <Typography variant="body2" sx={classes.error}>
+        <Typography
+          role="alert"
+          aria-live="assertive"
+          variant="body2"
+          sx={classes.error}
+        >
           {error}
         </Typography>
       )}

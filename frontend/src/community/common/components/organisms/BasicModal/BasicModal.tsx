@@ -16,9 +16,16 @@ interface Props {
   };
 }
 
-const BasicModal: FC<Props> = ({ open = false, onClose, children, sx, ids }) => {
+const BasicModal: FC<Props> = ({
+  open = false,
+  onClose,
+  children,
+  sx,
+  ids
+}) => {
   return (
     <Modal
+      disablePortal
       aria-labelledby={ids?.title}
       aria-describedby={ids?.description}
       open={open}

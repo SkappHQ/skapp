@@ -33,6 +33,7 @@ const UserLeaveUtilization: FC<Props> = ({ employeeId, leaveTypesList }) => {
       datasets={datasets}
       isLoading={isLoading}
       error={error}
+      isUserProfileView={true}
     />
   );
 };

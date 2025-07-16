@@ -11,9 +11,14 @@ import React, {
   Dispatch,
   JSX,
   SetStateAction,
-  useRef
+  useCallback,
+  useEffect,
+  useRef,
+  useState
 } from "react";
 
+import { KeyboardKeys } from "~community/common/enums/KeyboardEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { ManagerStoreType } from "~community/people/types/AddNewResourceTypes";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
@@ -78,12 +83,91 @@ const AvatarSearch = ({
   isDisabledLabel = false,
   onKeyDown
 }: Props): JSX.Element => {
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "avatarSearch"
+  );
   const parentRef = useRef<HTMLDivElement | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  useEffect(() => {
+    if (!isManagerPopperOpen) {
+      setSelectedIndex(-1);
+    }
+  }, [isManagerPopperOpen]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [managerSuggestions]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isManagerPopperOpen || !managerSuggestions?.length) {
+        if (onKeyDown) {
+          onKeyDown(e);
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case KeyboardKeys.ARROW_DOWN:
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev < managerSuggestions.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case KeyboardKeys.ARROW_UP:
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev > 0 ? prev - 1 : managerSuggestions.length - 1
+          );
+          break;
+        case KeyboardKeys.ENTER:
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < managerSuggestions.length) {
+            handleManagerSelect(managerSuggestions[selectedIndex]);
+          }
+          break;
+        case KeyboardKeys.ESCAPE:
+          e.preventDefault();
+          setIsManagerPopperOpen(false);
+          setSelectedIndex(-1);
+          break;
+        case KeyboardKeys.TAB:
+          setIsManagerPopperOpen(false);
+          setSelectedIndex(-1);
+          break;
+        default:
+          if (onKeyDown) {
+            onKeyDown(e);
+          }
+          break;
+      }
+    },
+    [
+      isManagerPopperOpen,
+      managerSuggestions,
+      selectedIndex,
+      handleManagerSelect,
+      setIsManagerPopperOpen,
+      onKeyDown
+    ]
+  );
   const isPlaceholderAvailable = () => {
     return (
       Number(newResourceManager?.employeeId) > 0 ||
       (newResourceManagerList && newResourceManagerList?.length > 0)
     );
+  };
+
+  const getAriaLabel = () => {
+    let baseLabel = title;
+
+    if (!isMultiSelect && newResourceManager?.employeeId) {
+      baseLabel += ` ${translateAria(["currentlySelected"])} ${newResourceManager.firstName} ${newResourceManager.lastName}`;
+    }
+    return baseLabel;
   };
 
   return (
@@ -243,8 +327,9 @@ const AvatarSearch = ({
               popperStyles={{
                 width: "100%"
               }}
-              onKeyDown={onKeyDown}
-              ariaLabel={placeholder}
+              onKeyDown={handleKeyDown}
+              ariaLabel={getAriaLabel()}
+              selectedIndex={selectedIndex}
             />
           </ClickAwayListener>
         </Stack>
