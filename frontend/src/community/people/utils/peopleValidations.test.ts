@@ -1,11 +1,10 @@
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 
 import {
+  employeeEmergencyContactDetailsValidation,
   employeeEmploymentDetailsValidation,
   employeeEntitlementsDetailsValidation,
   employeeGeneralDetailsValidation,
-  employeePrimaryEmergencyContactDetailsValidation,
-  employeeSecondaryEmergencyContactDetailsValidation,
   quickAddEmployeeValidations
 } from "./peopleValidations";
 
@@ -13,7 +12,7 @@ const translator = (suffixes: string[]) => suffixes[0];
 
 describe("Emergency Contact Validation", () => {
   describe("Primary Emergency Contact", () => {
-    const schema = employeePrimaryEmergencyContactDetailsValidation(translator);
+    const schema = employeeEmergencyContactDetailsValidation(translator);
 
     it("should validate valid primary emergency contact details", async () => {
       const validData = {
@@ -44,8 +43,7 @@ describe("Emergency Contact Validation", () => {
   });
 
   describe("Secondary Emergency Contact", () => {
-    const schema =
-      employeeSecondaryEmergencyContactDetailsValidation(translator);
+    const schema = employeeEmergencyContactDetailsValidation(translator);
 
     it("should validate complete valid data", async () => {
       const validData = {
