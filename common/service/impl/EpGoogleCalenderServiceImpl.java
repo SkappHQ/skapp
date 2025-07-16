@@ -401,6 +401,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			log.error("GoogleCalendar: generateAccessToken: {}", exception.getMessage(), exception);
 			employeeCalendar.setCalendarToken(null);
 			employeeCalendar.setIsEnabled(false);
+			employeeCalendar.setCalendarType(EpCalendarType.NONE);
 			employeeCalendarDao.save(employeeCalendar);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
 		}
