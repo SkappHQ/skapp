@@ -85,6 +85,9 @@
     "drawer": {
       "getHelp": "Get Help",
       "applyLeaveBtn": "Apply Leave"
+    },
+    "submitRequestModal": {
+      "title": "Submit a request"
     }
   },
   "durations": {

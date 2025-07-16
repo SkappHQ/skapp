@@ -14,12 +14,13 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import React, { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import SubmitRequestModal from "~community/common/components/molecules/SubmitRequestModal/SubmitRequestModal";
 import { appModes } from "~community/common/constants/configs";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
@@ -161,6 +162,20 @@ const Drawer = (): JSX.Element => {
       setOrgData(organizationDetails?.results[0]);
     }
   }, [organizationDetails, orgLoading]);
+
+  const [isSubmitRequestModalOpen, setIsSubmitRequestModalOpen] =
+    useState(false);
+
+  const handleOpenSubmitRequestModal = (
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
+    event.preventDefault();
+    setIsSubmitRequestModalOpen(true);
+  };
+
+  const handleCloseSubmitRequestModal = () => {
+    setIsSubmitRequestModalOpen(false);
+  };
 
   return (
     <StyledDrawer
@@ -378,6 +393,7 @@ const Drawer = (): JSX.Element => {
             {isSuperAdmin && (
               <MuiLink
                 href="https://docs.skapp.com"
+                onClick={handleOpenSubmitRequestModal}
                 target="_blank"
                 variant="body1"
                 color="inherit"
@@ -388,6 +404,10 @@ const Drawer = (): JSX.Element => {
                 {translateText(["getHelp"])}
               </MuiLink>
             )}
+            <SubmitRequestModal
+              isOpen={isSubmitRequestModalOpen}
+              onClose={handleCloseSubmitRequestModal}
+            />
           </Stack>
         )}
       </Stack>
