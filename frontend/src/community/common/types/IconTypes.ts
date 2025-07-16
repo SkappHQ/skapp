@@ -149,6 +149,7 @@ export enum IconName {
   BLOCKED_ICON = "BLOCKED_ICON",
   DRAWER_CLOSE_ICON = "DRAWER_CLOSE_ICON",
   DRAWER_OPEN_ICON = "DRAWER_OPEN_ICON",
-  GEM_ICON = "GEM_ICON"
+  GEM_ICON = "GEM_ICON",
+  PROJECTS_ICON = "PROJECTS_ICON",
   // add more icons in snake case
 }
