@@ -103,22 +103,6 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
       };
     }
 
-    if (route.name === "Project Management") {
-      return {
-        id: route?.id,
-        name: "Project Management",
-        url: ROUTES.INTEGRATIONS,
-        icon: route?.icon,
-        hasSubTree: false,
-        requiredAuthLevel: [
-          EmployeeTypes.PEOPLE_EMPLOYEE,
-          EmployeeTypes.LEAVE_EMPLOYEE,
-          EmployeeTypes.ATTENDANCE_EMPLOYEE
-        ],
-        subTree: []
-      };
-    }
-
     return route;
   });
 
