@@ -3,7 +3,7 @@
     "addJobTitleButton": "Add job title",
     "jobTitleField": "{{jobTitleName}} job title field",
     "edit": "Edit",
-    "delete": "Delete",
+    "delete": "Delete job title",
     "check": "Check",
     "cancel": "Cancel"
   },
