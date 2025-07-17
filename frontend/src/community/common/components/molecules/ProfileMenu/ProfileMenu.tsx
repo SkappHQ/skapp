@@ -4,6 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
+import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
@@ -13,6 +14,7 @@ import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
@@ -30,6 +32,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const isPeopleManagerOrSuperAdmin = session?.user.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
   );
+  const environment = useGetEnvironment();
 
   const asPath = router.asPath;
 
@@ -66,6 +69,9 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
     typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
 
   const handleSignOut = async () => {
+    if (environment === appModes.ENTERPRISE) {
+      document.cookie = `tenant=; domain=.${process.env.NEXT_PUBLIC_DOMAIN}; secure; path=/; SameSite=Lax`;
+    }
     await signOut({
       callbackUrl: `/signin?tenantId=${tenantId}`,
       redirect: true
