@@ -325,7 +325,7 @@ const Drawer = (): JSX.Element => {
                                   subTreeRoute?.url ?? ""
                                 )
                               )}
-                              tabIndex={0}
+                              tabIndex={isExpanded ? 0 : -1}
                             >
                               <ListItemText
                                 primary={subTreeRoute.name}
