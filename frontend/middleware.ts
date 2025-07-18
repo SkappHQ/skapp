@@ -299,6 +299,6 @@ export const config = {
     "/sign/sent/:path*",
     "/sign/complete/:path*",
     // Project routes
-    "/projects/:path*",
+    "/projects/:path*"
   ]
 };

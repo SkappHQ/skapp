@@ -285,7 +285,7 @@ export const IconMapping: Partial<
   [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
-  [IconName.PROJECTS_ICON]: ProjectsIcon,
+  [IconName.PROJECTS_ICON]: ProjectsIcon
   // Add more icons here as needed
 };
 
