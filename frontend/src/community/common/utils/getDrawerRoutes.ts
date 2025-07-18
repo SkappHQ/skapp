@@ -152,7 +152,7 @@ const getDrawerRoutes = ({
           if (hasAdditionalRolesForLeaveEmployee) {
             return {
               id: route?.id,
-              name: "Leave Requests",
+              name: "My Leave Requests",
               url: ROUTES.LEAVE.MY_REQUESTS,
               icon: route?.icon,
               hasSubTree: false

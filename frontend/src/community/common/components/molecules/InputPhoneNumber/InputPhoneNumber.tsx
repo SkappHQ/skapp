@@ -34,6 +34,7 @@ interface Props {
   isDisabled?: boolean;
   readOnly?: boolean;
   labelStyles?: SxProps;
+  ariaLabel?: string;
 }
 const InputPhoneNumber: FC<Props> = ({
   label,
@@ -51,7 +52,8 @@ const InputPhoneNumber: FC<Props> = ({
   isDisabled,
   inputStyle,
   readOnly,
-  labelStyles
+  labelStyles,
+  ariaLabel
 }) => {
   const translateText = useTranslator(
     "commonAria",
@@ -151,14 +153,14 @@ const InputPhoneNumber: FC<Props> = ({
         alignItems="flex-start"
         gap={1}
         role="group"
-        aria-label={`${label} ${translateText(["countryCode"])}`}
+        aria-label={`${ariaLabel ? ariaLabel : label} ${translateText(["countryCode"])}`}
       >
         <PhoneInput
           value={countryCodeValue}
           onChange={onChangeCountry}
           inputProps={{
             readOnly: true,
-            "aria-label": `${label} ${translateText(["countryCode"])}`,
+            "aria-label": `${ariaLabel ? ariaLabel : label} ${translateText(["countryCode"])}`,
             role: "combobox",
             "aria-expanded": phoneInputRef.current?.state.open
               ? "true"
@@ -261,6 +263,7 @@ const InputPhoneNumber: FC<Props> = ({
               e.preventDefault();
             }
           }}
+          ariaLabel={ariaLabel}
           isDisabled={isDisabled}
         />
       </Stack>

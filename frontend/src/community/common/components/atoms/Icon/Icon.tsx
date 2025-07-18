@@ -41,6 +41,7 @@ import DeniedIcon from "~community/common/assets/Icons/DeniedIcon";
 import DeniedStatusIcon from "~community/common/assets/Icons/DeniedStatusIcon";
 import DocumentsIcon from "~community/common/assets/Icons/DocumentsIcon";
 import DottedClockIcon from "~community/common/assets/Icons/DottedClockIcon";
+import DownloadDocumentIcon from "~community/common/assets/Icons/DownloadDocumentIcon";
 import DownloadIcon from "~community/common/assets/Icons/DownloadIcon";
 import DragIcon from "~community/common/assets/Icons/DragIcon";
 import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
@@ -283,6 +284,7 @@ export const IconMapping: Partial<
   [IconName.DRAWER_CLOSE_ICON]: DrawerCloseIcon,
   [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
   [IconName.GEM_ICON]: GemIcon,
+  [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
   // Add more icons here as needed
 };

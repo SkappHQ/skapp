@@ -66,20 +66,21 @@ const EmploymentDetailsForm = ({
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
 
   const onSave = async () => {
-    if (
-      employee?.employment?.employmentDetails?.email !==
-        initialEmployee?.employment?.employmentDetails?.email &&
-      !isReinviteConfirmationModalOpen &&
-      !isAddFlow
-    ) {
-      setIsReinviteConfirmationModalOpen(true);
-      return;
-    }
-
     const employmentFormErrors =
       (await employmentDetailsRef?.current?.validateForm()) || {};
     const identificationFormErrors =
       (await identificationDetailsRef?.current?.validateForm()) || {};
+
+    if (
+      employee?.employment?.employmentDetails?.email !==
+        initialEmployee?.employment?.employmentDetails?.email &&
+      !isReinviteConfirmationModalOpen &&
+      !isAddFlow &&
+      !employmentFormErrors?.email
+    ) {
+      setIsReinviteConfirmationModalOpen(true);
+      return;
+    }
 
     const employmentFormIsValid =
       employmentFormErrors && Object.keys(employmentFormErrors).length === 0;
