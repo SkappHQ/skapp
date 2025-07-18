@@ -35,8 +35,7 @@ export const getModalTitle = (
       return peopleTranslateText(["transferMembers"]);
     case JobFamilyActionModalEnums.JOB_TITLE_TRANSFER_MEMBERS:
       return peopleTranslateText(["transferMembers"]);
-    case JobFamilyActionModalEnums.UNSAVED_CHANGES_ADD_JOB_FAMILY:
-    case JobFamilyActionModalEnums.UNSAVED_CHANGES_EDIT_JOB_FAMILY:
+    case JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY:
     case JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS:
     case JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS:
       return peopleTranslateText(["unsavedChangesModalTitle"]);
@@ -95,12 +94,8 @@ export const handleJobFamilyCloseModal = ({
   if (hasDataChanged) {
     switch (jobFamilyModalType) {
       case JobFamilyActionModalEnums.ADD_JOB_FAMILY:
-        nextModalType =
-          JobFamilyActionModalEnums.UNSAVED_CHANGES_ADD_JOB_FAMILY;
-        break;
       case JobFamilyActionModalEnums.EDIT_JOB_FAMILY:
-        nextModalType =
-          JobFamilyActionModalEnums.UNSAVED_CHANGES_EDIT_JOB_FAMILY;
+        nextModalType = JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY;
         break;
       case JobFamilyActionModalEnums.JOB_FAMILY_TRANSFER_MEMBERS:
         nextModalType =
