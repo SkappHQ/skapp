@@ -22,9 +22,11 @@ const UnsavedChangesModal = () => {
       jobFamilyModalType ===
       JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY
     ) {
-      newModalType = currentEditingJobFamily?.jobFamilyId
-        ? JobFamilyActionModalEnums.EDIT_JOB_FAMILY
-        : JobFamilyActionModalEnums.ADD_JOB_FAMILY;
+      if (currentEditingJobFamily?.jobFamilyId) {
+        newModalType = JobFamilyActionModalEnums.EDIT_JOB_FAMILY;
+      } else {
+        newModalType = JobFamilyActionModalEnums.ADD_JOB_FAMILY;
+      }
     } else {
       const modalTypeMap = {
         [JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS]:
