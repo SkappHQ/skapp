@@ -13,8 +13,7 @@ public enum EpCacheKeys implements CacheKey {
 
 	CODE_CHALLENGE_CACHE_KEY("code_challenge_cache:%s", EpCommonConstants.REDIS_TTL_CODE_CHALLENGE_CACHE_KEY,
 			TimeUnit.MINUTES),
-	USER_DATA_CACHE_KEY("user_data_cache:%s:user_data", EpCommonConstants.REDIS_TTL_USER_DATA_CACHE_KEY,
-			TimeUnit.DAYS);
+	USER_DATA_CACHE_KEY("user_data_cache:%s:user_data", EpCommonConstants.REDIS_TTL_USER_DATA_CACHE_KEY, TimeUnit.DAYS);
 
 	private final String key;
 
