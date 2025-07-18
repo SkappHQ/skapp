@@ -196,7 +196,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           >
             <Checkbox
               label={
-                <span>
+                <span aria-label={leaveType.name}>
                   <span role="img" aria-hidden="true">
                     {getEmoji(leaveType?.emojiCode || "")}
                   </span>{" "}

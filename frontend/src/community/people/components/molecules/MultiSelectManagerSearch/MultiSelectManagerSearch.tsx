@@ -95,6 +95,14 @@ const MultiSelectManagerSearch = ({
     }
   }, [focusedIndex]);
 
+  useEffect(() => {
+    if (managerSearchTerm?.trim() !== "") {
+      setIsExpanded(displayItems.length > 0);
+    } else if (managerSearchTerm?.trim() === "" && displayItems.length === 0) {
+      setIsExpanded(false);
+    }
+  }, [displayItems.length, managerSearchTerm]);
+
   const toggleManagerSelection = (
     employee: EmployeeDataType | L4ManagerType
   ) => {
@@ -214,12 +222,13 @@ const MultiSelectManagerSearch = ({
           autoFocus={true}
           onKeyDown={handleKeyDown}
           onFocus={handleSearchFocus}
-          accessibility={{
-            ariaLabel: translateAria(["searchManagers"]),
+          inputProps={{
+            "aria-label": translateAria(["searchManagers"]),
+            "aria-expanded": isExpanded,
+            "aria-activedescendant": getActiveDescendant(),
+            "aria-autocomplete": "list",
             role: "combobox"
           }}
-          isExpanded={isExpanded}
-          activeDescendant={getActiveDescendant()}
         />
       </Box>
 

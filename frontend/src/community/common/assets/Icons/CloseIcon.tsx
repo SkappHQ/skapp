@@ -22,7 +22,7 @@ const CloseIcon = ({
         xmlns="http://www.w3.org/2000/svg"
         onClick={onClick}
         {...svgProps}
-        style={{ cursor: "pointer" }}
+        style={{ cursor: onClick ? "pointer" : "default" }}
       >
         <g clipPath="url(#clip0_3463_17966)">
           <path

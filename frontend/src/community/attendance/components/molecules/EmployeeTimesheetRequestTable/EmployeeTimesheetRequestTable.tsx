@@ -224,7 +224,7 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
       </Typography>
       <TimesheetRequestsFilters />
       <Table
-        tableName={TableNames.EMPLOYEE_TIMESHEET_REQUEST}
+        tableName={TableNames.TIME_ENTRY_REQUEST}
         headers={tableHeaders}
         rows={transformToTableRows() || []}
         isLoading={isRequestLoading}

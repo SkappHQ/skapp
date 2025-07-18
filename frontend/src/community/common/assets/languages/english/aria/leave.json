@@ -1,12 +1,14 @@
 {
   "dashboard": {
     "resourceAvailabilityTrendMonthlyNext": "next month",
-    "resourceAvailabilityTrendMonthlyPrevious": "previous month"
+    "resourceAvailabilityTrendMonthlyPrevious": "previous month",
+    "leaveUtilizationChart": "Leave utilization chart - use arrow keys to navigate"
   },
   "myRequests": {
     "myLeaveAllocation": {
       "myLeaveAllocationSection": "My Leave Allocation for the year {{year}}",
-      "selectYear": "Select Year for My Leave Allocation, current year selected is"
+      "selectYear": "Select Year for My Leave Allocation",
+      "currentSelection": "current year selected is"
     },
     "myLeaveRequests": {
       "myLeaveRequestsSection": "Accessing My Leave Requests",
@@ -41,7 +43,7 @@
       "icon": "Attach a file"
     },
     "calendar": {
-      "icon": "View leave entitlement balance",
+      "viewLeaveEntitlementBalance": "View leave entitlement balance",
       "selectDateForLeave": "select the dates for leave",
       "back": "Back",
       "next": "Next",
@@ -70,6 +72,11 @@
   "entitlement": {
     "leaveEntitlementTable": {
       "select": "Leave entitlements by year"
+    },
+    "customLeaveAllocationTable": {
+      "selectYear": "Custom leave allocations by year",
+      "filterButton": "Filter options",
+      "filterOption": "{{filterName}} option"
     }
   },
   "leaveTypeCard": {

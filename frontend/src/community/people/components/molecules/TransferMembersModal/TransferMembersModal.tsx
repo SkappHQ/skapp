@@ -77,7 +77,7 @@ const TransferMembersModal: FC<Props> = ({
     <Stack sx={classes.wrapper}>
       <Typography>{description}</Typography>
       <Stack sx={classes.contentWrapper}>
-        <Stack sx={classes.textWrapper}>
+        <Stack sx={classes.textWrapper} aria-hidden={true}>
           <Typography
             variant="body1"
             sx={{ ...classes.membersCell } as SxProps}
@@ -105,7 +105,7 @@ const TransferMembersModal: FC<Props> = ({
             {translateText(["jobTitle"])}
           </Typography>
         </Stack>
-        <Divider sx={classes.divider} />
+        <Divider sx={classes.divider} aria-hidden={true} />
         <Stack sx={classes.bodyWrapper}>
           <Stack sx={classes.bodyContainer}>
             {values?.map((member: TransferMemberFormType) => {
@@ -131,6 +131,7 @@ const TransferMembersModal: FC<Props> = ({
                     />
                     <Typography
                       variant="body1"
+                      aria-hidden={true}
                       sx={
                         {
                           ...classes.membersName,
@@ -141,13 +142,15 @@ const TransferMembersModal: FC<Props> = ({
                       {`${employee?.firstName} ${employee?.lastName}`}
                     </Typography>
                   </Box>
-                  <Box sx={classes.dropDownCell}>
+                  <Box sx={classes.dropDownCell} aria-hidden={true}>
                     <RoundedSelect
                       id="job-family-select"
                       options={jobFamily ?? []}
                       value={
                         member.jobFamily?.name ??
-                        translateText(["jobFamilyDropDownPlaceholder"])
+                        translateText(["jobFamilyDropDownPlaceholder"], {
+                          memberName: `${employee?.firstName} ${employee?.lastName}`
+                        })
                       }
                       variant="body2"
                       disabled={!jobFamilyTransfer}
@@ -187,14 +190,16 @@ const TransferMembersModal: FC<Props> = ({
                       }}
                     />
                   </Box>
-                  <Box sx={classes.dropDownCell}>
+                  <Box sx={classes.dropDownCell} aria-hidden={true}>
                     <RoundedSelect
                       id="job-title-select"
                       name="jobTitle"
                       options={jobTitleOptions ?? []}
                       value={
                         member.jobTitle?.name ??
-                        translateText(["jobTitleDropDownPlaceholder"])
+                        translateText(["jobTitleDropDownPlaceholder"], {
+                          memberName: `${employee?.firstName} ${employee?.lastName}`
+                        })
                       }
                       variant="body2"
                       disabled={!member.jobFamily?.jobFamilyId}
@@ -246,12 +251,18 @@ const TransferMembersModal: FC<Props> = ({
         buttonStyle={ButtonStyle.ERROR}
         endIcon={IconName.RIGHT_ARROW_ICON}
         onClick={() => handleSubmit(values)}
+        accessibility={{
+          ariaHidden: true
+        }}
       />
       <Button
         label={translateText(["backBtnText"])}
         buttonStyle={ButtonStyle.TERTIARY}
         startIcon={IconName.LEFT_ARROW_ICON}
         onClick={handleCancel}
+        accessibility={{
+          ariaHidden: true
+        }}
       />
     </Stack>
   );

@@ -65,12 +65,9 @@ const AddCalendar: FC = () => {
           endIcon={<DownSideArrow />}
           onClick={downloadTemplateHandler}
           shouldBlink={isButtonBlinking.download}
-          accessibility={{
-            ariaDescribedBy: "download-csv-description"
-          }}
         />
       </Box>
-      <Divider />
+      <Divider aria-hidden={true} />
       <Button
         label="Next"
         endIcon={<RightArrowIcon />}

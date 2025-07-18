@@ -44,10 +44,7 @@ const UserRolesTable = (): JSX.Element => {
               EmployeeTypes.ATTENDANCE_EMPLOYEE
             );
           }
-          // TODO: Remove once e-signature is fully added
-          if (role.module.toUpperCase() === Modules.ESIGNATURE) {
-            return;
-          }
+
           return true;
         })
         .map((role: AllUserRolesResponseType) => {

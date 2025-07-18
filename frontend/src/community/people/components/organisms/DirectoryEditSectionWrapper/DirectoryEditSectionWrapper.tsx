@@ -1,8 +1,9 @@
 import { Box } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -25,6 +26,8 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData, isLoading } = useGetEmployee(employeeId);
   const translateAria = useTranslator("peopleAria", "directory");
 
+  const peopleFormSectionsRef = useRef<HTMLDivElement>(null);
+
   const {
     isUnsavedChangesModalOpen,
     currentStep,
@@ -39,6 +42,8 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
     setIsCancelModalConfirmButtonClicked,
     setIsCancelChangesModalOpen
   } = usePeopleStore((state) => state);
+
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {
@@ -74,11 +79,17 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
       <Box sx={{ mt: "0.75rem" }}>
         {isLoading ? <EditInfoCardSkeleton /> : <EditInfoCard />}
       </Box>
-      <DirectorySteppers employeeId={Number(employeeId)} />
+      <DirectorySteppers
+        employeeId={Number(employeeId)}
+        formRef={peopleFormSectionsRef}
+      />
       {isLoading ? (
         <EditAllInfoSkeleton />
       ) : (
-        <PeopleFormSections employeeId={Number(employeeId)} />
+        <PeopleFormSections
+          employeeId={Number(employeeId)}
+          formRef={peopleFormSectionsRef}
+        />
       )}
       <TerminationModalController />
       <UserDeletionModalController />

@@ -5,6 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmploymentAllocationTypes } from "~community/people/types/AddNewResourceTypes";
 import {
+  EmployeeDataFilterTypes,
   EmploymentStatusTypes,
   EmploymentTypes
 } from "~community/people/types/EmployeeTypes";
@@ -26,7 +27,15 @@ const EmploymentSection = ({
   const { employeeDataFilter, setEmployeeDataFilter } = usePeopleStore(
     (state) => state
   );
-  const filterData = [
+
+  type FilterKey = keyof EmployeeDataFilterTypes;
+
+  const filterData: {
+    title: string;
+    data: { label: string; value: string }[];
+    filterKey: FilterKey;
+    accessibilityKey: string;
+  }[] = [
     {
       title: "Employment Type",
       data: [
@@ -37,7 +46,8 @@ const EmploymentSection = ({
         },
         { label: translateText(["contract"]), value: EmploymentTypes.CONTRACT }
       ],
-      filterKey: "employmentTypes"
+      filterKey: "employmentTypes",
+      accessibilityKey: "employmentTypes"
     },
     {
       title: "Employment Allocation",
@@ -51,7 +61,8 @@ const EmploymentSection = ({
           value: EmploymentAllocationTypes.PART_TIME
         }
       ],
-      filterKey: "employmentAllocations"
+      filterKey: "employmentTypes",
+      accessibilityKey: "employmentAllocations"
     },
     {
       title: "Employment Status",
@@ -65,20 +76,21 @@ const EmploymentSection = ({
           value: EmploymentStatusTypes.PENDING
         }
       ],
-      filterKey: "accountStatus"
+      filterKey: "employmentTypes",
+      accessibilityKey: "accountStatus"
     }
   ];
 
   const handleFilterChange = (
     value: string,
-    filterKey: string,
+    accessibilityKey: string,
     currentFilter: string[]
   ) => {
     if (!currentFilter.includes(value)) {
-      setEmployeeDataFilter(filterKey, [...currentFilter, value]);
+      setEmployeeDataFilter(accessibilityKey, [...currentFilter, value]);
     } else {
       setEmployeeDataFilter(
-        filterKey,
+        accessibilityKey,
         currentFilter.filter((currentItem) => currentItem !== value)
       );
     }
@@ -99,10 +111,10 @@ const EmploymentSection = ({
             selected={selected}
             key={filter.title}
             title={filter.title}
+            accessibilityKey={filter.accessibilityKey}
             data={filter.data}
-            filterKey={filter.filterKey}
             handleFilterChange={handleFilterChange}
-            currentFilter={employeeDataFilter[filter.filterKey]}
+            currentFilter={employeeDataFilter[filter.accessibilityKey] ?? []}
           />
         );
       })}

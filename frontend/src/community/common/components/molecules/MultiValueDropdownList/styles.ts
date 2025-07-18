@@ -49,6 +49,11 @@ export const styles = (theme: Theme) => ({
         error && errorFocusOutlineNeeded
           ? `${theme.palette.error.contrastText} 0.0625rem solid`
           : "none"
+    },
+    "&:focus-within": {
+      outline: `0.125rem solid  ${theme.palette.common.black}`,
+      outlineOffset: "-0.125rem",
+      borderRadius: "0.5rem"
     }
   }),
 

@@ -4,7 +4,8 @@
     "skipTo": "Skip to:",
     "mainContent": "Main content",
     "topBar": "Top bar",
-    "sideBar": "Side bar"
+    "sideBar": "Side bar",
+    "quickSetup": "Quick Setup"
   },
   "components": {
     "pagination": {
@@ -19,6 +20,7 @@
       "pickColor": "Select color {{color}}"
     },
     "backButton": "Click me to go to previous page",
+    "closeButton": "Click me to quit signing",
     "filterBtn": "Filter all leave requests",
     "inputDate": {
       "tooltip": "tooltip",
@@ -79,15 +81,19 @@
       "label": "icon chip"
     },
     "filterButton": {
-      "appliedFilter": "Applied filter {{filterLabel}}"
+      "appliedFilter": "Applied filter {{filterLabel}}",
+      "label": "Filter options"
     },
     "avatarSearch": {
       "currentlySelected": "currently selected:"
     },
     "multiSelectManagerSearch": {
       "searchManagers": "Search for managers",
-      "managerOptions": "Manager options",
+      "managerOptions": "Other supervisors options",
       "selected": "selected"
+    },
+    "toggleSwitch": {
+      "label": "Toggle switch, {{option}} selected"
     }
   },
   "modals": {
@@ -105,6 +111,6 @@
   },
   "dateRangePicker": {
     "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date",
-    "noSelectedDateLabel": "Press enter to select date"
+    "noSelectedDateLabel": "Selected date range is from {{startDate}} to {{endDate}}. Press enter to select date"
   }
 }

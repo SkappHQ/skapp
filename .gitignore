@@ -61,3 +61,5 @@ backend/.nb-gradle/
 backend/build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+.npmrc

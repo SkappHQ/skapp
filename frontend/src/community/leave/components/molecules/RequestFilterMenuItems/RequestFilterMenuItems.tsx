@@ -137,7 +137,8 @@ const RequestFilterMenuItems = ({
         ...filter,
         [type]: updatedFilters
       });
-      const updatedList = optionOrder.filter((item) => item !== filterValue);
+      const valueToRemove = type === "type" ? selectedButton.text : filterValue;
+      const updatedList = optionOrder.filter((item) => item !== valueToRemove);
       setOptionOrder(updatedList);
     }
   };
@@ -170,6 +171,14 @@ const RequestFilterMenuItems = ({
   useEffect(() => {
     setOptionOrder(leaveRequestFilterOrder);
   }, [leaveRequestFilterOrder, setOptionOrder]);
+
+  useEffect(() => {
+    setFilter({
+      status: leaveRequestsFilter.status || [],
+      type: leaveRequestsFilter.type || [],
+      date: leaveRequestsFilter.date || ""
+    });
+  }, [leaveRequestsFilter]);
 
   return (
     <Box sx={{ p: "0.75rem", backgroundColor: "common.white" }}>

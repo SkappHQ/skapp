@@ -3,10 +3,7 @@ import { ChangeEvent, SyntheticEvent } from "react";
 
 import { isValidAlphaNumericString } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
-import {
-  isValidAlphaNumericNamePattern,
-  isValidEmailPattern
-} from "~community/common/utils/validation";
+import { isValidAlphaNumericNamePattern } from "~community/common/utils/validation";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3ContactDetailsType } from "~community/people/types/PeopleTypes";
 
@@ -24,7 +21,7 @@ const useContactDetailsFormHandlers = ({ formik }: Props) => {
     let isValid = false;
 
     if (name === "personalEmail") {
-      isValid = value === "" || isValidEmailPattern(value);
+      isValid = true;
     } else if (["addressLine1", "addressLine2"].includes(name)) {
       isValid = value === "" || isValidAlphaNumericNamePattern(value);
     } else if (["state", "city"].includes(name)) {
