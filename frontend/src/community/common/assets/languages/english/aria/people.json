@@ -5,7 +5,19 @@
     "edit": "Edit",
     "delete": "Delete job title",
     "check": "Check",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "table": {
+      "actionColumn": {
+        "editButton": {
+          "label": "Edit {{jobFamilyName}} job family",
+          "description": ""
+        },
+        "deleteButton": {
+          "label": "Delete {{jobFamilyName}} job family",
+          "description": ""
+        }
+      }
+    }
   },
   "teams": {
     "table": {

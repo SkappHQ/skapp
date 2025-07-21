@@ -1,12 +1,17 @@
 import { Box, Theme, useTheme } from "@mui/material";
 import { FC } from "react";
 
+import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
+import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -37,6 +42,7 @@ const JobFamilyTable: FC<Props> = ({
   const classes = styles(theme);
 
   const translateText = useTranslator("peopleModule", "jobFamily");
+  const ariaTranslateText = useTranslator("peopleAria", "jobFamily");
 
   const { isPeopleAdmin } = useSessionData();
 
@@ -103,6 +109,80 @@ const JobFamilyTable: FC<Props> = ({
                 max={6}
               />
             )) || [],
+          actions: isPeopleAdmin ? (
+            <>
+              <IconButton
+                icon={<Icon name={IconName.EDIT_ICON} />}
+                id={`${jobFamilyData.jobFamilyId}-edit-btn`}
+                hoverEffect={false}
+                buttonStyles={classes.editIconBtn}
+                onClick={() =>
+                  handleJobFamilyEditBtnClick(
+                    jobFamilyData,
+                    setCurrentEditingJobFamily,
+                    setJobFamilyModalType
+                  )
+                }
+                ariaLabel={ariaTranslateText(
+                  ["table", "actionColumn", "editButton", "label"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+                ariaDescription={ariaTranslateText(
+                  ["table", "actionColumn", "editButton", "description"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+              />
+              <IconButton
+                icon={
+                  <Icon
+                    name={IconName.DELETE_BUTTON_ICON}
+                    width="10"
+                    height="12"
+                  />
+                }
+                id={`${jobFamilyData.jobFamilyId}-delete-btn`}
+                hoverEffect={false}
+                buttonStyles={classes.deleteIconBtn}
+                onClick={() =>
+                  handleJobFamilyDeleteBtnClick(
+                    allJobFamilies,
+                    jobFamilyData,
+                    setCurrentDeletingJobFamily,
+                    setJobFamilyModalType
+                  )
+                }
+                ariaLabel={ariaTranslateText(
+                  ["table", "actionColumn", "deleteButton", "label"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+                ariaDescription={ariaTranslateText(
+                  ["table", "actionColumn", "deleteButton", "description"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+              />
+            </>
+          ) : (
+            <Button
+              label={translateText(["viewBtnText"])}
+              buttonStyle={ButtonStyle.TERTIARY}
+              styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
+              onClick={() =>
+                handleJobFamilyEditBtnClick(
+                  jobFamilyData,
+                  setCurrentEditingJobFamily,
+                  setJobFamilyModalType
+                )
+              }
+            />
+          ),
           actionData: jobFamilyData,
           ariaLabel: {
             editButton: translateText(["editButton.label"], {
@@ -126,7 +206,8 @@ const JobFamilyTable: FC<Props> = ({
 
   const tableHeaders = [
     { id: "jobFamily", label: translateText(["jobFamilyHeader"]) },
-    { id: "employees", label: translateText(["memberHeader"]) }
+    { id: "employees", label: translateText(["memberHeader"]) },
+    { id: "actions", label: translateText(["actionsHeader"]) }
   ];
 
   return (
@@ -169,29 +250,6 @@ const JobFamilyTable: FC<Props> = ({
           loadingState: {
             skeleton: {
               rows: 6
-            }
-          },
-          actionColumn: {
-            isEnabled: isPeopleAdmin,
-            actionBtns: {
-              left: {
-                onClick: (jobFamilyData: AllJobFamilyType) => {
-                  handleJobFamilyEditBtnClick(
-                    jobFamilyData,
-                    setCurrentEditingJobFamily,
-                    setJobFamilyModalType
-                  );
-                }
-              },
-              right: {
-                onClick: (jobFamilyData: AllJobFamilyType) =>
-                  handleJobFamilyDeleteBtnClick(
-                    allJobFamilies,
-                    jobFamilyData,
-                    setCurrentDeletingJobFamily,
-                    setJobFamilyModalType
-                  )
-              }
             }
           }
         }}
