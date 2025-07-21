@@ -65,115 +65,56 @@ const JobFamilyTable: FC<Props> = ({
     }));
 
   const transformToTableRows = () => {
-    return (
-      allJobFamilies
-        ?.filter((jobFamilyData: AllJobFamilyType) =>
-          jobFamilyData?.name
-            ?.toLowerCase()
-            ?.includes(jobFamilySearchTerm?.toLowerCase())
-        )
-        .map((jobFamilyData: AllJobFamilyType) => ({
-          id: jobFamilyData.jobFamilyId,
-          jobFamily: jobFamilyData.name,
-          employees:
-            ((jobFamilyData?.employees as JobFamilyEmployeeDataType[])?.length <
-            2 ? (
-              (jobFamilyData?.employees as JobFamilyEmployeeDataType[]).map(
-                (employee: JobFamilyEmployeeDataType) => {
-                  return (
-                    <AvatarChip
-                      key={employee.employeeId}
-                      firstName={employee?.firstName ?? ""}
-                      lastName={employee?.lastName}
-                      avatarUrl={employee?.authPic}
-                      isResponsiveLayout
-                      chipStyles={classes.avatarChip}
-                    />
-                  );
-                }
-              )
-            ) : (
-              <AvatarGroup
-                componentStyles={classes.avatarGroup}
-                avatars={
-                  jobFamilyData?.employees
-                    ? (
-                        jobFamilyData?.employees as JobFamilyEmployeeDataType[]
-                      ).map((employee: JobFamilyEmployeeDataType) => ({
-                        firstName: employee.firstName,
-                        lastName: employee.lastName,
-                        image: employee.authPic as string
-                      }))
-                    : []
-                }
-                max={6}
-              />
-            )) || [],
-          actions: isPeopleAdmin ? (
-            <>
-              <IconButton
-                icon={<Icon name={IconName.EDIT_ICON} />}
-                id={`${jobFamilyData.jobFamilyId}-edit-btn`}
-                hoverEffect={false}
-                buttonStyles={classes.editIconBtn}
-                onClick={() =>
-                  handleJobFamilyEditBtnClick(
-                    jobFamilyData,
-                    setCurrentEditingJobFamily,
-                    setJobFamilyModalType
-                  )
-                }
-                ariaLabel={ariaTranslateText(
-                  ["table", "actionColumn", "editButton", "label"],
-                  {
-                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
-                  }
-                )}
-                ariaDescription={ariaTranslateText(
-                  ["table", "actionColumn", "editButton", "description"],
-                  {
-                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
-                  }
-                )}
-              />
-              <IconButton
-                icon={
-                  <Icon
-                    name={IconName.DELETE_BUTTON_ICON}
-                    width="10"
-                    height="12"
+    return (allJobFamilies as AllJobFamilyType[])
+      ?.filter((jobFamilyData: AllJobFamilyType) =>
+        jobFamilyData?.name
+          ?.toLowerCase()
+          ?.includes(jobFamilySearchTerm?.toLowerCase())
+      )
+      .map((jobFamilyData: AllJobFamilyType) => ({
+        id: jobFamilyData.jobFamilyId,
+        jobFamily: jobFamilyData.name,
+        employees:
+          ((jobFamilyData?.employees as JobFamilyEmployeeDataType[])?.length <
+          2 ? (
+            (jobFamilyData?.employees as JobFamilyEmployeeDataType[]).map(
+              (employee: JobFamilyEmployeeDataType) => {
+                return (
+                  <AvatarChip
+                    key={employee.employeeId}
+                    firstName={employee?.firstName ?? ""}
+                    lastName={employee?.lastName}
+                    avatarUrl={employee?.authPic}
+                    isResponsiveLayout
+                    chipStyles={classes.avatarChip}
                   />
-                }
-                id={`${jobFamilyData.jobFamilyId}-delete-btn`}
-                hoverEffect={false}
-                buttonStyles={classes.deleteIconBtn}
-                onClick={() =>
-                  handleJobFamilyDeleteBtnClick(
-                    allJobFamilies,
-                    jobFamilyData,
-                    setCurrentDeletingJobFamily,
-                    setJobFamilyModalType
-                  )
-                }
-                ariaLabel={ariaTranslateText(
-                  ["table", "actionColumn", "deleteButton", "label"],
-                  {
-                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
-                  }
-                )}
-                ariaDescription={ariaTranslateText(
-                  ["table", "actionColumn", "deleteButton", "description"],
-                  {
-                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
-                  }
-                )}
-              />
-            </>
+                );
+              }
+            )
           ) : (
-            <Button
-              label={translateText(["viewBtnText"])}
-              buttonStyle={ButtonStyle.TERTIARY}
-              styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
+            <AvatarGroup
+              componentStyles={classes.avatarGroup}
+              avatars={
+                jobFamilyData?.employees
+                  ? (
+                      jobFamilyData?.employees as JobFamilyEmployeeDataType[]
+                    ).map((employee: JobFamilyEmployeeDataType) => ({
+                      firstName: employee.firstName,
+                      lastName: employee.lastName,
+                      image: employee.authPic as string
+                    }))
+                  : []
+              }
+              max={6}
+            />
+          )) || [],
+        actions: isPeopleAdmin ? (
+          <>
+            <IconButton
+              icon={<Icon name={IconName.EDIT_ICON} />}
+              id={`${jobFamilyData.jobFamilyId}-edit-btn`}
+              hoverEffect={false}
+              buttonStyles={classes.editIconBtn}
               onClick={() =>
                 handleJobFamilyEditBtnClick(
                   jobFamilyData,
@@ -181,27 +122,67 @@ const JobFamilyTable: FC<Props> = ({
                   setJobFamilyModalType
                 )
               }
+              ariaLabel={ariaTranslateText(
+                ["table", "actionColumn", "editButton", "label"],
+                {
+                  jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "editButton", "description"],
+                {
+                  jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                }
+              )}
             />
-          ),
-          actionData: jobFamilyData,
-          ariaLabel: {
-            editButton: translateText(["editButton.label"], {
-              recordName: jobFamilyData?.name
-            }),
-            deleteButton: translateText(["deleteButton.label"], {
-              recordName: jobFamilyData?.name
-            })
-          },
-          ariaDescription: {
-            editButton: translateText(["editButton.description"], {
-              recordName: jobFamilyData?.name
-            }),
-            deleteButton: translateText(["deleteButton.description"], {
-              recordName: jobFamilyData?.name
-            })
-          }
-        })) || []
-    );
+            <IconButton
+              icon={
+                <Icon
+                  name={IconName.DELETE_BUTTON_ICON}
+                  width="10"
+                  height="12"
+                />
+              }
+              id={`${jobFamilyData.jobFamilyId}-delete-btn`}
+              hoverEffect={false}
+              buttonStyles={classes.deleteIconBtn}
+              onClick={() =>
+                handleJobFamilyDeleteBtnClick(
+                  allJobFamilies,
+                  jobFamilyData,
+                  setCurrentDeletingJobFamily,
+                  setJobFamilyModalType
+                )
+              }
+              ariaLabel={ariaTranslateText(
+                ["table", "actionColumn", "deleteButton", "label"],
+                {
+                  jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "deleteButton", "description"],
+                {
+                  jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                }
+              )}
+            />
+          </>
+        ) : (
+          <Button
+            label={translateText(["viewBtnText"])}
+            buttonStyle={ButtonStyle.TERTIARY}
+            styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
+            onClick={() =>
+              handleJobFamilyEditBtnClick(
+                jobFamilyData,
+                setCurrentEditingJobFamily,
+                setJobFamilyModalType
+              )
+            }
+          />
+        )
+      }));
   };
 
   const tableHeaders = [
