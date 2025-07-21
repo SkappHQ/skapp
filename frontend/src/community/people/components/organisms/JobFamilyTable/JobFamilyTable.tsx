@@ -42,6 +42,7 @@ const JobFamilyTable: FC<Props> = ({
   const classes = styles(theme);
 
   const translateText = useTranslator("peopleModule", "jobFamily");
+  const ariaTranslateText = useTranslator("peopleAria", "jobFamily");
 
   const { isPeopleAdmin } = useSessionData();
 
@@ -113,6 +114,7 @@ const JobFamilyTable: FC<Props> = ({
               <IconButton
                 icon={<Icon name={IconName.EDIT_ICON} />}
                 id={`${jobFamilyData.jobFamilyId}-edit-btn`}
+                buttonStyles={classes.editIconBtn}
                 hoverEffect={false}
                 onClick={() =>
                   handleJobFamilyEditBtnClick(
@@ -121,6 +123,18 @@ const JobFamilyTable: FC<Props> = ({
                     setJobFamilyModalType
                   )
                 }
+                ariaLabel={ariaTranslateText(
+                  ["table", "actionColumn", "editButton", "label"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+                ariaDescription={ariaTranslateText(
+                  ["table", "actionColumn", "editButton", "description"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
               />
               <IconButton
                 icon={
@@ -132,6 +146,7 @@ const JobFamilyTable: FC<Props> = ({
                 }
                 id={`${jobFamilyData.jobFamilyId}-delete-btn`}
                 hoverEffect={false}
+                buttonStyles={classes.deleteIconBtn}
                 onClick={() =>
                   handleJobFamilyDeleteBtnClick(
                     allJobFamilies,
@@ -140,11 +155,23 @@ const JobFamilyTable: FC<Props> = ({
                     setJobFamilyModalType
                   )
                 }
+                ariaLabel={ariaTranslateText(
+                  ["table", "actionColumn", "deleteButton", "label"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
+                ariaDescription={ariaTranslateText(
+                  ["table", "actionColumn", "deleteButton", "description"],
+                  {
+                    jobFamilyName: jobFamilyData?.name?.toLowerCase() ?? ""
+                  }
+                )}
               />
             </>
           ) : (
             <Button
-              label="View"
+              label={translateText(["viewBtnText"])}
               buttonStyle={ButtonStyle.TERTIARY}
               styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
               onClick={() =>
@@ -180,7 +207,7 @@ const JobFamilyTable: FC<Props> = ({
   const tableHeaders = [
     { id: "jobFamily", label: translateText(["jobFamilyHeader"]) },
     { id: "employees", label: translateText(["memberHeader"]) },
-    { id: "actions", label: "Actions" }
+    { id: "actions", label: translateText(["actionsHeader"]) }
   ];
 
   return (
