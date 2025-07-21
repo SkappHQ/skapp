@@ -263,7 +263,7 @@ public class RolesServiceImpl implements RolesService {
 
 		User currentUser = userService.getCurrentUser();
 		if (user.getEmployee() != null && userRoles != null
-				&& currentUser.getEmployee().getEmployeeRole().getPeopleRole() != Role.PEOPLE_ADMIN
+				&& !currentUser.getEmployee().getEmployeeRole().getPeopleRole().equals(Role.PEOPLE_ADMIN)
 				&& Objects.equals(currentUser.getUserId(), user.getEmployee().getEmployeeId())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
 		}
