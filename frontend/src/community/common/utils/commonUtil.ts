@@ -511,3 +511,19 @@ export const validateEnvelopeSearch = (input: string): string => {
     })
     .join("");
 };
+
+export const sanitizeInput = (value: string): string => {
+  if (!value) return "";
+
+  return (
+    value
+      // Remove HTML tags like <script>, <b>, etc.
+      .replace(/<[^>]*>/g, "")
+      // Remove javascript:
+      .replace(/javascript\s*:/gi, "")
+      // Remove inline event handlers like onerror=, onclick=, etc.
+      .replace(/\son\w+\s*=\s*/gi, "")
+      // Remove encoded characters like &#60; &gt;
+      .replace(/&(?:#\d+|#x[a-fA-F0-9]+|[a-z]+);/gi, "")
+  );
+};

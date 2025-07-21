@@ -435,7 +435,6 @@ export interface QuickAddEmployeePayload {
   firstName: string;
   lastName: string;
   email: string;
-  userRoles: EmployeeRoleType;
 }
 
 export interface EmployeeCredentials {
