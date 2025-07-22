@@ -14,7 +14,6 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { allowsLettersAndSpecialCharactersForNames } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
-import { sanitizeInput } from "~community/common/utils/commonUtil";
 import {
   useCheckEmailAndIdentificationNoForQuickAdd,
   useQuickAddEmployeeMutation
@@ -89,9 +88,9 @@ const AddNewResourceModal = () => {
 
   const onSubmit = async (values: any) => {
     const payload: QuickAddEmployeePayload = {
-      firstName: sanitizeInput(values.firstName),
-      lastName: sanitizeInput(values.lastName),
-      email: sanitizeInput(values.email)
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email
     };
 
     mutate(payload);
@@ -162,17 +161,15 @@ const AddNewResourceModal = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    const sanitizedValue = sanitizeInput(value);
-
     if (name === "firstName" || name === "lastName") {
       if (
-        sanitizedValue.length > characterLengths.NAME_LENGTH ||
-        !allowsLettersAndSpecialCharactersForNames().test(sanitizedValue)
+        value.length > characterLengths.NAME_LENGTH ||
+        !allowsLettersAndSpecialCharactersForNames().test(value)
       ) {
         return;
       }
     }
-    setFieldValue(name, sanitizedValue);
+    setFieldValue(name, value);
     setFieldError(name, "");
   };
 
@@ -222,7 +219,7 @@ const AddNewResourceModal = () => {
         <InputField
           inputName="lastName"
           value={values.lastName}
-          error={errors.firstName}
+          error={errors.lastName}
           label={translateText(["lastName"])}
           required
           placeHolder={translateText(["enterLastName"])}
