@@ -6,9 +6,11 @@ import com.skapp.enterprise.common.type.EpCalendarType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @Repository
 public interface EmployeeCalendarDao extends JpaRepository<EmployeeCalendar, Long> {
 
-	EmployeeCalendar findByUserAndCalendarType(User user, EpCalendarType calendarType);
+	EmployeeCalendar findByUserAndCalendarTypeIn(User user, Set<EpCalendarType> calendarType);
 
 }
