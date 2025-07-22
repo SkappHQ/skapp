@@ -1,7 +1,7 @@
 import { Stack, Theme, useTheme } from "@mui/material";
 import { useFormik } from "formik";
 import Link from "next/link";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -30,10 +30,6 @@ import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMetho
 const AddNewResourceModal = () => {
   const theme: Theme = useTheme();
   const { setToastMessage } = useToast();
-  const [clickCount, setClickCount] = useState(0);
-  const [isRateLimitExceeded, setIsRateLimitedExceeded] = useState(false);
-  const RATE_LIMIT_RESET_TIMEOUT = 5000;
-  const MAX_CLICK_COUNT = 2;
 
   const translateText = useTranslator(
     "peopleModule",
@@ -110,7 +106,8 @@ const AddNewResourceModal = () => {
   const {
     data: checkEmailAndIdentificationNo,
     refetch,
-    isSuccess
+    isSuccess,
+    isLoading: isCheckingEmailLoading
   } = useCheckEmailAndIdentificationNoForQuickAdd(values.email, "");
 
   const closeModal = () => {
@@ -182,15 +179,6 @@ const AddNewResourceModal = () => {
         title: translateText(["quickAddErrorTitle"]),
         description: translateText(["quickAddErrorDescription"])
       });
-      return;
-    }
-    setClickCount((prev) => prev + 1);
-    if (clickCount >= MAX_CLICK_COUNT) {
-      setIsRateLimitedExceeded(true);
-      setTimeout(() => {
-        setClickCount(0);
-        setIsRateLimitedExceeded(false);
-      }, RATE_LIMIT_RESET_TIMEOUT);
       return;
     }
     refetch();
@@ -275,18 +263,16 @@ const AddNewResourceModal = () => {
         disabled={
           values.email === "" ||
           values.firstName === "" ||
-          values.lastName === "" ||
-          isRateLimitExceeded
+          values.lastName === ""
         }
         data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
         shouldBlink={
           ongoingQuickSetup.INVITE_EMPLOYEES &&
           values.email !== "" &&
           values.firstName !== "" &&
-          values.lastName !== "" &&
-          !isRateLimitExceeded
+          values.lastName !== ""
         }
-        isLoading={isPending}
+        isLoading={isCheckingEmailLoading || isPending}
       />
       <Button
         buttonStyle={ButtonStyle.TERTIARY}
