@@ -33,6 +33,7 @@ const AddNewResourceModal = () => {
   const [clickCount, setClickCount] = useState(0);
   const [isRateLimitExceeded, setIsRateLimitedExceeded] = useState(false);
   const RATE_LIMIT_RESET_TIMEOUT = 5000;
+  const MAX_CLICK_COUNT = 2;
 
   const translateText = useTranslator(
     "peopleModule",
@@ -184,7 +185,7 @@ const AddNewResourceModal = () => {
       return;
     }
     setClickCount((prev) => prev + 1);
-    if (clickCount >= 2) {
+    if (clickCount >= MAX_CLICK_COUNT) {
       setIsRateLimitedExceeded(true);
       setTimeout(() => {
         setClickCount(0);
