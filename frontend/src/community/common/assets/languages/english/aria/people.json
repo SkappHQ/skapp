@@ -92,8 +92,8 @@
   },
   "peopleFormTable": {
     "actionColumn": {
-      "editButton": "Select edit button",
-      "deleteButton": "Select delete button"
+      "editButton": "Select edit",
+      "deleteButton": "Select delete"
     }
   },
   "holiday": {
