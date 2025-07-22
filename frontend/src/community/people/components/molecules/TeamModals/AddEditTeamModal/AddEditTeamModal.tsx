@@ -313,7 +313,7 @@ const AddEditTeamModal = ({
   ]);
 
   return (
-    <Box component="div">
+    <Box component="div" aria-hidden="true">
       <InputField
         id="team-name-input"
         inputName={"teamName"}

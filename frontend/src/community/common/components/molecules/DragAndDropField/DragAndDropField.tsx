@@ -276,7 +276,14 @@ const DragAndDropField: FC<Props> = ({
         ) : (
           <>
             <Stack>
-              <Box sx={{ pb: "0.3125rem" }}>
+              <Box
+                sx={{
+                  pb: "0.3125rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
                 <Icon name={IconName.FILE_UPLOAD_ICON} />
               </Box>
               <Typography

@@ -3,9 +3,21 @@
     "addJobTitleButton": "Add job title",
     "jobTitleField": "{{jobTitleName}} job title field",
     "edit": "Edit",
-    "delete": "Delete",
+    "delete": "Delete job title",
     "check": "Check",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "table": {
+      "actionColumn": {
+        "editButton": {
+          "label": "Edit {{jobFamilyName}} job family",
+          "description": ""
+        },
+        "deleteButton": {
+          "label": "Delete {{jobFamilyName}} job family",
+          "description": ""
+        }
+      }
+    }
   },
   "teams": {
     "table": {

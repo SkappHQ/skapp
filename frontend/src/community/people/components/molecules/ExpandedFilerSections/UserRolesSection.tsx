@@ -122,11 +122,10 @@ const UserRolesSection = ({
         <EmployeeFilterSection
           basicChipRef={basicChipRef}
           selected={selected}
-          accessibilityKey={filter.accessibilityKey}
+          accessibilityKey={filter.filterKey}
           key={filter.title}
           title={filter.title}
           data={filter.roles}
-          filterKey={filter.filterKey}
           handleFilterChange={handleFilterChange}
           currentFilter={employeeDataFilter[filter.filterKey]}
         />
