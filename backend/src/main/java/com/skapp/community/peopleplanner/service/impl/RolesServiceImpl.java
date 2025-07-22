@@ -256,6 +256,16 @@ public class RolesServiceImpl implements RolesService {
 		return employeeRole;
 	}
 
+	@Override
+	public EmployeeSystemPermissionsDto getDefaultEmployeeRoles() {
+		EmployeeSystemPermissionsDto defaultEmployeeRoles = new EmployeeSystemPermissionsDto();
+		defaultEmployeeRoles.setPeopleRole(Role.PEOPLE_EMPLOYEE);
+		defaultEmployeeRoles.setLeaveRole(Role.LEAVE_EMPLOYEE);
+		defaultEmployeeRoles.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
+		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
+		return defaultEmployeeRoles;
+	}
+
 	public void validateRoles(EmployeeSystemPermissionsDto userRoles, User user) {
 		if ((user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null) && userRoles == null) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SYSTEM_PERMISSION_REQUIRED);
