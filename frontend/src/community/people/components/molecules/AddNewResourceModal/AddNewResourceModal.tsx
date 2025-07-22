@@ -429,7 +429,7 @@ const AddNewResourceModal = () => {
   };
 
   return (
-    <Stack>
+    <Stack aria-hidden={true}>
       <Stack
         sx={{
           flexDirection: "row",
