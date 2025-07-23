@@ -60,7 +60,8 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
     country: "",
     organizationTimeZone: "",
     companyDomain: "",
-    organizationGlobalLogin: ""
+    organizationGlobalLogin: "",
+    organizationLogo: ""
   });
 
   useEffect(() => {
@@ -73,7 +74,8 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
         organizationTimeZone:
           organizationDetails.results[0].organizationTimeZone || "",
         companyDomain: tenantID as string,
-        organizationGlobalLogin: globalLogin
+        organizationGlobalLogin: globalLogin,
+        organizationLogo: organizationDetails.results[0].organizationLogo || ""
       });
       setIsInitialLoadComplete(true);
     }
@@ -99,7 +101,8 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
 
   const countryList = useGetCountryList();
   const onSubmit = async (values: typeof initialValues) => {
-    updateOrganizationDetails(values);
+    const { organizationLogo: _organizationLogo, ...updateData } = values;
+    updateOrganizationDetails(updateData);
   };
 
   const OrganisationForm = useFormik({
