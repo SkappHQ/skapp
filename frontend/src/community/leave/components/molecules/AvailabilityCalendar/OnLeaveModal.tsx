@@ -1,5 +1,5 @@
 import { Box, Theme, useTheme } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -11,6 +11,9 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { LeaveRequestStates } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
+import { useLeaveStore } from "~community/leave/store/store";
+import { leaveRequestRowDataTypes } from "~community/leave/types/LeaveRequestTypes";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getLeaveRequestState } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
@@ -33,6 +36,40 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     "leaveRequestTable"
   );
   const theme: Theme = useTheme();
+
+  const { setIsManagerModal, setLeaveRequestData, setNewLeaveId, newLeaveId } =
+    useLeaveStore((state) => ({
+      setIsManagerModal: state.setIsManagerModal,
+      setLeaveRequestData: state.setLeaveRequestData,
+      setNewLeaveId: state.setNewLeaveId,
+      newLeaveId: state.newLeaveId
+    }));
+
+  const {
+    refetch,
+    isSuccess: getLeaveByIdSuccess,
+    data: getLeaveByIdData
+  } = useGetLeaveRequestData(newLeaveId as number);
+
+  const handleRowClick = (leaveRequest: { id: number }) => {
+    setIsManagerModal(false);
+    setLeaveRequestData({} as leaveRequestRowDataTypes);
+    setNewLeaveId(leaveRequest.id);
+  };
+
+  useEffect(() => {
+    if (getLeaveByIdSuccess && getLeaveByIdData) {
+      setLeaveRequestData(getLeaveByIdData);
+    }
+  }, [getLeaveByIdData, getLeaveByIdSuccess]);
+
+  useEffect(() => {
+    if (newLeaveId) {
+      refetch()
+        .then(() => setIsManagerModal(true))
+        .catch(console.error);
+    }
+  }, [newLeaveId]);
 
   const columns = [
     {
@@ -139,7 +176,8 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
               skeleton: {
                 rows: 5
               }
-            }
+            },
+            onRowClick: handleRowClick
           }}
           tableFoot={{
             pagination: {
