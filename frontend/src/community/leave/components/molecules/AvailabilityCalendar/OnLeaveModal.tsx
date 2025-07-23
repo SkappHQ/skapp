@@ -91,7 +91,9 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     },
     {
       field: "reviewer",
-      headerName: translateText(["reviewer"]).toLocaleUpperCase()
+      headerName: todaysAvailability?.some((req: LeaveRequest) => req.reviewer)
+        ? translateText(["reviewer"]).toLocaleUpperCase()
+        : translateText(["status"]).toLocaleUpperCase()
     }
   ];
 
