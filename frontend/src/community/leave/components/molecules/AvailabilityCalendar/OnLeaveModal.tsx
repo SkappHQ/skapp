@@ -66,10 +66,17 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
   useEffect(() => {
     if (newLeaveId) {
       refetch()
-        .then(() => setIsManagerModal(true))
+        .then(() => {
+          if (
+            getLeaveByIdData?.status?.toUpperCase() ===
+            LeaveRequestStates.PENDING
+          ) {
+            setIsManagerModal(true);
+          }
+        })
         .catch(console.error);
     }
-  }, [newLeaveId]);
+  }, [newLeaveId, getLeaveByIdData, refetch, setIsManagerModal]);
 
   const columns = [
     {
