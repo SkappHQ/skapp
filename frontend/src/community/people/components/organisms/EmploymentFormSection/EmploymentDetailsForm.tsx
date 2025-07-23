@@ -108,14 +108,14 @@ const EmploymentDetailsForm = ({
   };
 
   const onSave = async () => {
+    if (!validateGoogleDomain()) {
+      return;
+    }
+
     const employmentFormErrors =
       (await employmentDetailsRef?.current?.validateForm()) || {};
     const identificationFormErrors =
       (await identificationDetailsRef?.current?.validateForm()) || {};
-
-    if (!validateGoogleDomain()) {
-      return;
-    }
 
     if (
       employee?.employment?.employmentDetails?.email !==
