@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import React, { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -43,6 +43,7 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
+import SubmitRequestModal from "~enterprise/common/components/molecules/SubmitRequestModal/SubmitRequestModal";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -161,6 +162,19 @@ const Drawer = (): JSX.Element => {
       setOrgData(organizationDetails?.results[0]);
     }
   }, [organizationDetails, orgLoading]);
+
+  const [isSubmitRequestModalOpen, setSubmitRequestModalOpen] = useState(false);
+
+  const handleOpenSubmitRequestModal = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+    setSubmitRequestModalOpen(true);
+  };
+
+  const handleCloseSubmitRequestModal = () => {
+    setSubmitRequestModalOpen(false);
+  };
 
   return (
     <StyledDrawer
@@ -378,6 +392,7 @@ const Drawer = (): JSX.Element => {
             {isSuperAdmin && (
               <MuiLink
                 href="https://docs.skapp.com"
+                onClick={handleOpenSubmitRequestModal}
                 target="_blank"
                 variant="body1"
                 color="inherit"
@@ -388,6 +403,10 @@ const Drawer = (): JSX.Element => {
                 {translateText(["getHelp"])}
               </MuiLink>
             )}
+            <SubmitRequestModal
+              isOpen={isSubmitRequestModalOpen}
+              onClose={handleCloseSubmitRequestModal}
+            />
           </Stack>
         )}
       </Stack>
