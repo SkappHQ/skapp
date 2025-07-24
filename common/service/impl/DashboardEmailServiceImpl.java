@@ -59,7 +59,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 
 		DashboardEmailDynamicFields fields = new DashboardEmailDynamicFields();
 		fields.setCompanyName(dashboardEmailOrganizationDetails.getCompanyName());
-		fields.setIssueType(issueType);
+		fields.setIssueType(issueType.label);
 		fields.setDetails(details);
 		fields.setSubmittedDateTime(dashboardEmailOrganizationDetails.getCurrentTime());
 		fields.setTenantId(tenantId);
@@ -69,7 +69,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 		fields.setNoOfAttachments(noOfAttachments);
 
 		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
-				EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE, fields, organizationEmail);
+				EpEmailBodyTemplates.DASHBOARD_MODULE_SUPPORT_REQUEST_APPLIED, fields, organizationEmail);
 	}
 
 	private void sendDashboardEmail(EpEmailBodyTemplates template, String tenantId, String superAdminEmail) {

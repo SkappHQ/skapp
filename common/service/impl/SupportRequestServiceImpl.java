@@ -41,7 +41,8 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 			SupportRequest finalSupportRequest = supportRequest;
 			Set<SupportRequestAttachment> supportRequestAttachments = applySupportRequestDto.getAttachments()
 				.stream()
-				.map(url -> new SupportRequestAttachment(url, finalSupportRequest))
+				.filter(filePath -> filePath != null && !filePath.trim().isEmpty())
+				.map(filePath -> new SupportRequestAttachment(filePath, finalSupportRequest))
 				.collect(Collectors.toSet());
 			supportRequest.setAttachments(supportRequestAttachments);
 		}
@@ -51,10 +52,16 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 		ApplySupportResponseDto applySupportResponseDto = epCommonMapper
 			.supportRequestToApplySupportResponseDto(supportRequest);
 
+		int attachmentCount = applySupportRequestDto.getAttachments() != null
+				? (int) applySupportRequestDto.getAttachments()
+					.stream()
+					.filter(filePath -> filePath != null && !filePath.trim().isEmpty())
+					.count()
+				: 0;
+
 		dashboardEmailService.sendSupportRequestAppliedEmail(TenantContext.getCurrentTenant(),
 				userService.getCurrentUser().getEmail(), applySupportRequestDto.getIssueType(),
-				applySupportRequestDto.getDetails(),
-				applySupportRequestDto.getAttachments() != null ? applySupportRequestDto.getAttachments().size() : 0);
+				applySupportRequestDto.getDetails(), attachmentCount);
 
 		log.info("applySupportRequest: execution ended");
 

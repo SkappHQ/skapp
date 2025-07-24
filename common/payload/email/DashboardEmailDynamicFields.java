@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.payload.email;
 
-import com.skapp.enterprise.common.type.SupportRequestIssueType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +25,7 @@ public class DashboardEmailDynamicFields {
 
 	private String subscriptionStartDate;
 
-	private SupportRequestIssueType issueType;
+	private String issueType;
 
 	private String submittedDateTime;
 

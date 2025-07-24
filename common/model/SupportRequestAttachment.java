@@ -28,7 +28,7 @@ public class SupportRequestAttachment {
 	private String filePath;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "support_Request_id")
+	@JoinColumn(name = "support_request_id")
 	private SupportRequest supportRequest;
 
 	public SupportRequestAttachment(String filePath, SupportRequest supportRequest) {
