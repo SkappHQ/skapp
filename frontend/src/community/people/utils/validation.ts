@@ -6,35 +6,12 @@ import {
   AllJobFamilyType,
   JobTitleType
 } from "~community/people/types/JobFamilyTypes";
-import { TeamType } from "~community/people/types/TeamTypes";
 
 export const addEditTeamValidationSchema = (
-  allTeams: TeamType[],
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    teamName: Yup.string()
-      .transform((value: string) => (value ? value.trim().toLowerCase() : ""))
-      .required(translator(["teamNameError"]))
-      .test(
-        "is-team-name-unique",
-        translator(["teamNameDuplicateError"]),
-        function (value, { parent }) {
-          if (allTeams) {
-            const isUnique = allTeams?.every((team: TeamType) => {
-              const isUnique = value !== team?.teamName?.trim().toLowerCase();
-
-              const isOriginalValue = team.teamId === parent?.teamId;
-
-              return isUnique || isOriginalValue;
-            });
-
-            return isUnique;
-          }
-
-          return true;
-        }
-      )
+    teamName: Yup.string().required(translator(["teamNameError"]))
   });
 
 export const addEditJobFamilyValidationSchema = (

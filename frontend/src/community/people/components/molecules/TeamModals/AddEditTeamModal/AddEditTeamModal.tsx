@@ -15,7 +15,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { hasSpecialCharacter } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetSearchedEmployees } from "~community/people/api/PeopleApi";
-import { useCreateTeam, useUpdateTeam, useGetAllTeams } from "~community/people/api/TeamApi";
+import { useCreateTeam, useUpdateTeam } from "~community/people/api/TeamApi";
 import AddTeamMemberRow from "~community/people/components/molecules/AddTeamMemberRow/AddTeamMemberRow";
 import AddTeamSelectMembers from "~community/people/components/molecules/AddTeamSelectMembers/AddTeamSelectMembers";
 import { characterLengths } from "~community/people/constants/stringConstants";
@@ -54,8 +54,6 @@ const AddEditTeamModal = ({
   const { setToastMessage } = useToast();
 
   const { isPeopleAdmin } = useSessionData();
-
-  const { data: allTeams } = useGetAllTeams();
 
   const {
     teamModalType,
@@ -176,7 +174,7 @@ const AddEditTeamModal = ({
 
   const teamAddForm = useFormik({
     initialValues,
-    validationSchema: addEditTeamValidationSchema(allTeams ?? [], translateText),
+    validationSchema: addEditTeamValidationSchema(translateText),
     onSubmit,
     validateOnChange: false
   });
