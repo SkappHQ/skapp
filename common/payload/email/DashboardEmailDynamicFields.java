@@ -15,6 +15,8 @@ public class DashboardEmailDynamicFields {
 
 	private String superAdminEmail;
 
+	private String superAdminName;
+
 	private String contactNumber;
 
 	private String upgradedDateTime;

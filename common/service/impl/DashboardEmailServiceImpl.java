@@ -58,6 +58,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 			.getDashboardEmailOrganizationDetails(superAdminEmail);
 
 		DashboardEmailDynamicFields fields = new DashboardEmailDynamicFields();
+		fields.setSuperAdminName(dashboardEmailOrganizationDetails.getSuperAdminName());
 		fields.setCompanyName(dashboardEmailOrganizationDetails.getCompanyName());
 		fields.setIssueType(issueType.label);
 		fields.setDetails(details);
@@ -84,6 +85,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 		fields.setCompanyName(details.getCompanyName());
 		fields.setTenantId(tenantId);
 		fields.setSuperAdminEmail(superAdminEmail != null ? superAdminEmail : "");
+		fields.setSuperAdminName(details.getSuperAdminName());
 		fields.setContactNumber(details.getContactNo() != null ? details.getContactNo() : "");
 		if (details.getCurrentTime() != null) {
 			fields.setSignedUpDateTime(details.getCurrentTime());

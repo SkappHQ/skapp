@@ -53,6 +53,12 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
 					}
 				}
+				else if (EpCommonConstants.DASHBOARD.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SUPER_ADMIN_NAME, "");
+					if (!StringUtils.isNullOrBlank(sender)) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
 			}
 			Email from = new Email(organizationEmail, senderName);
 			Email toEmail = new Email(to);

@@ -15,6 +15,8 @@ public class DashboardEmailOrganizationDetailsDto {
 
 	private String superAdminEmail;
 
+	private String superAdminName;
+
 	private String contactNo;
 
 }
