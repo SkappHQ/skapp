@@ -504,7 +504,9 @@
       "employeeAddErrorToastDescription": "Failed to add the resource. Please try again.",
       "areYouSureModalTitle": "Are you sure?",
       "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvitated Successfully",
-      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully"
+      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully",
+      "addFullProfile": "Add full profile",
+      "save": "Save"
     },
     "commonValidations": {
       "lettersAllowed": "Only letters are allowed",

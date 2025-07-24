@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -41,6 +42,8 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
     setIsCancelModalConfirmButtonClicked,
     setIsCancelChangesModalOpen
   } = usePeopleStore((state) => state);
+
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {

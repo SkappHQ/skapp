@@ -180,7 +180,8 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
 		log.info("superAdminSignUp: execution started");
 
-		boolean isSuperAdminExists = isSuperAdminExists();
+		boolean isSuperAdminExists = employeeRoleDao
+			.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		if (isSuperAdminExists) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SUPER_ADMIN_ALREADY_EXISTS);
 		}
@@ -489,10 +490,6 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("createNotificationSettings: execution ended");
 		return userSettings;
-	}
-
-	private boolean isSuperAdminExists() {
-		return employeeRoleDao.existsByIsSuperAdminTrue();
 	}
 
 	protected void createNewPassword(String newPassword, User user) {
