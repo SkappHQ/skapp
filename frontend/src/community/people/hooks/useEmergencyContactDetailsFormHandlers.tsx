@@ -8,9 +8,15 @@ import { RelationshipTypes } from "~community/people/enums/PeopleEnums";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3EmergencyContactType } from "~community/people/types/PeopleTypes";
-import { employeeSecondaryEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
+import { employeeEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
 
-const useSecondaryContactDetailsFormHandlers = () => {
+type EmergencyContactType =
+  | "primaryEmergencyContact"
+  | "secondaryEmergencyContact";
+
+const useEmergencyContactDetailsFormHandlers = (
+  contactType: EmergencyContactType
+) => {
   const translateText = useTranslator(
     "peopleModule",
     "addResource",
@@ -22,31 +28,28 @@ const useSecondaryContactDetailsFormHandlers = () => {
   const { employee, setEmergencyDetails } = usePeopleStore((state) => state);
 
   const initialValues = useMemo<L3EmergencyContactType>(() => {
-    const secondaryContact =
-      employee?.emergency?.secondaryEmergencyContact || {};
+    const contact = employee?.emergency?.[contactType] || {};
 
-    if (!secondaryContact.contactNo) {
+    if (!contact.contactNo) {
       return {
-        ...secondaryContact,
+        ...contact,
         countryCode,
         contactNo: ""
       };
     }
 
-    const [extractedCountryCode, ...rest] =
-      secondaryContact.contactNo.split(" ");
+    const [extractedCountryCode, ...rest] = contact.contactNo.split(" ");
 
     return {
-      ...secondaryContact,
+      ...contact,
       countryCode: extractedCountryCode || countryCode,
       contactNo: rest.join(" ")
     };
-  }, [employee, countryCode]);
+  }, [employee, countryCode, contactType]);
 
   const formik = useFormik({
     initialValues,
-    validationSchema:
-      employeeSecondaryEmergencyContactDetailsValidation(translateText),
+    validationSchema: employeeEmergencyContactDetailsValidation(translateText),
     onSubmit: () => {},
     validateOnChange: false,
     validateOnBlur: true,
@@ -63,8 +66,8 @@ const useSecondaryContactDetailsFormHandlers = () => {
         await setFieldValue(name, value);
         setFieldError(name, "");
         setEmergencyDetails({
-          secondaryEmergencyContact: {
-            ...employee?.emergency?.secondaryEmergencyContact,
+          [contactType]: {
+            ...employee?.emergency?.[contactType],
             name: value
           }
         });
@@ -72,14 +75,14 @@ const useSecondaryContactDetailsFormHandlers = () => {
         await setFieldValue(name, value);
         setFieldError(name, "");
         setEmergencyDetails({
-          secondaryEmergencyContact: {
-            ...employee?.emergency?.secondaryEmergencyContact,
+          [contactType]: {
+            ...employee?.emergency?.[contactType],
             relationship: value as RelationshipTypes
           }
         });
       }
     },
-    [employee, setEmergencyDetails, setFieldError, setFieldValue]
+    [employee, setEmergencyDetails, setFieldError, setFieldValue, contactType]
   );
 
   const onChangeCountry = useCallback(
@@ -96,8 +99,8 @@ const useSecondaryContactDetailsFormHandlers = () => {
       await setFieldValue("contactNo", newContactNo);
       setFieldError("contactNo", "");
       setEmergencyDetails({
-        secondaryEmergencyContact: {
-          ...employee?.emergency?.secondaryEmergencyContact,
+        [contactType]: {
+          ...employee?.emergency?.[contactType],
           contactNo: `${values.countryCode} ${newContactNo}`
         }
       });
@@ -107,7 +110,8 @@ const useSecondaryContactDetailsFormHandlers = () => {
       employee,
       setEmergencyDetails,
       setFieldError,
-      setFieldValue
+      setFieldValue,
+      contactType
     ]
   );
 
@@ -122,4 +126,4 @@ const useSecondaryContactDetailsFormHandlers = () => {
   };
 };
 
-export default useSecondaryContactDetailsFormHandlers;
+export default useEmergencyContactDetailsFormHandlers;
