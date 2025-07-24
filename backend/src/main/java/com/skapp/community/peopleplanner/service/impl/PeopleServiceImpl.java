@@ -246,7 +246,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeRequest(employeeQuickAddDto);
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
-		rolesService.validateRoles(employeeQuickAddDto.getUserRoles(), user);
 
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
 		employee.setUser(createUserEntity(user, createEmployeeRequestDto));
@@ -307,7 +306,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employmentDetails.setEmploymentDetails(basicDetails);
 		requestDto.setEmployment(employmentDetails);
 
-		requestDto.setSystemPermissions(dto.getUserRoles());
+		requestDto.setSystemPermissions(rolesService.getDefaultEmployeeRoles());
 
 		return requestDto;
 	}
