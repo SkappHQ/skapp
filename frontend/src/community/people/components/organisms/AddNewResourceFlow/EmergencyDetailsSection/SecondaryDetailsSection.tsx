@@ -17,7 +17,7 @@ import { isValidNamePattern } from "~community/common/utils/validation";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmergencyContactRelationshipList } from "~community/people/utils/data/employeeSetupStaticData";
-import { employeeEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
+import { employeeSecondaryEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
 
 interface Props {
   isManager?: boolean;
@@ -78,7 +78,7 @@ const SecondaryDetailsSection = forwardRef<RefCallback, Props>(
     const formik = useFormik({
       initialValues,
       validationSchema:
-        employeeEmergencyContactDetailsValidation(translateText),
+        employeeSecondaryEmergencyContactDetailsValidation(translateText),
       onSubmit: () => {},
       validateOnChange: false,
       validateOnBlur: true,
