@@ -43,7 +43,7 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
-import SubmitRequestModal from "~enterprise/common/components/molecules/SubmitRequestModal/SubmitRequestModal";
+import SubmitRequestModal from "~enterprise/common/components/molecules/SubmitRequestModals/SubmitRequestModal/SubmitRequestModal";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
