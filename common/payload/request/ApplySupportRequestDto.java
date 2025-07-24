@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.payload.request;
 
+import com.skapp.enterprise.common.type.SupportRequestIssueType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Setter
 public class ApplySupportRequestDto {
 
-	private String issueType;
+	private SupportRequestIssueType issueType;
 
 	private String details;
 

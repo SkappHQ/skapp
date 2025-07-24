@@ -32,6 +32,6 @@ public class DashboardEmailDynamicFields {
 
 	private String details;
 
-	private String attachmentsIncluded = "No";
+	private int noOfAttachments = 0;
 
 }

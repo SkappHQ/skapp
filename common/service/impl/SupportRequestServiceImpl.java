@@ -1,12 +1,15 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.model.SupportRequest;
 import com.skapp.enterprise.common.model.SupportRequestAttachment;
 import com.skapp.enterprise.common.payload.request.ApplySupportRequestDto;
 import com.skapp.enterprise.common.payload.response.ApplySupportResponseDto;
 import com.skapp.enterprise.common.repository.SupportRequestDao;
+import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.SupportRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,10 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 	private final EpCommonMapper epCommonMapper;
 
 	private final SupportRequestDao supportRequestDao;
+
+	private final DashboardEmailService dashboardEmailService;
+
+	private final UserService userService;
 
 	@Override
 	public ResponseEntityDto applySupportRequest(ApplySupportRequestDto applySupportRequestDto) {
@@ -43,6 +50,11 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 
 		ApplySupportResponseDto applySupportResponseDto = epCommonMapper
 			.supportRequestToApplySupportResponseDto(supportRequest);
+
+		dashboardEmailService.sendSupportRequestAppliedEmail(TenantContext.getCurrentTenant(),
+				userService.getCurrentUser().getEmail(), applySupportRequestDto.getIssueType(),
+				applySupportRequestDto.getDetails(),
+				applySupportRequestDto.getAttachments() != null ? applySupportRequestDto.getAttachments().size() : 0);
 
 		log.info("applySupportRequest: execution ended");
 
