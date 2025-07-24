@@ -12,6 +12,8 @@ jest.mock("~community/people/store/store", () => ({
 
 jest.mock("./useGetDefaultCountryCode", () => jest.fn());
 
+type ContactType = "primaryEmergencyContact" | "secondaryEmergencyContact";
+
 describe("useEmergencyContactDetailsFormHandlers", () => {
   const mockSetEmergencyDetails = jest.fn();
   const mockEmployee = {
@@ -29,6 +31,57 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
     }
   };
 
+  const contactTestData = {
+    primaryEmergencyContact: {
+      expectedValues: {
+        name: "John Doe",
+        relationship: "Spouse",
+        countryCode: "1",
+        contactNo: "1234567890"
+      },
+      testInputs: {
+        newName: "Jane Smith",
+        newRelationship: "Parent",
+        newContactNo: "9876543210",
+        expectedStoredContactNo: "1 9876543210"
+      }
+    },
+    secondaryEmergencyContact: {
+      expectedValues: {
+        name: "Jane Doe",
+        relationship: "Sibling",
+        countryCode: "1",
+        contactNo: "9876543210"
+      },
+      testInputs: {
+        newName: "John Smith",
+        newRelationship: "Parent",
+        newContactNo: "1234567890",
+        expectedStoredContactNo: "1 1234567890"
+      }
+    }
+  };
+
+  const renderHookWithType = (contactType: ContactType) => {
+    return renderHook(() => useEmergencyContactDetailsFormHandlers(contactType));
+  };
+
+  const simulateInputChange = async (result: any, field: string, value: string) => {
+    await act(async () => {
+      await result.current.handleInput({
+        target: { name: field, value }
+      } as SelectChangeEvent);
+    });
+  };
+
+  const simulatePhoneNumberChange = async (result: any, value: string) => {
+    await act(async () => {
+      await result.current.handlePhoneNumber({
+        target: { value }
+      } as any);
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (usePeopleStore as unknown as jest.Mock).mockReturnValue({
@@ -38,151 +91,56 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
     (useGetDefaultCountryCode as jest.Mock).mockReturnValue("1");
   });
 
-  describe("primaryEmergencyContact", () => {
-    it("should initialize form values correctly for primary contact", () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+  describe.each([
+    ["primaryEmergencyContact" as ContactType],
+    ["secondaryEmergencyContact" as ContactType]
+  ])("%s", (contactType) => {
+    const testData = contactTestData[contactType];
 
-      expect(result.current.values).toEqual({
-        name: "John Doe",
-        relationship: "Spouse",
-        countryCode: "1",
-        contactNo: "1234567890"
-      });
+    it(`should initialize form values correctly for ${contactType}`, () => {
+      const { result } = renderHookWithType(contactType);
+
+      expect(result.current.values).toEqual(testData.expectedValues);
     });
 
-    it("should handle name input changes correctly for primary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+    it(`should handle name input changes correctly for ${contactType}`, async () => {
+      const { result } = renderHookWithType(contactType);
 
-      await act(async () => {
-        await result.current.handleInput({
-          target: { name: "name", value: "Jane Smith" }
-        } as SelectChangeEvent);
-      });
+      await simulateInputChange(result, "name", testData.testInputs.newName);
 
-      expect(result.current.values.name).toBe("Jane Smith");
+      expect(result.current.values.name).toBe(testData.testInputs.newName);
       expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        primaryEmergencyContact: {
-          ...mockEmployee.emergency.primaryEmergencyContact,
-          name: "Jane Smith"
+        [contactType]: {
+          ...mockEmployee.emergency[contactType],
+          name: testData.testInputs.newName
         }
       });
     });
 
-    it("should handle relationship input changes correctly for primary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+    it(`should handle relationship input changes correctly for ${contactType}`, async () => {
+      const { result } = renderHookWithType(contactType);
 
-      await act(async () => {
-        await result.current.handleInput({
-          target: { name: "relationship", value: "Parent" }
-        } as SelectChangeEvent);
-      });
+      await simulateInputChange(result, "relationship", testData.testInputs.newRelationship);
 
-      expect(result.current.values.relationship).toBe("Parent");
+      expect(result.current.values.relationship).toBe(testData.testInputs.newRelationship);
       expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        primaryEmergencyContact: {
-          ...mockEmployee.emergency.primaryEmergencyContact,
-          relationship: "Parent"
+        [contactType]: {
+          ...mockEmployee.emergency[contactType],
+          relationship: testData.testInputs.newRelationship
         }
       });
     });
 
-    it("should handle phone number changes correctly for primary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+    it(`should handle phone number changes correctly for ${contactType}`, async () => {
+      const { result } = renderHookWithType(contactType);
 
-      await act(async () => {
-        await result.current.handlePhoneNumber({
-          target: { value: "9876543210" }
-        } as any);
-      });
+      await simulatePhoneNumberChange(result, testData.testInputs.newContactNo);
 
-      expect(result.current.values.contactNo).toBe("9876543210");
+      expect(result.current.values.contactNo).toBe(testData.testInputs.newContactNo);
       expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        primaryEmergencyContact: {
-          ...mockEmployee.emergency.primaryEmergencyContact,
-          contactNo: "1 9876543210"
-        }
-      });
-    });
-  });
-
-  describe("secondaryEmergencyContact", () => {
-    it("should initialize form values correctly for secondary contact", () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("secondaryEmergencyContact")
-      );
-
-      expect(result.current.values).toEqual({
-        name: "Jane Doe",
-        relationship: "Sibling",
-        countryCode: "1",
-        contactNo: "9876543210"
-      });
-    });
-
-    it("should handle name input changes correctly for secondary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("secondaryEmergencyContact")
-      );
-
-      await act(async () => {
-        await result.current.handleInput({
-          target: { name: "name", value: "John Smith" }
-        } as SelectChangeEvent);
-      });
-
-      expect(result.current.values.name).toBe("John Smith");
-      expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        secondaryEmergencyContact: {
-          ...mockEmployee.emergency.secondaryEmergencyContact,
-          name: "John Smith"
-        }
-      });
-    });
-
-    it("should handle relationship input changes correctly for secondary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("secondaryEmergencyContact")
-      );
-
-      await act(async () => {
-        await result.current.handleInput({
-          target: { name: "relationship", value: "Parent" }
-        } as SelectChangeEvent);
-      });
-
-      expect(result.current.values.relationship).toBe("Parent");
-      expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        secondaryEmergencyContact: {
-          ...mockEmployee.emergency.secondaryEmergencyContact,
-          relationship: "Parent"
-        }
-      });
-    });
-
-    it("should handle phone number changes correctly for secondary contact", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("secondaryEmergencyContact")
-      );
-
-      await act(async () => {
-        await result.current.handlePhoneNumber({
-          target: { value: "1234567890" }
-        } as any);
-      });
-
-      expect(result.current.values.contactNo).toBe("1234567890");
-      expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
-        secondaryEmergencyContact: {
-          ...mockEmployee.emergency.secondaryEmergencyContact,
-          contactNo: "1 1234567890"
+        [contactType]: {
+          ...mockEmployee.emergency[contactType],
+          contactNo: testData.testInputs.expectedStoredContactNo
         }
       });
     });
@@ -190,9 +148,7 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
 
   describe("common functionality", () => {
     it("should handle country code changes correctly", async () => {
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+      const { result } = renderHookWithType("primaryEmergencyContact");
 
       await act(async () => {
         await result.current.onChangeCountry("94");
@@ -216,9 +172,7 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
         setEmergencyDetails: mockSetEmergencyDetails
       });
 
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+      const { result } = renderHookWithType("primaryEmergencyContact");
 
       expect(result.current.values).toEqual({
         name: "John Doe",
@@ -236,9 +190,7 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
         setEmergencyDetails: mockSetEmergencyDetails
       });
 
-      const { result } = renderHook(() =>
-        useEmergencyContactDetailsFormHandlers("primaryEmergencyContact")
-      );
+      const { result } = renderHookWithType("primaryEmergencyContact");
 
       expect(result.current.values).toEqual({
         countryCode: "1",
