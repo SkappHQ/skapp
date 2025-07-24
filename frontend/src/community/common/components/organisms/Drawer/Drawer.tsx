@@ -35,7 +35,7 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { EmployeeTypes } from "~community/common/types/AuthTypes";
+import { AdminTypes, EmployeeTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
@@ -105,6 +105,10 @@ const Drawer = (): JSX.Element => {
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
   const isEnterprise = environment === appModes.ENTERPRISE;
+
+  const isSuperAdmin = sessionData?.user?.roles?.includes(
+    AdminTypes.SUPER_ADMIN
+  );
 
   const drawerRoutes = useMemo(
     () =>
@@ -371,17 +375,19 @@ const Drawer = (): JSX.Element => {
                 data-testid={appDrawerTestId.buttons.applyLeaveBtn}
               />
             )}
-            <MuiLink
-              href="https://docs.skapp.com"
-              target="_blank"
-              variant="body1"
-              color="inherit"
-              underline="hover"
-              sx={classes.link}
-              data-testid={appDrawerTestId.getHelpLink}
-            >
-              {translateText(["getHelp"])}
-            </MuiLink>
+            {isSuperAdmin && (
+              <MuiLink
+                href="https://docs.skapp.com"
+                target="_blank"
+                variant="body1"
+                color="inherit"
+                underline="hover"
+                sx={classes.link}
+                data-testid={appDrawerTestId.getHelpLink}
+              >
+                {translateText(["getHelp"])}
+              </MuiLink>
+            )}
           </Stack>
         )}
       </Stack>
