@@ -41,10 +41,10 @@ public class DashboardServiceImpl implements DashboardService {
 
 		String superAdminName = "";
 		if (superAdmin.isPresent()) {
-			superAdminName = superAdmin.get().getEmployee().getFirstName() + " "
-					+ superAdmin.get().getEmployee().getLastName();
+			superAdminName = superAdmin.get().getEmployee().getFullName();
 
 		}
+
 		DashboardEmailOrganizationDetailsDto dashboardEmailOrganizationDetailsDto = new DashboardEmailOrganizationDetailsDto();
 		dashboardEmailOrganizationDetailsDto.setCompanyName(companyName);
 		dashboardEmailOrganizationDetailsDto.setCurrentTime(formattedCurrentTime);
