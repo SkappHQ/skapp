@@ -256,7 +256,7 @@ export const useGetUseCarryForwardLeaveEntitlements = (
   const { page, year, size } = carryForwardPaginationParams;
 
   return useQuery({
-    enabled: false,
+    enabled: selectedleaveTypes.length > 0,
     queryKey: leaveTypeQueryKeys.CARRY_FORWARD_LEAVE_TYPES({
       leaveTypes: selectedleaveTypes,
       page,
