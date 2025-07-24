@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.payload.response.ApplySupportResponseDto;
 import com.skapp.enterprise.common.repository.SupportRequestDao;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.SupportRequestService;
+import com.skapp.enterprise.common.util.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 			SupportRequest finalSupportRequest = supportRequest;
 			Set<SupportRequestAttachment> supportRequestAttachments = applySupportRequestDto.getAttachments()
 				.stream()
-				.filter(filePath -> filePath != null && !filePath.trim().isEmpty())
+				.filter(Validation::isValidFilePath)
 				.map(filePath -> new SupportRequestAttachment(filePath, finalSupportRequest))
 				.collect(Collectors.toSet());
 			supportRequest.setAttachments(supportRequestAttachments);
@@ -53,10 +54,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 			.supportRequestToApplySupportResponseDto(supportRequest);
 
 		int attachmentCount = applySupportRequestDto.getAttachments() != null
-				? (int) applySupportRequestDto.getAttachments()
-					.stream()
-					.filter(filePath -> filePath != null && !filePath.trim().isEmpty())
-					.count()
+				? (int) applySupportRequestDto.getAttachments().stream().filter(Validation::isValidFilePath).count()
 				: 0;
 
 		dashboardEmailService.sendSupportRequestAppliedEmail(TenantContext.getCurrentTenant(),
@@ -66,7 +64,6 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 		log.info("applySupportRequest: execution ended");
 
 		return new ResponseEntityDto(false, applySupportResponseDto);
-
 	}
 
 }
