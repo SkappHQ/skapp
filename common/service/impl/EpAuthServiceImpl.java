@@ -731,12 +731,13 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		Optional<User> userOptional = userDao.findByEmail(email);
 
-		if (userOptional.isPresent() && userOptional.get().getIsPasswordChangedForTheFirstTime()) {
-			return userOptional.get();
+		if (userOptional.isPresent()) {
+			User user = userOptional.get();
+			if (user.getIsPasswordChangedForTheFirstTime()) {
+				return user;
+			}
 		}
-		else {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
-		}
+		throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
 	}
 
 	public boolean validateTenantExist(String tenantId) {
