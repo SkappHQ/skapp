@@ -338,7 +338,7 @@ const SystemPermissionFormSection = ({
             )}
             <DropdownList
               inputName={"pmRole"}
-              label={"Project Management"}
+              label={translateText(["projectManagement"])}
               itemList={grantablePermission?.pm || []}
               value={permissions.pmRole}
               componentStyle={classes.dropdownListComponentStyles}
