@@ -37,7 +37,7 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
           id: route?.id,
           name: "Integrations",
           url: ROUTES.INTEGRATIONS,
-          icon: route?.icon,
+          icon: IconName.INTEGRATIONS_ICON,
           hasSubTree: false,
           requiredAuthLevel: [
             EmployeeTypes.PEOPLE_EMPLOYEE,
