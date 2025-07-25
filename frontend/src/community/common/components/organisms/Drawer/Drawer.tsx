@@ -43,7 +43,8 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
-import SubmitRequestModal from "~enterprise/common/components/molecules/SubmitRequestModals/SubmitRequestModal/SubmitRequestModal";
+import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
+import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -163,17 +164,13 @@ const Drawer = (): JSX.Element => {
     }
   }, [organizationDetails, orgLoading]);
 
-  const [isSubmitRequestModalOpen, setSubmitRequestModalOpen] = useState(false);
+  const { setSubmitRequestModalType } = useCommonEnterpriseStore();
 
   const handleOpenSubmitRequestModal = (
     e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) => {
     e.preventDefault();
-    setSubmitRequestModalOpen(true);
-  };
-
-  const handleCloseSubmitRequestModal = () => {
-    setSubmitRequestModalOpen(false);
+    setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
   };
 
   return (
@@ -403,10 +400,7 @@ const Drawer = (): JSX.Element => {
                 {translateText(["getHelp"])}
               </MuiLink>
             )}
-            <SubmitRequestModal
-              isOpen={isSubmitRequestModalOpen}
-              onClose={handleCloseSubmitRequestModal}
-            />
+            <SubmitRequestModalController />
           </Stack>
         )}
       </Stack>
