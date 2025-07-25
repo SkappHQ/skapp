@@ -263,6 +263,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		defaultEmployeeRoles.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
+		defaultEmployeeRoles.setPmRole(Role.PM_EMPLOYEE);
 		return defaultEmployeeRoles;
 	}
 
@@ -467,6 +468,7 @@ public class RolesServiceImpl implements RolesService {
 			employeeRole.setLeaveRole(Role.LEAVE_ADMIN);
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 			employeeRole.setEsignRole(Role.ESIGN_ADMIN);
+			employeeRole.setPmRole(Role.PM_ADMIN);
 			employeeRole.setIsSuperAdmin(true);
 		}
 		else {
@@ -474,6 +476,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getLeaveRole, employeeRole::setLeaveRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getAttendanceRole, employeeRole::setAttendanceRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
+			CommonModuleUtils.setIfExists(roleRequestDto::getPmRole, employeeRole::setPmRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
@@ -486,22 +489,26 @@ public class RolesServiceImpl implements RolesService {
 
 	private RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
 		RoleResponseDto roleResponseDto = new RoleResponseDto();
-		String capitalizedModuleName = moduleType.getDisplayName().substring(0, 1).toUpperCase()
-				+ moduleType.getDisplayName().substring(1).toLowerCase();
+		String displayName = moduleType.getDisplayName();
+		if (displayName == null || displayName.isEmpty()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_MODULE_NAME);
+		}
+		String capitalizedModuleName = Character.toUpperCase(displayName.charAt(0))
+				+ displayName.substring(1).toLowerCase();
 		roleResponseDto.setModule(capitalizedModuleName);
 
-		List<String> roles = new ArrayList<>();
-		roles.add(RoleLevel.ADMIN.getDisplayName());
-		if (moduleType == ModuleType.ESIGN) {
-			roles.add(RoleLevel.SENDER.getDisplayName());
-		}
-		else {
-			roles.add(RoleLevel.MANAGER.getDisplayName());
-		}
-		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
+		List<String> roles = getRoleDisplayNames(moduleType);
 
 		roleResponseDto.setRoles(roles);
 		return roleResponseDto;
+	}
+
+	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
+		List<String> roles = new ArrayList<>();
+		roles.add(RoleLevel.ADMIN.getDisplayName());
+		roles.add(RoleLevel.MANAGER.getDisplayName());
+		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
+		return roles;
 	}
 
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {
