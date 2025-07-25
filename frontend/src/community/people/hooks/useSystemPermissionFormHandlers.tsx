@@ -197,7 +197,7 @@ const useSystemPermissionFormHandlers = () => {
         attendanceRole: Role.ATTENDANCE_ADMIN,
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
-        projectManagementRole: Role.PROJECT_MANAGEMENT_ADMIN
+        pmRole: Role.PM_ADMIN
       });
       setSystemPermissions({
         isSuperAdmin: checked,
@@ -205,7 +205,7 @@ const useSystemPermissionFormHandlers = () => {
         attendanceRole: Role.ATTENDANCE_ADMIN,
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
-        projectManagementRole: Role.PROJECT_MANAGEMENT_ADMIN
+        pmRole: Role.PM_ADMIN
       });
     },
     [

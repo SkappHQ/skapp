@@ -337,17 +337,14 @@ const SystemPermissionFormSection = ({
               />
             )}
             <DropdownList
-              inputName={"projectManagementRole"}
+              inputName={"pmRole"}
               label={"Project Management"}
-              itemList={grantablePermission?.projectManagement || []}
-              value={permissions.projectManagementRole}
+              itemList={grantablePermission?.pm || []}
+              value={permissions.pmRole}
               componentStyle={classes.dropdownListComponentStyles}
               checkSelected
               onChange={(event) =>
-                handleRoleDropdown(
-                  "projectManagementRole",
-                  event.target.value as Role
-                )
+                handleRoleDropdown("pmRole", event.target.value as Role)
               }
               isDisabled={
                 isProfileView ||
