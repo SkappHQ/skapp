@@ -53,6 +53,10 @@ public class EmployeeRole {
 	@Column(name = "esign_role", length = 20, columnDefinition = "varchar(255)")
 	private Role esignRole;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "pm_role", length = 20, columnDefinition = "varchar(255)")
+	private Role pmRole;
+
 	@Column(name = "is_super_admin", nullable = false)
 	private Boolean isSuperAdmin = false;
 
