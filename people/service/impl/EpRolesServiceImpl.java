@@ -175,6 +175,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	public EmployeeRole setupBulkEmployeeRoles(Employee employee) {
 		EmployeeRole employeeRole = super.setupBulkEmployeeRoles(employee);
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
+		employeeRole.setPmRole(Role.PM_EMPLOYEE);
 		return employeeRole;
 	}
 
