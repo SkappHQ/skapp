@@ -487,19 +487,28 @@ public class RolesServiceImpl implements RolesService {
 		return employeeRole;
 	}
 
-	protected RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
+	private RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
 		RoleResponseDto roleResponseDto = new RoleResponseDto();
-		String capitalizedModuleName = moduleType.getDisplayName().substring(0, 1).toUpperCase()
-				+ moduleType.getDisplayName().substring(1).toLowerCase();
+		String displayName = moduleType.getDisplayName();
+		if (displayName == null || displayName.isEmpty()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_MODULE_NAME);
+		}
+		String capitalizedModuleName = Character.toUpperCase(displayName.charAt(0))
+				+ displayName.substring(1).toLowerCase();
 		roleResponseDto.setModule(capitalizedModuleName);
 
+		List<String> roles = getRoleDisplayNames(moduleType);
+
+		roleResponseDto.setRoles(roles);
+		return roleResponseDto;
+	}
+
+	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
 		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
-
-		roleResponseDto.setRoles(roles);
-		return roleResponseDto;
+		return roles;
 	}
 
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {
