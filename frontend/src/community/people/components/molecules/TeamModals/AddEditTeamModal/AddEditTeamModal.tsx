@@ -84,6 +84,7 @@ const AddEditTeamModal = ({
   const [isSelectingMembers, setIsSelectingMembers] = useState<boolean>(false);
 
   const initialValues: AddTeamType = {
+    teamId: currentEditingTeam?.teamId as number,
     teamName: "",
     teamMembers: [],
     teamSupervisors: []
@@ -105,7 +106,15 @@ const AddEditTeamModal = ({
     });
   };
 
-  const onAddError = () => {
+  const onAddError = (error: any) => {
+    if (
+      error?.response?.data?.results?.[0]?.messageKey ===
+      "PEOPLE_ERROR_TEAM_NAME_ALREADY_EXISTS"
+    ) {
+      setFieldError("teamName", translateText(["teamNameDuplicateError"]));
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: "error",
@@ -127,7 +136,15 @@ const AddEditTeamModal = ({
     });
   };
 
-  const onUpdateError = () => {
+  const onUpdateError = (error: any) => {
+    if (
+      error?.response?.data?.results?.[0]?.messageKey ===
+      "PEOPLE_ERROR_TEAM_NAME_ALREADY_EXISTS"
+    ) {
+      setFieldError("teamName", translateText(["teamNameDuplicateError"]));
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: "error",
