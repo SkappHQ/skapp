@@ -18,6 +18,6 @@ public class EmployeeSystemPermissionsDto {
 
 	private Role esignRole;
 
-	private Role projectManagementRole;
+	private Role pmRole;
 
 }

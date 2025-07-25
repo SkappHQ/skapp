@@ -468,6 +468,7 @@ public class RolesServiceImpl implements RolesService {
 			employeeRole.setLeaveRole(Role.LEAVE_ADMIN);
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 			employeeRole.setEsignRole(Role.ESIGN_ADMIN);
+			employeeRole.setPmRole(Role.PM_ADMIN);
 			employeeRole.setIsSuperAdmin(true);
 		}
 		else {
@@ -475,6 +476,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getLeaveRole, employeeRole::setLeaveRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getAttendanceRole, employeeRole::setAttendanceRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
+			CommonModuleUtils.setIfExists(roleRequestDto::getPmRole, employeeRole::setPmRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
