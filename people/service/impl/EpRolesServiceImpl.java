@@ -102,6 +102,12 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 				case EMPLOYEE -> Role.ESIGN_EMPLOYEE;
 				default -> null;
 			};
+		} else if (module == ModuleType.PM) {
+			return switch (roleLevel) {
+				case ADMIN -> Role.PM_ADMIN;
+				case EMPLOYEE -> Role.PM_EMPLOYEE;
+				default -> null;
+			};
 		}
 		return role;
 	}
