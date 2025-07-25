@@ -263,6 +263,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		defaultEmployeeRoles.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
+		defaultEmployeeRoles.setEsignRole(Role.PM_EMPLOYEE);
 		return defaultEmployeeRoles;
 	}
 
