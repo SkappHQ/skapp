@@ -10,6 +10,7 @@ import { downloadCarryForwardDataCSV } from "~community/leave/utils/CarryForward
 interface Props {
   isRecordLoading?: boolean;
   rows: carryForwardTableDataType[];
+  exportRows: carryForwardTableDataType[];
   headers: { label: string; id: number }[];
   totalPage: number;
 }
@@ -17,13 +18,15 @@ interface Props {
 const CarryForwardTable: React.FC<Props> = ({
   isRecordLoading,
   rows,
+  exportRows,
   headers,
   totalPage
 }) => {
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
 
-  const { leaveTypes, carryForwardPagination, setCarryForwardPagination } =
-    useLeaveStore((state) => state);
+  const { carryForwardPagination, setCarryForwardPagination } = useLeaveStore(
+    (state) => state
+  );
 
   const formattedHeaders = useMemo(() => {
     const baseColumns = [{ id: "name", label: translateTexts(["name"]) }];
@@ -55,14 +58,14 @@ const CarryForwardTable: React.FC<Props> = ({
         pagination: {
           isEnabled: totalPage > 1,
           totalPages: totalPage,
-          currentPage: carryForwardPagination.page - 1,
+          currentPage: carryForwardPagination.page,
           onChange: (_event: ChangeEvent<unknown>, value: number) =>
             setCarryForwardPagination(value - 1)
         },
         exportBtn: {
           isVisible: true,
           label: translateTexts(["exportBtnTxt"]),
-          onClick: () => downloadCarryForwardDataCSV(rows, headers)
+          onClick: () => downloadCarryForwardDataCSV(exportRows, headers)
         }
       }}
     />
