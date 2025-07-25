@@ -111,6 +111,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		Map<ModuleType, List<RoleLevel>> roles = super.initializeRolesForModule();
 
 		roles.put(ModuleType.ESIGN, List.of(RoleLevel.ADMIN, RoleLevel.SENDER, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
 
 		return roles;
 	}
