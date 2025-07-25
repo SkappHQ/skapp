@@ -106,7 +106,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   const { data: storageAvailableData } = useStorageAvailability();
   const hasTerminationAbility =
     data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN) &&
-    data?.user?.userId !== employee?.common?.employeeId;
+    data?.user?.userId !== employee?.common?.employeeId &&
+    !employee?.systemPermissions?.isSuperAdmin;
 
   const [supervisor, setSupervisor] = useState<EmployeeManagerType | null>(
     null

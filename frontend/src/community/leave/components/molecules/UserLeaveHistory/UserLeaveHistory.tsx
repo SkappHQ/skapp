@@ -25,6 +25,7 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useGetEmployeeLeaveHistory } from "~community/leave/api/LeaveAnalyticsApi";
+import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
 import LeaveRequestMenu from "~community/leave/components/molecules/LeaveRequestMenu/LeaveRequestMenu";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
@@ -32,6 +33,7 @@ import {
   LeaveHistoryRawType
 } from "~community/leave/types/AnalyticsTypes";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
+import { leaveRequestRowDataTypes } from "~community/leave/types/LeaveRequestTypes";
 import {
   downloadDataAsCSV,
   formatDateRange
@@ -44,6 +46,8 @@ import {
 } from "~community/leave/utils/LeaveRequestFilterActions";
 import ShowSelectedFilters from "~community/people/components/molecules/ShowSelectedFilters/ShowSelectedFilters";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
+
+import LeaveManagerModalController from "../../organisms/LeaveManagerModalController/LeaveManagerModalController";
 
 interface Props {
   employeeId: number;
@@ -99,6 +103,42 @@ const UserLeaveHistory: FC<Props> = ({
       totalItems: 0,
       totalPages: 0
     });
+
+  const { setIsManagerModal, setLeaveRequestData, setNewLeaveId, newLeaveId } =
+    useLeaveStore((state) => ({
+      setIsManagerModal: state.setIsManagerModal,
+      setLeaveRequestData: state.setLeaveRequestData,
+      setNewLeaveId: state.setNewLeaveId,
+      newLeaveId: state.newLeaveId
+    }));
+
+  const {
+    refetch,
+    isSuccess: getLeaveByIdSuccess,
+    data: getLeaveByIdData
+  } = useGetLeaveRequestData(newLeaveId as number);
+
+  const handleRowClick = (leaveRequest: { id: number }) => {
+    setIsManagerModal(false);
+    setLeaveRequestData({} as leaveRequestRowDataTypes);
+    setNewLeaveId(leaveRequest.id);
+  };
+
+  useEffect(() => {
+    if (getLeaveByIdSuccess && getLeaveByIdData) {
+      setLeaveRequestData(getLeaveByIdData);
+    }
+  }, [getLeaveByIdData, getLeaveByIdSuccess]);
+
+  useEffect(() => {
+    if (newLeaveId) {
+      refetch()
+        .then(() => {
+          setIsManagerModal(true);
+        })
+        .catch(console.error);
+    }
+  }, [newLeaveId, getLeaveByIdData, refetch, setIsManagerModal]);
 
   const filterBeOpen: boolean = filterOpen && Boolean(filterEl);
 
@@ -509,7 +549,8 @@ const UserLeaveHistory: FC<Props> = ({
             skeleton: {
               rows: 5
             }
-          }
+          },
+          onRowClick: handleRowClick
         }}
         tableFoot={{
           pagination: {
@@ -548,6 +589,7 @@ const UserLeaveHistory: FC<Props> = ({
           }
         }}
       />
+      <LeaveManagerModalController />
     </Box>
   );
 };

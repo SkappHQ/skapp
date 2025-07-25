@@ -186,6 +186,9 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       },
       resetForm: () => {
         formik.resetForm();
+      },
+      setFieldError: (field: string, message: string) => {
+        formik.setFieldError(field, message);
       }
     }));
 

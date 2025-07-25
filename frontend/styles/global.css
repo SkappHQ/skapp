@@ -86,7 +86,7 @@ input[type="number"] {
 }
 
 .signup-layout-content-section--centered {
-  justify-content: center;
+  justify-content: safe center;
 }
 
 .signup-layout-content-section--top {

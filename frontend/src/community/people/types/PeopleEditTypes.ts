@@ -21,4 +21,5 @@ export interface FormMethods {
   validateForm: () => Promise<Record<string, string>>;
   submitForm: () => void;
   resetForm: () => void;
+  setFieldError?: (field: string, error: string) => void;
 }
