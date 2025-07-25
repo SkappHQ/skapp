@@ -1,3 +1,5 @@
+import { JSX } from "react";
+
 export interface LeaveType {
   typeId: number;
   name: string;
@@ -54,6 +56,6 @@ export type carryForwardEntitlementType = {
 
 export type carryForwardTableDataType = {
   employeeId: string;
-  name: string;
-  [key: string]: string | number;
+  name: string | JSX.Element;
+  [key: string]: string | number | JSX.Element;
 };
