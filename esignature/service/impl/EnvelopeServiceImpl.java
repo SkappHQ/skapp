@@ -1102,13 +1102,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<table class='doc-header-table'>");
 		htmlBuilder.append("<tr>");
 		htmlBuilder.append("<td>");
-		htmlBuilder.append("<h2 class='doc-name'>").append(escapeHtml(responseDto.getName())).append("</h2>");
-		htmlBuilder.append("<p class='doc-id'>").append(escapeHtml(responseDto.getUuid())).append("</p>");
+		htmlBuilder.append("<h2 class='doc-name'>").append(EsignUtil.escapeHtml(responseDto.getName())).append("</h2>");
+		htmlBuilder.append("<p class='doc-id'>").append(EsignUtil.escapeHtml(responseDto.getUuid())).append("</p>");
 		htmlBuilder.append("</td>");
 
 		htmlBuilder.append("<td class='status-badge'>");
-		String statusClass = getStatusClass(responseDto.getStatus());
-		String statusLabel = getStatusLabel(responseDto.getStatus());
+		String statusClass = EsignUtil.getStatusClass(responseDto.getStatus());
+		String statusLabel = EsignUtil.getStatusLabel(responseDto.getStatus());
 		htmlBuilder.append("<div class='status-content'>");
 		htmlBuilder.append("<span class='status-dot ").append(statusClass).append("'></span>");
 		htmlBuilder.append("<span class='status-text'>").append(statusLabel).append("</span>");
@@ -1131,13 +1131,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<td>");
 		htmlBuilder.append("<div class='meta-label'>Sender</div>");
 		htmlBuilder.append("<div class='meta-value'>")
-			.append(escapeHtml(responseDto.getOwner().getName()))
+			.append(EsignUtil.escapeHtml(responseDto.getOwner().getName()))
 			.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("<td>");
 		htmlBuilder.append("<div class='meta-label'>Enclosed Documents</div>");
 		htmlBuilder.append("<div class='meta-value'>")
-			.append(escapeHtml(responseDto.getDocuments().getFirst().getName()))
+			.append(EsignUtil.escapeHtml(responseDto.getDocuments().getFirst().getName()))
 			.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("</tr>");
@@ -1151,7 +1151,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<td>");
 		htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
 		htmlBuilder.append("<div class='meta-value'>")
-			.append(escapeHtml(responseDto.getOrganizationTimeZone()))
+			.append(EsignUtil.escapeHtml(responseDto.getOrganizationTimeZone()))
 			.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("</tr>");
@@ -1166,7 +1166,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.map(recipient -> recipient.getAddressBook().getFirstName() + " "
 					+ recipient.getAddressBook().getLastName())
 			.collect(Collectors.joining(", "));
-		htmlBuilder.append(escapeHtml(recipients));
+		htmlBuilder.append(EsignUtil.escapeHtml(recipients));
 		htmlBuilder.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("</tr>");
@@ -1193,9 +1193,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
 			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
 				htmlBuilder.append("<tr>");
-				htmlBuilder.append("<td>").append(escapeHtml(formatTimestamp(audit.getTimestamp()))).append("</td>");
-				htmlBuilder.append("<td>").append(escapeHtml(audit.getActionDoneByEmail())).append("</td>");
-				htmlBuilder.append("<td>").append(escapeHtml(getFormattedActionText(audit))).append("</td>");
+				htmlBuilder.append("<td>")
+					.append(EsignUtil.escapeHtml(formatTimestamp(audit.getTimestamp())))
+					.append("</td>");
+				htmlBuilder.append("<td>").append(EsignUtil.escapeHtml(audit.getActionDoneByEmail())).append("</td>");
+				htmlBuilder.append("<td>")
+					.append(EsignUtil.escapeHtml(EsignUtil.getFormattedActionText(audit)))
+					.append("</td>");
 				htmlBuilder.append("</tr>");
 			}
 		}
@@ -1206,93 +1210,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("</body></html>");
 
 		return htmlBuilder.toString();
-	}
-
-	// Helper methods to match the design
-	private String getStatusClass(EnvelopeStatus status) {
-		switch (status) {
-			case COMPLETED:
-				return "completed"; // Green filled dot
-			case WAITING:
-				return "waiting"; // Orange outlined dot
-			case NEED_TO_SIGN:
-				return "need-to-sign"; // Green outlined dot
-			case VOIDED:
-				return "voided"; // Dark filled dot
-			case DECLINED:
-				return "declined"; // Red outlined dot
-			case EXPIRED:
-				return "expired"; // Red filled dot
-			default:
-				return "completed";
-		}
-	}
-
-	private String getStatusLabel(EnvelopeStatus status) {
-		switch (status) {
-			case COMPLETED:
-				return "Completed";
-			case WAITING:
-				return "Waiting";
-			case NEED_TO_SIGN:
-				return "Need to sign";
-			case VOIDED:
-				return "Voided";
-			case DECLINED:
-				return "Declined";
-			case EXPIRED:
-				return "Expired";
-			default:
-				return status.name();
-		}
-	}
-
-	private String escapeHtml(String text) {
-		if (text == null)
-			return "";
-		return text.replace("&", "&amp;")
-			.replace("<", "&lt;")
-			.replace(">", "&gt;")
-			.replace("\"", "&quot;")
-			.replace("'", "&#39;");
-	}
-
-	private String getFormattedActionText(AuditTrailResponseDto audit) {
-		String actionBy = audit.getActionDoneByName() != null ? audit.getActionDoneByName() : "";
-
-		switch (audit.getAction()) {
-			case ENVELOPE_CREATED:
-				return actionBy + EsignConstants.AUDIT_ACTION_CREATED_DOCUMENT;
-			case ENVELOPE_SENT:
-				return actionBy + EsignConstants.AUDIT_ACTION_SENT_DOCUMENT;
-			case ENVELOPE_VIEWED:
-				return actionBy + EsignConstants.AUDIT_ACTION_VIEWED_DOCUMENT;
-			case ENVELOPE_SIGNED:
-				return actionBy + EsignConstants.AUDIT_ACTION_SIGNED_DOCUMENT;
-			case ENVELOPE_COMPLETED:
-				return EsignConstants.AUDIT_ACTION_DOCUMENT_COMPLETED;
-			case ENVELOPE_VOIDED:
-				return EsignConstants.AUDIT_ACTION_DOCUMENT_VOIDED;
-			case ENVELOPE_DECLINED:
-				return actionBy + EsignConstants.AUDIT_ACTION_DECLINED_TO_SIGN;
-			case ENVELOPE_EXPIRED:
-				return EsignConstants.AUDIT_ACTION_DOCUMENT_EXPIRED;
-			case ENVELOPE_DOWNLOADED:
-				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
-			case ENVELOPE_CUSTODY_TRANSFERRED:
-				String newOwner = "";
-				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
-					for (MetadataResponseDto metadata : audit.getMetadata()) {
-						if (EsignConstants.CURRENT_OWNER_METADATA_NAME.equals(metadata.getName())) {
-							newOwner = metadata.getValue();
-							break;
-						}
-					}
-				}
-				return actionBy + EsignConstants.AUDIT_ACTION_TRANSFERRED_OWNERSHIP + newOwner;
-			default:
-				return audit.getAction().toString();
-		}
 	}
 
 	private String formatDate(LocalDateTime localDateTime) {

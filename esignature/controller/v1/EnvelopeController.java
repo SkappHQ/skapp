@@ -126,7 +126,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Get Signature Certificate (PDF)",
 			description = "This endpoint retrieves the signature certificate PDF for a given envelope ID.")
-	@GetMapping(value = "/external/signature-certificate", produces = MediaType.APPLICATION_PDF_VALUE)
+	@GetMapping(value = "/signature-certificate", produces = MediaType.APPLICATION_PDF_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<byte[]> getSignatureCertificateExternal(@RequestParam Long envelopeId) {
 		HttpHeaders headers = new HttpHeaders();

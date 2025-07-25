@@ -56,7 +56,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	public static final String DOCUMENT_RECIPIENT_CONSENT_URL = "/v1/ep/esign/recipients/consent";
 
-	public static final String ENVELOPE_SIGNATURE_CERTIFICATE_URL = "/v1/ep/esign/envelopes/external/signature-certificate";
+	public static final String ENVELOPE_SIGNATURE_CERTIFICATE_URL = "/v1/ep/esign/envelopes/signature-certificate";
 
 	public static final String AUDIT_TRIAL_CREATE_URL = "/v1/ep/esign/audit-trial/create";
 
