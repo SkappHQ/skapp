@@ -16,7 +16,6 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
-import com.skapp.community.peopleplanner.payload.response.RoleResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
@@ -198,12 +197,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	}
 
 	@Override
-	protected RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
-		RoleResponseDto roleResponseDto = new RoleResponseDto();
-		String capitalizedModuleName = moduleType.getDisplayName().substring(0, 1).toUpperCase()
-				+ moduleType.getDisplayName().substring(1).toLowerCase();
-		roleResponseDto.setModule(capitalizedModuleName);
-
+	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
 		if (moduleType == ModuleType.ESIGN) {
@@ -213,9 +207,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 			roles.add(RoleLevel.MANAGER.getDisplayName());
 		}
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
-
-		roleResponseDto.setRoles(roles);
-		return roleResponseDto;
+		return roles;
 	}
 
 	private void processSuperAdmins(List<EmployeeRole> rolesToUpdate) {
