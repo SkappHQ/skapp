@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.payload.request;
 
 import com.skapp.enterprise.common.type.SupportRequestIssueType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.List;
 @Setter
 public class ApplySupportRequestDto {
 
+	@NotNull
 	private SupportRequestIssueType issueType;
 
 	@NotBlank(message = "Details cannot be blank.")
