@@ -731,7 +731,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		Optional<User> userOptional = userDao.findByEmail(email);
 
-		if (userOptional.isPresent()) {
+		if (userOptional.isPresent() && userOptional.get().getIsPasswordChangedForTheFirstTime()) {
 			return userOptional.get();
 		}
 		else {
