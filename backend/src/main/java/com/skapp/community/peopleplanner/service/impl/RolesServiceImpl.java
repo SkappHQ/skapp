@@ -484,7 +484,7 @@ public class RolesServiceImpl implements RolesService {
 		return employeeRole;
 	}
 
-	private RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
+	protected RoleResponseDto createRoleResponseDto(ModuleType moduleType) {
 		RoleResponseDto roleResponseDto = new RoleResponseDto();
 		String capitalizedModuleName = moduleType.getDisplayName().substring(0, 1).toUpperCase()
 				+ moduleType.getDisplayName().substring(1).toLowerCase();
@@ -492,12 +492,7 @@ public class RolesServiceImpl implements RolesService {
 
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
-		if (moduleType == ModuleType.ESIGN) {
-			roles.add(RoleLevel.SENDER.getDisplayName());
-		}
-		else {
-			roles.add(RoleLevel.MANAGER.getDisplayName());
-		}
+		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 
 		roleResponseDto.setRoles(roles);
