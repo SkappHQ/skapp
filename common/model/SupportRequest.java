@@ -5,6 +5,8 @@ import com.skapp.enterprise.common.type.SupportRequestIssueType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +30,7 @@ public class SupportRequest extends Auditable<String> {
 	@Column(name = "support_req_id", updatable = false)
 	private Long supportRequestId;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "issue_type", nullable = false, columnDefinition = "varchar(255)")
 	private SupportRequestIssueType issueType;
 
