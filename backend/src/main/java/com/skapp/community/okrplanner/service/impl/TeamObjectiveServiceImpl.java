@@ -1,13 +1,16 @@
 package com.skapp.community.okrplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.okrplanner.mapper.TeamObjectiveMapper;
+import com.skapp.community.okrplanner.payload.response.TeamObjectiveResponseDto;
 import com.skapp.community.okrplanner.service.TeamObjectiveService;
 import com.skapp.community.okrplanner.model.TeamObjective;
-import com.skapp.community.okrplanner.payload.ResponseEntityDto;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.okrplanner.repository.TeamObjectiveRepository;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
@@ -24,8 +27,11 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 
 	private final TeamDao teamDao;
 
+	@NonNull
+	private final TeamObjectiveMapper teamObjectiveMapper;
+
 	@Override
-	public ResponseEntityDto<List<TeamObjective>> findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId,
+	public ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId,
 			Long effectiveTimePeriod) {
 		// Check if team is logged in users, if not return unauthorized response
 		if (teamId != null) {
@@ -37,7 +43,9 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 		}
 		List<TeamObjective> objectives = teamObjectiveRepository.findByTeamIdAndEffectiveTimePeriod(teamId,
 				effectiveTimePeriod);
-		return new ResponseEntityDto<>(objectives, "Success", HttpStatus.OK);
+		List<TeamObjectiveResponseDto> objectiveResponseDtos = teamObjectiveMapper.teamObjectivesToTeamObjectiveResponseDto(objectives);
+
+		return new ResponseEntityDto(false, objectiveResponseDtos);
 	}
 
 }
