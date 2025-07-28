@@ -6,9 +6,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class KeyResultResponseDto {
-    private Long id;
-    private String title;
-    private String type;
-    private Double lowerLimit;
-    private Double upperLimit;
+
+	private Long id;
+
+	private String title;
+
+	private String type;
+
+	private Double lowerLimit;
+
+	private Double upperLimit;
+
 }

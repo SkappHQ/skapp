@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableCaching
 @EnableRetry
 @EntityScan(basePackages = { "com.skapp.community.peopleplanner.model", "com.skapp.community.common.model",
-		"com.skapp.community.timeplanner.model", "com.skapp.community.leaveplanner.model" })
+		"com.skapp.community.timeplanner.model", "com.skapp.community.leaveplanner.model", "com.skapp.community.okrplanner.model" })
 public class SkappApplication implements AsyncConfigurer {
 
 	public static void main(String[] args) {

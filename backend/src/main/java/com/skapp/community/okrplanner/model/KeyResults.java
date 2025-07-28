@@ -14,28 +14,29 @@ import java.util.List;
 @NoArgsConstructor
 public class KeyResults {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "key_result_id")
-    private Long keyResultId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private Long keyResultId;
 
-    @Column(name = "title")
-    private String title;
+	@Column(name = "title")
+	private String title;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private KeyResultType type;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "type")
+	private KeyResultType type;
 
-    @Column(name = "lower_limit")
-    private Double lowerLimit;
+	@Column(name = "lower_limit")
+	private Double lowerLimit;
 
-    @Column(name = "upper_limit")
-    private Double upperLimit;
+	@Column(name = "upper_limit")
+	private Double upperLimit;
 
-    @OneToMany(mappedBy = "keyResults", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<KeyResultAssignedTeam> assignedTeams;
+	@OneToMany(mappedBy = "keyResults", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<KeyResultAssignedTeam> assignedTeams;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_objective_id")
-    private TeamObjective teamObjective;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_objective_id")
+	private TeamObjective teamObjective;
+
 }
