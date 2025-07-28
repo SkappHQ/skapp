@@ -1,29 +1,30 @@
 -- liquibase formatted sql
 
--- changeset AkilaSilva:common-ddl-script-v1-create-table-okr
+-- changeset attigala:common-ddl-script-v1-create-table-okr
 CREATE TABLE team_objective (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255),
-    description VARCHAR(1024)
+    title VARCHAR(255) NOT NULL,
+    effective_time_period BIGINT NOT NULL,
+    duration VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE key_results (
+CREATE TABLE key_result (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255),
+    title VARCHAR(255) NOT NULL,
     type VARCHAR(50),
     lower_limit DOUBLE,
     upper_limit DOUBLE,
-    team_objective_id BIGINT,
-    CONSTRAINT fk_key_results_team_objective FOREIGN KEY (team_objective_id)
+    team_objective_id BIGINT NOT NULL,
+    CONSTRAINT fk_key_result_team_objective FOREIGN KEY (team_objective_id)
         REFERENCES team_objective(id)
 );
 
 CREATE TABLE key_result_assigned_team (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    key_results_id BIGINT NOT NULL,
+    key_result_id BIGINT NOT NULL,
     team_id BIGINT NOT NULL,
-    CONSTRAINT fk_assigned_team_key_results FOREIGN KEY (key_results_id)
-        REFERENCES key_results(id),
+    CONSTRAINT fk_assigned_team_key_result FOREIGN KEY (key_result_id)
+        REFERENCES key_result(id),
     CONSTRAINT fk_assigned_team_team FOREIGN KEY (team_id)
         REFERENCES team(team_id)
 );
@@ -40,5 +41,5 @@ CREATE TABLE team_objective_assigned_team (
 
 --rollback DROP TABLE team_objective_assigned_team;
 --rollback DROP TABLE key_result_assigned_team;
---rollback DROP TABLE key_results;
+--rollback DROP TABLE key_result;
 --rollback DROP TABLE team_objective;

@@ -13,17 +13,17 @@ import lombok.Setter;
 @Table(name = "team_objective_assigned_team")
 public class TeamObjectiveAssignedTeam {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, updatable = false)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_objective_id")
-    private TeamObjective teamObjective;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_objective_id")
+	private TeamObjective teamObjective;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
-    private Team team;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_id", referencedColumnName = "team_id")
+	private Team team;
+
 }
-

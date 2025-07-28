@@ -6,7 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AssignedTeamResponseDto {
-    private Long teamId;
-    private String name;
-}
 
+	private Long teamId;
+
+	private String name;
+
+}
