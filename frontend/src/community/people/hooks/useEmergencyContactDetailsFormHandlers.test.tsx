@@ -63,10 +63,16 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
   };
 
   const renderHookWithType = (contactType: ContactType) => {
-    return renderHook(() => useEmergencyContactDetailsFormHandlers(contactType));
+    return renderHook(() =>
+      useEmergencyContactDetailsFormHandlers(contactType)
+    );
   };
 
-  const simulateInputChange = async (result: any, field: string, value: string) => {
+  const simulateInputChange = async (
+    result: any,
+    field: string,
+    value: string
+  ) => {
     await act(async () => {
       await result.current.handleInput({
         target: { name: field, value }
@@ -120,9 +126,15 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
     it(`should handle relationship input changes correctly for ${contactType}`, async () => {
       const { result } = renderHookWithType(contactType);
 
-      await simulateInputChange(result, "relationship", testData.testInputs.newRelationship);
+      await simulateInputChange(
+        result,
+        "relationship",
+        testData.testInputs.newRelationship
+      );
 
-      expect(result.current.values.relationship).toBe(testData.testInputs.newRelationship);
+      expect(result.current.values.relationship).toBe(
+        testData.testInputs.newRelationship
+      );
       expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
         [contactType]: {
           ...mockEmployee.emergency[contactType],
@@ -136,7 +148,9 @@ describe("useEmergencyContactDetailsFormHandlers", () => {
 
       await simulatePhoneNumberChange(result, testData.testInputs.newContactNo);
 
-      expect(result.current.values.contactNo).toBe(testData.testInputs.newContactNo);
+      expect(result.current.values.contactNo).toBe(
+        testData.testInputs.newContactNo
+      );
       expect(mockSetEmergencyDetails).toHaveBeenCalledWith({
         [contactType]: {
           ...mockEmployee.emergency[contactType],
