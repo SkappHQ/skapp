@@ -16,8 +16,6 @@ public class TeamObjectiveResponseDto {
 
 	private String duration;
 
-	private List<AssignedTeamResponseDto> assignedTeamIds;
-
-	private List<KeyResultResponseDto> keyResultIds;
+	//TODO: Add company objective id when available
 
 }
