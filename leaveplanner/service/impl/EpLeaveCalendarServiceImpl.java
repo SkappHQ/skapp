@@ -127,15 +127,21 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	public void deleteOutOfOfficeEventsForLeave(LeaveRequest leaveRequest) {
 		log.info("deleteOutOfOfficeEventsForLeave: execution started");
 
-		List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
+		try {
+			List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
 
-		if (calendarEvents != null && !calendarEvents.isEmpty()) {
-			String accessToken = epGoogleCalenderService
-				.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
-			for (CalendarEvent calendarEvent : calendarEvents) {
-				epGoogleCalenderService.deleteOutOfOfficeEvent(
-						encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret), accessToken);
+			if (calendarEvents != null && !calendarEvents.isEmpty()) {
+				String accessToken = epGoogleCalenderService
+					.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
+				for (CalendarEvent calendarEvent : calendarEvents) {
+					epGoogleCalenderService.deleteOutOfOfficeEvent(
+							encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
+							accessToken);
+				}
 			}
+		}
+		catch (ModuleException e) {
+			log.error("Error while deleting out of office events for leave request", e);
 		}
 
 		log.info("deleteOutOfOfficeEventsForLeave: execution ended");
