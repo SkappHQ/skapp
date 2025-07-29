@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1/key-result-types")
 public class KeyResultTypeController {
 
-	//TODO: Change the role to ROLE_OKR_MANAGER when the role is created
+	// TODO: Change the role to ROLE_OKR_MANAGER when the role is created
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getKeyResultTypes() {

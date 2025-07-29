@@ -1,7 +1,9 @@
 package com.skapp.community.okrplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.okrplanner.constants.OkrMessageConstant;
 import com.skapp.community.okrplanner.mapper.TeamObjectiveMapper;
+import com.skapp.community.okrplanner.payload.response.TeamObjectiveDetailedResponseDto;
 import com.skapp.community.okrplanner.payload.response.TeamObjectiveResponseDto;
 import com.skapp.community.okrplanner.service.TeamObjectiveService;
 import com.skapp.community.okrplanner.model.TeamObjective;
@@ -13,7 +15,6 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,18 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 			.teamObjectivesToTeamObjectiveResponseDto(objectives);
 
 		return new ResponseEntityDto(false, objectiveResponseDtos);
+	}
+
+	@Override
+	public ResponseEntityDto findTeamObjectiveById(Long id) {
+		Optional<TeamObjective> teamObjectiveOpt = teamObjectiveRepository.findById(id);
+		if (teamObjectiveOpt.isEmpty()) {
+			log.error("findTeamObjectiveById: Team Objective with ID {} not found", id);
+			throw new ModuleException(OkrMessageConstant.TEAM_OBJECTIVE_ERROR_OBJECTIVE_NOT_FOUND);
+		}
+		TeamObjectiveDetailedResponseDto teamObjectiveDetailedResponseDto = teamObjectiveMapper
+			.teamObjectiveToTeamObjectiveDetailedResponseDto(teamObjectiveOpt.get());
+		return new ResponseEntityDto(false, teamObjectiveDetailedResponseDto);
 	}
 
 }
