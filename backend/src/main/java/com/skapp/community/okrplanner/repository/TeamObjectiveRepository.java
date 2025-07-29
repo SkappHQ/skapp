@@ -12,6 +12,7 @@ import java.util.List;
 public interface TeamObjectiveRepository extends JpaRepository<TeamObjective, Long> {
 
 	@Query("SELECT obj FROM TeamObjectiveAssignedTeam toa JOIN toa.teamObjective obj JOIN toa.team t WHERE t.teamId = :teamId AND obj.effectiveTimePeriod = :effectiveTimePeriod")
-	List<TeamObjective> findByTeamIdAndEffectiveTimePeriod(@Param("teamId") Long teamId, @Param("effectiveTimePeriod") Long effectiveTimePeriod);
+	List<TeamObjective> findByTeamIdAndEffectiveTimePeriod(@Param("teamId") Long teamId,
+			@Param("effectiveTimePeriod") Long effectiveTimePeriod);
 
 }

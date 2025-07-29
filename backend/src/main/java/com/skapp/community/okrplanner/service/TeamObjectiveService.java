@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface TeamObjectiveService {
 
-	ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId,
-																									 Long effectiveTimePeriod);
+	ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId, Long effectiveTimePeriod);
 
 }

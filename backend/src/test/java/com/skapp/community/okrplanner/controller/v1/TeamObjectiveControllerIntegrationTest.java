@@ -44,146 +44,150 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Team objective controller integration tests")
 public class TeamObjectiveControllerIntegrationTest {
 
-    private static final String BASE_PATH = "/v1/team-objectives";
+	private static final String BASE_PATH = "/v1/team-objectives";
 
-    private static final String STATUS_PATH = "['status']";
+	private static final String STATUS_PATH = "['status']";
 
-    private static final String RESULTS_0_PATH = "['results'][0]";
+	private static final String RESULTS_0_PATH = "['results'][0]";
 
-    private static final String MESSAGE_PATH = "['message']";
+	private static final String MESSAGE_PATH = "['message']";
 
-    private static final String STATUS_SUCCESSFUL = "successful";
+	private static final String STATUS_SUCCESSFUL = "successful";
 
-    private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
+	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @Autowired
-    private AuthorityService authorityService;
+	@Autowired
+	private AuthorityService authorityService;
 
-    @Autowired
-    private JwtService jwtService;
+	@Autowired
+	private JwtService jwtService;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+	@Autowired
+	private UserDetailsService userDetailsService;
 
-    @Autowired
-    private TeamDao teamDao;
+	@Autowired
+	private TeamDao teamDao;
 
-    @Autowired
-    private TeamObjectiveRepository teamObjectiveRepository;
+	@Autowired
+	private TeamObjectiveRepository teamObjectiveRepository;
 
-    @Autowired
-    private MockMvc mvc;
+	@Autowired
+	private MockMvc mvc;
 
-    private String authToken;
+	private String authToken;
 
-    private TeamObjective teamObjective;
-    private Team team;
+	private TeamObjective teamObjective;
 
-    @BeforeEach
-    void setup() {
-        setupSecurityContext();
-        authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
-        setupTeamObective();
-    }
+	private Team team;
 
-    @AfterEach
-    void tearDown() {
-        teamObjectiveRepository.deleteAll();
-        teamDao.deleteAll();
-        SecurityContextHolder.clearContext();
-    }
+	@BeforeEach
+	void setup() {
+		setupSecurityContext();
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
+		setupTeamObective();
+	}
 
-    private void setupTeamObective() {
-        team = new Team();
-        team.setTeamName("Test Team");
-        team = teamDao.save(team);
+	@AfterEach
+	void tearDown() {
+		teamObjectiveRepository.deleteAll();
+		teamDao.deleteAll();
+		SecurityContextHolder.clearContext();
+	}
 
-        teamObjective = new TeamObjective();
-        teamObjective.setTitle("Test Objective");
-        teamObjective.setEffectiveTimePeriod(1L);
-        teamObjective = teamObjectiveRepository.save(teamObjective);
+	private void setupTeamObective() {
+		team = new Team();
+		team.setTeamName("Test Team");
+		team = teamDao.save(team);
 
-        TeamObjectiveAssignedTeam assignedTeam = new TeamObjectiveAssignedTeam();
-        assignedTeam.setTeam(team);
-        assignedTeam.setTeamObjective(teamObjective);
+		teamObjective = new TeamObjective();
+		teamObjective.setTitle("Test Objective");
+		teamObjective.setEffectiveTimePeriod(1L);
+		teamObjective = teamObjectiveRepository.save(teamObjective);
 
-        teamObjective.setAssignedTeams(Arrays.asList(assignedTeam));
-        teamObjectiveRepository.save(teamObjective);
-    }
+		TeamObjectiveAssignedTeam assignedTeam = new TeamObjectiveAssignedTeam();
+		assignedTeam.setTeam(team);
+		assignedTeam.setTeamObjective(teamObjective);
 
-    private RequestPostProcessor bearerToken() {
-        return request -> {
-            request.addHeader("Authorization", "Bearer " + authToken);
-            return request;
-        };
-    }
+		teamObjective.setAssignedTeams(Arrays.asList(assignedTeam));
+		teamObjectiveRepository.save(teamObjective);
+	}
 
-    private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-        return mvc.perform(request.with(bearerToken()));
-    }
+	private RequestPostProcessor bearerToken() {
+		return request -> {
+			request.addHeader("Authorization", "Bearer " + authToken);
+			return request;
+		};
+	}
 
-    private void setupSecurityContext() {
-        User mockUser = createMockUser();
-        SkappUserDetails userDetails = SkappUserDetails.builder()
-                .username(mockUser.getEmail())
-                .password(mockUser.getPassword())
-                .enabled(mockUser.getIsActive())
-                .authorities(authorityService.getAuthorities(mockUser))
-                .build();
+	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
+		return mvc.perform(request.with(bearerToken()));
+	}
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                userDetails.getAuthorities());
+	private void setupSecurityContext() {
+		User mockUser = createMockUser();
+		SkappUserDetails userDetails = SkappUserDetails.builder()
+			.username(mockUser.getEmail())
+			.password(mockUser.getPassword())
+			.enabled(mockUser.getIsActive())
+			.authorities(authorityService.getAuthorities(mockUser))
+			.build();
 
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
-    }
+		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+				userDetails.getAuthorities());
 
-    private User createMockUser() {
-        User mockUser = new User();
-        mockUser.setEmail("user2@gmail.com");
-        mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
-        mockUser.setIsActive(true);
-        mockUser.setUserId(2L);
+		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+		securityContext.setAuthentication(authentication);
+		SecurityContextHolder.setContext(securityContext);
+	}
 
-        Employee mockEmployee = new Employee();
-        mockEmployee.setEmployeeId(2L);
-        mockEmployee.setFirstName("name");
+	private User createMockUser() {
+		User mockUser = new User();
+		mockUser.setEmail("user2@gmail.com");
+		mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
+		mockUser.setIsActive(true);
+		mockUser.setUserId(2L);
 
-        EmployeeRole role = new EmployeeRole();
-        role.setLeaveRole(Role.LEAVE_EMPLOYEE);
-        role.setIsSuperAdmin(true);
+		Employee mockEmployee = new Employee();
+		mockEmployee.setEmployeeId(2L);
+		mockEmployee.setFirstName("name");
 
-        mockEmployee.setEmployeeRole(role);
-        mockUser.setEmployee(mockEmployee);
+		EmployeeRole role = new EmployeeRole();
+		role.setLeaveRole(Role.LEAVE_EMPLOYEE);
+		role.setIsSuperAdmin(true);
 
-        return mockUser;
-    }
+		mockEmployee.setEmployeeRole(role);
+		mockUser.setEmployee(mockEmployee);
 
-    private ResultActions performGetRequest(String path) throws Exception {
-        return performRequest(get(path).accept(MediaType.APPLICATION_JSON));
-    }
+		return mockUser;
+	}
 
-    @Nested
-    @DisplayName("Get team objectives tests")
-    class RetrieveTeamObjectivesTests {
+	private ResultActions performGetRequest(String path) throws Exception {
+		return performRequest(get(path).accept(MediaType.APPLICATION_JSON));
+	}
 
-        @DisplayName("Get team objectives by team and effective time period")
-        @Test
-        void getTeamObjectivesByTeamAndEffectiveTimePeriod() throws Exception {
-            Long teamId = team.getTeamId();
-            Long effectiveTimePeriod = 1L;
+	@Nested
+	@DisplayName("Get team objectives tests")
+	class RetrieveTeamObjectivesTests {
 
-            ResultActions resultActions = performGetRequest(BASE_PATH + "?teamId=" + teamId + "&effectiveTimePeriod=" + effectiveTimePeriod);
+		@DisplayName("Get team objectives by team and effective time period")
+		@Test
+		void getTeamObjectivesByTeamAndEffectiveTimePeriod() throws Exception {
+			Long teamId = team.getTeamId();
+			Long effectiveTimePeriod = 1L;
 
-            resultActions.andExpect(status().isOk())
-                    .andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-                    .andExpect(jsonPath(RESULTS_0_PATH + ".teamObjectiveId").exists())
-                    .andExpect(jsonPath(RESULTS_0_PATH + ".title").exists())
-                    .andExpect(jsonPath(MESSAGE_PATH).doesNotExist());
-        }
-    }
+			ResultActions resultActions = performGetRequest(
+					BASE_PATH + "?teamId=" + teamId + "&effectiveTimePeriod=" + effectiveTimePeriod);
+
+			resultActions.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + ".teamObjectiveId").exists())
+				.andExpect(jsonPath(RESULTS_0_PATH + ".title").exists())
+				.andExpect(jsonPath(MESSAGE_PATH).doesNotExist());
+		}
+
+	}
+
 }

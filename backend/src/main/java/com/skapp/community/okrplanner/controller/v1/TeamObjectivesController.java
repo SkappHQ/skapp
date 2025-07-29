@@ -23,17 +23,17 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("v1/team-objectives")
 public class TeamObjectivesController {
 
-    private final TeamObjectiveService teamObjectiveService;
+	private final TeamObjectiveService teamObjectiveService;
 
-    // TODO: Change the role to ROLE_OKR_MANAGER when the role is created
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
-    @GetMapping
-    public ResponseEntity<ResponseEntityDto> getTeamObjectives(@RequestParam Long teamId,
-                                                               @RequestParam Long effectiveTimePeriod) {
+	// TODO: Change the role to ROLE_OKR_MANAGER when the role is created
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@GetMapping
+	public ResponseEntity<ResponseEntityDto> getTeamObjectives(@RequestParam Long teamId,
+			@RequestParam Long effectiveTimePeriod) {
 
-        ResponseEntityDto response = teamObjectiveService
-                .findTeamObjectivesByTeamAndEffectiveTimePeriod(teamId, effectiveTimePeriod);
+		ResponseEntityDto response = teamObjectiveService.findTeamObjectivesByTeamAndEffectiveTimePeriod(teamId,
+				effectiveTimePeriod);
 		return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+	}
 
 }
