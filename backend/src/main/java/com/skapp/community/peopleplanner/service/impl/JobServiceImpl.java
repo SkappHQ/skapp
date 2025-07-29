@@ -337,7 +337,7 @@ public class JobServiceImpl implements JobService {
 		levels.forEach(level -> {
 			if (level != null && !level.isEmpty()) {
 				JobTitle jobTitle = new JobTitle();
-				jobTitle.setName(makeFirstLetterUpper(level));
+				jobTitle.setName(level);
 				jobTitles.add(jobTitle);
 			}
 		});
