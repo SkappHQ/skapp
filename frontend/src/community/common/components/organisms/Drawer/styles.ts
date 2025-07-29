@@ -51,7 +51,7 @@ export const styles = ({ theme }: stylesProps) => ({
     justifyContent: "flex-start",
     alignItems: "center",
     width: "8.75rem",
-    marginBottom: "0.75rem"
+    marginBottom: "0.25rem"
   },
 
   logoImage: {
@@ -70,7 +70,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: "1.25rem",
+    paddingTop: "1.625rem",
     transition: `all ${DRAWER_ANIMATION_DURATION} ease`
   },
   listItem: {
