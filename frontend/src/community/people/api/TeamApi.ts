@@ -46,7 +46,10 @@ export const useGetAllTeams = (): UseQueryResult<TeamType[]> => {
   });
 };
 
-export const useCreateTeam = (onSuccess: () => void, onError: () => void) => {
+export const useCreateTeam = (
+  onSuccess: () => void,
+  onError: (error: any) => void
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (teamData: AddTeamType) => {
@@ -72,7 +75,10 @@ export const useCreateTeam = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
-export const useUpdateTeam = (onSuccess: () => void, onError: () => void) => {
+export const useUpdateTeam = (
+  onSuccess: () => void,
+  onError: (error: any) => void
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({

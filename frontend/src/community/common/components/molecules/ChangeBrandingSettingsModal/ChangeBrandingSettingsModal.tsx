@@ -134,10 +134,7 @@ const ChangeBrandingSettingsModal: React.FC<Props> = ({
       }
     } else {
       updateBranding({
-        organizationLogo:
-          formValues.organizationLogo === ""
-            ? null
-            : formValues.organizationLogo,
+        organizationLogo: formValues.organizationLogo,
         themeColor: formValues.themeColor
       });
     }

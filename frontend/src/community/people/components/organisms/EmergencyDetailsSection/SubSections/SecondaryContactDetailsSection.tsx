@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useSecondaryContactDetailsFormHandlers from "~community/people/hooks/useSecondaryContactDetailsFormHandlers";
+import useEmergencyContactDetailsFormHandlers from "~community/people/hooks/useEmergencyContactDetailsFormHandlers";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 
 import EmergencyContactDetailsSection from "./EmergencyContactDetailsSection";
@@ -18,13 +18,16 @@ const SecondaryContactDetailsSection = forwardRef<FormMethods, Props>(
       "emergencyDetails"
     );
 
+    const useSecondaryContactFormHandlers = () =>
+      useEmergencyContactDetailsFormHandlers("secondaryEmergencyContact");
+
     return (
       <EmergencyContactDetailsSection
         isReadOnly={isReadOnly}
         isInputsDisabled={isInputsDisabled}
         ref={ref}
         titleKey={translateText(["secondaryTitle"])}
-        formHandlersHook={useSecondaryContactDetailsFormHandlers}
+        formHandlersHook={useSecondaryContactFormHandlers}
       />
     );
   }
