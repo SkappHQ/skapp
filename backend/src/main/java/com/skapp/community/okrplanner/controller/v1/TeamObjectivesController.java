@@ -1,8 +1,6 @@
 package com.skapp.community.okrplanner.controller.v1;
 
-import com.skapp.community.okrplanner.payload.response.TeamObjectiveResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.okrplanner.service.TeamObjectiveService;
-import com.skapp.community.okrplanner.model.TeamObjective;
-
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 

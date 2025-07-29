@@ -13,8 +13,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.repository.TeamDao;
-import com.skapp.community.peopleplanner.repository.TeamRepository;
-import org.junit.After;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,8 +51,6 @@ public class TeamObjectiveControllerIntegrationTest {
 	private static final String MESSAGE_PATH = "['message']";
 
 	private static final String STATUS_SUCCESSFUL = "successful";
-
-	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -111,7 +107,7 @@ public class TeamObjectiveControllerIntegrationTest {
 		assignedTeam.setTeam(team);
 		assignedTeam.setTeamObjective(teamObjective);
 
-		teamObjective.setAssignedTeams(Arrays.asList(assignedTeam));
+		teamObjective.setAssignedTeams(List.of(assignedTeam));
 		teamObjectiveRepository.save(teamObjective);
 	}
 
@@ -168,6 +164,14 @@ public class TeamObjectiveControllerIntegrationTest {
 		return performRequest(get(path).accept(MediaType.APPLICATION_JSON));
 	}
 
+	public ObjectMapper getObjectMapper() {
+		return objectMapper;
+	}
+
+	public void setObjectMapper(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+
 	@Nested
 	@DisplayName("Get team objectives tests")
 	class RetrieveTeamObjectivesTests {
@@ -186,6 +190,31 @@ public class TeamObjectiveControllerIntegrationTest {
 				.andExpect(jsonPath(RESULTS_0_PATH + ".teamObjectiveId").exists())
 				.andExpect(jsonPath(RESULTS_0_PATH + ".title").exists())
 				.andExpect(jsonPath(MESSAGE_PATH).doesNotExist());
+		}
+
+		@DisplayName("Get team objective by ID")
+		@Test
+		void getTeamObjective() throws Exception {
+			Long teamObjectiveId = teamObjective.getId();
+
+			ResultActions resultActions = performGetRequest(BASE_PATH + "/" + teamObjectiveId);
+
+			resultActions.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + ".teamObjectiveId").value(teamObjectiveId))
+				.andExpect(jsonPath(RESULTS_0_PATH + ".title").value(teamObjective.getTitle()))
+				.andExpect(jsonPath(MESSAGE_PATH).doesNotExist());
+		}
+
+		@DisplayName("An error is returned if team objective does not exist")
+		@Test
+		void getTeamObjectiveNotFound() throws Exception {
+			Long teamObjectiveId = 999999999999L;
+			ResultActions resultActions = performGetRequest(BASE_PATH + "/" + teamObjectiveId);
+
+			resultActions.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath(STATUS_PATH).value("unsuccessful"))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).exists());
 		}
 
 	}

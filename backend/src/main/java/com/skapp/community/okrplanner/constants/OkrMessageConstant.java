@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum TeamObjectiveMessageConstant implements MessageConstant {
+public enum OkrMessageConstant implements MessageConstant {
 
 	TEAM_OBJECTIVE_ERROR_OBJECTIVE_NOT_FOUND("api.error.okr.team.objective.not.found");
 

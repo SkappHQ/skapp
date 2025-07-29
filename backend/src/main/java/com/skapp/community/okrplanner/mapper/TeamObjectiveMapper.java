@@ -1,9 +1,11 @@
 package com.skapp.community.okrplanner.mapper;
 
 import com.skapp.community.okrplanner.model.KeyResultAssignedTeam;
+import com.skapp.community.okrplanner.model.KeyResults;
 import com.skapp.community.okrplanner.model.TeamObjective;
 import com.skapp.community.okrplanner.model.TeamObjectiveAssignedTeam;
 import com.skapp.community.okrplanner.payload.response.AssignedTeamResponseDto;
+import com.skapp.community.okrplanner.payload.response.KeyResultResponseDto;
 import com.skapp.community.okrplanner.payload.response.TeamObjectiveDetailedResponseDto;
 import com.skapp.community.okrplanner.payload.response.TeamObjectiveResponseDto;
 import org.mapstruct.Mapper;
@@ -28,6 +30,10 @@ public interface TeamObjectiveMapper {
 	@Mapping(target = "name", source = "team.teamName")
 	AssignedTeamResponseDto keyResultAssignedTeamToAssignedTeamResponseDto(KeyResultAssignedTeam keyResultAssignedTeam);
 
+	@Mapping(target = "id", source = "keyResultId")
+	KeyResultResponseDto keyResultsToKeyResultResponseDto(KeyResults keyResult);
+
+	@Mapping(target = "teamObjectiveId", source = "id")
 	TeamObjectiveDetailedResponseDto teamObjectiveToTeamObjectiveDetailedResponseDto(TeamObjective teamObjective);
 
 }
