@@ -20,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/team-objectives")
+@RequestMapping("v1/team-objectives")
 public class TeamObjectivesController {
 
     private final TeamObjectiveService teamObjectiveService;
