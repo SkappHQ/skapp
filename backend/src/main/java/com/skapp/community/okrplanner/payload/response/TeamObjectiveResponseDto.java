@@ -16,6 +16,6 @@ public class TeamObjectiveResponseDto {
 
 	private String duration;
 
-	//TODO: Add company objective id when available
+	// TODO: Add company objective id when available
 
 }

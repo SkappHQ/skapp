@@ -31,8 +31,7 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 	private final TeamObjectiveMapper teamObjectiveMapper;
 
 	@Override
-	public ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId,
-			Long effectiveTimePeriod) {
+	public ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId, Long effectiveTimePeriod) {
 		// Check if team is logged in users, if not return unauthorized response
 		if (teamId != null) {
 			Optional<Team> teamOpt = teamDao.findByTeamIdAndIsActive(teamId, true);
@@ -43,7 +42,8 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 		}
 		List<TeamObjective> objectives = teamObjectiveRepository.findByTeamIdAndEffectiveTimePeriod(teamId,
 				effectiveTimePeriod);
-		List<TeamObjectiveResponseDto> objectiveResponseDtos = teamObjectiveMapper.teamObjectivesToTeamObjectiveResponseDto(objectives);
+		List<TeamObjectiveResponseDto> objectiveResponseDtos = teamObjectiveMapper
+			.teamObjectivesToTeamObjectiveResponseDto(objectives);
 
 		return new ResponseEntityDto(false, objectiveResponseDtos);
 	}

@@ -10,8 +10,9 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface TeamObjectiveMapper {
 
-    @Mapping(target = "teamObjectiveId", source = "id")
-    TeamObjectiveResponseDto teamObjectiveToTeamObjectiveResponseDto(TeamObjective teamObjective);
+	@Mapping(target = "teamObjectiveId", source = "id")
+	TeamObjectiveResponseDto teamObjectiveToTeamObjectiveResponseDto(TeamObjective teamObjective);
 
-    List<TeamObjectiveResponseDto> teamObjectivesToTeamObjectiveResponseDto(List<TeamObjective> teamObjective);
+	List<TeamObjectiveResponseDto> teamObjectivesToTeamObjectiveResponseDto(List<TeamObjective> teamObjective);
+
 }
