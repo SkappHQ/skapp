@@ -10,4 +10,6 @@ public interface TeamObjectiveService {
 
 	ResponseEntityDto findTeamObjectivesByTeamAndEffectiveTimePeriod(Long teamId, Long effectiveTimePeriod);
 
+	ResponseEntityDto findTeamObjectiveById(Long id);
+
 }

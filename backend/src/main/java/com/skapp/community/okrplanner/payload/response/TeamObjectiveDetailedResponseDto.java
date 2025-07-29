@@ -7,17 +7,17 @@ import java.util.List;
 
 @Getter
 @Setter
-public class KeyResultResponseDto {
+public class TeamObjectiveDetailedResponseDto {
 
-	private Long id;
+	private Long teamObjectiveId;
 
 	private String title;
 
-	private String type;
+	private Long effectiveTimePeriod;
 
-	private Double lowerLimit;
+	private String duration;
 
-	private Double upperLimit;
+	private List<KeyResultResponseDto> keyResults;
 
 	private List<AssignedTeamResponseDto> assignedTeams;
 
