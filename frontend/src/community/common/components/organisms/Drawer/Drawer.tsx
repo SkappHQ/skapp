@@ -166,10 +166,7 @@ const Drawer = (): JSX.Element => {
 
   const { setSubmitRequestModalType } = useCommonEnterpriseStore();
 
-  const handleOpenSubmitRequestModal = (
-    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) => {
-    e.preventDefault();
+  const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
   };
 
@@ -388,13 +385,11 @@ const Drawer = (): JSX.Element => {
             )}
             {isSuperAdmin && (
               <MuiLink
-                href="https://docs.skapp.com"
                 onClick={handleOpenSubmitRequestModal}
-                target="_blank"
                 variant="body1"
                 color="inherit"
                 underline="hover"
-                sx={classes.link}
+                sx={{ ...classes.link, cursor: "pointer" }}
                 data-testid={appDrawerTestId.getHelpLink}
               >
                 {translateText(["getHelp"])}
