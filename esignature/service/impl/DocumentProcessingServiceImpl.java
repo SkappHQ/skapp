@@ -236,14 +236,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	public Map<Integer, PageDimensionResponseDto> processDocumentDimensions(byte[] documentBytes) {
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
 				PDDocument document = Loader.loadPDF(randomAccessRead)) {
-			Map<Integer, PageDimensionResponseDto> result = new HashMap<>();
+			Map<Integer, PageDimensionResponseDto> documentDimensionsData = new HashMap<>();
 			int pageCount = document.getNumberOfPages();
 			for (int i = 0; i < pageCount; i++) {
 				PDPage page = document.getPage(i);
 				PDRectangle mediaBox = page.getMediaBox();
-				result.put(i + 1, new PageDimensionResponseDto(mediaBox.getWidth(), mediaBox.getHeight()));
+				documentDimensionsData.put(i + 1,
+						new PageDimensionResponseDto(mediaBox.getWidth(), mediaBox.getHeight()));
 			}
-			return result;
+			return documentDimensionsData;
 		}
 		catch (IOException e) {
 			log.error("Error processDocumentDimensions: {}", e.getMessage(), e);
