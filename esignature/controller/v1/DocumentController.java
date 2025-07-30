@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -114,6 +115,15 @@ public class DocumentController {
 			HttpServletRequest request) {
 		ResponseEntityDto response = documentService.signField(documentFieldSignDto, EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Retrieve dimensions of a document",
+			description = "This endpoint retrieves the dimensions (e.g., page width and height) of a document by its ID.")
+	@GetMapping(value = "/dimension/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getDocumentDimensions(@PathVariable Long id) {
+		ResponseEntityDto response = documentService.getDocumentDimensions(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
