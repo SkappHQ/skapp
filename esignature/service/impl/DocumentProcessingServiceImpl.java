@@ -246,7 +246,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			return result;
 		}
 		catch (IOException e) {
-			log.error("Error processing getNumberOfPages: {}", e.getMessage(), e);
+			log.error("Error processDocumentDimensions: {}", e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
