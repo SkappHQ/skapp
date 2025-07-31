@@ -1072,7 +1072,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	public List<LeaveTrendByDay> findLeaveTrendAwayByDay(LocalDate startDate, LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// We need to generate all dates between startDate and endDate
+		// We need to generate all dates between startDate and endDat
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 				.collect(Collectors.toList());
 
