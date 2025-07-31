@@ -118,7 +118,7 @@ public class DocumentController {
 	}
 
 	@Operation(summary = "Retrieve dimensions of a document",
-			description = "This endpoint retrieves the dimensions (e.g., page width and height) of a document by its ID.")
+			description = "This endpoint retrieves the dimensions of a document by its ID.")
 	@GetMapping(value = "/dimension/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getDocumentDimensions(@PathVariable Long id) {
