@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -35,7 +35,7 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { AdminTypes, EmployeeTypes } from "~community/common/types/AuthTypes";
+import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
@@ -107,10 +107,6 @@ const Drawer = (): JSX.Element => {
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
   const isEnterprise = environment === appModes.ENTERPRISE;
-
-  const isSuperAdmin = sessionData?.user?.roles?.includes(
-    AdminTypes.SUPER_ADMIN
-  );
 
   const drawerRoutes = useMemo(
     () =>
@@ -383,18 +379,16 @@ const Drawer = (): JSX.Element => {
                 data-testid={appDrawerTestId.buttons.applyLeaveBtn}
               />
             )}
-            {isSuperAdmin && (
-              <MuiLink
-                onClick={handleOpenSubmitRequestModal}
-                variant="body1"
-                color="inherit"
-                underline="hover"
-                sx={{ ...classes.link, cursor: "pointer" }}
-                data-testid={appDrawerTestId.getHelpLink}
-              >
-                {translateText(["getHelp"])}
-              </MuiLink>
-            )}
+            <MuiLink
+              onClick={handleOpenSubmitRequestModal}
+              variant="body1"
+              color="inherit"
+              underline="hover"
+              sx={{ ...classes.link, cursor: "pointer" }}
+              data-testid={appDrawerTestId.getHelpLink}
+            >
+              {translateText(["getHelp"])}
+            </MuiLink>
             <SubmitRequestModalController />
           </Stack>
         )}
