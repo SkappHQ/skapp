@@ -18,6 +18,11 @@ const generateThumbnail = (
       const ctx = canvas.getContext("2d");
       const targetSize = 128;
 
+      if (!ctx) {
+        reject(new Error("Could not get canvas context"));
+        return;
+      }
+
       let sourceX = 0;
       let sourceY = 0;
       let sourceWidth = img.width;
@@ -33,10 +38,20 @@ const generateThumbnail = (
         sourceY = (img.height - img.width) / 2;
       }
 
-      canvas.width = targetSize;
-      canvas.height = targetSize;
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const scaleFactor = Math.max(devicePixelRatio, 2);
 
-      ctx?.drawImage(
+      canvas.width = targetSize * scaleFactor;
+      canvas.height = targetSize * scaleFactor;
+      canvas.style.width = `${targetSize}px`;
+      canvas.style.height = `${targetSize}px`;
+
+      ctx.scale(scaleFactor, scaleFactor);
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      ctx.drawImage(
         img,
         sourceX,
         sourceY,
@@ -48,22 +63,26 @@ const generateThumbnail = (
         destHeight
       );
 
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const thumbnailFile = new File([blob], file.name, {
-            type: file.type
-          });
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const thumbnailFile = new File([blob], file.name, {
+              type: file.type
+            });
 
-          const thumbnailWithPreview = Object.assign(thumbnailFile, {
-            preview: URL.createObjectURL(thumbnailFile),
-            path: file.path
-          });
+            const thumbnailWithPreview = Object.assign(thumbnailFile, {
+              preview: URL.createObjectURL(thumbnailFile),
+              path: file.path
+            });
 
-          resolve([thumbnailWithPreview]);
-        } else {
-          reject(new Error("Failed to create thumbnail blob."));
-        }
-      }, file.type);
+            resolve([thumbnailWithPreview]);
+          } else {
+            reject(new Error("Failed to create thumbnail blob."));
+          }
+        },
+        file.type,
+        0.95
+      );
     };
     img.onerror = reject;
   });
