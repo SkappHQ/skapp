@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ public class EpUserController {
 	private final EpUserService epUserService;
 
 	@GetMapping
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<List<EpUserResponseDto>> getUsers(
 			@Parameter(name = "employeeIds", description = "List of employee IDs to retrieve (comma-separated)",
 					example = "1,2,3", schema = @Schema(type = "array", implementation = Long.class)) @RequestParam(
