@@ -1,14 +1,20 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
+import { appModes } from "~community/common/constants/configs";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { scrollToFirstError } from "~community/common/utils/commonUtil";
+import { useCheckEmailAndIdentificationNo } from "~community/people/api/PeopleApi";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
+import { LoginMethodsEnums } from "~enterprise/common/enums/Common";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -62,10 +68,50 @@ const EmploymentDetailsForm = ({
 
   const { handleNext } = useStepper();
 
+  const env = useGetEnvironment();
+  const isEnterpriseMode = env === appModes.ENTERPRISE;
+
+  const { tenantID } = useSessionData();
+
+  const { data: globalLogin } = useGetGlobalLoginMethod(
+    isEnterpriseMode,
+    tenantID as string
+  );
+
+  const email = employee?.employment?.employmentDetails?.email || "";
+  const employeeNumber =
+    employee?.employment?.employmentDetails?.employeeNumber || "";
+
+  const { data: emailValidation } = useCheckEmailAndIdentificationNo(
+    email,
+    employeeNumber
+  );
+
   const isTerminatedEmployee =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
 
+  const validateGoogleDomain = (): boolean => {
+    if (
+      isEnterpriseMode &&
+      email &&
+      globalLogin === LoginMethodsEnums.GOOGLE.toString() &&
+      emailValidation &&
+      !emailValidation.isGoogleDomain
+    ) {
+      employmentDetailsRef.current?.setFieldError?.(
+        "email",
+        translateText(["addResource", "generalDetails", "workEmailGoogle"])
+      );
+      return false;
+    }
+    return true;
+  };
+
   const onSave = async () => {
+    if (!validateGoogleDomain()) {
+      return;
+    }
+
     const employmentFormErrors =
       (await employmentDetailsRef?.current?.validateForm()) || {};
     const identificationFormErrors =

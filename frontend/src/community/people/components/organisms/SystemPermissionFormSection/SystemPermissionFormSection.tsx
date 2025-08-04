@@ -96,7 +96,8 @@ const SystemPermissionFormSection = ({
   const {
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
-    isEsignatureModuleEnabled
+    isEsignatureModuleEnabled,
+    isSuperAdmin
   } = useSessionData();
 
   const { handleNext } = useStepper();
@@ -105,7 +106,10 @@ const SystemPermissionFormSection = ({
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
 
   const onSave = () => {
-    if (!employee.systemPermissions?.isSuperAdmin) {
+    if (
+      initialEmployee.systemPermissions?.isSuperAdmin &&
+      !employee.systemPermissions?.isSuperAdmin
+    ) {
       const rolesToAssign = {
         peopleRole: employee?.systemPermissions?.peopleRole,
         leaveRole: employee?.systemPermissions?.leaveRole,
@@ -229,15 +233,17 @@ const SystemPermissionFormSection = ({
         dividerStyles={classes.layoutDividerStyles}
       >
         <>
-          <SwitchRow
-            labelId="super-admin"
-            label={translateText(["superAdmin"])}
-            disabled={isProfileView || isInputsDisabled || isReadOnly}
-            checked={permissions.isSuperAdmin as boolean}
-            onChange={(checked: boolean) => handleSuperAdminToggle(checked)}
-            wrapperStyles={classes.switchRowWrapper}
-            icon={!isInputsDisabled ? IconName.SUPER_ADMIN_ICON : undefined}
-          />
+          {(isSuperAdmin || employee?.systemPermissions?.isSuperAdmin) && (
+            <SwitchRow
+              labelId="super-admin"
+              label={translateText(["superAdmin"])}
+              disabled={!isSuperAdmin}
+              checked={permissions.isSuperAdmin as boolean}
+              onChange={(checked: boolean) => handleSuperAdminToggle(checked)}
+              wrapperStyles={classes.switchRowWrapper}
+              icon={!isInputsDisabled ? IconName.SUPER_ADMIN_ICON : undefined}
+            />
+          )}
 
           <Stack sx={classes.dropdownContainer}>
             {!isRoleMissing(RoleModuleEnum.PEOPLE, RoleNameEnum.ADMIN) &&
