@@ -24,7 +24,7 @@ export const useCheckOrgSetupStatus = () => {
   });
 };
 
-export const useGetOrganization = () => {
+export const useGetOrganization = (isSessionDataAvailable: boolean = true) => {
   return useQuery({
     queryKey: [organizationCreateEndpoints.CREATE_ORGANIZATION],
     queryFn: async () => {
@@ -32,6 +32,7 @@ export const useGetOrganization = () => {
         organizationCreateEndpoints.CREATE_ORGANIZATION
       );
       return data;
-    }
+    },
+    enabled: isSessionDataAvailable
   });
 };

@@ -323,6 +323,10 @@ const nextConfig = {
       {
         source: "/user-account",
         destination: "/community/user-account"
+      },
+      {
+        source: "/projects",
+        destination: "/enterprise/projects"
       }
     ];
   },

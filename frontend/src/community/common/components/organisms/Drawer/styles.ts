@@ -50,9 +50,8 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    height: "2.8225rem",
-    width: "calc(100% - 7rem)",
-    marginBottom: "0.25rem"
+    width: "8.75rem",
+    marginBottom: "0.75rem"
   },
 
   logoImage: {
@@ -60,6 +59,7 @@ export const styles = ({ theme }: stylesProps) => ({
     width: "100%",
     height: "auto",
     maxWidth: "10rem",
+    maxHeight: "3.25rem",
     objectFit: "contain" as const
   },
   list: {
@@ -71,7 +71,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: "1.625rem",
+    paddingTop: "1.25rem",
     transition: `all ${DRAWER_ANIMATION_DURATION} ease`
   },
   listItem: {
@@ -168,7 +168,7 @@ export const styles = ({ theme }: stylesProps) => ({
       expandedDrawerListItem === currentDrawerListItem ? "rotate(180deg)" : ""
   }),
   footer: {
-    width: "12.5rem",
+    width: "calc(100% - 2rem)",
     marginTop: "auto",
     paddingTop: "1.25rem",
     gap: "1.5rem",

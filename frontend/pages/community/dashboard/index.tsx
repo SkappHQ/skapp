@@ -24,6 +24,7 @@ import {
 import { ModuleTypes } from "~community/common/types/CommonTypes";
 import LeaveAllocationSummary from "~community/leave/components/organisms/LeaveDashboard/LeaveAllocationSummary";
 import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard/LeaveDashboard";
+import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
@@ -179,6 +180,7 @@ const Dashboard: NextPage = () => {
           )}
 
           <VersionUpgradeModal />
+          <LeaveManagerModalController />
         </>
       </ContentLayout>
     );
