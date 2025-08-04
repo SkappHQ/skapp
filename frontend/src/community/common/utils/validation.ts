@@ -116,7 +116,10 @@ export const organizationSetupValidation = (
   Yup.object({
     organizationName: Yup.string()
       .required(translateText(["orgNameRequiredError"]))
-      .matches(onlyLettersAndSpaces(), translateText(["orgNameCharacterError"]))
+      .matches(
+        allowsLettersAndSpecialCharactersForNames(),
+        translateText(["orgNameCharacterError"])
+      )
       .max(
         characterLengths.ORGANIZATION_NAME_LENGTH,
         translateText(["orgNameLengthError"])
