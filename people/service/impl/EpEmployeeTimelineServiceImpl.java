@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.enterprise.common.type.Tier;
@@ -82,6 +83,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 	private final EpUserService epUserService;
 
+	private final RolesService rolesService;
+
 	@Override
 	public ResponseEntityDto getEmployeeTimelineRecords(Long id) {
 		User currentUser = userService.getCurrentUser();
@@ -123,7 +126,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 			EmployeeQuickAddDto employeeQuickAddDto) {
 		List<EmployeeTimeline> employeeTimelines = new ArrayList<>();
 
-		addSystemPermissionTimeline(savedEmployee, employeeQuickAddDto.getUserRoles(), employeeTimelines);
+		addSystemPermissionTimeline(savedEmployee, rolesService.getDefaultEmployeeRoles(), employeeTimelines);
 
 		epEmployeeTimelineDao.saveAll(employeeTimelines);
 	}
