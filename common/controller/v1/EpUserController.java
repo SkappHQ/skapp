@@ -21,25 +21,17 @@ public class EpUserController {
 
 	private final EpUserService epUserService;
 
-    @GetMapping
-    public ResponseEntity<List<EpUserResponseDto>> getUsers(
-            @Parameter(
-                    name = "employeeIds",
-                    description = "List of employee IDs to retrieve (comma-separated)",
-                    example = "1,2,3",
-                    schema = @Schema(type = "array", implementation = Long.class)
-            )
-            @RequestParam(value = "employeeIds", required = false) List<Long> employeeIds,
+	@GetMapping
+	public ResponseEntity<List<EpUserResponseDto>> getUsers(
+			@Parameter(name = "employeeIds", description = "List of employee IDs to retrieve (comma-separated)",
+					example = "1,2,3", schema = @Schema(type = "array", implementation = Long.class)) @RequestParam(
+							value = "employeeIds", required = false) List<Long> employeeIds,
 
-            @Parameter(
-                    name = "search",
-                    description = "Search term for user email, name, or employee ID",
-                    example = "john"
-            )
-            @RequestParam(value = "search", required = false) String search) {
+			@Parameter(name = "search", description = "Search term for user email, name, or employee ID",
+					example = "john") @RequestParam(value = "search", required = false) String search) {
 
-        List<EpUserResponseDto> response = epUserService.getUsersByIdsOrSearch(employeeIds, search);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+		List<EpUserResponseDto> response = epUserService.getUsersByIdsOrSearch(employeeIds, search);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 }

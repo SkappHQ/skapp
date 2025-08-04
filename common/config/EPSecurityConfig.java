@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.config.DocumentLinkAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +75,8 @@ public class EPSecurityConfig {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
 			.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
-			.authorizeHttpRequests(auth -> auth
+			.authorizeHttpRequests(auth -> auth.requestMatchers("/internal/v1/ep/users")
+				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
 						"/error", "/v1/app-setup-status", "/robots.txt", "/ws/**", "/v1/ep/auth/signup/super-admin",
