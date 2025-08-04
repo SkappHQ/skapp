@@ -61,7 +61,7 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     if (getLeaveByIdSuccess && getLeaveByIdData) {
       setLeaveRequestData(getLeaveByIdData);
     }
-  }, [getLeaveByIdData, getLeaveByIdSuccess]);
+  }, [getLeaveByIdData, getLeaveByIdSuccess, setLeaveRequestData]);
 
   useEffect(() => {
     if (newLeaveId) {
