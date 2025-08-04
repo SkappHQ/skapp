@@ -205,27 +205,25 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			String searchPattern = "%" + searchTerm.trim().toLowerCase() + "%";
 
 			List<Predicate> searchPredicates = new ArrayList<>();
-			searchPredicates.add(criteriaBuilder.like(
-					criteriaBuilder.lower(root.get(Employee_.firstName)), searchPattern));
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.firstName)), searchPattern));
 
-			searchPredicates.add(criteriaBuilder.like(
-					criteriaBuilder.lower(root.get(Employee_.lastName)), searchPattern));
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.lastName)), searchPattern));
 
-			searchPredicates.add(criteriaBuilder.like(
-					criteriaBuilder.lower(userJoin.get(User_.email)), searchPattern));
+			searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)), searchPattern));
 
 			predicates.add(criteriaBuilder.or(searchPredicates.toArray(new Predicate[0])));
-		} else if (employeeIds != null && !employeeIds.isEmpty()) {
+		}
+		else if (employeeIds != null && !employeeIds.isEmpty()) {
 			predicates.add(root.get(Employee_.employeeId).in(employeeIds));
 		}
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(root);
 		criteriaQuery.distinct(true);
-		criteriaQuery.orderBy(
-				criteriaBuilder.asc(root.get(Employee_.firstName)),
-				criteriaBuilder.asc(root.get(Employee_.lastName))
-		);
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(Employee_.firstName)),
+				criteriaBuilder.asc(root.get(Employee_.lastName)));
 
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
 		return query.getResultList();
