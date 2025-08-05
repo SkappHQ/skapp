@@ -1020,17 +1020,17 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
 		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
-		Join<Employee, User> userJoin = employeeJoin.join("user");
+		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.between(root.get(LeaveEntitlement_.validFrom), validFrom, validDate));
 		predicates.add(cb.between(root.get(LeaveEntitlement_.validTo), validFrom, validDate));
 		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
-		predicates.add(cb.equal(userJoin.get("isActive"), true));
+		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
 
-		cq.multiselect(employeeJoin.get("employeeId"), root.get("createdDate"));
+		cq.multiselect(employeeJoin.get(Employee_.employeeId), root.get(Auditable_.createdDate));
 		cq.where(predicates.toArray(new Predicate[0]));
-		cq.orderBy(cb.asc(root.get("createdDate")));
+		cq.orderBy(cb.asc(root.get(Auditable_.createdDate)));
 
 		TypedQuery<Object[]> query = entityManager.createQuery(cq);
 		query.setFirstResult((int) offset);
@@ -1100,46 +1100,45 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		return new ArrayList<>(employeeIds);
 	}
 
-
 	@Override
 	public Long findEmployeeIdsCountWithLeaveEntitlements(List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
 
-		Join<LeaveEntitlement, Employee> employeeJoin = root.join("employee");
-		Join<Employee, User> userJoin = employeeJoin.join("user");
-		Join<Employee, EmployeeTeam> employeeTeamJoin = employeeJoin.join("employeeTeams", JoinType.LEFT);
-		Join<EmployeeTeam, Team> teamJoin = employeeTeamJoin.join("team", JoinType.LEFT);
-		Join<Employee, JobFamily> jobFamilyJoin = employeeJoin.join("jobFamily", JoinType.LEFT);
-		Join<LeaveEntitlement, LeaveType> leaveTypeJoin = root.join("leaveType");
+		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
+		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
+		Join<Employee, EmployeeTeam> employeeTeamJoin = employeeJoin.join(Employee_.employeeTeams, JoinType.LEFT);
+		Join<EmployeeTeam, Team> teamJoin = employeeTeamJoin.join(EmployeeTeam_.team, JoinType.LEFT);
+		Join<Employee, JobFamily> jobFamilyJoin = employeeJoin.join(Employee_.jobFamily, JoinType.LEFT);
+		Join<LeaveEntitlement, LeaveType> leaveTypeJoin = root.join(LeaveEntitlement_.leaveType);
 
 		List<Predicate> predicates = new ArrayList<>();
 
 		// Leave type filter
 		if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
-			predicates.add(leaveTypeJoin.get("typeId").in(leaveTypeIds));
+			predicates.add(leaveTypeJoin.get(LeaveType_.typeId).in(leaveTypeIds));
 		}
 
 		// Active filters
-		predicates.add(cb.equal(userJoin.get("isActive"), true));
-		predicates.add(cb.equal(root.get("isActive"), true));
+		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
 
 		// Date range filter
-		predicates.add(cb.lessThanOrEqualTo(root.get("validFrom"), endDate));
-		predicates.add(cb.greaterThanOrEqualTo(root.get("validTo"), startDate));
+		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveEntitlement_.validFrom), endDate));
+		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveEntitlement_.validTo), startDate));
 
 		// Optional job family filter
 		if (jobFamilyId != null) {
-			predicates.add(cb.equal(jobFamilyJoin.get("jobFamilyId"), jobFamilyId));
+			predicates.add(cb.equal(jobFamilyJoin.get(JobFamily_.jobFamilyId), jobFamilyId));
 		}
 
 		// Optional team filter
 		if (teamId != null) {
-			predicates.add(cb.equal(teamJoin.get("teamId"), teamId));
+			predicates.add(cb.equal(teamJoin.get(Team_.teamId), teamId));
 		}
 
-		cq.select(cb.countDistinct(employeeJoin.get("employeeId")));
+		cq.select(cb.countDistinct(employeeJoin.get(Employee_.employeeId)));
 		cq.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(cq).getSingleResult();

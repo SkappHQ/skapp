@@ -368,9 +368,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 								cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId),
 								cb.literal("startTime"), timeSlot.get(TimeSlot_.startTime),
 								cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
-								cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), // Changed from type to slotType
+								cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType),
 								cb.literal("isActiveRightNow"), timeSlot.get(TimeSlot_.isActiveRightNow),
-								cb.literal("isManualEntry"), timeSlot.get(TimeSlot_.isManualEntry) // Changed from isManual
+								cb.literal("isManualEntry"), timeSlot.get(TimeSlot_.isManualEntry)
 						)
 				)
 		);
