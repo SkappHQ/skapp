@@ -68,7 +68,9 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     if (getLeaveByIdSuccess && getLeaveByIdData) {
       setLeaveRequestData(getLeaveByIdData);
       setIsManagerModal(true);
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 70);
     }
   }, [getLeaveByIdSuccess, getLeaveByIdData]);
 
