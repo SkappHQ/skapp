@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
@@ -1437,6 +1438,37 @@ public class DocumentServiceImpl implements DocumentService {
 		newVersion.setSignatures(documentSignature);
 
 		return newVersion;
+	}
+
+	@Override
+	public ResponseEntityDto getDocumentDimensions(Long id) {
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
+
+		Document document = documentRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		boolean isRecipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
+
+		if (!isRecipient) {
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
+			if (!isOwner) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+			}
+		}
+
+		if (document.getFilePath() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
+		}
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, document.getFilePath());
+
+		Map<Integer, PageDimensionResponseDto> result = documentProcessingService
+			.processDocumentDimensions(documentBytes);
+		return new ResponseEntityDto(false, result);
 	}
 
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
