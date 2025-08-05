@@ -767,7 +767,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-				// Create the result object
+				// Create the result
 				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
 				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 				String slot = slotStartTime + " - " + slotEndTime;
