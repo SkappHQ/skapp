@@ -45,11 +45,8 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
       newLeaveId: state.newLeaveId
     }));
 
-  const {
-    refetch,
-    isSuccess: getLeaveByIdSuccess,
-    data: getLeaveByIdData
-  } = useGetLeaveRequestData(newLeaveId as number);
+  const { isSuccess: getLeaveByIdSuccess, data: getLeaveByIdData } =
+    useGetLeaveRequestData(newLeaveId as number);
 
   const handleRowClick = (leaveRequest: { id: number }) => {
     const selectedLeaveRequest = todaysAvailability?.find(
@@ -61,26 +58,19 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     ) {
       setIsManagerModal(false);
       setLeaveRequestData({} as leaveRequestRowDataTypes);
-      setNewLeaveId(leaveRequest.id);
-      onClose();
+      if (leaveRequest.id !== newLeaveId) {
+        setNewLeaveId(leaveRequest.id);
+      }
     }
   };
 
   useEffect(() => {
     if (getLeaveByIdSuccess && getLeaveByIdData) {
       setLeaveRequestData(getLeaveByIdData);
+      setIsManagerModal(true);
+      onClose();
     }
-  }, [getLeaveByIdData, getLeaveByIdSuccess, setLeaveRequestData]);
-
-  useEffect(() => {
-    if (newLeaveId) {
-      refetch()
-        .then(() => {
-          setIsManagerModal(true);
-        })
-        .catch(console.error);
-    }
-  }, [newLeaveId, refetch, setIsManagerModal]);
+  }, [getLeaveByIdSuccess, getLeaveByIdData]);
 
   const columns = [
     {
