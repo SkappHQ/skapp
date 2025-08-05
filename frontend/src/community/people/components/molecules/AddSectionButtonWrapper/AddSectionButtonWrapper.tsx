@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -123,7 +124,13 @@ const AddSectionButtonWrapper = ({
         <Button
           label={translateText(["next"])}
           buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={IconName.RIGHT_ARROW_ICON}
+          endIcon={
+            <Icon
+              name={IconName.RIGHT_ARROW_ICON}
+              width="1.25rem"
+              height="1.25rem"
+            />
+          }
           isFullWidth={false}
           onClick={() => {
             if (onNextClick) {

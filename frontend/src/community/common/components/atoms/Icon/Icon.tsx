@@ -66,6 +66,7 @@ import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIco
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
+import InstagramIcon from "~community/common/assets/Icons/InstagramIcon";
 import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
@@ -287,7 +288,8 @@ export const IconMapping: Partial<
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
-  [IconName.INTEGRATIONS_ICON]: IntegrationsIcon
+  [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
+  [IconName.INSTAGRAM_ICON]: InstagramIcon
   // Add more icons here as needed
 };
 

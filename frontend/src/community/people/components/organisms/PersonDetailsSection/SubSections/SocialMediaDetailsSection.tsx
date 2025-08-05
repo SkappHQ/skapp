@@ -1,12 +1,14 @@
-import { Facebook, Instagram, LinkedIn, X } from "@mui/icons-material";
-import { Grid2 as Grid, type Theme, useTheme } from "@mui/material";
+import { Facebook, LinkedIn, X } from "@mui/icons-material";
+import { Box, Grid2 as Grid, type Theme, useTheme } from "@mui/material";
 import { useFormik } from "formik";
 import { ChangeEvent, forwardRef, useImperativeHandle, useMemo } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidUrlInputPattern } from "~community/common/regex/regexPatterns";
+import { IconName } from "~community/common/types/IconTypes";
 import { SOCIAL_MEDIA_MAX_CHARACTER_LENGTH } from "~community/people/constants/configs";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
@@ -156,12 +158,9 @@ const SocialMediaDetailsSection = forwardRef<FormMethods, props>(
                 value={values?.instagram ?? ""}
                 placeHolder={translateText(["enterAccountUrl"])}
                 startAdornment={
-                  <Instagram
-                    sx={{
-                      color: theme.palette.grey[700],
-                      ml: "0.5rem"
-                    }}
-                  />
+                  <Box sx={{ ml: "0.5rem" }}>
+                    <Icon name={IconName.INSTAGRAM_ICON} />
+                  </Box>
                 }
                 onChange={handleInput}
                 inputName="instagram"

@@ -42,7 +42,11 @@ const EmployeeDataBanner = ({
           </Typography>
         </Stack>
         <Typography
-          sx={classes.bannerPromptStyles}
+          sx={{
+            ...classes.bannerPromptStyles,
+            textDecoration: "underline",
+            textDecorationSkipInk: "none"
+          }}
           onClick={onClick}
           data-testid={peopleDirectoryTestId.employeeDataBanner}
           role="link"
