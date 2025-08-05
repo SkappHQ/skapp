@@ -45,38 +45,34 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
       newLeaveId: state.newLeaveId
     }));
 
-  const {
-    refetch,
-    isSuccess: getLeaveByIdSuccess,
-    data: getLeaveByIdData
-  } = useGetLeaveRequestData(newLeaveId as number);
+  const { isSuccess: getLeaveByIdSuccess, data: getLeaveByIdData } =
+    useGetLeaveRequestData(newLeaveId as number);
 
   const handleRowClick = (leaveRequest: { id: number }) => {
-    setIsManagerModal(false);
-    setLeaveRequestData({} as leaveRequestRowDataTypes);
-    setNewLeaveId(leaveRequest.id);
+    const selectedLeaveRequest = todaysAvailability?.find(
+      (req: LeaveRequest) => req.leaveRequestId === leaveRequest.id
+    );
+
+    if (
+      selectedLeaveRequest?.status?.toUpperCase() === LeaveRequestStates.PENDING
+    ) {
+      setIsManagerModal(false);
+      setLeaveRequestData({} as leaveRequestRowDataTypes);
+      if (leaveRequest.id !== newLeaveId) {
+        setNewLeaveId(leaveRequest.id);
+      }
+    }
   };
 
   useEffect(() => {
     if (getLeaveByIdSuccess && getLeaveByIdData) {
       setLeaveRequestData(getLeaveByIdData);
+      setIsManagerModal(true);
+      setTimeout(() => {
+        onClose();
+      }, 70);
     }
-  }, [getLeaveByIdData, getLeaveByIdSuccess]);
-
-  useEffect(() => {
-    if (newLeaveId) {
-      refetch()
-        .then(() => {
-          if (
-            getLeaveByIdData?.status?.toUpperCase() ===
-            LeaveRequestStates.PENDING
-          ) {
-            setIsManagerModal(true);
-          }
-        })
-        .catch(console.error);
-    }
-  }, [newLeaveId, getLeaveByIdData, refetch, setIsManagerModal]);
+  }, [getLeaveByIdSuccess, getLeaveByIdData]);
 
   const columns = [
     {

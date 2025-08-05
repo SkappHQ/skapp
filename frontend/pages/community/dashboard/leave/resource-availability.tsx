@@ -5,6 +5,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ResourceAvailabilityCalendar from "~community/leave/components/organisms/LeaveDashboard/ResourceAvailability";
+import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 
 const ResourceAvailability: NextPage = () => {
   const translateText = useTranslator("leaveModule", "dashboard");
@@ -20,6 +21,7 @@ const ResourceAvailability: NextPage = () => {
     >
       <>
         <ResourceAvailabilityCalendar />
+        <LeaveManagerModalController />
       </>
     </ContentLayout>
   );

@@ -2,12 +2,11 @@ import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { DateTime } from "luxon";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useState } from "react";
 
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
-import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 
 import AvailableChip from "../LeaveDashboardChips/AvailableChip";
@@ -39,8 +38,6 @@ const AvailabilityCalendarCard = ({
 }: AvailabilityCalendarCardProps): JSX.Element => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const isManagerModalOpen = useLeaveStore((state) => state.isManagerModalOpen);
-
   const isToday = () => {
     const date = DateTime.now().toFormat(DATE_FORMAT);
     return actualDate === date ? true : false;
@@ -54,12 +51,6 @@ const AvailabilityCalendarCard = ({
       leaveState: request.leaveState
     }));
   };
-
-  useEffect(() => {
-    if (isManagerModalOpen && isModalOpen) {
-      setIsModalOpen(false);
-    }
-  }, [isManagerModalOpen, isModalOpen]);
 
   const resourceDetails = () => {
     if (holidays?.length > 0) {

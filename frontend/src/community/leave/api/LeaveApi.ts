@@ -329,7 +329,7 @@ export const useGetLeaveRequestData = (leaveId: number) => {
   return useQuery({
     queryKey: ["manager-leave-request-data", leaveId],
     queryFn: fetchLeaveRequest,
-    enabled: false
+    enabled: !!leaveId
   });
 };
 
