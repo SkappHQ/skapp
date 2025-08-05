@@ -1103,7 +1103,46 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 	@Override
 	public Long findEmployeeIdsCountWithLeaveEntitlements(List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId) {
-		return 0L;
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
+
+		Join<LeaveEntitlement, Employee> employeeJoin = root.join("employee");
+		Join<Employee, User> userJoin = employeeJoin.join("user");
+		Join<Employee, EmployeeTeam> employeeTeamJoin = employeeJoin.join("employeeTeams", JoinType.LEFT);
+		Join<EmployeeTeam, Team> teamJoin = employeeTeamJoin.join("team", JoinType.LEFT);
+		Join<Employee, JobFamily> jobFamilyJoin = employeeJoin.join("jobFamily", JoinType.LEFT);
+		Join<LeaveEntitlement, LeaveType> leaveTypeJoin = root.join("leaveType");
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		// Leave type filter
+		if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
+			predicates.add(leaveTypeJoin.get("typeId").in(leaveTypeIds));
+		}
+
+		// Active filters
+		predicates.add(cb.equal(userJoin.get("isActive"), true));
+		predicates.add(cb.equal(root.get("isActive"), true));
+
+		// Date range filter
+		predicates.add(cb.lessThanOrEqualTo(root.get("validFrom"), endDate));
+		predicates.add(cb.greaterThanOrEqualTo(root.get("validTo"), startDate));
+
+		// Optional job family filter
+		if (jobFamilyId != null) {
+			predicates.add(cb.equal(jobFamilyJoin.get("jobFamilyId"), jobFamilyId));
+		}
+
+		// Optional team filter
+		if (teamId != null) {
+			predicates.add(cb.equal(teamJoin.get("teamId"), teamId));
+		}
+
+		cq.select(cb.countDistinct(employeeJoin.get("employeeId")));
+		cq.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(cq).getSingleResult();
 	}
 
 }

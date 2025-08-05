@@ -2,39 +2,37 @@ package com.skapp.community.timeplanner.repository;
 
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.*;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
-import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.model.TimeRecord_;
+import com.skapp.community.timeplanner.model.TimeSlot;
+import com.skapp.community.timeplanner.model.TimeSlot_;
 import com.skapp.community.timeplanner.payload.projection.EmployeeWorkHours;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordTrendDto;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordsByEmployeesDto;
 import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.community.timeplanner.payload.response.TimeSheetSummaryData;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
+import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecordImpl;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.security.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -314,150 +312,481 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+
+
 	@Override
-	public Long getTotalEmployeesTimeRecordCount(List<Long> employeeId, LocalDate startDate, LocalDate endDate) {
-		return 0L;
+	public Long getTotalEmployeesTimeRecordCount(List<Long> employeeIds, LocalDate startDate, LocalDate endDate) {
+		// Calculate total days in range
+		long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+		// Get count of distinct employees that exist in the database and match criteria
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Employee> employeeRoot = query.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(employeeRoot.get(Employee_.employeeId).in(employeeIds));
+
+		query.select(cb.countDistinct(employeeRoot.get(Employee_.employeeId)));
+		query.where(predicates.toArray(new Predicate[0]));
+
+		Long validEmployeeCount = entityManager.createQuery(query).getSingleResult();
+
+		// Total combinations = days * valid employees
+		return totalDays * validEmployeeCount;
 	}
 
 	@Override
-	public List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeId, LocalDate startDate, LocalDate endDate, int limit, long offset) {
-		return List.of();
+	public List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeIds, LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+
+		// Main roots
+		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
+		Root<Employee> employee = query.from(Employee.class);
+
+		// Joins
+		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
+
+		// Predicates
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+		predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
+
+		// Select clause
+		query.multiselect(
+				timeRecord.get(TimeRecord_.timeRecordId),
+				employee.get(Employee_.employeeId),
+				timeRecord.get(TimeRecord_.date),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+				cb.function("JSON_ARRAYAGG",
+						String.class,
+						cb.function("JSON_OBJECT",
+								String.class,
+								cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId),
+								cb.literal("startTime"), timeSlot.get(TimeSlot_.startTime),
+								cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
+								cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), // Changed from type to slotType
+								cb.literal("isActiveRightNow"), timeSlot.get(TimeSlot_.isActiveRightNow),
+								cb.literal("isManualEntry"), timeSlot.get(TimeSlot_.isManualEntry) // Changed from isManual
+						)
+				)
+		);
+
+		query.where(predicates.toArray(new Predicate[0]));
+		query.groupBy(
+				timeRecord.get(TimeRecord_.date),
+				employee.get(Employee_.employeeId),
+				timeRecord.get(TimeRecord_.timeRecordId),
+				employee.get(Employee_.firstName)
+		);
+		query.orderBy(
+				cb.asc(timeRecord.get(TimeRecord_.date)),
+				cb.asc(employee.get(Employee_.firstName))
+		);
+
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query)
+				.setMaxResults(limit)
+				.setFirstResult((int) offset);
+
+		return typedQuery.getResultList().stream()
+				.map(tuple -> new EmployeeTimeRecordImpl(
+						tuple.get(0, Long.class),
+						tuple.get(1, Long.class),
+						tuple.get(2, LocalDate.class),
+						tuple.get(3, Float.class),
+						tuple.get(4, Float.class),
+						tuple.get(5, String.class)
+				))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeId, List<Long> teamIds, LocalDate startDate, LocalDate endDate, int limit, long offset) {
-		return List.of();
+	public List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+																	  LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+
+		// Main roots
+		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
+		Root<Employee> employee = query.from(Employee.class);
+
+		// Joins for team filtering
+		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+		Join<EmployeeTeam, Team> team = employeeTeam.join(EmployeeTeam_.team, JoinType.LEFT);
+
+		// Time slot joins
+		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
+
+		// Predicates
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
+		predicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+
+		// Team filter
+		if (teamIds != null && !teamIds.isEmpty()) {
+			predicates.add(team.get(Team_.teamId).in(teamIds));
+		}
+
+		// Select clause
+		query.multiselect(
+				cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null),
+				employee.get(Employee_.employeeId),
+				timeRecord.get(TimeRecord_.date),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+				cb.function("JSON_ARRAYAGG",
+						String.class,
+						cb.function("JSON_OBJECT",
+								String.class,
+								cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId),
+								cb.literal("startTime"), timeSlot.get(TimeSlot_.startTime),
+								cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
+								cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType),
+								cb.literal("isActiveRightNow"), timeSlot.get(TimeSlot_.isActiveRightNow),
+								cb.literal("isManualEntry"), timeSlot.get(TimeSlot_.isManualEntry)
+						)
+				)
+		);
+
+		query.where(predicates.toArray(new Predicate[0]));
+		query.groupBy(
+				timeRecord.get(TimeRecord_.date),
+				employee.get(Employee_.employeeId),
+				timeRecord.get(TimeRecord_.timeRecordId),
+				employee.get(Employee_.firstName)
+		);
+		query.orderBy(
+				cb.asc(timeRecord.get(TimeRecord_.date)),
+				cb.asc(employee.get(Employee_.firstName))
+		);
+
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query)
+				.setMaxResults(limit)
+				.setFirstResult((int) offset);
+
+		return typedQuery.getResultList().stream()
+				.map(tuple -> new EmployeeTimeRecordImpl(
+						tuple.get(0, Long.class),      // timeRecordId
+						tuple.get(1, Long.class),      // employeeId
+						tuple.get(2, LocalDate.class), // date
+						tuple.get(3, Float.class),     // workedHours
+						tuple.get(4, Float.class),     // breakHours
+						tuple.get(5, String.class)     // timeSlots JSON
+				))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<TimeRecordsByEmployeesDto> getTimeRecordsByEmployees(List<Long> employeeId, LocalDate startDate, LocalDate endDate) {
-		return List.of();
+	public List<TimeRecordsByEmployeesDto> getTimeRecordsByEmployees(List<Long> employeeIds, LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+
+		// Main roots
+		Root<Employee> employee = query.from(Employee.class);
+		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
+
+		// Join conditions
+		List<Predicate> joinPredicates = new ArrayList<>();
+		joinPredicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
+		joinPredicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+
+		// Main predicates
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(cb.or(
+				cb.and(joinPredicates.toArray(new Predicate[0])),
+				cb.isNull(timeRecord.get(TimeRecord_.timeRecordId))
+		));
+
+		// Select clause
+		query.multiselect(
+				cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null),
+				timeRecord.get(TimeRecord_.date),
+				employee.get(Employee_.employeeId),
+				cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0f)
+		);
+
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)));
+
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+
+		return typedQuery.getResultList().stream()
+				.map(tuple -> new TimeRecordsByEmployeesDto() {
+					@Override
+					public Long getTimeRecordId() {
+						return tuple.get(0, Long.class);
+					}
+
+					@Override
+					public LocalDate getDate() {
+						return tuple.get(1, LocalDate.class);
+					}
+
+					@Override
+					public Long getEmployeeId() {
+						return tuple.get(2, Long.class);
+					}
+
+					@Override
+					public float getWorkedHours() {
+						return tuple.get(3, Float.class);
+					}
+				})
+				.collect(Collectors.toList());
 	}
+
 
 	@Override
 	public List<EmployeeWorkHours> getAllWorkHoursOfEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
-		return List.of();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		// Generate date range programmatically
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+
+		// Create a cross join simulation by collecting results for each date
+		List<Tuple> allResults = new ArrayList<>();
+
+		for (LocalDate currentDate : dateRange) {
+			CriteriaQuery<Tuple> dateQuery = cb.createTupleQuery();
+			Root<TimeRecord> trRoot = dateQuery.from(TimeRecord.class);
+
+			dateQuery.multiselect(
+					cb.literal(currentDate).alias("date"),
+					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0f).alias("workedHours")
+			);
+
+			Predicate employeeFilter = cb.equal(trRoot.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId);
+			Predicate dateFilter = cb.equal(trRoot.get(TimeRecord_.date), currentDate);
+
+			dateQuery.where(cb.and(employeeFilter, dateFilter));
+
+			List<Tuple> dateResults = entityManager.createQuery(dateQuery).getResultList();
+
+			// If no time record exists for this date, add a default entry with 0 worked hours
+			if (dateResults.isEmpty()) {
+				allResults.add(createTuple(currentDate, 0.0));
+			} else {
+				allResults.addAll(dateResults);
+			}
+		}
+
+		// Convert to EmployeeWorkHours
+		return allResults.stream()
+				.map(tuple -> new EmployeeWorkHours() {
+					@Override
+					public LocalDate getDate() {
+						return tuple.get("date", LocalDate.class);
+					}
+
+					@Override
+					public Double getWorkedHours() {
+						Float workedHours = tuple.get("workedHours", Float.class);
+						return workedHours != null ? workedHours.doubleValue() : 0.0;
+					}
+				})
+				.collect(Collectors.toList());
+	}
+
+	// Helper method to create manual tuple for missing dates
+	private Tuple createTuple(Object... values) {
+		return new Tuple() {
+			private final Map<String, Object> aliasMap = new HashMap<>();
+			private final List<Object> valueList = Arrays.asList(values);
+
+			{
+				if (values.length == 2) {
+					aliasMap.put("date", values[0]);
+					aliasMap.put("workedHours", values[1]);
+				} else if (values.length == 4) {
+					aliasMap.put("timeRecordId", values[0]);
+					aliasMap.put("date", values[1]);
+					aliasMap.put("employeeId", values[2]);
+					aliasMap.put("workedHours", values[3]);
+				}
+			}
+
+			@Override
+			public <X> X get(String alias, Class<X> type) {
+				return type.cast(aliasMap.get(alias));
+			}
+
+			@Override
+			public Object get(String alias) {
+				return aliasMap.get(alias);
+			}
+
+			@Override
+			public <X> X get(int i, Class<X> type) {
+				return type.cast(valueList.get(i));
+			}
+
+			@Override
+			public Object get(int i) {
+				return valueList.get(i);
+			}
+
+			@Override
+			public Object[] toArray() {
+				return valueList.toArray();
+			}
+
+			@Override
+			public List<TupleElement<?>> getElements() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public <X> X get(TupleElement<X> tupleElement) {
+				return null;
+			}
+		};
 	}
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<TimeRecordTrendDto> query = cb.createQuery(TimeRecordTrendDto.class);
+		// Generate time slots (30-minute intervals throughout the day)
+		List<TimeRecordTrendDto> result = new ArrayList<>();
+		LocalDateTime baseDateTime = date.atStartOfDay();
 
-		// Create time slots subquery
-		Subquery<Tuple> timeSlots = query.subquery(Tuple.class);
-		Root<TimeRecord> dummy = timeSlots.from(TimeRecord.class);
+		// Create 48 time slots (30-minute intervals for 24 hours)
+		for (int hour = 0; hour < 24; hour++) {
+			for (int halfHour = 0; halfHour < 2; halfHour++) {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
 
-		Expression<String> slotStart = cb
-				.function("TIMESTAMPADD", Timestamp.class, cb.literal("MINUTE"),
-						cb.prod(cb.literal(30),
-								cb.function("MOD", Integer.class, cb.literal("@row := @row + 1"), cb.literal(8))),
-						cb.parameter(LocalDate.class, "date"))
-				.as(String.class);
+				// Query for employees who clocked in during this time slot
+				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
+				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
+				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 
-		Expression<String> slotEnd = cb
-				.function("TIMESTAMPADD", Timestamp.class, cb.literal("MINUTE"),
-						cb.sum(cb.prod(cb.literal(30),
-								cb.function("MOD", Integer.class, cb.literal("@row"), cb.literal(8))), cb.literal(30)),
-						cb.parameter(LocalDate.class, "date"))
-				.as(String.class);
+				List<Predicate> predicates = new ArrayList<>();
 
-		timeSlots.select((Expression<Tuple>) cb.tuple(slotStart, slotEnd));
+				// Filter by teams (including -1 for all teams)
+				if (teams.contains(-1L)) {
+					// Include all employees if -1 is in teams list
+					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+				} else {
+					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+				}
 
-		// Main query
-		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
-		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
+				// Filter by date and time slot
+				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
+				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
 
-		// Convert clock in time to timezone
-		Expression<Timestamp> convertedTime = cb.function("CONVERT_TZ", Timestamp.class,
-				timeRecord.get(TimeRecord_.clockInTime), cb.literal("@@session.time_zone"),
-				cb.parameter(String.class, "timeZone"));
+				// Convert timestamp to local time and check if it falls within the slot
+				Expression<LocalTime> clockInLocalTime = cb.function("TIME", LocalTime.class,
+						cb.function("CONVERT_TZ", String.class,
+								cb.function("FROM_UNIXTIME", String.class,
+										cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)),
+								cb.literal("@@session.time_zone"),
+								cb.literal(timeZone)));
 
-		// Predicates
-		List<Predicate> predicates = new ArrayList<>();
-		predicates
-				.add(cb.or(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams), cb.literal(-1L).in(teams)));
+				predicates.add(cb.greaterThanOrEqualTo(clockInLocalTime, slotStart));
+				predicates.add(cb.lessThan(clockInLocalTime, slotEnd));
 
-		// Select
-		query.multiselect(cb.function("TIME_FORMAT", String.class, cb.literal("slot_start"), cb.literal("%H:%i")),
-				cb.function("TIME_FORMAT", String.class, cb.literal("slot_end"), cb.literal("%H:%i")),
-				cb.concat(cb.function("TIME_FORMAT", String.class, cb.literal("slot_start"), cb.literal("%H:%i")),
-						cb.concat(cb.literal(" - "),
-								cb.function("TIME_FORMAT", String.class, cb.literal("slot_end"), cb.literal("%H:%i")))),
-				cb.countDistinct(employee.get(Employee_.employeeId)));
+				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
+				countQuery.where(predicates.toArray(new Predicate[0]));
 
-		// Where clause
-		query.where(predicates.toArray(new Predicate[0]));
+				Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-		// Group by and Order by
-		query.groupBy(cb.literal("slot_start"), cb.literal("slot_end")).orderBy(cb.asc(cb.literal("slot_start")));
+				// Create the result object
+				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
+				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+				String slot = slotStartTime + " - " + slotEndTime;
 
-		return entityManager.createQuery(query)
-				.setParameter("timeZone", timeZone)
-				.setParameter("date", date)
-				.getResultList();
+				result.add(new TimeRecordTrendDto() {
+					@Override
+					public String getSlot() {
+						return slot;
+					}
+
+					@Override
+					public int getCount() {
+						return count != null ? count.intValue() : 0;
+					}
+				});
+			}
+		}
+
+		return result;
 	}
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<TimeRecordTrendDto> query = cb.createQuery(TimeRecordTrendDto.class);
+		// Generate time slots (30-minute intervals throughout the day)
+		List<TimeRecordTrendDto> result = new ArrayList<>();
+		LocalDateTime baseDateTime = date.atStartOfDay();
 
-		// Create time slots subquery
-		Subquery<Tuple> timeSlots = query.subquery(Tuple.class);
-		Root<TimeRecord> dummy = timeSlots.from(TimeRecord.class);
+		// Create 48 time slots (30-minute intervals for 24 hours)
+		for (int hour = 0; hour < 24; hour++) {
+			for (int halfHour = 0; halfHour < 2; halfHour++) {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
 
-		Expression<String> slotStart = cb
-				.function("TIMESTAMPADD", Timestamp.class, cb.literal("MINUTE"),
-						cb.prod(cb.literal(30),
-								cb.function("MOD", Integer.class, cb.literal("@row := @row + 1"), cb.literal(8))),
-						cb.parameter(LocalDate.class, "date"))
-				.as(String.class);
+				// Query for employees who clocked out during this time slot
+				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
+				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
+				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 
-		Expression<String> slotEnd = cb
-				.function("TIMESTAMPADD", Timestamp.class, cb.literal("MINUTE"),
-						cb.sum(cb.prod(cb.literal(30),
-								cb.function("MOD", Integer.class, cb.literal("@row"), cb.literal(8))), cb.literal(30)),
-						cb.parameter(LocalDate.class, "date"))
-				.as(String.class);
+				List<Predicate> predicates = new ArrayList<>();
 
-		timeSlots.select((Expression<Tuple>) cb.tuple(slotStart, slotEnd));
+				// Filter by teams (including -1 for all teams)
+				if (teams.contains(-1L)) {
+					// Include all employees if -1 is in teams list
+					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+				} else {
+					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+				}
 
-		// Main query
-		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
-		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
+				// Filter by date and time slot - using clockOutTime instead of clockInTime
+				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
+				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
 
-		// Convert clock out time to timezone
-		Expression<Timestamp> convertedTime = cb.function("CONVERT_TZ", Timestamp.class,
-				timeRecord.get(TimeRecord_.clockOutTime), // Using clockOutTime instead of
-				// clockInTime
-				cb.literal("@@session.time_zone"), cb.parameter(String.class, "timeZone"));
+				// Convert timestamp to local time and check if it falls within the slot
+				Expression<LocalTime> clockOutLocalTime = cb.function("TIME", LocalTime.class,
+						cb.function("CONVERT_TZ", String.class,
+								cb.function("FROM_UNIXTIME", String.class,
+										cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)),
+								cb.literal("@@session.time_zone"),
+								cb.literal(timeZone)));
 
-		// Predicates
-		List<Predicate> predicates = new ArrayList<>();
-		predicates
-				.add(cb.or(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams), cb.literal(-1L).in(teams)));
+				predicates.add(cb.greaterThanOrEqualTo(clockOutLocalTime, slotStart));
+				predicates.add(cb.lessThan(clockOutLocalTime, slotEnd));
 
-		// Select
-		query.multiselect(cb.function("TIME_FORMAT", String.class, cb.literal("slot_start"), cb.literal("%H:%i")),
-				cb.function("TIME_FORMAT", String.class, cb.literal("slot_end"), cb.literal("%H:%i")),
-				cb.concat(cb.function("TIME_FORMAT", String.class, cb.literal("slot_start"), cb.literal("%H:%i")),
-						cb.concat(cb.literal(" - "),
-								cb.function("TIME_FORMAT", String.class, cb.literal("slot_end"), cb.literal("%H:%i")))),
-				cb.countDistinct(employee.get(Employee_.employeeId)));
+				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
+				countQuery.where(predicates.toArray(new Predicate[0]));
 
-		// Where clause
-		query.where(predicates.toArray(new Predicate[0]));
+				Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-		// Group by and Order by
-		query.groupBy(cb.literal("slot_start"), cb.literal("slot_end")).orderBy(cb.asc(cb.literal("slot_start")));
+				// Create the result object
+				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
+				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+				String slot = slotStartTime + " - " + slotEndTime;
 
-		return entityManager.createQuery(query)
-				.setParameter("timeZone", timeZone)
-				.setParameter("date", date)
-				.getResultList();
+				result.add(new TimeRecordTrendDto() {
+					@Override
+					public String getSlot() {
+						return slot;
+					}
+
+					@Override
+					public int getCount() {
+						return count != null ? count.intValue() : 0;
+					}
+				});
+			}
+		}
+
+		return result;
 	}
 
-}
+	}
