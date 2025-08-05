@@ -16,7 +16,7 @@ import { employeeFamilyDetailsValidation } from "~community/people/utils/peopleV
 const useFamilyDetailsFormHandlers = () => {
   const [rowEdited, setRowEdited] = useState(-1);
   const [relationshipList, setRelationshipList] = useState(RelationshipList);
-  const [disableParentName, setDisableParentName] = useState(false);
+  const [disableParentName, setDisableParentName] = useState(true);
   const [selectedDob, setSelectedDob] = useState<DateTime | undefined>(
     undefined
   );
@@ -127,7 +127,7 @@ const useFamilyDetailsFormHandlers = () => {
       setRelationshipList(RelationshipList);
     }
 
-    setDisableParentName(values.relationship === RelationshipTypes.SPOUSE);
+    setDisableParentName(values.relationship !== RelationshipTypes.CHILD);
   }, [employee?.personal?.general?.maritalStatus, values.relationship]);
 
   useEffect(() => {

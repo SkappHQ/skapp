@@ -240,6 +240,9 @@ const useCareerProgressionFormHandler = ({
     await setFieldValue(e.target.name, e.target.checked);
     await setFieldValue("endDate", "");
     setFieldError(e.target.name, "");
+    if (e.target.checked) {
+      setFieldError("endDate", "");
+    }
   };
 
   const dateOnChange = async (
