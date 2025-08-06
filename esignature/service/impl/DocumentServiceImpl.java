@@ -6,6 +6,8 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -72,6 +74,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
@@ -150,6 +154,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentLinkService documentLinkService;
 
 	private final AuditTrailService auditTrailService;
+
+	private final ScheduleService scheduleService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -386,6 +392,14 @@ public class DocumentServiceImpl implements DocumentService {
 		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
+
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
@@ -545,6 +559,14 @@ public class DocumentServiceImpl implements DocumentService {
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
+
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					String tenantId = TenantContext.getCurrentTenant();
+					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+				}
+			});
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
