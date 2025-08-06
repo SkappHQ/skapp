@@ -94,11 +94,9 @@ public class ScheduleServiceImpl implements ScheduleService {
 			else {
 				log.warn("No expiration trigger found for {} with ID: {}", entityTypeName, entityId);
 			}
-			tenantContext.setTenantAndSwitchSchema(tenantId);
-
 		}
 		catch (SchedulerException e) {
-			log.error("Failed to unscheduled expiration trigger for {} with ID: {}", entityType.name(), entityId, e);
+			log.error("Failed to unschedule expiration trigger for {} with ID: {}", entityType.name(), entityId, e);
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(tenantId);
