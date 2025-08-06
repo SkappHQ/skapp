@@ -24,7 +24,7 @@ spring:
     console:
       enabled: true
   messages:
-    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages
+    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages, community/messages/okr-messages
 
   liquibase:
     enabled: false

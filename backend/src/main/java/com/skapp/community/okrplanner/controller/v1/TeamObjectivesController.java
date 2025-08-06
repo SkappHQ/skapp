@@ -1,8 +1,8 @@
 package com.skapp.community.okrplanner.controller.v1;
 
-import com.skapp.community.okrplanner.payload.response.TeamObjectiveResponseDto;
+import com.skapp.community.okrplanner.payload.request.TeamObjectiveRequestDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.okrplanner.service.TeamObjectiveService;
-import com.skapp.community.okrplanner.model.TeamObjective;
-
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
@@ -43,6 +41,14 @@ public class TeamObjectivesController {
 		ResponseEntityDto response = teamObjectiveService.findTeamObjectiveById(id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@PostMapping
+	public ResponseEntity<ResponseEntityDto> createTeamObjective(
+			@RequestBody @Valid TeamObjectiveRequestDto requestDto) {
+		ResponseEntityDto response = teamObjectiveService.createTeamObjective(requestDto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 }
