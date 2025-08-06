@@ -47,16 +47,11 @@ export const employeeEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    name: Yup.string()
-      .test(
-        "conditional-required",
-        translator(["requireNameError"]),
-        conditionalRequired(["contactNo", "relationship"])
-      )
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
-      ),
+    name: Yup.string().test(
+      "conditional-required",
+      translator(["requireNameError"]),
+      conditionalRequired(["contactNo", "relationship"])
+    ),
     relationship: Yup.string().nullable(),
     contactNo: Yup.string()
       .test(
