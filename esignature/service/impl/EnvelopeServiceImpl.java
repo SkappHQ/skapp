@@ -62,13 +62,7 @@ import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
@@ -156,7 +150,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final DocumentLinkService documentLinkService;
 
-	private final DocumentVersionRepository documentVersionRepository;
+	private final DocumentVersionDao documentVersionDao;
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -258,7 +252,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.map(SignedDocumentResponse::getDocumentVersion)
 			.toList();
 
-		documentVersionRepository.saveAll(documentVersionList);
+		documentVersionDao.saveAll(documentVersionList);
 
 		List<Document> updatedDocuments = signedDocumentResponseList.stream().map(signedDocumentResponse -> {
 			DocumentVersion documentVersion = signedDocumentResponse.getDocumentVersion();
@@ -856,7 +850,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
 		return envelope.getDocuments().stream().map(document -> {
 			int currentVersion = document.getCurrentVersion();
-			DocumentVersion documentVersion = documentVersionRepository
+			DocumentVersion documentVersion = documentVersionDao
 				.findFirstByVersionNumberAndDocumentIdOrderByIdDesc(currentVersion, document.getId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
@@ -980,12 +974,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeStatus status = envelope.getStatus();
 
 		// First always process version 1 document
-		DocumentVersion firstVersion = documentVersionRepository.findByVersionNumberAndDocumentId(1, document.getId())
+		DocumentVersion firstVersion = documentVersionDao.findByVersionNumberAndDocumentId(1, document.getId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
 		// Update version 1 to -1
 		firstVersion.setVersionNumber(-1);
-		documentVersionRepository.save(firstVersion);
+		documentVersionDao.save(firstVersion);
 
 		processDocumentCustodyTransfer(firstVersion, newOwner, 1);
 
@@ -993,7 +987,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			int currentVersionNumber = document.getCurrentVersion();
 
 			if (currentVersionNumber > 1) {
-				DocumentVersion currentVersion = documentVersionRepository
+				DocumentVersion currentVersion = documentVersionDao
 					.findByVersionNumberAndDocumentId(currentVersionNumber, document.getId())
 					.orElseThrow(
 							() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
@@ -1001,7 +995,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				if (!Objects.equals(currentVersion.getId(), firstVersion.getId())) {
 					// Update last completed version to -2
 					currentVersion.setVersionNumber(-2);
-					documentVersionRepository.save(currentVersion);
+					documentVersionDao.save(currentVersion);
 					processDocumentCustodyTransfer(currentVersion, newOwner, currentVersionNumber);
 				}
 			}
@@ -1047,7 +1041,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				newOwner);
 		newVersion.setVersionNumber(newVersionNumber);
 
-		documentVersionRepository.save(newVersion);
+		documentVersionDao.save(newVersion);
 
 	}
 

@@ -14,6 +14,7 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -316,4 +317,26 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		}
 	}
 
+	@Override
+	public Envelope findByIdWithRecipientsForUpdate(Long envelopeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Envelope> query = cb.createQuery(Envelope.class);
+
+		Root<Envelope> envelope = query.from(Envelope.class);
+
+		// Fetch recipients eagerly
+		envelope.fetch(Envelope_.recipients, JoinType.LEFT);
+
+		// Create predicate for envelope id
+		Predicate idPredicate = cb.equal(envelope.get(Envelope_.id), envelopeId);
+
+		query.select(envelope).where(idPredicate);
+
+		TypedQuery<Envelope> typedQuery = entityManager.createQuery(query);
+
+		// Set the lock mode to PESSIMISTIC_WRITE
+		typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+
+		return typedQuery.getSingleResult();
+	}
 }

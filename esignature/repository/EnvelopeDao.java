@@ -17,10 +17,6 @@ public interface EnvelopeDao extends JpaRepository<Envelope, Long>, EnvelopeRepo
 
 	boolean existsByUuid(String uuid);
 
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("SELECT e FROM Envelope e LEFT JOIN FETCH e.recipients WHERE e.id = :envelopeId")
-	Envelope findByIdWithRecipientsForUpdate(@Param("envelopeId") Long envelopeId);
-
 	long countBySentAtGreaterThanEqualAndSentAtLessThan(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
 	List<Envelope> findByOwner(AddressBook owner);
