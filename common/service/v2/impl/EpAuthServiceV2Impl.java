@@ -144,12 +144,15 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignUp: SSO Signup flow executed");
+		log.info("ssoGoogleSignUp: SSO Signup flow started for code: {}", epSignUpGoogleDataDto.getCode());
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
+		log.info("ssoGoogleSignUp: Google token response received");
 		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
+		log.info("ssoGoogleSignUp: Google user details fetched for email: {}", googleUserDetailsDto.getEmail());
 
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
+			log.info("ssoGoogleSignUp: Creating SuperAdmin for email: {}", googleUserDetailsDto.getEmail());
 			SuperAdmin superAdmin = new SuperAdmin();
 			superAdmin.setEmail(googleUserDetailsDto.getEmail());
 			superAdmin.setFirstName(googleUserDetailsDto.getFirstName());
@@ -160,9 +163,11 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			superAdmin.setVerified(true);
 
 			SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
+			log.info("ssoGoogleSignUp: SuperAdmin saved with ID: {}", savedSuperAdmin.getId());
 
 			String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 			String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
+			log.info("ssoGoogleSignUp: Tokens generated for SuperAdmin ID: {}", savedSuperAdmin.getId());
 
 			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
@@ -170,30 +175,36 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			return new ResponseEntityDto(false, signInResponseDto);
 		}
 
-		log.info("ssoGoogleSignUp: execution ended");
+		log.info("ssoGoogleSignUp: execution ended (not master tenant)");
 		return new ResponseEntityDto(false, null);
 
 	}
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignIn: execution started");
+		log.info("ssoGoogleSignIn: execution started for code: {}", epSignUpGoogleDataDto.getCode());
 
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
+		log.info("ssoGoogleSignIn: Google token response received");
+
 		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
+		log.info("ssoGoogleSignIn: Google user details fetched for email: {}", googleUserDetailsDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(googleUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
+			log.warn("ssoGoogleSignIn: User not found for email: {}", googleUserDetailsDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
+			log.warn("ssoGoogleSignIn: User account deactivated for userId: {}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
+			log.warn("ssoGoogleSignIn: Employee not found for userId: {}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -201,6 +212,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
+			log.info("ssoGoogleSignIn: Activating employee account for userId: {}", user.getUserId());
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}
@@ -208,20 +220,24 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String authPic = googleUserDetailsDto.getAuthPicUrl();
 
 		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
+			log.info("ssoGoogleSignIn: Updating authPic for userId: {}", user.getUserId());
 			userEmployee.setAuthPic(authPic);
 			isUpdated = true;
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
+			log.info("ssoGoogleSignIn: Employee record updated for userId: {}", user.getUserId());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-			.employeeToEmployeeSignInResponseDto(userEmployee);
+				.employeeToEmployeeSignInResponseDto(userEmployee);
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		log.info("ssoGoogleSignIn: Tokens generated for userId: {}", user.getUserId());
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
@@ -229,7 +245,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoGoogleSignIn: execution ended");
+		log.info("ssoGoogleSignIn: execution ended for userId: {}", user.getUserId());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
@@ -288,35 +304,42 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String encodedState = epGoogleAuthRedirectDto.getState();
 		String authorizationCode = epGoogleAuthRedirectDto.getCode();
 
+		log.debug("getIdTokenAndRedirect: Received encodedState={}, code={}", encodedState, authorizationCode);
+
 		if (encodedState.isEmpty()) {
 			log.error("getIdTokenAndRedirect: State is empty");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
+		log.debug("getIdTokenAndRedirect: Decoded state={}", decodedState);
+
 		String frontendUrl = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		log.debug("getIdTokenAndRedirect: Decrypted frontendUrl={}", frontendUrl);
 
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("getIdTokenAndRedirect: State is invalid");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
+		log.debug("getIdTokenAndRedirect: Validating frontendUrl");
 		Validation.validateFrontendUrl(frontendUrl);
 
 		try {
+			log.debug("getIdTokenAndRedirect: Validating GoogleAuthRedirectDto");
 			Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
-		}
-		catch (Exception exception) {
-			log.error("getIdTokenAndRedirect: {}", exception.getMessage(), exception);
+		} catch (Exception exception) {
+			log.error("getIdTokenAndRedirect: Validation failed - {}", exception.getMessage(), exception);
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
+			log.info("getIdTokenAndRedirect: Returning error redirect to frontendUrl={}", frontendUrl);
 			return UriComponentsBuilder.fromUriString(frontendUrl)
-				.queryParam("error", encodedErrorMessage)
-				.toUriString();
+					.queryParam("error", encodedErrorMessage)
+					.toUriString();
 		}
 
-		log.info("getIdTokenAndRedirect: execution ended");
+		log.info("getIdTokenAndRedirect: execution ended, redirecting to frontendUrl={} with code", frontendUrl);
 		return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("code", authorizationCode).toUriString();
 	}
 
@@ -327,27 +350,31 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		EpGoogleAuthResponseDto responseDto = new EpGoogleAuthResponseDto();
 
 		String frontendRedirectUri = epGoogleConsentUrlDto.getFrontendRedirectUrl();
+		log.debug("getGoogleAuthUrl: Received frontendRedirectUri={}", frontendRedirectUri);
 
 		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
-			log.error("getAuthUrlGoogleCalendar: unable to the organizational url");
+			log.error("getAuthUrlGoogleCalendar: unable to fetch the organizational url");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL);
 		}
 
+		log.debug("getGoogleAuthUrl: Validating frontendRedirectUri");
 		com.skapp.enterprise.common.util.Validation.validateFrontendUrl(frontendRedirectUri);
 
 		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri, encryptSecret);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
+		log.debug("getGoogleAuthUrl: Encrypted and encoded state={}", encodedState);
 
 		try {
+			log.debug("getGoogleAuthUrl: Building GoogleAuthorizationCodeRequestUrl");
 			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(clientId,
 					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_AUTH_SCOPES)
-				.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
-				.setState(encodedState);
+					.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
+					.setState(encodedState);
 			String authUrl = authorizationUrl.build();
 			responseDto.setAuthUrl(authUrl);
-		}
-		catch (Exception exception) {
-			log.error("getGoogleAuthUrl: {}", exception.getMessage(), exception);
+			log.info("getGoogleAuthUrl: Auth URL generated successfully");
+		} catch (Exception exception) {
+			log.error("getGoogleAuthUrl: Exception occurred - {}", exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL);
 		}
 		log.info("getGoogleAuthUrl: execution ended");
