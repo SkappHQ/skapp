@@ -1,11 +1,7 @@
 package com.skapp.community.okrplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-<<<<<<< HEAD
-import com.skapp.community.okrplanner.constants.OkrMessageConstant;
-=======
 import com.skapp.community.okrplanner.constant.OkrMessageConstant;
->>>>>>> 6e1d7dd195c3a027e624a58ee1d26dce29b741fd
 import com.skapp.community.okrplanner.mapper.TeamObjectiveMapper;
 import com.skapp.community.okrplanner.payload.request.KeyResultRequestDto;
 import com.skapp.community.okrplanner.payload.request.TeamObjectiveRequestDto;
@@ -70,8 +66,6 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 		return new ResponseEntityDto(false, teamObjectiveDetailedResponseDto);
 	}
 
-<<<<<<< HEAD
-=======
 	@Override
 	@Transactional
 	public ResponseEntityDto createTeamObjective(TeamObjectiveRequestDto requestDto) {
@@ -162,6 +156,4 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 			validateAssignedTeams(kr.getAssignedTeamIds());
 		}
 	}
-
->>>>>>> 6e1d7dd195c3a027e624a58ee1d26dce29b741fd
 }
