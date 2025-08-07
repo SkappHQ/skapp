@@ -15,6 +15,7 @@ import com.skapp.community.timeplanner.model.TimeSlot_;
 import com.skapp.community.timeplanner.payload.projection.EmployeeWorkHours;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordTrendDto;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordsByEmployeesDto;
+import com.skapp.community.timeplanner.payload.projection.impl.EmployeeWorkHoursImpl;
 import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.community.timeplanner.payload.response.TimeSheetSummaryData;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
@@ -61,7 +62,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		TypedQuery<AttendanceSummaryDto> typedQuery = entityManager.createQuery(criteriaQuery);
 		return typedQuery.getSingleResult();
 	}
-
 
 	@Override
 	public Optional<TimeRecord> findIncompleteClockoutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
@@ -312,8 +312,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
-
-
 	@Override
 	public Long getTotalEmployeesTimeRecordCount(List<Long> employeeIds, LocalDate startDate, LocalDate endDate) {
 		// Calculate total days in range
@@ -548,8 +546,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		// Generate date range programmatically
 		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
 
-		// Create a cross join simulation by collecting results for each date
-		List<Tuple> allResults = new ArrayList<>();
+		List<EmployeeWorkHours> allResults = new ArrayList<>();
 
 		for (LocalDate currentDate : dateRange) {
 			CriteriaQuery<Tuple> dateQuery = cb.createTupleQuery();
@@ -567,85 +564,18 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 			List<Tuple> dateResults = entityManager.createQuery(dateQuery).getResultList();
 
-			// If no time record exists for this date, add a default entry with 0 worked hours
 			if (dateResults.isEmpty()) {
-				allResults.add(createTuple(currentDate, 0.0));
+				allResults.add(new EmployeeWorkHoursImpl(currentDate, 0.0));
 			} else {
-				allResults.addAll(dateResults);
-			}
-		}
-
-		// Convert to EmployeeWorkHours
-		return allResults.stream()
-				.map(tuple -> new EmployeeWorkHours() {
-					@Override
-					public LocalDate getDate() {
-						return tuple.get("date", LocalDate.class);
-					}
-
-					@Override
-					public Double getWorkedHours() {
-						Float workedHours = tuple.get("workedHours", Float.class);
-						return workedHours != null ? workedHours.doubleValue() : 0.0;
-					}
-				})
-				.collect(Collectors.toList());
-	}
-
-	// Helper method to create manual tuple for missing dates
-	private Tuple createTuple(Object... values) {
-		return new Tuple() {
-			private final Map<String, Object> aliasMap = new HashMap<>();
-			private final List<Object> valueList = Arrays.asList(values);
-
-			{
-				if (values.length == 2) {
-					aliasMap.put("date", values[0]);
-					aliasMap.put("workedHours", values[1]);
-				} else if (values.length == 4) {
-					aliasMap.put("timeRecordId", values[0]);
-					aliasMap.put("date", values[1]);
-					aliasMap.put("employeeId", values[2]);
-					aliasMap.put("workedHours", values[3]);
+				for (Tuple tuple : dateResults) {
+					Float workedHours = tuple.get("workedHours", Float.class);
+					allResults.add(new EmployeeWorkHoursImpl(currentDate, workedHours != null ? workedHours.doubleValue() : 0.0));
 				}
 			}
-
-			@Override
-			public <X> X get(String alias, Class<X> type) {
-				return type.cast(aliasMap.get(alias));
-			}
-
-			@Override
-			public Object get(String alias) {
-				return aliasMap.get(alias);
-			}
-
-			@Override
-			public <X> X get(int i, Class<X> type) {
-				return type.cast(valueList.get(i));
-			}
-
-			@Override
-			public Object get(int i) {
-				return valueList.get(i);
-			}
-
-			@Override
-			public Object[] toArray() {
-				return valueList.toArray();
-			}
-
-			@Override
-			public List<TupleElement<?>> getElements() {
-				return Collections.emptyList();
-			}
-
-			@Override
-			public <X> X get(TupleElement<X> tupleElement) {
-				return null;
-			}
-		};
+		}
+		return allResults;
 	}
+
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date) {
