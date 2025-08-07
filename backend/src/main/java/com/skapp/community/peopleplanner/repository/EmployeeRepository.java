@@ -23,12 +23,15 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface EmployeeRepository {
 
 	Optional<Employee> findEmployeeByEmployeeIdAndUserActiveNot(Long employeeId, boolean userState);
 
 	Page<Employee> findEmployees(EmployeeFilterDto employeeFilterDto, Pageable page);
+
+	List<Employee> findEmployees(List<Long> employeeIds, String searchTerm, Set<AccountStatus> accountStatuses);
 
 	List<Employee> findEmployeesForExport(EmployeeExportFilterDto employeeExportFilterDto);
 
