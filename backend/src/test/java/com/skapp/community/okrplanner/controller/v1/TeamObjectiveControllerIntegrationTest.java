@@ -9,6 +9,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.okrplanner.model.TeamObjective;
 import com.skapp.community.okrplanner.model.TeamObjectiveAssignedTeam;
 import com.skapp.community.okrplanner.repository.TeamObjectiveRepository;
+import com.skapp.community.okrplanner.type.KeyResultType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Team;
@@ -33,9 +34,14 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.List;
 
+import static com.skapp.community.okrplanner.constant.OkrMessageConstant.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import com.skapp.community.okrplanner.payload.request.TeamObjectiveRequestDto;
+import com.skapp.community.okrplanner.payload.request.KeyResultRequestDto;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -212,9 +218,252 @@ public class TeamObjectiveControllerIntegrationTest {
 			Long teamObjectiveId = 999999999999L;
 			ResultActions resultActions = performGetRequest(BASE_PATH + "/" + teamObjectiveId);
 
-			resultActions.andExpect(status().isInternalServerError())
+			resultActions.andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value("unsuccessful"))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).exists());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Create team objectives tests")
+	class CreateTeamObjectivesTests {
+
+		@DisplayName("Successfully create a team objective")
+		@Test
+		void createTeamObjectiveSuccessfully() throws Exception {
+			String payload = objectMapper.writeValueAsString(new TeamObjectiveRequestDto() {
+				{
+					setTitle("Improve QA Process");
+					setEffectiveTimePeriod(2025L);
+					setDuration("Q4");
+					setAssignedTeamIds(List.of(team.getTeamId()));
+					setKeyResults(List.of(new KeyResultRequestDto() {
+						{
+							setTitle("Automate 80% of test cases");
+							setType(KeyResultType.GREATER_THAN.name());
+							setLowerLimit(40.0);
+							setUpperLimit(null);
+							setAssignedTeamIds(List.of(team.getTeamId()));
+						}
+					}));
+				}
+			});
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			ResultActions result = performRequest(request);
+
+			result.andExpect(status().isCreated())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH).value("Team Objective created successfully"));
+		}
+
+		@DisplayName("Fail to create objective with missing title")
+		@Test
+		void failCreateWithMissingTitle() throws Exception {
+			String payload = objectMapper.writeValueAsString(new TeamObjectiveRequestDto() {
+				{
+					setEffectiveTimePeriod(2025L);
+					setDuration("Q4");
+					setAssignedTeamIds(List.of(team.getTeamId()));
+					setKeyResults(List.of(new KeyResultRequestDto() {
+						{
+							setTitle("Test Result");
+							setType(KeyResultType.GREATER_THAN.name());
+							setLowerLimit(10.0);
+							setUpperLimit(20.0);
+							setAssignedTeamIds(List.of(team.getTeamId()));
+						}
+					}));
+				}
+			});
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			performRequest(request).andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.results[0].errors[0].field").value("title"));
+		}
+
+		@DisplayName("Fail to create objective with title exceeding 250 characters")
+		@Test
+		void failCreateWithTooLongTitle() throws Exception {
+			String longTitle = "A".repeat(251);
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle(longTitle);
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content(payload))
+				.andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.results[0].errors[0].field").value("title"))
+				.andExpect(jsonPath("$.results[0].errors[0].message").value("Title cannot exceed 250 characters"));
+		}
+
+		@DisplayName("Fail to create objective with too long description")
+		@Test
+		void failCreateWithTooLongDescription() throws Exception {
+			String longDesc = "D".repeat(1001);
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Valid title");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setDescription(longDesc);
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content(payload))
+				.andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.results[0].errors[0].field").value("description"))
+				.andExpect(
+						jsonPath("$.results[0].errors[0].message").value("Description cannot exceed 1000 characters"));
+		}
+
+		@DisplayName("Fail to create objective with invalid key result type")
+		@Test
+		void failCreateWithInvalidKeyResultType() throws Exception {
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Bad Type Test");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+
+			KeyResultRequestDto kr = new KeyResultRequestDto();
+			kr.setTitle("Invalid Type");
+			kr.setType("INVALID_TYPE");
+			kr.setLowerLimit(10.0);
+			kr.setUpperLimit(20.0);
+			kr.setAssignedTeamIds(List.of(team.getTeamId()));
+			dto.setKeyResults(List.of(kr));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			performRequest(request).andExpect(status().isBadRequest())
+				.andExpect(
+						jsonPath("$.results[0].messageKey").value(TEAM_OBJECTIVE_ERROR_INVALID_KEY_RESULT_TYPE.name()));
+
+		}
+
+		@DisplayName("Fail to create objective with invalid key result limits")
+		@Test
+		void failCreateWithInvalidKeyResultLimits() throws Exception {
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Limit Test");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+
+			KeyResultRequestDto kr = new KeyResultRequestDto();
+			kr.setTitle("Bad Limits");
+			kr.setType(KeyResultType.LESS_THAN.name());
+			kr.setLowerLimit(50.0);
+			kr.setUpperLimit(10.0);
+			kr.setAssignedTeamIds(List.of(team.getTeamId()));
+			dto.setKeyResults(List.of(kr));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			performRequest(request).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.results[0].messageKey")
+					.value(TEAM_OBJECTIVE_ERROR_INVALID_KEY_RESULT_LIMITS.name()));
+
+		}
+
+		@DisplayName("Fail to create KR of type GREATER_THAN with both lower and upper limits")
+		@Test
+		void failCreateWithGreaterThanAndBothLimits() throws Exception {
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Test");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+			dto.setKeyResults(List.of(new KeyResultRequestDto() {
+				{
+					setTitle("KR Type Issue");
+					setType(KeyResultType.GREATER_THAN.name());
+					setLowerLimit(10.0);
+					setUpperLimit(30.0);
+					setAssignedTeamIds(List.of(team.getTeamId()));
+				}
+			}));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content(payload))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.results[0].messageKey")
+					.value(TEAM_OBJECTIVE_ERROR_INVALID_KEY_RESULT_LIMITS.name()));
+		}
+
+		@Test
+		@DisplayName("Fail if key result assigned teams are not subset of parent teams")
+		void failKeyResultTeamNotInParentAssignedTeams() throws Exception {
+			Team unrelatedTeam = new Team();
+			unrelatedTeam.setTeamName("Unrelated");
+			unrelatedTeam = teamDao.save(unrelatedTeam);
+
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Subset Test");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(team.getTeamId()));
+
+			KeyResultRequestDto kr = new KeyResultRequestDto();
+			kr.setTitle("Outsider Team");
+			kr.setType(KeyResultType.GREATER_THAN.name());
+			kr.setLowerLimit(10.0);
+			kr.setAssignedTeamIds(List.of(unrelatedTeam.getTeamId()));
+			dto.setKeyResults(List.of(kr));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			performRequest(request).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.results[0].messageKey")
+					.value(TEAM_OBJECTIVE_ERROR_INVALID_ASSIGNED_TEAM_FOR_KEY_RESULT.name()));
+		}
+
+		@DisplayName("Fail to create objective with duplicate team IDs")
+		@Test
+		void failWithDuplicateAssignedTeamIds() throws Exception {
+			Long id = team.getTeamId();
+
+			TeamObjectiveRequestDto dto = new TeamObjectiveRequestDto();
+			dto.setTitle("Duplicate Teams");
+			dto.setEffectiveTimePeriod(2025L);
+			dto.setDuration("Q4");
+			dto.setAssignedTeamIds(List.of(id, id));
+
+			KeyResultRequestDto kr = new KeyResultRequestDto();
+			kr.setTitle("KR with dup team");
+			kr.setType(KeyResultType.GREATER_THAN.name());
+			kr.setLowerLimit(10.0);
+			kr.setUpperLimit(30.0);
+			kr.setAssignedTeamIds(List.of(id));
+			dto.setKeyResults(List.of(kr));
+
+			String payload = objectMapper.writeValueAsString(dto);
+
+			MockHttpServletRequestBuilder request = post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(payload);
+
+			performRequest(request).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.results[0].messageKey").value(TEAM_OBJECTIVE_ERROR_DUPLICATE_TEAM_ID.name()));
 		}
 
 	}
