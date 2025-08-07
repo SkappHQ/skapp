@@ -132,34 +132,45 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	@Transactional
 	public ResponseEntityDto signIn(SignInRequestDto signInRequestDto) {
-		log.debug("signIn: execution started");
+		log.info("signIn: execution started for email={}", signInRequestDto.getEmail());
 
+		log.info("Authenticating user with email={}", signInRequestDto.getEmail());
 		authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
 
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
+			log.warn("User not found for email={}", signInRequestDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
+		log.info("User found: userId={}, isActive={}", user.getUserId(), user.getIsActive());
 
 		validateTenantStatus(user);
+		log.info("Tenant status validated for userId={}", user.getUserId());
 
 		if (Boolean.FALSE.equals(user.getIsActive())) {
+			log.warn("User account deactivated: userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
+			log.warn("Employee not found for userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
+		log.info("Employee found for userId={}", user.getUserId());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-			.employeeToEmployeeSignInResponseDto(employee.get());
+				.employeeToEmployeeSignInResponseDto(employee.get());
+		log.info("Mapped EmployeeSignInResponseDto for userId={}", user.getUserId());
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		log.info("Loaded UserDetails for email={}", user.getEmail());
+
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
+		log.info("Generated access and refresh tokens for userId={}", user.getUserId());
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
@@ -167,7 +178,7 @@ public class AuthServiceImpl implements AuthService {
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("signIn: execution ended");
+		log.info("signIn: execution ended for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
@@ -178,19 +189,22 @@ public class AuthServiceImpl implements AuthService {
 	@Transactional
 	@Override
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
-		log.info("superAdminSignUp: execution started");
+		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
 		boolean isSuperAdminExists = employeeRoleDao
-			.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+				.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		if (isSuperAdminExists) {
+			log.warn("Super admin already exists. Aborting sign up.");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SUPER_ADMIN_ALREADY_EXISTS);
 		}
 
 		Optional<User> optionalUser = userDao.findByEmail(superAdminSignUpRequestDto.getEmail());
 		if (optionalUser.isPresent()) {
+			log.warn("User already exists for email={}", superAdminSignUpRequestDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ALREADY_EXISTS);
 		}
 
+		log.info("Validating super admin sign up request for email={}", superAdminSignUpRequestDto.getEmail());
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
@@ -210,17 +224,22 @@ public class AuthServiceImpl implements AuthService {
 
 		employee.setUser(user);
 
+		log.info("Saving new super admin user and employee for email={}", user.getEmail());
 		userDao.save(user);
 
 		rolesService.saveSuperAdminRoles(employee);
 		employeeDao.save(employee);
 
+		log.info("Super admin roles assigned and employee saved for userId={}", user.getUserId());
+
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-			.employeeToEmployeeSignInResponseDto(employee);
+				.employeeToEmployeeSignInResponseDto(employee);
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		log.info("Generated access and refresh tokens for userId={}", user.getUserId());
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
@@ -228,7 +247,7 @@ public class AuthServiceImpl implements AuthService {
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(true);
 
-		log.info("superAdminSignUp: execution ended");
+		log.info("superAdminSignUp: execution ended for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
@@ -236,35 +255,44 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto refreshAccessToken(RefreshTokenRequestDto refreshTokenRequestDto) {
 		log.info("refreshAccessToken: execution started");
 
-		if (!jwtService.isRefreshToken(refreshTokenRequestDto.getRefreshToken())
-				|| jwtService.isTokenExpired(refreshTokenRequestDto.getRefreshToken())) {
+		String refreshToken = refreshTokenRequestDto.getRefreshToken();
+
+		if (!jwtService.isRefreshToken(refreshToken) || jwtService.isTokenExpired(refreshToken)) {
+			log.warn("Invalid or expired refresh token");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
 		}
 
-		String userEmail = jwtService.extractUserEmail(refreshTokenRequestDto.getRefreshToken());
+		String userEmail = jwtService.extractUserEmail(refreshToken);
+		log.info("Extracted userEmail={} from refresh token", userEmail);
+
 		UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-		if (!jwtService.isTokenValid(refreshTokenRequestDto.getRefreshToken(), userDetails)) {
+		if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+			log.warn("Refresh token is not valid for userEmail={}", userEmail);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
 		}
 
 		Optional<User> optionalUser = userDao.findByEmail(userEmail);
 		if (optionalUser.isEmpty()) {
+			log.warn("User not found for email={}", userEmail);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
+		log.info("User found: userId={}", user.getUserId());
 
 		if (employeeDao.existsByEmployeeIdAndAccountStatusIn(user.getUserId(),
 				Set.of(AccountStatus.TERMINATED, AccountStatus.DELETED))) {
+			log.warn("User is terminated or deleted: userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_TERMINATED_OR_DELETED);
 		}
 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		log.info("Generated new access token for userId={}", user.getUserId());
 
 		AccessTokenResponseDto accessTokenResponseDto = new AccessTokenResponseDto();
 		accessTokenResponseDto.setAccessToken(accessToken);
 
-		log.info("refreshAccessToken: execution ended");
+		log.info("refreshAccessToken: execution ended for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, accessTokenResponseDto);
 	}
 
@@ -274,60 +302,69 @@ public class AuthServiceImpl implements AuthService {
 
 		User user = userService.getCurrentUser();
 		if (user == null) {
+			log.warn("Current user not found during password reset");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		if (Boolean.TRUE.equals(user.getIsPasswordChangedForTheFirstTime())) {
+			log.warn("Password already reset for userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ALREADY_PASSWORD_RESET);
 		}
 
 		String newPassword = resetPasswordRequestDto.getNewPassword();
+		log.info("Setting new password for userId={}", user.getUserId());
 		createNewPassword(newPassword, user);
 
 		Employee employee = user.getEmployee();
 		employee.setAccountStatus(AccountStatus.ACTIVE);
 		employeeDao.save(employee);
+		log.info("Employee account status set to ACTIVE for userId={}", user.getUserId());
 
-		log.info("employeeResetPassword: execution ended");
+		log.info("employeeResetPassword: execution ended for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, "User password reset successfully");
 	}
 
 	@Override
 	public ResponseEntityDto sharePassword(Long userId) {
-		log.info("sharePassword: execution started");
+		log.info("sharePassword: execution started for userId={}", userId);
 
 		Optional<User> optionalUser = userDao.findById(userId);
 		if (optionalUser.isEmpty()) {
+			log.warn("User not found for userId={} in sharePassword", userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
 
+		log.info("User found for sharePassword: userId={}", userId);
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user,
 				encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
 
-		log.info("sharePassword: execution ended");
+		log.info("sharePassword: execution ended for userId={}", userId);
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
 	}
 
 	@Override
 	public ResponseEntityDto resetAndSharePassword(Long userId) {
-		log.info("resetAndSharePassword: execution started");
+		log.info("resetAndSharePassword: execution started for userId={}", userId);
 
 		Optional<User> optionalUser = userDao.findById(userId);
 		if (optionalUser.isEmpty()) {
+			log.warn("User not found for userId={} in resetAndSharePassword", userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		log.info("Generated new temp password for userId={}", userId);
 		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
 
+		log.info("User password reset and saved for userId={}", userId);
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(savedUser, user, tempPassword);
 
-		log.info("resetAndSharePassword: execution ended");
+		log.info("resetAndSharePassword: execution ended for userId={}", userId);
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
 	}
 
@@ -337,12 +374,13 @@ public class AuthServiceImpl implements AuthService {
 
 		if (!profileActivator.isEpProfile()) {
 			Optional<OrganizationConfig> optionalOrganizationConfig = organizationConfigDao
-				.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
+					.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
 
 			if (optionalOrganizationConfig.isEmpty()) {
-				log.error("Email configuration not found");
+				log.error("Email configuration not found in sendReInvitation");
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EMAIL_CONFIG_NOT_FOUND);
 			}
+			log.info("Email configuration found for re-invitation");
 		}
 
 		List<Long> ids = reInvitationRequestDto.getIds();
@@ -350,9 +388,11 @@ public class AuthServiceImpl implements AuthService {
 			Set<Long> uniqueEmails = new HashSet<>(ids);
 			ids = new ArrayList<>(uniqueEmails);
 			reInvitationRequestDto.setIds(ids);
+			log.info("Deduplicated ids for re-invitation: {}", ids);
 		}
 
 		String currentTenant = bulkContextService.getContext();
+		log.info("Current tenant context: {}", currentTenant);
 
 		ExecutorService executorService = Executors.newFixedThreadPool(5);
 		List<ErrorLogDto> bulkRecordErrorLogs = Collections.synchronizedList(new ArrayList<>());
@@ -371,13 +411,14 @@ public class AuthServiceImpl implements AuthService {
 						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 							@Override
 							protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
+								log.info("Processing re-invitation for userId={}", id);
 								validateAndSendReInvitation(id, reInvitationSkippedCountDto, bulkRecordErrorLogs,
 										bulkStatusSummary);
 							}
 						});
 					}
 					catch (Exception e) {
-						log.error("Exception occurred when saving entitlement: {}", e.getMessage());
+						log.error("Exception occurred when saving entitlement for userId={}: {}", id, e.getMessage());
 						List<String> errorMessages = Collections.singletonList(e.getMessage());
 						bulkRecordErrorLogs.add(createErrorLog(id, errorMessages));
 						bulkStatusSummary.incrementFailedCount();
@@ -412,12 +453,13 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public ResponseEntityDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
-		log.info("forgotPassword: execution started");
+		log.info("forgotPassword: execution started for email={}", forgotPasswordRequestDto.getEmail());
 
 		Validations.validateEmail(forgotPasswordRequestDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(forgotPasswordRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
+			log.warn("User not found for email={} in forgotPassword", forgotPasswordRequestDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -425,34 +467,39 @@ public class AuthServiceImpl implements AuthService {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		String requestDateTime = nowUtc.format(formatter);
 
+		log.info("Sending password reset email and notification for userId={}", optionalUser.get().getUserId());
 		peopleEmailService.sendPasswordResetRequestManagerEmail(optionalUser.get(), requestDateTime);
 		peopleNotificationService.sendPasswordResetRequestManagerNotification(optionalUser.get(), requestDateTime);
 
-		log.info("forgotPassword: execution ended");
+		log.info("forgotPassword: execution ended for userId={}", optionalUser.get().getUserId());
 		return new ResponseEntityDto(false, "The email has been successfully sent to all people admins.");
 	}
 
 	@Override
 	public ResponseEntityDto changePassword(ChangePasswordRequestDto changePasswordRequestDto, Long userId) {
-		log.info("changePassword: execution started");
+		log.info("changePassword: execution started for userId={}", userId);
 
 		User user = userService.getCurrentUser();
 		if (!Objects.equals(user.getUserId(), userId)) {
+			log.warn("UserId mismatch in changePassword: currentUserId={}, requestedUserId={}", user.getUserId(), userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		if (!passwordEncoder.matches(changePasswordRequestDto.getOldPassword(), user.getPassword())) {
+			log.warn("Old password incorrect for userId={}", userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_OLD_PASSWORD_INCORRECT);
 		}
 
 		if (passwordEncoder.matches(changePasswordRequestDto.getNewPassword(), user.getPassword())) {
+			log.warn("New password same as old password for userId={}", userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SAME_PASSWORD);
 		}
 
 		String newPassword = changePasswordRequestDto.getNewPassword();
+		log.info("Setting new password for userId={}", userId);
 		createNewPassword(newPassword, user);
 
-		log.info("changePassword: execution ended");
+		log.info("changePassword: execution ended for userId={}", userId);
 		return new ResponseEntityDto(false, "User password changed successfully");
 	}
 
