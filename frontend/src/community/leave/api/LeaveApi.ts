@@ -310,7 +310,8 @@ export const useGetManagerAssignedLeaveRequests = () => {
     },
     select: (data) => {
       return leaveRequestPreProcessor(data?.data?.results[0]);
-    }
+    },
+    enabled: params && params.startDate !== "" && params.endDate !== ""
   });
 };
 
