@@ -75,7 +75,7 @@ const EmploymentBreakdownGraph = ({
               {isDataLoading ? (
                 <EmploymentChartSkeleton />
               ) : !isDataLoading &&
-                (!chartData || chartData.values.every((val) => val === 0)) ? (
+                (!chartData || chartData?.values?.every((val) => val === 0)) ? (
                 <Stack height="100%" justifyContent="center">
                   <NoDataScreen />
                 </Stack>
