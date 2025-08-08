@@ -41,7 +41,9 @@ const GenderDistributionGraph = ({
               </Box>
               {isDataLoading ? (
                 <GenderChartSkeleton />
-              ) : !isDataLoading && chartData?.length === 0 ? (
+              ) : !isDataLoading &&
+                (chartData?.length === 0 ||
+                  chartData.every((item) => item.value === 0)) ? (
                 <Stack height="100%" justifyContent="center">
                   <NoDataScreen />
                 </Stack>
