@@ -231,7 +231,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-				.employeeToEmployeeSignInResponseDto(userEmployee);
+			.employeeToEmployeeSignInResponseDto(userEmployee);
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
@@ -328,15 +328,16 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		try {
 			log.debug("getIdTokenAndRedirect: Validating GoogleAuthRedirectDto");
 			Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
-		} catch (Exception exception) {
+		}
+		catch (Exception exception) {
 			log.error("getIdTokenAndRedirect: Validation failed - {}", exception.getMessage(), exception);
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
 			log.info("getIdTokenAndRedirect: Returning error redirect to frontendUrl={}", frontendUrl);
 			return UriComponentsBuilder.fromUriString(frontendUrl)
-					.queryParam("error", encodedErrorMessage)
-					.toUriString();
+				.queryParam("error", encodedErrorMessage)
+				.toUriString();
 		}
 
 		log.info("getIdTokenAndRedirect: execution ended, redirecting to frontendUrl={} with code", frontendUrl);
@@ -368,12 +369,13 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			log.debug("getGoogleAuthUrl: Building GoogleAuthorizationCodeRequestUrl");
 			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(clientId,
 					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_AUTH_SCOPES)
-					.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
-					.setState(encodedState);
+				.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
+				.setState(encodedState);
 			String authUrl = authorizationUrl.build();
 			responseDto.setAuthUrl(authUrl);
 			log.info("getGoogleAuthUrl: Auth URL generated successfully");
-		} catch (Exception exception) {
+		}
+		catch (Exception exception) {
 			log.error("getGoogleAuthUrl: Exception occurred - {}", exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL);
 		}
