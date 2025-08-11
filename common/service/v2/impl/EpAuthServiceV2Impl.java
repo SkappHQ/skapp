@@ -144,7 +144,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignUp: SSO Signup flow started for code: {}", epSignUpGoogleDataDto.getCode());
+		log.info("ssoGoogleSignUp: SSO Signup flow started");
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
 		log.info("ssoGoogleSignUp: Google token response received");
 		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
@@ -182,7 +182,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignIn: execution started for code: {}", epSignUpGoogleDataDto.getCode());
+		log.info("ssoGoogleSignIn: execution started");
 
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
 		log.info("ssoGoogleSignIn: Google token response received");
@@ -198,13 +198,13 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
-			log.warn("ssoGoogleSignIn: User account deactivated for userId: {}", user.getUserId());
+			log.warn("ssoGoogleSignIn: User account deactivated for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
-			log.warn("ssoGoogleSignIn: Employee not found for userId: {}", user.getUserId());
+			log.warn("ssoGoogleSignIn: Employee not found for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -212,7 +212,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
-			log.info("ssoGoogleSignIn: Activating employee account for userId: {}", user.getUserId());
+			log.info("ssoGoogleSignIn: Activating employee account for userEmail: {}", user.getEmail());
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}
@@ -220,14 +220,14 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String authPic = googleUserDetailsDto.getAuthPicUrl();
 
 		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
-			log.info("ssoGoogleSignIn: Updating authPic for userId: {}", user.getUserId());
+			log.info("ssoGoogleSignIn: Updating authPic for userEmail: {}", user.getEmail());
 			userEmployee.setAuthPic(authPic);
 			isUpdated = true;
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
-			log.info("ssoGoogleSignIn: Employee record updated for userId: {}", user.getUserId());
+			log.info("ssoGoogleSignIn: Employee record updated for userEmail: {}", user.getEmail());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
@@ -237,7 +237,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-		log.info("ssoGoogleSignIn: Tokens generated for userId: {}", user.getUserId());
+		log.info("ssoGoogleSignIn: Tokens generated for userEmail: {}", user.getEmail());
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
@@ -245,7 +245,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoGoogleSignIn: execution ended for userId: {}", user.getUserId());
+		log.info("ssoGoogleSignIn: execution ended for userEmail: {}", user.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 

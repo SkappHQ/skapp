@@ -222,14 +222,14 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		log.info("superAdminSignUp: saving SuperAdmin to database");
 		SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
 
-		log.info("superAdminSignUp: generating access and refresh tokens for superAdminId={}", savedSuperAdmin.getId());
+		log.info("superAdminSignUp: generating access and refresh tokens for superAdminEmail={}", savedSuperAdmin.getEmail());
 		String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 		String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
 		log.info("superAdminSignUp: preparing sign-in response DTO");
 		SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
-		log.info("superAdminSignUp: execution ended for superAdminId={}", savedSuperAdmin.getId());
+		log.info("superAdminSignUp: execution ended for  superAdminEmail={}", savedSuperAdmin.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
@@ -391,7 +391,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
-			log.warn("ssoGoogleSignUp: SSO Signup flow executed for email: {}", epSignUpGoogleDataDto.getEmail());
+			log.info("ssoGoogleSignUp: SSO Signup flow executed for email: {}", epSignUpGoogleDataDto.getEmail());
 			SuperAdmin superAdmin = epCommonMapper.createEpGoogleDataDtoToSuperAdmin(epSignUpGoogleDataDto);
 			superAdmin.setLoginMethod(LoginMethod.GOOGLE);
 			superAdmin.setFirstName(epSignUpGoogleDataDto.getFirstName());
@@ -765,8 +765,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 				.queryParam("secret", recaptchaConfig.getSecret())
 				.queryParam("response", epCaptchaVerificationDto.getRecaptchaToken())
 				.toUriString();
-
-			log.debug("validateCaptcha: reCAPTCHA verification URL built: {}", url);
 
 			HttpHeaders headers = new HttpHeaders();
 			HttpEntity<?> requestEntity = new HttpEntity<>(headers);
