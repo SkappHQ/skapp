@@ -162,7 +162,7 @@ public class AuthServiceImpl implements AuthService {
 		log.info("signIn: Employee found for userEmail={}", user.getEmail());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-				.employeeToEmployeeSignInResponseDto(employee.get());
+			.employeeToEmployeeSignInResponseDto(employee.get());
 		log.info("signIn: Mapped EmployeeSignInResponseDto for userEmail={}", user.getEmail());
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
@@ -192,7 +192,7 @@ public class AuthServiceImpl implements AuthService {
 		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
 		boolean isSuperAdminExists = employeeRoleDao
-				.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		if (isSuperAdminExists) {
 			log.warn("superAdminSignUp: Super admin already exists. Aborting sign up.");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SUPER_ADMIN_ALREADY_EXISTS);
@@ -204,7 +204,8 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ALREADY_EXISTS);
 		}
 
-		log.info("superAdminSignUp: Validating super admin sign up request for email={}", superAdminSignUpRequestDto.getEmail());
+		log.info("superAdminSignUp: Validating super admin sign up request for email={}",
+				superAdminSignUpRequestDto.getEmail());
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
@@ -233,13 +234,13 @@ public class AuthServiceImpl implements AuthService {
 		log.info("superAdminSignUp: Super admin roles assigned and employee saved for email={}", user.getEmail());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
-				.employeeToEmployeeSignInResponseDto(employee);
+			.employeeToEmployeeSignInResponseDto(employee);
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-		log.info("superAdminSignUp: Generated access and refresh tokens for userEmail={}",user.getEmail());
+		log.info("superAdminSignUp: Generated access and refresh tokens for userEmail={}", user.getEmail());
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
@@ -374,7 +375,7 @@ public class AuthServiceImpl implements AuthService {
 
 		if (!profileActivator.isEpProfile()) {
 			Optional<OrganizationConfig> optionalOrganizationConfig = organizationConfigDao
-					.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
+				.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
 
 			if (optionalOrganizationConfig.isEmpty()) {
 				log.error("sendReInvitation: Email configuration not found in sendReInvitation");
@@ -418,7 +419,8 @@ public class AuthServiceImpl implements AuthService {
 						});
 					}
 					catch (Exception e) {
-						log.error("sendReInvitation: Exception occurred when saving entitlement for userId={}: {}", id, e.getMessage());
+						log.error("sendReInvitation: Exception occurred when saving entitlement for userId={}: {}", id,
+								e.getMessage());
 						List<String> errorMessages = Collections.singletonList(e.getMessage());
 						bulkRecordErrorLogs.add(createErrorLog(id, errorMessages));
 						bulkStatusSummary.incrementFailedCount();
@@ -459,7 +461,8 @@ public class AuthServiceImpl implements AuthService {
 
 		Optional<User> optionalUser = userDao.findByEmail(forgotPasswordRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
-			log.warn("forgotPassword: User not found for email={} in forgotPassword", forgotPasswordRequestDto.getEmail());
+			log.warn("forgotPassword: User not found for email={} in forgotPassword",
+					forgotPasswordRequestDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -467,7 +470,8 @@ public class AuthServiceImpl implements AuthService {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		String requestDateTime = nowUtc.format(formatter);
 
-		log.info("forgotPassword: Sending password reset email and notification for userEmail={}", optionalUser.get().getEmail());
+		log.info("forgotPassword: Sending password reset email and notification for userEmail={}",
+				optionalUser.get().getEmail());
 		peopleEmailService.sendPasswordResetRequestManagerEmail(optionalUser.get(), requestDateTime);
 		peopleNotificationService.sendPasswordResetRequestManagerNotification(optionalUser.get(), requestDateTime);
 
@@ -481,7 +485,8 @@ public class AuthServiceImpl implements AuthService {
 
 		User user = userService.getCurrentUser();
 		if (!Objects.equals(user.getUserId(), userId)) {
-			log.warn("changePassword: UserId mismatch in changePassword: currentUserId={}, requestedUserId={}", user.getUserId(), userId);
+			log.warn("changePassword: UserId mismatch in changePassword: currentUserId={}, requestedUserId={}",
+					user.getUserId(), userId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -518,9 +523,8 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private UserSettings createNotificationSettings(User user) {
-		log.info("createNotificationSettings: execution started={}",user.getEmail());
+		log.info("createNotificationSettings: execution started={}", user.getEmail());
 		UserSettings userSettings = new UserSettings();
-
 
 		ObjectNode notificationsObjectNode = objectMapper.createObjectNode();
 
@@ -536,12 +540,12 @@ public class AuthServiceImpl implements AuthService {
 		userSettings.setNotifications(notificationsObjectNode);
 		userSettings.setUser(user);
 
-		log.info("createNotificationSettings: execution ended={}",user.getEmail());
+		log.info("createNotificationSettings: execution ended={}", user.getEmail());
 		return userSettings;
 	}
 
 	protected void createNewPassword(String newPassword, User user) {
-		log.info("createNewPassword: execution started={}",user.getEmail());
+		log.info("createNewPassword: execution started={}", user.getEmail());
 		String tempPassword = user.getTempPassword();
 		if (tempPassword != null
 				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
@@ -563,7 +567,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(encodedNewPassword);
 		user.setIsPasswordChangedForTheFirstTime(true);
 		user.setTempPassword(null);
-		log.info("createNewPassword: execution ended={}",user.getEmail());
+		log.info("createNewPassword: execution ended={}", user.getEmail());
 
 		userDao.save(user);
 	}
