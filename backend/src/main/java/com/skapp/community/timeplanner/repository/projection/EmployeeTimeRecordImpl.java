@@ -1,7 +1,14 @@
 package com.skapp.community.timeplanner.repository.projection;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
+@RequiredArgsConstructor
+@Getter
+@Setter
 public class EmployeeTimeRecordImpl implements EmployeeTimeRecord {
 
 	private final Long timeRecordId;
@@ -15,45 +22,5 @@ public class EmployeeTimeRecordImpl implements EmployeeTimeRecord {
 	private final Float breakHours;
 
 	private final String timeSlots;
-
-	public EmployeeTimeRecordImpl(Long timeRecordId, Long employeeId, LocalDate date, Float workedHours,
-			Float breakHours, String timeSlots) {
-		this.timeRecordId = timeRecordId;
-		this.employeeId = employeeId;
-		this.date = date;
-		this.workedHours = workedHours;
-		this.breakHours = breakHours;
-		this.timeSlots = timeSlots;
-	}
-
-	@Override
-	public Long getTimeRecordId() {
-		return timeRecordId;
-	}
-
-	@Override
-	public Long getEmployeeId() {
-		return employeeId;
-	}
-
-	@Override
-	public LocalDate getDate() {
-		return date;
-	}
-
-	@Override
-	public Float getWorkedHours() {
-		return workedHours;
-	}
-
-	@Override
-	public Float getBreakHours() {
-		return breakHours;
-	}
-
-	@Override
-	public String getTimeSlots() {
-		return timeSlots;
-	}
 
 }

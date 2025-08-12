@@ -1023,7 +1023,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	public List<Long> findEmployeeIdsCreatedWithValidDates(LocalDate validFrom, LocalDate validDate, int limit,
 			long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		CriteriaQuery<Long[]> cq = cb.createQuery(Long[].class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
 		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
 		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
@@ -1034,18 +1034,18 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
 		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
 
-		cq.multiselect(employeeJoin.get(Employee_.employeeId), root.get(Auditable_.createdDate));
+		cq.multiselect(employeeJoin.get(Employee_.employeeId));
 		cq.where(predicates.toArray(new Predicate[0]));
 		cq.orderBy(cb.asc(root.get(Auditable_.createdDate)));
 
-		TypedQuery<Object[]> query = entityManager.createQuery(cq);
+		TypedQuery<Long[]> query = entityManager.createQuery(cq);
 		query.setFirstResult((int) offset);
 		query.setMaxResults(limit);
-		List<Object[]> results = query.getResultList();
+		List<Long[]> results = query.getResultList();
 
 		Set<Long> employeeIds = new LinkedHashSet<>();
-		for (Object[] row : results) {
-			employeeIds.add((Long) row[0]);
+		for (Long[] row : results) {
+			employeeIds.add(row[0]);
 		}
 		return new ArrayList<>(employeeIds);
 	}
@@ -1054,7 +1054,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	public List<Long> findEmployeeIdsWithLeaveEntitlement(List<Long> leaveTypeIds, LocalDate startDate,
 			LocalDate endDate, Long jobFamilyId, Long teamId, int limit, long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		CriteriaQuery<Long[]> cq = cb.createQuery(Long[].class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
 
 		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
@@ -1089,20 +1089,20 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 			predicates.add(cb.equal(teamJoin.get(Team_.teamId), teamId));
 		}
 
-		cq.multiselect(employeeJoin.get(Employee_.employeeId), employeeJoin.get(Employee_.firstName));
+		cq.multiselect(employeeJoin.get(Employee_.employeeId));
 		cq.where(predicates.toArray(new Predicate[0]));
-		cq.groupBy(employeeJoin.get(Employee_.employeeId), employeeJoin.get(Employee_.firstName));
+		cq.groupBy(employeeJoin.get(Employee_.employeeId));
 		cq.orderBy(cb.asc(employeeJoin.get(Employee_.firstName)));
 
-		TypedQuery<Object[]> query = entityManager.createQuery(cq);
+		TypedQuery<Long[]> query = entityManager.createQuery(cq);
 		query.setFirstResult((int) offset);
 		query.setMaxResults(limit);
-		List<Object[]> results = query.getResultList();
+		List<Long[]> results = query.getResultList();
 
 		// Use LinkedHashSet to preserve order and ensure uniqueness
 		Set<Long> employeeIds = new LinkedHashSet<>();
-		for (Object[] row : results) {
-			employeeIds.add((Long) row[0]);
+		for (Long[] row : results) {
+			employeeIds.add(row[0]);
 		}
 		return new ArrayList<>(employeeIds);
 	}
