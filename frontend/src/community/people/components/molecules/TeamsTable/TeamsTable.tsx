@@ -152,7 +152,13 @@ const TeamsTable: FC<Props> = ({
               buttonStyles={classes.editIconBtn}
               onClick={() => handleEditTeam(teamDetails)}
               ariaLabel={ariaTranslateText(
-                ["table", "actionColumn", "editButton"],
+                ["table", "actionColumn", "editButton", "label"],
+                {
+                  teamName: teamDetails?.teamName?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "editButton", "description"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
                 }
@@ -171,7 +177,13 @@ const TeamsTable: FC<Props> = ({
               buttonStyles={classes.deleteIconBtn}
               onClick={() => handleDeleteTeam(teamDetails)}
               ariaLabel={ariaTranslateText(
-                ["table", "actionColumn", "deleteButton"],
+                ["table", "actionColumn", "deleteButton", "label"],
+                {
+                  teamName: teamDetails?.teamName?.toLowerCase() ?? ""
+                }
+              )}
+              ariaDescription={ariaTranslateText(
+                ["table", "actionColumn", "deleteButton", "description"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
                 }
@@ -206,6 +218,18 @@ const TeamsTable: FC<Props> = ({
     setIsTeamModalOpen(true);
   };
 
+  const addTeamsButton = isAdmin
+    ? {
+        id: "add-teams-empty-table-screen-button",
+        label: teamAddButtonText,
+        onClick: () => {
+          teamAddButtonButtonClick?.();
+          destroyDriverObj();
+        },
+        shouldBlink: ongoingQuickSetup.DEFINE_TEAMS
+      }
+    : undefined;
+
   return (
     <Box sx={classes.tableWrapper}>
       <Table
@@ -229,15 +253,7 @@ const TeamsTable: FC<Props> = ({
                 allTeams && allTeams?.length > 0
                   ? translateText(["emptyScreen", "description"])
                   : translateText(["emptySearchResult", "description"]),
-              button: {
-                id: "add-teams-empty-table-screen-button",
-                label: teamAddButtonText,
-                onClick: () => {
-                  teamAddButtonButtonClick?.();
-                  destroyDriverObj();
-                },
-                shouldBlink: ongoingQuickSetup.DEFINE_TEAMS
-              }
+              button: addTeamsButton
             }
           },
           loadingState: {

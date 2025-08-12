@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
-import {
+import React, {
   ChangeEvent,
   Dispatch,
   MouseEvent,
@@ -20,6 +20,10 @@ import {
   AvatarPropTypes,
   MenuTypes
 } from "~community/common/types/MoleculeTypes";
+import {
+  shouldActivateButton,
+  shouldCollapseDropdown
+} from "~community/common/utils/keyboardUtils";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 import {
   L1EmployeeType,
@@ -87,6 +91,27 @@ const SupervisorSelector = ({
     "employmentDetails"
   );
 
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "avatarSearch"
+  );
+
+  const getAriaLabel = () => {
+    let baseLabel = label;
+
+    if (!employee?.employment?.employmentDetails?.otherSupervisors?.length) {
+      return baseLabel;
+    }
+
+    const supervisorNames =
+      employee.employment.employmentDetails.otherSupervisors
+        .map((supervisor) => `${supervisor.firstName} ${supervisor.lastName}`)
+        .join(", ");
+
+    return `${baseLabel} ${translateAria(["currentlySelected"])} ${supervisorNames}`;
+  };
+
   return (
     <>
       <Stack
@@ -111,6 +136,11 @@ const SupervisorSelector = ({
       <Box
         ref={boxRef}
         alignItems={"center"}
+        tabIndex={isInputsDisabled ? -1 : 0}
+        role="combobox"
+        aria-expanded={filterOpen}
+        aria-haspopup="listbox"
+        aria-label={getAriaLabel()}
         sx={{
           backgroundColor: theme.palette.grey[100],
           height: "3rem",
@@ -119,12 +149,28 @@ const SupervisorSelector = ({
           pl: otherSupervisorsCount > 2 ? "0.75rem" : "0rem",
           display: "flex",
           width: "100%",
-          cursor: "pointer"
+          cursor: isInputsDisabled ? "default" : "pointer",
+          "&:focus": {
+            outline: `0.125rem solid ${theme.palette.common.black}`,
+            outlineOffset: "-0.125rem"
+          }
         }}
         onClick={(event: MouseEvent<HTMLElement>): void => {
           setManagerSearchTerm("");
           setFilterEl(event.currentTarget);
           !isInputsDisabled && setFilterOpen((previousOpen) => !previousOpen);
+        }}
+        onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>): void => {
+          if (isInputsDisabled) return;
+          if (shouldActivateButton(event.key)) {
+            event.preventDefault();
+            setManagerSearchTerm("");
+            setFilterEl(event.currentTarget);
+            setFilterOpen((previousOpen) => !previousOpen);
+          } else if (shouldCollapseDropdown(event.key) && filterOpen) {
+            event.preventDefault();
+            handleFilterClose();
+          }
         }}
       >
         {otherSupervisorsCount === 0 ? (
@@ -153,6 +199,8 @@ const SupervisorSelector = ({
               <Box
                 sx={{ height: "3.125rem", pt: "0.3125rem" }}
                 key={manager?.employeeId}
+                aria-hidden={true}
+                tabIndex={-1}
               >
                 <AvatarChip
                   firstName={manager?.firstName ?? ""}
@@ -184,6 +232,7 @@ const SupervisorSelector = ({
                     ml: "0.75rem"
                   }}
                   isDisabled={isInputsDisabled}
+                  tabIndex={-1}
                 />
               </Box>
             )
@@ -245,6 +294,8 @@ const SupervisorSelector = ({
           onManagerSearchChange={onmanagerSearchChange}
           managerSearchTerm={managerSearchTerm}
           isSearchResultsLoading={isSearchResultsLoading}
+          filterOpen={filterOpen}
+          setFilterOpen={setFilterOpen}
         />
       </Popper>
     </>

@@ -36,6 +36,7 @@ const EmployeeNudgeSupervisorPopup: FC<Props> = ({
           color: theme.palette.grey[400],
           marginTop: "1rem"
         }}
+        tabIndex={0}
       >
         {translateText(["myLeaveRequests", "supervisorNudgedDescription"])}
       </Typography>

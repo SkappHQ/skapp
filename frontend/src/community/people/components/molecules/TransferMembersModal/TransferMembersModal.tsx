@@ -1,21 +1,27 @@
-import { Box, Divider, Stack, SxProps, Typography } from "@mui/material";
-import { FC, MouseEvent, useEffect } from "react";
+import {
+  Box,
+  Divider,
+  SelectChangeEvent,
+  Stack,
+  SxProps,
+  Typography
+} from "@mui/material";
+import { FC, useEffect } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
+import RoundedSelect, {
+  SelectOption
+} from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import {
   ButtonStyle,
   ButtonTypes
 } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { StyleProps } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import {
-  JobFamilyDropDownType,
   JobFamilyEmployeeDataType,
-  JobTitleType,
   TransferMemberFormType
 } from "~community/people/types/JobFamilyTypes";
 import {
@@ -31,7 +37,7 @@ interface Props {
   jobFamilyTransfer: boolean;
   description: string;
   initialValues: TransferMemberFormType[] | undefined;
-  jobFamily: JobFamilyDropDownType[] | undefined;
+  jobFamily: SelectOption[] | undefined;
   employees: JobFamilyEmployeeDataType[] | undefined;
   handleSubmit: (values: any) => void;
   handleCancel: () => void;
@@ -71,7 +77,7 @@ const TransferMembersModal: FC<Props> = ({
     <Stack sx={classes.wrapper}>
       <Typography>{description}</Typography>
       <Stack sx={classes.contentWrapper}>
-        <Stack sx={classes.textWrapper}>
+        <Stack sx={classes.textWrapper} aria-hidden={true}>
           <Typography
             variant="body1"
             sx={{ ...classes.membersCell } as SxProps}
@@ -99,13 +105,20 @@ const TransferMembersModal: FC<Props> = ({
             {translateText(["jobTitle"])}
           </Typography>
         </Stack>
-        <Divider sx={classes.divider} />
+        <Divider sx={classes.divider} aria-hidden={true} />
         <Stack sx={classes.bodyWrapper}>
           <Stack sx={classes.bodyContainer}>
             {values?.map((member: TransferMemberFormType) => {
               const employee = getEmployeeDetails(
                 member?.employeeId,
                 employees
+              );
+
+              const jobTitleOptions = getJobTitlesWithJobFamilyId(
+                jobFamilyTransfer,
+                allJobFamilies,
+                member.jobFamily?.jobFamilyId ?? 0,
+                jobTitleId
               );
 
               return (
@@ -118,6 +131,7 @@ const TransferMembersModal: FC<Props> = ({
                     />
                     <Typography
                       variant="body1"
+                      aria-hidden={true}
                       sx={
                         {
                           ...classes.membersName,
@@ -128,73 +142,101 @@ const TransferMembersModal: FC<Props> = ({
                       {`${employee?.firstName} ${employee?.lastName}`}
                     </Typography>
                   </Box>
-                  <Box sx={classes.dropDownCell}>
-                    <Dropdown
-                      title={
+                  <Box sx={classes.dropDownCell} aria-hidden={true}>
+                    <RoundedSelect
+                      id="job-family-select"
+                      options={jobFamily ?? []}
+                      value={
                         member.jobFamily?.name ??
-                        translateText(["jobFamilyDropDownPlaceholder"])
+                        translateText(["jobFamilyDropDownPlaceholder"], {
+                          memberName: `${employee?.firstName} ${employee?.lastName}`
+                        })
                       }
-                      items={jobFamily ?? []}
-                      onItemClick={(
-                        _event: MouseEvent<HTMLElement>,
-                        item: JobFamilyDropDownType
-                      ) =>
-                        handleJobFamilyDropDownItemClick(
-                          employee?.employeeId,
-                          item,
-                          values,
-                          setValues
-                        )
-                      }
-                      displayKey="name"
-                      selectedItem={member?.jobFamily as JobFamilyDropDownType}
-                      dropdownBtnStyles={
-                        classes.dropdownBtnStyles as StyleProps
-                      }
-                      textStyles={
-                        {
-                          ...classes.dropDownTextStyles,
-                          ...classes.seeMoreStyles
-                        } as StyleProps
-                      }
+                      variant="body2"
                       disabled={!jobFamilyTransfer}
+                      onChange={(event: SelectChangeEvent) => {
+                        const selectedOption = jobFamily?.find(
+                          (option) =>
+                            option.value.toString() ===
+                            event.target.value.toString()
+                        );
+
+                        if (selectedOption !== undefined) {
+                          handleJobFamilyDropDownItemClick(
+                            employee?.employeeId,
+                            selectedOption,
+                            values,
+                            setValues
+                          );
+                        }
+                      }}
+                      customStyles={{
+                        label: {
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis"
+                        },
+                        menuProps: {
+                          sx: {
+                            width: "100%"
+                          }
+                        },
+                        select: {
+                          width: "9.6875rem",
+                          "& .MuiSelect-select": {
+                            padding: "0.75rem 2rem 0.75rem 1rem"
+                          }
+                        }
+                      }}
                     />
                   </Box>
-                  <Box sx={classes.dropDownCell}>
-                    <Dropdown
-                      title={
+                  <Box sx={classes.dropDownCell} aria-hidden={true}>
+                    <RoundedSelect
+                      id="job-title-select"
+                      name="jobTitle"
+                      options={jobTitleOptions ?? []}
+                      value={
                         member.jobTitle?.name ??
-                        translateText(["jobTitleDropDownPlaceholder"])
+                        translateText(["jobTitleDropDownPlaceholder"], {
+                          memberName: `${employee?.firstName} ${employee?.lastName}`
+                        })
                       }
+                      variant="body2"
                       disabled={!member.jobFamily?.jobFamilyId}
-                      items={getJobTitlesWithJobFamilyId(
-                        jobFamilyTransfer,
-                        allJobFamilies,
-                        member.jobFamily?.jobFamilyId ?? 0,
-                        jobTitleId
-                      )}
-                      onItemClick={(
-                        _event: MouseEvent<HTMLElement>,
-                        item: JobTitleType
-                      ) =>
-                        handleJobTitleDropDownItemClick(
-                          employee?.employeeId,
-                          item,
-                          values,
-                          setValues
-                        )
-                      }
-                      displayKey="name"
-                      selectedItem={member.jobTitle as JobTitleType}
-                      dropdownBtnStyles={
-                        classes.dropdownBtnStyles as StyleProps
-                      }
-                      textStyles={
-                        {
-                          ...classes.dropDownTextStyles,
-                          ...classes.seeMoreStyles
-                        } as StyleProps
-                      }
+                      onChange={(event: SelectChangeEvent) => {
+                        const selectedOption = jobTitleOptions?.find(
+                          (option) =>
+                            option.value.toString() ===
+                            event.target.value.toString()
+                        );
+
+                        if (selectedOption !== undefined) {
+                          handleJobTitleDropDownItemClick(
+                            employee?.employeeId,
+                            selectedOption,
+                            values,
+                            setValues
+                          );
+                        }
+                      }}
+                      customStyles={{
+                        label: {
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis"
+                        },
+                        menuProps: {
+                          sx: {
+                            width: "100%"
+                          }
+                        },
+                        select: {
+                          width: "9.6875rem",
+                          "& .MuiSelect-select": {
+                            padding: "0.75rem 2rem 0.75rem 1rem"
+                          }
+                        }
+                      }}
                     />
                   </Box>
                 </Stack>
@@ -209,12 +251,18 @@ const TransferMembersModal: FC<Props> = ({
         buttonStyle={ButtonStyle.ERROR}
         endIcon={IconName.RIGHT_ARROW_ICON}
         onClick={() => handleSubmit(values)}
+        accessibility={{
+          ariaHidden: true
+        }}
       />
       <Button
         label={translateText(["backBtnText"])}
         buttonStyle={ButtonStyle.TERTIARY}
         startIcon={IconName.LEFT_ARROW_ICON}
         onClick={handleCancel}
+        accessibility={{
+          ariaHidden: true
+        }}
       />
     </Stack>
   );

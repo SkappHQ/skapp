@@ -43,6 +43,7 @@ import {
   TenantStatusEnums
 } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { shouldUseDefaultTheme } from "~enterprise/common/utils/commonUtil";
 import { useCheckUserLimit } from "~enterprise/people/api/CheckUserLimitApi";
 import UserLimitBanner from "~enterprise/people/components/molecules/UserLimitBanner/UserLimitBanner";
 import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
@@ -72,6 +73,7 @@ interface Props {
   isPrimaryBtnLoading?: boolean;
   backIcon?: IconName;
   isPrimaryBtnDisabled?: boolean;
+  showBackButtonTooltip?: boolean;
   id?: {
     btnWrapper?: string;
     primaryBtn?: string;
@@ -84,6 +86,11 @@ interface Props {
   customStyles?: {
     header?: SxProps<Theme>;
   };
+  ariaDescribedBy?: {
+    primaryButton?: string;
+    secondaryButton?: string;
+  };
+  isCloseButton?: boolean;
 }
 
 const ContentLayout = ({
@@ -111,7 +118,10 @@ const ContentLayout = ({
   isPrimaryBtnDisabled = false,
   id,
   shouldBlink,
-  customStyles
+  customStyles,
+  ariaDescribedBy,
+  showBackButtonTooltip = true,
+  isCloseButton = false
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -181,11 +191,13 @@ const ContentLayout = ({
     }
   }, [data?.user?.tenantStatus]);
 
-  const { data: organizationDetails } = useGetOrganization();
+  const { data: organizationDetails } = useGetOrganization(!!data);
 
-  const updatedTheme = themeSelector(
-    organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME
-  );
+  const themeColor = shouldUseDefaultTheme(asPath)
+    ? ThemeTypes.BLUE_THEME
+    : organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME;
+
+  const updatedTheme = themeSelector(themeColor);
 
   theme.palette = updatedTheme.palette;
 
@@ -199,14 +211,14 @@ const ContentLayout = ({
     setIsUserLimitExceeded: state.setIsUserLimitExceeded
   }));
 
-  const { data: storageAvailabilityData } = useStorageAvailability();
+  const { data: storageAvailabilityData } = useStorageAvailability(!!data);
 
   const usedStoragePercentage = useMemo(() => {
     return 100 - storageAvailabilityData?.availableSpace;
   }, [storageAvailabilityData]);
 
   const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
-    useCheckUserLimit(isEnterpriseMode);
+    useCheckUserLimit(isEnterpriseMode, !!data);
 
   useEffect(() => {
     if (isEnterpriseMode) {
@@ -263,23 +275,40 @@ const ContentLayout = ({
                   })
                 }
                 data-testid={contentLayoutTestId.buttons.backButton}
-                aria-label={translateAria(["backButton"])}
-                title={translateAria(["backButton"])}
+                aria-label={
+                  isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
+                }
+                {...(showBackButtonTooltip && {
+                  title: isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
+                })}
                 tabIndex={0}
               >
                 <Icon name={backIcon} />
               </IconButton>
             )}
             {!isTitleHidden && (
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="h1">{title}</Typography>
-                {titleAddon}
-              </Stack>
+              <header aria-label={translateAria(["pageHeader"])}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography variant="h1" component="h1" id="page-title">
+                    {title}
+                  </Typography>
+                  {titleAddon && (
+                    <div aria-live="polite" aria-atomic="true">
+                      {titleAddon}
+                    </div>
+                  )}
+                </Stack>
+              </header>
             )}
             {subtitleNextToTitle && (
               <Typography
                 variant="body2"
                 component="h3"
+                id="subtitle-next-to-title"
                 sx={{
                   color: theme.palette.primary.dark
                 }}
@@ -300,6 +329,9 @@ const ContentLayout = ({
                 dataTestId={contentLayoutTestId.buttons.secondaryButton}
                 shouldBlink={shouldBlink?.secondaryBtn}
                 id={id?.secondaryBtn}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.secondaryButton
+                }}
               />
             )}
             {primaryButtonText && (
@@ -315,6 +347,9 @@ const ContentLayout = ({
                 shouldBlink={shouldBlink?.primaryBtn}
                 id={id?.primaryBtn}
                 disabled={isPrimaryBtnDisabled}
+                accessibility={{
+                  ariaDescribedBy: ariaDescribedBy?.primaryButton
+                }}
               />
             )}
             {customRightContent}

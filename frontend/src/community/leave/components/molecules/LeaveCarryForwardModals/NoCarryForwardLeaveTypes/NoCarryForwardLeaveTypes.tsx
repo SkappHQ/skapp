@@ -27,6 +27,7 @@ const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
           width: "100%"
         }}
         variant="body1"
+        id="no-carry-forward-leave-types-modal-description"
       >
         {translateTexts([
           "leaveCarryForwardLeaveTypesNotAvailableModalDescription"
@@ -39,6 +40,9 @@ const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
           type={ButtonTypes.SUBMIT}
           onClick={() => {
             handleClose();
+          }}
+          accessibility={{
+            ariaHidden: true
           }}
         />
       </Box>

@@ -49,21 +49,29 @@ const DownloadCsv = () => {
   };
 
   return (
-    <Box>
-      <Box sx={classes.wrapper}>
-        <Typography variant="body1" sx={classes.description}>
-          {translateText(["downloadCsvModalDes"])}
-        </Typography>
-        <Button
-          label={translateText(["downloadCsvButton"])}
-          buttonStyle={ButtonStyle.SECONDARY}
-          styles={classes.downloadBtn}
-          endIcon={IconName.DOWNLOAD_ICON}
-          onClick={handleDownloadBtnClick}
-        />
-      </Box>
-      <Divider sx={classes.divider} />
+    <Box sx={classes.wrapper}>
+      <Typography
+        variant="body1"
+        sx={classes.description}
+        id="upload-csv-modal-title"
+      >
+        {translateText(["downloadCsvModalDes"])}
+      </Typography>
       <Button
+        accessibility={{
+          ariaHidden: true
+        }}
+        label={translateText(["downloadCsvButton"])}
+        buttonStyle={ButtonStyle.SECONDARY}
+        styles={classes.downloadBtn}
+        endIcon={IconName.DOWNLOAD_ICON}
+        onClick={handleDownloadBtnClick}
+      />
+      <Divider sx={classes.divider} aria-hidden={true} />
+      <Button
+        accessibility={{
+          ariaHidden: true
+        }}
         label={translateText(["nextButton"])}
         endIcon={IconName.RIGHT_ARROW_ICON}
         buttonStyle={ButtonStyle.PRIMARY}

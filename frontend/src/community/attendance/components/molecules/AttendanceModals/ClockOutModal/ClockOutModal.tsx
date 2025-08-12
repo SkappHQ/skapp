@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { FC } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
@@ -23,6 +23,8 @@ interface Props {
 }
 
 const ClockOutModal: FC<Props> = ({ closeModal }) => {
+  const theme = useTheme();
+
   const { setSlotType, attendanceParams } = useAttendanceStore(
     (state) => state
   );
@@ -61,27 +63,31 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               spacing={1}
               alignItems="center"
               component="div"
-              tabIndex={0}
             >
               <Typography variant="body2" sx={classes.headerText}>
                 {translateText(["clockOutTime"])}:
               </Typography>
-              <Stack direction="row" spacing={1}>
-                <IconChip
-                  icon={<Icon name={IconName.CLOCK_ICON} />}
-                  label={clockOutTime}
-                  chipStyles={classes.iconChipStyles}
-                />
-              </Stack>
+              <div
+                style={{
+                  backgroundColor: theme.palette.grey[100],
+                  borderRadius: "9.375rem",
+                  padding: "0.5rem 1rem"
+                }}
+              >
+                {clockOutTime}
+              </div>
               <Typography variant="body2" sx={classes.headerText}>
                 {translateText(["workedHours"])}:
               </Typography>
-              <Stack direction="row" spacing={1}>
-                <BasicChip
-                  label={workedHours}
-                  chipStyles={classes.basicChipStyles}
-                />
-              </Stack>
+              <div
+                style={{
+                  backgroundColor: theme.palette.grey[100],
+                  borderRadius: "9.375rem",
+                  padding: "0.5rem 1rem"
+                }}
+              >
+                {workedHours}
+              </div>
             </Stack>
           </Box>
           <Typography variant="body2" sx={classes.messageText}>
@@ -95,6 +101,9 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               ariaLabel={translateText(["confirm"])}
               isLoading={isPending}
               buttonStyle={ButtonStyle.PRIMARY}
+              accessibility={{
+                ariaHidden: true
+              }}
             />
             <Button
               buttonStyle={ButtonStyle.TERTIARY}
@@ -102,6 +111,9 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               endIcon={IconName.CLOSE_ICON}
               onClick={handleUndoClockOut}
               ariaLabel={translateText(["cancel"])}
+              accessibility={{
+                ariaHidden: true
+              }}
             />
           </Stack>
         </Box>

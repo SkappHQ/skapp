@@ -111,6 +111,9 @@ const ReassignMembersModal = () => {
           buttonStyle={ButtonStyle.ERROR}
           endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
           onClick={reassignAndDeleteClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
         <Button
           label={translateText(["cancelBtnText"])}
@@ -120,6 +123,9 @@ const ReassignMembersModal = () => {
           buttonStyle={ButtonStyle.TERTIARY}
           endIcon={<Icon name={IconName.CLOSE_ICON} />}
           onClick={cancelClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
       </Box>
     </Box>

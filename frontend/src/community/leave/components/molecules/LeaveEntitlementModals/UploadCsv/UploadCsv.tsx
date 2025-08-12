@@ -138,10 +138,19 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
 
   return (
     <Stack sx={classes.wrapper}>
-      <Typography variant="body1" sx={classes.description}>
+      <Typography
+        variant="body1"
+        sx={classes.description}
+        id="upload-csv-modal-description"
+      >
         {translateText(["uploadCsvModalDes"])}
       </Typography>
       <DragAndDropField
+        accessibility={{
+          componentName: translateText(["title"]),
+          ariaDescribedBy: "upload-csv-modal-description",
+          ariaHidden: true
+        }}
         setAttachments={(acceptedFiles: FileUploadType[]) =>
           setAttachment({
             acceptedFiles,
@@ -162,8 +171,11 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         maxFileSize={1}
         customError={customError}
       />
-      <Divider sx={classes.divider} />
+      <Divider sx={classes.divider} aria-hidden={true} />
       <Button
+        accessibility={{
+          ariaHidden: true
+        }}
         label={translateText(["uploadButton"])}
         endIcon={IconName.RIGHT_ARROW_ICON}
         buttonStyle={ButtonStyle.PRIMARY}
@@ -173,6 +185,9 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         isLoading={leaveEntitlementBulkUploadPending}
       />
       <Button
+        accessibility={{
+          ariaHidden: true
+        }}
         label={translateText(["goBackButton"])}
         startIcon={IconName.LEFT_ARROW_ICON}
         buttonStyle={ButtonStyle.TERTIARY}

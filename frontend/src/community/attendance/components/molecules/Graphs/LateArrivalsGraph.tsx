@@ -200,6 +200,13 @@ const LateArrivalsGraph = ({
               ) : (
                 <Box
                   tabIndex={0}
+                  role="application"
+                  aria-label={translateTextAria(["lateArrivalChart"], {
+                    type:
+                      dataCategory === lateArrivalsGraphTypes.WEEKLY.value
+                        ? lateArrivalsGraphTypes.WEEKLY.label
+                        : lateArrivalsGraphTypes.MONTHLY.label
+                  })}
                   onKeyDown={(event) =>
                     handleGraphKeyboardNavigation({
                       event,
@@ -227,6 +234,7 @@ const LateArrivalsGraph = ({
               )}
             </Box>
             <ChartNavigationArrows
+              tabIndex={0}
               hasData={chartData?.preProcessedData?.length !== 0}
               handleClick={handleClick}
               handleChevronVisibility={handleChevronVisibility}

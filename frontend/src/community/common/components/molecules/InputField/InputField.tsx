@@ -173,6 +173,7 @@ const InputField = ({
         "aria-label": ariaLabel ? ariaLabel : label,
         "aria-invalid": !!error,
         "data-testid": testId,
+        "aria-required": required,
         ...(inputType === "number" && { min, max }),
         ...inputProps
       }}
@@ -220,6 +221,7 @@ const InputField = ({
               title={tooltip}
               open={open}
               id={tooltipId}
+              ariaDescription={tooltip}
             />
           </Box>
         )}
@@ -276,7 +278,12 @@ const InputField = ({
         </Typography>
       )}
       {!!error && (
-        <Box sx={{ mt: "0.5rem" }} aria-live="polite" aria-atomic={true}>
+        <Box
+          sx={{ mt: "0.5rem" }}
+          role="alert"
+          aria-live="assertive"
+          aria-atomic={true}
+        >
           <Typography
             variant="body2"
             sx={classes.errorTypography}

@@ -67,7 +67,7 @@ export const styles = (theme: Theme) => ({
     "& .MuiSelect-icon": {
       display: readOnly ? "none" : "block"
     },
-    "&:focus-visible": {
+    "& .MuiSelect-select:focus-visible": {
       outline: `0.125rem solid ${theme.palette.common.black}`,
       outlineOffset: "-0.125rem",
       borderRadius: "0.5rem"

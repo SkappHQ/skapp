@@ -212,7 +212,12 @@ const PeopleSearch: FC<Props> = ({
           {needSearchIcon && <Icon name={IconName.SEARCH_ICON} />}
         </Paper>
         {!!error && (
-          <Typography variant="body2" sx={classes.error}>
+          <Typography
+            role="alert"
+            aria-live="assertive"
+            variant="body2"
+            sx={classes.error}
+          >
             {error}
           </Typography>
         )}

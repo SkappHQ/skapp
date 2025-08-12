@@ -15,6 +15,8 @@ interface Props {
   size?: "small" | "medium" | "large"; // TODO: create an enum for this
   labelStyles?: SxProps;
   customStyles?: SxProps;
+  ariaLabel?: string;
+  tabIndex?: number;
 }
 
 const Checkbox = ({
@@ -25,7 +27,9 @@ const Checkbox = ({
   label,
   size = "medium",
   labelStyles,
-  customStyles
+  customStyles,
+  ariaLabel,
+  tabIndex
 }: Props) => {
   const theme = useTheme();
 
@@ -42,6 +46,12 @@ const Checkbox = ({
             ...customStyles
           }}
           size={size}
+          slotProps={{
+            input: {
+              "aria-label": ariaLabel
+            }
+          }}
+          tabIndex={tabIndex}
         />
       }
       label={label}

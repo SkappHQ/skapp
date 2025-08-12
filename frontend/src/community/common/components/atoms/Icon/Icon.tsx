@@ -41,8 +41,11 @@ import DeniedIcon from "~community/common/assets/Icons/DeniedIcon";
 import DeniedStatusIcon from "~community/common/assets/Icons/DeniedStatusIcon";
 import DocumentsIcon from "~community/common/assets/Icons/DocumentsIcon";
 import DottedClockIcon from "~community/common/assets/Icons/DottedClockIcon";
+import DownloadDocumentIcon from "~community/common/assets/Icons/DownloadDocumentIcon";
 import DownloadIcon from "~community/common/assets/Icons/DownloadIcon";
 import DragIcon from "~community/common/assets/Icons/DragIcon";
+import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
+import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
@@ -56,12 +59,14 @@ import FileUploadIcon from "~community/common/assets/Icons/FileUploadIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import FinanceModuleIcon from "~community/common/assets/Icons/FinanceModuleIcon";
 import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
+import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
+import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
@@ -87,6 +92,7 @@ import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
 import ProjectManagementModuleIcon from "~community/common/assets/Icons/ProjectManagementModuleIcon";
+import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
 import RequestCancelCrossIcon from "~community/common/assets/Icons/RequestCancelCrossIcon";
 import RestoreIcon from "~community/common/assets/Icons/RestoreIcon";
@@ -275,7 +281,13 @@ export const IconMapping: Partial<
   [IconName.CRM_MODULE_ICON]: CRMModuleIcon,
   [IconName.HELP_DESK_MODULE_ICON]: HelpDeskModuleIcon,
   [IconName.PROJECT_MANAGEMENT_MODULE_ICON]: ProjectManagementModuleIcon,
-  [IconName.BLOCKED_ICON]: BlockedIcon
+  [IconName.BLOCKED_ICON]: BlockedIcon,
+  [IconName.DRAWER_CLOSE_ICON]: DrawerCloseIcon,
+  [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
+  [IconName.GEM_ICON]: GemIcon,
+  [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
+  [IconName.PROJECTS_ICON]: ProjectsIcon,
+  [IconName.INTEGRATIONS_ICON]: IntegrationsIcon
   // Add more icons here as needed
 };
 

@@ -9,6 +9,7 @@ import ManagerTimesheetRequestTable from "~community/attendance/components/molec
 import TimesheetAnalytics from "~community/attendance/components/molecules/TimesheetAnalytics/TimesheetAnalytics";
 import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDenyTimeRequest";
 import { TimeRecordDataResponseType } from "~community/attendance/types/timeSheetTypes";
+import { TableNames } from "~community/common/enums/Table";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
 interface ManagerTimesheetProps {
@@ -25,7 +26,8 @@ const ManagerTimesheet = ({
   const { data: recordData, isLoading: isRecordLoading } =
     useGetManagerTimeRecords();
   const { data: workSummaryData } = useGetManagerWorkSummary();
-  const { data: exportRecordData } = useGetManagerTimeRecords(true);
+  const { data: exportRecordData, isPending: isExportRecordDataLoading } =
+    useGetManagerTimeRecords(true);
 
   const {
     approveTimesheetRequest,
@@ -46,6 +48,7 @@ const ManagerTimesheet = ({
         workSummaryData={workSummaryData}
         isManager={true}
         isRecordLoading={isRecordLoading}
+        isExportRecordDataLoading={isExportRecordDataLoading}
         isTeamSelectionAvailable={isTeamSelectionAvailable}
         selectedTeamName={selectedTeamName}
       />
@@ -58,6 +61,7 @@ const ManagerTimesheet = ({
           approveTimesheetRequest={approveTimesheetRequest}
           declineTimesheetRequest={declineTimesheetRequest}
           isApproveDenyLoading={isApproveDenyLoading}
+          tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         />
       )}
     </>

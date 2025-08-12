@@ -54,7 +54,7 @@ const AnalyticCard = ({
       })) || [];
 
     const pieChartRestData = { name: "available", value: 100 - total };
-    return [...pieChartSeries, pieChartRestData];
+    return [pieChartRestData, ...pieChartSeries];
   };
 
   const pieChartData: PieChartSeriesData[] = isEnabledPieChart
@@ -76,10 +76,17 @@ const AnalyticCard = ({
           sx={{
             justifyContent: "center",
             alignItems: "center",
-            flex: 1
+            flex: 1,
+            minWidth: 0,
+            overflow: "hidden"
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.5}
+            sx={{ width: "100%", minWidth: 0 }}
+          >
             <IconChip
               icon={emoji}
               chipStyles={{
@@ -94,7 +101,17 @@ const AnalyticCard = ({
               }}
               tabIndex={getTabIndex(isFreeTier)}
             />
-            <Typography variant="body2" marginTop={0.5} sx={{ ...titleStyles }}>
+            <Typography
+              variant="body2"
+              marginTop={0.5}
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                flex: 1,
+                minWidth: 0,
+                ...titleStyles
+              }}
+            >
               {cardTitle}
             </Typography>
           </Stack>

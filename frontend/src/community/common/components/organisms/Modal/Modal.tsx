@@ -27,11 +27,18 @@ interface Props {
   icon?: JSX.Element;
   modalContentStyles?: SxProps;
   modalWrapperStyles?: SxProps;
+  role?: string;
   customCloseComponent?: JSX.Element;
   customCloseIcon?: JSX.Element;
   modalHeaderStyles?: SxProps;
   modalChildrenStyles?: SxProps;
   dividerStyles?: SxProps;
+  ids?: {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  };
+  role?: string;
 }
 
 const Modal: FC<Props> = ({
@@ -49,7 +56,13 @@ const Modal: FC<Props> = ({
   customCloseIcon,
   modalHeaderStyles,
   modalChildrenStyles,
-  dividerStyles
+  dividerStyles,
+  ids = {
+    title: "modal-title",
+    description: "modal-description",
+    closeButton: "modal-close-button"
+  },
+  role = "modal"
 }) => {
   const translateAria = useTranslator("commonAria", "components", "modal");
 
@@ -57,19 +70,22 @@ const Modal: FC<Props> = ({
 
   return (
     <BasicModal
+      ids={ids}
       open={isModalOpen}
       onClose={onCloseModal}
       sx={mergeSx([classes.modalWrapper, modalWrapperStyles])}
     >
       <Stack
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
-        role="dialog"
-        aria-label={`${title} ${translateAria(["modal"])}`}
+        role={role}
+        aria-label={translateAria(["modal"], { title })}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
             {isIconVisible && <Box sx={classes.titleIcon}>{icon}</Box>}
-            <Typography sx={classes.modalHeaderTitle}>{title}</Typography>
+            <Typography sx={classes.modalHeaderTitle} id={ids?.title}>
+              {title}
+            </Typography>
           </Stack>
           {isClosable && customCloseComponent ? (
             customCloseComponent
@@ -77,7 +93,9 @@ const Modal: FC<Props> = ({
             <IconButton
               sx={classes.closeIconBtn}
               onClick={(event) => onCloseModal(event, "backdropClick")}
-              aria-label={translateAria(["closeIconBtn"])}
+              aria-label={translateAria(["closeIconBtn"], { title })}
+              aria-hidden={true}
+              id={ids?.closeButton}
             >
               {customCloseIcon ? (
                 customCloseIcon
@@ -87,7 +105,7 @@ const Modal: FC<Props> = ({
             </IconButton>
           ) : null}
         </Stack>
-        {isDividerVisible && <Divider sx={dividerStyles} />}
+        {isDividerVisible && <Divider sx={dividerStyles} aria-hidden={true} />}
         <Stack
           sx={mergeSx([
             classes.childrenWrapper,

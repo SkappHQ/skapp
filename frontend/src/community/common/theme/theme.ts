@@ -212,6 +212,7 @@ declare module "@mui/material/styles" {
     smallTitle: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue: React.CSSProperties;
+    documentStatusTitle: React.CSSProperties;
   }
   interface TypographyVariantsOptions {
     onboardingHeader?: React.CSSProperties;
@@ -221,6 +222,7 @@ declare module "@mui/material/styles" {
     smallTitle?: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue?: React.CSSProperties;
+    documentStatusTitle?: React.CSSProperties;
   }
 }
 declare module "@mui/material/Badge" {
@@ -262,6 +264,7 @@ declare module "@mui/material/Typography" {
     subtitle1: false;
     subtitle2: false;
     kpiValue: true;
+    documentStatusTitle: true;
     body1: true;
     body2: true;
     button: false;
@@ -285,11 +288,11 @@ export const theme = createTheme({
     },
     primary: {
       main: "#93C5FD", //* primary-color
-      dark: "#408CE4" //* primary-color-text
+      dark: "#2A61A0" //* primary-color-text
     },
     secondary: {
       main: "#DBEAFE", //* primary-color-background
-      dark: "#2A61A0" //* primary-color-accent
+      dark: "#408CE4" //* primary-color-accent
     },
     grey: {
       50: "#FAFAFA",
@@ -418,28 +421,28 @@ export const theme = createTheme({
     },
     recipientsColors: [
       {
-        background: "#E7DBFFB2",
+        background: "#D7D5E5CC",
         border: "#9A66FF"
       },
       {
-        background: "#FFDFE6B2",
+        background: "#E7D7D4CC",
         border: "#F6587A"
       },
       {
-        background: "#FFE3C7B2",
+        background: "#E3C5D4CC",
         border: "#EA5DA3"
       },
       {
-        background: "#FFF5DEB2",
+        background: "#F4D6C7CC",
         border: "#DF7D4E"
       },
       {
-        background: "#9FD6D6B2",
+        background: "#A4D1C9CC",
         border: "#27A197"
       },
       {
-        background: "#7AA3BF",
-        border: "#658AFC"
+        background: "#9DCDEECC",
+        border: "#567EF7"
       }
     ]
   },
@@ -491,8 +494,10 @@ export const theme = createTheme({
     button: undefined,
     overline: undefined,
     onboardingHeader: {
-      fontWeight: 700,
-      fontSize: "2.25rem" //36px
+      fontFamily: "'Poppins', sans-serif",
+      fontWeight: 600,
+      fontSize: "2rem", //32px
+      lineHeight: "100%"
     },
     // Table heading
     tableHeader: {
@@ -523,6 +528,12 @@ export const theme = createTheme({
     kpiValue: {
       fontWeight: 700,
       fontSize: "2rem" //32px
+    },
+    //Document status title
+    documentStatusTitle: {
+      fontFamily: "'Poppins', sans-serif",
+      fontWeight: 600,
+      fontSize: "1.5rem" // 24px
     }
   },
   breakpoints: {

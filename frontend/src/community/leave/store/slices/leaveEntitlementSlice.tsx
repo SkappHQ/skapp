@@ -9,8 +9,8 @@ export const leaveEntitlementSlice = (
   set: SetType<LeaveEntitlementSliceType>
 ): LeaveEntitlementSliceType => ({
   page: 1,
-  selectedYear: yearsList[1].toString(),
-  leaveEntitlementTableSelectedYear: yearsList[1].toString(),
+  selectedYear: yearsList[1].value.toString(),
+  leaveEntitlementTableSelectedYear: yearsList[1].value.toString(),
   isLeaveEntitlementModalOpen: false,
   leaveEntitlementModalType: LeaveEntitlementModelTypes.NONE,
   setPage: (page: number) => set(() => ({ page })),

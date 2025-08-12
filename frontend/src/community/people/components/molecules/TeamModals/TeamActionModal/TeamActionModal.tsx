@@ -92,6 +92,9 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
             buttonStyle={ButtonStyle.PRIMARY}
             endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
             onClick={handleAddNewTeam}
+            accessibility={{
+              ariaHidden: true
+            }}
           />
 
           <Button
@@ -99,6 +102,9 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
             buttonStyle={ButtonStyle.ERROR}
             endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
             onClick={handleDeleteTeam}
+            accessibility={{
+              ariaHidden: true
+            }}
           />
         </Stack>
       </Box>

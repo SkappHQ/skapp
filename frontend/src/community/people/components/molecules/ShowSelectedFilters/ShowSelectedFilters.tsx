@@ -1,7 +1,10 @@
-import { useMediaQuery } from "@mui/material";
+import { Chip, useMediaQuery } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
+import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 
 interface Props {
   filterOptions: string[];
@@ -9,6 +12,11 @@ interface Props {
 }
 
 const ShowSelectedFilters = ({ filterOptions, onDeleteIcon }: Props) => {
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "filterButton"
+  );
   const theme: Theme = useTheme();
   const isMiniTabScreen = useMediaQuery(theme.breakpoints.down("lg"));
   const isTabScreen = useMediaQuery(theme.breakpoints.down("xl"));
@@ -19,36 +27,38 @@ const ShowSelectedFilters = ({ filterOptions, onDeleteIcon }: Props) => {
         filterOptions
           ?.slice(0, visibleFilterCount)
           .map((option: string, index: number) => (
-            <BasicChip
+            <Chip
               key={index}
-              label={option?.replace(/_/g, " ").toLowerCase()}
-              chipStyles={{
-                backgroundColor: theme.palette.grey[100],
+              tabIndex={0}
+              role="button"
+              label={pascalCaseFormatter(option)}
+              sx={{
+                flexDirection: "row",
                 border: "0.0625rem solid",
-                borderColor: "grey.500",
-                textTransform: "capitalize",
-                color: "common.black",
-                px: "1rem",
-                py: "0.4375rem",
-                gap: "0.5rem",
-                lineHeight: "1.0625rem"
+                borderColor: theme.palette.grey[500],
+                backgroundColor: theme.palette.grey[100],
+                color: theme.palette.common.black,
+                paddingX: "0.5rem"
               }}
-              tabIndex={-1}
-              onDeleteIcon={() => onDeleteIcon && onDeleteIcon(option)}
+              onDelete={() => onDeleteIcon && onDeleteIcon(option)}
+              aria-label={translateAria(["appliedFilter"], {
+                filterLabel: pascalCaseFormatter(option)
+              })}
+              deleteIcon={
+                <Icon name={IconName.CLOSE_ICON} height="1rem" width="1rem" />
+              }
             />
           ))}
       {filterOptions?.length > visibleFilterCount && (
-        <BasicChip
+        <Chip
           label={`+${String(filterOptions?.length - visibleFilterCount)}`}
-          chipStyles={{
-            backgroundColor: theme.palette.grey[100],
+          sx={{
+            flexDirection: "row",
             border: "0.0625rem solid",
-            borderColor: "grey.500",
-            textTransform: "capitalize",
-            color: "common.black",
-            px: "1rem",
-            py: "0.4375rem",
-            lineHeight: "1.0625rem"
+            borderColor: theme.palette.grey[500],
+            backgroundColor: theme.palette.grey[100],
+            color: theme.palette.text.secondary,
+            paddingX: "0.5rem"
           }}
         />
       )}

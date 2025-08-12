@@ -1,4 +1,4 @@
-import { Divider } from "@mui/material";
+import { Divider, Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
 
@@ -56,31 +56,34 @@ const LeaveEntitlements: NextPage = () => {
   });
 
   return (
-    <>
-      <ContentLayout
-        title={translateText(["title"])}
-        pageHead={translateText(["pageHead"])}
-        isDividerVisible
-        primaryButtonType={ButtonStyle.SECONDARY}
-        primaryButtonText={
-          leaveEntitlementTableData &&
-          leaveEntitlementTableData?.items.length > 0 &&
-          translateText(["bulkUploadBtnTxt"])
-        }
-        primaryBtnIconName={IconName.UP_ARROW_ICON}
-        onPrimaryButtonClick={() =>
-          setLeaveEntitlementModalType(
-            leaveEntitlementTableData?.items?.length === 0
-              ? LeaveEntitlementModelTypes.DOWNLOAD_CSV
-              : LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION
-          )
-        }
-      >
-        <>
+    <ContentLayout
+      title={translateText(["title"])}
+      pageHead={translateText(["pageHead"])}
+      isDividerVisible
+      primaryButtonType={ButtonStyle.SECONDARY}
+      primaryButtonText={
+        leaveEntitlementTableData &&
+        leaveEntitlementTableData?.items.length > 0 &&
+        translateText(["bulkUploadBtnTxt"])
+      }
+      primaryBtnIconName={IconName.UP_ARROW_ICON}
+      onPrimaryButtonClick={() =>
+        setLeaveEntitlementModalType(
+          leaveEntitlementTableData?.items?.length === 0
+            ? LeaveEntitlementModelTypes.DOWNLOAD_CSV
+            : LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION
+        )
+      }
+    >
+      <>
+        <Stack gap="1rem">
           {(searchTerm !== "" ||
             (leaveEntitlementTableData &&
               leaveEntitlementTableData?.items.length !== 0)) && (
             <SearchBox
+              accessibility={{
+                ariaHidden: false
+              }}
               placeHolder={translateText(["searchBoxPlaceholder"])}
               value={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -91,14 +94,14 @@ const LeaveEntitlements: NextPage = () => {
             isFetching={isFetching}
             searchTerm={searchTerm}
           />
-          <Divider sx={{ my: "1.5rem" }} />
-          <LeaveCarryForward />
-          <Divider sx={{ my: "1.5rem" }} />
-          <CustomLeaveAllocationContent />
-          <LeaveEntitlementModalController />
-        </>
-      </ContentLayout>
-    </>
+        </Stack>
+        <Divider sx={{ my: "1.5rem" }} />
+        <LeaveCarryForward />
+        <Divider sx={{ my: "1.5rem" }} />
+        <CustomLeaveAllocationContent />
+        <LeaveEntitlementModalController />
+      </>
+    </ContentLayout>
   );
 };
 

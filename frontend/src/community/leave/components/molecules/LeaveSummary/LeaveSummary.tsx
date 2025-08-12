@@ -1,4 +1,4 @@
-import { Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
+import { Box, Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
 import { DateTime } from "luxon";
 import { useMemo } from "react";
 
@@ -73,18 +73,27 @@ const LeaveSummary = ({
     });
   }, [commonTranslateText, leaveDuration]);
 
+  const supervisorNames = useMemo(() => {
+    const allManagers = [primaryManager, ...otherManagers].filter(Boolean);
+    return allManagers
+      .map((manager) => `${manager?.firstName} ${manager?.lastName}`)
+      .join(", ");
+  }, [primaryManager, otherManagers]);
+
   return (
     <Stack sx={classes.wrapper}>
-      <Typography variant="body1">{translateText(["title"])}</Typography>
+      <Typography tabIndex={0} variant="body1">
+        {translateText(["title"])}
+      </Typography>
       <Stack sx={classes.container}>
-        <Stack sx={classes.row}>
+        <Stack sx={classes.row} tabIndex={0}>
           <Typography variant="body2" sx={classes.label}>
             {translateText(["type"])}
           </Typography>
           <Chip
             label={leaveTypeName}
             icon={
-              <Typography component="span">
+              <Typography component="span" aria-hidden="true">
                 {getEmoji(leaveTypeEmoji)}
               </Typography>
             }
@@ -92,7 +101,7 @@ const LeaveSummary = ({
           />
         </Stack>
 
-        <Stack sx={classes.row}>
+        <Stack sx={classes.row} tabIndex={0}>
           <Typography variant="body2" sx={classes.label}>
             {translateText(["duration"])}
           </Typography>
@@ -108,58 +117,60 @@ const LeaveSummary = ({
             )}
           </Stack>
         </Stack>
-        <Stack sx={classes.row}>
+        <Stack sx={classes.row} tabIndex={0}>
           <Typography variant="body2" sx={classes.label}>
             {translateText(["recipient"])}
           </Typography>
-          <Stack sx={classes.chipWrapper}>
-            <AvatarChip
-              key={primaryManager?.employeeId ?? ""}
-              firstName={primaryManager?.firstName ?? ""}
-              lastName={primaryManager?.lastName ?? ""}
-              avatarUrl={primaryManager?.authPic ?? ""}
-              chipStyles={classes.chipStyles}
-            />
-
-            {otherManagers.length > 0 && (
+          <Box aria-label={supervisorNames} role="region">
+            <Stack sx={classes.chipWrapper} aria-hidden="true">
               <AvatarChip
-                key={otherManagers[0]?.employeeId ?? ""}
-                firstName={otherManagers[0]?.firstName ?? ""}
-                lastName={otherManagers[0]?.lastName ?? ""}
-                avatarUrl={otherManagers[0]?.authPic ?? ""}
+                key={primaryManager?.employeeId ?? ""}
+                firstName={primaryManager?.firstName ?? ""}
+                lastName={primaryManager?.lastName ?? ""}
+                avatarUrl={primaryManager?.authPic ?? ""}
                 chipStyles={classes.chipStyles}
               />
-            )}
-            {otherManagers.length > 1 && (
-              <AvatarGroup
-                componentStyles={{
-                  ".MuiAvatarGroup-avatar": {
-                    bgcolor: theme.palette.grey[100],
-                    color: theme.palette.primary.dark,
-                    fontSize: "0.875rem",
-                    height: "2.5rem",
-                    width: "2.5rem",
-                    fontWeight: 400,
-                    flexDirection: "row-reverse"
+
+              {otherManagers.length > 0 && (
+                <AvatarChip
+                  key={otherManagers[0]?.employeeId ?? ""}
+                  firstName={otherManagers[0]?.firstName ?? ""}
+                  lastName={otherManagers[0]?.lastName ?? ""}
+                  avatarUrl={otherManagers[0]?.authPic ?? ""}
+                  chipStyles={classes.chipStyles}
+                />
+              )}
+              {otherManagers.length > 1 && (
+                <AvatarGroup
+                  componentStyles={{
+                    ".MuiAvatarGroup-avatar": {
+                      bgcolor: theme.palette.grey[100],
+                      color: theme.palette.primary.dark,
+                      fontSize: "0.875rem",
+                      height: "2.5rem",
+                      width: "2.5rem",
+                      fontWeight: 400,
+                      flexDirection: "row-reverse"
+                    }
+                  }}
+                  avatars={
+                    otherManagers
+                      ? otherManagers.slice(1).map(
+                          (manager: L4ManagerType) =>
+                            ({
+                              firstName: manager?.firstName,
+                              lastName: manager?.lastName,
+                              image: manager?.authPic
+                            }) as AvatarPropTypes
+                        )
+                      : []
                   }
-                }}
-                avatars={
-                  otherManagers
-                    ? otherManagers.slice(1).map(
-                        (manager: L4ManagerType) =>
-                          ({
-                            firstName: manager?.firstName,
-                            lastName: manager?.lastName,
-                            image: manager?.authPic
-                          }) as AvatarPropTypes
-                      )
-                    : []
-                }
-                max={1}
-                isHoverModal={true}
-              />
-            )}
-          </Stack>
+                  max={1}
+                  isHoverModal={true}
+                />
+              )}
+            </Stack>
+          </Box>
         </Stack>
       </Stack>
     </Stack>

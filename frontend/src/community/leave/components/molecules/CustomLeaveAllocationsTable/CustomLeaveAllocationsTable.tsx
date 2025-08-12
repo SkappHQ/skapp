@@ -1,14 +1,13 @@
 import { Box, Chip, Theme, Typography, useTheme } from "@mui/material";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   currentYear,
   getAdjacentYearsWithCurrent,
@@ -42,6 +41,11 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   setHasEmptyFilterResults
 }) => {
   const translateText = useTranslator("leaveModule", "customLeave");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "entitlement",
+    "customLeaveAllocationTable"
+  );
   const theme: Theme = useTheme();
 
   const {
@@ -126,8 +130,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     () => [
       { field: "employee", headerName: translateText(["tableHeaderOne"]) },
       { field: "duration", headerName: translateText(["tableHeaderTwo"]) },
-      { field: "type", headerName: translateText(["tableHeaderThree"]) },
-      { field: "actions", headerName: translateText(["tableHeaderFour"]) }
+      { field: "type", headerName: translateText(["tableHeaderThree"]) }
     ],
     [translateText]
   );
@@ -138,14 +141,14 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   );
 
   const yearFilter = (
-    <Dropdown
-      onItemClick={(event) => {
-        setSelectedYear(event?.currentTarget?.innerText);
+    <RoundedSelect
+      id="custom-leave-allocations-table-year-filter"
+      onChange={(event) => setSelectedYear(event?.target?.value)}
+      value={selectedYear}
+      options={getAdjacentYearsWithCurrent()}
+      accessibility={{
+        label: translateAria(["selectYear"])
       }}
-      selectedItem={selectedYear}
-      title={selectedYear}
-      items={getAdjacentYearsWithCurrent()}
-      ariaRole="menu"
     />
   );
 
@@ -155,43 +158,62 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
         return {
           id: leaveAllocation.entitlementId,
           employee: (
-            <Box width="100%">
-              <AvatarChip
-                firstName={leaveAllocation.employee?.firstName}
-                lastName={leaveAllocation.employee?.lastName}
-                avatarUrl={leaveAllocation.employee?.authPic}
-                chipStyles={{
-                  display: "flex",
-                  justifyContent: "start",
-                  maxWidth: "fit-content"
-                }}
-              />
-            </Box>
+            <AvatarChip
+              firstName={leaveAllocation.employee?.firstName}
+              lastName={leaveAllocation.employee?.lastName}
+              avatarUrl={leaveAllocation.employee?.authPic}
+              chipStyles={{
+                display: "flex",
+                justifyContent: "start",
+                maxWidth: "fit-content"
+              }}
+            />
           ),
           duration: (
-            <BasicChip
-              label={
-                leaveAllocation.totalDaysAllocated === 0.5
-                  ? translateText(["halfDayChip"])
-                  : `${leaveAllocation.totalDaysAllocated} ${
-                      leaveAllocation.totalDaysAllocated === 1
-                        ? translateText(["day"])
-                        : translateText(["days"])
-                    }`
-              }
-            />
+            <div
+              style={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                padding: "0.5rem 1rem"
+              }}
+            >
+              {leaveAllocation.totalDaysAllocated === 0.5
+                ? translateText(["halfDayChip"])
+                : `${leaveAllocation.totalDaysAllocated} ${
+                    leaveAllocation.totalDaysAllocated === 1
+                      ? translateText(["day"])
+                      : translateText(["days"])
+                  }`}
+            </div>
           ),
           type: (
-            <IconChip
-              icon={
-                leaveAllocation.leaveType?.emojiCode ||
-                leaveAllocation.leaveType?.name
-              }
-              label={leaveAllocation.leaveType?.name}
-              isTruncated={false}
-            />
+            <div
+              style={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                padding: "0.5rem 1rem"
+              }}
+            >
+              <span role="img" aria-hidden="true">
+                {getEmoji(leaveAllocation.leaveType?.emojiCode || "")}
+              </span>
+              &nbsp;
+              {leaveAllocation.leaveType?.name}
+            </div>
           ),
-          actionData: leaveAllocation
+          actionData: leaveAllocation,
+          ariaLabel: {
+            editButton: translateText(["editButton.label"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          },
+          ariaDescription: {
+            editButton: translateText(["editButton.description"], {
+              leaveType: leaveAllocation.leaveType?.name,
+              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
+            })
+          }
         };
       }) || []
     );
@@ -254,6 +276,9 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
             tabIndex={0}
             role="button"
             label={leaveType.name}
+            aria-label={translateAria(["filterOption"], {
+              filterName: leaveType.name
+            })}
             onClick={() =>
               handleLeaveTypeFilter({
                 id: leaveType.id.toString(),

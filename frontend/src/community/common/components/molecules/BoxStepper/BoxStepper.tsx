@@ -1,8 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { type SxProps } from "@mui/system";
-import { FC } from "react";
+import { FC, type KeyboardEvent, useRef } from "react";
 
+import { KeyboardKeys } from "~community/common/enums/KeyboardEnums";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 
 interface Props {
@@ -28,8 +29,41 @@ const BoxStepper: FC<Props> = ({
   "data-testid": testId
 }) => {
   const theme = useTheme();
+  const tabRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>, index: number) => {
+    switch (e.key) {
+      case KeyboardKeys.ARROW_RIGHT:
+        e.preventDefault();
+        if (index < steps.length - 1) {
+          tabRefs.current[index + 1]?.focus();
+        }
+        break;
+      case KeyboardKeys.ARROW_LEFT:
+        e.preventDefault();
+        if (index > 0) {
+          tabRefs.current[index - 1]?.focus();
+        }
+        break;
+      case KeyboardKeys.HOME:
+        e.preventDefault();
+        tabRefs.current[0]?.focus();
+        break;
+      case KeyboardKeys.END:
+        e.preventDefault();
+        tabRefs.current[steps.length - 1]?.focus();
+        break;
+      default:
+        if (shouldActivateButton(e.key)) {
+          e.preventDefault();
+          onStepClick(useStringIdentifier ? steps[index] : index);
+        }
+    }
+  };
+
   return (
     <Box
+      role="tablist"
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -42,7 +76,12 @@ const BoxStepper: FC<Props> = ({
     >
       {steps.map((step, index) => (
         <Box
+          role="tab"
+          aria-selected={activeStep === index || activeStep === step}
           key={index}
+          ref={(el) => {
+            tabRefs.current[index] = el as HTMLDivElement | null;
+          }}
           onClick={() => onStepClick(useStringIdentifier ? step : index)}
           data-testid={`${testId}-step-${index}`}
           sx={{
@@ -68,12 +107,8 @@ const BoxStepper: FC<Props> = ({
             },
             ...boxStyles
           }}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (shouldActivateButton(e.key)) {
-              onStepClick(useStringIdentifier ? step : index);
-            }
-          }}
+          tabIndex={activeStep === index || activeStep === step ? 0 : -1}
+          onKeyDown={(e) => handleKeyDown(e, index)}
         >
           <Typography
             variant="body1"

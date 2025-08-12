@@ -29,6 +29,7 @@
     "unsavedEditModalTitle": "Unsaved changes",
     "unsavedAddModalTitle": "Are you sure?",
     "teamNameError": "Please enter team name.",
+    "teamNameDuplicateError": "Team name already exists.",
     "confirmDeleteModalTitle": "Confirm deletion",
     "confirmDeleteModalDes": "Proceeding with this deletion will remove all members from the team. Would you like to reassign the members first or continue with deleting the team?",
     "teamDeleteConfirmBtnText": "Proceed to delete",
@@ -180,7 +181,11 @@
     "HALFDAY_EVENING": "HALFDAY_EVENING",
     "HALFDAY_MORNING": "HALFDAY_MORNING",
     "noRecordCSVTitle": "No Records Found",
-    "noRecordCSVDes": "No records have been found. Please try again."
+    "noRecordCSVDes": "No records have been found. Please try again.",
+    "sort": "Sort : ",
+    "chronologically": "Chronologically :",
+    "janToDec": "Jan to Dec",
+    "decToJan": "Dec to Jan"
   },
 
   "editAllInfo": {
@@ -500,7 +505,9 @@
       "employeeAddErrorToastDescription": "Failed to add the resource. Please try again.",
       "areYouSureModalTitle": "Are you sure?",
       "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvitated Successfully",
-      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully"
+      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully",
+      "addFullProfile": "Add full profile",
+      "save": "Save"
     },
     "commonValidations": {
       "lettersAllowed": "Only letters are allowed",
@@ -526,8 +533,8 @@
       "selectGender": "Select gender",
       "selectBirthDate": "Select date of birth",
       "selectNationality": "Select nationality",
-      "enterNIN": "Enter national identification no",
-      "enterPassportNo": "Enter passport no",
+      "enterNIN": "Enter national identification number",
+      "enterPassportNo": "Enter passport number",
       "selectMaritalStatus": "Select marital status",
       "contactNo": "Contact no",
       "requireFirstNameError": "Please enter the first name",
@@ -682,7 +689,7 @@
       "probationStartDate": "Probation start date",
       "probationEndDate": "Probation end date",
       "workTimeZone": "Work time zone",
-      "enterEmployeeNo": "Enter employee no",
+      "enterEmployeeNo": "Enter employee number",
       "enterWorkEmail": "Enter work email",
       "selectEmploymentStatus": "Select employment status",
       "selectEmploymentAllocation": "Select employment allocation",
@@ -745,7 +752,7 @@
       "SSN": "Social security number(SSN)",
       "ethnicity": "Ethnicity",
       "eeoJobCategory": "EEO job category",
-      "enterSSN": "Enter social security no",
+      "enterSSN": "Enter social security number",
       "selectEthnicity": "Select ethnicity",
       "selectEEOJobCategory": "Select EEO job category",
       "eeoTooltip": "The Equal Opportunity Office (EOO) job categories ensure fair representation within the organization, crucial for reporting diversity and inclusion efforts",
@@ -873,6 +880,14 @@
     "jobFamilyHeader": "JOB FAMILY",
     "memberHeader": "MEMBERS",
     "actionsHeader": "ACTIONS",
+    "editButton": {
+      "label": "Edit {{recordName}} job family",
+      "description": ""
+    },
+    "deleteButton": {
+      "label": "Delete {{recordName}} job family",
+      "description": ""
+    },
     "addJobFamilyModalTitle": "Add job family",
     "editJobFamilyModalTitle": "Edit job family",
     "jobFamilyInputField": {
@@ -950,8 +965,8 @@
     "member": "Member",
     "jobFamily": "Job Family",
     "jobTitle": "Job Title",
-    "jobFamilyDropDownPlaceholder": "Set new job family",
-    "jobTitleDropDownPlaceholder": "Set new title",
+    "jobFamilyDropDownPlaceholder": "Set new job family for {{memberName}}",
+    "jobTitleDropDownPlaceholder": "Set new title for {{memberName}}",
     "emptySearchResult": {
       "title": "No results found",
       "description": "We couldn't find any matches for your search. Please try using a different term."

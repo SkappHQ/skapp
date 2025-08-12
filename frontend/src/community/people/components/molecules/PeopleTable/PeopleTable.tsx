@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import {
   FC,
-  FormEvent,
   MouseEvent,
   useCallback,
   useEffect,
@@ -15,7 +14,7 @@ import {
 
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import Button from "~community/common/components/atoms/Button/Button";
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
@@ -56,6 +55,7 @@ import {
   GetTeamPreProcessor,
   refactorTeamListData
 } from "~community/people/utils/PeopleDirectoryUtils";
+import { generatePeopleTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
@@ -84,14 +84,15 @@ const PeopleTable: FC<Props> = ({
   const router = useRouter();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("peopleModule", "peoples");
+  const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
+  const isPeopleManager = data?.user.roles?.includes(
+    ManagerTypes.PEOPLE_MANAGER
   );
 
-  const [sortOpen, setSortOpen] = useState<boolean>(false);
+  const isPeopleAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
-  const [sortEl, setSortEl] = useState<null | HTMLElement>(null);
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [sortType, setSortType] = useState<string>("A to Z");
   const [filter, setFilter] = useState<boolean>(false);
@@ -101,9 +102,6 @@ const PeopleTable: FC<Props> = ({
   const filterId: string | undefined = filterByOpen
     ? "filter-popper"
     : undefined;
-
-  const sortByOpen: boolean = sortOpen && Boolean(sortEl);
-  const sortId: string | undefined = sortByOpen ? "sortBy-popper" : undefined;
 
   const {
     isPendingInvitationListOpen,
@@ -158,21 +156,9 @@ const PeopleTable: FC<Props> = ({
     setSelectedEmployees(selectedPeople);
   }, [selectedPeople]);
 
-  const handleSortClick = (
-    event: MouseEvent<HTMLElement> | FormEvent<HTMLFormElement>
-  ): void => {
-    setSortEl(event.currentTarget);
-    setSortOpen((previousOpen) => !previousOpen);
-  };
-
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
     setFilterOpen((previousOpen) => !previousOpen);
-  };
-
-  const handleSortClose = (): void => {
-    setSortOpen(false);
-    scrollToTop();
   };
 
   const handleFilterClose = (value?: boolean): void => {
@@ -230,6 +216,16 @@ const PeopleTable: FC<Props> = ({
       )
       .map((employee: AllEmployeeDataType) => ({
         id: employee?.employeeId,
+        ariaLabel: {
+          row: generatePeopleTableRowAriaLabel(
+            translateAria,
+            isPendingInvitationListOpen,
+            employee
+          ),
+          checkbox: translateAria(["selectEmployee"], {
+            employeeName: `${employee?.firstName ?? ""} ${employee?.lastName ?? ""}`
+          })
+        },
         name: (
           <Stack flexDirection={"row"} gap={1} alignItems={"center"}>
             <AvatarChip
@@ -270,7 +266,14 @@ const PeopleTable: FC<Props> = ({
           </Stack>
         ),
         jobTitle: (
-          <Typography sx={{ wordBreak: "break-all" }} variant="body2">
+          <Typography
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+            variant="body2"
+          >
             {employee?.jobTitle}
           </Typography>
         ),
@@ -289,7 +292,7 @@ const PeopleTable: FC<Props> = ({
               {refactorTeamListData(employee?.teams as EmployeeDataTeamType[])
                 ?.firstTeamName && (
                 <Box width="100%">
-                  <BasicChip
+                  <ReadOnlyChip
                     label={
                       refactorTeamListData(
                         employee?.teams as EmployeeDataTeamType[]
@@ -307,7 +310,7 @@ const PeopleTable: FC<Props> = ({
               {refactorTeamListData(employee?.teams as EmployeeDataTeamType[])
                 .otherTeamCount >= 1 && (
                 <Box width="100%">
-                  <BasicChip
+                  <ReadOnlyChip
                     chipStyles={{
                       color: theme.palette.primary.dark
                     }}
@@ -384,7 +387,7 @@ const PeopleTable: FC<Props> = ({
     resetPeopleSlice();
     if (
       currentEmployeeDetails?.employeeId === employee.id.toString() &&
-      !isPeopleManagerOrSuperAdmin
+      !isPeopleManager
     ) {
       resetEmployeeDataChanges();
       resetEmployeeData();
@@ -392,7 +395,7 @@ const PeopleTable: FC<Props> = ({
       setCurrentStep(EditPeopleFormTypes.personal);
       setNextStep(EditPeopleFormTypes.personal);
       router.push(ROUTES.PEOPLE.ACCOUNT);
-    } else if (isPeopleManagerOrSuperAdmin) {
+    } else if (isPeopleManager) {
       setSelectedEmployeeId(employee.id);
       setCurrentStep(EditPeopleFormTypes.personal);
       setNextStep(EditPeopleFormTypes.personal);
@@ -507,8 +510,10 @@ const PeopleTable: FC<Props> = ({
           isLoading={isFetching && !isFetchingNextPage}
           selectedRows={selectedPeople}
           checkboxSelection={{
-            isEnabled: isPendingInvitationListOpen || isRemovePeople,
-            isSelectAllEnabled: isPendingInvitationListOpen || !isRemovePeople,
+            isEnabled:
+              (isPendingInvitationListOpen && isPeopleAdmin) || isRemovePeople,
+            isSelectAllEnabled:
+              (isPendingInvitationListOpen && isPeopleAdmin) || !isRemovePeople,
             isSelectAllVisible: true,
             isSelectAllChecked: isSelectAllCheckboxChecked,
             handleIndividualSelectClick: handleCheckBoxClick,
@@ -523,49 +528,41 @@ const PeopleTable: FC<Props> = ({
           actionToolbar={{
             firstRow: {
               leftButton:
-                isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
-                  <PeopleTableSortBy
-                    sortEl={sortEl}
-                    handleSortClose={handleSortClose}
-                    scrollToTop={scrollToTop}
-                    sortOpen={sortOpen}
-                    sortId={sortId}
-                    sortType={sortType}
-                    handleSortClick={handleSortClick}
-                    disabled={employeeData?.length === 0}
-                  />
+                isPeopleManager && !isRemovePeople ? (
+                  <PeopleTableSortBy sortType={sortType} />
                 ) : undefined,
-              rightButton: isPendingInvitationListOpen ? (
-                <Button
-                  label={translateText(["reinviteButtonTitle"])}
-                  buttonStyle={ButtonStyle.SECONDARY}
-                  size={ButtonSizes.MEDIUM}
-                  endIcon={<InviteIcon />}
-                  onClick={() => {
-                    setIsReinviteConfirmationModalOpen(true);
-                  }}
-                  isStrokeAvailable={true}
-                  disabled={selectedPeople.length === 0}
-                />
-              ) : isPeopleManagerOrSuperAdmin && !isRemovePeople ? (
-                <PeopleTableFilterBy
-                  filterEl={filterEl}
-                  handleFilterClose={handleFilterClose}
-                  handleFilterClick={handleFilterClick}
-                  disabled={isPendingInvitationListOpen}
-                  filterId={filterId}
-                  filterOpen={filterOpen}
-                  scrollToTop={scrollToTop}
-                  teams={
-                    teamData && !isLoading && GetTeamPreProcessor(teamData)
-                  }
-                  jobFamilies={
-                    jobFamilyData &&
-                    !jobFamilyLoading &&
-                    GetFamilyFilterPreProcessor(jobFamilyData)
-                  }
-                />
-              ) : undefined
+              rightButton:
+                isPendingInvitationListOpen && isPeopleAdmin ? (
+                  <Button
+                    label={translateText(["reinviteButtonTitle"])}
+                    buttonStyle={ButtonStyle.SECONDARY}
+                    size={ButtonSizes.MEDIUM}
+                    endIcon={<InviteIcon />}
+                    onClick={() => {
+                      setIsReinviteConfirmationModalOpen(true);
+                    }}
+                    isStrokeAvailable={true}
+                    disabled={selectedPeople.length === 0}
+                  />
+                ) : isPeopleManager && !isRemovePeople ? (
+                  <PeopleTableFilterBy
+                    filterEl={filterEl}
+                    handleFilterClose={handleFilterClose}
+                    handleFilterClick={handleFilterClick}
+                    disabled={isPendingInvitationListOpen}
+                    filterId={filterId}
+                    filterOpen={filterOpen}
+                    scrollToTop={scrollToTop}
+                    teams={
+                      teamData && !isLoading && GetTeamPreProcessor(teamData)
+                    }
+                    jobFamilies={
+                      jobFamilyData &&
+                      !jobFamilyLoading &&
+                      GetFamilyFilterPreProcessor(jobFamilyData)
+                    }
+                  />
+                ) : undefined
             }
           }}
           tableHead={{

@@ -60,7 +60,8 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
     country: "",
     organizationTimeZone: "",
     companyDomain: "",
-    organizationGlobalLogin: ""
+    organizationGlobalLogin: "",
+    organizationLogo: ""
   });
 
   useEffect(() => {
@@ -73,7 +74,8 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
         organizationTimeZone:
           organizationDetails.results[0].organizationTimeZone || "",
         companyDomain: tenantID as string,
-        organizationGlobalLogin: globalLogin
+        organizationGlobalLogin: globalLogin,
+        organizationLogo: organizationDetails.results[0].organizationLogo || ""
       });
       setIsInitialLoadComplete(true);
     }
@@ -92,12 +94,15 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
     onClose();
   };
 
-  const { mutate: updateOrganizationDetails } =
-    useUpdateOrganizationDetails(onSuccess);
+  const {
+    mutate: updateOrganizationDetails,
+    isPending: isUpdateOrganizationDetailsPending
+  } = useUpdateOrganizationDetails(onSuccess);
 
   const countryList = useGetCountryList();
   const onSubmit = async (values: typeof initialValues) => {
-    updateOrganizationDetails(values);
+    const { organizationLogo: _organizationLogo, ...updateData } = values;
+    updateOrganizationDetails(updateData);
   };
 
   const OrganisationForm = useFormik({
@@ -235,6 +240,7 @@ const ChangeOrganizationSettingsModal: React.FC<Props> = ({
           <Button
             label={translateText(["saveChangesBtnText"])}
             styles={{ mt: "1rem" }}
+            isLoading={isUpdateOrganizationDetailsPending}
             buttonStyle={ButtonStyle.PRIMARY}
             endIcon={IconName.RIGHT_ARROW_ICON}
             disabled={!isInitialLoadComplete || !OrganisationForm.dirty}

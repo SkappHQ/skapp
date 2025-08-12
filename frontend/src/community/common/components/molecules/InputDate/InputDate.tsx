@@ -83,6 +83,9 @@ interface Props {
   isYearHidden?: boolean;
   myLeaveRequests?: MyLeaveRequestPayloadType[];
   initialMonthlyView?: DateTime | undefined;
+  accessibility?: {
+    ariaLabel?: string;
+  };
 }
 
 const InputDate: FC<Props> = ({
@@ -105,7 +108,8 @@ const InputDate: FC<Props> = ({
   isYearHidden,
   readOnly = false,
   myLeaveRequests,
-  initialMonthlyView
+  initialMonthlyView,
+  accessibility
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -265,7 +269,6 @@ const InputDate: FC<Props> = ({
     <Box
       sx={{
         width: "100%",
-        mt: "0.75rem",
         display: "flex",
         flexDirection: "column",
         ...componentStyle
@@ -339,10 +342,14 @@ const InputDate: FC<Props> = ({
         </Typography>
         <Box
           role="button"
-          tabIndex={0}
-          aria-label={translateAria(["calendarIcon"], {
-            name: lowerCaseLabel
-          })}
+          tabIndex={disabled ? -1 : 0}
+          aria-label={
+            accessibility?.ariaLabel
+              ? accessibility?.ariaLabel
+              : translateAria(["calendarIcon"], {
+                  name: lowerCaseLabel
+                })
+          }
           onClick={(e: MouseEvent<HTMLElement>) =>
             !(disabled || readOnly) && handleClick(e)
           }
@@ -357,8 +364,6 @@ const InputDate: FC<Props> = ({
         >
           <Icon
             name={IconName.CALENDAR_ICON}
-            width="6.25rem"
-            height="6.25rem"
             fill={
               readOnly
                 ? theme.palette.grey[700]
@@ -378,6 +383,11 @@ const InputDate: FC<Props> = ({
         disablePortal
         sx={mergeSx([classes.popper, popperStyles])}
         tabIndex={0}
+        aria-hidden={true}
+        onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+          if (shouldCollapseDropdown(e.key))
+            !(disabled || readOnly) && handleClose();
+        }}
       >
         <ClickAwayListener onClickAway={handleClose}>
           <Paper>
@@ -436,6 +446,8 @@ const InputDate: FC<Props> = ({
       {!!error && (
         <Typography
           variant="body2"
+          role="alert"
+          aria-live="assertive"
           sx={mergeSx([
             classes.errorText,
             { color: theme.palette.error.contrastText }

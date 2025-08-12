@@ -9,11 +9,25 @@ interface Props {
   onClose: (_event: MouseEvent<HTMLButtonElement>, reason: string) => void;
   children: ReactElement;
   sx?: SxProps<Theme>;
+  ids?: {
+    title?: string;
+    description?: string;
+    closeButton?: string;
+  };
 }
 
-const BasicModal: FC<Props> = ({ open = false, onClose, children, sx }) => {
+const BasicModal: FC<Props> = ({
+  open = false,
+  onClose,
+  children,
+  sx,
+  ids
+}) => {
   return (
     <Modal
+      disablePortal
+      aria-labelledby={ids?.title}
+      aria-describedby={ids?.description}
       open={open}
       onClose={(event, reason) => {
         if (reason === "backdropClick") return;

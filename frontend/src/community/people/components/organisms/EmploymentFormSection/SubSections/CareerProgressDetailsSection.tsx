@@ -418,9 +418,9 @@ const CareerProgressDetailsSection = ({
                   disabled={isInputsDisabled}
                   slotProps={{
                     input: {
-                      "aria-label": values.isCurrentEmployment
-                        ? translateAria(["selectCurrentEmploymentChecked"])
-                        : translateAria(["selectCurrentEmploymentUnChecked"])
+                      "aria-label": translateAria([
+                        "selectCurrentEmploymentChecked"
+                      ])
                     }
                   }}
                 />
@@ -446,6 +446,7 @@ const CareerProgressDetailsSection = ({
               tableStyles={{
                 mt: "2rem"
               }}
+              tableName={translateAria(["careerProgressionTable"])}
             />
           )}
         </Grid>

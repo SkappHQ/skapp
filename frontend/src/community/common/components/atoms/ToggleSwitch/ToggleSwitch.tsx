@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { SxProps, type Theme, useTheme } from "@mui/material/styles";
 import React, { JSX } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import { shouldToggleSubmenu } from "~community/common/utils/keyboardUtils";
 
@@ -19,6 +20,11 @@ type ToggleSwitchProps = {
 };
 
 const ToggleSwitch = (props: ToggleSwitchProps): JSX.Element => {
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "toggleSwitch"
+  );
   const theme: Theme = useTheme();
   const classes = styles(theme);
   const {
@@ -41,14 +47,16 @@ const ToggleSwitch = (props: ToggleSwitchProps): JSX.Element => {
 
   return (
     <Box
+      role="application"
       tabIndex={0}
       sx={mergeSx([classes.container, containerStyles])}
       onKeyDown={handleKeyDown}
+      aria-label={translateAria(["label"], { option: categoryOption })}
     >
       {/* options */}
       {options.map((option, index) => (
         <Typography
-          aria-label={option.ariaLabel}
+          aria-label={option.ariaLabel || option.value}
           key={index}
           sx={mergeSx([
             classes.text(categoryOption === option.value),

@@ -23,6 +23,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
 import styles from "./styles";
@@ -183,17 +184,29 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
       ),
       status: (
         <Box sx={classes.statusOuterBoxStyles}>
-          <IconChip
-            label={timesheetRequest?.status?.toLowerCase()}
-            icon={requestTypeSelector(timesheetRequest?.status)}
-            chipStyles={classes.iconChipStyles}
-            isResponsive={true}
-            isTruncated={false}
-            mediumScreenWidth={1024}
-          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: theme.palette.common.white,
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem",
+              gap: "0.5rem"
+            }}
+          >
+            <span>{pascalCaseFormatter(timesheetRequest?.status)}</span>
+            {requestTypeSelector(timesheetRequest?.status)}
+          </div>
           <Box sx={classes.kebabMenuBoxStyle}>
             {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
               <KebabMenu
+                ariaLabel={translateText(["kebabMenu.label"], {
+                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                })}
+                ariaDescription={translateText(["kebabMenu.description"], {
+                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                })}
                 id={timesheetRequest?.employee?.employeeId ?? 0}
                 menuItems={getKebabMenuOptions(timesheetRequest.timeRequestId)}
               />
@@ -211,7 +224,7 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
       </Typography>
       <TimesheetRequestsFilters />
       <Table
-        tableName={TableNames.EMPLOYEE_TIMESHEET_REQUEST}
+        tableName={TableNames.TIME_ENTRY_REQUEST}
         headers={tableHeaders}
         rows={transformToTableRows() || []}
         isLoading={isRequestLoading}

@@ -3,7 +3,6 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
 import { TableNames } from "~community/common/enums/Table";
@@ -48,31 +47,71 @@ const LeaveTypesTable = () => {
   const transformToTableRows = () => {
     return (
       (leaveTypes as LeaveTypeType[])?.map((leaveType: LeaveTypeType) => ({
-        id: leaveType?.typeId,
+        id: (
+          <div
+            style={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            {leaveType?.typeId}
+          </div>
+        ),
         leaveTypeName: (
-          <BasicChip
-            label={`${getEmoji(`${leaveType?.emojiCode}`)} ${leaveType?.name}`}
-          />
+          <div
+            style={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            <span role="img" aria-hidden="true">
+              {getEmoji(leaveType?.emojiCode || "")}
+            </span>
+            &nbsp;
+            {leaveType?.name}
+          </div>
         ),
         durations: getLeaveTypeDurationTableContent(
           leaveType?.leaveDuration
         ).map((duration: string, index: number) => (
-          <BasicChip
-            key={duration}
-            label={duration}
-            chipStyles={{ marginRight: index === 0 ? "2rem" : 0 }}
-          />
+          <div
+            key={index}
+            style={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem",
+              marginRight: "0.5rem"
+            }}
+          >
+            {duration}
+          </div>
         )),
         carriedForward: (
-          <BasicChip
-            label={
-              leaveType?.isCarryForwardEnabled
-                ? translateText(["enabled"])
-                : translateText(["disabled"])
-            }
-          />
+          <div
+            style={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            {leaveType?.isCarryForwardEnabled
+              ? translateText(["enabled"])
+              : translateText(["disabled"])}
+          </div>
         ),
-        actionData: leaveType
+        actionData: leaveType,
+        ariaLabel: {
+          editButton: translateText(["editButton.label"], {
+            recordName: leaveType?.name
+          })
+        },
+        ariaDescription: {
+          editButton: translateText(["editButton.description"], {
+            recordName: leaveType?.name
+          })
+        }
       })) || []
     );
   };

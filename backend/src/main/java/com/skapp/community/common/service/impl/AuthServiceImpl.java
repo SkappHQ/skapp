@@ -180,7 +180,8 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
 		log.info("superAdminSignUp: execution started");
 
-		boolean isSuperAdminExists = isSuperAdminExists();
+		boolean isSuperAdminExists = employeeRoleDao
+			.existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		if (isSuperAdminExists) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_SUPER_ADMIN_ALREADY_EXISTS);
 		}
@@ -252,6 +253,11 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
+
+		if (employeeDao.existsByEmployeeIdAndAccountStatusIn(user.getUserId(),
+				Set.of(AccountStatus.TERMINATED, AccountStatus.DELETED))) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_TERMINATED_OR_DELETED);
+		}
 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 
@@ -486,12 +492,14 @@ public class AuthServiceImpl implements AuthService {
 		return userSettings;
 	}
 
-	private boolean isSuperAdminExists() {
-		return employeeRoleDao.existsByIsSuperAdminTrue();
-	}
+	protected void createNewPassword(String newPassword, User user) {
+		String tempPassword = user.getTempPassword();
+		if (tempPassword != null
+				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
+		}
 
-	private void createNewPassword(String newPassword, User user) {
-		if (user.getPreviousPasswordsList()
+		if (passwordEncoder.matches(newPassword, user.getPassword()) || user.getPreviousPasswordsList()
 			.stream()
 			.anyMatch(prevPassword -> passwordEncoder.matches(newPassword, prevPassword))) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);

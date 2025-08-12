@@ -13,6 +13,7 @@ interface Props {
   setInputTextAndKey?: (label: string, value: string) => void;
   ariaLabel?: string;
   isReadOnly?: boolean;
+  tabIndex?: number;
 }
 
 const LeaveStatusPopupColumn: FC<Props> = ({
@@ -26,7 +27,8 @@ const LeaveStatusPopupColumn: FC<Props> = ({
   isForAForm = false,
   setInputTextAndKey,
   ariaLabel,
-  isReadOnly = false
+  isReadOnly = false,
+  tabIndex
 }) => {
   const theme: Theme = useTheme();
   return (
@@ -35,14 +37,16 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         display: "flex",
         flexDirection: "column"
       }}
+      tabIndex={tabIndex}
     >
       <Typography
+        htmlFor={id}
+        component="label"
         variant="body1"
         sx={{
           marginBottom: "0.75rem",
           color: error ? theme.palette.error.contrastText : "black"
         }}
-        aria-hidden={true}
       >
         {label}
       </Typography>

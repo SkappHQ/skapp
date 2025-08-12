@@ -1,7 +1,8 @@
+import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { type NextPage } from "next";
 
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
@@ -15,6 +16,11 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 const MyRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "myRequests");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveAllocation"
+  );
 
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
@@ -37,13 +43,23 @@ const MyRequests: NextPage = () => {
       customRightContent={
         isEntitlementAvailableNextYear &&
         isEntitlementAvailableNextYear.length !== 0 ? (
-          <Dropdown
-            onItemClick={(event) =>
-              setSelectedYear(event?.currentTarget?.innerText)
-            }
-            selectedItem={selectedYear}
-            title={selectedYear}
-            items={getCurrentAndNextYear()}
+          <RoundedSelect
+            id="leave-allocations-year-dropdown"
+            value={selectedYear}
+            options={getCurrentAndNextYear()}
+            onChange={(event) => setSelectedYear(event?.target.value)}
+            renderValue={(selectedValue: string) => {
+              return (
+                <Typography
+                  aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+                >
+                  {selectedValue}
+                </Typography>
+              );
+            }}
+            accessibility={{
+              label: translateAria(["selectYear"])
+            }}
           />
         ) : (
           <></>

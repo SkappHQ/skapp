@@ -22,13 +22,17 @@ import {
 } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx, removeDuplicates } from "~community/common/utils/commonUtil";
-import { formatBytesToReadableSize } from "~community/common/utils/dragAndDropUtils";
 
 import IconChip from "../../atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "../../atoms/Icon/Icon";
 import { styles } from "./styles";
 
 interface Props {
+  accessibility?: {
+    componentName?: string;
+    ariaDescribedBy?: string;
+    ariaHidden?: boolean;
+  };
   setAttachmentErrors?: (errors: FileRejectionType[]) => void;
   setAttachments: (acceptedFiles: FileUploadType[]) => void;
   accept: Record<string, string[]>;
@@ -43,7 +47,10 @@ interface Props {
   label?: string;
   descriptionStyles?: SxProps;
   browseTextStyles?: SxProps;
-  maxSizeOfFile?: number;
+  maxSizeOfFile?: {
+    inBytes: number;
+    inReadableSize: string;
+  };
 }
 
 const MAX_FILE_SIZE_OF_FILE = 5000000;
@@ -63,7 +70,11 @@ const DragAndDropField: FC<Props> = ({
   label,
   descriptionStyles,
   browseTextStyles,
-  maxSizeOfFile = MAX_FILE_SIZE_OF_FILE
+  maxSizeOfFile = {
+    inBytes: MAX_FILE_SIZE_OF_FILE,
+    inReadableSize: "5MB"
+  },
+  accessibility
 }) => {
   const translateText = useTranslator("commonComponents", "dragAndDrop");
   const translateAria = useTranslator(
@@ -78,7 +89,7 @@ const DragAndDropField: FC<Props> = ({
       maxFileSize: maxFileSize.toString()
     }),
     fileTooLarge: translateText(["attachmentSizeError"], {
-      fileSize: formatBytesToReadableSize(maxSizeOfFile)
+      fileSize: maxSizeOfFile.inReadableSize
     }),
     invalidFileType: translateText(["attachmentTypeError"], { supportedFiles }),
 
@@ -185,7 +196,7 @@ const DragAndDropField: FC<Props> = ({
     accept,
     maxFiles: maxFileSize - uploadableFiles?.length,
     minSize: minFileSize,
-    maxSize: maxSizeOfFile
+    maxSize: maxSizeOfFile.inBytes
   });
 
   const handleUnselectItem = (filePath: string): void => {
@@ -250,93 +261,103 @@ const DragAndDropField: FC<Props> = ({
         style={classes.dragDropContainer as CSSProperties}
       >
         <input
-          {...getInputProps()}
-          aria-label={label || translateAria(["ariaLabel"])}
+          {...getInputProps({
+            "aria-label": translateAria(["ariaLabel"], {
+              componentName: accessibility?.componentName
+            }),
+            "aria-describedby": accessibility?.ariaDescribedBy,
+            "aria-hidden": accessibility?.ariaHidden
+          })}
         />
-        <>
-          {isDragActive ? (
-            <Typography variant="body1">
-              {translateText(["description"])}
-            </Typography>
-          ) : (
-            <>
-              <Stack>
-                <Box sx={{ pb: "0.3125rem" }}>
-                  <Icon name={IconName.FILE_UPLOAD_ICON} />
-                </Box>
+        {isDragActive ? (
+          <Typography variant="body1">
+            {translateText(["description"])}
+          </Typography>
+        ) : (
+          <>
+            <Stack>
+              <Box
+                sx={{
+                  pb: "0.3125rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <Icon name={IconName.FILE_UPLOAD_ICON} />
+              </Box>
+              <Typography
+                variant="body2"
+                sx={mergeSx([classes.desTextStyle, descriptionStyles])}
+              >
+                {translateText(["dropFileDescription"])} &nbsp;
+              </Typography>
+            </Stack>
+            <Stack>
+              <Typography
+                variant="body2"
+                sx={mergeSx([classes.orText, browseTextStyles])}
+              >
+                or &nbsp;
                 <Typography
+                  component="span"
                   variant="body2"
-                  sx={mergeSx([classes.desTextStyle, descriptionStyles])}
-                >
-                  {translateText(["dropFileDescription"])} &nbsp;
-                </Typography>
-              </Stack>
-              <Stack>
-                <Typography
-                  variant="body2"
-                  sx={mergeSx([classes.orText, browseTextStyles])}
-                >
-                  or &nbsp;
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    sx={{
-                      ...(classes.browseText as CSSProperties),
-                      ...browseTextStyles
-                    }}
-                  >{`Browse`}</Typography>
-                </Typography>
-              </Stack>
-            </>
-          )}
-        </>
-        <>
-          <Stack alignItems={"center"}>
-            {uploadableFiles?.length > 0 || fileName ? (
-              <>
-                <Fragment
-                  key={
+                  sx={{
+                    ...(classes.browseText as CSSProperties),
+                    ...browseTextStyles
+                  }}
+                >{`Browse`}</Typography>
+              </Typography>
+            </Stack>
+          </>
+        )}
+        <Stack alignItems={"center"}>
+          {uploadableFiles?.length > 0 || fileName ? (
+            <Fragment
+              key={
+                uploadableFiles[uploadableFiles?.length - 1]
+                  ? uploadableFiles[
+                      uploadableFiles?.length - 1
+                    ]?.name?.toString()
+                  : uploadableFiles[0]?.name?.toString()
+              }
+            >
+              <IconChip
+                chipStyles={classes.IconChip}
+                accessibility={{
+                  ariaLabel: translateAria(["uploadedFiles.label"], {
+                    fileName:
+                      uploadableFiles[uploadableFiles?.length - 1]?.name ?? ""
+                  }),
+                  ariaDescription: translateAria(["uploadedFiles.description"]),
+                  ariaHidden: true
+                }}
+                label={
+                  uploadableFiles[uploadableFiles?.length - 1]
+                    ? uploadableFiles[uploadableFiles?.length - 1]?.name
+                    : (uploadableFiles[0]?.name ?? "")
+                }
+                icon={<ContentCopyIcon fontSize="small" />}
+                endIcon={<CloseIcon fontSize="small" />}
+                onDelete={(event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+                  event.stopPropagation();
+                  handleUnselectItem(
                     uploadableFiles[uploadableFiles?.length - 1]
-                      ? uploadableFiles[
-                          uploadableFiles?.length - 1
-                        ]?.name?.toString()
-                      : uploadableFiles[0]?.name?.toString()
-                  }
-                >
-                  <IconChip
-                    chipStyles={classes.IconChip}
-                    label={
-                      uploadableFiles[uploadableFiles?.length - 1]
-                        ? uploadableFiles[uploadableFiles?.length - 1]?.name
-                        : (uploadableFiles[0]?.name ?? "")
-                    }
-                    icon={<ContentCopyIcon fontSize="small" />}
-                    endIcon={<CloseIcon fontSize="small" />}
-                    onDelete={(
-                      event: MouseEvent<HTMLDivElement, MouseEvent>
-                    ) => {
-                      event.stopPropagation();
-                      handleUnselectItem(
-                        uploadableFiles[uploadableFiles?.length - 1]
-                          ? uploadableFiles[uploadableFiles?.length - 1]?.path
-                          : (uploadableFiles[0]?.path ?? "")
-                      );
-                    }}
-                  />
-                </Fragment>
-              </>
-            ) : (
-              <>
-                <Typography variant="body2" sx={classes.supportedFileText}>
-                  {translateText(["supportFiles"])} : {supportedFiles}
-                </Typography>
-              </>
-            )}
-          </Stack>
-        </>
+                      ? uploadableFiles[uploadableFiles?.length - 1]?.path
+                      : (uploadableFiles[0]?.path ?? "")
+                  );
+                }}
+              />
+            </Fragment>
+          ) : (
+            <Typography variant="body2" sx={classes.supportedFileText}>
+              {translateText(["supportFiles"])} : {supportedFiles}
+            </Typography>
+          )}
+        </Stack>
       </div>
 
-      <Typography variant="body2" sx={classes.errorText}>
+      <Typography variant="body2" sx={classes.errorText} aria-live="assertive">
         {getInlineErrorMessage}
       </Typography>
     </>

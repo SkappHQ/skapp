@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Box,
-  IconButton,
-  Skeleton,
-  Stack,
-  Typography
-} from "@mui/material";
+import { Badge, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
@@ -84,7 +77,6 @@ const AppBar = () => {
       <Stack
         sx={classes.wrapper}
         id="top-bar"
-        role="menubar"
         tabIndex={0}
         component="header"
         aria-label={translateAria(["appBar"])}
@@ -92,14 +84,14 @@ const AppBar = () => {
         <Stack
           sx={{
             ...classes.container,
-            justifyContent: showClockWidget ? "space-between" : "flex-end"
+            justifyContent: "flex-end"
           }}
         >
-          {showClockWidget && <ClockWidget />}
           {employee ? (
             <Stack sx={classes.userInfoPanelWrapper} ref={userInfoRef}>
+              {showClockWidget && <ClockWidget />}
               <Box
-                sx={{ cursor: "pointer", mr: "0.25rem" }}
+                sx={{ cursor: "pointer" }}
                 onClick={() => handleOpenMenu(AppBarItemTypes.NOTIFICATION)}
                 tabIndex={0}
                 role="button"
@@ -122,7 +114,11 @@ const AppBar = () => {
                   max={100}
                   aria-atomic={true}
                 >
-                  <Icon name={IconName.BELL_ICON} width="2rem" height="2rem" />
+                  <Icon
+                    name={IconName.BELL_ICON}
+                    width="1.75rem"
+                    height="1.75rem"
+                  />
                 </Badge>
               </Box>
               <Box
@@ -146,22 +142,14 @@ const AppBar = () => {
                       ? employee.authPic
                       : ""
                   }
+                  avatarStyles={{ width: "2.5rem", height: "2.5rem" }}
                 />
               </Box>
-              <Stack sx={classes.userInfo}>
-                <Typography sx={classes.name}>
-                  {status !== "loading" &&
-                    `${employee?.firstName} ${employee?.lastName}`}
-                </Typography>
-                <Typography sx={classes.userRole}>
-                  {employee?.jobTitle?.name}
-                </Typography>
-              </Stack>
             </Stack>
           ) : (
             <Skeleton
               variant="rounded"
-              height="4.5rem"
+              height="4rem"
               width="7.5rem"
               sx={classes.userInfoPanelWrapper}
               animation={"wave"}

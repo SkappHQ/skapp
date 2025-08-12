@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
-  EmployeeTypes
+  EmployeeTypes,
+  SenderTypes
 } from "~community/common/types/AuthTypes";
 import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
@@ -76,8 +77,24 @@ const useSessionData = () => {
     [sessionData?.user?.roles]
   );
 
+  const isLeaveManager = useMemo(
+    () => sessionData?.user?.roles?.includes(AuthManagerType.LEAVE_MANAGER),
+    [sessionData?.user?.roles]
+  );
+
   const isAttendanceEmployee = useMemo(
     () => sessionData?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
+    [sessionData?.user?.roles]
+  );
+
+  const isAttendanceManager = useMemo(
+    () =>
+      sessionData?.user?.roles?.includes(AuthManagerType.ATTENDANCE_MANAGER),
+    [sessionData?.user?.roles]
+  );
+
+  const isESignSender = useMemo(
+    () => sessionData?.user?.roles?.includes(SenderTypes.ESIGN_SENDER),
     [sessionData?.user?.roles]
   );
 
@@ -100,7 +117,10 @@ const useSessionData = () => {
     isPeopleManager,
     userId,
     isLeaveEmployee,
+    isLeaveManager,
     isAttendanceEmployee,
+    isAttendanceManager,
+    isESignSender,
     tenantID
   };
 };

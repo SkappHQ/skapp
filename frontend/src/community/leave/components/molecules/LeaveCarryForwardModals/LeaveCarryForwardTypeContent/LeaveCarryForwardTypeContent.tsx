@@ -148,6 +148,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           color: "grey.900",
           width: "100%"
         }}
+        id="leave-carry-forward-modal-description"
       >
         {translateTexts(["leaveCarryForwardTypeSelectionModalDescription"]) ??
           ""}
@@ -194,9 +195,14 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
             }}
           >
             <Checkbox
-              label={`${getEmoji(leaveType?.emojiCode || "")} ${getTruncatedLabel(
-                leaveType?.name as string
-              )}`}
+              label={
+                <span aria-label={leaveType.name}>
+                  <span role="img" aria-hidden="true">
+                    {getEmoji(leaveType?.emojiCode || "")}
+                  </span>{" "}
+                  {getTruncatedLabel(leaveType?.name as string)}
+                </span>
+              }
               name={`leaveTypes[${leaveType.typeId}]`}
               checked={checkedList?.includes(leaveType.typeId)}
               onChange={() => handleCheck(leaveType.typeId)}
@@ -213,8 +219,14 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           onClick={() => formik.handleSubmit()}
           isLoading={loading}
           disabled={checkedList.length === 0}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
         <Button
+          accessibility={{
+            ariaHidden: true
+          }}
           label={translateTexts(["leaveCarryForwardModalCancelBtn"])}
           endIcon={<CloseIcon />}
           buttonStyle={ButtonStyle.TERTIARY}

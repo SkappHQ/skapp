@@ -25,7 +25,11 @@ const BulkUploadSummary: FC<Props> = ({
 
   return (
     <Stack>
-      <Typography variant="body1" sx={{ my: 1 }}>
+      <Typography
+        id="bulk-upload-summary-description"
+        variant="body1"
+        sx={{ my: 1 }}
+      >
         {translateText(["description"], {
           successCount: successCount,
           failedCount: failedCount
@@ -37,6 +41,9 @@ const BulkUploadSummary: FC<Props> = ({
         buttonStyle={ButtonStyle.PRIMARY}
         styles={{ mt: "1rem" }}
         onClick={onClick}
+        accessibility={{
+          ariaHidden: true
+        }}
       />
     </Stack>
   );

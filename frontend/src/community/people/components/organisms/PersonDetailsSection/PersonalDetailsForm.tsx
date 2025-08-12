@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
 import { theme } from "~community/common/theme/theme";
@@ -136,7 +137,7 @@ const PersonalDetailsForm = ({
   }, [isCancelModalConfirmButtonClicked]);
 
   return (
-    <>
+    <Box role="region" aria-labelledby="page-title subtitle-next-to-title">
       <GeneralDetailsSection
         ref={generalDetailsRef}
         isAddFlow={isAddFlow}
@@ -177,7 +178,7 @@ const PersonalDetailsForm = ({
             onSaveClick={onSave}
           />
         ))}
-    </>
+    </Box>
   );
 };
 

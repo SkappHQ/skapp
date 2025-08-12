@@ -75,6 +75,9 @@ const DeleteConfirmModal = () => {
           buttonStyle={ButtonStyle.PRIMARY}
           endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           onClick={handleReassignClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
         <Button
           label={translateText(["teamDeleteConfirmBtnText"])}
@@ -84,6 +87,9 @@ const DeleteConfirmModal = () => {
           buttonStyle={ButtonStyle.ERROR}
           endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
           onClick={handleDeleteClick}
+          accessibility={{
+            ariaHidden: true
+          }}
         />
       </Box>
     </Box>

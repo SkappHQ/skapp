@@ -125,7 +125,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
         </Stack>
       )}
       {values.jobTitles && (
-        <Box sx={classes.scrollContainer} tabIndex={0}>
+        <Box sx={classes.scrollContainer}>
           <Box sx={classes.valueContainer}>
             {values.jobTitles?.map((jobTitle: JobTitleType, index: number) => {
               const isOldValue = jobTitle.jobTitleId !== null;
@@ -137,9 +137,14 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
 
               return (
                 <Box
-                  key={index}
-                  tabIndex={0}
+                  key={jobTitle.jobTitleId}
+                  tabIndex={!isEditing ? 0 : -1}
                   onFocus={() => setFocusedInputField(index)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setFocusedInputField(null);
+                    }
+                  }}
                 >
                   <InputField
                     focusOnText
@@ -162,7 +167,11 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                     onMouseEnter={() => setHoveredInputField(index)}
                     onMouseLeave={() => {
                       setHoveredInputField(null);
-                      setFocusedInputField(null);
+                    }}
+                    onFocus={() => {
+                      if (isEditing) {
+                        setFocusedInputField(index);
+                      }
                     }}
                     ariaLabel={ariaTranslateText(["jobTitleField"], {
                       jobTitleName: jobTitle?.name?.toLowerCase() ?? ""
@@ -177,6 +186,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                             <Box
                               tabIndex={0}
                               role="button"
+                              onFocus={() => setFocusedInputField(index)}
                               onKeyDown={(e) => {
                                 if (shouldActivateButton(e.key)) {
                                   handleEditIconBtnClick(
@@ -187,6 +197,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                   );
                                 }
                               }}
+                              aria-label={ariaTranslateText(["edit"])}
                             >
                               <Icon
                                 name={IconName.EDIT_ICON}
@@ -207,6 +218,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                             <Box
                               tabIndex={0}
                               role="button"
+                              onFocus={() => setFocusedInputField(index)}
                               onKeyDown={(e) => {
                                 if (shouldActivateButton(e.key)) {
                                   handleBinIconBtnClick(
@@ -219,6 +231,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                   );
                                 }
                               }}
+                              aria-label={ariaTranslateText(["delete"])}
                             >
                               <Icon
                                 name={IconName.BIN_ICON}
@@ -242,6 +255,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                               <Box
                                 tabIndex={0}
                                 role="button"
+                                onFocus={() => setFocusedInputField(index)}
                                 onKeyDown={(e) => {
                                   if (shouldActivateButton(e.key)) {
                                     !error &&
@@ -256,6 +270,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                       );
                                   }
                                 }}
+                                aria-label={ariaTranslateText(["check"])}
                               >
                                 <Icon
                                   name={IconName.TICK_ICON}
@@ -280,6 +295,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                               <Box
                                 tabIndex={0}
                                 role="button"
+                                onFocus={() => setFocusedInputField(index)}
                                 onKeyDown={(e) => {
                                   if (shouldActivateButton(e.key)) {
                                     handleCloseIconBtnClick(
@@ -291,6 +307,7 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
                                     );
                                   }
                                 }}
+                                aria-label={ariaTranslateText(["cancel"])}
                               >
                                 <Icon
                                   name={IconName.ROUNDED_CLOSE_ICON}

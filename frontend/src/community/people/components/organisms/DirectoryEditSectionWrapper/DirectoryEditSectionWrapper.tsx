@@ -1,7 +1,9 @@
 import { Box } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -21,13 +23,17 @@ interface Props {
 }
 
 const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
-  const { data: employee, isLoading } = useGetEmployee(employeeId);
+  const { data: employeeData, isLoading } = useGetEmployee(employeeId);
+  const translateAria = useTranslator("peopleAria", "directory");
+
+  const peopleFormSectionsRef = useRef<HTMLDivElement>(null);
 
   const {
     isUnsavedChangesModalOpen,
     currentStep,
     nextStep,
     isCancelChangesModalOpen,
+    employee,
     setIsUnsavedChangesModalOpen,
     setCurrentStep,
     setIsUnsavedModalSaveButtonClicked,
@@ -37,11 +43,13 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
     setIsCancelChangesModalOpen
   } = usePeopleStore((state) => state);
 
+  useDefaultTabNavigation();
+
   useEffect(() => {
-    if (employee) {
-      setEmployee(employee?.data?.results[0]);
+    if (employeeData) {
+      setEmployee(employeeData?.data?.results[0]);
     }
-  }, [employee, setEmployee]);
+  }, [employeeData, setEmployee]);
 
   const { hasChanged } = useFormChangeDetector();
 
@@ -62,15 +70,26 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   ]);
 
   return (
-    <>
+    <Box
+      role="region"
+      aria-label={translateAria(["userProfile"], {
+        name: `${employee?.personal?.general?.firstName} ${employee?.personal?.general?.lastName}`
+      })}
+    >
       <Box sx={{ mt: "0.75rem" }}>
         {isLoading ? <EditInfoCardSkeleton /> : <EditInfoCard />}
       </Box>
-      <DirectorySteppers employeeId={Number(employeeId)} />
+      <DirectorySteppers
+        employeeId={Number(employeeId)}
+        formRef={peopleFormSectionsRef}
+      />
       {isLoading ? (
         <EditAllInfoSkeleton />
       ) : (
-        <PeopleFormSections employeeId={Number(employeeId)} />
+        <PeopleFormSections
+          employeeId={Number(employeeId)}
+          formRef={peopleFormSectionsRef}
+        />
       )}
       <TerminationModalController />
       <UserDeletionModalController />
@@ -93,7 +112,7 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
         }}
       />
       <RouteChangeAreYouSureModal />
-    </>
+    </Box>
   );
 };
 

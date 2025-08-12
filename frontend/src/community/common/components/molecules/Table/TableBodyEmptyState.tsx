@@ -4,7 +4,6 @@ import { FC, JSX } from "react";
 import TableEmptyScreen, {
   TableEmptyScreenProps
 } from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
-import { TableTypes } from "~community/common/types/CommonTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import styles from "./styles";
@@ -16,13 +15,14 @@ export interface TableBodyEmptyStateProps {
     element?: JSX.Element;
   }[];
   emptyState?: {
+    isSearching?: boolean;
     noData?: TableEmptyScreenProps;
+    noSearchResults?: TableEmptyScreenProps;
     customStyles?: { row?: SxProps<Theme>; cell?: SxProps<Theme> };
   };
 }
 
-const TableBodyEmptyState: FC<TableTypes & TableBodyEmptyStateProps> = ({
-  tableName,
+const TableBodyEmptyState: FC<TableBodyEmptyStateProps> = ({
   headers,
   emptyState
 }) => {
@@ -35,8 +35,6 @@ const TableBodyEmptyState: FC<TableTypes & TableBodyEmptyStateProps> = ({
         classes.tableBody.emptyState.row,
         emptyState?.customStyles?.row
       ])}
-      role="row"
-      aria-label={`${tableName}-table-body-empty-state-row`}
     >
       <TableCell
         colSpan={headers?.length + 2}
@@ -44,15 +42,22 @@ const TableBodyEmptyState: FC<TableTypes & TableBodyEmptyStateProps> = ({
           classes.tableBody.emptyState.cell,
           emptyState?.customStyles?.cell
         ])}
-        role="cell"
-        aria-label={`${tableName}-table-body-empty-state-cell`}
       >
-        <TableEmptyScreen
-          title={emptyState?.noData?.title}
-          description={emptyState?.noData?.description}
-          button={emptyState?.noData?.button}
-          customStyles={emptyState?.noData?.customStyles}
-        />
+        {emptyState?.isSearching ? (
+          <TableEmptyScreen
+            title={emptyState?.noSearchResults?.title}
+            description={emptyState?.noSearchResults?.description}
+            button={emptyState?.noSearchResults?.button}
+            customStyles={emptyState?.noSearchResults?.customStyles}
+          />
+        ) : (
+          <TableEmptyScreen
+            title={emptyState?.noData?.title}
+            description={emptyState?.noData?.description}
+            button={emptyState?.noData?.button}
+            customStyles={emptyState?.noData?.customStyles}
+          />
+        )}
       </TableCell>
     </TableRow>
   );

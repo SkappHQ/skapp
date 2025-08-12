@@ -1,7 +1,6 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Theme, Typography, useTheme } from "@mui/material";
 import { FC } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getAsDaysString } from "~community/common/utils/dateTimeUtils";
 import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
@@ -9,11 +8,13 @@ import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveReques
 interface Props {
   startDate: string;
   endDate: string;
-  days: string;
+  days: number;
 }
 
 const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
   const translateText = useTranslator("leaveModule", "myRequests");
+
+  const theme: Theme = useTheme();
 
   return (
     <Box
@@ -37,21 +38,19 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
       >
         {getStartEndDate(startDate, endDate)}
       </Typography>
-      <BasicChip
-        label={
-          days == "1"
-            ? translateText(["myLeaveRequests", "fullDay"])
-            : days < "1"
-              ? translateText(["myLeaveRequests", "halfDay"])
-              : getAsDaysString(days)
-        }
-        chipStyles={{
-          "&:hover": {
-            backgroundColor: "inherit",
-            cursor: "default"
-          }
+      <div
+        style={{
+          backgroundColor: theme.palette.common.white,
+          borderRadius: "9.375rem",
+          padding: "0.5rem 1rem"
         }}
-      />
+      >
+        {days == 1
+          ? translateText(["myLeaveRequests", "fullDay"])
+          : days < 1
+            ? translateText(["myLeaveRequests", "halfDay"])
+            : getAsDaysString(days)}
+      </div>
     </Box>
   );
 };

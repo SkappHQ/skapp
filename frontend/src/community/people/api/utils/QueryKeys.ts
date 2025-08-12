@@ -1,6 +1,11 @@
+import { EmployeeDataParamsTypes } from "~community/people/types/EmployeeTypes";
+
 export const peopleQueryKeys = {
   all: ["super-admin"],
   PENDING_EMPLOYEE_COUNT: ["pending-employee-count"],
+  ALL_EMPLOYEE_DATA: function (params?: EmployeeDataParamsTypes) {
+    return ["all-employee-data", params].filter((val) => val !== undefined);
+  },
   EMPLOYEE_DATA_TABLE: function (params?: {
     page?: number;
     sortKey?: string;

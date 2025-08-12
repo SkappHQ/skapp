@@ -29,6 +29,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -222,7 +224,8 @@ public class RolesServiceImpl implements RolesService {
 	public ResponseEntityDto getSuperAdminCount() {
 		log.info("getSuperAdminCount: execution started");
 
-		long superAdminCount = employeeRoleDao.countByIsSuperAdminTrue();
+		long superAdminCount = employeeRoleDao
+			.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		log.info("getSuperAdminCount: execution ended");
 		return new ResponseEntityDto(false, superAdminCount);
@@ -253,6 +256,16 @@ public class RolesServiceImpl implements RolesService {
 		return employeeRole;
 	}
 
+	@Override
+	public EmployeeSystemPermissionsDto getDefaultEmployeeRoles() {
+		EmployeeSystemPermissionsDto defaultEmployeeRoles = new EmployeeSystemPermissionsDto();
+		defaultEmployeeRoles.setPeopleRole(Role.PEOPLE_EMPLOYEE);
+		defaultEmployeeRoles.setLeaveRole(Role.LEAVE_EMPLOYEE);
+		defaultEmployeeRoles.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
+		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
+		return defaultEmployeeRoles;
+	}
+
 	public void validateRoles(EmployeeSystemPermissionsDto userRoles, User user) {
 		if ((user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null) && userRoles == null) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SYSTEM_PERMISSION_REQUIRED);
@@ -266,7 +279,9 @@ public class RolesServiceImpl implements RolesService {
 
 		if (userRoles != null && user.getEmployee() != null
 				&& Boolean.TRUE.equals(user.getEmployee().getEmployeeRole().getIsSuperAdmin())
-				&& employeeRoleDao.countByIsSuperAdminTrue() == 1 && isUserRoleDowngraded(userRoles)) {
+				&& employeeRoleDao.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(
+						Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)) == 1
+				&& isUserRoleDowngraded(userRoles)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_ONLY_ONE_SUPER_ADMIN);
 		}
 
@@ -313,10 +328,9 @@ public class RolesServiceImpl implements RolesService {
 			}
 		}
 
-		if (Boolean.TRUE
-			.equals(user.getEmployee() != null && user.getEmployee().getEmployeeRole() != null
-					&& user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
-					&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin()))
+		if (user.getEmployee() != null && user.getEmployee().getEmployeeRole() != null
+				&& user.getEmployee().getEmployeeRole().getIsSuperAdmin() && userRoles != null
+				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
 				&& (userRoles.getPeopleRole() != Role.PEOPLE_ADMIN || userRoles.getLeaveRole() != Role.LEAVE_ADMIN
 						|| userRoles.getAttendanceRole() != Role.ATTENDANCE_ADMIN)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_ROLES_CANNOT_BE_CHANGED);
@@ -478,7 +492,12 @@ public class RolesServiceImpl implements RolesService {
 
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
-		roles.add(RoleLevel.MANAGER.getDisplayName());
+		if (moduleType == ModuleType.ESIGN) {
+			roles.add(RoleLevel.SENDER.getDisplayName());
+		}
+		else {
+			roles.add(RoleLevel.MANAGER.getDisplayName());
+		}
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 
 		roleResponseDto.setRoles(roles);

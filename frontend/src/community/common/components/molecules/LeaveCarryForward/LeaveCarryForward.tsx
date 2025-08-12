@@ -43,7 +43,7 @@ const LeaveCarryForward = () => {
         justifyContent: "space-between"
       }}
     >
-      <Box>
+      <Box id="leave-carry-forward-section-description">
         <Typography
           variant="h1"
           sx={{
@@ -77,6 +77,9 @@ const LeaveCarryForward = () => {
             paddingY: "1.25rem"
           }}
           onClick={handleLeaveSync}
+          accessibility={{
+            ariaDescribedBy: "leave-carry-forward-section-description"
+          }}
         />
       </Box>
       <LeaveCarryForwardModalController />

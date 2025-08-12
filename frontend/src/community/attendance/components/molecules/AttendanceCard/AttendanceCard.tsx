@@ -89,10 +89,7 @@ const AttendanceCard: FC<Props> = ({
           </Box>
           <Stack direction="row" justifyContent="left">
             <div style={{ display: "flex", alignItems: "baseline" }}>
-              <Typography
-                variant="h4"
-                style={{ fontSize: "2.5rem", fontWeight: 600 }}
-              >
+              <Typography style={{ fontSize: "2.5rem", fontWeight: 600 }}>
                 {analytic1 ?? "--"}
               </Typography>
               {type === ClockInOutGraphTypes.CLOCK_IN && (

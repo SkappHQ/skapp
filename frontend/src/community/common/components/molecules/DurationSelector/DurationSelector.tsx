@@ -1,7 +1,8 @@
 import { Stack, SxProps, Theme, Typography, useTheme } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { HalfDayType } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { DurationSelectorDisabledOptions } from "~community/common/types/MoleculeTypes";
@@ -40,17 +41,51 @@ const DurationSelector = <T,>({
   commonButtonStyles
 }: Props<T>) => {
   const translateText = useTranslator("commonComponents", "durationSelector");
+  const translateAria = useTranslator("leaveAria", "durationSelector");
 
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
   const [isHalfDaySelected, setIsHalfDaySelected] = useState(false);
+  const [shouldFocusButton, setShouldFocusButton] = useState<
+    HalfDayType.MORNING | HalfDayType.EVENING | null
+  >(null);
+  const [lastFocusedElement, setLastFocusedElement] =
+    useState<HTMLElement | null>(null);
+  const morningButtonRef = useRef<HTMLDivElement>(null);
+  const eveningButtonRef = useRef<HTMLDivElement>(null);
+  const halfDayButtonRef = useRef<HTMLDivElement>(null);
+  const fullDayButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (value === options.halfDayMorning || value === options.halfDayEvening) {
       setIsHalfDaySelected(true);
     }
   }, [value, options.halfDayEvening, options.halfDayMorning]);
+
+  useEffect(() => {
+    if (shouldFocusButton && isHalfDaySelected) {
+      if (
+        shouldFocusButton === HalfDayType.MORNING &&
+        morningButtonRef.current
+      ) {
+        morningButtonRef.current.focus();
+      } else if (
+        shouldFocusButton === HalfDayType.EVENING &&
+        eveningButtonRef.current
+      ) {
+        eveningButtonRef.current.focus();
+      }
+      setShouldFocusButton(null);
+    }
+  }, [isHalfDaySelected, shouldFocusButton]);
+
+  useEffect(() => {
+    if (lastFocusedElement && document.contains(lastFocusedElement)) {
+      lastFocusedElement.focus();
+      setLastFocusedElement(null);
+    }
+  }, [value, lastFocusedElement]);
 
   const muiFullDayClasses = useMemo(() => {
     if (disabledOptions.fullDay) {
@@ -94,11 +129,25 @@ const DurationSelector = <T,>({
     return "Mui-default-button";
   }, [disabledOptions.halfDayEvening, error, options.halfDayEvening, value]);
 
-  const onOptionClick = (value: T) => {
+  const onOptionClick = (
+    value: T,
+    elementRef?: { current: HTMLDivElement | null },
+    isDisabled?: boolean
+  ) => {
+    if (isDisabled) {
+      return;
+    }
+    if (elementRef?.current) {
+      setLastFocusedElement(elementRef.current);
+    }
     onChange(value);
   };
 
   const handleHalfDayClick = () => {
+    if (disabledOptions.halfDayMorning && disabledOptions.halfDayEvening) {
+      return;
+    }
+
     setIsHalfDaySelected(true);
 
     const halfDayOptionToSelect = disabledOptions.halfDayMorning
@@ -106,10 +155,49 @@ const DurationSelector = <T,>({
       : options.halfDayMorning;
 
     onChange(halfDayOptionToSelect);
+
+    setShouldFocusButton(
+      disabledOptions.halfDayMorning ? HalfDayType.EVENING : HalfDayType.MORNING
+    );
+  };
+
+  const getFullDayAriaLabel = () => {
+    if (value === options.fullDay) {
+      return translateAria(["selectedDurationFullDay"]);
+    }
+    return translateAria(["selectDurationFullDay"]);
+  };
+
+  const getHalfDayAriaLabel = () => {
+    if (isHalfDaySelected) {
+      return translateAria(["selectMorningOrEveningHalf"]);
+    }
+    if (value === options.halfDayMorning || value === options.halfDayEvening) {
+      return translateAria(["selectedDurationHalfDay"]);
+    }
+    return translateAria(["selectDurationHalfDay"]);
+  };
+
+  const getHalfDayMorningAriaLabel = () => {
+    if (value === options.halfDayMorning) {
+      return translateAria(["selectedHalfMorning"]);
+    }
+    return translateAria(["selectHalfMorning"]);
+  };
+
+  const getHalfDayEveningAriaLabel = () => {
+    if (value === options.halfDayEvening) {
+      return translateAria(["selectedHalfEvening"]);
+    }
+    return translateAria(["selectHalfEvening"]);
   };
 
   return (
-    <Stack sx={classes.wrapper}>
+    <Stack
+      sx={classes.wrapper}
+      role="group"
+      aria-label={`${translateAria(["selectDuration"])}, ${isRequired ? translateAria(["mandatoryField"]) : ""}`}
+    >
       <Stack sx={classes.container}>
         <Typography
           variant="body1"
@@ -126,14 +214,26 @@ const DurationSelector = <T,>({
         </Typography>
         <Stack sx={classes.btnWrapper}>
           <Stack
+            ref={fullDayButtonRef}
             className={muiFullDayClasses}
             role="button"
-            tabIndex={0}
+            tabIndex={disabledOptions.fullDay ? -1 : 0}
+            aria-label={getFullDayAriaLabel()}
             sx={mergeSx([classes.btn, commonButtonStyles])}
-            onClick={() => onOptionClick(options.fullDay)}
+            onClick={() =>
+              onOptionClick(
+                options.fullDay,
+                fullDayButtonRef,
+                disabledOptions.fullDay
+              )
+            }
             onKeyDown={(event) => {
               if (shouldActivateButton(event.key)) {
-                onOptionClick(options.fullDay);
+                onOptionClick(
+                  options.fullDay,
+                  fullDayButtonRef,
+                  disabledOptions.fullDay
+                );
               }
             }}
           >
@@ -151,18 +251,30 @@ const DurationSelector = <T,>({
           {isHalfDaySelected ? (
             <Stack sx={classes.btnGroup}>
               <Stack
+                ref={morningButtonRef}
                 className={muiHalfDayMorningClasses}
                 role="button"
-                tabIndex={0}
+                tabIndex={disabledOptions.halfDayMorning ? -1 : 0}
+                aria-label={getHalfDayMorningAriaLabel()}
                 sx={mergeSx([
                   classes.halfBtn,
                   classes.firstHalfBtn,
                   commonButtonStyles
                 ])}
-                onClick={() => onOptionClick(options.halfDayMorning)}
+                onClick={() =>
+                  onOptionClick(
+                    options.halfDayMorning,
+                    morningButtonRef,
+                    disabledOptions.halfDayMorning
+                  )
+                }
                 onKeyDown={(event) => {
                   if (shouldActivateButton(event.key)) {
-                    onOptionClick(options.halfDayMorning);
+                    onOptionClick(
+                      options.halfDayMorning,
+                      morningButtonRef,
+                      disabledOptions.halfDayMorning
+                    );
                   }
                 }}
               >
@@ -171,7 +283,7 @@ const DurationSelector = <T,>({
                   sx={classes.btnText}
                   variant="body1"
                 >
-                  {translateText(["morning"])}
+                  {translateText([HalfDayType.MORNING])}
                 </Typography>
                 {!disabledOptions.halfDayMorning &&
                   value === options.halfDayMorning && (
@@ -179,18 +291,30 @@ const DurationSelector = <T,>({
                   )}
               </Stack>
               <Stack
+                ref={eveningButtonRef}
                 className={muiHalfDayEveningClasses}
                 role="button"
-                tabIndex={0}
+                tabIndex={disabledOptions.halfDayEvening ? -1 : 0}
+                aria-label={getHalfDayEveningAriaLabel()}
                 sx={mergeSx([
                   classes.halfBtn,
                   classes.lastHalfBtn,
                   commonButtonStyles
                 ])}
-                onClick={() => onOptionClick(options.halfDayEvening)}
+                onClick={() =>
+                  onOptionClick(
+                    options.halfDayEvening,
+                    eveningButtonRef,
+                    disabledOptions.halfDayEvening
+                  )
+                }
                 onKeyDown={(event) => {
                   if (shouldActivateButton(event.key)) {
-                    onOptionClick(options.halfDayEvening);
+                    onOptionClick(
+                      options.halfDayEvening,
+                      eveningButtonRef,
+                      disabledOptions.halfDayEvening
+                    );
                   }
                 }}
               >
@@ -199,7 +323,7 @@ const DurationSelector = <T,>({
                   sx={classes.btnText}
                   variant="body1"
                 >
-                  {translateText(["evening"])}
+                  {translateText([HalfDayType.EVENING])}
                 </Typography>
                 {!disabledOptions.halfDayEvening &&
                   value === options.halfDayEvening && (
@@ -209,9 +333,15 @@ const DurationSelector = <T,>({
             </Stack>
           ) : (
             <Stack
+              ref={halfDayButtonRef}
               role="button"
-              tabIndex={0}
+              tabIndex={
+                disabledOptions.halfDayMorning && disabledOptions.halfDayEvening
+                  ? -1
+                  : 0
+              }
               className={muiHalfDayClasses}
+              aria-label={getHalfDayAriaLabel()}
               sx={mergeSx([classes.btn, commonButtonStyles])}
               onClick={handleHalfDayClick}
               onKeyDown={(event) => {
@@ -248,6 +378,8 @@ const DurationSelector = <T,>({
       {!!error && (
         <Typography
           variant="caption"
+          role="alert"
+          aria-live="assertive"
           sx={{ color: theme.palette.error.contrastText }}
         >
           {error}

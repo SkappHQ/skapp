@@ -1,3 +1,6 @@
+import { Box } from "@mui/material";
+import { RefObject } from "react";
+
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
@@ -5,7 +8,11 @@ import EmergencyDetailsForm from "../EmergencyDetailsSection/EmergencyDetailsFor
 import EmploymentDetailsForm from "../EmploymentFormSection/EmploymentDetailsForm";
 import PersonalDetailsForm from "../PersonDetailsSection/PersonalDetailsForm";
 
-const PeopleAccountSection = () => {
+interface Props {
+  formRef?: RefObject<HTMLDivElement>;
+}
+
+const PeopleAccountSection = ({ formRef }: Props) => {
   const { currentStep } = usePeopleStore((state) => state);
 
   const getSections = () => {
@@ -21,7 +28,7 @@ const PeopleAccountSection = () => {
     }
   };
 
-  return <>{getSections()}</>;
+  return <Box ref={formRef}>{getSections()}</Box>;
 };
 
 export default PeopleAccountSection;

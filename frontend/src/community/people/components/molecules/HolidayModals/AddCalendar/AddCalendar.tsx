@@ -49,6 +49,7 @@ const AddCalendar: FC = () => {
     <Box>
       <Box>
         <Typography
+          id="download-csv-description"
           variant="body1"
           sx={{
             py: "1rem",
@@ -66,7 +67,7 @@ const AddCalendar: FC = () => {
           shouldBlink={isButtonBlinking.download}
         />
       </Box>
-      <Divider />
+      <Divider aria-hidden={true} />
       <Button
         label="Next"
         endIcon={<RightArrowIcon />}

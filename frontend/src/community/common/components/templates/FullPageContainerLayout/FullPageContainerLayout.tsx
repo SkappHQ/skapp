@@ -27,6 +27,8 @@ interface Props {
     dataTestId?: string;
     onClick?: () => void | Promise<void>;
     styles?: SxProps;
+    ariaLabel?: string;
+    title?: string;
   };
   title: string;
   stepText: string;
@@ -39,6 +41,8 @@ interface Props {
     body?: SxProps;
   };
   children?: ReactNode;
+  id?: string;
+  tabIndex?: number;
 }
 
 const FullPageContainerLayout = ({
@@ -47,7 +51,9 @@ const FullPageContainerLayout = ({
   title,
   stepText,
   customStyles,
-  children
+  children,
+  id,
+  tabIndex
 }: Props): JSX.Element => {
   const router = useRouter();
 
@@ -74,26 +80,40 @@ const FullPageContainerLayout = ({
       router.back();
     }
   };
-
   return (
     <>
       <Head>
         <title>{pageHead}</title>
       </Head>
-      <Stack sx={mergeSx([classes.wrapper, customStyles?.wrapper])}>
-        <Stack sx={mergeSx([classes.container, customStyles?.container])}>
-          <Stack sx={mergeSx([classes.header, customStyles?.header])}>
+      <Stack
+        component="div"
+        sx={mergeSx([classes.wrapper, customStyles?.wrapper])}
+        id={id}
+        tabIndex={tabIndex}
+      >
+        <Stack
+          component="div"
+          sx={mergeSx([classes.container, customStyles?.container])}
+        >
+          <Stack
+            component="div"
+            sx={mergeSx([classes.header, customStyles?.header])}
+            role="banner"
+          >
             <IconButton
               tabIndex={0}
               data-testid={icon?.dataTestId}
-              aria-label={translateAria(["backButton"])}
-              title={translateAria(["backButton"])}
+              aria-label={icon?.ariaLabel ?? translateAria(["backButton"])}
+              title={icon?.title ?? translateAria(["backButton"])}
               onClick={onIconClick}
               sx={classes.iconBtn}
             >
               <Icon name={icon?.name ?? IconName.CLOSE_ICON} />
             </IconButton>
-            <Stack sx={mergeSx([classes.title, customStyles?.title])}>
+            <Stack
+              component="div"
+              sx={mergeSx([classes.title, customStyles?.title])}
+            >
               <Typography variant="h1">{title}</Typography>
               <Typography
                 variant="body2"
@@ -103,7 +123,9 @@ const FullPageContainerLayout = ({
               </Typography>
             </Stack>
           </Stack>
-          <Stack sx={mergeSx([customStyles?.body])}>{children}</Stack>
+          <Stack component="main" sx={mergeSx([customStyles?.body])}>
+            {children}
+          </Stack>
         </Stack>
       </Stack>
     </>

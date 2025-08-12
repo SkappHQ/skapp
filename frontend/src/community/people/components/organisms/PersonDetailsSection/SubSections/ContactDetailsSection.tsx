@@ -9,7 +9,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "~community/people/constants/configs";
 import useContactDetailsFormHandlers from "~community/people/hooks/useContactDetailsFormHandlers";
 import useGetCountryList from "~community/people/hooks/useGetCountryList";
-import useGetDefaultConuntryCode from "~community/people/hooks/useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { L3ContactDetailsType } from "~community/people/types/PeopleTypes";
@@ -29,8 +29,13 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
     "addResource",
     "contactDetails"
   );
+  const translateAria = useTranslator(
+    "peopleAria",
+    "addResource",
+    "contactDetails"
+  );
 
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
 
   const { employee } = usePeopleStore((state) => state);
 
@@ -144,6 +149,7 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
               placeHolder={translateText(["enterContactNo"])}
               isDisabled={isInputsDisabled}
               readOnly={isReadOnly}
+              ariaLabel={translateAria(["contactNumber"])}
             />
           </Grid>
           <Grid

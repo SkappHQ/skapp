@@ -41,6 +41,7 @@ export type MenuItemTypes = {
   color?: string;
   onClickHandler: () => void;
   isDisabled?: boolean;
+  ariaLabel?: string;
 };
 
 export enum IconPositions {

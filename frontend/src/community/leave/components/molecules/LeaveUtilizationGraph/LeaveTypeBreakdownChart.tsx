@@ -28,11 +28,13 @@ interface Props {
   isLoading: boolean;
   error: Error | null;
   datasets: LeaveTypeBreakDownReturnTypes | undefined;
+  isUserProfileView?: boolean;
 }
 const LeaveTypeBreakdownChart = ({
   isLoading,
   error,
-  datasets
+  datasets,
+  isUserProfileView
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
 
@@ -42,6 +44,7 @@ const LeaveTypeBreakdownChart = ({
   const classes = styles(theme);
 
   const translateTexts = useTranslator("leaveModule", "dashboard");
+  const translateAria = useTranslator("leaveAria", "dashboard");
 
   const { isDrawerExpanded } = useCommonStore((state) => ({
     isDrawerExpanded: state.isDrawerExpanded
@@ -155,7 +158,9 @@ const LeaveTypeBreakdownChart = ({
                       : "none",
                   ...classes.chartContainer
                 }}
-                tabIndex={getTabIndex(isFreeTier)}
+                tabIndex={getTabIndex(!isFreeTier || !isUserProfileView)}
+                role="application"
+                aria-label={translateAria(["leaveUtilizationChart"])}
                 onKeyDown={handleKeyPress}
                 onFocus={() => {
                   const chartInstance = chartRef.current?.getEchartsInstance();

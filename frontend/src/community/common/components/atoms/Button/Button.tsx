@@ -23,7 +23,13 @@ import StyledButton from "./StyledButton";
 
 export interface StyledButtonProps {
   id?: string;
+  accessibility?: {
+    ariaDescription?: string;
+    ariaDescribedBy?: string;
+    ariaHidden?: boolean;
+  };
   ariaLabel?: string;
+  ariaDisabled?: boolean;
   dataTestId?: string;
   dataAttr?: Record<string, unknown>;
   isLoading?: boolean;
@@ -43,13 +49,14 @@ export interface StyledButtonProps {
   isStrokeAvailable?: boolean;
   shouldBlink?: boolean;
   title?: string;
-  ariaDisabled?: boolean;
 }
 
 const Button = ({
   id,
   dataTestId,
+  accessibility,
   ariaLabel,
+  ariaDisabled = false,
   title,
   dataAttr,
   isLoading = false,
@@ -67,8 +74,7 @@ const Button = ({
   onMouseLeave,
   isDefaultIconColor = false,
   isStrokeAvailable = false,
-  shouldBlink = false,
-  ariaDisabled = false
+  shouldBlink = false
 }: StyledButtonProps): JSX.Element => {
   const theme = useTheme();
 
@@ -133,6 +139,8 @@ const Button = ({
       role="button"
       data-testid={dataTestId}
       aria-label={ariaLabel}
+      aria-describedby={accessibility?.ariaDescribedBy}
+      aria-hidden={accessibility?.ariaHidden}
       aria-disabled={ariaDisabled}
       title={title}
       disableElevation

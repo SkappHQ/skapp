@@ -256,6 +256,9 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                       cursor: "pointer",
                       zIndex: ZIndexEnums.DEFAULT
                     }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={translateAria(["addProfileAvatar"])}
                     onClick={handleImageClick}
                   >
                     {employee?.common?.authPic?.length ? (
@@ -452,6 +455,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                 }}
                 isDisabled={isInputsDisabled}
                 maxLength={PASSPORT_AND_NIN_MAX_CHARACTER_LENGTH}
+                ariaLabel={translateAria(["enterNIN"])}
               />
             </Grid>
 
@@ -472,6 +476,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                 }}
                 isDisabled={isInputsDisabled}
                 maxLength={PASSPORT_AND_NIN_MAX_CHARACTER_LENGTH}
+                ariaLabel={translateAria(["passportNumber"])}
               />
             </Grid>
             <Grid

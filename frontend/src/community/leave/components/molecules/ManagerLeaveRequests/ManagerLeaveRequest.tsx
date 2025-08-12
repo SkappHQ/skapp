@@ -1,13 +1,14 @@
-import { Stack, Theme, useTheme } from "@mui/material";
+import { Box, Stack, Theme, useTheme } from "@mui/material";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
+import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
   getAsDaysString,
@@ -30,6 +31,7 @@ import {
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
+import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 
 interface Props {
   employeeLeaveRequests: LeaveRequestItemsType[];
@@ -54,6 +56,8 @@ const ManagerLeaveRequest: FC<Props> = ({
     "leaveRequests",
     "leaveRequestTable"
   );
+
+  const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
   const {
     resetLeaveRequestParams,
@@ -148,16 +152,29 @@ const ManagerLeaveRequest: FC<Props> = ({
   const transformToTableRows = () => {
     return employeeLeaveRequests?.map((employeeLeaveRequest) => ({
       id: employeeLeaveRequest.leaveRequestId,
+      ariaLabel: {
+        row: generateManagerLeaveRequestAriaLabel(
+          translateAria,
+          employeeLeaveRequest
+        )
+      },
       name: (
-        <AvatarChip
-          firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
-          lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
-          avatarUrl={employeeLeaveRequest?.employee.authPic ?? ""}
-          isResponsiveLayout
-          chipStyles={{
-            maxWidth: "15.625rem"
-          }}
-        />
+        <Box
+          role="group"
+          aria-label={`${employeeLeaveRequest?.employee?.firstName} ${employeeLeaveRequest?.employee?.lastName}`}
+        >
+          <Box aria-hidden={true}>
+            <AvatarChip
+              firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
+              lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
+              avatarUrl={employeeLeaveRequest?.employee.authPic ?? ""}
+              isResponsiveLayout
+              chipStyles={{
+                maxWidth: "15.625rem"
+              }}
+            />
+          </Box>
+        </Box>
       ),
       duration: (
         <RequestDates
@@ -166,25 +183,39 @@ const ManagerLeaveRequest: FC<Props> = ({
         />
       ),
       type: (
-        <IconChip
-          label={employeeLeaveRequest?.leaveType?.name}
-          icon={employeeLeaveRequest?.leaveType?.emojiCode}
-          isTruncated={!theme.breakpoints.up("xl")}
-        />
+        <div
+          style={{
+            backgroundColor: theme.palette.common.white,
+            borderRadius: "9.375rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 1rem"
+          }}
+        >
+          <span role="img" aria-hidden="true">
+            {getEmoji(employeeLeaveRequest?.leaveType?.emojiCode || "")}
+          </span>
+          {employeeLeaveRequest?.leaveType?.name}
+        </div>
       ),
       status: (
-        <IconChip
-          label={employeeLeaveRequest?.status.toLowerCase()}
-          icon={requestTypeSelector(employeeLeaveRequest?.status)}
-          chipStyles={{
-            alignSelf: "flex-end",
-            [`@media (max-width: 81.25rem)`]: {
-              marginRight: "2.25rem",
-              padding: "1rem"
-            }
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            backgroundColor: theme.palette.common.white,
+            borderRadius: "9.375rem",
+            padding: "0.5rem 1rem",
+            textTransform: "capitalize"
           }}
-          isTruncated={!theme.breakpoints.up("xl")}
-        />
+        >
+          <span role="img" aria-hidden="true">
+            {requestTypeSelector(employeeLeaveRequest?.status)}
+          </span>
+          {employeeLeaveRequest?.status.toLowerCase()}
+        </div>
       )
     }));
   };
@@ -242,58 +273,74 @@ const ManagerLeaveRequest: FC<Props> = ({
   }, [newLeaveId]);
 
   return (
-    <Table
-      tableName={TableNames.MANAGER_LEAVE_REQUESTS}
-      headers={tableHeaders}
-      rows={transformToTableRows()}
-      tableBody={{
-        emptyState: {
-          noData: {
-            title: translateText(["noLeaveRequests"]),
-            description: translateText(["noLeaveRequestsManagerDetails"])
+    <Box role="region" aria-label={translateAria(["allLeaveRequestTable"])}>
+      <Table
+        tableName={TableNames.MANAGER_LEAVE_REQUESTS}
+        headers={tableHeaders}
+        rows={transformToTableRows()}
+        tableBody={{
+          emptyState: {
+            noData: {
+              title: translateText(["noLeaveRequests"]),
+              description: translateText(["noLeaveRequestsManagerDetails"])
+            }
+          },
+          loadingState: {
+            skeleton: {
+              rows: 5
+            }
+          },
+          onRowClick: handelRowClick
+        }}
+        tableFoot={{
+          pagination: {
+            isEnabled: true,
+            totalPages: totalPages,
+            currentPage: currentPage,
+            onChange: (_event: ChangeEvent<unknown>, value: number) =>
+              setPagination(value - 1)
           }
-        },
-        loadingState: {
-          skeleton: {
-            rows: 5
+        }}
+        actionToolbar={{
+          firstRow: {
+            leftButton: (
+              <Stack flexDirection={"row"} gap="1.25rem">
+                <ManagerLeaveRequestsSortByBtn />
+                <DateRangePicker
+                  label={commonTranslateText(["label"])}
+                  selectedDates={selectedDates}
+                  setSelectedDates={setSelectedDates}
+                  accessibility={{
+                    ariaLabel: translateAria(["dateRangeFilter"], {
+                      startDate: selectedDates[0]
+                        ? convertDateToFormat(
+                            selectedDates[0],
+                            DAY_MONTH_YEAR_FORMAT
+                          )
+                        : getDateForPeriod("year", "start"),
+                      endDate: selectedDates[1]
+                        ? convertDateToFormat(
+                            selectedDates[1],
+                            DAY_MONTH_YEAR_FORMAT
+                          )
+                        : getDateForPeriod("year", "end")
+                    })
+                  }}
+                />
+              </Stack>
+            ),
+            rightButton: (
+              <ManagerLeaveRequestFilterByBtn
+                leaveTypeButtons={leaveTypeButtons}
+                onClickReset={onClickReset}
+                removeFilters={removeFilters}
+              />
+            )
           }
-        },
-        onRowClick: handelRowClick
-      }}
-      tableFoot={{
-        pagination: {
-          isEnabled: true,
-          totalPages: totalPages,
-          currentPage: currentPage,
-          onChange: (_event: ChangeEvent<unknown>, value: number) =>
-            setPagination(value - 1)
-        }
-      }}
-      actionToolbar={{
-        firstRow: {
-          leftButton: (
-            <Stack flexDirection={"row"} gap="1.25rem">
-              <ManagerLeaveRequestsSortByBtn
-                isDisabled={employeeLeaveRequests?.length === 0}
-              />
-              <DateRangePicker
-                label={commonTranslateText(["label"])}
-                selectedDates={selectedDates}
-                setSelectedDates={setSelectedDates}
-              />
-            </Stack>
-          ),
-          rightButton: (
-            <ManagerLeaveRequestFilterByBtn
-              leaveTypeButtons={leaveTypeButtons}
-              onClickReset={onClickReset}
-              removeFilters={removeFilters}
-            />
-          )
-        }
-      }}
-      isLoading={isLoading}
-    />
+        }}
+        isLoading={isLoading}
+      />
+    </Box>
   );
 };
 

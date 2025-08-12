@@ -52,6 +52,11 @@ const ExitModal = () => {
       modalWrapperStyles={{
         zIndex: ZIndexEnums.MODAL
       }}
+      ids={{
+        title: "user-prompt-modal-title",
+        description: "user-prompt-modal-description",
+        closeButton: "user-prompt-modal-close-btn"
+      }}
     >
       <AreYouSureModal
         onPrimaryBtnClick={() =>

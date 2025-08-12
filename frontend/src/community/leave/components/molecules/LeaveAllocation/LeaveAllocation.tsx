@@ -1,7 +1,15 @@
-import { Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { FC, useEffect, useMemo, useState } from "react";
+import {
+  FC,
+  KeyboardEvent,
+  MouseEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
@@ -9,6 +17,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import LeaveTypeCard from "~community/leave/components/molecules/LeaveTypeCard/LeaveTypeCard";
@@ -22,6 +31,7 @@ import LeaveAllocationSkeleton from "./LeaveAllocationSkeleton";
 import styles from "./styles";
 
 const LeaveAllocation: FC = () => {
+  const translateAria = useTranslator("leaveAria");
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
@@ -32,6 +42,8 @@ const LeaveAllocation: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [allocationsPerPage, setAllocationsPerPage] =
     useState(ALLOCATION_PER_PAGE);
+
+  const firstCardRef = useRef<HTMLDivElement | null>(null);
 
   const { data: entitlement, isLoading } = useGetLeaveAllocation(selectedYear);
 
@@ -57,25 +69,61 @@ const LeaveAllocation: FC = () => {
     return Math.ceil(entitlement?.length / allocationsPerPage);
   }, [entitlement, allocationsPerPage]);
 
+  const handleNextPage = (
+    event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>
+  ): void => {
+    event.preventDefault();
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = (
+    event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>
+  ): void => {
+    event.preventDefault();
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  useEffect(() => {
+    if (firstCardRef.current) {
+      firstCardRef.current?.focus();
+    }
+  }, [currentPage]);
+
   return (
-    <>
+    <Box
+      role="region"
+      aria-label={translateAria(
+        ["myRequests", "myLeaveAllocation", "myLeaveAllocationSection"],
+        {
+          year: selectedYear
+        }
+      )}
+    >
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />
         ) : (
-          currentAllocations?.map((entitlement: LeaveAllocationDataTypes) => {
-            return (
-              <Grid
-                key={entitlement?.leaveType?.typeId}
-                size={{ xs: 6, md: 4 }}
-              >
-                <LeaveTypeCard
-                  entitlement={entitlement}
-                  managers={managerAvailability ?? false}
-                />
-              </Grid>
-            );
-          })
+          currentAllocations?.map(
+            (entitlement: LeaveAllocationDataTypes, index: number) => {
+              const isFirstCard = index === 0;
+              return (
+                <Grid
+                  key={entitlement?.leaveType?.typeId}
+                  size={{ xs: 6, md: 4 }}
+                >
+                  <LeaveTypeCard
+                    entitlement={entitlement}
+                    managers={managerAvailability ?? false}
+                    ref={isFirstCard ? firstCardRef : undefined}
+                  />
+                </Grid>
+              );
+            }
+          )
         )}
         {(isLoading || isManagerAvailabilityLoading) && (
           <LeaveAllocationSkeleton />
@@ -84,7 +132,7 @@ const LeaveAllocation: FC = () => {
       {entitlement?.length > ALLOCATION_PER_PAGE && (
         <Stack sx={classes.buttonFooter}>
           <IconButton
-            onClick={() => setCurrentPage(currentPage - 1)}
+            onClick={handlePreviousPage}
             icon={
               <Icon
                 name={IconName.CHEVRON_LEFT_ICON}
@@ -97,9 +145,10 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === 1 ? 0.5 : 1
             }}
             disabled={currentPage === 1}
+            ariaLabel={translateAria(["applyLeave", "calendar", "back"])}
           />
           <IconButton
-            onClick={() => setCurrentPage(currentPage + 1)}
+            onClick={handleNextPage}
             icon={
               <Icon
                 name={IconName.CHEVRON_RIGHT_ICON}
@@ -112,10 +161,11 @@ const LeaveAllocation: FC = () => {
               opacity: currentPage === totalPages ? 0.5 : 1
             }}
             disabled={currentPage === totalPages}
+            ariaLabel={translateAria(["applyLeave", "calendar", "next"])}
           />
         </Stack>
       )}
-    </>
+    </Box>
   );
 };
 

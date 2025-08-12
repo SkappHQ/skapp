@@ -24,7 +24,7 @@ import {
   TeamResultsType
 } from "~community/people/types/EmployeeTypes";
 
-import useGetDefaultConuntryCode from "./useGetDefaultConuntryCode";
+import useGetDefaultCountryCode from "./useGetDefaultCountryCode";
 
 const useDetectProfileChange = () => {
   const {
@@ -41,7 +41,7 @@ const useDetectProfileChange = () => {
     employeePreviousEmploymentDetails,
     employeeVisaDetails
   } = usePeopleStore((state) => state);
-  const countryCode = useGetDefaultConuntryCode();
+  const countryCode = useGetDefaultCountryCode();
   const { data: employee } = useGetUserPersonalDetails();
   const immutableFields = ["webkitRelativePath"];
 

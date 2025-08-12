@@ -1,27 +1,20 @@
 import {
   Box,
   Divider,
+  SelectChangeEvent,
   Stack,
   Theme,
   Typography,
   useTheme
 } from "@mui/material";
-import {
-  ChangeEvent,
-  FC,
-  MouseEvent,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
-import TImesheetTableRowFill from "~community/attendance/components/molecules/TimesheetTableRow/TImesheetTableRowFill";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
-import Dropdown from "~community/common/components/molecules/Dropdown/Dropdown";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -36,6 +29,7 @@ import {
 import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import LeaveReportsTableHeader from "~community/leave/components/molecules/LeaveReportTableHeader/LeaveReportTableHeader";
 import LeaveReportsTableRow from "~community/leave/components/molecules/LeaveReportTableRow/LeaveReportTableRow";
+import TimesheetTableRowFill from "~community/leave/components/molecules/TimesheetTableRow/TimesheetTableRowFill";
 import { SheetType } from "~community/leave/enums/LeaveReportEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { ReportTableRowDataType } from "~community/leave/types/LeaveReportTypes";
@@ -226,8 +220,8 @@ const LeaveEntitlementsReportsTable: FC = () => {
     resetReportsFilterOrderIds();
   };
 
-  const handleYearClick = (event: MouseEvent<HTMLElement>): void => {
-    setReportsParams("year", event.currentTarget.innerText);
+  const handleYearClick = (event: SelectChangeEvent): void => {
+    setReportsParams("year", event.target.value);
   };
 
   const downloadCSV = (reportType: SheetType) => {
@@ -240,11 +234,11 @@ const LeaveEntitlementsReportsTable: FC = () => {
     <>
       <Stack sx={classes.headerStack}>
         <Box>
-          <Dropdown
-            onItemClick={handleYearClick}
-            selectedItem={reportsParams.year}
-            title={reportsParams.year}
-            items={years}
+          <RoundedSelect
+            id="leave-entitlements-report-table-year-filter"
+            onChange={handleYearClick}
+            value={reportsParams.year}
+            options={years}
           />
         </Box>
         <Box>
@@ -315,7 +309,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
                 <>
                   {!isDrawerToggled ? (
                     <>
-                      <TImesheetTableRowFill
+                      <TimesheetTableRowFill
                         noOfRows={reportData.items.length}
                       />
                       <LeaveReportsTableRow
@@ -331,7 +325,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
                     </>
                   ) : (
                     <Box sx={classes.boxContainer}>
-                      <TImesheetTableRowFill
+                      <TimesheetTableRowFill
                         noOfRows={reportData.items.length}
                       />
                       <LeaveReportsTableRow

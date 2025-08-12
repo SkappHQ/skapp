@@ -41,6 +41,8 @@ const PeopleFormSectionWrapper = ({
           margin: "0rem auto",
           ...containerStyles
         }}
+        role="region"
+        aria-label={title}
       >
         <Box>
           <Box

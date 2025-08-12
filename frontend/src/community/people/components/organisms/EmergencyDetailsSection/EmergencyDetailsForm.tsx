@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
 import { theme } from "~community/common/theme/theme";
@@ -114,7 +115,7 @@ const EmergencyDetailsForm = ({
   }, [isCancelModalConfirmButtonClicked]);
 
   return (
-    <>
+    <Box role="region" aria-labelledby="page-title subtitle-next-to-title">
       <PrimaryContactDetailsSection
         ref={primaryContactDetailsRef}
         isInputsDisabled={isTerminatedEmployee}
@@ -135,7 +136,7 @@ const EmergencyDetailsForm = ({
             onSaveClick={onSave}
           />
         ))}
-    </>
+    </Box>
   );
 };
 

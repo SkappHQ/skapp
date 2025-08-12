@@ -1,20 +1,16 @@
-import { useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import Search from "~community/common/components/molecules/Search/Search";
-import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
+import PeopleAndTeamAutocompleteSearch, {
+  OptionType
+} from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
-import {
-  EmployeeSearchResultType,
-  TeamSearchResultType
-} from "~community/common/types/CommonTypes";
 import { useGetManagerAssignedLeaveRequests } from "~community/leave/api/LeaveApi";
 import ManagerLeaveRequest from "~community/leave/components/molecules/ManagerLeaveRequests/ManagerLeaveRequest";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
@@ -26,22 +22,18 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 const LeaveRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveRequests");
-  const theme = useTheme();
+  const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();
   const { data } = useSession();
-  const { toastMessage, setToastMessage } = useToast();
 
-  const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedUserName, setSelectedUserName] = useState<string>("");
-  const [selectedTeamName, setSelectedTeamName] = useState<string>("");
   const [searchErrors] = useState<string | undefined>(undefined);
 
   const { setIsFromPeopleDirectory, setViewEmployeeId, setSelectedEmployeeId } =
     usePeopleStore((state) => state);
-  const { data: suggestions } = useGetEmployeesAndTeamsForAnalytics(
-    searchTerm || " "
-  );
+
+  const { data: suggestions, isPending: isSuggestionsPending } =
+    useGetEmployeesAndTeamsForAnalytics(searchTerm || " ");
 
   const { data: assignedLeaveRequests, isLoading } =
     useGetManagerAssignedLeaveRequests();
@@ -53,53 +45,18 @@ const LeaveRequests: NextPage = () => {
     triggerOnMount: true
   });
 
-  const onSearchChange = (
-    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ): void => {
-    e.target.value = e.target.value.replace(/^\s+/g, "");
-    setSearchTerm(e.target.value);
-  };
-
-  const onSelectResult = async (
-    result: EmployeeSearchResultType | TeamSearchResultType
-  ): Promise<void> => {
-    if ((result as EmployeeSearchResultType)?.employeeId) {
-      const employeeId = (result as EmployeeSearchResultType)?.employeeId;
-      const employeeName = `${(result as EmployeeSearchResultType)?.firstName} ${
-        (result as EmployeeSearchResultType)?.lastName
-      }`;
-
-      setSelectedUserName(employeeName);
-      setSelectedTeamName("");
-
-      await handleRowClick({
-        id: employeeId
-      });
-    } else {
-      const teamId = (result as TeamSearchResultType)?.teamId;
-      await router.push(
-        `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/${teamId}?teamName=${encodeURIComponent((result as TeamSearchResultType)?.teamName)}`
-      );
-      setSelectedTeamName((result as TeamSearchResultType)?.teamName);
-      setSelectedUserName("");
-    }
-    setIsPopperOpen(false);
-    setSearchTerm("");
-  };
-
-  const handleRowClick = async (employee: { id: number }) => {
+  const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
     if (
-      data?.user.roles?.includes(
-        ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
-      )
+      data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
+      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN)
     ) {
-      setSelectedEmployeeId(employee.id);
-      const url = `${ROUTES.PEOPLE.EDIT(employee.id)}?tab=leave`;
+      setSelectedEmployeeId(employeeId);
+      const url = `${ROUTES.PEOPLE.EDIT(employeeId)}?tab=leave`;
       await router.push(url);
     } else {
       setIsFromPeopleDirectory(true);
-      setViewEmployeeId(employee.id);
-      const url = `${ROUTES.PEOPLE.INDIVIDUAL}/${employee.id}?tab=leave`;
+      setViewEmployeeId(employeeId);
+      const url = `${ROUTES.PEOPLE.INDIVIDUAL}/${employeeId}?tab=leave`;
       await router.push(url);
     }
   };
@@ -108,41 +65,80 @@ const LeaveRequests: NextPage = () => {
     setLeaveRequestParams("status", ["PENDING"]);
   }, [setLeaveRequestParams]);
 
+  const options = useMemo(() => {
+    const individualSuggestions = suggestions?.employeeResponseDtoList?.map(
+      (employee) => {
+        return {
+          value: employee.employeeId,
+          label: `${employee.firstName} ${employee.lastName}`,
+          category: "Individuals",
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          authPic: employee.authPic
+        };
+      }
+    );
+
+    const teamSuggestions = suggestions?.teamResponseDtoList?.map((team) => {
+      return {
+        value: team.teamId,
+        label: team.teamName,
+        category: "Teams",
+        teamName: team.teamName
+      };
+    });
+
+    return [...(individualSuggestions || []), ...(teamSuggestions || [])];
+  }, [suggestions]);
+
+  const onSearchChange = async (value: OptionType | null) => {
+    if (value?.category === "Individuals") {
+      await handleRowClick({ employeeId: value.value });
+    }
+
+    if (value?.category === "Teams") {
+      await router.push(
+        `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/${value.value}?teamName=${encodeURIComponent(value.label)}`
+      );
+    }
+  };
+
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       isDividerVisible={true}
     >
-      <>
-        <Search
-          placeHolder={
-            selectedUserName || selectedTeamName || translateText(["search"])
-          }
-          label=""
-          setIsPopperOpen={setIsPopperOpen}
-          isPopperOpen={isPopperOpen}
-          labelStyles={{ mb: "0.25rem" }}
+      <Box
+        role="region"
+        aria-label={translateAria(["allLeaveRequestPage"])}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          width: "100%"
+        }}
+      >
+        <PeopleAndTeamAutocompleteSearch
+          id={{
+            autocomplete: "all-leave-requests-autocomplete",
+            textField: "all-leave-requests-text-field"
+          }}
+          name="leaveRequestsSearch"
+          options={options}
+          value={null}
+          inputValue={searchTerm}
           onChange={onSearchChange}
-          value={searchTerm}
+          onInputChange={(value) => {
+            const formattedValue = value.replace(/^\s+/g, "");
+            setSearchTerm(formattedValue);
+          }}
+          placeholder={translateText(["search"])}
+          isLoading={isSuggestionsPending}
           error={searchErrors}
-          onSelectMember={(result) =>
-            onSelectResult(
-              result as EmployeeSearchResultType | TeamSearchResultType
-            )
-          }
-          isAutoFocus={true}
-          filterSearchResult={true}
-          isEmployeeAndUserSearch={true}
-          employeeAndUserSearchResult={suggestions}
-          suggestionBoxStyles={{
-            maxHeight: "15.625rem",
-            backgroundColor: theme.palette.notifyBadge.contrastText
-          }}
-          popperStyles={{
-            boxShadow: `0rem 0.25rem 1.25rem ${theme.palette.grey.A200}`,
-            width: "100%"
-          }}
+          isDisabled={false}
+          required={false}
+          label=""
         />
 
         <ManagerLeaveRequest
@@ -152,14 +148,7 @@ const LeaveRequests: NextPage = () => {
         />
 
         <LeaveManagerModalController />
-        <ToastMessage
-          {...toastMessage}
-          open={toastMessage.open}
-          onClose={() => {
-            setToastMessage((state) => ({ ...state, open: false }));
-          }}
-        />
-      </>
+      </Box>
     </ContentLayout>
   );
 };

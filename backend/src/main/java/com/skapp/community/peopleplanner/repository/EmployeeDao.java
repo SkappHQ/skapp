@@ -32,4 +32,8 @@ public interface EmployeeDao
 
 	long countByAccountStatusIn(Set<AccountStatus> accountStatuses);
 
+	boolean existsByEmployeeIdAndAccountStatusIn(Long userId, Set<AccountStatus> accountStatuses);
+
+	List<Employee> findByAccountStatusIn(Set<AccountStatus> accountStatuses);
+
 }

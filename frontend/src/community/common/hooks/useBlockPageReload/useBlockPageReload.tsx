@@ -1,50 +1,40 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-const useBlockPageReload = () => {
+const useBlockPageReload = (): boolean => {
   const router = useRouter();
-  const [previousPath, setPreviousPath] = useState<string | null>(null);
+  const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
-    if (!previousPath && typeof window !== "undefined") {
-      setPreviousPath(document.referrer || "/");
-    }
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = ""; // Required for Chrome
-      return ""; // For other browsers
+      e.returnValue = "";
+      sessionStorage.setItem("redirectAfterReload", "true");
     };
 
-    const handleRouteChange = () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+    const shouldRedirect = sessionStorage.getItem("redirectAfterReload");
+    if (shouldRedirect) {
+      sessionStorage.removeItem("redirectAfterReload");
 
-    const handleUnload = () => {
-      if (previousPath) {
-        sessionStorage.setItem("redirectAfterReload", "true");
-      }
-    };
-
-    // Only go back if we navigated here after a page reload
-    if (typeof window !== "undefined") {
-      const shouldRedirect = sessionStorage.getItem("redirectAfterReload");
-      if (shouldRedirect) {
-        sessionStorage.removeItem("redirectAfterReload");
+      // Redirect before showing content
+      if (window.history.length > 1) {
         router.back();
+      } else {
+        router.replace("/"); // fallback
       }
+      return; // do not continue; block rendering
     }
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("unload", handleUnload);
-    router.events.on("routeChangeStart", handleRouteChange);
+
+    setShouldRender(true); // safe to render
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("unload", handleUnload);
-      router.events.off("routeChangeStart", handleRouteChange);
     };
-  }, [router, previousPath]);
+  }, [router]);
+
+  return shouldRender;
 };
 
 export default useBlockPageReload;
