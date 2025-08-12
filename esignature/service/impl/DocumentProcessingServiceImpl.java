@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,8 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -50,7 +54,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float TEXT_PADDING = 3.0f;
 
-	private static final float BORDER_IMAGE_PADDING = 5.0f;
+	private static final float BORDER_IMAGE_PADDING = 1.0f; // 1.0f to match the front end
 
 	private static final float Y_OFFSET_VALUE = 2.0f;
 
@@ -118,6 +122,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				PDDocument document = Loader.loadPDF(randomAccessRead);
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
+			// Handle encrypted documents by removing security
+			if (document.isEncrypted()) {
+				document.setAllSecurityToBeRemoved(true);
+			}
+
 			for (int i = 0; i < numOfPages; i++) {
 				PDPage page = document.getPage(i);
 				float pageHeight = page.getMediaBox().getHeight();
@@ -125,13 +134,36 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
-					contentStream.beginText();
 					PDType0Font font = loadFont(document);
+					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
+					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000
+							* UUID_FONT_SIZE;
 
+					// Set different paddings for horizontal and vertical sides
+					float verticalPadding = 1.0f;
+					float horizontalPadding = 6.0f; // Increased horizontal padding
+					float borderRadius = 4.0f; // Border radius of 4px
+
+					float rectWidth = textWidth + (horizontalPadding * 2);
+					float rectHeight = textHeight + (verticalPadding * 2);
+
+					// Calculate positions for centered text in rectangle
+					float rectY = adjustedY - rectHeight;
+					float rectX = UUID_X_POSITION - horizontalPadding;
+
+					// Calculate text position to center it within the rectangle
+					float textY = rectY + verticalPadding + (textHeight * 0.25f);
+					float textX = UUID_X_POSITION;
+
+					// Draw rounded rectangle with white background
+					drawRoundedRectangle(contentStream, rectX, rectY, rectWidth, rectHeight, borderRadius,
+							new Color(1f, 1f, 1f)); // White color
+
+					// Add text in black color
+					contentStream.setNonStrokingColor(0, 0, 0); // Black color for text
+					contentStream.beginText();
 					contentStream.setFont(font, UUID_FONT_SIZE);
-
-					// take co-ordinated from bottom-left
-					contentStream.newLineAtOffset(UUID_X_POSITION, adjustedY);
+					contentStream.newLineAtOffset(textX, textY);
 					contentStream.showText(value);
 					contentStream.endText();
 				}
@@ -145,6 +177,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			log.error("Error processing envelop Uuid PDF document: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
+	}
+
+	// Draws a filled rounded rectangle with the specified parameters.
+	private void drawRoundedRectangle(PDPageContentStream contentStream, float x, float y, float width, float height,
+			float radius, Color color) throws IOException {
+		contentStream.setNonStrokingColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f);
+
+		// Draw rounded rectangle
+		contentStream.moveTo(x + radius, y);
+		contentStream.lineTo(x + width - radius, y);
+		contentStream.curveTo(x + width - radius / 2, y, x + width, y + radius / 2, x + width, y + radius);
+		contentStream.lineTo(x + width, y + height - radius);
+		contentStream.curveTo(x + width, y + height - radius / 2, x + width - radius / 2, y + height,
+				x + width - radius, y + height);
+		contentStream.lineTo(x + radius, y + height);
+		contentStream.curveTo(x + radius / 2, y + height, x, y + height - radius / 2, x, y + height - radius);
+		contentStream.lineTo(x, y + radius);
+		contentStream.curveTo(x, y + radius / 2, x + radius / 2, y, x + radius, y);
+		contentStream.closePath();
+		contentStream.fill();
 	}
 
 	@Override
@@ -176,6 +228,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Error processing getNumberOfPages: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public Map<Integer, PageDimensionResponseDto> processDocumentDimensions(byte[] documentBytes) {
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+			Map<Integer, PageDimensionResponseDto> documentDimensionsData = new HashMap<>();
+			int pageCount = document.getNumberOfPages();
+			for (int i = 0; i < pageCount; i++) {
+				PDPage page = document.getPage(i);
+				PDRectangle mediaBox = page.getMediaBox();
+				documentDimensionsData.put(i + 1,
+						new PageDimensionResponseDto(mediaBox.getWidth(), mediaBox.getHeight()));
+			}
+			return documentDimensionsData;
+		}
+		catch (IOException e) {
+			log.error("Error processDocumentDimensions: {}", e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
@@ -271,9 +343,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private BorderDimensions calculateBorderDimensions(float imageX, float imageY, float imageWidth,
 			float imageHeight) {
-		float borderWidth = imageWidth + (BORDER_IMAGE_PADDING * 2);
+		float borderWidth = imageWidth;
 		float borderHeight = imageHeight + (BORDER_IMAGE_PADDING * 2);
-		float borderX = imageX - BORDER_IMAGE_PADDING;
+		float borderX = imageX;
 		float borderY = imageY - BORDER_IMAGE_PADDING;
 
 		return new BorderDimensions(borderX, borderY, borderWidth, borderHeight);
@@ -363,14 +435,28 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float imageWidth = image.getWidth();
 			float imageHeight = image.getHeight();
 
-			float scale = Math.min(width / imageWidth, height / imageHeight);
+			// Define a pixel to point conversion factor (typically 72 DPI for PDFs)
+			float pixelToPoint = 72f / 77f;
+
+			// Convert dimensions from pixels to points
+			float adjustedWidth = width * pixelToPoint;
+			// Reduce height to account for border padding (top and bottom)
+			float adjustedHeight = (height - (BORDER_IMAGE_PADDING * 2)) * pixelToPoint;
+
+			// Maintain aspect ratio while fitting within the bounds
+			float scale = Math.min(adjustedWidth / imageWidth, adjustedHeight / imageHeight);
 			float scaledWidth = imageWidth * scale;
 			float scaledHeight = imageHeight * scale;
 
+			// Center the image horizontally and vertically within available space
 			float imageX = x + (width - scaledWidth) / 2;
-			float imageY = y + (height - scaledHeight) / 2;
+			// Position image with padding adjustment
+			float imageY = y + BORDER_IMAGE_PADDING + (height - BORDER_IMAGE_PADDING * 2 - scaledHeight) / 2;
 
+			// Draw the image with exact dimensions
 			contentStream.drawImage(image, imageX, imageY, scaledWidth, scaledHeight);
+
+			log.debug("Drawing image at ({}, {}) with dimensions: {}x{}", imageX, imageY, scaledWidth, scaledHeight);
 		}
 		catch (IOException e) {
 			log.error("Error processing: drawInputImage : {}", e.getMessage());

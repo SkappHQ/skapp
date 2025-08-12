@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
@@ -16,9 +17,11 @@ public interface AuditTrailService {
 
 	ResponseEntityDto validateEnvelopeAuditTrails(Long envelopeId);
 
-	ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId);
+	ResponseEntityDto getAuditTrailsBySentEnvelope(Long envelopeId);
+
+	ResponseEntityDto getAuditTrailsByInboxEnvelope(Long envelopeId);
 
 	AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook, String ipAddress);
+			AddressBook addressBook, String ipAddress, JsonNode metadata);
 
 }

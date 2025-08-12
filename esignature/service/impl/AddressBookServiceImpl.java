@@ -6,6 +6,8 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -16,15 +18,18 @@ import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.repository.UserKeyRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
-import com.skapp.enterprise.esignature.utill.EsignValidations;
+import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,15 +39,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AddressBookServiceImpl implements AddressBookService {
 
+	public static final String HTTPS_PROTOCOL = "https://";
+
 	private final ExternalUserService externalUserService;
 
 	private final UserKeyService userKeyService;
 
 	private final AddressBookDao addressBookDao;
 
+	private final UserKeyRepository userKeyRepository;
+
 	private final EsignMapper esignMapper;
 
 	private final UserService userService;
+
+	private final TenantMigrationService tenantMigrationService;
+
+	private final TenantContext tenantContext;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
 
 	@Override
 	public ResponseEntityDto addExternalUserToAddressBook(ExternalUserDto externalUserDto, UserType type) {
@@ -79,6 +95,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	private void validateRequest(ExternalUserDto externalUserDto) {
 
+		externalUserDto.setEmail(externalUserDto.getEmail().trim());
 		Validations.validateEmail(externalUserDto.getEmail());
 		externalUserDto.setFirstName(externalUserDto.getFirstName().trim());
 		EsignValidations.validateExternalUserName(externalUserDto.getFirstName());
@@ -125,6 +142,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 		MySignatureLinkResponseDto mySignatureLinkResponseDto = esignMapper
 			.addressBookToMySignatureLinkResponseDto(addressBook);
+		mySignatureLinkResponseDto.setMySignatureLink(addressBook.getMySignatureLink());
 		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
@@ -144,6 +162,11 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setUserId(addressBook.getUserId());
 		mySignatureLinkResponseDto.setFirstName(addressBook.getFirstName());
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
+
+		if (addressBook.getMySignatureLink() != null) {
+			mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
+		}
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
 	}

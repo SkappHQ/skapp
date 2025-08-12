@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
@@ -52,19 +53,26 @@ import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
-import com.skapp.enterprise.esignature.utill.decryptor.AESDecrypt;
+import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.decryptor.AESDecrypt;
+import jakarta.persistence.PessimisticLockException;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -80,6 +88,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +112,8 @@ public class DocumentServiceImpl implements DocumentService {
 	public static final String SKAPP_SIGN_ENVELOPE_TEXT = "Skapp Sign Envelope ID: ";
 
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
+
+	public static final String HTTPS_PROTOCOL = "https://";
 
 	private final DocumentRepository documentRepository;
 
@@ -142,6 +153,20 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	@Value("${aws.s3.max-attempts}")
+	private int s3MaxAttempts;
+
+	@Getter
+	@Value("${retry.max-attempts}")
+	private int retryMaxAttempts;
+
+	@Getter
+	@Value("${retry.backoff-delay}")
+	private Long retryBackoffDelay;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
 
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
@@ -286,10 +311,6 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
-		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
-		}
-
 		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
 
 		for (Recipient rec : updatedRecipients) {
@@ -305,18 +326,25 @@ public class DocumentServiceImpl implements DocumentService {
 				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 			}
 		}
+
+		if (isDocumentComplete(nextSignRecipientList)) {
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
+		}
+
 		document = documentRepository.save(document);
 		recipientRepository.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -340,11 +368,11 @@ public class DocumentServiceImpl implements DocumentService {
 		List<AuditTrail> auditTrails = new ArrayList<>();
 
 		AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrails.add(auditTrailRecipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_COMPLETED,
-				null, null);
+				null, null, null);
 		auditTrails.add(auditTrail);
 
 		auditTrailDao.saveAll(auditTrails);
@@ -355,11 +383,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
+	@Retryable(
+			retryFor = { CannotAcquireLockException.class, PessimisticLockException.class,
+					LockAcquisitionException.class },
+			maxAttemptsExpression = "#{@documentServiceImpl.retryMaxAttempts}",
+			backoff = @Backoff(delayExpression = "#{@documentServiceImpl.retryBackoffDelay}"))
 	@Override
 	@Transactional
 	public ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess,
@@ -408,10 +442,14 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
-		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
-		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
-		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
+		LatestDocumentData latestDocumentData = downloadLatestDocumentBytes(document, currentVersion);
+		byte[] documentBytes = latestDocumentData.fileBytes();
+
+		DocumentVersion usedVersion = latestDocumentData.documentVersion();
+
+		KeyPair keyPairVerify = loadKeyPair(usedVersion.getAddressBook().getId());
+		verifyDocumentSignature(documentBytes, usedVersion, keyPairVerify.getPublic());
 
 		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
@@ -488,11 +526,11 @@ public class DocumentServiceImpl implements DocumentService {
 			List<AuditTrail> auditTrails = new ArrayList<>();
 
 			AuditTrail auditTrailRecipient = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-					AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+					AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 			auditTrails.add(auditTrailRecipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_COMPLETED, null, null);
+					AuditAction.ENVELOPE_COMPLETED, null, null, null);
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
@@ -505,19 +543,62 @@ public class DocumentServiceImpl implements DocumentService {
 			recipientService.sendDocumentCompletedEmailNotifications(envelope);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
-			documentCompleteResponseDto.setAccessLink(finalVersion.getFilePath());
+			documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_SIGNED, null, ipAddress);
+				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
 
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
-		documentCompleteResponseDto.setAccessLink(newVersion.getFilePath());
+		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
+	}
+
+	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
+		int attempt = 0;
+		DocumentVersion documentVersion = currentVersion;
+
+		while (attempt < s3MaxAttempts) {
+			try {
+				byte[] bytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+				return new LatestDocumentData(bytes, documentVersion);
+			}
+			catch (S3Exception ex) {
+				if (ex.statusCode() == 404) {
+					attempt++;
+					if (attempt >= s3MaxAttempts) {
+						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOWNLOAD_FILE_MAX_ATTEMPT_FAILED,
+								new Integer[] { attempt });
+					}
+					documentVersion = getPreviousDocumentVersion(document, documentVersion.getVersionNumber());
+				}
+				else {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_DOWNLOAD_FILE);
+				}
+			}
+		}
+
+		// Final fallback
+		DocumentVersion firstDocumentVersion = getDocumentVersion(1, document.getId());
+		byte[] bytes = amazonS3Service.downloadFileAsBytes(bucketName, firstDocumentVersion.getFilePath());
+		return new LatestDocumentData(bytes, firstDocumentVersion);
+	}
+
+	public DocumentVersion getPreviousDocumentVersion(Document document, int currentVersionNumber) {
+		List<DocumentVersion> versions = document.getVersions();
+		if (versions == null || versions.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY);
+		}
+		return versions.stream()
+			.filter(v -> v.getVersionNumber() < currentVersionNumber)
+			.max(Comparator.comparingInt(DocumentVersion::getVersionNumber))
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_PREVIOUS_VERSION));
 	}
 
 	private byte[] mergeAllFieldsToDocument(DocumentVersion currentVersion, byte[] documentBytes) {
@@ -654,7 +735,7 @@ public class DocumentServiceImpl implements DocumentService {
 			Envelope envelope = updateDeclineStatus(document, recipient);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
-					AuditAction.ENVELOPE_DECLINED, null, ipAddress);
+					AuditAction.ENVELOPE_DECLINED, null, ipAddress, null);
 			auditTrailDao.save(auditTrail);
 			envelopeDao.save(envelope);
 			recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
@@ -983,6 +1064,10 @@ public class DocumentServiceImpl implements DocumentService {
 				markField(field, fields, FieldStatus.SKIP);
 			}
 			else if (FieldType.imageFieldTypes().contains(fieldType)) {
+
+				if (fieldSignDto.getFieldValue() == null) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_VALUE_NOT_FOUND);
+				}
 				fieldSignDto.setFieldValue(processImageFieldPath(fieldSignDto.getFieldValue()));
 				String imageUrl = fieldSignDto.getFieldValue();
 
@@ -1036,6 +1121,10 @@ public class DocumentServiceImpl implements DocumentService {
 				field.setStatus(FieldStatus.SKIP);
 				fields.add(field);
 				return;
+			}
+
+			if (fieldSignDto.getFieldValue() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_VALUE_NOT_FOUND);
 			}
 
 			if (FieldType.imageFieldTypes().contains(fieldSignDto.getType()) && fieldSignDto.getFieldValue() != null) {
@@ -1351,6 +1440,37 @@ public class DocumentServiceImpl implements DocumentService {
 		return newVersion;
 	}
 
+	@Override
+	public ResponseEntityDto getDocumentDimensions(Long id) {
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
+
+		Document document = documentRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		boolean isRecipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
+
+		if (!isRecipient) {
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
+			if (!isOwner) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+			}
+		}
+
+		if (document.getFilePath() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
+		}
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, document.getFilePath());
+
+		Map<Integer, PageDimensionResponseDto> result = documentProcessingService
+			.processDocumentDimensions(documentBytes);
+		return new ResponseEntityDto(false, result);
+	}
+
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 
 		if (FieldType.imageFieldTypes().contains(fieldSignDto.getType())) {
@@ -1407,6 +1527,9 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private record DocumentVersionFieldBulk(List<DocumentVersionField> documentVersionFields, List<Field> fields) {
+	}
+
+	private record LatestDocumentData(byte[] fileBytes, DocumentVersion documentVersion) {
 	}
 
 }

@@ -103,4 +103,19 @@ public class EpCommonConstants {
 
 	public static final String EMAIL_KEY = "email";
 
+	public static final String SENDER = "sender";
+
+	public static final String VIA = " via ";
+
+	public static final String ESIGNATURE = "esignature";
+
+	public static final String MODULE = "module";
+
+	public static final int S3_SIGNED_URL_DURATION = 15;
+
+	// Redis TTL Constants
+	public static final int REDIS_TTL_CODE_CHALLENGE_CACHE_KEY = 5;
+
+	public static final int REDIS_TTL_USER_DATA_CACHE_KEY = 7;
+
 }

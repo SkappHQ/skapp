@@ -37,7 +37,8 @@ public interface EpPeopleMapper {
 	EmployeeBasicDetailsResponseDto employeeToEmployeeBasicDetailsResponseDto(Employee employee);
 
 	@Mapping(target = "date", source = "createdDate", dateFormat = "yyyy-MM-dd")
-	@Mapping(target = "recordedBy", expression = "java(employeeTimeline.getRecordedBy().getFullName())")
+	@Mapping(target = "recordedBy",
+			expression = "java(employeeTimeline.getRecordedBy() != null ? employeeTimeline.getRecordedBy().getFullName() : null)")
 	EpEmployeeTimelineResponseDto employeeTimelineToEmployeeTimelineResponseDto(EmployeeTimeline employeeTimeline);
 
 }

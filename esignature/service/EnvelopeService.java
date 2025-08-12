@@ -1,12 +1,15 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
+
+import java.util.List;
 
 public interface EnvelopeService {
 
@@ -26,9 +29,11 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getEnvelopeForSender(Long id);
 
-	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId);
+	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress);
 
 	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto, String ipAddress);
+
+	void transferEmployeeEnvelopes(List<Employee> employeeIds);
 
 	ResponseEntityDto declineEnvelope(Long recipientId, DeclineEnvelopeRequestDto declineEnvelopeRequestDto,
 			boolean isDocAccess, String ipAddress);
@@ -36,5 +41,7 @@ public interface EnvelopeService {
 	ResponseEntityDto getSignatureCertificate(Long envelopeId);
 
 	void expireEnvelope(Long envelopeId);
+
+	ResponseEntityDto getEnvelopeTierLimitations();
 
 }

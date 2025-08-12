@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
@@ -17,7 +18,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserDao;
 import com.skapp.enterprise.esignature.repository.ExternalUserRepository;
 import com.skapp.enterprise.esignature.service.ExternalUserService;
-import com.skapp.enterprise.esignature.utill.EsignValidations;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,11 +42,17 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 
 	@Override
 	public ExternalUser createExternalUser(ExternalUserDto externalUserDto) {
-		Optional<ExternalUser> existingUser = externalUserRepository.findByEmail(externalUserDto.getEmail());
-		Optional<User> internalUser = userDao.findByEmail(externalUserDto.getEmail());
 
-		if (existingUser.isPresent() || internalUser.isPresent()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EXTERNAL_USER_EXITS);
+		Optional<AddressBook> byInternalUserEmail = addressBookDao.findByInternalUserEmail(externalUserDto.getEmail());
+
+		if (byInternalUserEmail.isPresent() && Boolean.TRUE.equals(byInternalUserEmail.get().getIsActive())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ALREADY_EXISTS);
+		}
+
+		Optional<AddressBook> byExternalUserEmail = addressBookDao.findByExternalUserEmail(externalUserDto.getEmail());
+
+		if (byExternalUserEmail.isPresent() && Boolean.TRUE.equals(byExternalUserEmail.get().getIsActive())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ALREADY_EXISTS);
 		}
 
 		ExternalUser externalUser = esignMapper.externalUserDtoToExternalUser(externalUserDto);
@@ -96,7 +103,7 @@ public class ExternalUserServiceImpl implements ExternalUserService {
 		}
 		if (externalUserDto.getEmail() != null) {
 			Validations.validateEmail(externalUserDto.getEmail());
-			externalUser.setEmail(externalUserDto.getEmail());
+			externalUser.setEmail(externalUserDto.getEmail().trim());
 		}
 		if (externalUserDto.getPhone() != null) {
 			Validations.validateContactNo(externalUserDto.getPhone());

@@ -85,7 +85,7 @@ public final class CertificateGenerator {
 		catch (Exception e) {
 			log.error("Failed to generate certificate", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { e.getMessage() });
+					new String[] { "Certificate generation failed" });
 		}
 	}
 
@@ -114,7 +114,6 @@ public final class CertificateGenerator {
 	private static void addCertificateExtensions(X509v3CertificateBuilder certBuilder, KeyPair keyPair,
 			BigInteger serialNumber) {
 		try {
-
 			SubjectPublicKeyInfo pubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 
 			byte[] skiBytes = calculateIdentifier(pubKeyInfo);
@@ -141,9 +140,22 @@ public final class CertificateGenerator {
 			addOCSPAccessInfo(certBuilder);
 
 		}
-		catch (Exception e) {
+		// Specific exception handling allows targeted logging and sanitized error
+		// messages
+		catch (NoSuchAlgorithmException e) {
+			log.error("Algorithm error during certificate generation", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
-					new String[] { e.getMessage() });
+					new String[] { "Certificate generation failed due to cryptographic configuration issue" });
+		}
+		catch (CertIOException e) {
+			log.error("Certificate extension error", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+					new String[] { "Certificate generation failed due to extension configuration issue" });
+		}
+		catch (Exception e) {
+			log.error("Unexpected error during certificate generation", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_GENERATE_CERTIFICATE,
+					new String[] { "Certificate generation failed due to an internal error" });
 		}
 
 	}

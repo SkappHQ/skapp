@@ -3,7 +3,7 @@ package com.skapp.enterprise.esignature.payload.request;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
-import com.skapp.enterprise.esignature.utill.deserializer.RecipientMemberRoleDeserializer;
+import com.skapp.enterprise.esignature.util.deserializer.RecipientMemberRoleDeserializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

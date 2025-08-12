@@ -129,7 +129,19 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND("ep.esign.error.document.link.not-found"),
 	ESIGN_ERROR_UNSUPPORTED_PERMISSION_TYPE("ep.esign.error.unsupported.permission.type"),
 	ESIGN_ERROR_CC_RECIPIENT_CANNOT_SIGN("ep.esign.error.cc.recipient.cannot.sign"),
-	ESIGN_ERROR_FAILED_PROCESSING_IMAGE_FIELD("ep.esign.error.failed.processing.image-field");
+	ESIGN_ERROR_FAILED_PROCESSING_IMAGE_FIELD("ep.esign.error.failed.processing.image-field"),
+	ESIGN_ERROR_INVALID_AES_KEY_SIZE("ep.esign.error.invalid.aes.key.size"),
+	ESIGN_ERROR_INVALID_AES_KEY_FORMAT("ep.esign.error.invalid.aes.key.format"),
+	ESIGN_FAILED_TO_GENERATE_KEY_PAIR("ep.esign.error.failed.generate.key-pair"),
+	ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND("ep.esign.error.no.declined.recipient.found"),
+	ESIGN_ERROR_FIELD_VALUE_NOT_FOUND("ep.esign.error.field.value.not-found"),
+	ESIGN_ERROR_DOWNLOAD_FILE_MAX_ATTEMPT_FAILED("ep.esign.error.download.file.max-attempt.failed"),
+	ESIGN_ERROR_NO_PREVIOUS_VERSION("ep.esign.error.no.previous.version"),
+	ESIGN_ERROR_DOCUMENT_VERSIONS_EMPTY("ep.esign.error.document.versions.empty"),
+	ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS("ep.esign.error.fetching.envelope.tier-limitations"),
+	ESIGN_ERROR_ENVELOPE_LIMIT_REACHED("ep.esign.error.envelope.limit.reached"),
+	ESIGN_ERROR_ADDRESS_BOOK_MY_SIGNATURE_LINK_NOT_FOUND("ep.esign.error.address-book.my-signature-link.not-found"),
+	ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND("ep.esign.error.document.file-path.not-found");
 
 	private final String messageKey;
 

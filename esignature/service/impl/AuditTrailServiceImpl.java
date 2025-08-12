@@ -168,7 +168,16 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	@Override
-	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId) {
+	public ResponseEntityDto getAuditTrailsBySentEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, false);
+	}
+
+	@Override
+	public ResponseEntityDto getAuditTrailsByInboxEnvelope(Long envelopeId) {
+		return getAuditTrailsByEnvelopeId(envelopeId, true);
+	}
+
+	public ResponseEntityDto getAuditTrailsByEnvelopeId(Long envelopeId, boolean isInbox) {
 		log.info("Fetching audit trails for envelopeId: {}", envelopeId);
 
 		User currentUser = userService.getCurrentUser();
@@ -180,34 +189,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		}
 		Envelope envelope = envelopeOptional.get();
 		AddressBook addressBook = envelope.getOwner();
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+		checkAuthorization(isInbox, currentUser, envelope, addressBook);
 
-		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
-		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
-
-		if (isSenderRole) {
-			boolean isEnvelopeOwner = addressBook != null && addressBook.getInternalUser() != null
-					&& addressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
-
-			if (!isEnvelopeOwner) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-
-		}
-
-		if (isEmployee) {
-			Optional<Recipient> recipientOptional = envelope.getRecipients()
-				.stream()
-				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
-						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
-				.findFirst();
-
-			if (recipientOptional.isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
-
-		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
+		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByIdDesc(envelopeId);
 
 		if (auditTrails.isEmpty()) {
 			log.error("No audit trails found for envelopeId: {}", envelopeId);
@@ -257,9 +241,44 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		return new ResponseEntityDto(false, responseDtoList);
 	}
 
+	private static void checkAuthorization(boolean isInbox, User currentUser, Envelope envelope,
+			AddressBook ownerAddressBook) {
+		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+
+		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
+		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
+
+		// Check if user is authorized to access this envelope's audit trail
+		boolean needsRecipientCheck = isInbox || isEmployee;
+		boolean needsOwnerCheck = !isInbox && isSenderRole;
+
+		// If user needs to be a recipient, verify
+		if (needsRecipientCheck) {
+			Optional<Recipient> recipientOptional = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook().getType().equals(UserType.INTERNAL)
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId()))
+				.findFirst();
+
+			if (recipientOptional.isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+
+		// If user needs to be the envelope owner, verify
+		if (needsOwnerCheck) {
+			boolean isEnvelopeOwner = ownerAddressBook != null && ownerAddressBook.getInternalUser() != null
+					&& ownerAddressBook.getInternalUser().getUserId().equals(currentUser.getUserId());
+
+			if (!isEnvelopeOwner) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+	}
+
 	@Override
 	public AuditTrail processAuditTrailInfo(Envelope envelope, Recipient recipient, AuditAction action,
-			AddressBook addressBook, String ipAddress) {
+			AddressBook addressBook, String ipAddress, JsonNode metadata) {
 		AuditTrail auditTrail = new AuditTrail();
 
 		auditTrail.setEnvelope(envelope);
@@ -267,6 +286,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
+		auditTrail.setMetadata(metadata);
 
 		auditTrail.setIsAuthorized(true);
 

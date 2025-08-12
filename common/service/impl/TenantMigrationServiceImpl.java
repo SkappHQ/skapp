@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.config.DataSourceConfig;
 import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
@@ -34,6 +35,8 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 
 	private final DataSource dataSource;
 
+	private final DataSourceConfig dataSourceConfig;
+
 	@Override
 	public void runMigration(String tenantId) {
 		log.debug("Starting migration for tenant: {}", tenantId);
@@ -46,7 +49,9 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 			handleMigrationError(tenantId, e);
 		}
 		finally {
-			cleanup(tenantId);
+			TenantContext.clearCurrentTenant();
+			RequestMethodContext.clear();
+			dataSourceConfig.closeTenantDataSource(tenantId);
 		}
 	}
 
@@ -54,36 +59,12 @@ public class TenantMigrationServiceImpl implements TenantMigrationService {
 		TenantContext.setCurrentTenant(tenantId);
 		RequestMethodContext.setReadOnly(false);
 
-		Database database;
-		Liquibase liquibase = null;
 		try (Connection connection = dataSource.getConnection()) {
-			try {
-				database = DatabaseFactory.getInstance()
-					.findCorrectDatabaseImplementation(new JdbcConnection(connection));
-				liquibase = new Liquibase("enterprise/db/changelog/db.changelog.yml", new ClassLoaderResourceAccessor(),
-						database);
-				liquibase.update();
-			}
-			finally {
-				if (liquibase != null) {
-					try {
-						liquibase.close();
-					}
-					catch (LiquibaseException e) {
-						log.error("Error closing Liquibase for tenant: {}", tenantId, e);
-					}
-				}
-			}
-		}
-	}
-
-	private void cleanup(String tenantId) {
-		try {
-			TenantContext.clearCurrentTenant();
-			RequestMethodContext.clear();
-		}
-		catch (Exception e) {
-			log.error("Error removing tenant: {}", tenantId, e);
+			Database database = DatabaseFactory.getInstance()
+				.findCorrectDatabaseImplementation(new JdbcConnection(connection));
+			Liquibase liquibase = new Liquibase("enterprise/db/changelog/db.changelog.yml",
+					new ClassLoaderResourceAccessor(), database);
+			liquibase.update();
 		}
 	}
 

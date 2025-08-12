@@ -467,8 +467,9 @@ public class RecipientServiceImpl implements RecipientService {
 			String senderEmail = envelope.getOwner().getEmail();
 
 			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
-				declinedBy = obtainEnvelopeDeclinedBy(recipientList);
-				voidOrDeclinedReason = envelope.getVoidReason();
+				Recipient declinedRecipient = obtainEnvelopeDeclinedBy(recipientList);
+				declinedBy = declinedRecipient.getAddressBook().getName();
+				voidOrDeclinedReason = declinedRecipient.getDeclineReason();
 				title = EsignEmailTitleConstant.ESIGN_ENVELOPE_DECLINED_EMAIL_TITLE;
 			}
 			else if (envelope.getStatus() == EnvelopeStatus.VOIDED) {
@@ -505,19 +506,21 @@ public class RecipientServiceImpl implements RecipientService {
 			});
 
 			// Send the mail to the Sender
-			String documentName = concatDocumentNames(envelope.getDocuments());
+			if (envelope.getStatus() == EnvelopeStatus.DECLINED) {
+				String documentName = concatDocumentNames(envelope.getDocuments());
 
-			EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
-					envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
-					documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
-			epEsignEnvelopeRecipientEmailDynamicFields
-				.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
+				EpEsignEnvelopeRecipientEmailDynamicFields epEsignEnvelopeRecipientEmailDynamicFields = initializeEpEsignEmailValues(
+						envelope.getOwner().getName(), envelopeId, envelope.getSubject(), envelope.getMessage(),
+						documentName, voidOrDeclinedReason, declinedBy, title, null, senderName, senderEmail);
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setButtonText(EpEmailButtonText.ESIGN_EMAIL_SENDER_BUTTON_TEXT.name());
 
-			epEsignEnvelopeRecipientEmailDynamicFields
-				.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
+				epEsignEnvelopeRecipientEmailDynamicFields
+					.setDocumentAccessUrl(esignEmailService.getDocumentAccessUrlForSender(envelope));
 
-			sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
-					epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
+				sendEmailBasedOnRoleAndEnvelopeStatus(null, envelope.getStatus(),
+						epEsignEnvelopeRecipientEmailDynamicFields, envelope.getOwner().getEmail());
+			}
 
 			envelopeDetailedResponseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(envelope);
 
@@ -604,7 +607,9 @@ public class RecipientServiceImpl implements RecipientService {
 
 		recipients.forEach(recipient -> {
 			recipient.setStatus(RecipientStatus.EMPTY);
-			recipient.setInboxStatus(InboxStatus.VOID);
+			if (recipient.getEmailStatus() != null && recipient.getEmailStatus().equals(EmailStatus.SENT)) {
+				recipient.setInboxStatus(InboxStatus.VOID);
+			}
 		});
 
 		recipientRepository.saveAll(recipients);
@@ -694,16 +699,17 @@ public class RecipientServiceImpl implements RecipientService {
 	 * @return This method is used to find who declined the envelope in order to mention
 	 * that in the email
 	 */
-	private String obtainEnvelopeDeclinedBy(List<Recipient> recipients) {
+	private Recipient obtainEnvelopeDeclinedBy(List<Recipient> recipients) {
 
 		Optional<Recipient> declinedRecipient = recipients.stream()
 			.filter(recpt -> recpt.getStatus() == RecipientStatus.DECLINED)
 			.findFirst();
 
-		if (declinedRecipient.isPresent()) {
-			return declinedRecipient.get().getAddressBook().getName();
+		if (declinedRecipient.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_DECLINED_RECIPIENT_FOUND);
 		}
-		return null;
+
+		return declinedRecipient.get();
 	}
 
 	private RecipientUpdateDto initializerecipientDtoData(RecipientStatus recipientStatus, String reminderBatchId,

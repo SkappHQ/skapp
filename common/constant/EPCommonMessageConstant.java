@@ -25,6 +25,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_COMPANY_DOMAIN_REQUIRED("ep.common.error.company-domain-required"),
 	EP_COMMON_ERROR_COMPANY_DOMAIN_LENGTH_EXCEEDED("ep.common.error.company-domain-length-exceeded"),
 	EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID("ep.common.error.company-domain-invalid"),
+	EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID("ep.common.error.company-contact-no-invalid"),
 	EP_COMMON_ERROR_NO_HOSTED_ZONES_FOUND("ep.common.error.no-hosted-zones-found"),
 	EP_COMMON_ERROR_FETCHING_HOSTED_ZONE_ID("ep.common.error.fetching-hosted-zone-id"),
 	EP_COMMON_ERROR_HOSTED_ZONE_NOT_FOUND("ep.common.error.hosted-zone-not-found"),
@@ -151,7 +152,15 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND("ep.common.error.cached-uuid-not-found"),
 	EP_COMMON_ERROR_FAILED_TO_HASH("ep.common.error.failed-to-hash"),
 	EP_COMMON_ERROR_OTP_STILL_VALID("ep.common.error.otp-still-valid"),
-	EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL("ep.common.error.personal-temp-or-disposable-email"),;
+	EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL("ep.common.error.personal-temp-or-disposable-email"),
+	EP_COMMON_ERROR_INVALID_S3_ACTION_TYPE("ep.common.error.invalid-s3-action-type"),
+	EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED("ep.common.error.signed-url-generation-failed"),
+	EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH("ep.common.error.invalid-s3-folder-path"),
+	EP_COMMON_ERROR_TENANT_ID_REQUIRED("ep.common.error.tenant-id-required"),
+	EP_COMMON_ERROR_CLOUD_FRONT_PRIVATE_KEY_FAILED_TO_LOAD("ep.common.error.cloud-front-private-key-failed-to-load"),
+	EP_COMMON_ERROR_CLOUD_FRONT_SIGNED_COOKIES_GENERATION_FAILED(
+			"ep.common.error.cloud-front-signed-cookies-generation-failed"),
+	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key");
 
 	private final String messageKey;
 

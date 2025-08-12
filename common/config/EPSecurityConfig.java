@@ -89,7 +89,11 @@ public class EPSecurityConfig {
 						"/v1/ep/auth/code-challenge/verify", "/v2/ep/auth/sso/microsoft/auth-url",
 						"/v2/ep/auth/sso/microsoft/redirect", "/v2/ep/auth/signup/super-admin/sso/microsoft",
 						"/v2/ep/auth/signin/sso/microsoft", "/v1/ep/esign/document-link/resend",
-						"/v1/ep/esign/document-link/token-exchange")
+						"/v1/ep/esign/document-link/token-exchange",
+						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend",
+						"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/document-link/token/resend-status",
+						"/v1/ep/redis/load-all-users", "/v1/ep/redis/load-system-version",
+						"/v1/ep/redis/load-all-user-versions")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -125,8 +129,20 @@ public class EPSecurityConfig {
 		configuration.setAllowedHeaders(
 				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
+		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
+	}
+
+	private CorsConfiguration getCorsConfigurationCookies(String[] origins) {
+		CorsConfiguration credentialedConfig = new CorsConfiguration();
+		credentialedConfig.setAllowedOriginPatterns(Arrays.asList(origins));
+		credentialedConfig.setAllowedMethods(Arrays.asList("GET", "OPTIONS"));
+		credentialedConfig.setAllowedHeaders(
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
+		credentialedConfig.setAllowCredentials(true);
+		return credentialedConfig;
 	}
 
 }

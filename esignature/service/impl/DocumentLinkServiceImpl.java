@@ -24,6 +24,7 @@ import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentTokenResendStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
@@ -39,7 +40,7 @@ import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.UserType;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,6 +94,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String STATE_STRING = "&state=";
 
+	public static final String HTTPS_PROTOCOL = "https://";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -129,6 +132,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
@@ -315,6 +324,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);
 
+		if (recipient.getAddressBook().getMySignatureLink() != null) {
+			recipientResponseDto.getAddressBook()
+				.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+						+ EsignUtil.removeEsignPrefix(recipient.getAddressBook().getMySignatureLink()));
+		}
+
 		int versionNumber = document.getCurrentVersion();
 		DocumentVersion documentVersion;
 
@@ -493,6 +508,26 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 	}
 
+	@Override
+	public ResponseEntityDto getTokenResendStatus(@NotNull String token) {
+
+		log.info("getTokenResendStatus: process started");
+
+		if (token == null || token.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID);
+		}
+
+		DocumentLink documentLink = documentLinkRepository.findByToken(token)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_LINK_INVALID));
+
+		DocumentTokenResendStatusResponseDto documentTokenResendStatusResponseDto = new DocumentTokenResendStatusResponseDto();
+
+		documentTokenResendStatusResponseDto.setResend(documentLink.isResend());
+		log.info("getTokenResendStatus: process end");
+
+		return new ResponseEntityDto(false, documentTokenResendStatusResponseDto);
+	}
+
 	private String generateAndEnsureUniqueUuidWithRetry() {
 		int maxRetries = 3;
 		int retryCount = 0;
@@ -526,7 +561,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 		dto.setId(document.getId());
 		dto.setName(document.getName());
-		dto.setFilePath(documentVersion.getFilePath());
+		dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 		dto.setNumOfPages(document.getNumOfPages());
 		return dto;
 	}

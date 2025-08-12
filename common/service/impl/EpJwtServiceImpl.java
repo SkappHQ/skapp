@@ -40,10 +40,10 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 	private String jwtSigningKey;
 
 	public EpJwtServiceImpl(SystemVersionService systemVersionService, UserVersionService userVersionService,
-			TenantDao tenantDao, TenantContext tenantContext) {
+			TenantContext tenantContext, TenantDao tenantDao) {
 		super(systemVersionService, userVersionService);
-		this.tenantDao = tenantDao;
 		this.tenantContext = tenantContext;
+		this.tenantDao = tenantDao;
 	}
 
 	@Override

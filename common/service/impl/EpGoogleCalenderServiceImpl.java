@@ -78,6 +78,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -181,8 +182,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 		User currentUser = getUser(userId);
 
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
-				EpCalendarType.GOOGLE);
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.GOOGLE, EpCalendarType.NONE));
 
 		if (employeeCalendar == null) {
 			employeeCalendar = new EmployeeCalendar();
@@ -219,6 +220,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 				tokenGenerated = employeeCalendar.getCalendarToken();
 			}
 			employeeCalendar.setIsEnabled(true);
+			employeeCalendar.setCalendarType(EpCalendarType.GOOGLE);
 			employeeCalendarDao.save(employeeCalendar);
 		}
 		catch (Exception exception) {
@@ -277,8 +279,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		boolean isConnected = false;
 
 		try {
-			EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
-					EpCalendarType.GOOGLE);
+			EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+					Set.of(EpCalendarType.GOOGLE));
 
 			if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
 					&& !employeeCalendar.getCalendarToken().isEmpty()
@@ -310,7 +312,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
 
 		if (organizationCalendars.isEmpty() || organizationCalendars.getFirst().getIsGoogleCalendarEnabled() == null
-				|| Boolean.TRUE.equals(!organizationCalendars.getFirst().getIsGoogleCalendarEnabled())) {
+				|| !organizationCalendars.getFirst().getIsGoogleCalendarEnabled()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
 
@@ -358,8 +360,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		User currentUser = userService.getCurrentUser();
 
 		log.info("disconnectGoogleCalendar: execution started by user: {}", currentUser.getUserId());
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
-				EpCalendarType.GOOGLE);
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.GOOGLE));
 
 		if (!employeeCalendar.getCalendarType().equals(EpCalendarType.GOOGLE)
 				|| employeeCalendar.getCalendarToken() == null) {
@@ -376,7 +378,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	@Override
 	public String generateGoogleAccessToken(@NonNull User user) {
 		log.info("GoogleCalendar: generateAccessToken: execution started for {}", user.getUserId());
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(user, EpCalendarType.GOOGLE);
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(user,
+				Set.of(EpCalendarType.GOOGLE));
 
 		if (employeeCalendar == null || employeeCalendar.getCalendarToken() == null
 				|| employeeCalendar.getCalendarToken().isEmpty()
@@ -396,6 +399,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		}
 		catch (IOException exception) {
 			log.error("GoogleCalendar: generateAccessToken: {}", exception.getMessage(), exception);
+			employeeCalendar.setCalendarToken(null);
+			employeeCalendar.setIsEnabled(false);
 			employeeCalendar.setCalendarType(EpCalendarType.NONE);
 			employeeCalendarDao.save(employeeCalendar);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
@@ -486,8 +491,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	}
 
 	private void rollbackCalendarConnect(@NonNull User currentUser, @NonNull String generatedToken) {
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(currentUser,
-				EpCalendarType.GOOGLE);
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.GOOGLE));
 		if (!generatedToken.isEmpty()) {
 			try {
 				revokeToken(generatedToken);
@@ -527,7 +532,8 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	}
 
 	private void disconnectCalendarFromDatabase(@NonNull User user) {
-		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarType(user, EpCalendarType.GOOGLE);
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(user,
+				Set.of(EpCalendarType.GOOGLE));
 		employeeCalendar.setCalendarToken(null);
 		employeeCalendar.setIsEnabled(false);
 		employeeCalendarDao.save(employeeCalendar);

@@ -1,6 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response;
 
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,9 @@ public class EnvelopeInboxInfoResponseDto {
 
 	private String subject;
 
-	private EnvelopeStatus status;
+	private String message;
+
+	private InboxStatus status;
 
 	private SignType signType;
 
@@ -24,6 +26,8 @@ public class EnvelopeInboxInfoResponseDto {
 	private List<RecipientResponseDto> recipients;
 
 	private AddressBookBasicResponseDto addressBook;
+
+	private AddressBookBasicResponseDto senderAddressBook;
 
 	private String envelopeAccessLink;
 

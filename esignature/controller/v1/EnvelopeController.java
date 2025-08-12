@@ -8,7 +8,7 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
-import com.skapp.enterprise.esignature.utill.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
@@ -130,8 +130,10 @@ public class EnvelopeController {
 			@RequestParam @Schema(description = "ID of the envelope to transfer custody",
 					example = "1") Long envelopeId,
 			@RequestParam @Schema(description = "ID of the new owner in the address book",
-					example = "2") Long addressbookId) {
-		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId);
+					example = "2") Long addressbookId,
+			HttpServletRequest request) {
+		ResponseEntityDto response = envelopeService.transferEnvelopeCustody(envelopeId, addressbookId,
+				EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -168,6 +170,16 @@ public class EnvelopeController {
 		ResponseEntityDto response = envelopeService.declineEnvelope(recipientId, declineEnvelopeRequestDto, false,
 				EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Retrieve envelope tier limitations for the current tenant/organization",
+			description = "Provides the remaining and allocated envelope limits for the organization, based on their subscription tier. "
+					+ "This endpoint returns information about envelope usage, allocation, and whether the organization has reached their envelope limit for the current tier.")
+	@GetMapping(value = "envelope-limitation", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeTierLimitations() {
+		ResponseEntityDto response = envelopeService.getEnvelopeTierLimitations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

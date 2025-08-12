@@ -12,6 +12,8 @@ public class EpOrganizationResponseDto extends OrganizationDto {
 
 	private String tenantId;
 
+	private String contactNo;
+
 	private String uuid;
 
 }

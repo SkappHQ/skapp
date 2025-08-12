@@ -50,6 +50,7 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
 import com.skapp.enterprise.common.payload.response.ValidationResult;
 import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
+import com.skapp.enterprise.common.payload.v2.GoogleUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.service.ValidationService;
@@ -266,13 +267,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 			if (profile.getEmailAddresses() != null && !profile.getEmailAddresses().isEmpty()) {
 				String userEmail = profile.getEmailAddresses().getFirst().getValue();
-				ValidationResult validationResult = validationService.validateEmail(userEmail);
-
-				if (Boolean.FALSE.equals(validationResult.getIsValid())) {
-					throw new ModuleException(CommonMessageConstant.valueOf(validationResult.getMessageKey()));
-				}
 
 				if (userEmail != null && !userEmail.isEmpty()) {
+					validationService.checkBusinessEmailValidity(userEmail);
 					return getGoogleUserDetailsDto(profile, userEmail);
 				}
 				else {

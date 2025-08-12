@@ -60,7 +60,10 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
 			"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v2/ep/auth/signin/sso/microsoft",
 			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trial/create",
-			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external");
+			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
+			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status",
+			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
+			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions");
 
 	private final JwtService jwtService;
 
@@ -127,6 +130,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		UserDetails userDetails;
 
 		if (EpCommonConstants.MASTER_DATABASE.equals(tenantId)) {
+			log.info("debug: EpJwtAuthFilter - Authenticating super admin user with ID: {}", userId);
 			userDetails = superAdminDao.findById(userId)
 				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 		}
@@ -144,6 +148,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
 
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		log.info("debug: EpJwtAuthFilter - Creating authentication token for user ID: {}", userId);
 		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, userId,
 				userDetails.getAuthorities());
 
@@ -151,6 +156,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		AuthenticationDetailsDto authenticationDetails = new AuthenticationDetailsDto(webDetails, additionalDetails);
 
 		authToken.setDetails(authenticationDetails);
+		log.info("debug: EpJwtAuthFilter - Setting authentication in security context for user ID: {}", userId);
 
 		context.setAuthentication(authToken);
 		SecurityContextHolder.setContext(context);
