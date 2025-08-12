@@ -61,10 +61,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashSet;
 
 import static com.skapp.community.leaveplanner.model.LeaveType_.TYPE_ID;
 
@@ -1014,14 +1014,14 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
 		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
 
-		cq.select(cb.countDistinct(employeeJoin.get(Employee_.employeeId)))
-		  .where(predicates.toArray(new Predicate[0]));
+		cq.select(cb.countDistinct(employeeJoin.get(Employee_.employeeId))).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(cq).getSingleResult();
 	}
 
 	@Override
-	public List<Long> findEmployeeIdsCreatedWithValidDates(LocalDate validFrom, LocalDate validDate, int limit, long offset) {
+	public List<Long> findEmployeeIdsCreatedWithValidDates(LocalDate validFrom, LocalDate validDate, int limit,
+			long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
@@ -1051,7 +1051,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public List<Long> findEmployeeIdsWithLeaveEntitlement(List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId, int limit, long offset) {
+	public List<Long> findEmployeeIdsWithLeaveEntitlement(List<Long> leaveTypeIds, LocalDate startDate,
+			LocalDate endDate, Long jobFamilyId, Long teamId, int limit, long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
@@ -1107,7 +1108,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public Long findEmployeeIdsCountWithLeaveEntitlements(List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId) {
+	public Long findEmployeeIdsCountWithLeaveEntitlements(List<Long> leaveTypeIds, LocalDate startDate,
+			LocalDate endDate, Long jobFamilyId, Long teamId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);

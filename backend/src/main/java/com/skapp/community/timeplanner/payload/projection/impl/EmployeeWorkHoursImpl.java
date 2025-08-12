@@ -11,6 +11,9 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class EmployeeWorkHoursImpl implements EmployeeWorkHours {
-    private final LocalDate date;
-    private final Double workedHours;
+
+	private final LocalDate date;
+
+	private final Double workedHours;
+
 }

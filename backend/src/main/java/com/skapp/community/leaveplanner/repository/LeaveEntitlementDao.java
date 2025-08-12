@@ -5,7 +5,6 @@ import com.skapp.community.leaveplanner.model.LeaveType;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;

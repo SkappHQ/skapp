@@ -35,20 +35,18 @@ public interface TimeRecordRepository {
 	Long getTotalEmployeesTimeRecordCount(List<Long> employeeId, LocalDate startDate, LocalDate endDate);
 
 	List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeId, LocalDate startDate, LocalDate endDate,
-													  int limit, long offset);
+			int limit, long offset);
 
 	List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeId, List<Long> teamIds,
-															   LocalDate startDate, LocalDate endDate, int limit, long offset);
+			LocalDate startDate, LocalDate endDate, int limit, long offset);
 
 	List<TimeRecordsByEmployeesDto> getTimeRecordsByEmployees(List<Long> employeeId, LocalDate startDate,
-															  LocalDate endDate);
+			LocalDate endDate);
 
 	List<EmployeeWorkHours> getAllWorkHoursOfEmployee(Long employeeId, LocalDate startDate, LocalDate endDate);
 
 	List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date);
 
 	List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date);
-
-
 
 }
