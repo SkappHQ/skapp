@@ -214,6 +214,7 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.ATTENDANCE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.LEAVE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 
 		return roles;
 	}
@@ -431,6 +432,12 @@ public class RolesServiceImpl implements RolesService {
 				case EMPLOYEE -> Role.LEAVE_EMPLOYEE;
 				default -> null;
 			};
+			case OKR -> switch (roleLevel) {
+				case ADMIN -> Role.OKR_ADMIN;
+				case MANAGER -> Role.OKR_MANAGER;
+				case EMPLOYEE -> Role.OKR_EMPLOYEE;
+				default -> null;
+			};
 			default -> null;
 		};
 	}
@@ -452,6 +459,7 @@ public class RolesServiceImpl implements RolesService {
 			employeeRole.setLeaveRole(Role.LEAVE_ADMIN);
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 			employeeRole.setEsignRole(Role.ESIGN_ADMIN);
+			employeeRole.setOkrRole(Role.OKR_ADMIN);
 			employeeRole.setIsSuperAdmin(true);
 		}
 		else {
@@ -459,6 +467,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getLeaveRole, employeeRole::setLeaveRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getAttendanceRole, employeeRole::setAttendanceRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getEsignRole, employeeRole::setEsignRole);
+			CommonModuleUtils.setIfExists(roleRequestDto::getOkrRole, employeeRole::setOkrRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
