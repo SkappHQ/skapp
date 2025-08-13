@@ -1,9 +1,9 @@
 package com.skapp.enterprise.esignature.repository.impl;
 
 import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.Document_;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersion_;
+import com.skapp.enterprise.esignature.model.Document_;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
