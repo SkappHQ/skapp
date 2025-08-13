@@ -50,7 +50,6 @@ const LeaveManagerModalController = () => {
     removeNewLeaveId();
     removeLeaveRequestRowData();
     setIsOnLeaveModalOpen(false);
-    console.log("from here isOnLeaveModalOpen:", isOnLeaveModalOpen);
   };
 
   const handelManagerModal = (): void => {
@@ -65,11 +64,11 @@ const LeaveManagerModalController = () => {
     setPopupType("");
     removeNewLeaveId();
     removeLeaveRequestRowData();
-  };
 
-  console.log("isManagerModalOpen:", isManagerModalOpen);
-  console.log("onLeaveModal:", isOnLeaveModalOpen);
-  console.log("popupType:", popupType);
+    if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL) {
+      setIsOnLeaveModalOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (leaveRequestData.status === LeaveStatusTypes.PENDING)

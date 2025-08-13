@@ -29,13 +29,15 @@ const OnLeaveModal = () => {
     setLeaveRequestData,
     setNewLeaveId,
     newLeaveId,
-    todaysAvailability
+    todaysAvailability,
+    setIsOnLeaveModalOpen
   } = useLeaveStore((state) => ({
     setIsManagerModal: state.setIsManagerModal,
     setLeaveRequestData: state.setLeaveRequestData,
     setNewLeaveId: state.setNewLeaveId,
     newLeaveId: state.newLeaveId,
-    todaysAvailability: state.todaysAvailability
+    todaysAvailability: state.todaysAvailability,
+    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
   }));
 
   const { isSuccess: getLeaveByIdSuccess, data: getLeaveByIdData } =
@@ -53,6 +55,7 @@ const OnLeaveModal = () => {
       if (leaveRequest.id !== newLeaveId) {
         setNewLeaveId(leaveRequest.id);
       }
+      setIsOnLeaveModalOpen(false);
     }
   };
 
