@@ -1080,16 +1080,14 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates in range (excluding non-working days and holidays)
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).filter(date -> {
-			// Filter working days
+
 			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
 				int dayOfWeek = date.getDayOfWeek().getValue() % 7;
 				if (!workingDaysIndex.contains(dayOfWeek)) {
 					return false;
 				}
 			}
-			// Filter holidays
 			return holidayDates == null || !holidayDates.contains(date);
 		}).collect(Collectors.toList());
 
@@ -1103,15 +1101,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Date range predicates - employee is on leave on this specific date
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
 
-			// Status predicates
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Active user predicate
 			predicates.add(cb.equal(user.get(User_.isActive), true));
 
 			countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
@@ -1142,25 +1137,19 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).filter(date -> {
-			// Filter working days
 			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
 				int dayOfWeek = date.getDayOfWeek().getValue() % 7;
 				if (!workingDaysIndex.contains(dayOfWeek)) {
 					return false;
 				}
 			}
-			// Filter holidays
 			return holidayDates == null || !holidayDates.contains(date);
 		}).collect(Collectors.toList());
 
-		// Map to store employee counts by month
 		Map<Integer, Set<Long>> employeesByMonth = new HashMap<>();
 
-		// For each date, identify employees on leave and group by month
 		for (LocalDate date : allDates) {
-			// Create a query to get employees on leave for this date
 			CriteriaQuery<Long> employeeQuery = cb.createQuery(Long.class);
 			Root<LeaveRequest> leaveRequest = employeeQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
@@ -1168,15 +1157,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
 
-			// Filter by leave status
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.isActive), true));
 
 			employeeQuery.select(employee.get(Employee_.employeeId));
@@ -1185,12 +1171,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Long> employeesOnLeave = entityManager.createQuery(employeeQuery).getResultList();
 
-			// Get the month (1-12) and add employees to the appropriate month set
 			int month = date.getMonthValue();
 			employeesByMonth.computeIfAbsent(month, k -> new HashSet<>()).addAll(employeesOnLeave);
 		}
 
-		// Convert the map to LeaveTrendByMonth objects
 		List<LeaveTrendByMonth> result = new ArrayList<>();
 		for (Map.Entry<Integer, Set<Long>> entry : employeesByMonth.entrySet()) {
 			final Integer month = entry.getKey();
@@ -1207,7 +1191,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month
 		result.sort(Comparator.comparing(LeaveTrendByMonth::getKeyValue));
 		return result;
 	}
@@ -1216,33 +1199,27 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
 
-		// Map to store leave counts by leave type and month
 		Map<String, Double> leaveCountsByTypeAndMonth = new HashMap<>();
 
-		// For each date, calculate leave counts by type and month
 		for (LocalDate date : allDates) {
-			// Skip non-working days
+
 			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()
 					&& !workingDaysIndex.contains(date.getDayOfWeek().getValue() % 7)) {
 				continue;
 			}
 
-			// Skip holidays
 			if (holidayDates != null && holidayDates.contains(date)) {
 				continue;
 			}
 
-			// Create a query to get leave requests for this date
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
 			Join<Employee, User> user = employee.join(Employee_.user);
 			Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.leaveType);
 
-			// Optional join for team filtering
 			Join<Employee, EmployeeTeam> employeeTeam = null;
 			if (teamIds != null && !teamIds.isEmpty()) {
 				employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
@@ -1250,27 +1227,21 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
 
-			// Filter by leave status (APPROVED only)
 			predicates.add(cb.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.isActive), true));
 
-			// Filter by leave type if specified
 			if (typeIds != null && !typeIds.isEmpty()) {
 				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
 			}
 
-			// Filter by team if specified
 			if (teamIds != null && !teamIds.isEmpty()) {
 				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
 			}
 
-			// Filter by active leave types
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
 
 			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
@@ -1278,27 +1249,22 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results
 			for (Object[] result : results) {
 				Long leaveTypeId = (Long) result[0];
 				LeaveState leaveState = (LeaveState) result[1];
 
-				// Calculate leave count (half-days count as 0.5)
 				double leaveCount = 1.0;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
 					leaveCount = 0.5;
 				}
 
-				// Create key for the map (leaveTypeId:month)
 				int month = date.getMonthValue();
 				String key = leaveTypeId + ":" + month;
 
-				// Add to the map
 				leaveCountsByTypeAndMonth.put(key, leaveCountsByTypeAndMonth.getOrDefault(key, 0.0) + leaveCount);
 			}
 		}
 
-		// Convert the map to LeaveTypeBreakDown objects
 		List<LeaveTypeBreakDown> result = new ArrayList<>();
 		for (Map.Entry<String, Double> entry : leaveCountsByTypeAndMonth.entrySet()) {
 			String[] keyParts = entry.getKey().split(":");
@@ -1321,7 +1287,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month and then by leave type
 		result.sort(
 				Comparator.comparing(LeaveTypeBreakDown::getKeyValue).thenComparing(LeaveTypeBreakDown::getLeaveType));
 
@@ -1335,18 +1300,14 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidLeaveDate(date, workingDaysIndex, holidayDates))
 			.collect(Collectors.toList());
 
-		// Map to store leave counts by leave type and month
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
-		// For each date, calculate leave counts by type and month
 		for (LocalDate date : allDates) {
-			// Create a query to get leave requests for this date for the specific
-			// employee
+
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
@@ -1354,21 +1315,15 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
 
-			// Filter by employee ID
 			predicates.add(cb.equal(employee.get(Employee_.employeeId), employeeId));
 
-			// Filter by leave status
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
-
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.isActive), true));
 
-			// Filter by leave type if specified
 			if (typeIds != null && !typeIds.isEmpty()) {
 				predicates.add(leaveRequest.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
 			}
@@ -1379,20 +1334,16 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results
 			for (Object[] result : results) {
 				Long leaveTypeId = (Long) result[0];
 				LeaveState leaveState = (LeaveState) result[1];
 
-				// Calculate leave count (half-days count as 0.5)
 				float leaveCount = (leaveState == LeaveState.HALFDAY_MORNING
 						|| leaveState == LeaveState.HALFDAY_EVENING) ? 0.5f : 1.0f;
 
-				// Create key for the map (leaveTypeId:month)
 				int month = date.getMonthValue();
 				String key = leaveTypeId + ":" + month;
 
-				// Add to the map
 				leaveCountsByTypeAndMonth.put(key, leaveCountsByTypeAndMonth.getOrDefault(key, 0.0f) + leaveCount);
 			}
 		}
@@ -1401,13 +1352,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	private boolean isValidLeaveDate(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-		// Skip non-working days
+
 		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()
 				&& !workingDaysIndex.contains(date.getDayOfWeek().getValue() % 7)) {
 			return false;
 		}
 
-		// Skip holidays
 		return holidayDates == null || !holidayDates.contains(date);
 	}
 
@@ -1436,7 +1386,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month and then by leave type
 		result.sort(Comparator.comparing(LeaveUtilizationByEmployeeMonthly::getMonthValue)
 			.thenComparing(LeaveUtilizationByEmployeeMonthly::getLeaveType));
 
@@ -1448,17 +1397,14 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
 			.collect(Collectors.toList());
 
-		// Map to store leave counts by leave type and month
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
-		// For each date, calculate leave counts by type and month
 		for (LocalDate date : allDates) {
-			// Create a query to get leave requests for this date
+
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
@@ -1467,32 +1413,25 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
 
-			// Filter by leave status (APPROVED or PENDING)
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
 
-			// Filter by leave type if specified
 			if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
 				predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
 			}
 
-			// Filter by active leave types
 			predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
 
-			// Select leave type ID, leave state, and month
 			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID), leaveRequest.get(LeaveRequest_.LEAVE_STATE));
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results
 			int month = date.getMonthValue();
 			for (Object[] result : results) {
 				Long typeId = (Long) result[0];
@@ -1500,7 +1439,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				String key = typeId + ":" + month;
 
-				// Calculate leave count based on leave state
 				float leaveCount = 1.0f;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
 					leaveCount = 0.5f;
@@ -1510,7 +1448,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 		}
 
-		// Convert the map to OrganizationLeaveTrendForTheYear objects
 		List<OrganizationLeaveTrendForTheYear> result = new ArrayList<>();
 		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
 			String[] keyParts = entry.getKey().split(":");
@@ -1533,7 +1470,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month and then by leave type
 		result.sort(Comparator.comparing(OrganizationLeaveTrendForTheYear::getKeyValue)
 			.thenComparing(OrganizationLeaveTrendForTheYear::getLeaveType));
 
@@ -1541,15 +1477,11 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	private boolean isValidWorkingDay(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-		// Skip holidays
 		if (holidayDates != null && holidayDates.contains(date)) {
 			return false;
 		}
 
-		// Skip non-working days (if working days are specified)
 		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
-			// Convert day of week to match the native query's WEEKDAY function (Monday=0,
-			// Sunday=6)
 			int weekday = (date.getDayOfWeek().getValue() - 1) % 7;
 			return workingDaysIndex.contains(weekday);
 		}
@@ -1562,17 +1494,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
 			.collect(Collectors.toList());
 
-		// Map to store leave counts by leave type and month
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
-		// For each date, calculate leave counts by type and month
 		for (LocalDate date : allDates) {
-			// Create a query to get leave requests for this date
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
@@ -1583,35 +1511,27 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by team
 			predicates.add(cb.equal(team.get(Team_.TEAM_ID), teamId));
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
 
-			// Filter by leave status (APPROVED or PENDING)
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
 
-			// Filter by leave type if specified
 			if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
 				predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
 			}
 
-			// Filter by active leave types
 			predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
 
-			// Select leave type ID and leave state
 			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID), leaveRequest.get(LeaveRequest_.LEAVE_STATE));
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results
 			int month = date.getMonthValue();
 			for (Object[] result : results) {
 				Long typeId = (Long) result[0];
@@ -1619,7 +1539,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				String key = typeId + ":" + month;
 
-				// Calculate leave count based on leave state
 				float leaveCount = 1.0f;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
 					leaveCount = 0.5f;
@@ -1629,7 +1548,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 		}
 
-		// Convert the map to TeamLeaveTrendForTheYear objects
 		List<TeamLeaveTrendForTheYear> result = new ArrayList<>();
 		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
 			String[] keyParts = entry.getKey().split(":");
@@ -1653,7 +1571,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month and then by leave type
 		result.sort(Comparator.comparing(TeamLeaveTrendForTheYear::getKeyValue)
 			.thenComparing(TeamLeaveTrendForTheYear::getLeaveType));
 
@@ -1666,17 +1583,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<Long> employeeIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
 			.collect(Collectors.toList());
 
-		// Map to store leave counts by leave type and month
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
-		// For each date, calculate leave counts by type and month
 		for (LocalDate date : allDates) {
-			// Create a query to get leave requests for this date
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
 			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
@@ -1685,7 +1598,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by team OR employee (matching the native query logic)
 			List<Predicate> teamOrEmployeePredicates = new ArrayList<>();
 
 			if (teamIds != null && !teamIds.isEmpty()) {
@@ -1702,32 +1614,25 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				predicates.add(cb.or(teamOrEmployeePredicates.toArray(new Predicate[0])));
 			}
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
 
-			// Filter by leave status (APPROVED or PENDING)
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
 
-			// Filter by leave type if specified
 			if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
 				predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
 			}
 
-			// Filter by active leave types
 			predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
 
-			// Select leave type ID and leave state
 			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID), leaveRequest.get(LeaveRequest_.LEAVE_STATE));
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results
 			int month = date.getMonthValue();
 			for (Object[] result : results) {
 				Long typeId = (Long) result[0];
@@ -1735,7 +1640,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				String key = typeId + ":" + month;
 
-				// Calculate leave count based on leave state
 				float leaveCount = 1.0f;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
 					leaveCount = 0.5f;
@@ -1745,7 +1649,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 		}
 
-		// Convert the map to ManagerLeaveTrend objects
 		List<ManagerLeaveTrend> result = new ArrayList<>();
 		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
 			String[] keyParts = entry.getKey().split(":");
@@ -1768,7 +1671,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by month and then by leave type
 		result
 			.sort(Comparator.comparing(ManagerLeaveTrend::getKeyValue).thenComparing(ManagerLeaveTrend::getLeaveType));
 
@@ -1780,14 +1682,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
 			.collect(Collectors.toList());
 
 		float totalLeaveCount = 0.0f;
 
-		// For each valid date, calculate leave counts
 		for (LocalDate date : allDates) {
 			CriteriaQuery<Float> leaveQuery = cb.createQuery(Float.class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
@@ -1796,18 +1696,14 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
 
-			// Filter by leave status (APPROVED or PENDING)
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
 
-			// Calculate leave count based on leave state (using CASE expression)
 			Expression<Float> leaveCountExpression = cb.<Float>selectCase()
 				.when(cb.or(cb.equal(leaveRequest.get(LeaveRequest_.LEAVE_STATE), LeaveState.HALFDAY_MORNING),
 						cb.equal(leaveRequest.get(LeaveRequest_.LEAVE_STATE), LeaveState.HALFDAY_EVENING)), 0.5f)
@@ -1830,15 +1726,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			List<LocalDate> holidayDates, LocalDate startDate, LocalDate endDate) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Generate all dates between startDate and endDate
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
 			.collect(Collectors.toList());
 
-		// Map to store leave counts by leave type
 		Map<Integer, Float> leaveCountsByType = new HashMap<>();
 
-		// For each date, calculate leave counts by type
 		for (LocalDate date : allDates) {
 			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
 			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
@@ -1850,28 +1743,22 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			List<Predicate> predicates = new ArrayList<>();
 
-			// Filter by team
 			predicates.add(cb.equal(team.get(Team_.TEAM_ID), teamId));
 
-			// Filter by date range (where date is between leave start and end date)
 			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
 			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
 
-			// Filter by leave status (APPROVED or PENDING)
 			predicates.add(
 					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 
-			// Filter out inactive users
 			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
 
-			// Select leave type ID and leave state
 			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID).as(Integer.class),
 					leaveRequest.get(LeaveRequest_.LEAVE_STATE));
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
-			// Process results and accumulate counts
 			for (Object[] result : results) {
 				Integer typeId = (Integer) result[0];
 				LeaveState leaveState = (LeaveState) result[1];
@@ -1883,7 +1770,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 		}
 
-		// Convert the map to TeamLeaveCountByType objects
 		List<TeamLeaveCountByType> result = new ArrayList<>();
 		for (Map.Entry<Integer, Float> entry : leaveCountsByType.entrySet()) {
 			final Integer leaveTypeId = entry.getKey();
@@ -1900,10 +1786,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			});
 		}
 
-		// Sort by leave type
 		result.sort(Comparator.comparing(TeamLeaveCountByType::getLeaveType));
 
 		return result;
 	}
 
 }
+

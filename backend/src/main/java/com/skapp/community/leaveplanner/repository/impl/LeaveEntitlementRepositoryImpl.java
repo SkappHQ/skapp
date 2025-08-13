@@ -1066,25 +1066,19 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		// Leave type filter
 		if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
 			predicates.add(leaveTypeJoin.get(LeaveType_.typeId).in(leaveTypeIds));
 		}
 
-		// Active filters
 		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
 		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
 
-		// Date range filter
 		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveEntitlement_.validFrom), endDate));
 		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveEntitlement_.validTo), startDate));
-
-		// Optional job family filter
 		if (jobFamilyId != null) {
 			predicates.add(cb.equal(jobFamilyJoin.get(JobFamily_.jobFamilyId), jobFamilyId));
 		}
 
-		// Optional team filter
 		if (teamId != null) {
 			predicates.add(cb.equal(teamJoin.get(Team_.teamId), teamId));
 		}
@@ -1099,7 +1093,6 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		query.setMaxResults(limit);
 		List<Long[]> results = query.getResultList();
 
-		// Use LinkedHashSet to preserve order and ensure uniqueness
 		Set<Long> employeeIds = new LinkedHashSet<>();
 		for (Long[] row : results) {
 			employeeIds.add(row[0]);
@@ -1123,25 +1116,20 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		// Leave type filter
 		if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
 			predicates.add(leaveTypeJoin.get(LeaveType_.typeId).in(leaveTypeIds));
 		}
 
-		// Active filters
 		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
 		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
 
-		// Date range filter
 		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveEntitlement_.validFrom), endDate));
 		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveEntitlement_.validTo), startDate));
 
-		// Optional job family filter
 		if (jobFamilyId != null) {
 			predicates.add(cb.equal(jobFamilyJoin.get(JobFamily_.jobFamilyId), jobFamilyId));
 		}
 
-		// Optional team filter
 		if (teamId != null) {
 			predicates.add(cb.equal(teamJoin.get(Team_.teamId), teamId));
 		}
@@ -1153,3 +1141,4 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 }
+
