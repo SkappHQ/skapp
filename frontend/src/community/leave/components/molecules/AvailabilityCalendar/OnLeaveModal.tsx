@@ -1,12 +1,11 @@
 import { Box, Theme, useTheme } from "@mui/material";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/Table/Table";
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { LeaveRequestStates } from "~community/common/types/CommonTypes";
@@ -17,19 +16,7 @@ import { leaveRequestRowDataTypes } from "~community/leave/types/LeaveRequestTyp
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getLeaveRequestState } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
-interface OnLeaveModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  todaysAvailability: any;
-}
-
-const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  todaysAvailability
-}) => {
+const OnLeaveModal = () => {
   const translateText = useTranslator(
     "leaveModule",
     "leaveRequests",
@@ -37,13 +24,19 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
   );
   const theme: Theme = useTheme();
 
-  const { setIsManagerModal, setLeaveRequestData, setNewLeaveId, newLeaveId } =
-    useLeaveStore((state) => ({
-      setIsManagerModal: state.setIsManagerModal,
-      setLeaveRequestData: state.setLeaveRequestData,
-      setNewLeaveId: state.setNewLeaveId,
-      newLeaveId: state.newLeaveId
-    }));
+  const {
+    setIsManagerModal,
+    setLeaveRequestData,
+    setNewLeaveId,
+    newLeaveId,
+    todaysAvailability
+  } = useLeaveStore((state) => ({
+    setIsManagerModal: state.setIsManagerModal,
+    setLeaveRequestData: state.setLeaveRequestData,
+    setNewLeaveId: state.setNewLeaveId,
+    newLeaveId: state.newLeaveId,
+    todaysAvailability: state.todaysAvailability
+  }));
 
   const { isSuccess: getLeaveByIdSuccess, data: getLeaveByIdData } =
     useGetLeaveRequestData(newLeaveId as number);
@@ -56,7 +49,6 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     if (
       selectedLeaveRequest?.status?.toUpperCase() === LeaveRequestStates.PENDING
     ) {
-      setIsManagerModal(false);
       setLeaveRequestData({} as leaveRequestRowDataTypes);
       if (leaveRequest.id !== newLeaveId) {
         setNewLeaveId(leaveRequest.id);
@@ -68,9 +60,6 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
     if (getLeaveByIdSuccess && getLeaveByIdData) {
       setLeaveRequestData(getLeaveByIdData);
       setIsManagerModal(true);
-      setTimeout(() => {
-        onClose();
-      }, 70);
     }
   }, [getLeaveByIdSuccess, getLeaveByIdData]);
 
@@ -79,7 +68,10 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
       field: "name",
       headerName: translateText(["name"]).toLocaleUpperCase()
     },
-    { field: "type", headerName: translateText(["type"]).toLocaleUpperCase() },
+    {
+      field: "type",
+      headerName: translateText(["type"]).toLocaleUpperCase()
+    },
 
     {
       field: "duration",
@@ -156,40 +148,32 @@ const OnLeaveModal: React.FC<OnLeaveModalProps> = ({
   };
 
   return (
-    <Modal
-      isModalOpen={isOpen}
-      onCloseModal={onClose}
-      title={title}
-      isClosable={true}
-      modalContentStyles={{ maxWidth: { md: "64rem" } }}
-    >
-      <Box sx={{ pt: 1 }}>
-        <Table
-          tableName={TableNames.ON_LEAVE_MODAL}
-          headers={tableHeaders}
-          rows={transformToTableRows()}
-          tableBody={{
-            emptyState: {
-              noData: {
-                title: translateText(["allAvailable"]),
-                description: ""
-              }
-            },
-            loadingState: {
-              skeleton: {
-                rows: 5
-              }
-            },
-            onRowClick: handleRowClick
-          }}
-          tableFoot={{
-            pagination: {
-              isEnabled: false
+    <Box sx={{ pt: 1 }}>
+      <Table
+        tableName={TableNames.ON_LEAVE_MODAL}
+        headers={tableHeaders}
+        rows={transformToTableRows()}
+        tableBody={{
+          emptyState: {
+            noData: {
+              title: translateText(["allAvailable"]),
+              description: ""
             }
-          }}
-        />
-      </Box>
-    </Modal>
+          },
+          loadingState: {
+            skeleton: {
+              rows: 5
+            }
+          },
+          onRowClick: handleRowClick
+        }}
+        tableFoot={{
+          pagination: {
+            isEnabled: false
+          }
+        }}
+      />
+    </Box>
   );
 };
 

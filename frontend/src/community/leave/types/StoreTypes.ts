@@ -106,6 +106,11 @@ interface actionsTypes {
   setNewLeaveId: (value: number) => void;
   removeNewLeaveId: () => void;
 
+  //OnLeaveModal
+  setIsOnLeaveModalOpen: (value: boolean) => void;
+  setOnLeaveModalTitle: (value: string) => void;
+  setTodaysAvailability: (value: any[]) => void;
+
   //LeaveReportSlice
   setReportsParams: (key: string, value: any) => void;
   setReportsFilter: (key: string, value: string[] | string) => void;
@@ -209,6 +214,11 @@ export interface LeaveStore extends actionsTypes {
   isManagerModalOpen: boolean;
   isEmployeeModalOpen: boolean;
   newLeaveId: number | null;
+
+  //OnLeaveModal
+  isOnLeaveModalOpen: boolean;
+  onLeaveModalTitle: string;
+  todaysAvailability: any[];
 
   //LeaveReportSlice
   reportsParams: {
