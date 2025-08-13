@@ -22,4 +22,5 @@ public interface EnvelopeRepository {
 	Map<EnvelopeStatus, Long> countEnvelopesByStatus(Long userId, boolean isAllCount);
 
 	Envelope findByIdWithRecipientsForUpdate(Long envelopeId);
+
 }

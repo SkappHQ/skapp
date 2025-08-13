@@ -324,19 +324,17 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		Root<Envelope> envelope = query.from(Envelope.class);
 
-		// Fetch recipients eagerly
 		envelope.fetch(Envelope_.recipients, JoinType.LEFT);
 
-		// Create predicate for envelope id
 		Predicate idPredicate = cb.equal(envelope.get(Envelope_.id), envelopeId);
 
 		query.select(envelope).where(idPredicate);
 
 		TypedQuery<Envelope> typedQuery = entityManager.createQuery(query);
 
-		// Set the lock mode to PESSIMISTIC_WRITE
 		typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 
 		return typedQuery.getSingleResult();
 	}
+
 }

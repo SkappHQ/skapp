@@ -21,29 +21,28 @@ import java.util.List;
 @Repository
 public class DocumentVersionRepositoryImpl implements DocumentVersionRepository {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+	@PersistenceContext
+	private EntityManager entityManager;
 
-    @Override
-    public List<DocumentVersion> findByVersionNumberAndDocumentIdForUpdateOrdered(int versionNumber, Long documentId) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<DocumentVersion> query = cb.createQuery(DocumentVersion.class);
-        Root<DocumentVersion> root = query.from(DocumentVersion.class);
+	@Override
+	public List<DocumentVersion> findByVersionNumberAndDocumentIdForUpdateOrdered(int versionNumber, Long documentId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<DocumentVersion> query = cb.createQuery(DocumentVersion.class);
+		Root<DocumentVersion> root = query.from(DocumentVersion.class);
 
-        // Using metamodel for type-safe queries
-        Join<DocumentVersion, Document> documentJoin = root.join(DocumentVersion_.document);
+		Join<DocumentVersion, Document> documentJoin = root.join(DocumentVersion_.document);
 
-        // Create predicates using metamodel attributes
-        Predicate versionPredicate = cb.equal(root.get(DocumentVersion_.versionNumber), versionNumber);
-        Predicate documentPredicate = cb.equal(documentJoin.get(Document_.id), documentId);
+		Predicate versionPredicate = cb.equal(root.get(DocumentVersion_.versionNumber), versionNumber);
+		Predicate documentPredicate = cb.equal(documentJoin.get(Document_.id), documentId);
 
-        query.select(root)
-                .where(cb.and(versionPredicate, documentPredicate))
-                .orderBy(cb.desc(root.get(DocumentVersion_.id)));
+		query.select(root)
+			.where(cb.and(versionPredicate, documentPredicate))
+			.orderBy(cb.desc(root.get(DocumentVersion_.id)));
 
-        TypedQuery<DocumentVersion> typedQuery = entityManager.createQuery(query);
-        typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+		TypedQuery<DocumentVersion> typedQuery = entityManager.createQuery(query);
+		typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 
-        return typedQuery.getResultList();
-    }
+		return typedQuery.getResultList();
+	}
+
 }
