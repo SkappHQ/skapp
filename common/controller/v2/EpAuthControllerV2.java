@@ -71,7 +71,7 @@ public class EpAuthControllerV2 {
 	}
 
 	// Endpoint to handle redirection from Microsoft after authentication
-	@PostMapping(value = "/sso/microsoft/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/sso/microsoft/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public RedirectView ssoMicrosoftSignInRedirect(@Valid EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
 		return new RedirectView(epAuthServiceV2.ssoMicrosoftSignInRedirect(epMicrosoftAuthRedirectDto));
 	}
