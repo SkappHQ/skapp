@@ -41,6 +41,11 @@ const PreviousEmploymentDetailsSection = ({
     "addResource",
     "entitlementDetails"
   );
+  const translateAria = useTranslator(
+    "peopleAria",
+    "addResource",
+    "previousEmploymentDetails"
+  );
 
   const { employee } = usePeopleStore((state) => state);
 
@@ -219,6 +224,7 @@ const PreviousEmploymentDetailsSection = ({
             tableStyles={{
               mt: "2rem"
             }}
+            tableName={translateAria(["previousEmploymentTable"])}
           />
         )}
       </Grid>

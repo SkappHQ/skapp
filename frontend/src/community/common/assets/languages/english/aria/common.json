@@ -4,7 +4,8 @@
     "skipTo": "Skip to:",
     "mainContent": "Main content",
     "topBar": "Top bar",
-    "sideBar": "Side bar"
+    "sideBar": "Side bar",
+    "quickSetup": "Quick Setup"
   },
   "components": {
     "pagination": {
@@ -88,8 +89,11 @@
     },
     "multiSelectManagerSearch": {
       "searchManagers": "Search for managers",
-      "managerOptions": "Manager options",
+      "managerOptions": "Other supervisors options",
       "selected": "selected"
+    },
+    "toggleSwitch": {
+      "label": "Toggle switch, {{option}} selected"
     }
   },
   "modals": {

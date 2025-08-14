@@ -87,15 +87,19 @@ const PlayButton = (): JSX.Element => {
 
   const getIcon = () => {
     if (isPending) {
-      return <CircularProgress size={"1rem"} />;
+      return <CircularProgress size={"0.75rem"} />;
     }
 
     switch (status) {
       case AttendanceSlotType.RESUME:
       case AttendanceSlotType.START:
-        return <Icon name={IconName.PAUSE_ICON} />;
+        return (
+          <Icon name={IconName.PAUSE_ICON} width="0.75rem" height="0.75rem" />
+        );
       default:
-        return <Icon name={IconName.PLAY_ICON} />;
+        return (
+          <Icon name={IconName.PLAY_ICON} width="0.75rem" height="0.75rem" />
+        );
     }
   };
 
