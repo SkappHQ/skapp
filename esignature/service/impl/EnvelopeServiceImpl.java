@@ -320,11 +320,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		documentDao.saveAll(updatedDocuments);
 
-		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
-				envelope.getOwner(), null, null);
-
-		auditTrails.add(auditTrailSent);
-
 		auditTrailDao.saveAll(auditTrails);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
