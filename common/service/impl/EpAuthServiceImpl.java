@@ -762,13 +762,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto validateCaptcha(EpCaptchaVerificationDto epCaptchaVerificationDto) {
 		log.info("validateCaptcha: execution started");
 
-		if (epCaptchaVerificationDto == null) {
-			log.warn("validateCaptcha: epCaptchaVerificationDto is null");
-			return new ResponseEntityDto(true,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID));
-		}
-
-		if (epCaptchaVerificationDto.getRecaptchaToken() == null) {
+		if (epCaptchaVerificationDto == null || epCaptchaVerificationDto.getRecaptchaToken() == null) {
 			log.warn("validateCaptcha: recaptchaToken is null or missing");
 			return new ResponseEntityDto(true,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID));
