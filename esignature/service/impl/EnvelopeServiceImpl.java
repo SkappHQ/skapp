@@ -743,17 +743,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
 				auditTrailResponseDto.setActionDoneByName("");
 				auditTrailResponseDto.setActionDoneByEmail("");
-				log.debug("Action done by: null (both recipient and address book user are null)");
 			}
 			else if (auditTrail.getRecipient() == null) {
 				auditTrailResponseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
 				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getAddressBookUser().getEmail());
-				log.debug("Action done by: {}", auditTrail.getAddressBookUser().getName());
 			}
 			else {
 				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
 				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getRecipient().getAddressBook().getEmail());
-				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
 			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
 			return auditTrailResponseDto;
@@ -819,9 +816,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 				}
 
-				if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
+				if (!recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
 					.isEmpty()) {
-					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+					return;
 				}
 
 				// Check if user is the envelope owner
