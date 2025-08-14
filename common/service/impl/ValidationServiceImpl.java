@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.component.EmailValidationProperties;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.payload.response.EmailValidationResultDto;
@@ -22,8 +23,6 @@ public class ValidationServiceImpl implements ValidationService {
 
 	private static final String CONFIG_PATH = "enterprise/validations/email-validation.yml";
 
-	private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-
 	private final MessageUtil messageUtil;
 
 	private final EmailValidationProperties properties = YamlReader.read(CONFIG_PATH, EmailValidationProperties.class);
@@ -40,7 +39,7 @@ public class ValidationServiceImpl implements ValidationService {
 			emailValidationResultDto.setReason(messageUtil.getMessage(validationResult.getMessageKey()));
 		}
 
-		return new ResponseEntityDto(validationResult.getIsValid(), emailValidationResultDto);
+		return new ResponseEntityDto(false, emailValidationResultDto);
 	}
 
 	@Override
@@ -58,7 +57,7 @@ public class ValidationServiceImpl implements ValidationService {
 			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_EMPTY_EMAIL.getMessageKey());
 		}
 
-		if (!EMAIL_PATTERN.matcher(email).matches()) {
+		if (!Pattern.compile(Validation.EMAIL_REGEX).matcher(email).matches()) {
 			return new ValidationResult(false,
 					EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_EMAIL_FORMAT.getMessageKey());
 		}
