@@ -47,8 +47,7 @@ import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
-import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
-import com.skapp.enterprise.common.payload.response.ValidationResult;
+import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
 import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
@@ -340,7 +339,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	public ResponseEntityDto getGoogleAuthUrl(EpGoogleConsentUrlDto epGoogleConsentUrlDto) {
 		log.info("getGoogleAuthUrl: execution started");
 
-		EpGoogleAuthResponseDto responseDto = new EpGoogleAuthResponseDto();
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
 
 		String frontendRedirectUri = epGoogleConsentUrlDto.getFrontendRedirectUrl();
 
@@ -372,7 +371,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto getMicrosoftAuthUrl(@Valid EpMicrosoftConsentUrlDto epMicrosoftConsentUrlDto) {
-        log.info("getMicrosoftAuthUrl: execution started");
+		log.info("getMicrosoftAuthUrl: execution started");
+
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
 
 		String frontendRedirectUri = epMicrosoftConsentUrlDto.getFrontendRedirectUrl();
 		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
@@ -387,8 +388,9 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 				+ microsoftBackendRedirectURI + "&scope=" + EpCommonConstants.ENTERPRISE_MICROSOFT_AUTH_SCOPES
 				+ "&response_mode=query" + "&state=" + encodedState;
 
-        log.info("getMicrosoftAuthUrl: execution ended");
-		return new ResponseEntityDto(false, authUrl);
+		responseDto.setAuthUrl(authUrl);
+		log.info("getMicrosoftAuthUrl: execution ended");
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override

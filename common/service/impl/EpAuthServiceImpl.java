@@ -238,6 +238,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto generateAndSendOTP() {
+		log.info("generateAndSendOTP: execution started");
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 		SuperAdmin superAdmin = superAdminDao.findById(userId)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
