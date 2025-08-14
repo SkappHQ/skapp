@@ -327,11 +327,11 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public ResponseEntityDto sharePassword(Long userId) {
-		log.info("sharePassword: execution started for userId={}", userId);
+		log.info("sharePassword: execution started");
 
 		Optional<User> optionalUser = userDao.findById(userId);
 		if (optionalUser.isEmpty()) {
-			log.warn("sharePassword: User not found for userId={} in sharePassword", userId);
+			log.warn("sharePassword: User not found for sharePassword");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
@@ -346,11 +346,11 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public ResponseEntityDto resetAndSharePassword(Long userId) {
-		log.info("resetAndSharePassword: execution started for userId={}", userId);
+		log.info("resetAndSharePassword: execution started");
 
 		Optional<User> optionalUser = userDao.findById(userId);
 		if (optionalUser.isEmpty()) {
-			log.warn("resetAndSharePassword: User not found for userId={} in resetAndSharePassword", userId);
+			log.warn("resetAndSharePassword: User not found for resetAndSharePassword");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
