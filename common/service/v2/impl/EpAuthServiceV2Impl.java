@@ -50,7 +50,6 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
 import com.skapp.enterprise.common.payload.response.ValidationResult;
 import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
-import com.skapp.enterprise.common.payload.v2.GoogleUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.service.ValidationService;
@@ -373,6 +372,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto getMicrosoftAuthUrl(@Valid EpMicrosoftConsentUrlDto epMicrosoftConsentUrlDto) {
+        log.info("getMicrosoftAuthUrl: execution started");
 
 		String frontendRedirectUri = epMicrosoftConsentUrlDto.getFrontendRedirectUrl();
 		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
@@ -387,6 +387,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 				+ microsoftBackendRedirectURI + "&scope=" + EpCommonConstants.ENTERPRISE_MICROSOFT_AUTH_SCOPES
 				+ "&response_mode=query" + "&state=" + encodedState;
 
+        log.info("getMicrosoftAuthUrl: execution ended");
 		return new ResponseEntityDto(false, authUrl);
 	}
 
