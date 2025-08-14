@@ -57,6 +57,8 @@ export interface DirectoryModalSliceType
     | "setBulkUploadUsers"
     | "sharedCredentialData"
     | "setSharedCredentialData"
+    | "pendingAddResourceData"
+    | "setPendingAddResourceData"
   > {}
 
 export interface AddNewResourceSliceTypes

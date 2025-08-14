@@ -23,7 +23,8 @@ const DirectoryPopupController = () => {
     directoryModalType,
     isDirectoryModalOpen,
     setDirectoryModalType,
-    setBulkUploadUsers
+    setBulkUploadUsers,
+    pendingAddResourceData
   } = usePeopleStore((state) => state);
 
   const {
@@ -61,6 +62,14 @@ const DirectoryPopupController = () => {
   };
 
   const handleCloseModal = (): void => {
+    if (
+      directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE &&
+      pendingAddResourceData
+    ) {
+      setDirectoryModalType(DirectoryModalTypes.UNSAVED_CHANGES);
+      return;
+    }
+
     setBulkUploadUsers([]);
     if (ongoingQuickSetup.INVITE_EMPLOYEES) {
       stopAllOngoingQuickSetup();
