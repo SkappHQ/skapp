@@ -1,12 +1,13 @@
 import { SetType } from "~community/common/types/storeTypes";
+import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 
 interface OnLeaveModalSliceTypes {
   isOnLeaveModalOpen: boolean;
   onLeaveModalTitle: string;
-  todaysAvailability: any[];
+  todaysAvailability: LeaveRequest[];
   setIsOnLeaveModalOpen: (value: boolean) => void;
   setOnLeaveModalTitle: (value: string) => void;
-  setTodaysAvailability: (value: any[]) => void;
+  setTodaysAvailability: (value: LeaveRequest[]) => void;
 }
 
 export const onLeaveModalSlice = (
@@ -25,7 +26,7 @@ export const onLeaveModalSlice = (
       ...state,
       onLeaveModalTitle: value
     })),
-  setTodaysAvailability: (value: any[]) =>
+  setTodaysAvailability: (value: LeaveRequest[]) =>
     set((state: OnLeaveModalSliceTypes) => ({
       ...state,
       todaysAvailability: value

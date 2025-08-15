@@ -22,7 +22,7 @@ interface AvailabilityCalendarCardProps {
   holidays: { id: string; name: string; holidayDuration: string }[];
   availableCount: number;
   unavailableCount: number;
-  onLeaveEmployees: any[];
+  onLeaveEmployees: LeaveRequest[];
   cards: number;
   actualDate: string;
 }
@@ -37,7 +37,11 @@ const AvailabilityCalendarCard = ({
   cards,
   actualDate
 }: AvailabilityCalendarCardProps): JSX.Element => {
-  const translateText = useTranslator("leaveModule", "myRequests", "teamAvailabilityModal");
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "teamAvailabilityModal"
+  );
 
   const {
     setIsManagerModal,
