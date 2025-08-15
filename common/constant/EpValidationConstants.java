@@ -11,7 +11,7 @@ public class EpValidationConstants {
 
 	public static final Set<String> RESTRICTED_SUBDOMAINS = Set.of("skapp", "skapp-dev", "skapp-qa", "skapp-stage",
 			"skapp-prod", "skapp-test", "admin", "api", "mail", "smtp", "pop", "ftp", "www", "hello", "no-reply",
-			"document", "docs");
+			"document", "docs", "migrations");
 
 	/**
 	 * Regular expression pattern to validate a valid company phone number. The phone
