@@ -51,7 +51,6 @@ import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveEmailService;
 import com.skapp.community.leaveplanner.service.LeaveEntitlementService;
 import com.skapp.community.leaveplanner.service.LeaveNotificationService;
-import com.skapp.community.leaveplanner.type.CustomLeaveEntitlementSort;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -844,51 +843,72 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 	@Override
 	public ResponseEntityDto getLeaveEntitlementByDate(
 			CustomLeaveEntitlementsFilterDto customLeaveEntitlementsFilterDto) {
-		log.info("getLeaveEntitlementByYear: execution started");
+		log.info("getLeaveEntitlementByDate: execution started");
 
-		Pageable pageable = PageRequest.of(customLeaveEntitlementsFilterDto.getPage(),
-				customLeaveEntitlementsFilterDto.getSize(), Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
-						customLeaveEntitlementsFilterDto.getSortKey().toString()));
+		if (!isCustomLeaveEntitlementInCorrectYearRange(customLeaveEntitlementsFilterDto.getYear())) {
+			return new ResponseEntityDto(false, new PageDto());
+		}
 
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		LocalDate validFrom = DateTimeUtils.getUtcLocalDate(customLeaveEntitlementsFilterDto.getYear(),
 				leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
 		LocalDate validTo = DateTimeUtils.calculateEndDateAfterYears(validFrom, 1);
 
-		PageDto pageDto = new PageDto();
-		List<EntitlementBasicDetailsDto> entitlementDetails = new ArrayList<>();
-
-		if (isCustomLeaveEntitlementInCorrectYearRange(customLeaveEntitlementsFilterDto.getYear())) {
-			List<Long> employeeIds;
-			if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
-				employeeIds = leaveEntitlementDao.findAllEmployeeIdsCreatedWithValidDates(validFrom, validTo,
-						Sort.by(Sort.Direction.ASC, CustomLeaveEntitlementSort.CREATED_DATE.getSortField()));
-			}
-			else {
-				employeeIds = leaveEntitlementDao.findEmployeeIdsCreatedWithValidDates(validFrom, validTo,
-						pageable.getPageSize(), pageable.getOffset());
-			}
-
-			List<LeaveEntitlement> list = leaveEntitlementDao.findLeaveEntitlementByValidDate(validFrom, validTo,
-					pageable.getSort(), employeeIds, customLeaveEntitlementsFilterDto.getKeyword());
-
-			if (!list.isEmpty()) {
-				entitlementDetails = getEmployeesWithEntitlements(list);
-			}
-
-			if (Boolean.FALSE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
-				Long totalItems = (long) list.size();
-				pageDto.setTotalItems(totalItems);
-				pageDto.setCurrentPage(customLeaveEntitlementsFilterDto.getPage());
-				pageDto.setTotalPages(customLeaveEntitlementsFilterDto.getSize() == 0 ? 1
-						: (int) Math.ceil((double) totalItems / (double) customLeaveEntitlementsFilterDto.getSize()));
-				pageDto.setItems(entitlementDetails);
-			}
+		Pageable pageable;
+		if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
+			pageable = Pageable.unpaged(Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
+					customLeaveEntitlementsFilterDto.getSortKey().getSortField()));
+		}
+		else {
+			pageable = PageRequest.of(customLeaveEntitlementsFilterDto.getPage(),
+					customLeaveEntitlementsFilterDto.getSize(), Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
+							customLeaveEntitlementsFilterDto.getSortKey().getSortField()));
 		}
 
-		log.info("getLeaveEntitlementByYear: execution ended");
-		return Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())
-				? new ResponseEntityDto(false, entitlementDetails) : new ResponseEntityDto(false, pageDto);
+		Page<Employee> employees = leaveEntitlementDao.findEmployeesWithEntitlements(validFrom, validTo,
+				customLeaveEntitlementsFilterDto.getKeyword(), pageable);
+
+		List<EntitlementBasicDetailsDto> responseDtos = employees.getContent()
+			.stream()
+			.map(this::mapToEntitlementBasicDetailsDto)
+			.toList();
+
+		if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
+			return new ResponseEntityDto(false, responseDtos);
+		}
+
+		PageDto pageDto = pageTransformer.transform(employees);
+		pageDto.setItems(responseDtos);
+
+		log.info("getLeaveEntitlementByDate: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee) {
+		EntitlementBasicDetailsDto dto = new EntitlementBasicDetailsDto();
+		dto.setFirstName(employee.getFirstName());
+		dto.setLastName(employee.getLastName());
+		dto.setEmployeeId(employee.getEmployeeId());
+		dto.setAuthPic(employee.getAuthPic());
+		dto.setEmail(employee.getUser().getEmail());
+
+		List<LeaveEntitlement> entitlements = leaveEntitlementDao.findByEmployee_EmployeeId(employee.getEmployeeId());
+
+		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
+			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual())
+			.map(entitlement -> {
+				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
+				entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
+				entitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated().toString());
+				entitlementDto.setName(entitlement.getLeaveType().getName());
+				entitlementDto.setValidFrom(entitlement.getValidFrom());
+				entitlementDto.setValidTo(entitlement.getValidTo());
+				return entitlementDto;
+			})
+			.toList();
+
+		dto.setEntitlements(entitlementDtos);
+		return dto;
 	}
 
 	@Override
@@ -938,54 +958,6 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 	private boolean isCustomLeaveEntitlementInCorrectYearRange(int year) {
 		return leaveCycleService.isInCurrentCycle(year) || leaveCycleService.isInPreviousCycle(year)
 				|| leaveCycleService.isInNextCycle(year);
-	}
-
-	private List<EntitlementBasicDetailsDto> getEmployeesWithEntitlements(List<LeaveEntitlement> allEntitlements) {
-		HashMap<Long, EntitlementBasicDetailsDto> results = new HashMap<>();
-		List<CustomEntitlementDto> entitlements;
-
-		for (LeaveEntitlement leaveEntitlement : allEntitlements) {
-			CustomEntitlementDto newEntitlementDto = leaveMapper
-				.leaveTypeAndEntitlementToEntitlementDto(leaveEntitlement.getLeaveType(), leaveEntitlement);
-
-			EntitlementBasicDetailsDto entitlementDetailsDto = new EntitlementBasicDetailsDto();
-			entitlements = new ArrayList<>();
-
-			if (results.containsKey(leaveEntitlement.getEmployee().getEmployeeId())) {
-				updateEntitlementsIfExistOtherwiseAdd(
-						results.get(leaveEntitlement.getEmployee().getEmployeeId()).getEntitlements(),
-						newEntitlementDto);
-			}
-			else {
-				entitlements.add(newEntitlementDto);
-				entitlementDetailsDto.setEntitlements(entitlements);
-				entitlementDetailsDto.setFirstName(leaveEntitlement.getEmployee().getFirstName());
-				entitlementDetailsDto.setLastName(leaveEntitlement.getEmployee().getLastName());
-				entitlementDetailsDto.setEmail(leaveEntitlement.getEmployee().getUser().getEmail());
-				entitlementDetailsDto.setAuthPic(leaveEntitlement.getEmployee().getAuthPic());
-				entitlementDetailsDto.setEmployeeId(leaveEntitlement.getEmployee().getUser().getUserId());
-				results.put(leaveEntitlement.getEmployee().getEmployeeId(), entitlementDetailsDto);
-			}
-		}
-
-		return results.values().stream().toList();
-	}
-
-	private void updateEntitlementsIfExistOtherwiseAdd(List<CustomEntitlementDto> entitlementDtoList,
-			CustomEntitlementDto newEntitlement) {
-		if (newEntitlement.getTotalDaysAllocated() == null)
-			newEntitlement.setTotalDaysAllocated("0f");
-		if (newEntitlement.getLeaveTypeId() != null) {
-			for (CustomEntitlementDto existingEntitlement : entitlementDtoList) {
-				if (existingEntitlement.getLeaveTypeId().equals(newEntitlement.getLeaveTypeId())) {
-					float totalDaysAllocated = Float.parseFloat(newEntitlement.getTotalDaysAllocated())
-							+ Float.parseFloat(existingEntitlement.getTotalDaysAllocated());
-					existingEntitlement.setTotalDaysAllocated(String.valueOf(totalDaysAllocated));
-					return;
-				}
-			}
-		}
-		entitlementDtoList.add(newEntitlement);
 	}
 
 	private void createNewLeaveEntitlementFromBulk(int year, EntitlementDetailsDto entitlementDetailsDto,
