@@ -54,6 +54,7 @@ import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
