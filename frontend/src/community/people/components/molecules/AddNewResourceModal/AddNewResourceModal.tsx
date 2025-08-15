@@ -11,7 +11,6 @@ import { peopleDirectoryTestId } from "~community/common/constants/testIds";
 import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { allowsLettersAndSpecialCharactersForNames } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import {
@@ -245,7 +244,6 @@ const AddNewResourceModal = () => {
           textDecoration: "underline",
           color: theme.palette.primary.dark,
           marginTop: "1rem",
-          display: "inline-block",
           width: "fit-content"
         }}
       >
