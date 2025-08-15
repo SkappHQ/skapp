@@ -54,7 +54,6 @@ import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
-import com.skapp.enterprise.esignature.service.EsignConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -66,7 +65,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
 
 @Primary
@@ -349,13 +347,13 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	}
 
 	private void validateOrganizationInput(EpOrganizationDto organizationDto) {
-		if (organizationDto.getOrganizationTimeZone() != null
-				&& !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
-		}
-
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
+		}
+
+		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
+				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
 		if (organizationDto.getCompanyDomain() == null || organizationDto.getCompanyDomain().isEmpty()) {
@@ -368,11 +366,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 		if (!organizationDto.getCompanyDomain().matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
-		}
-
-		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
-				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
