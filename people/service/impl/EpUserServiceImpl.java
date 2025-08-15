@@ -1,11 +1,13 @@
 package com.skapp.enterprise.people.service.impl;
 
+import com.skapp.community.common.service.CacheService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.people.service.EpUserService;
@@ -18,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
 public class EpUserServiceImpl implements EpUserService {
 
 	private final EmployeeDao employeeDao;
+
+	private final CacheService cacheService;
 
 	@Override
 	public Tier getCurrentUserTier() {
@@ -71,7 +74,12 @@ public class EpUserServiceImpl implements EpUserService {
 
 		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
 
-		return employees.stream().map(this::mapEmployeeToUserDto).collect(Collectors.toList());
+		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
+
+		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
+		cacheService.put(cacheKey.getKey(), mappedUsers.toString(), cacheKey.getTtl(), cacheKey.getTimeUnit());
+
+		return mappedUsers;
 	}
 
 	private EpUserResponseDto mapEmployeeToUserDto(Employee employee) {
