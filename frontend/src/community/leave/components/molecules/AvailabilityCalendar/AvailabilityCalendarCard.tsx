@@ -6,6 +6,7 @@ import { JSX } from "react";
 
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
@@ -36,6 +37,8 @@ const AvailabilityCalendarCard = ({
   cards,
   actualDate
 }: AvailabilityCalendarCardProps): JSX.Element => {
+  const translateText = useTranslator("leaveModule", "myRequests", "teamAvailabilityModal");
+
   const {
     setIsManagerModal,
     setIsOnLeaveModalOpen,
@@ -47,6 +50,13 @@ const AvailabilityCalendarCard = ({
     setOnLeaveModalTitle: state.setOnLeaveModalTitle,
     setTodaysAvailability: state.setTodaysAvailability
   }));
+
+  const handleOnLeaveModalOpen = () => {
+    setIsManagerModal(true);
+    setIsOnLeaveModalOpen(true);
+    setOnLeaveModalTitle(translateText(["onLeaveTitle"], { date: actualDate }));
+    setTodaysAvailability(onLeaveEmployees);
+  };
 
   const isToday = () => {
     const date = DateTime.now().toFormat(DATE_FORMAT);
@@ -131,17 +141,11 @@ const AvailabilityCalendarCard = ({
         role="button"
         onKeyDown={(e) => {
           if (shouldActivateButton(e.key)) {
-            setIsManagerModal(true);
-            setIsOnLeaveModalOpen(true);
-            setOnLeaveModalTitle(`On leave : ${actualDate}`);
-            setTodaysAvailability(onLeaveEmployees);
+            handleOnLeaveModalOpen();
           }
         }}
         onClick={() => {
-          setIsManagerModal(true);
-          setIsOnLeaveModalOpen(true);
-          setOnLeaveModalTitle(`On leave : ${actualDate}`);
-          setTodaysAvailability(onLeaveEmployees);
+          handleOnLeaveModalOpen();
         }}
       >
         <Box

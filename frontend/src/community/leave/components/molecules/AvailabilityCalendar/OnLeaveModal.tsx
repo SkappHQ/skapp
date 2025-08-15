@@ -48,9 +48,7 @@ const OnLeaveModal = () => {
       (req: LeaveRequest) => req.leaveRequestId === leaveRequest.id
     );
 
-    if (
-      selectedLeaveRequest?.status?.toUpperCase() === LeaveRequestStates.PENDING
-    ) {
+    if (selectedLeaveRequest?.status === LeaveRequestStates.PENDING) {
       setLeaveRequestData({} as leaveRequestRowDataTypes);
       if (leaveRequest.id !== newLeaveId) {
         setNewLeaveId(leaveRequest.id);
