@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
 
 @Service
@@ -99,10 +98,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 	public ResponseEntityDto saveOrganization(OrganizationDto organizationDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("saveOrganization: execution started by user: {}", currentUser.getUserId());
-
-		if (organizationDto.getOrganizationTimeZone() != null
-				&& !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone()))
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
 
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor()))
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);

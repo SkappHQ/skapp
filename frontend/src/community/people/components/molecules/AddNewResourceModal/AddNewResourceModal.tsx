@@ -160,10 +160,7 @@ const AddNewResourceModal = () => {
     const { name, value } = e.target;
 
     if (name === "firstName" || name === "lastName") {
-      if (
-        value.length > characterLengths.NAME_LENGTH ||
-        !allowsLettersAndSpecialCharactersForNames().test(value)
-      ) {
+      if (value.length > characterLengths.NAME_LENGTH) {
         return;
       }
     }

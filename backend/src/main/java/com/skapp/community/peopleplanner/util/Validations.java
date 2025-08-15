@@ -25,7 +25,6 @@ import static com.skapp.community.common.util.Validation.ALPHANUMERIC_REGEX;
 import static com.skapp.community.common.util.Validation.COUNTRY_CODE_PATTERN;
 import static com.skapp.community.common.util.Validation.EMAIL_REGEX;
 import static com.skapp.community.common.util.Validation.LETTERS_AND_SPACE_REGEX;
-import static com.skapp.community.common.util.Validation.NAME_REGEX;
 import static com.skapp.community.common.util.Validation.NUMERIC_REGEX;
 import static com.skapp.community.common.util.Validation.PHONE_NUMBER_PATTERN;
 import static com.skapp.community.common.util.Validation.VALID_IDENTIFICATION_NUMBER_REGEXP;
@@ -33,13 +32,6 @@ import static com.skapp.community.common.util.Validation.VALID_NIN_NUMBER_REGEXP
 
 @UtilityClass
 public class Validations {
-
-	public static boolean isEmployeeNameValid(String name) {
-		if (!name.matches(NAME_REGEX)) {
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMPLOYEE_NAME);
-		}
-		return true;
-	}
 
 	public static boolean isValidPhoneNumber(String phoneNumber) {
 		boolean isValid = false;
@@ -196,54 +188,36 @@ public class Validations {
 	}
 
 	public static void validateName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
 	}
 
 	public static void validateFirstName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
 	}
 
 	public static void validateLastName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
 	}
 
 	public static void validateMiddleName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_MIDDLE_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_MIDDLE_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
 	}
 
 	public static void validateFamilyFirstName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_FAMILY_FIRST_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_FAMILY_FIRST_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
 	}
 
 	public static void validateFamilyLastName(String name) {
-		if (name != null && !name.trim().matches(NAME_REGEX))
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_FAMILY_LAST_NAME);
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_FAMILY_LAST_NAME_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_NAME_LENGTH)));
