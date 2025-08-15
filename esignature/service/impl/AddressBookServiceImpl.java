@@ -6,8 +6,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.peopleplanner.util.Validations;
-import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.service.TenantMigrationService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -18,7 +16,6 @@ import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.UserKeyRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.service.AddressBookService;
@@ -47,15 +44,9 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	private final AddressBookDao addressBookDao;
 
-	private final UserKeyRepository userKeyRepository;
-
 	private final EsignMapper esignMapper;
 
 	private final UserService userService;
-
-	private final TenantMigrationService tenantMigrationService;
-
-	private final TenantContext tenantContext;
 
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;

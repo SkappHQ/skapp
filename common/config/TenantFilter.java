@@ -97,15 +97,15 @@ public class TenantFilter extends OncePerRequestFilter {
 		String requestLog = "\n" + greenColor + "==================== Request Details ====================\n"
 				+ String.format("Remote Address:      %s%n", request.getRemoteAddr())
 				+ String.format("Origin Address:      %s%n", originAddress)
-				+ String.format("Host:               %s%n", request.getRemoteHost())
-				+ String.format("Method:             %s%n", method)
-				+ String.format("URI:                %s%n", request.getRequestURI())
-				+ String.format("Protocol:           %s%n", request.getProtocol())
-				+ String.format("Content Type:       %s%n", contentType != null ? contentType : "N/A")
-				+ String.format("Accept Types:       %s%n", acceptHeader != null ? acceptHeader : "N/A")
-				+ String.format("User Agent:         %s%n", userAgent != null ? userAgent : "N/A")
-				+ String.format("Referer:            %s%n", referer != null ? referer : "N/A")
-				+ String.format("Tenant ID:          %s%n", tenantId)
+				+ String.format("Host:                %s%n", request.getRemoteHost())
+				+ String.format("Method:              %s%n", method)
+				+ String.format("URI:                 %s%n", request.getRequestURI())
+				+ String.format("Protocol:            %s%n", request.getProtocol())
+				+ String.format("Content Type:        %s%n", contentType != null ? contentType : "N/A")
+				+ String.format("Accept Types:        %s%n", acceptHeader != null ? acceptHeader : "N/A")
+				+ String.format("User Agent:          %s%n", userAgent != null ? userAgent : "N/A")
+				+ String.format("Referer:             %s%n", referer != null ? referer : "N/A")
+				+ String.format("Tenant ID:           %s%n", tenantId)
 				+ "=========================================================" + resetColor;
 
 		log.info(requestLog);
