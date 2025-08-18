@@ -242,7 +242,7 @@ const AddNewResourceModal = () => {
           fontWeight: 500,
           fontFamily: theme.typography.fontFamily,
           textDecoration: "underline",
-          color: theme.palette.primary.main,
+          color: theme.palette.primary.dark,
           marginTop: "1rem",
           marginLeft: "0.125rem",
           width: "fit-content"
