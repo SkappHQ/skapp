@@ -21,4 +21,6 @@ public interface LeaveEntitlementDao extends JpaRepository<LeaveEntitlement, Lon
 
 	List<LeaveEntitlement> findAllByLeaveType(LeaveType leaveType);
 
+	List<LeaveEntitlement> findByEmployee_EmployeeId(Long employeeId);
+
 }

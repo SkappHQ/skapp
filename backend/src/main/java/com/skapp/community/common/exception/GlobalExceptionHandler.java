@@ -134,8 +134,8 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(NoHandlerFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleNoHandlerFoundException(NoHandlerFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_ENTITY_NOT_FOUND);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_ENTITY_NOT_FOUND.name(), message, status);
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_NO_HANDLER_FOUND);
+		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_NO_HANDLER_FOUND.name(), message, status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,

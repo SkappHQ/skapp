@@ -292,7 +292,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	private void createAttendanceNotificationForManagers(List<EmployeeManager> managers, String timeRequestId,
 			AttendanceEmailDynamicFields attendanceEmailDynamicFields, EmailBodyTemplates emailBodyTemplates) {
 		PeopleUtil.filterManagersByAttendanceRoles(managers)
-			.forEach(manager -> notificationService.createNotification(manager.getEmployee(), timeRequestId,
+			.forEach(manager -> notificationService.createNotification(manager.getManager(), timeRequestId,
 					NotificationType.TIME_ENTRY, emailBodyTemplates, attendanceEmailDynamicFields,
 					NotificationCategory.ATTENDANCE));
 	}
