@@ -299,7 +299,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
-	@Override
+    @Override
 	public Float findAllEmployeesAnnualEntitlementDaysByDateRangeQuery(Long leaveTypeId, LocalDate startDate,
 			LocalDate endDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
