@@ -99,11 +99,6 @@ public class EpCommonConstants {
 
 	public static final int S3_SIGNED_URL_DURATION = 15;
 
-	// Redis TTL Constants
-	public static final int REDIS_TTL_CODE_CHALLENGE_CACHE_KEY = 5;
-
-	public static final int REDIS_TTL_USER_DATA_CACHE_KEY = 7;
-
 	public static final String PRD_CONFIG_PATH = "enterprise/validations/email-validation-prd.yml";
 
 	public static final String NON_PRD_CONFIG_PATH = "enterprise/validations/email-validation-non-prd.yml";
