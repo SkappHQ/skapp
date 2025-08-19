@@ -260,7 +260,9 @@ const AddNewResourceModal = () => {
           fontFamily: theme.typography.fontFamily,
           textDecoration: "underline",
           color: theme.palette.primary.dark,
-          marginTop: "1rem"
+          marginTop: "1rem",
+          marginLeft: "0.125rem",
+          width: "fit-content"
         }}
       >
         {generalTexts(["addFullProfile"])}
