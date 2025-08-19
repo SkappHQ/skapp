@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -113,13 +114,24 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get Signature Certificate",
-			description = "This endpoint retrieves the signature certificate for a given envelope ID.")
-	@GetMapping("/signature-certificate")
+	@Operation(summary = "Get Signature Certificate (PDF)",
+			description = "This endpoint retrieves the signature certificate PDF for a given envelope ID.")
+	@GetMapping(value = "/internal/signature-certificate", produces = MediaType.APPLICATION_PDF_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<byte[]> getSignatureCertificateInternal(@RequestParam Long envelopeId) {
+		HttpHeaders headers = new HttpHeaders();
+		byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers, false);
+		return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get Signature Certificate (PDF)",
+			description = "This endpoint retrieves the signature certificate PDF for a given envelope ID.")
+	@GetMapping(value = "/signature-certificate", produces = MediaType.APPLICATION_PDF_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> getSignatureCertificate(@RequestParam Long envelopeId) {
-		ResponseEntityDto response = envelopeService.getSignatureCertificate(envelopeId);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	public ResponseEntity<byte[]> getSignatureCertificateExternal(@RequestParam Long envelopeId) {
+		HttpHeaders headers = new HttpHeaders();
+		byte[] pdfBytes = envelopeService.getSignatureCertificate(envelopeId, headers, true);
+		return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Custody Transfer of Envelope",

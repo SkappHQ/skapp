@@ -1,5 +1,9 @@
 package com.skapp.enterprise.esignature.util;
 
+import com.skapp.enterprise.esignature.constant.EsignConstants;
+import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
@@ -111,6 +115,93 @@ public class EsignUtil {
 			return path.substring(prefix.length());
 		}
 		return path;
+	}
+
+	// Helper methods to match the design
+	public static String getStatusClass(EnvelopeStatus status) {
+		switch (status) {
+			case COMPLETED:
+				return "completed"; // Green filled dot
+			case WAITING:
+				return "waiting"; // Orange outlined dot
+			case NEED_TO_SIGN:
+				return "need-to-sign"; // Green outlined dot
+			case VOIDED:
+				return "voided"; // Dark filled dot
+			case DECLINED:
+				return "declined"; // Red outlined dot
+			case EXPIRED:
+				return "expired"; // Red filled dot
+			default:
+				return "completed";
+		}
+	}
+
+	public static String getStatusLabel(EnvelopeStatus status) {
+		switch (status) {
+			case COMPLETED:
+				return "Completed";
+			case WAITING:
+				return "Waiting";
+			case NEED_TO_SIGN:
+				return "Need to sign";
+			case VOIDED:
+				return "Voided";
+			case DECLINED:
+				return "Declined";
+			case EXPIRED:
+				return "Expired";
+			default:
+				return status.name();
+		}
+	}
+
+	public static String escapeHtml(String text) {
+		if (text == null)
+			return "";
+		return text.replace("&", "&amp;")
+			.replace("<", "&lt;")
+			.replace(">", "&gt;")
+			.replace("\"", "&quot;")
+			.replace("'", "&#39;");
+	}
+
+	public static String getFormattedActionText(AuditTrailResponseDto audit) {
+		String actionBy = audit.getActionDoneByName() != null ? audit.getActionDoneByName() : "";
+
+		switch (audit.getAction()) {
+			case ENVELOPE_CREATED:
+				return actionBy + EsignConstants.AUDIT_ACTION_CREATED_DOCUMENT;
+			case ENVELOPE_SENT:
+				return actionBy + EsignConstants.AUDIT_ACTION_SENT_DOCUMENT;
+			case ENVELOPE_VIEWED:
+				return actionBy + EsignConstants.AUDIT_ACTION_VIEWED_DOCUMENT;
+			case ENVELOPE_SIGNED:
+				return actionBy + EsignConstants.AUDIT_ACTION_SIGNED_DOCUMENT;
+			case ENVELOPE_COMPLETED:
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_COMPLETED;
+			case ENVELOPE_VOIDED:
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_VOIDED;
+			case ENVELOPE_DECLINED:
+				return actionBy + EsignConstants.AUDIT_ACTION_DECLINED_TO_SIGN;
+			case ENVELOPE_EXPIRED:
+				return EsignConstants.AUDIT_ACTION_DOCUMENT_EXPIRED;
+			case ENVELOPE_DOWNLOADED:
+				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
+			case ENVELOPE_CUSTODY_TRANSFERRED:
+				String newOwner = "";
+				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
+					for (MetadataResponseDto metadata : audit.getMetadata()) {
+						if (EsignConstants.CURRENT_OWNER_METADATA_NAME.equals(metadata.getName())) {
+							newOwner = metadata.getValue();
+							break;
+						}
+					}
+				}
+				return actionBy + EsignConstants.AUDIT_ACTION_TRANSFERRED_OWNERSHIP + newOwner;
+			default:
+				return audit.getAction().toString();
+		}
 	}
 
 }
