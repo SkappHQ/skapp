@@ -221,6 +221,11 @@
             <artifactId>quartz</artifactId>
             <version>2.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.1.28</version>
+        </dependency>
 
         <!-- Test Packages -->
         <dependency>
