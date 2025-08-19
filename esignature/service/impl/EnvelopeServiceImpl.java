@@ -324,8 +324,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
-						LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), LocalTime.MAX));
+				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
+					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
+									LocalTime.MAX));
+				}
 			}
 		});
 
@@ -915,6 +918,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
+
 		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
@@ -1157,6 +1168,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
 				AuditAction.ENVELOPE_DECLINED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
