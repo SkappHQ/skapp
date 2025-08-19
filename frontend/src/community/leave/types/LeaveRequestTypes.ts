@@ -21,7 +21,8 @@ export enum LeaveExtraPopupTypes {
   CANCELATION_UNDO_POPUP = "CancelationUndoPopup",
   REVOKE_POPUP = "RevokePopup",
   REVOKE_SUMMARY_POPUP = "REVOKESUMMARYPOPUP",
-  REVOKE_UNDO_POPUP = "RevokeUndoPopup"
+  REVOKE_UNDO_POPUP = "RevokeUndoPopup",
+  ON_LEAVE_MODAL = "OnLeaveModal"
 }
 
 export interface LeaveRequestItemsType {

@@ -36,4 +36,6 @@ public interface EmployeeDao
 
 	List<Employee> findByAccountStatusIn(Set<AccountStatus> accountStatuses);
 
+	List<Employee> findByEmployeeIdInAndAccountStatusIn(List<Long> userIds, Set<AccountStatus> active);
+
 }
