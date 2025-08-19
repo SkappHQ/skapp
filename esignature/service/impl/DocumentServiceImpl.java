@@ -6,6 +6,8 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -32,8 +34,8 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.FieldRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
@@ -72,6 +74,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
@@ -119,7 +123,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AddressBookDao addressBookDao;
 
-	private final DocumentVersionRepository documentVersionRepository;
+	private final DocumentVersionDao documentVersionDao;
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
@@ -150,6 +154,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentLinkService documentLinkService;
 
 	private final AuditTrailService auditTrailService;
+
+	private final ScheduleService scheduleService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -303,7 +309,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
 				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
 
-		newVersion = documentVersionRepository.save(newVersion);
+		newVersion = documentVersionDao.save(newVersion);
 
 		// save document on current version
 		document.setCurrentVersion(newVersion.getVersionNumber());
@@ -353,7 +359,7 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] latestDocumentBytes, Recipient recipient, String ipAddress) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
-		documentVersionRepository.save(documentVersion);
+		documentVersionDao.save(documentVersion);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
 		documentRepository.save(document);
@@ -385,6 +391,14 @@ public class DocumentServiceImpl implements DocumentService {
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
@@ -485,7 +499,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
 				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
 
-		documentVersionRepository.save(newVersion);
+		documentVersionDao.save(newVersion);
 
 		document.setCurrentVersion(newVersion.getVersionNumber());
 		documentRepository.save(document);
@@ -513,7 +527,7 @@ public class DocumentServiceImpl implements DocumentService {
 			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes,
 					completeFileUrl, keyPairSender);
 
-			documentVersionRepository.save(finalVersion);
+			documentVersionDao.save(finalVersion);
 
 			document.setCurrentVersion(finalVersion.getVersionNumber());
 			documentRepository.save(document);
@@ -545,6 +559,14 @@ public class DocumentServiceImpl implements DocumentService {
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
+
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					String tenantId = TenantContext.getCurrentTenant();
+					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+				}
+			});
 
 			return new ResponseEntityDto(false, documentCompleteResponseDto);
 		}
@@ -1348,12 +1370,12 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersion getDocumentVersion(int versionNumber, Long documentId) {
-		return documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
+		return documentVersionDao.findByVersionNumberAndDocumentId(versionNumber, documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 	}
 
 	private DocumentVersion getDocumentVersionForUpdate(int versionNumber, Long documentId) {
-		List<DocumentVersion> documentVersionList = documentVersionRepository
+		List<DocumentVersion> documentVersionList = documentVersionDao
 			.findByVersionNumberAndDocumentIdForUpdateOrdered(versionNumber, documentId);
 
 		if (documentVersionList.isEmpty()) {

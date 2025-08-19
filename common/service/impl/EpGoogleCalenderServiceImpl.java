@@ -120,6 +120,17 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 	private String backendRedirectURI;
 
 	@Override
+	public void setupOrganizationCalendar() {
+		log.info("setupOrganizationCalendar: execution started");
+
+		OrganizationCalendar organizationCalendar = new OrganizationCalendar();
+		organizationCalendar.setIsGoogleCalendarEnabled(false);
+		epOrganizationCalenderDao.save(organizationCalendar);
+
+		log.info("setupOrganizationCalendar: execution ended");
+	}
+
+	@Override
 	public String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
 		log.info("connectGoogleCalendar: execution started");
 

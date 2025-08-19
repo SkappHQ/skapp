@@ -30,6 +30,21 @@ public class ModuleServiceImpl implements ModuleService {
 
 	@Override
 	@Transactional
+	public void setDefaultModules() {
+		log.info("setDefaultModules: Setting default modules configuration");
+
+		ModuleConfig moduleConfig = new ModuleConfig();
+		moduleConfig.setId(1L);
+		moduleConfig.setLeaveModule(true);
+		moduleConfig.setAttendanceModule(true);
+		moduleConfig.setEsignModule(true);
+
+		moduleDao.save(moduleConfig);
+		log.info("setDefaultModules: Default modules configuration set successfully");
+	}
+
+	@Override
+	@Transactional
 	public ResponseEntityDto updateModules(UpdateModulesRequestDto updateModulesRequestDto) {
 		log.info("Received request to update module: {}", updateModulesRequestDto);
 

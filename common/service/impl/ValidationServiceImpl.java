@@ -1,11 +1,13 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.component.ProfileActivator;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.enterprise.common.component.EmailValidationProperties;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.response.EmailValidationResultDto;
 import com.skapp.enterprise.common.payload.response.ValidationResult;
 import com.skapp.enterprise.common.service.ValidationService;
@@ -21,11 +23,15 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ValidationServiceImpl implements ValidationService {
 
-	private static final String CONFIG_PATH = "enterprise/validations/email-validation.yml";
-
 	private final MessageUtil messageUtil;
 
-	private final EmailValidationProperties properties = YamlReader.read(CONFIG_PATH, EmailValidationProperties.class);
+	private EmailValidationProperties getProperties() {
+		String configPath = profileActivator.isEpPrdProfile() ? EpCommonConstants.PRD_CONFIG_PATH
+				: EpCommonConstants.NON_PRD_CONFIG_PATH;
+		return YamlReader.read(configPath, EmailValidationProperties.class);
+	}
+
+	private final ProfileActivator profileActivator;
 
 	@Override
 	public ResponseEntityDto validateBusinessEmail(String email) {
@@ -63,16 +69,17 @@ public class ValidationServiceImpl implements ValidationService {
 		}
 
 		String domain = extractDomain(email);
+		EmailValidationProperties properties = getProperties();
 
-		if (isPersonalDomain(domain)) {
+		if (isPersonalDomain(domain, properties)) {
 			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_EMAIL.getMessageKey());
 		}
 
-		if (isTempEmailDomain(domain)) {
+		if (isTempEmailDomain(domain, properties)) {
 			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_TEMP_EMAIL.getMessageKey());
 		}
 
-		if (matchesTempEmailPattern(domain)) {
+		if (matchesTempEmailPattern(domain, properties)) {
 			return new ValidationResult(false,
 					EPCommonMessageConstant.EP_COMMON_ERROR_DISPOSABLE_EMAIL.getMessageKey());
 		}
@@ -84,15 +91,15 @@ public class ValidationServiceImpl implements ValidationService {
 		return email.substring(email.indexOf("@") + 1).toLowerCase();
 	}
 
-	private boolean isPersonalDomain(String domain) {
+	private boolean isPersonalDomain(String domain, EmailValidationProperties properties) {
 		return properties.getEmail().getValidation().getPersonalDomains().contains(domain);
 	}
 
-	private boolean isTempEmailDomain(String domain) {
+	private boolean isTempEmailDomain(String domain, EmailValidationProperties properties) {
 		return properties.getEmail().getValidation().getTempEmailDomains().contains(domain);
 	}
 
-	private boolean matchesTempEmailPattern(String domain) {
+	private boolean matchesTempEmailPattern(String domain, EmailValidationProperties properties) {
 		return properties.getEmail().getValidation().getTempEmailPatterns().stream().anyMatch(domain::matches);
 	}
 

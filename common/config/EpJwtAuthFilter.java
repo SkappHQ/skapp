@@ -42,7 +42,7 @@ import java.util.Set;
 public class EpJwtAuthFilter extends OncePerRequestFilter {
 
 	private static final Set<String> PUBLIC_URLS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
-			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
+			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css", "/favicon.ico",
 			"/swagger-ui/swagger-ui-standalone-preset.js", "/swagger-ui/swagger-ui.css", "/v3/api-docs/swagger-config",
 			"/swagger-ui/swagger-ui-bundle.js", "/swagger-ui/swagger-initializer.js", "/swagger-ui/favicon-16x16.png",
 			"/swagger-ui/favicon-32x32.png", "/v1/auth", "/v1/app-setup-status", "/ws",
@@ -63,7 +63,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
 			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status",
 			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
-			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions");
+			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users");
 
 	private final JwtService jwtService;
 
