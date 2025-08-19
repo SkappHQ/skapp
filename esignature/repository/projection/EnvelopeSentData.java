@@ -23,6 +23,8 @@ public class EnvelopeSentData {
 
 	private String subject;
 
+	private String title;
+
 	private AddressBookBasicResponseDto sender;
 
 	private EnvelopeStatus status;
