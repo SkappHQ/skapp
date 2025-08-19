@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
+import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserService;
@@ -58,6 +59,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.ValidationService;
+import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
@@ -144,6 +146,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final EnvelopeService envelopeService;
 
+	private final CacheService cacheService;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
@@ -162,7 +166,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
 			SpecialTenantConfig specialTenantConfig, ValidationService validationService,
-			EnvelopeService envelopeService) {
+			EnvelopeService envelopeService, CacheService cacheService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
@@ -190,6 +194,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.specialTenantConfig = specialTenantConfig;
 		this.validationService = validationService;
 		this.envelopeService = envelopeService;
+		this.cacheService = cacheService;
 	}
 
 	@Override
@@ -306,6 +311,12 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 				userDao.save(employee.getUser());
 			}
 		}
+	}
+
+	@Override
+	protected void invalidateUserCache() {
+		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
+		cacheService.invalidate(cacheKey.getKey());
 	}
 
 	private void transferTeamSupervisors(List<TransferSupervisorsRequestDto> supervisorsTransfer) {
