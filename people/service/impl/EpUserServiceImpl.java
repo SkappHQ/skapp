@@ -1,9 +1,13 @@
 package com.skapp.enterprise.people.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
@@ -29,6 +33,8 @@ public class EpUserServiceImpl implements EpUserService {
 	private final EmployeeDao employeeDao;
 
 	private final CacheService cacheService;
+
+	private final ObjectMapper objectMapper;
 
 	@Override
 	public Tier getCurrentUserTier() {
@@ -76,8 +82,14 @@ public class EpUserServiceImpl implements EpUserService {
 
 		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
 
-		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
-		cacheService.put(cacheKey.getKey(), mappedUsers.toString(), cacheKey.getTtl(), cacheKey.getTimeUnit());
+		try {
+			String usersJson = objectMapper.writeValueAsString(mappedUsers);
+			EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
+			cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		}
+		catch (JsonProcessingException e) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
+		}
 
 		return mappedUsers;
 	}

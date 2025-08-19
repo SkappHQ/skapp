@@ -161,7 +161,7 @@ public interface EsignMapper {
 	FieldSignDto fieldToFieldSignDto(Field field);
 
 	@Named("cleanSubject")
-	 static String cleanSubject(String subject) {
+	static String cleanSubject(String subject) {
 		if (subject == null)
 			return null;
 		return subject.replaceFirst(COMPLETE_VIA_SKAPP_REGEX, "");
