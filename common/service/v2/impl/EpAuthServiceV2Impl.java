@@ -485,9 +485,21 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
 			log.info("ssoMicrosoftSignUp: Creating SuperAdmin for email: {}", authUserDetailsDto.getEmail());
+			SuperAdmin superAdmin = new SuperAdmin();
+			superAdmin.setEmail(authUserDetailsDto.getEmail());
+			superAdmin.setFirstName(authUserDetailsDto.getFirstName());
+			superAdmin.setLastName(authUserDetailsDto.getLastName());
+			superAdmin.setAuthPic(authUserDetailsDto.getAuthPicUrl());
+			superAdmin.setLoginMethod(LoginMethod.MICROSOFT);
+			superAdmin.setActive(true);
+			superAdmin.setVerified(true);
+
+			SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
+			log.info("ssoMicrosoftSignUp: SuperAdmin saved with ID: {}", savedSuperAdmin.getId());
+
 			SignInResponseDto signInResponseDto = createSuperAdminAndGenerateTokens(authUserDetailsDto,
 					LoginMethod.MICROSOFT);
-			log.info("ssoMicrosoftSignUp: Tokens generated for SuperAdmin email: {}", authUserDetailsDto.getEmail());
+			log.info("ssoMicrosoftSignUp: Tokens generated for SuperAdmin ID: {}", savedSuperAdmin.getId());
 			log.info("ssoMicrosoftSignUp: super admin flow: execution ended");
 			return new ResponseEntityDto(false, signInResponseDto);
 		}
