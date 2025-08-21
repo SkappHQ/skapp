@@ -83,8 +83,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static com.stripe.Stripe.clientId;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
