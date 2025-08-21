@@ -221,22 +221,3 @@ const SkipToContentPopup = ({
 };
 
 export default SkipToContentPopup;
-
-// return (
-//   <Stack
-//     sx={{
-//       position: "absolute",
-//       left: "0rem",
-//       top: "0rem",
-//       width: "0.0625rem",
-//       height: "0.0625rem",
-//       overflow: "hidden",
-//       zIndex: ZIndexEnums.SKIP_TO_CONTENT,
-//       border: "none"
-//     }}
-//   >
-//     <Typography variant="label" sx={{ display: "none" }}>
-//       {useTranslator("commonAria", "skipToContent")(["label"])}
-//     </Typography>
-//   </Stack>
-// );
