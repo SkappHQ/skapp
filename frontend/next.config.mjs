@@ -323,11 +323,12 @@ const nextConfig = {
       {
         source: "/user-account",
         destination: "/community/user-account"
+      },
+      {
+        source: "/projects",
+        destination: "/enterprise/projects"
       }
     ];
-  },
-  images: {
-    domains: ["dev-app-storage-bucket.s3.ap-southeast-1.amazonaws.com"]
   },
   eslint: {
     ignoreDuringBuilds: true

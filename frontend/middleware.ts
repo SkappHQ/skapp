@@ -45,7 +45,8 @@ const superAdminRoutes = {
     ROUTES.SETTINGS.MODULES,
     ROUTES.SETTINGS.PAYMENT,
     ROUTES.REMOVE_PEOPLE,
-    ROUTES.SUBSCRIPTION
+    ROUTES.SUBSCRIPTION,
+    ROUTES.PROJECTS
   ]
 };
 
@@ -296,6 +297,8 @@ export const config = {
     "/sign/folders/:path*",
     "/sign/inbox/:path*",
     "/sign/sent/:path*",
-    "/sign/complete/:path*"
+    "/sign/complete/:path*",
+    // Project routes
+    "/projects/:path*"
   ]
 };

@@ -39,6 +39,9 @@ const PeopleFormSections = ({
   const isPeopleManagerOnly =
     isPeopleManager && !isPeopleAdmin && !isSuperAdmin;
 
+  const isPeopleAdminViewingOwnProfile =
+    isPeopleAdmin && !isSuperAdmin && userId === employeeId;
+
   const getAddFlowSection = () => {
     switch (activeStep) {
       case 0:
@@ -79,7 +82,9 @@ const PeopleFormSections = ({
         return (
           <SystemPermissionFormSection
             isAddFlow={isAddFlow}
-            isReadOnly={isSystemPermissionsReadOnly}
+            isReadOnly={
+              isSystemPermissionsReadOnly || isPeopleAdminViewingOwnProfile
+            }
           />
         );
       case EditPeopleFormTypes.timeline:

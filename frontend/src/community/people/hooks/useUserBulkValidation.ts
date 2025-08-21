@@ -18,12 +18,9 @@ const useUserBulkValidation = () => {
     return (
       user?.firstName &&
       user?.firstName?.length <= characterLengths.NAME_LENGTH &&
-      isValidNameWithAccentsAndApostrophes().test(user?.firstName) &&
       (!user?.middleName ||
-        (isValidNameWithAccentsAndApostrophes().test(user?.middleName) &&
-          user?.middleName?.length <= characterLengths.NAME_LENGTH)) &&
+        user?.middleName?.length <= characterLengths.NAME_LENGTH) &&
       user?.lastName &&
-      isValidNameWithAccentsAndApostrophes().test(user?.lastName) &&
       user?.lastName?.length <= characterLengths.NAME_LENGTH &&
       user?.gender &&
       user?.birthDate &&
