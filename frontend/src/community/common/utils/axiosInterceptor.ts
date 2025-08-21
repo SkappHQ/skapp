@@ -23,6 +23,24 @@ export const authFetchV2 = axios.create({
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   const session = await getSession();
 
+  // Redirect to sign-in page if session is null
+  if (!session) {
+    // Check if we're in the browser environment and not already on sign-in related pages
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const isOnSignInPage =
+        currentPath.includes("/signin") ||
+        currentPath.includes("/signup") ||
+        currentPath.includes("/reset-password");
+
+      // Only redirect if not already on authentication pages and not calling auth-related endpoints
+      if (!isOnSignInPage && !config.url?.includes("/app-setup-status")) {
+        window.location.href = "/signin";
+        return config; // Return config to avoid promise rejection
+      }
+    }
+  }
+
   if (
     session?.user.accessToken &&
     !config.url?.includes("/refresh-token") &&
