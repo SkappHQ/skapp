@@ -14,6 +14,7 @@ interface Props {
   ariaLabel?: string;
   isReadOnly?: boolean;
   tabIndex?: number;
+  required?: boolean;
 }
 
 const LeaveStatusPopupColumn: FC<Props> = ({
@@ -28,7 +29,8 @@ const LeaveStatusPopupColumn: FC<Props> = ({
   setInputTextAndKey,
   ariaLabel,
   isReadOnly = false,
-  tabIndex
+  tabIndex,
+  required
 }) => {
   const theme: Theme = useTheme();
   return (
@@ -49,6 +51,14 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         }}
       >
         {label}
+        {required && (
+          <Typography
+            component="span"
+            sx={{ color: theme.palette.error.contrastText }}
+          >
+            *
+          </Typography>
+        )}
       </Typography>
       <textarea
         id={id}
