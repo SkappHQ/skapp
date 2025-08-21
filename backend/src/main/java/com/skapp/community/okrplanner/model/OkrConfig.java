@@ -15,11 +15,11 @@ public class OkrConfig {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, unique = true, updatable = false)
+	@Column(name = "id")
 	private Long id;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "frequency", nullable = false)
-	private OkrFrequency frequency = OkrFrequency.ANNUAL;
+	private OkrFrequency frequency;
 
 }
