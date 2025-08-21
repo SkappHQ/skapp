@@ -214,10 +214,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
 		log.info("ssoGoogleSignIn: Google token response received");
 
-//		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
-        AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
+		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
 		log.info("ssoGoogleSignIn: Google user details fetched for email: {}", authUserDetailsDto.getEmail());
-//		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
 
 		Optional<User> optionalUser = userDao.findByEmail(authUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
@@ -346,10 +344,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String frontendUrl = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
 		log.debug("getIdTokenAndRedirect: Decrypted frontendUrl={}", frontendUrl);
 
-//		byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
-//		String frontendUrl = encryptionDecryptionService.decrypt(new String(decodedBytes, StandardCharsets.UTF_8),
-//				encryptSecret);
-
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("getIdTokenAndRedirect: State is invalid");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
@@ -442,8 +436,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public String ssoMicrosoftSignInRedirect(@Valid EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
-        log.info("ssoMicrosoftSignInRedirect: execution started");
-        try {
+		log.info("ssoMicrosoftSignInRedirect: execution started");
+		try {
 			String encodedState = epMicrosoftAuthRedirectDto.getState();
 			String authorizationCode = epMicrosoftAuthRedirectDto.getCode();
 
