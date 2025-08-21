@@ -319,6 +319,16 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 		String ninField = field(EmployeePersonalGeneralDetailsDto::getNin);
 		String maritalStatusField = field(EmployeePersonalGeneralDetailsDto::getMaritalStatus);
+		String passportNumberField = field(EmployeePersonalGeneralDetailsDto::getPassportNumber);
+
+		String personalEmailField = field(EmployeePersonalContactDetailsDto::getPersonalEmail);
+		String countryCodeField = field(EmployeePersonalContactDetailsDto::getCountryCode);
+		String contactNoField = field(EmployeePersonalContactDetailsDto::getContactNo);
+		String addressLine1Field = field(EmployeePersonalContactDetailsDto::getAddressLine1);
+		String addressLine2Field = field(EmployeePersonalContactDetailsDto::getAddressLine2);
+		String cityField = field(EmployeePersonalContactDetailsDto::getCity);
+		String stateField = field(EmployeePersonalContactDetailsDto::getState);
+		String postalCodeField = field(EmployeePersonalContactDetailsDto::getPostalCode);
 
 		String employmentDetailsField = field(EmployeeEmploymentDetailsDto::getEmploymentDetails);
 		String careerProgressionField = field(EmployeeEmploymentDetailsDto::getCareerProgression);
@@ -333,6 +343,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		String joinedDateField = field(EmployeeEmploymentBasicDetailsDto::getJoinedDate);
 		String probationStartDateField = field(EmployeeEmploymentBasicDetailsDto::getProbationStartDate);
 		String probationEndDateField = field(EmployeeEmploymentBasicDetailsDto::getProbationEndDate);
+		String otherSupervisorsField = field(EmployeeEmploymentBasicDetailsDto::getOtherSupervisors);
 
 		String personal_contactField = personalField + "_" + contactField;
 		String personal_familyField = personalField + "_" + familyField;
@@ -342,6 +353,16 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 		String personal_general_ninField = personalField + "_" + generalField + "_" + ninField;
 		String personal_general_maritalStatusField = personalField + "_" + generalField + "_" + maritalStatusField;
+		String personal_general_passportNumberField = personalField + "_" + generalField + "_" + passportNumberField;
+
+		String personal_contact_personalEmailField = personalField + "_" + contactField + "_" + personalEmailField;
+		String personal_contact_countryCodeField = personalField + "_" + contactField + "_" + countryCodeField;
+		String personal_contact_contactNoField = personalField + "_" + contactField + "_" + contactNoField;
+		String personal_contact_addressLine1Field = personalField + "_" + contactField + "_" + addressLine1Field;
+		String personal_contact_addressLine2Field = personalField + "_" + contactField + "_" + addressLine2Field;
+		String personal_contact_cityField = personalField + "_" + contactField + "_" + cityField;
+		String personal_contact_stateField = personalField + "_" + contactField + "_" + stateField;
+		String personal_contact_postalCodeField = personalField + "_" + contactField + "_" + postalCodeField;
 
 		String employment_careerProgressionField = employmentField + "_" + careerProgressionField;
 		String employment_identificationAndDiversityDetailsField = employmentField + "_"
@@ -361,39 +382,66 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				+ "_" + probationStartDateField;
 		String employment_employmentDetails_probationEndDateField = employmentField + "_" + employmentDetailsField + "_"
 				+ probationEndDateField;
+		String employment_employmentDetails_otherSupervisorsField = employmentField + "_" + employmentDetailsField + "_"
+				+ otherSupervisorsField;
 
-		if (!doesNotHaveRole(userRoles, Role.SUPER_ADMIN)) {
+		// super-admin people_admin ,people_manager view
+		if (!doesNotHaveRole(userRoles, Role.SUPER_ADMIN) || !doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN)
+				|| !doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
 			return;
 		}
 
+		// current user view
 		if (isCurrentUser && doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			setNull(dto, systemPermissionsField);
 			return;
 		}
 
-		if (doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
+		// not people admin or manager but manager/admin in other module view
+		if ((doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER))
+				&& (!doesNotHaveRole(userRoles, Role.ATTENDANCE_ADMIN) || !doesNotHaveRole(userRoles, Role.LEAVE_ADMIN)
+						|| !doesNotHaveRole(userRoles, Role.ATTENDANCE_MANAGER)
+						|| !doesNotHaveRole(userRoles, Role.LEAVE_MANAGER))) {
 			setNull(dto, systemPermissionsField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
+			setNull(dto, personal_general_ninField, personal_general_passportNumberField,
+					personal_general_maritalStatusField);
+			setNull(dto, personal_contact_personalEmailField, personal_contact_countryCodeField,
+					personal_contact_contactNoField, personal_contact_addressLine1Field,
+					personal_contact_addressLine2Field, personal_contact_cityField, personal_contact_stateField,
+					personal_contact_postalCodeField);
+			setNull(dto, personal_familyField, personal_educationalField, personal_socialMediaField,
+					personal_healthAndOtherField);
 			setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
 					employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
 					employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
 					employment_employmentDetails_probationStartDateField,
-					employment_employmentDetails_probationEndDateField);
+					employment_employmentDetails_probationEndDateField,
+					employment_employmentDetails_otherSupervisorsField);
 			return;
 		}
 
-		if ((doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER))
-				&& (doesNotHaveRole(userRoles, Role.ATTENDANCE_ADMIN) || doesNotHaveRole(userRoles, Role.LEAVE_ADMIN)
-						|| doesNotHaveRole(userRoles, Role.ATTENDANCE_MANAGER)
-						|| doesNotHaveRole(userRoles, Role.LEAVE_MANAGER))) {
-			setNull(dto, systemPermissionsField, emergencyField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
-			setNull(dto, personal_general_maritalStatusField, personal_general_ninField,
+		// default employee (people,attendance, leave) view
+		if (doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
+			setNull(dto, systemPermissionsField);
+			setNull(dto, personal_general_ninField, personal_general_passportNumberField,
+					personal_general_maritalStatusField);
+			setNull(dto, personal_contact_personalEmailField, personal_contact_countryCodeField,
+					personal_contact_contactNoField, personal_contact_addressLine1Field,
+					personal_contact_addressLine2Field, personal_contact_cityField, personal_contact_stateField,
+					personal_contact_postalCodeField);
+			setNull(dto, personal_familyField, personal_educationalField, personal_socialMediaField,
+					personal_healthAndOtherField);
+			setNull(dto, emergencyField);
+			setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
+					employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
+					employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
+					employment_employmentDetails_probationStartDateField,
+					employment_employmentDetails_probationEndDateField,
 					employment_employmentDetails_primarySupervisorField,
-					employment_employmentDetails_secondarySupervisorField);
+					employment_employmentDetails_secondarySupervisorField,
+					employment_employmentDetails_otherSupervisorsField);
 		}
+
 	}
 
 	private <T, R> String field(FieldExtractor.SerializableFunction<T, R> getter) {
