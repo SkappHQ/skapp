@@ -39,7 +39,7 @@ const NotificationContent = ({
             item.authPic === null ||
             item.isCausedByCurrentUser ||
             item.authPic === undefined
-              ? "/logo/skapp-thumbnail 48_48.svg"
+              ? "/logo/skapp-thumbnail 16_16.svg"
               : item.authPic
           }
         />
