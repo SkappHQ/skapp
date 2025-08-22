@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 
+import java.util.List;
 import java.util.Map;
 
 public interface DocumentProcessingService {
@@ -16,5 +17,7 @@ public interface DocumentProcessingService {
 	int getNumberOfPages(byte[] inputBytes);
 
 	Map<Integer, PageDimensionResponseDto> processDocumentDimensions(byte[] documentBytes);
+
+	List<byte[]> convertPDFdocumentToImageList(byte[] documentBytes);
 
 }
