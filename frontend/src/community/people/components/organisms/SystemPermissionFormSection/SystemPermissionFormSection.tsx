@@ -152,7 +152,8 @@ const SystemPermissionFormSection = ({
       }
     }
     if (
-      employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE &&
+      (employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE ||
+        employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE) &&
       (initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN ||
         initialEmployee?.systemPermissions?.peopleRole ===
           Role.PEOPLE_MANAGER) &&
