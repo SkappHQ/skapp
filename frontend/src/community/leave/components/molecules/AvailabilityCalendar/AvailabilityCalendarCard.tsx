@@ -2,17 +2,18 @@ import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { DateTime } from "luxon";
-import { JSX, useState } from "react";
+import { JSX } from "react";
 
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
+import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 
 import AvailableChip from "../LeaveDashboardChips/AvailableChip";
 import AwayChip from "../LeaveDashboardChips/AwayChip";
 import HolidayChip from "../LeaveDashboardChips/HolidayChip";
-import OnLeaveModal from "./OnLeaveModal";
 
 interface AvailabilityCalendarCardProps {
   day: string;
@@ -21,7 +22,7 @@ interface AvailabilityCalendarCardProps {
   holidays: { id: string; name: string; holidayDuration: string }[];
   availableCount: number;
   unavailableCount: number;
-  onLeaveEmployees: any[];
+  onLeaveEmployees: LeaveRequest[];
   cards: number;
   actualDate: string;
 }
@@ -36,7 +37,30 @@ const AvailabilityCalendarCard = ({
   cards,
   actualDate
 }: AvailabilityCalendarCardProps): JSX.Element => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "teamAvailabilityModal"
+  );
+
+  const {
+    setIsManagerModal,
+    setIsOnLeaveModalOpen,
+    setOnLeaveModalTitle,
+    setTodaysAvailability
+  } = useLeaveStore((state) => ({
+    setIsManagerModal: state.setIsManagerModal,
+    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen,
+    setOnLeaveModalTitle: state.setOnLeaveModalTitle,
+    setTodaysAvailability: state.setTodaysAvailability
+  }));
+
+  const handleOnLeaveModalOpen = () => {
+    setIsManagerModal(true);
+    setIsOnLeaveModalOpen(true);
+    setOnLeaveModalTitle(translateText(["onLeaveTitle"], { date: actualDate }));
+    setTodaysAvailability(onLeaveEmployees);
+  };
 
   const isToday = () => {
     const date = DateTime.now().toFormat(DATE_FORMAT);
@@ -121,10 +145,12 @@ const AvailabilityCalendarCard = ({
         role="button"
         onKeyDown={(e) => {
           if (shouldActivateButton(e.key)) {
-            setIsModalOpen(true);
+            handleOnLeaveModalOpen();
           }
         }}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => {
+          handleOnLeaveModalOpen();
+        }}
       >
         <Box
           sx={{
@@ -176,12 +202,6 @@ const AvailabilityCalendarCard = ({
         </Typography>
         <Box> {resourceDetails()}</Box>
       </Box>
-      <OnLeaveModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`On leave : ${actualDate}`}
-        todaysAvailability={onLeaveEmployees}
-      />
     </Grid>
   );
 };

@@ -30,6 +30,7 @@ import {
   LeaveAllocationDataTypes,
   TeamAvailabilityDataType
 } from "./MyRequests";
+import { LeaveRequest } from "./ResourceAvailabilityTypes";
 
 interface actionsTypes {
   // leaveTypeSlice
@@ -105,6 +106,11 @@ interface actionsTypes {
   setIsEmployeeModal: (value: boolean) => void;
   setNewLeaveId: (value: number) => void;
   removeNewLeaveId: () => void;
+
+  //OnLeaveModal
+  setIsOnLeaveModalOpen: (value: boolean) => void;
+  setOnLeaveModalTitle: (value: string) => void;
+  setTodaysAvailability: (value: LeaveRequest[]) => void;
 
   //LeaveReportSlice
   setReportsParams: (key: string, value: any) => void;
@@ -209,6 +215,11 @@ export interface LeaveStore extends actionsTypes {
   isManagerModalOpen: boolean;
   isEmployeeModalOpen: boolean;
   newLeaveId: number | null;
+
+  //OnLeaveModal
+  isOnLeaveModalOpen: boolean;
+  onLeaveModalTitle: string;
+  todaysAvailability: LeaveRequest[];
 
   //LeaveReportSlice
   reportsParams: {

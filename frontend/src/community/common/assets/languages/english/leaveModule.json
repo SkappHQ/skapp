@@ -91,6 +91,7 @@
       "awayMembers": "Away Members",
       "fullTeamAvailable": "Full team available",
       "fullTeamAway": "Full team away",
+      "onLeaveTitle": "On leave : {{date}}",
       "goBackBtn": "Go back"
     },
     "addAttachmentModal": {

@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import AddNewResourceModal from "~community/people/components/molecules/AddNewResourceModal/AddNewResourceModal";
+import AddResourceUnsavedChangesModal from "~community/people/components/molecules/AddResourceUnsavedChangesModal/AddResourceUnsavedChangesModal";
 import LoginCredentialsModal from "~community/people/components/molecules/LoginCredentialsModal/LoginCredentialsModal";
 import BulkUploadSummary from "~community/people/components/molecules/UserBulkUploadModals/BulkUploadSummary";
 import UserBulkCsvDownload from "~community/people/components/molecules/UserBulkUploadModals/UserBulkCsvDownload";
@@ -22,7 +23,8 @@ const DirectoryPopupController = () => {
     directoryModalType,
     isDirectoryModalOpen,
     setDirectoryModalType,
-    setBulkUploadUsers
+    setBulkUploadUsers,
+    pendingAddResourceData
   } = usePeopleStore((state) => state);
 
   const {
@@ -52,12 +54,22 @@ const DirectoryPopupController = () => {
         return translatedTexts(["uploadTypeSelectorModalTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
+      case DirectoryModalTypes.UNSAVED_CHANGES:
+        return translatedTexts(["unsavedModalTitle"]);
       default:
         return "";
     }
   };
 
   const handleCloseModal = (): void => {
+    if (
+      directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE &&
+      pendingAddResourceData
+    ) {
+      setDirectoryModalType(DirectoryModalTypes.UNSAVED_CHANGES);
+      return;
+    }
+
     setBulkUploadUsers([]);
     if (ongoingQuickSetup.INVITE_EMPLOYEES) {
       stopAllOngoingQuickSetup();
@@ -73,6 +85,10 @@ const DirectoryPopupController = () => {
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}
       setModalType={setDirectoryModalType}
+      isClosable={directoryModalType !== DirectoryModalTypes.UNSAVED_CHANGES}
+      {...(directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE
+        ? { role: "dialog" }
+        : {})}
     >
       <Fragment>
         {directoryModalType === DirectoryModalTypes.DOWNLOAD_CSV && (
@@ -96,6 +112,9 @@ const DirectoryPopupController = () => {
           )}
         {directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE && (
           <AddNewResourceModal />
+        )}
+        {directoryModalType === DirectoryModalTypes.UNSAVED_CHANGES && (
+          <AddResourceUnsavedChangesModal />
         )}
         {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
           <LoginCredentialsModal />

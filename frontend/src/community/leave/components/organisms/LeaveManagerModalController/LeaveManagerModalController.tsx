@@ -9,6 +9,7 @@ import {
   LeaveStatusTypes
 } from "~community/leave/types/LeaveRequestTypes";
 
+import OnLeaveModal from "../../molecules/AvailabilityCalendar/OnLeaveModal";
 import LeaveManagerSuccessModal from "../../molecules/ManagerLeaveModalContents/LeaveManagerSuccessModal/LeaveManagerSuccessModal";
 import ManagerApproveLeaveModal from "../../molecules/ManagerLeaveModalContents/ManagerApproveLeaveModal/ManagerApproveLeaveModal";
 import ManagerDeclineLeaveModal from "../../molecules/ManagerLeaveModalContents/ManagerDeclineLeaveModal/ManagerDeclineLeaveModal";
@@ -24,13 +25,19 @@ const LeaveManagerModalController = () => {
     isManagerModalOpen,
     setIsManagerModal,
     removeLeaveRequestRowData,
-    removeNewLeaveId
+    removeNewLeaveId,
+    isOnLeaveModalOpen,
+    onLeaveModalTitle,
+    setIsOnLeaveModalOpen
   } = useLeaveStore((state) => ({
     removeLeaveRequestRowData: state.removeLeaveRequestRowData,
     leaveRequestData: state.leaveRequestData,
     isManagerModalOpen: state.isManagerModalOpen,
     setIsManagerModal: state.setIsManagerModal,
-    removeNewLeaveId: state.removeNewLeaveId
+    removeNewLeaveId: state.removeNewLeaveId,
+    isOnLeaveModalOpen: state.isOnLeaveModalOpen,
+    onLeaveModalTitle: state.onLeaveModalTitle,
+    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
   }));
   const [modalTitle, setModalTitle] = useState<string>("");
   const [popupType, setPopupType] = useState<
@@ -42,6 +49,7 @@ const LeaveManagerModalController = () => {
     setPopupType("");
     removeNewLeaveId();
     removeLeaveRequestRowData();
+    setIsOnLeaveModalOpen(false);
   };
 
   const handelManagerModal = (): void => {
@@ -56,6 +64,10 @@ const LeaveManagerModalController = () => {
     setPopupType("");
     removeNewLeaveId();
     removeLeaveRequestRowData();
+
+    if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL) {
+      setIsOnLeaveModalOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -69,7 +81,9 @@ const LeaveManagerModalController = () => {
       return setPopupType(LeaveStatusTypes.CANCELLED);
     if (leaveRequestData.status === LeaveStatusTypes.REVOKED)
       return setPopupType(LeaveStatusTypes.REVOKED);
-  }, [leaveRequestData, isManagerModalOpen]);
+    if (isOnLeaveModalOpen)
+      return setPopupType(LeaveExtraPopupTypes.ON_LEAVE_MODAL);
+  }, [leaveRequestData, isManagerModalOpen, isOnLeaveModalOpen]);
 
   useEffect(() => {
     if (popupType === LeaveStatusTypes.PENDING)
@@ -88,6 +102,8 @@ const LeaveManagerModalController = () => {
       setModalTitle(translateText(["deniedModalTitle"]));
     else if (popupType === LeaveExtraPopupTypes.APPROVED_STATUS)
       setModalTitle(translateText(["approvedModalTitle"]));
+    else if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL)
+      setModalTitle(onLeaveModalTitle);
   }, [popupType, isManagerModalOpen]);
 
   return (
@@ -98,6 +114,11 @@ const LeaveManagerModalController = () => {
           onCloseModal={handelManagerModal}
           aria-labelledby="modal-title"
           title={modalTitle}
+          modalContentStyles={
+            popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL
+              ? { maxWidth: { md: "64rem" } }
+              : undefined
+          }
         >
           <Box
             aria-labelledby="modal-title"
@@ -128,6 +149,10 @@ const LeaveManagerModalController = () => {
                 closeModel={closeModel}
                 setPopupType={setPopupType}
               />
+            )}
+
+            {popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL && (
+              <OnLeaveModal />
             )}
           </Box>
         </Modal>

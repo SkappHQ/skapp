@@ -34,4 +34,8 @@ public interface EmployeeDao
 
 	boolean existsByEmployeeIdAndAccountStatusIn(Long userId, Set<AccountStatus> accountStatuses);
 
+	List<Employee> findByAccountStatusIn(Set<AccountStatus> accountStatuses);
+
+	List<Employee> findByEmployeeIdInAndAccountStatusIn(List<Long> userIds, Set<AccountStatus> active);
+
 }

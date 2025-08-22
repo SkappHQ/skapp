@@ -1,6 +1,7 @@
 import { SetType } from "~community/common/types/storeTypes";
 import {
   BulkEmployeeDetails,
+  QuickAddEmployeePayload,
   QuickAddEmployeeResponse
 } from "~community/people/types/EmployeeTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
@@ -13,6 +14,7 @@ export const directoryModalSlice = (
   directoryModalType: DirectoryModalTypes.NONE,
   bulkUploadUsers: [],
   sharedCredentialData: null,
+  pendingAddResourceData: null,
   setIsDirectoryModalOpen: (value: boolean) =>
     set((state: DirectoryModalSliceType) => ({
       ...state,
@@ -42,5 +44,10 @@ export const directoryModalSlice = (
     set((state: DirectoryModalSliceType) => ({
       ...state,
       sharedCredentialData: data
+    })),
+  setPendingAddResourceData: (data: QuickAddEmployeePayload | null) =>
+    set((state: DirectoryModalSliceType) => ({
+      ...state,
+      pendingAddResourceData: data
     }))
 });

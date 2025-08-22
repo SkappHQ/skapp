@@ -256,7 +256,7 @@ export const useGetUseCarryForwardLeaveEntitlements = (
   const { page, year, size } = carryForwardPaginationParams;
 
   return useQuery({
-    enabled: false,
+    enabled: selectedleaveTypes.length > 0,
     queryKey: leaveTypeQueryKeys.CARRY_FORWARD_LEAVE_TYPES({
       leaveTypes: selectedleaveTypes,
       page,
@@ -310,7 +310,8 @@ export const useGetManagerAssignedLeaveRequests = () => {
     },
     select: (data) => {
       return leaveRequestPreProcessor(data?.data?.results[0]);
-    }
+    },
+    enabled: params && params.startDate !== "" && params.endDate !== ""
   });
 };
 
@@ -329,7 +330,7 @@ export const useGetLeaveRequestData = (leaveId: number) => {
   return useQuery({
     queryKey: ["manager-leave-request-data", leaveId],
     queryFn: fetchLeaveRequest,
-    enabled: false
+    enabled: !!leaveId
   });
 };
 

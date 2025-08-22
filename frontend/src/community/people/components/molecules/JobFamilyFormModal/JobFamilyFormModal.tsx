@@ -105,7 +105,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Box component="div">
+      <Box component="div" aria-hidden={true}>
         <InputField
           id="job-family-name-input"
           inputName="name"

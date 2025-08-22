@@ -17,6 +17,7 @@ import {
 } from "./slices/leaveRequestData";
 import leaveRequestFilterSlice from "./slices/leaveRequestFilterSlice";
 import { newPendingLeaveCountSlice } from "./slices/newPendingLeaveCountSlice";
+import { onLeaveModalSlice } from "./slices/onLeaveModalSlice";
 import reportsFiltersSlice from "./slices/reportFilterSlice";
 import teamLeaveAnalyticSlice from "./slices/teamLeaveAnalyticSlice";
 
@@ -39,7 +40,8 @@ export const useLeaveStore = create<
       ...leaveRequestModalSlice(set),
       ...employeeLeaveRequestDataSlice(set),
       ...teamLeaveAnalyticSlice(set),
-      ...newPendingLeaveCountSlice(set)
+      ...newPendingLeaveCountSlice(set),
+      ...onLeaveModalSlice(set)
     }),
     { name: "leaveStore" }
   )

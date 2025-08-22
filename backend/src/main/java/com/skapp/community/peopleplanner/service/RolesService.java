@@ -31,4 +31,6 @@ public interface RolesService {
 
 	EmployeeRole setupBulkEmployeeRoles(Employee employee);
 
+	EmployeeSystemPermissionsDto getDefaultEmployeeRoles();
+
 }

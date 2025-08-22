@@ -58,11 +58,11 @@ export const PURPLE_THEME: Partial<PaletteOptions> = {
 export const ROSE_THEME: Partial<PaletteOptions> = {
   primary: {
     main: "#FDA4AF",
-    dark: "#FE6781"
+    dark: "#CA2441"
   },
   secondary: {
     main: "#FFE4E6",
-    dark: "#CA2441"
+    dark: "#FE6781"
   }
 };
 

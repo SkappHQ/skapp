@@ -37,8 +37,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.skapp.community.peopleplanner.util.PeopleUtil.makeFirstLetterUpper;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -337,7 +335,7 @@ public class JobServiceImpl implements JobService {
 		levels.forEach(level -> {
 			if (level != null && !level.isEmpty()) {
 				JobTitle jobTitle = new JobTitle();
-				jobTitle.setName(makeFirstLetterUpper(level));
+				jobTitle.setName(level);
 				jobTitles.add(jobTitle);
 			}
 		});
