@@ -130,7 +130,7 @@ public class DocumentController {
 			description = "This endpoint converts a PDF document into a list of images.")
 	@GetMapping(value = "/pdf-image/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> generateImageListFromPdf(@PathVariable Long id) {
+	public ResponseEntity<ResponseEntityDto> getImageListFromPdfDocument(@PathVariable Long id) {
 		ResponseEntityDto response = documentService.generateImageListFromPdf(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
