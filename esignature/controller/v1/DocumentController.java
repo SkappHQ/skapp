@@ -126,4 +126,13 @@ public class DocumentController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Convert PDF to Image",
+			description = "This endpoint converts a PDF document into a list of images.")
+	@GetMapping(value = "/pdf-image/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> generateImageListFromPdf(@PathVariable Long id) {
+		ResponseEntityDto response = documentService.generateImageListFromPdf(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
