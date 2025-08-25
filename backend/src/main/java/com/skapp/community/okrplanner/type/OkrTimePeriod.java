@@ -5,32 +5,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum OkrTimePeriod {
-    // Annual - no specific period needed
-    ANNUAL(OkrFrequency.ANNUAL),
 
-    // BI_ANNUAL periods
-    FIRST_HALF(OkrFrequency.BI_ANNUAL),
-    SECOND_HALF(OkrFrequency.BI_ANNUAL),
+	// Annual - no specific period needed
+	ANNUAL(OkrFrequency.ANNUAL),
 
-    // QUARTERLY periods
-    Q1(OkrFrequency.QUARTERLY),
-    Q2(OkrFrequency.QUARTERLY),
-    Q3(OkrFrequency.QUARTERLY),
-    Q4(OkrFrequency.QUARTERLY);
+	// BI_ANNUAL periods
+	FIRST_HALF(OkrFrequency.BI_ANNUAL), SECOND_HALF(OkrFrequency.BI_ANNUAL),
 
-    private final OkrFrequency frequency;
+	// QUARTERLY periods
+	Q1(OkrFrequency.QUARTERLY), Q2(OkrFrequency.QUARTERLY), Q3(OkrFrequency.QUARTERLY), Q4(OkrFrequency.QUARTERLY);
 
-    OkrTimePeriod(OkrFrequency frequency) {
-        this.frequency = frequency;
-    }
+	private final OkrFrequency frequency;
 
-    public OkrFrequency getType() {
-        return frequency;
-    }
+	OkrTimePeriod(OkrFrequency frequency) {
+		this.frequency = frequency;
+	}
 
-    public static List<OkrTimePeriod> getByType(OkrFrequency type) {
-        return Arrays.stream(values())
-                .filter(period -> period.getType() == type)
-                .collect(Collectors.toList());
-    }
+	public OkrFrequency getType() {
+		return frequency;
+	}
+
+	public static List<OkrTimePeriod> getByType(OkrFrequency type) {
+		return Arrays.stream(values()).filter(period -> period.getType() == type).collect(Collectors.toList());
+	}
+
 }

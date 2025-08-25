@@ -10,8 +10,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CompanyObjectiveRequestDto {
 
-    private String title;
-    private String description;
-    private Integer year;
-    private OkrTimePeriod timePeriod;
+	private String title;
+
+	private String description;
+
+	private Integer year;
+
+	private OkrTimePeriod timePeriod;
+
 }

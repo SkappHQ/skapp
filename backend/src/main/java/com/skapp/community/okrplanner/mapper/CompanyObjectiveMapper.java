@@ -7,5 +7,7 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface CompanyObjectiveMapper {
 
-    CompanyObjective companyObjectiveRequestDtoToCompanyObjective(CompanyObjectiveRequestDto companyObjectiveRequestDto);
+	CompanyObjective companyObjectiveRequestDtoToCompanyObjective(
+			CompanyObjectiveRequestDto companyObjectiveRequestDto);
+
 }

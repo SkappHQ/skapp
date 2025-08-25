@@ -14,7 +14,6 @@ public enum OkrMessageConstant implements MessageConstant {
 	// Error messages
 	OKR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY("api.error.okr.time.not.match.frequency");
 
-
 	private final String messageKey;
 
 }

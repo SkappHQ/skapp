@@ -18,21 +18,22 @@ import lombok.Setter;
 @Setter
 public class CompanyObjective {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private Long id;
 
-    @Column(name = "title")
-    private String title;
+	@Column(name = "title")
+	private String title;
 
-    @Column(name = "description")
-    private String description;
+	@Column(name = "description")
+	private String description;
 
-    @Column(name = "year")
-    private Integer year;
+	@Column(name = "year")
+	private Integer year;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "time_period")
-    private OkrTimePeriod timePeriod;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "time_period")
+	private OkrTimePeriod timePeriod;
+
 }

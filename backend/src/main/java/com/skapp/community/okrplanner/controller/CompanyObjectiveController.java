@@ -19,15 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1/company-objective")
 public class CompanyObjectiveController {
 
-    private final CompanyObjectiveService companyObjectiveService;
+	private final CompanyObjectiveService companyObjectiveService;
 
-    @Operation(summary = "Create Company Objective",
-            description = "Create a new company objective with the provided details.")
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
-    @PostMapping
-    public ResponseEntity<ResponseEntityDto> createTeamObjective(
-            @RequestBody @Valid CompanyObjectiveRequestDto requestDto) {
-        ResponseEntityDto response = companyObjectiveService.createCompanyObjective(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+	@Operation(summary = "Create Company Objective",
+			description = "Create a new company objective with the provided details.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@PostMapping
+	public ResponseEntity<ResponseEntityDto> createTeamObjective(
+			@RequestBody @Valid CompanyObjectiveRequestDto requestDto) {
+		ResponseEntityDto response = companyObjectiveService.createCompanyObjective(requestDto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
 }

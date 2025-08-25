@@ -5,13 +5,14 @@ import com.skapp.community.okrplanner.payload.request.CompanyObjectiveRequestDto
 
 public interface CompanyObjectiveService {
 
-    ResponseEntityDto loadCompanyObjectivesByYear(Integer year);
+	ResponseEntityDto loadCompanyObjectivesByYear(Integer year);
 
-    ResponseEntityDto findCompanyObjectiveById(Long id);
+	ResponseEntityDto findCompanyObjectiveById(Long id);
 
-    ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
+	ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
 
-    ResponseEntityDto editCompanyObjective();
+	ResponseEntityDto editCompanyObjective();
 
-    ResponseEntityDto deleteCompanyObjective(Long id);
+	ResponseEntityDto deleteCompanyObjective(Long id);
+
 }
