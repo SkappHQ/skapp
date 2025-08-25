@@ -17,3 +17,5 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-okr-0.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-edit-employeerole.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-company-objective-0.sql

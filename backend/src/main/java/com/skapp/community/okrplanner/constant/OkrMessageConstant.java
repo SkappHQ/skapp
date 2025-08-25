@@ -9,9 +9,11 @@ import lombok.RequiredArgsConstructor;
 public enum OkrMessageConstant implements MessageConstant {
 
 	// Success messages
-	OKR_SUCCESS_OKR_CONFIG_UPDATED("api.success.okr.config.updated");
+	OKR_SUCCESS_OKR_CONFIG_UPDATED("api.success.okr.config.updated"),
 
 	// Error messages
+	OKR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY("api.error.okr.time.not.match.frequency");
+
 
 	private final String messageKey;
 

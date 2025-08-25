@@ -26,4 +26,12 @@ public class OkrOptionsController {
 		return ResponseEntity.ok(responseEntityDto);
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@GetMapping("/okr-company-objective-time")
+	public ResponseEntity<ResponseEntityDto> getOkrCompanyObjectiveTime() {
+		ResponseEntityDto responseEntityDto = new ResponseEntityDto(false, okrOptionsService.getOkrCompanyObjectiveTime());
+
+		return ResponseEntity.ok(responseEntityDto);
+	}
+
 }
