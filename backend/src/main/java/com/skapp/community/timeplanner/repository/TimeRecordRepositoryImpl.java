@@ -366,8 +366,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		query.multiselect(timeRecord.get(TimeRecord_.timeRecordId), employee.get(Employee_.employeeId),
 				timeRecord.get(TimeRecord_.date),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0),
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
@@ -415,10 +415,10 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			predicates.add(team.get(Team_.teamId).in(teamIds));
 		}
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null),
+		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
 				employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0),
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
@@ -437,12 +437,12 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		return typedQuery.getResultList()
 			.stream()
-			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), // timeRecordId
-					tuple.get(1, Long.class), // employeeId
-					tuple.get(2, LocalDate.class), // date
-					tuple.get(3, Float.class), // workedHours
-					tuple.get(4, Float.class), // breakHours
-					tuple.get(5, String.class) // timeSlots JSON
+			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class),
+					tuple.get(1, Long.class),
+					tuple.get(2, LocalDate.class),
+					tuple.get(3, Float.class),
+					tuple.get(4, Float.class),
+					tuple.get(5, String.class)
 			))
 			.collect(Collectors.toList());
 	}
@@ -465,8 +465,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		predicates.add(cb.or(cb.and(joinPredicates.toArray(new Predicate[0])),
 				cb.isNull(timeRecord.get(TimeRecord_.timeRecordId))));
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null), timeRecord.get(TimeRecord_.date),
-				employee.get(Employee_.employeeId), cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0f));
+		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)), timeRecord.get(TimeRecord_.date),
+				employee.get(Employee_.employeeId), cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
 
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)));
@@ -506,7 +506,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			Root<TimeRecord> trRoot = dateQuery.from(TimeRecord.class);
 
 			dateQuery.multiselect(cb.literal(currentDate).alias("date"),
-					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0f).alias("workedHours"));
+					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0).alias("workedHours"));
 
 			Predicate employeeFilter = cb.equal(trRoot.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId);
 			Predicate dateFilter = cb.equal(trRoot.get(TimeRecord_.date), currentDate);
