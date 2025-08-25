@@ -26,6 +26,7 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
@@ -67,6 +68,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final TimeConfigDao timeConfigDao;
+
+	private final OkrConfigService okrConfigService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -219,6 +222,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		okrConfigService.setOkrDefaultConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
 
 		log.info("setDefaultOrganizationConfigs: execution ended");

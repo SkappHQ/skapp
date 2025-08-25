@@ -82,6 +82,7 @@ public class JwtServiceImpl implements JwtService {
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_ADMIN);
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
+		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.OKR_ADMIN);
 
 		boolean hasShortDurationRole = userDetails.getAuthorities()
 			.stream()

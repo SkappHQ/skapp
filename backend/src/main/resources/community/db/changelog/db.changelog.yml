@@ -13,3 +13,7 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-user-version.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-drop-employee-timeline.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-okr-0.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-edit-employeerole.sql
