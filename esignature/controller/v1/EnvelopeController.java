@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
@@ -191,6 +192,17 @@ public class EnvelopeController {
 	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> getEnvelopeTierLimitations() {
 		ResponseEntityDto response = envelopeService.getEnvelopeTierLimitations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get paginated envelopes received to current user",
+			description = "Returns a paginated list of envelopes received to current user(inbox), including subject, "
+					+ "sender email, status, expiry date, and received date. Supports filtering by envelope status, "
+					+ "searching by subject or sender email, and sorting by expire dates.")
+	@GetMapping(value = "/next", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getCurrentUserNextEnvelopes(EnvelopeNextFilterDto envelopeNextFilterDto) {
+		ResponseEntityDto response = envelopeService.getCurrentUserNextEnvelopes(envelopeNextFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -5,6 +5,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
@@ -31,6 +32,8 @@ public interface EnvelopeService {
 	ResponseEntityDto getEnvelopeForSender(Long id);
 
 	ResponseEntityDto transferEnvelopeCustody(Long envelopeId, Long addressbookId, String ipAddress);
+
+	ResponseEntityDto getCurrentUserNextEnvelopes(EnvelopeNextFilterDto envelopeNextFilterDto);
 
 	ResponseEntityDto voidEnvelope(Long envelopeId, VoidEnvelopeRequestDto voidEnvelopeRequestDto, String ipAddress);
 
