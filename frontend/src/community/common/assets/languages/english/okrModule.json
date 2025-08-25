@@ -1,0 +1,20 @@
+{
+  "teamObjectives": {
+    "pageHead": "Team Objectives | Skapp",
+    "title": "Team Objectives",
+    "addObjective": "Add Objective",
+    "chooseATeam": "Choose a Team",
+    "searchObjectives": "Search objectives",
+    "period": "PERIOD",
+    "titleHeader": "TITLE",
+    "currentQuarter": "Current Quarter",
+    "emptyState": {
+      "title": "No objectives found",
+      "description": "No objectives have been created yet for the selected team and year. Once objectives are added, they will be displayed here."
+    },
+    "emptySearchResult": {
+      "title": "No results found",
+      "description": "We couldn't find any objectives matching your search. Please try using different keywords."
+    }
+  }
+}
