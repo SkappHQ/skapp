@@ -1,14 +1,14 @@
 -- liquibase formatted sql
 
 -- changeset attigala:common-ddl-script-v1-create-table-okr
-CREATE TABLE team_objective (
+CREATE TABLE IF NOT EXISTS `team_objective` (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     effective_time_period BIGINT NOT NULL,
     duration VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE key_result (
+CREATE TABLE IF NOT EXISTS `key_result` (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     type VARCHAR(50),
@@ -19,7 +19,7 @@ CREATE TABLE key_result (
         REFERENCES team_objective(id)
 );
 
-CREATE TABLE key_result_assigned_team (
+CREATE TABLE IF NOT EXISTS `key_result_assigned_team` (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     key_result_id BIGINT NOT NULL,
     team_id BIGINT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE key_result_assigned_team (
         REFERENCES team(team_id)
 );
 
-CREATE TABLE team_objective_assigned_team (
+CREATE TABLE IF NOT EXISTS `team_objective_assigned_team` (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     team_objective_id BIGINT NOT NULL,
     team_id BIGINT NOT NULL,
