@@ -437,13 +437,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		return typedQuery.getResultList()
 			.stream()
-			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class),
-					tuple.get(1, Long.class),
-					tuple.get(2, LocalDate.class),
-					tuple.get(3, Float.class),
-					tuple.get(4, Float.class),
-					tuple.get(5, String.class)
-			))
+			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
+					tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
+					tuple.get(5, String.class)))
 			.collect(Collectors.toList());
 	}
 
@@ -465,8 +461,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		predicates.add(cb.or(cb.and(joinPredicates.toArray(new Predicate[0])),
 				cb.isNull(timeRecord.get(TimeRecord_.timeRecordId))));
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)), timeRecord.get(TimeRecord_.date),
-				employee.get(Employee_.employeeId), cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
+		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
+				timeRecord.get(TimeRecord_.date), employee.get(Employee_.employeeId),
+				cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
 
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)));
