@@ -131,7 +131,7 @@ const ApplyLeaveModal = () => {
 
   const { data: myLeaveRequests } = useGetMyRequests({ isExport: true });
 
-  const { data: allHolidays } = useGetAllHolidays(currentYear.toString());
+  const { data: allHolidays } = useGetAllHolidays(currentYear.toString(), true);
 
   const { data: leaveEntitlementBalance } = useGetLeaveEntitlementBalance(
     selectedLeaveAllocationData.leaveType.typeId

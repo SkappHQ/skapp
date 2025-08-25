@@ -38,7 +38,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
   ariaLabel = "menu",
   ariaDescription,
   menuAlign = {
-    anchorOrigin: { vertical: "top", horizontal: "left" },
+    anchorOrigin: { vertical: "bottom", horizontal: "left" },
     transformOrigin: { vertical: "top", horizontal: "left" }
   },
   customStyles = {}
@@ -93,6 +93,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
           onClose={handleMenuClose}
           anchorOrigin={menuAlign.anchorOrigin}
           transformOrigin={menuAlign.transformOrigin}
+          disableScrollLock={true}
           sx={{ ...classes.menu, ...customStyles.menu }}
         >
           {menuItems?.map((item: MenuItemTypes) => (

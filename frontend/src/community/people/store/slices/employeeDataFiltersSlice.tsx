@@ -81,7 +81,7 @@ export const employeeDataFiltersSlice = (
       employeeDataParams: {
         ...state.employeeDataParams,
         employmentAllocations: "",
-        permission: "",
+        permissions: "",
         team: "",
         role: "",
         searchKeyword: "",

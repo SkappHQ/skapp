@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { type NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { JSX, useMemo, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -18,7 +18,8 @@ import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveCarryForwardModalTypes,
   carryForwardEntitlementType,
-  carryForwardLeaveEntitlementsType
+  carryForwardLeaveEntitlementsType,
+  carryForwardTableDataType
 } from "~community/leave/types/LeaveCarryForwardTypes";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -66,12 +67,10 @@ const CarryForwardBalances: NextPage = () => {
       carryForwardEntitlementItems !== undefined &&
       carryForwardEntitlementItems.length > 0
     ) {
-      return carryForwardEntitlementItems.map(
+      const tableData: Array<Record<string, string | number | JSX.Element>> =
+        [];
+      carryForwardEntitlementItems.forEach(
         (entitlement: carryForwardLeaveEntitlementsType) => {
-          const tableData: Array<
-            Record<string, string | number | JSX.Element>
-          > = [];
-
           const tableRow: Record<string, string | number | JSX.Element> = {
             employeeId: entitlement.employee.employeeId,
             name: (
@@ -101,14 +100,44 @@ const CarryForwardBalances: NextPage = () => {
           });
 
           tableData.push(tableRow);
-
-          return tableData;
         }
       );
+      return tableData;
     }
 
     return [];
-  }, [carryForwardEntitlement, headers]);
+  }, [carryForwardEntitlement, headers]) as carryForwardTableDataType[];
+
+  const exportRows = useMemo(() => {
+    const carryForwardEntitlementItems = carryForwardEntitlement?.items;
+
+    if (!carryForwardEntitlementItems?.length) {
+      return [];
+    }
+
+    return carryForwardEntitlementItems.map(
+      (entitlement: carryForwardLeaveEntitlementsType) => {
+        const baseRow = {
+          employeeId: entitlement.employee.employeeId,
+          name: `${entitlement.employee.firstName ?? ""} ${entitlement.employee.lastName ?? ""}`.trim()
+        };
+
+        const leaveTypeColumns = headers.reduce(
+          (acc, header) => {
+            const leaveType = entitlement.entitlements.find(
+              (ent: carryForwardEntitlementType) =>
+                ent.leaveTypeId === header.id
+            );
+            acc[header.id] = leaveType?.carryForwardAmount ?? "-";
+            return acc;
+          },
+          {} as Record<number, string | number>
+        );
+
+        return { ...baseRow, ...leaveTypeColumns };
+      }
+    );
+  }, [carryForwardEntitlement?.items, headers]);
 
   const handleSync = () => {
     setIsLeaveCarryForwardModalOpen(true);
@@ -137,7 +166,8 @@ const CarryForwardBalances: NextPage = () => {
         <>
           <CarryForwardTable
             headers={headers}
-            rows={rows[0]}
+            rows={rows}
+            exportRows={exportRows}
             totalPage={carryForwardEntitlement?.totalPages}
           />
           <Box

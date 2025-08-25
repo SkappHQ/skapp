@@ -29,6 +29,7 @@
     "unsavedEditModalTitle": "Unsaved changes",
     "unsavedAddModalTitle": "Are you sure?",
     "teamNameError": "Please enter team name.",
+    "teamNameDuplicateError": "Team name already exists.",
     "confirmDeleteModalTitle": "Confirm deletion",
     "confirmDeleteModalDes": "Proceeding with this deletion will remove all members from the team. Would you like to reassign the members first or continue with deleting the team?",
     "teamDeleteConfirmBtnText": "Proceed to delete",
@@ -504,7 +505,9 @@
       "employeeAddErrorToastDescription": "Failed to add the resource. Please try again.",
       "areYouSureModalTitle": "Are you sure?",
       "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvitated Successfully",
-      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully"
+      "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully",
+      "addFullProfile": "Add full profile",
+      "save": "Save"
     },
     "commonValidations": {
       "lettersAllowed": "Only letters are allowed",

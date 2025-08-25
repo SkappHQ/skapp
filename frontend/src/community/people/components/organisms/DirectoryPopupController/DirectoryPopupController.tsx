@@ -73,6 +73,9 @@ const DirectoryPopupController = () => {
       handleCloseModal={handleCloseModal}
       modalTitle={getModalTitle()}
       setModalType={setDirectoryModalType}
+      {...(directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE
+        ? { role: "dialog" }
+        : {})}
     >
       <Fragment>
         {directoryModalType === DirectoryModalTypes.DOWNLOAD_CSV && (

@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OkrMessageConstant implements MessageConstant {
 
+	// Success messages
+	OKR_SUCCESS_OKR_CONFIG_UPDATED("api.success.okr.config.updated"),
+
+	// Error messages
 	TEAM_OBJECTIVE_ERROR_OBJECTIVE_NOT_FOUND("api.error.okr.team.objective.not.found"),
 	TEAM_OBJECTIVE_ERROR_DUPLICATE_TEAM_ID("api.error.okr.team.duplicate-team-id"),
 	TEAM_OBJECTIVE_ERROR_INVALID_ASSIGNED_TEAM_FOR_KEY_RESULT(
