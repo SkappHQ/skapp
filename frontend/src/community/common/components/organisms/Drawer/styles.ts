@@ -51,7 +51,7 @@ export const styles = ({ theme }: stylesProps) => ({
     justifyContent: "flex-start",
     alignItems: "center",
     width: "8.75rem",
-    marginBottom: "0.25rem"
+    marginBottom: "0.75rem"
   },
 
   logoImage: {
@@ -59,6 +59,7 @@ export const styles = ({ theme }: stylesProps) => ({
     width: "100%",
     height: "auto",
     maxWidth: "10rem",
+    maxHeight: "3.25rem",
     objectFit: "contain" as const
   },
   list: {
@@ -70,7 +71,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: "1.625rem",
+    paddingTop: "1.25rem",
     transition: `all ${DRAWER_ANIMATION_DURATION} ease`
   },
   listItem: {

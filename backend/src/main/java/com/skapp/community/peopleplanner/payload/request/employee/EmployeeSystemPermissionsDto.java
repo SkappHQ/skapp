@@ -20,4 +20,6 @@ public class EmployeeSystemPermissionsDto {
 
 	private Role pmRole;
 
+	private Role okrRole;
+
 }

@@ -539,7 +539,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private TimeBlockDto processTimeBlocks(JsonNode timeBlocks) {
 		TimeBlockDto timeBlockDto = new TimeBlockDto();
 
-		if (timeBlocks.isArray()) {
+		if (timeBlocks.isArray() && !timeBlocks.isEmpty()) {
 			for (JsonNode block : timeBlocks) {
 				if (!block.has("timeBlock") || !block.has("hours")) {
 					throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
