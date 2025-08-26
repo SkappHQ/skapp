@@ -122,11 +122,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
 			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
-			AttendanceConfigService attendanceConfigService1, EpCommonEmailService emailService,
-			LeaveTypeService leaveTypeService1, LeaveCycleService leaveCycleService1, TenantService tenantService,
-			TenantContext tenantContext, EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			ObjectMapper objectMapper1, OrganizationConfigDao organizationConfigDao1,
 			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
 			DashboardEmailService dashboardEmailService, ModuleService moduleService,
 			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
@@ -134,10 +132,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
 				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
-		this.attendanceConfigService = attendanceConfigService1;
+		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
-		this.leaveTypeService = leaveTypeService1;
-		this.leaveCycleService = leaveCycleService1;
+		this.leaveTypeService = leaveTypeService;
+		this.leaveCycleService = leaveCycleService;
 		this.tenantService = tenantService;
 		this.tenantContext = tenantContext;
 		this.epCommonMapper = epCommonMapper;
@@ -145,8 +143,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.userDao = userDao;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
-		this.objectMapper = objectMapper1;
-		this.organizationConfigDao = organizationConfigDao1;
+		this.objectMapper = objectMapper;
+		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
