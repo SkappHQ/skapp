@@ -24,6 +24,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -120,14 +121,16 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
 			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
-			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
-			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
-			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			CacheService cacheService, DashboardEmailService dashboardEmailService, ModuleService moduleService,
+			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
+			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
+			DashboardEmailService dashboardEmailService, ModuleService moduleService,
 			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
-				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
+				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
+				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
 		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
