@@ -26,36 +26,39 @@ type TranslatorFunctionType = (
   interpolationValues?: Record<string, string>
 ) => string;
 
-export const employeePrimaryEmergencyContactDetailsValidation = (
+const conditionalRequired = (
+  dependentFields: string[]
+): Yup.TestFunction<any> => {
+  return function (value) {
+    const shouldRequire = dependentFields.some((field) => {
+      const fieldValue = this.parent[field];
+      return fieldValue && fieldValue.trim() !== "";
+    });
+
+    if (shouldRequire) {
+      return value && value.trim() !== "";
+    }
+
+    return true;
+  };
+};
+
+export const employeeEmergencyContactDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    name: Yup.string().matches(
-      allowsLettersAndSpecialCharactersForNames(),
-      translator(["validNameError"])
-    ),
-    relationship: Yup.string(),
-    contactNo: Yup.string()
-      .max(
-        characterLengths.PHONE_NUMBER_LENGTH_MAX,
-        translator(["validPhoneError"])
-      )
-      .min(
-        characterLengths.PHONE_NUMBER_LENGTH_MIN,
-        translator(["validPhoneError"])
-      )
-  });
-
-export const employeeSecondaryEmergencyContactDetailsValidation = (
-  translator: TranslatorFunctionType
-) =>
-  Yup.object().shape({
-    name: Yup.string().matches(
-      allowsLettersAndSpecialCharactersForNames(),
-      translator(["validNameError"])
+    name: Yup.string().test(
+      "conditional-required",
+      translator(["requireNameError"]),
+      conditionalRequired(["contactNo", "relationship"])
     ),
     relationship: Yup.string().nullable(),
     contactNo: Yup.string()
+      .test(
+        "conditional-required",
+        translator(["requirePhoneError"]),
+        conditionalRequired(["name", "relationship"])
+      )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
         translator(["validPhoneError"])
@@ -72,24 +75,18 @@ export const employeeGeneralDetailsValidation = (
   Yup.object({
     firstName: Yup.string()
       .required(translator(["requireFirstNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     middleName: Yup.string()
       .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
-      )
       .nullable(),
     lastName: Yup.string()
       .required(translator(["requireLastNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     gender: Yup.string().nullable(),
     birthDate: Yup.date().nullable(),
@@ -123,17 +120,15 @@ export const employeeFamilyDetailsValidation = (
   Yup.object({
     firstName: Yup.string()
       .required(translator(["requireFirstNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     lastName: Yup.string()
       .required(translator(["requireLastNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     gender: Yup.string().required(translator(["requireGenderError"])),
     relationship: Yup.string().required(
@@ -143,10 +138,6 @@ export const employeeFamilyDetailsValidation = (
     parentName: Yup.string()
 
       .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
-      )
   });
 
 export const employeeEducationalDetailsValidation = (
@@ -501,17 +492,15 @@ export const quickAddEmployeeValidations = (
   Yup.object({
     firstName: Yup.string()
       .required(translator(["requireFirstNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     lastName: Yup.string()
       .required(translator(["requireLastNameError"]))
-      .max(characterLengths.NAME_LENGTH, translator(["maxCharacterLimitError"]))
-      .matches(
-        allowsLettersAndSpecialCharactersForNames(),
-        translator(["validNameError"])
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["maxCharacterLimitError"])
       ),
     email: Yup.string()
       .trim()

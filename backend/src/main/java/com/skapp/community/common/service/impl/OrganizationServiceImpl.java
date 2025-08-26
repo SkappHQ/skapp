@@ -26,6 +26,7 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
@@ -39,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
 
 @Service
@@ -68,6 +68,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final TimeConfigDao timeConfigDao;
+
+	private final OkrConfigService okrConfigService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -99,10 +101,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 	public ResponseEntityDto saveOrganization(OrganizationDto organizationDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("saveOrganization: execution started by user: {}", currentUser.getUserId());
-
-		if (organizationDto.getOrganizationTimeZone() != null
-				&& !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone()))
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
 
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor()))
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
@@ -224,6 +222,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		okrConfigService.setOkrDefaultConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
 
 		log.info("setDefaultOrganizationConfigs: execution ended");

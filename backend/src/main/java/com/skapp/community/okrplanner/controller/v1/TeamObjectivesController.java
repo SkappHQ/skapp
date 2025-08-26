@@ -1,6 +1,7 @@
 package com.skapp.community.okrplanner.controller.v1;
 
 import com.skapp.community.okrplanner.payload.request.TeamObjectiveRequestDto;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,9 @@ public class TeamObjectivesController {
 
 	private final TeamObjectiveService teamObjectiveService;
 
-	// TODO: Change the role to ROLE_OKR_MANAGER when the role is created
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@Operation(summary = "Get Team objectives",
+			description = "Retrieve team objectives based on team ID and effective time period.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getTeamObjectives(@RequestParam Long teamId,
 			@RequestParam Long effectiveTimePeriod) {
@@ -35,7 +37,8 @@ public class TeamObjectivesController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyAuthority('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@Operation(summary = "Get Team objective by ID", description = "Retrieve team objective details using ID.")
+	@PreAuthorize("hasAnyAuthority('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
 	@GetMapping("/{id}")
 	public ResponseEntity<ResponseEntityDto> getTeamObjectiveById(@PathVariable Long id) {
 		ResponseEntityDto response = teamObjectiveService.findTeamObjectiveById(id);
@@ -43,7 +46,9 @@ public class TeamObjectivesController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@Operation(summary = "Create Team Objective",
+			description = "Create a new team objective with the provided details.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> createTeamObjective(
 			@RequestBody @Valid TeamObjectiveRequestDto requestDto) {

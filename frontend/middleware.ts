@@ -48,6 +48,7 @@ const superAdminRoutes = {
     ROUTES.REMOVE_PEOPLE,
     ROUTES.SUBSCRIPTION,
     ROUTES.OKR.TEAM_OBJECTIVES
+    ROUTES.PROJECTS
   ]
 };
 
@@ -303,6 +304,8 @@ export const config = {
     "/sign/folders/:path*",
     "/sign/inbox/:path*",
     "/sign/sent/:path*",
-    "/sign/complete/:path*"
+    "/sign/complete/:path*",
+    // Project routes
+    "/projects/:path*"
   ]
 };

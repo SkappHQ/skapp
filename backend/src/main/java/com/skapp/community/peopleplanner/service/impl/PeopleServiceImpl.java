@@ -246,7 +246,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeRequest(employeeQuickAddDto);
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
-		rolesService.validateRoles(employeeQuickAddDto.getUserRoles(), user);
 
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
 		employee.setUser(createUserEntity(user, createEmployeeRequestDto));
@@ -307,7 +306,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employmentDetails.setEmploymentDetails(basicDetails);
 		requestDto.setEmployment(employmentDetails);
 
-		requestDto.setSystemPermissions(dto.getUserRoles());
+		requestDto.setSystemPermissions(rolesService.getDefaultEmployeeRoles());
 
 		return requestDto;
 	}
@@ -1692,10 +1691,6 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	public void validateFirstName(String firstName, List<String> errors) {
-		if (firstName != null && (!firstName.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME));
-		}
-
 		if (firstName != null && firstName.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH, "First Name" }));
@@ -1703,20 +1698,12 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	public void validateLastName(String lastName, List<String> errors) {
-		if (lastName != null && (!lastName.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME));
-		}
-
 		if (lastName != null && lastName.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH, "Last Name" }));
 	}
 
 	public void validateEmergencyContactName(String name, List<String> errors) {
-		if (name != null && (!name.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMERGENCY_CONTACT_NAME));
-		}
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME_LENGTH,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH }));
@@ -1898,7 +1885,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (employeeBulkDto.getIdentificationNo() != null)
 			employeeBulkDto.setIdentificationNo(employeeBulkDto.getIdentificationNo().toUpperCase());
-		Validations.isEmployeeNameValid(employeeBulkDto.getFirstName().concat(employeeBulkDto.getLastName()));
 
 		Employee employee = peopleMapper.employeeBulkDtoToEmployee(employeeBulkDto);
 		EmployeeDetailsDto employeeDetailsDto = peopleMapper.employeeBulkDtoToEmployeeDetailsDto(employeeBulkDto);

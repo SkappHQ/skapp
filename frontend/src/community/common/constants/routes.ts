@@ -120,7 +120,8 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
-  SUBSCRIPTION: "/subscription"
+  SUBSCRIPTION: "/subscription",
+  PROJECTS: "/projects"
 };
 
 export default ROUTES;

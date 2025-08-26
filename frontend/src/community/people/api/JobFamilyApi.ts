@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { jobFamilyEndpoints } from "~community/people/api/utils/ApiEndpoints";
 import { jobFamilyQueryKeys } from "~community/people/api/utils/QueryKeys";
 import {
@@ -32,7 +31,7 @@ export const useGetAllJobFamilies = (): UseQueryResult<AllJobFamilyType[]> => {
           ...jobFamily,
           jobTitles: jobFamily.jobTitles.map((jobTitle) => ({
             jobTitleId: jobTitle.jobTitleId,
-            name: pascalCaseFormatter(jobTitle.name)
+            name: jobTitle.name
           }))
         })
       );

@@ -49,7 +49,7 @@ public interface TeamObjectiveMapper {
 		entity.setTitle(dto.getTitle());
 		entity.setEffectiveTimePeriod(dto.getEffectiveTimePeriod());
 		entity.setDuration(dto.getDuration());
-		// TODO: Map companyObjectiveId once company objectives feature is implemented
+		// TODO: Map companyObjectiveId once company objectives feature is implemented.
 
 		if (dto.getAssignedTeamIds() != null) {
 			List<TeamObjectiveAssignedTeam> assignedTeams = dto.getAssignedTeamIds().stream().map(teamId -> {
