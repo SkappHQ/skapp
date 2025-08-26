@@ -36,6 +36,9 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.ESIGN_ADMIN, Role.ESIGN_SENDER,
 					Role.ESIGN_EMPLOYEE));
 
+		Optional.ofNullable(employeeRole.getPmRole())
+			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.PM_ADMIN, null, Role.PM_EMPLOYEE));
+
 		ModuleConfig moduleConfig = moduleDao.findAll().getFirst();
 		return authorities.stream().filter(authority -> {
 			String auth = authority.getAuthority();
