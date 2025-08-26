@@ -50,4 +50,8 @@ public interface DocumentService {
 	DocumentVersion buildNewDocumentVersion(DocumentVersion currentVersion, String filePath, String hash,
 			String signature, AddressBook addressBook);
 
+	ResponseEntityDto getDocumentDimensions(Long id);
+
+	ResponseEntityDto generateImageListFromPdf(Long id);
+
 }

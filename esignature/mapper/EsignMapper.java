@@ -46,6 +46,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface EsignMapper {
 
+	String COMPLETE_VIA_SKAPP_REGEX = "^Complete via Skapp\\s*-?\\s*";
+
 	ExternalUser externalUserDtoToExternalUser(ExternalUserDto externalUserDto);
 
 	@Named("externalUserToExternalUserResponseDto")
@@ -126,6 +128,7 @@ public interface EsignMapper {
 	@Mapping(source = "id", target = "envelopeId")
 	@Mapping(source = "owner", target = "sender")
 	@Mapping(source = "setting.expirationDate", target = "expiresAt")
+	@Mapping(source = "subject", target = "title", qualifiedByName = "cleanSubject")
 	EnvelopeSentData envelopeToEnvelopeSentData(Envelope envelope);
 
 	@Mapping(source = "id", target = "id")
@@ -143,6 +146,7 @@ public interface EsignMapper {
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "receivedDate", ignore = true)
 	@Mapping(source = "setting.expirationDate", target = "expiresAt")
+	@Mapping(source = "subject", target = "title", qualifiedByName = "cleanSubject")
 	EnvelopeInboxData envelopeToEnvelopeInboxData(Envelope envelope);
 
 	@Mapping(source = "id", target = "addressBookId")
@@ -155,5 +159,12 @@ public interface EsignMapper {
 	@Mapping(source = "XPosition", target = "xposition")
 	@Mapping(source = "YPosition", target = "yposition")
 	FieldSignDto fieldToFieldSignDto(Field field);
+
+	@Named("cleanSubject")
+	static String cleanSubject(String subject) {
+		if (subject == null)
+			return null;
+		return subject.replaceFirst(COMPLETE_VIA_SKAPP_REGEX, "");
+	}
 
 }

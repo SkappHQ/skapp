@@ -17,6 +17,8 @@ public class AuditTrailResponseDto {
 
 	private String actionDoneByName;
 
+	private String actionDoneByEmail;
+
 	private Instant timestamp;
 
 	private List<MetadataResponseDto> metadata;

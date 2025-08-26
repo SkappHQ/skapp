@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -66,7 +67,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
@@ -92,13 +93,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -156,7 +161,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final DocumentLinkService documentLinkService;
 
-	private final DocumentVersionRepository documentVersionRepository;
+	private final DocumentVersionDao documentVersionDao;
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -258,7 +263,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.map(SignedDocumentResponse::getDocumentVersion)
 			.toList();
 
-		documentVersionRepository.saveAll(documentVersionList);
+		documentVersionDao.saveAll(documentVersionList);
 
 		List<Document> updatedDocuments = signedDocumentResponseList.stream().map(signedDocumentResponse -> {
 			DocumentVersion documentVersion = signedDocumentResponse.getDocumentVersion();
@@ -315,11 +320,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		documentDao.saveAll(updatedDocuments);
 
-		AuditTrail auditTrailSent = auditTrailService.processAuditTrailInfo(envelope, null, AuditAction.ENVELOPE_SENT,
-				envelope.getOwner(), null, null);
-
-		auditTrails.add(auditTrailSent);
-
 		auditTrailDao.saveAll(auditTrails);
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
@@ -329,8 +329,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
-						LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), LocalTime.MAX));
+				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
+					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
+									LocalTime.MAX));
+				}
 			}
 		});
 
@@ -717,7 +720,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	@Override
-	public ResponseEntityDto getSignatureCertificate(Long envelopeId) {
+	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess) {
 		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
@@ -725,30 +728,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
-		String username = documentService.getCurrentUsername();
-
-		if (username == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		}
-
-		AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(username);
-
-		if (currentAddressBookUser == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
-		}
-
-		if (currentAddressBookUser.getType() == UserType.INTERNAL) {
-			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
-				.isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
-		else if (currentAddressBookUser.getType() == UserType.EXTERNAL) {
-			Recipient envelopeRecipient = documentLinkService.getDocumentLinkFromToken().getRecipientId();
-			if (!envelopeRecipient.getEnvelope().getId().equals(envelopeId)) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
+		validateUser(envelopeId, isDocAccess);
 
 		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
 
@@ -763,10 +743,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					}));
 			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			auditTrailResponseDto.setHash(auditTrail.getHash());
-			auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient() == null
-					? auditTrail.getAddressBookUser().getInternalUser().getEmployee().getFirstName() + " "
-							+ auditTrail.getAddressBookUser().getInternalUser().getEmployee().getLastName()
-					: auditTrail.getRecipient().getName());
+			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
+				auditTrailResponseDto.setActionDoneByName("");
+				auditTrailResponseDto.setActionDoneByEmail("");
+			}
+			else if (auditTrail.getRecipient() == null) {
+				auditTrailResponseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
+				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getAddressBookUser().getEmail());
+			}
+			else {
+				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
+				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getRecipient().getAddressBook().getEmail());
+			}
 			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
 			return auditTrailResponseDto;
 		}).toList();
@@ -776,7 +764,457 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		responseDto.setAuditTrails(responseDtoList);
 
 		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
-		return new ResponseEntityDto(false, responseDto);
+
+		try {
+			// Generate HTML content for the certificate
+			String html = generateSignatureCertificateHtml(responseDto);
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.toStream(baos);
+			builder.run();
+
+			byte[] pdfBytes = baos.toByteArray();
+
+			// Set appropriate headers for PDF response
+			headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+			headers.setContentLength(pdfBytes.length);
+			headers.add("Content-Disposition",
+					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + responseDto.getName() + ".pdf\"");
+
+			return pdfBytes;
+		}
+		catch (IOException e) {
+			log.error("Error generating signature certificate PDF", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
+		}
+	}
+
+	private void validateUser(Long envelopeId, boolean isDocAccess) {
+		if (isDocAccess) {
+			// Document access via token validation
+			DocumentLink documentLinkFromToken = documentLinkService.getDocumentLinkFromToken();
+			Long addressBookId = documentLinkFromToken.getRecipientId().getAddressBook().getId();
+
+			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
+		else {
+			// Internal user access validation
+			User currentUser = userService.getCurrentUser();
+			if (currentUser == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+			}
+
+			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+			boolean isAdmin = esignRole.equals(Role.ESIGN_ADMIN);
+
+			// Admins have automatic access, other users need validation
+			if (!isAdmin) {
+				// Check if user is a recipient
+				AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(currentUser.getEmail());
+				if (currentAddressBookUser == null) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
+				}
+
+				if (!recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
+					.isEmpty()) {
+					return;
+				}
+
+				// Check if user is the envelope owner
+				AddressBook ownerAddressBook = envelopeDao.findById(envelopeId)
+					.map(Envelope::getOwner)
+					.orElseThrow(
+							() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
+
+				boolean isEnvelopeOwner = Optional.ofNullable(ownerAddressBook)
+					.map(AddressBook::getInternalUser)
+					.map(User::getUserId)
+					.filter(userId -> userId.equals(currentUser.getUserId()))
+					.isPresent();
+
+				if (!isEnvelopeOwner) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+				}
+			}
+		}
+	}
+
+	private String generateSignatureCertificateHtml(SignatureCertificateResponseDto responseDto) {
+		StringBuilder htmlBuilder = new StringBuilder();
+
+		// HTML structure with proper XML formatting for OpenHTMLToPDF
+		htmlBuilder.append("<!DOCTYPE html>");
+		htmlBuilder.append("<html><head>");
+		htmlBuilder.append("<meta charset='UTF-8'/>");
+		htmlBuilder.append(
+				"<link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap' rel='stylesheet' />");
+		htmlBuilder.append("<style>");
+
+		// CSS Styles optimized for OpenHTMLToPDF
+		htmlBuilder.append("@page { ");
+		htmlBuilder.append("  size: A4; ");
+		htmlBuilder.append("  margin: 40px; ");
+		htmlBuilder.append("  @bottom-right { ");
+		htmlBuilder.append("    content: 'Page ' counter(page) '/' counter(pages); ");
+		htmlBuilder.append("    font-size: 11px; ");
+		htmlBuilder.append("    font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("    color: #666; ");
+		htmlBuilder.append("  } ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append("body { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("  padding: 20px; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  line-height: 1.4; ");
+		htmlBuilder.append("  color: #333; ");
+		htmlBuilder.append("  background: white; ");
+		htmlBuilder.append("} ");
+
+		// Header styles
+		htmlBuilder.append(".header { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  margin-bottom: 40px; ");
+		htmlBuilder.append("  position: relative; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".header-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".title { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 20px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".logo { ");
+		htmlBuilder.append("  text-align: right; ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #f97316; ");
+		htmlBuilder.append("} ");
+
+		// Document info styles
+		htmlBuilder.append(".doc-section { ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("  position: relative; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".doc-header-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".doc-name { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 18px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  margin: 0 0 5px 0; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".doc-id { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-size: 12px; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  margin: 0; ");
+		htmlBuilder.append("} ");
+
+		// Status badge styles
+		htmlBuilder.append(".status-badge { ");
+		htmlBuilder.append("  text-align: right; ");
+		htmlBuilder.append("  vertical-align: middle; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-content { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  min-width: 130px; ");
+		htmlBuilder.append("  padding: 8px 16px; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
+		htmlBuilder.append("  background: #F4F4F5; ");
+		htmlBuilder.append("  border-radius: 32px; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  color: #52525C; ");
+		htmlBuilder.append("  text-align: center; ");
+		htmlBuilder.append("  line-height: 24px; ");
+		htmlBuilder.append("  height: 34px; ");
+		htmlBuilder.append("  white-space: nowrap; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot { ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  width: 10px; ");
+		htmlBuilder.append("  height: 10px; ");
+		htmlBuilder.append("  border-radius: 50%; ");
+		htmlBuilder.append("  margin-right: 8px; ");
+		htmlBuilder.append("  margin-top: -4px; ");
+		htmlBuilder.append("  vertical-align: middle; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-text { ");
+		htmlBuilder.append("  display: inline-block; ");
+		htmlBuilder.append("  vertical-align: middle; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  margin-top: -2px; ");
+		htmlBuilder.append("  color: #52525C; ");
+		htmlBuilder.append("} ");
+
+		// Status-specific dot styles
+		htmlBuilder.append(".status-dot.completed { ");
+		htmlBuilder.append("  background: #4EA500; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot.waiting { ");
+		htmlBuilder.append("  border: 2px solid #FF9900; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot.need-to-sign { ");
+		htmlBuilder.append("  border: 2px solid #4EA500; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot.declined { ");
+		htmlBuilder.append("  border: 2px solid #F00011; ");
+		htmlBuilder.append("  background: transparent; ");
+		htmlBuilder.append("  box-sizing: border-box; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot.expired { ");
+		htmlBuilder.append("  background: #F00011; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".status-dot.voided { ");
+		htmlBuilder.append("  background: #000000; ");
+		htmlBuilder.append("} ");
+
+		// Meta information styles
+		htmlBuilder.append(".meta-section { ");
+		htmlBuilder.append("  margin-bottom: 10px; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".meta-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".meta-table td { ");
+		htmlBuilder.append("  padding: 8px 0; ");
+		htmlBuilder.append("  vertical-align: top; ");
+		htmlBuilder.append("  width: 50%; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".meta-label { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  font-size: 14px; ");
+		htmlBuilder.append("  margin-bottom: 4px; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".meta-value { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 400; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  font-size: 11px; ");
+		htmlBuilder.append("} ");
+
+		// Activities section styles
+		htmlBuilder.append(".activities-title { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  font-size: 16px; ");
+		htmlBuilder.append("  margin-bottom: 5px; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".activities-table { ");
+		htmlBuilder.append("  width: 100%; ");
+		htmlBuilder.append("  border-collapse: collapse; ");
+		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  -fs-table-paginate: paginate; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".activities-table thead { ");
+		htmlBuilder.append("  background: #f8f9fa; ");
+		htmlBuilder.append("  display: table-header-group; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".activities-table th { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  text-align: left; ");
+		htmlBuilder.append("  padding: 10px 8px; ");
+		htmlBuilder.append("  font-weight: 600; ");
+		htmlBuilder.append("  color: #000; ");
+		htmlBuilder.append("  border-bottom: 1px solid #e0e0e0; ");
+		htmlBuilder.append("  font-size: 13px; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".activities-table tbody { ");
+		htmlBuilder.append("  display: table-row-group; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append(".activities-table td { ");
+		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
+		htmlBuilder.append("  padding: 8px; ");
+		htmlBuilder.append("  border-bottom: 1px solid #f0f0f0; ");
+		htmlBuilder.append("  color: #666; ");
+		htmlBuilder.append("  font-size: 11px; ");
+		htmlBuilder.append("  font-weight: 400; ");
+		htmlBuilder.append("} ");
+
+		htmlBuilder.append("</style>");
+		htmlBuilder.append("</head><body>");
+
+		// Header
+		htmlBuilder.append("<div class='header'>");
+		htmlBuilder.append("<table class='header-table'>");
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td><h1 class='title'>Document History</h1></td>");
+		htmlBuilder.append(
+				"<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/></td>");
+		htmlBuilder.append("</tr>");
+		htmlBuilder.append("</table>");
+		htmlBuilder.append("</div>");
+
+		// Document info section
+		htmlBuilder.append("<div class='doc-section'>"); // Reduced margin
+		htmlBuilder.append("<table class='doc-header-table'>");
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<h2 class='doc-name'>").append(EsignUtil.escapeHtml(responseDto.getName())).append("</h2>");
+		htmlBuilder.append("<p class='doc-id'>").append(EsignUtil.escapeHtml(responseDto.getUuid())).append("</p>");
+		htmlBuilder.append("</td>");
+
+		htmlBuilder.append("<td class='status-badge'>");
+		String statusClass = EsignUtil.getStatusClass(responseDto.getStatus());
+		String statusLabel = EsignUtil.getStatusLabel(responseDto.getStatus());
+		htmlBuilder.append("<div class='status-content'>");
+		htmlBuilder.append("<span class='status-dot ").append(statusClass).append("'></span>");
+		htmlBuilder.append("<span class='status-text'>").append(statusLabel).append("</span>");
+		htmlBuilder.append("</div>");
+		htmlBuilder.append("</td>");
+
+		htmlBuilder.append("</tr>");
+		htmlBuilder.append("</table>");
+		htmlBuilder.append("</div>");
+
+		// Add horizontal line between document info and meta information sections
+		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
+
+		// Meta information section
+		htmlBuilder.append("<div class='meta-section'>");
+		htmlBuilder.append("<table class='meta-table'>");
+
+		// First row: Sender and Enclosed Documents
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Sender</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(EsignUtil.escapeHtml(responseDto.getOwner().getName()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Enclosed Documents</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(EsignUtil.escapeHtml(responseDto.getDocuments().getFirst().getName()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
+
+		// Second row: Date Created and Time Zone
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Date Created</div>");
+		htmlBuilder.append("<div class='meta-value'>").append(formatDate(responseDto.getSentAt())).append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("<td>");
+		htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(EsignUtil.escapeHtml(responseDto.getOrganizationTimeZone()))
+			.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
+
+		// Third row: Recipients (spans both columns)
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<td colspan='2'>");
+		htmlBuilder.append("<div class='meta-label'>Recipients</div>");
+		htmlBuilder.append("<div class='meta-value'>");
+		String recipients = responseDto.getRecipients()
+			.stream()
+			.map(recipient -> recipient.getAddressBook().getFirstName() + " "
+					+ recipient.getAddressBook().getLastName())
+			.collect(Collectors.joining(", "));
+		htmlBuilder.append(EsignUtil.escapeHtml(recipients));
+		htmlBuilder.append("</div>");
+		htmlBuilder.append("</td>");
+		htmlBuilder.append("</tr>");
+
+		htmlBuilder.append("</table>");
+		htmlBuilder.append("</div>");
+
+		// Activities section
+		htmlBuilder.append("<h3 class='activities-title'>Activities</h3>");
+
+		// Add horizontal line between document info and meta information sections
+		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
+
+		htmlBuilder.append("<table class='activities-table'>");
+		htmlBuilder.append("<thead>");
+		htmlBuilder.append("<tr>");
+		htmlBuilder.append("<th style='width: 28%;'>Time</th>");
+		htmlBuilder.append("<th style='width: 35%;'>User</th>");
+		htmlBuilder.append("<th style='width: 40%;'>Activity</th>");
+		htmlBuilder.append("</tr>");
+		htmlBuilder.append("</thead>");
+		htmlBuilder.append("<tbody>");
+
+		if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
+			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
+				htmlBuilder.append("<tr>");
+				htmlBuilder.append("<td>")
+					.append(EsignUtil.escapeHtml(formatTimestamp(audit.getTimestamp())))
+					.append("</td>");
+				htmlBuilder.append("<td>").append(EsignUtil.escapeHtml(audit.getActionDoneByEmail())).append("</td>");
+				htmlBuilder.append("<td>")
+					.append(EsignUtil.escapeHtml(EsignUtil.getFormattedActionText(audit)))
+					.append("</td>");
+				htmlBuilder.append("</tr>");
+			}
+		}
+
+		htmlBuilder.append("</tbody>");
+		htmlBuilder.append("</table>");
+
+		htmlBuilder.append("</body></html>");
+
+		return htmlBuilder.toString();
+	}
+
+	private String formatDate(LocalDateTime localDateTime) {
+		// Format according to your requirements
+		return DateTimeUtils.formatDateTimeEsignCert(localDateTime);
+	}
+
+	private String formatTimestamp(Instant instant) {
+		// Format according to your requirements
+		return DateTimeUtils.formatInstantEsignCert(instant);
 	}
 
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {
@@ -861,7 +1299,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public List<DocumentDetailResponseDto> getDocumentDetails(Envelope envelope) {
 		return envelope.getDocuments().stream().map(document -> {
 			int currentVersion = document.getCurrentVersion();
-			DocumentVersion documentVersion = documentVersionRepository
+			DocumentVersion documentVersion = documentVersionDao
 				.findFirstByVersionNumberAndDocumentIdOrderByIdDesc(currentVersion, document.getId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
@@ -919,6 +1357,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		auditTrailDao.save(auditTrail);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
 
 		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
@@ -985,12 +1431,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EnvelopeStatus status = envelope.getStatus();
 
 		// First always process version 1 document
-		DocumentVersion firstVersion = documentVersionRepository.findByVersionNumberAndDocumentId(1, document.getId())
+		DocumentVersion firstVersion = documentVersionDao.findByVersionNumberAndDocumentId(1, document.getId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 
 		// Update version 1 to -1
 		firstVersion.setVersionNumber(-1);
-		documentVersionRepository.save(firstVersion);
+		documentVersionDao.save(firstVersion);
 
 		processDocumentCustodyTransfer(firstVersion, newOwner, 1);
 
@@ -998,7 +1444,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			int currentVersionNumber = document.getCurrentVersion();
 
 			if (currentVersionNumber > 1) {
-				DocumentVersion currentVersion = documentVersionRepository
+				DocumentVersion currentVersion = documentVersionDao
 					.findByVersionNumberAndDocumentId(currentVersionNumber, document.getId())
 					.orElseThrow(
 							() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
@@ -1006,7 +1452,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				if (!Objects.equals(currentVersion.getId(), firstVersion.getId())) {
 					// Update last completed version to -2
 					currentVersion.setVersionNumber(-2);
-					documentVersionRepository.save(currentVersion);
+					documentVersionDao.save(currentVersion);
 					processDocumentCustodyTransfer(currentVersion, newOwner, currentVersionNumber);
 				}
 			}
@@ -1052,7 +1498,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				newOwner);
 		newVersion.setVersionNumber(newVersionNumber);
 
-		documentVersionRepository.save(newVersion);
+		documentVersionDao.save(newVersion);
 
 	}
 
@@ -1162,6 +1608,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
 				AuditAction.ENVELOPE_DECLINED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				String tenantId = TenantContext.getCurrentTenant();
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+		});
 
 		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");

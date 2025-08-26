@@ -24,6 +24,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -48,7 +49,9 @@ import com.skapp.enterprise.common.repository.EpOrganizationConfigDao;
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.service.EpGoogleCalenderService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
+import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
@@ -64,7 +67,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.skapp.community.common.util.Validation.isValidOrganizationTimeZone;
 import static com.skapp.community.common.util.Validation.isValidThemeColor;
 
 @Primary
@@ -106,6 +108,12 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final DashboardEmailService dashboardEmailService;
 
+	private final ModuleService moduleService;
+
+	private final EpGoogleCalenderService epGoogleCalenderService;
+
+	private final EsignConfigService esignConfigService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -113,14 +121,16 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
 			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
-			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
-			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
-			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			EsignConfigService esignConfigService, CacheService cacheService,
-			DashboardEmailService dashboardEmailService) {
+			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
+			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
+			DashboardEmailService dashboardEmailService, ModuleService moduleService,
+			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
-				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
+				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
+				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
 		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
@@ -138,70 +148,52 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
+		this.moduleService = moduleService;
+		this.epGoogleCalenderService = epGoogleCalenderService;
+		this.esignConfigService = esignConfigService;
 	}
 
 	@Override
 	public ResponseEntityDto saveOrganization(EpOrganizationDto organizationDto) {
 		validateOrganizationInput(organizationDto);
 		String companyDomain = organizationDto.getCompanyDomain();
-		boolean tenantCreated = false;
 
-		try {
-			Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-			SuperAdmin superAdmin = superAdminDao.findById(userId)
-				.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+		SuperAdmin superAdmin = superAdminDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
 
-			tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
-			tenantCreated = true;
+		tenantService.createTenant(companyDomain, superAdmin.getLoginMethod(), superAdmin.getEmail());
 
-			log.info("Tenant created for: {}", companyDomain);
+		log.info("Tenant created for: {}", companyDomain);
 
-			tenantContext.setTenantAndSwitchSchema(companyDomain);
-			epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
-			log.info("Organization saved for: {}", companyDomain);
+		tenantContext.setTenantAndSwitchSchema(companyDomain);
+		epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
+		log.info("Organization saved for: {}", companyDomain);
 
-			EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+		EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
-			setDefaultOrganizationConfigsForEp();
+		setDefaultOrganizationConfigsForEp();
 
-			User savedUser = createSuperAdminUser(superAdmin);
-			log.info("Super admin user created for: {}", companyDomain);
-			applicationEventPublisher.publishEvent(new UserCreatedEvent(this, savedUser));
+		User savedUser = createSuperAdminUser(superAdmin);
+		log.info("Super admin user created for: {}", companyDomain);
+		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, savedUser));
 
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			superAdminDao.delete(superAdmin);
-			log.info("SuperAdmin deleted after successful organization creation.");
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		superAdminDao.delete(superAdmin);
+		log.info("SuperAdmin deleted after successful organization creation.");
 
-			tenantContext.setTenantAndSwitchSchema(companyDomain);
+		tenantContext.setTenantAndSwitchSchema(companyDomain);
 
-			dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getCompanyDomain(),
-					superAdmin.getEmail());
+		dashboardEmailService.sendNewOrganizationCreatedEmail(organizationDto.getCompanyDomain(),
+				superAdmin.getEmail());
 
-			EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		EpOrganizationResponseDto responseDto = buildOrganizationResponse(epOrganization, companyDomain);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-			emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
+		emailService.sendTenantUrlEmail(superAdmin, companyDomain, organizationDto.getOrganizationName());
 
-			return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(false, responseDto);
 
-		}
-		catch (Exception e) {
-			log.error("Error creating organization: {}", e.getMessage(), e);
-
-			try {
-				cleanup(companyDomain, tenantCreated);
-			}
-			catch (ModuleException cleanupException) {
-				log.error("Cleanup failed: {}", cleanupException.getMessage());
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CLEANUP_FAILED);
-			}
-
-			if (e instanceof ModuleException moduleException) {
-				throw moduleException;
-			}
-
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ORGANIZATION_CREATE);
-		}
 	}
 
 	@Override
@@ -358,35 +350,14 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		return uuid;
 	}
 
-	private void cleanup(String companyDomain, boolean tenantCreated) {
-		ModuleException cleanupException = null;
-
-		if (tenantCreated) {
-			try {
-				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-				tenantService.deleteTenant(companyDomain);
-				log.info("Tenant deleted during cleanup: {}", companyDomain);
-			}
-			catch (Exception e) {
-				String error = "Failed to delete tenant during cleanup: " + companyDomain;
-				log.error(error, e);
-				cleanupException = new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_DELETING_TENANT);
-			}
-		}
-
-		if (cleanupException != null) {
-			throw cleanupException;
-		}
-	}
-
 	private void validateOrganizationInput(EpOrganizationDto organizationDto) {
-		if (organizationDto.getOrganizationTimeZone() != null
-				&& !isValidOrganizationTimeZone(organizationDto.getOrganizationTimeZone())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
-		}
-
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
+		}
+
+		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
+				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
 		if (organizationDto.getCompanyDomain() == null || organizationDto.getCompanyDomain().isEmpty()) {
@@ -399,11 +370,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 		if (!organizationDto.getCompanyDomain().matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID);
-		}
-
-		if (organizationDto.getContactNo() != null && !organizationDto.getContactNo().isEmpty()
-				&& !organizationDto.getContactNo().matches(EpValidationConstants.VALID_COMPANY_PHONE_NUMBER_PATTERN)) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_CONTACT_NO_INVALID);
 		}
 
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(organizationDto.getCompanyDomain().toLowerCase())) {
@@ -419,6 +385,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		getDefaultTimeConfigs();
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
+		moduleService.setDefaultModules();
+		epGoogleCalenderService.setupOrganizationCalendar();
+		esignConfigService.setDefaultEsignConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,15 +13,23 @@ import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -59,6 +68,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
+
+	public static final int DPI = 96;
+
+	public static final String PNG = "png";
 
 	private final MessageUtil messageUtil;
 
@@ -225,6 +238,51 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		catch (IOException e) {
 			log.error("Error processing getNumberOfPages: {}", e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public Map<Integer, PageDimensionResponseDto> processDocumentDimensions(byte[] documentBytes) {
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+			Map<Integer, PageDimensionResponseDto> documentDimensionsData = new HashMap<>();
+			int pageCount = document.getNumberOfPages();
+			for (int i = 0; i < pageCount; i++) {
+				PDPage page = document.getPage(i);
+				PDRectangle mediaBox = page.getMediaBox();
+				documentDimensionsData.put(i + 1,
+						new PageDimensionResponseDto(mediaBox.getWidth(), mediaBox.getHeight()));
+			}
+			return documentDimensionsData;
+		}
+		catch (IOException e) {
+			log.error("Error processDocumentDimensions: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public List<byte[]> convertPDFdocumentToImageList(byte[] documentBytes) {
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+
+			List<byte[]> imageList = new ArrayList<>();
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			int pageCount = document.getNumberOfPages();
+
+			for (int page = 0; page < pageCount; page++) {
+				BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DPI);
+
+				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+					ImageIO.write(bim, PNG, baos);
+					imageList.add(baos.toByteArray());
+				}
+			}
+			return imageList;
+		}
+		catch (IOException e) {
+			log.error("Error converting PDF to image list: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST);
 		}
 	}
 
