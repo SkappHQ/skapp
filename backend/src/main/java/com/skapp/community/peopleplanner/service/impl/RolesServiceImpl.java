@@ -455,7 +455,7 @@ public class RolesServiceImpl implements RolesService {
 				case EMPLOYEE -> Role.OKR_EMPLOYEE;
 				default -> null;
 			};
-            case PM -> switch (roleLevel) {
+			case PM -> switch (roleLevel) {
 				case ADMIN -> Role.PM_ADMIN;
 				case EMPLOYEE -> Role.PM_EMPLOYEE;
 				default -> null;

@@ -80,7 +80,7 @@ public class EmployeeRole {
 			this.attendanceRole = original.attendanceRole;
 			this.esignRole = original.esignRole;
 			this.okrRole = original.okrRole;
-            this.pmRole = original.pmRole;
+			this.pmRole = original.pmRole;
 			this.isSuperAdmin = original.isSuperAdmin;
 			this.changedDate = original.changedDate;
 			this.roleChangedBy = original.roleChangedBy;
