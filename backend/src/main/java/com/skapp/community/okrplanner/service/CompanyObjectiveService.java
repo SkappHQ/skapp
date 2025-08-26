@@ -1,17 +1,20 @@
 package com.skapp.community.okrplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.okrplanner.payload.request.CompanyObjectiveFilterDto;
 import com.skapp.community.okrplanner.payload.request.CompanyObjectiveRequestDto;
+import jakarta.validation.Valid;
+import lombok.NonNull;
 
 public interface CompanyObjectiveService {
 
-	ResponseEntityDto loadCompanyObjectivesByYear(Integer year);
+	ResponseEntityDto loadCompanyObjectivesByYear(@Valid CompanyObjectiveFilterDto companyObjectiveFilterDto);
 
-	ResponseEntityDto findCompanyObjectiveById(Long id);
+	ResponseEntityDto findCompanyObjectiveById(@NonNull Long id);
 
 	ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
 
-	ResponseEntityDto editCompanyObjective();
+	ResponseEntityDto updateCompanyObjective(@NonNull Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto);
 
 	ResponseEntityDto deleteCompanyObjective(Long id);
 
