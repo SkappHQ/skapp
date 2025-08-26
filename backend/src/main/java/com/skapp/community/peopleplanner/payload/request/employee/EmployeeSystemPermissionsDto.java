@@ -20,6 +20,6 @@ public class EmployeeSystemPermissionsDto {
 
 	private Role okrRole;
 
-    private Role invoiceRole;
+	private Role invoiceRole;
 
 }
