@@ -90,6 +90,8 @@ public class ModuleServiceImpl implements ModuleService {
 			activeModules.add(ModuleType.ATTENDANCE.name());
 		if (moduleConfig.isEsignModule())
 			activeModules.add(ModuleType.ESIGN.name());
+        if (moduleConfig.isInvoiceModule())
+            activeModules.add(ModuleType.INVOICE.name());
 		return activeModules.stream().sorted().toList();
 	}
 
