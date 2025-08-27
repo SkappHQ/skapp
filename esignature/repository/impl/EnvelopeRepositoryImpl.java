@@ -146,8 +146,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
 		Join<Recipient, AddressBook> recipientAddressJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
 		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.OWNER, JoinType.LEFT);
-		Join<Envelope, EnvelopeSetting> settingJoin = envelopeRoot.join(Envelope_.SETTING, JoinType.LEFT); // Join
-																											// EnvelopeSetting
+		Join<Envelope, EnvelopeSetting> settingJoin = envelopeRoot.join(Envelope_.SETTING, JoinType.LEFT);
 
 		Predicate userCondition = cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID),
 				currentUserId);
@@ -155,16 +154,12 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		cq.multiselect(envelopeRoot.get(Envelope_.id).alias("id"), envelopeRoot.get(Envelope_.subject).alias("subject"),
 				ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL).alias("ownerEmail"),
-				settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE).alias("expiresAt"), // Use
-																						// expirationDate
-																						// from
-																						// EnvelopeSetting
+				settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE).alias("expiresAt"),
 				envelopeRoot.get(Envelope_.sentAt).alias("sentAt"))
 			.distinct(true);
 
 		cq.where(cb.and(userCondition, statusCondition));
-		cq.orderBy(cb.asc(settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE))); // Order by
-																				// expirationDate
+		cq.orderBy(cb.asc(settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE)));
 
 		TypedQuery<Tuple> query = entityManager.createQuery(cq);
 		query.setFirstResult(page * size);
@@ -178,8 +173,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 			data.setEnvelopeId(tuple.get("id", Long.class));
 			data.setSubject(tuple.get("subject", String.class));
 			data.setSenderEmail(tuple.get("ownerEmail", String.class));
-			data.setExpiresAt(tuple.get("expiresAt", LocalDate.class)); // now from
-																		// EnvelopeSetting
+			data.setExpiresAt(tuple.get("expiresAt", LocalDate.class));
 			data.setSentAt(tuple.get("sentAt", LocalDateTime.class));
 			envelopes.add(data);
 		}
