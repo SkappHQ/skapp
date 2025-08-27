@@ -26,7 +26,7 @@ public class ModuleConfig {
 	@Column(name = "esign_module")
 	private boolean esignModule;
 
-    @Column(name = "invoice_module")
-    private boolean invoiceModule;
+	@Column(name = "invoice_module")
+	private boolean invoiceModule;
 
 }
