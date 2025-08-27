@@ -11,7 +11,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public enum ModuleType {
 
-	COMMON("common"), ATTENDANCE("attendance"), PEOPLE("people"), LEAVE("leave"), ESIGN("esignature"), OKR("okr");
+	COMMON("common"), ATTENDANCE("attendance"), PEOPLE("people"), LEAVE("leave"), ESIGN("esignature"),
+	PM("projectmanagement"), OKR("okr");
 
 	private static final Map<String, ModuleType> DISPLAY_NAME_MAP = Stream.of(values())
 		.collect(Collectors.toMap(ModuleType::getDisplayName, module -> module));
