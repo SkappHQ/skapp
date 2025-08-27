@@ -84,6 +84,7 @@ public class EmployeeRole {
 			this.attendanceRole = original.attendanceRole;
 			this.esignRole = original.esignRole;
 			this.okrRole = original.okrRole;
+            this.invoiceRole= original.invoiceRole;
 			this.pmRole = original.pmRole;
 			this.isSuperAdmin = original.isSuperAdmin;
 			this.changedDate = original.changedDate;

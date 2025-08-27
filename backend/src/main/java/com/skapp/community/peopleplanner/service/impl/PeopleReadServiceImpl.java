@@ -284,6 +284,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			dto.setAttendanceRole(role.getAttendanceRole());
 			dto.setEsignRole(role.getEsignRole());
 			dto.setOkrRole(role.getOkrRole());
+            dto.setInvoiceRole(role.getInvoiceRole());
 			dto.setPmRole(role.getPmRole());
 		});
 

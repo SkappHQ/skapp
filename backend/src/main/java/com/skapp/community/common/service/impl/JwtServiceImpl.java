@@ -204,6 +204,7 @@ public class JwtServiceImpl implements JwtService {
 		roles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
 		roles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
 		roles.add(AuthConstants.AUTH_ROLE + Role.OKR_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.INVOICE_ADMIN);
 		return roles;
 	}
 
