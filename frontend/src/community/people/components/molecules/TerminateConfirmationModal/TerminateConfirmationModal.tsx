@@ -2,7 +2,6 @@ import { Stack } from "@mui/material";
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
@@ -21,7 +20,7 @@ const TerminateConfirmationModal: React.FC<TerminateConfirmationModalProps> = ({
   onClose
 }) => {
   const translateText = useTranslator("peopleModule", "termination");
-  const { toastMessage, setToastMessage } = useToast();
+  const { setToastMessage } = useToast();
 
   const onSuccess = () => {
     setToastMessage({
@@ -86,13 +85,6 @@ const TerminateConfirmationModal: React.FC<TerminateConfirmationModalProps> = ({
           />
         </Stack>
       </Modal>
-      <ToastMessage
-        {...toastMessage}
-        open={toastMessage.open}
-        onClose={() => {
-          setToastMessage((state) => ({ ...state, open: false }));
-        }}
-      />
     </>
   );
 };
