@@ -272,7 +272,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		defaultEmployeeRoles.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
-        defaultEmployeeRoles.setInvoiceRole(null);
+		defaultEmployeeRoles.setInvoiceRole(null);
 		defaultEmployeeRoles.setPmRole(Role.PM_EMPLOYEE);
 		return defaultEmployeeRoles;
 	}
@@ -520,8 +520,8 @@ public class RolesServiceImpl implements RolesService {
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 			employeeRole.setEsignRole(Role.ESIGN_ADMIN);
 			employeeRole.setOkrRole(Role.OKR_ADMIN);
-            employeeRole.setPmRole(Role.PM_ADMIN);
-            employeeRole.setInvoiceRole(Role.INVOICE_ADMIN);
+			employeeRole.setPmRole(Role.PM_ADMIN);
+			employeeRole.setInvoiceRole(Role.INVOICE_ADMIN);
 			employeeRole.setIsSuperAdmin(true);
 		}
 		else {
