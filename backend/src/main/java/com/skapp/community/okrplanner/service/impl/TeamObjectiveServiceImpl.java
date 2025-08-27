@@ -156,5 +156,4 @@ public class TeamObjectiveServiceImpl implements TeamObjectiveService {
 			validateAssignedTeams(kr.getAssignedTeamIds());
 		}
 	}
-
 }
