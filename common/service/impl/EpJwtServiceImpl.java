@@ -1,10 +1,12 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -26,6 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -99,6 +102,14 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		}
 
 		super.checkVersionMismatch(userId, accessToken);
+	}
+
+	@Override
+	protected Set<String> getShortDurationRoles() {
+		Set<String> roles = super.getShortDurationRoles();
+		roles.add(AuthConstants.AUTH_ROLE + Role.ESIGN_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.PM_ADMIN);
+		return roles;
 	}
 
 }

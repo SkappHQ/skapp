@@ -102,6 +102,13 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 				default -> null;
 			};
 		}
+		else if (module == ModuleType.PM) {
+			return switch (roleLevel) {
+				case ADMIN -> Role.PM_ADMIN;
+				case EMPLOYEE -> Role.PM_EMPLOYEE;
+				default -> null;
+			};
+		}
 		return role;
 	}
 
@@ -110,6 +117,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		Map<ModuleType, List<RoleLevel>> roles = super.initializeRolesForModule();
 
 		roles.put(ModuleType.ESIGN, List.of(RoleLevel.ADMIN, RoleLevel.SENDER, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
 
 		return roles;
 	}
@@ -167,6 +175,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 	public EmployeeRole setupBulkEmployeeRoles(Employee employee) {
 		EmployeeRole employeeRole = super.setupBulkEmployeeRoles(employee);
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
+		employeeRole.setPmRole(Role.PM_EMPLOYEE);
 		return employeeRole;
 	}
 
@@ -186,6 +195,20 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 			envelopeService.transferEmployeeEnvelopes(employees);
 			epEmployeeRoleDao.saveAll(rolesToUpdate);
 		}
+	}
+
+	@Override
+	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
+		List<String> roles = new ArrayList<>();
+		roles.add(RoleLevel.ADMIN.getDisplayName());
+		if (moduleType == ModuleType.ESIGN) {
+			roles.add(RoleLevel.SENDER.getDisplayName());
+		}
+		else if (moduleType != ModuleType.PM) {
+			roles.add(RoleLevel.MANAGER.getDisplayName());
+		}
+		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
+		return roles;
 	}
 
 	private void processSuperAdmins(List<EmployeeRole> rolesToUpdate) {
