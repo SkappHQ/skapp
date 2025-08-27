@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 public enum ModuleType {
 
 	COMMON("common"), ATTENDANCE("attendance"), PEOPLE("people"), LEAVE("leave"), ESIGN("esignature"), OKR("okr"),
-	INVOICE("invoice");
+	INVOICE("invoice"), PM("projectmanagement"), OKR("okr");
 
 	private static final Map<String, ModuleType> DISPLAY_NAME_MAP = Stream.of(values())
 		.collect(Collectors.toMap(ModuleType::getDisplayName, module -> module));

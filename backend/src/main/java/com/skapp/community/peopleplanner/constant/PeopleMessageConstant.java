@@ -123,6 +123,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_INVALID_ATTENDANCE_ROLE("api.error.people.invalid-attendance-role"),
 	PEOPLE_ERROR_INVALID_LEAVE_ROLE("api.error.people.invalid-leave-role"),
 	PEOPLE_ERROR_INVALID_INVOICE_ROLE("api.error.people.invalid-invoice-role"),
+	PEOPLE_ERROR_INVALID_MODULE_NAME("api.error.people.invalid-module-name"),
 	PEOPLE_ERROR_ATTENDANCE_RESTRICTED_ROLE_ACCESS("api.error.people.attendance-restricted-role-access"),
 	PEOPLE_ERROR_PEOPLE_RESTRICTED_ROLE_ACCESS("api.error.people.people-restricted-role-access"),
 	PEOPLE_ERROR_LEAVE_RESTRICTED_ROLE_ACCESS("api.error.people.leave-restricted-role-access"),
