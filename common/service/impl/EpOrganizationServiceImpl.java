@@ -56,6 +56,7 @@ import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
+import com.skapp.enterprise.invoice.service.InvoiceConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -114,23 +115,25 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EsignConfigService esignConfigService;
 
+    private final InvoiceConfigService invoiceConfigService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
 	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
-			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
-			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
-			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
-			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
-			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
-			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
-			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
-			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
-			DashboardEmailService dashboardEmailService, ModuleService moduleService,
-			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
+                                     MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
+                                     LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
+                                     ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
+                                     TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
+                                     EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+                                     EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+                                     ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+                                     EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
+                                     DashboardEmailService dashboardEmailService, ModuleService moduleService,
+                                     EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService , InvoiceConfigService invoiceConfigService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
-				okrConfigService);
+				okrConfigService );
 		this.epOrganizationDao = epOrganizationDao;
 		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
@@ -151,6 +154,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.moduleService = moduleService;
 		this.epGoogleCalenderService = epGoogleCalenderService;
 		this.esignConfigService = esignConfigService;
+        this.invoiceConfigService = invoiceConfigService;
 	}
 
 	@Override
@@ -296,6 +300,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
 		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 		superAdminRoles.setEsignRole(Role.ESIGN_ADMIN);
+        superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
 		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
 
@@ -388,6 +393,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		moduleService.setDefaultModules();
 		epGoogleCalenderService.setupOrganizationCalendar();
 		esignConfigService.setDefaultEsignConfigs();
+        invoiceConfigService.setDefaultInvoiceConfigs();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

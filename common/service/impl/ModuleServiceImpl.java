@@ -38,6 +38,7 @@ public class ModuleServiceImpl implements ModuleService {
 		moduleConfig.setLeaveModule(true);
 		moduleConfig.setAttendanceModule(true);
 		moduleConfig.setEsignModule(true);
+        moduleConfig.setInvoiceModule(true);
 
 		moduleDao.save(moduleConfig);
 		log.info("setDefaultModules: Default modules configuration set successfully");
@@ -78,6 +79,7 @@ public class ModuleServiceImpl implements ModuleService {
 			case LEAVE -> moduleConfig.setLeaveModule(isToggled);
 			case ATTENDANCE -> moduleConfig.setAttendanceModule(isToggled);
 			case ESIGN -> moduleConfig.setEsignModule(isToggled);
+            case INVOICE -> moduleConfig.setInvoiceModule(isToggled);
 			default -> throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_NAME);
 		}
 	}
@@ -120,6 +122,7 @@ public class ModuleServiceImpl implements ModuleService {
 			case LEAVE -> moduleConfig.isLeaveModule();
 			case ATTENDANCE -> moduleConfig.isAttendanceModule();
 			case ESIGN -> moduleConfig.isEsignModule();
+            case INVOICE -> moduleConfig.isInvoiceModule();
 			default -> false;
 		};
 	}

@@ -31,18 +31,18 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
     }
 
     @Override
-    public ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto dto) {
+    public ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto invoiceConfigDto) {
         InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
                 .orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
-        if(invoiceConfig.getLogoUrl() != null) {
-            invoiceConfig.setLogoUrl(invoiceConfig.getLogoUrl());
+        if(invoiceConfigDto.getLogoUrl() != null) {
+            invoiceConfig.setLogoUrl(invoiceConfigDto.getLogoUrl());
         }
-        if(dto.getPaymentTerms() != null) {
-            invoiceConfig.setPaymentTerms(dto.getPaymentTerms());
+        if(invoiceConfigDto.getPaymentTerms() != null) {
+            invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
         }
-        if(dto.getPayToAddress() != null) {
-            invoiceConfig.setPayToAddress(dto.getPayToAddress());
+        if(invoiceConfigDto.getPayToAddress() != null) {
+            invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
         }
 
         invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
