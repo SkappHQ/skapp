@@ -8,5 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface InvoiceConfigRepository extends JpaRepository<InvoiceConfig, Long> {
-    Optional<InvoiceConfig> findFirstBy();
+
+	Optional<InvoiceConfig> findFirstBy();
+
 }

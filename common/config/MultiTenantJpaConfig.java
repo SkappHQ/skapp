@@ -22,12 +22,12 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@EnableJpaRepositories(
-		basePackages = { "com.skapp.enterprise.common.masterrepository", "com.skapp.enterprise.common.repository",
-				"com.skapp.community.common.repository", "com.skapp.community.leaveplanner.repository",
-				"com.skapp.community.peopleplanner.repository", "com.skapp.community.timeplanner.repository",
-				"com.skapp.community.okrplanner.repository", "com.skapp.enterprise.esignature.repository",
-				"com.skapp.enterprise.leaveplanner.repository", "com.skapp.enterprise.people.repository","com.skapp.enterprise.invoice.repository" })
+@EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
+		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
+		"com.skapp.community.leaveplanner.repository", "com.skapp.community.peopleplanner.repository",
+		"com.skapp.community.timeplanner.repository", "com.skapp.community.okrplanner.repository",
+		"com.skapp.enterprise.esignature.repository", "com.skapp.enterprise.leaveplanner.repository",
+		"com.skapp.enterprise.people.repository", "com.skapp.enterprise.invoice.repository" })
 @EnableTransactionManagement
 public class MultiTenantJpaConfig {
 

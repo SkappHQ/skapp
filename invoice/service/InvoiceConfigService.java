@@ -5,9 +5,10 @@ import com.skapp.enterprise.invoice.payload.request.InvoiceConfigDto;
 
 public interface InvoiceConfigService {
 
-    void setDefaultInvoiceConfigs();
+	void setDefaultInvoiceConfigs();
 
-    ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto dto);
+	ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto dto);
 
-    ResponseEntityDto getInvoiceConfig();
+	ResponseEntityDto getInvoiceConfig();
+
 }

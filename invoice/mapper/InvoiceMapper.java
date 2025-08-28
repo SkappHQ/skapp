@@ -8,8 +8,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface InvoiceMapper {
 
-    @Mapping(source = "logoUrl", target = "logoUrl")
-    @Mapping(source = "paymentTerms", target = "paymentTerms")
-    @Mapping(source = "payToAddress", target = "payToAddress")
-    InvoiceConfigResponseDto invoiceConfigToInvoiceConfigResponseDto(InvoiceConfig invoiceConfig);
+	@Mapping(source = "logoUrl", target = "logoUrl")
+	@Mapping(source = "paymentTerms", target = "paymentTerms")
+	@Mapping(source = "payToAddress", target = "payToAddress")
+	InvoiceConfigResponseDto invoiceConfigToInvoiceConfigResponseDto(InvoiceConfig invoiceConfig);
+
 }

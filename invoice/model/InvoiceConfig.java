@@ -8,18 +8,19 @@ import lombok.Data;
 @Data
 @Table(name = "invoice_config")
 public class InvoiceConfig {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
-    @Column(name = "logo_url")
-    private String logoUrl;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private Long id;
 
-    @Column(name = "payment_terms")
-    private String paymentTerms;
+	@Column(name = "logo_url")
+	private String logoUrl;
 
-    @Column(name = "pay_to_address")
-    private String payToAddress;
+	@Column(name = "payment_terms")
+	private String paymentTerms;
+
+	@Column(name = "pay_to_address")
+	private String payToAddress;
 
 }

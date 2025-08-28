@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum InvoiceMessageConstant implements MessageConstant {
-    INVOICE_ERROR_CONFIG_NOT_FOUND("invoice.error.config.not.found");
-    private final String messageKey;
+
+	INVOICE_ERROR_CONFIG_NOT_FOUND("invoice.error.config.not.found");
+
+	private final String messageKey;
+
 }

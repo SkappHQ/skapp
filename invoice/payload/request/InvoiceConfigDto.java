@@ -7,11 +7,10 @@ import lombok.Setter;
 @Setter
 public class InvoiceConfigDto {
 
-    private String logoUrl;
+	private String logoUrl;
 
-    private String paymentTerms;
+	private String paymentTerms;
 
-    private String payToAddress;
-
+	private String payToAddress;
 
 }

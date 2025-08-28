@@ -17,45 +17,48 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 
-    private final InvoiceConfigRepository invoiceConfigRepository;
+	private final InvoiceConfigRepository invoiceConfigRepository;
 
-    private final InvoiceMapper invoiceMapper;
+	private final InvoiceMapper invoiceMapper;
 
-    @Override
-    public void setDefaultInvoiceConfigs() {
-        InvoiceConfig invoiceConfig = new InvoiceConfig();
-        invoiceConfig.setLogoUrl("https://rootcode.skapp.com/logo/logo.png");
-        invoiceConfig.setPaymentTerms("Net 30");
-        invoiceConfig.setPayToAddress("123 Default St, City, Country");
-        invoiceConfigRepository.save(invoiceConfig);
-    }
+	@Override
+	public void setDefaultInvoiceConfigs() {
+		InvoiceConfig invoiceConfig = new InvoiceConfig();
+		invoiceConfig.setLogoUrl("https://rootcode.skapp.com/logo/logo.png");
+		invoiceConfig.setPaymentTerms("Net 30");
+		invoiceConfig.setPayToAddress("123 Default St, City, Country");
+		invoiceConfigRepository.save(invoiceConfig);
+	}
 
-    @Override
-    public ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto invoiceConfigDto) {
-        InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
-                .orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+	@Override
+	public ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto invoiceConfigDto) {
+		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
+			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
-        if(invoiceConfigDto.getLogoUrl() != null) {
-            invoiceConfig.setLogoUrl(invoiceConfigDto.getLogoUrl());
-        }
-        if(invoiceConfigDto.getPaymentTerms() != null) {
-            invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
-        }
-        if(invoiceConfigDto.getPayToAddress() != null) {
-            invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
-        }
+		if (invoiceConfigDto.getLogoUrl() != null) {
+			invoiceConfig.setLogoUrl(invoiceConfigDto.getLogoUrl());
+		}
+		if (invoiceConfigDto.getPaymentTerms() != null) {
+			invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
+		}
+		if (invoiceConfigDto.getPayToAddress() != null) {
+			invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
+		}
 
-        invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
-        InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper.invoiceConfigToInvoiceConfigResponseDto(invoiceConfig);
-        return new ResponseEntityDto(false, invoiceConfigResponseDto);
-    }
+		invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
+		InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper
+			.invoiceConfigToInvoiceConfigResponseDto(invoiceConfig);
+		return new ResponseEntityDto(false, invoiceConfigResponseDto);
+	}
 
-    @Override
-    public ResponseEntityDto getInvoiceConfig() {
-        InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
-                .orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+	@Override
+	public ResponseEntityDto getInvoiceConfig() {
+		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
+			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
-        InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper.invoiceConfigToInvoiceConfigResponseDto(invoiceConfig);
-        return new ResponseEntityDto(false, invoiceConfigResponseDto);
-    }
+		InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper
+			.invoiceConfigToInvoiceConfigResponseDto(invoiceConfig);
+		return new ResponseEntityDto(false, invoiceConfigResponseDto);
+	}
+
 }
