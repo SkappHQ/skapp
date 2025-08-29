@@ -9,6 +9,10 @@ public class InvoiceConfigResponseDto {
 
 	private String logoUrl;
 
+	private String currency;
+
+	private String country;
+
 	private String paymentTerms;
 
 	private String payToAddress;

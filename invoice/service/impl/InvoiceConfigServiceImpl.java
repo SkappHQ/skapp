@@ -9,6 +9,7 @@ import com.skapp.enterprise.invoice.payload.request.InvoiceConfigDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceConfigResponseDto;
 import com.skapp.enterprise.invoice.repository.InvoiceConfigRepository;
 import com.skapp.enterprise.invoice.service.InvoiceConfigService;
+import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,10 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 	public void setDefaultInvoiceConfigs() {
 		InvoiceConfig invoiceConfig = new InvoiceConfig();
 		invoiceConfig.setLogoUrl("https://rootcode.skapp.com/logo/logo.png");
-		invoiceConfig.setPaymentTerms("Net 30");
-		invoiceConfig.setPayToAddress("123 Default St, City, Country");
+		invoiceConfig.setCurrency(CurrencyType.USD);
+		invoiceConfig.setCountry("US");
+		invoiceConfig.setPaymentTerms("");
+		invoiceConfig.setPayToAddress("");
 		invoiceConfigRepository.save(invoiceConfig);
 	}
 
@@ -36,6 +39,12 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 
 		if (invoiceConfigDto.getLogoUrl() != null) {
 			invoiceConfig.setLogoUrl(invoiceConfigDto.getLogoUrl());
+		}
+		if (invoiceConfigDto.getCurrency() != null) {
+			invoiceConfig.setCurrency(invoiceConfigDto.getCurrency());
+		}
+		if (invoiceConfigDto.getCountry() != null) {
+			invoiceConfig.setCountry(invoiceConfigDto.getCountry());
 		}
 		if (invoiceConfigDto.getPaymentTerms() != null) {
 			invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
