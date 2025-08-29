@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.payload.response;
 
+import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ public class InvoiceConfigResponseDto {
 
 	private String logoUrl;
 
-	private String currency;
+	private CurrencyType currency;
 
 	private String country;
 
