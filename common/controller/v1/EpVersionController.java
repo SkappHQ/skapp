@@ -23,9 +23,9 @@ public class EpVersionController {
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<EpVersionResponseDto> getVersions(
-			@Parameter(name = "employeeIds", description = "List of employee IDs to retrieve version(comma-separated)",
-					example = "1,2,3", schema = @Schema(type = "array", implementation = Long.class)) @RequestParam(
-							value = "employeeIds", required = false) Long employeeId) {
+			@Parameter(name = "employeeIds", description = "Employee ID to retrieve versions",
+					example = "1", schema = @Schema(type = "number", implementation = Long.class)) @RequestParam(
+							value = "employeeId", required = false) Long employeeId) {
 
 		return new ResponseEntity<>(epVersionService.getVersionsByUserId(employeeId), HttpStatus.OK);
 	}
