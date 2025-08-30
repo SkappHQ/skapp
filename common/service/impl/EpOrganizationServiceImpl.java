@@ -394,7 +394,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		moduleService.setDefaultModules();
 		epGoogleCalenderService.setupOrganizationCalendar();
 		esignConfigService.setDefaultEsignConfigs();
-		invoiceConfigService.setDefaultInvoiceConfigs();
+
+		EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+		invoiceConfigService.setDefaultInvoiceConfigs(organization.getOrganizationLogo(), organization.getCountry());
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

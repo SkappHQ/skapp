@@ -26,11 +26,11 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 	private final InvoiceConfigValidationService invoiceConfigValidationService;
 
 	@Override
-	public void setDefaultInvoiceConfigs() {
+	public void setDefaultInvoiceConfigs(String organizationLogo, String country) {
 		InvoiceConfig invoiceConfig = new InvoiceConfig();
-		invoiceConfig.setInvoiceLogo(""); // Set organization logo URL
-		invoiceConfig.setCurrency(CurrencyType.USD); //
-		invoiceConfig.setCountry("");// Set Organization country
+		invoiceConfig.setInvoiceLogo(organizationLogo);
+		invoiceConfig.setCurrency(CurrencyType.USD);
+		invoiceConfig.setCountry(country);
 		invoiceConfig.setPaymentTerms(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_PAYMENT_TERMS);
 		invoiceConfig.setPayToAddress(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_ADDRESS);
 		invoiceConfigRepository.save(invoiceConfig);
