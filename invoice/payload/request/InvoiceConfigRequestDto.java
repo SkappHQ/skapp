@@ -6,9 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class InvoiceConfigDto {
+public class InvoiceConfigRequestDto {
 
-	private String logoUrl;
+	private String invoiceLogo;
 
 	private CurrencyType currency;
 

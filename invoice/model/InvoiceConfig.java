@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "invoice_config")
+@Table(name = "fin_invoice_config")
 public class InvoiceConfig {
 
 	@Id
@@ -21,11 +21,11 @@ public class InvoiceConfig {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "logo_url")
-	private String logoUrl;
+	@Column(name = "invoice_logo")
+	private String invoiceLogo;
 
-	@Column(name = "currency" , columnDefinition = "varchar(255)")
-    @Enumerated(EnumType.STRING)
+	@Column(name = "currency")
+	@Enumerated(EnumType.STRING)
 	private CurrencyType currency;
 
 	@Column(name = "country")

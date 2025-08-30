@@ -8,7 +8,9 @@ import lombok.Setter;
 @Setter
 public class InvoiceConfigResponseDto {
 
-	private String logoUrl;
+	private Long id;
+
+	private String invoiceLogo;
 
 	private CurrencyType currency;
 

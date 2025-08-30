@@ -2,13 +2,15 @@ package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.invoice.constant.InvoiceConfigDefaultConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.InvoiceConfig;
-import com.skapp.enterprise.invoice.payload.request.InvoiceConfigDto;
+import com.skapp.enterprise.invoice.payload.request.InvoiceConfigRequestDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceConfigResponseDto;
 import com.skapp.enterprise.invoice.repository.InvoiceConfigRepository;
 import com.skapp.enterprise.invoice.service.InvoiceConfigService;
+import com.skapp.enterprise.invoice.service.InvoiceConfigValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,37 +23,26 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 
 	private final InvoiceMapper invoiceMapper;
 
+	private final InvoiceConfigValidationService invoiceConfigValidationService;
+
 	@Override
 	public void setDefaultInvoiceConfigs() {
 		InvoiceConfig invoiceConfig = new InvoiceConfig();
-		invoiceConfig.setLogoUrl("https://rootcode.skapp.com/logo/logo.png");
-		invoiceConfig.setCurrency(CurrencyType.USD);
-		invoiceConfig.setCountry("US");
-		invoiceConfig.setPaymentTerms("");
-		invoiceConfig.setPayToAddress("");
+		invoiceConfig.setInvoiceLogo(""); // Set organization logo URL
+		invoiceConfig.setCurrency(CurrencyType.USD); //
+		invoiceConfig.setCountry("");// Set Organization country
+		invoiceConfig.setPaymentTerms(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_PAYMENT_TERMS);
+		invoiceConfig.setPayToAddress(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_ADDRESS);
 		invoiceConfigRepository.save(invoiceConfig);
 	}
 
 	@Override
-	public ResponseEntityDto updateInvoiceConfig(InvoiceConfigDto invoiceConfigDto) {
+	public ResponseEntityDto updateInvoiceConfig(InvoiceConfigRequestDto invoiceConfigDto) {
+
 		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
 			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
-		if (invoiceConfigDto.getLogoUrl() != null) {
-			invoiceConfig.setLogoUrl(invoiceConfigDto.getLogoUrl());
-		}
-		if (invoiceConfigDto.getCurrency() != null) {
-			invoiceConfig.setCurrency(invoiceConfigDto.getCurrency());
-		}
-		if (invoiceConfigDto.getCountry() != null) {
-			invoiceConfig.setCountry(invoiceConfigDto.getCountry());
-		}
-		if (invoiceConfigDto.getPaymentTerms() != null) {
-			invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
-		}
-		if (invoiceConfigDto.getPayToAddress() != null) {
-			invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
-		}
+		invoiceConfigValidationService.validateInvoiceConfigRequest(invoiceConfigDto);
 
 		invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
 		InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper

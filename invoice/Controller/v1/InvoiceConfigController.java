@@ -1,7 +1,7 @@
 package com.skapp.enterprise.invoice.Controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.invoice.payload.request.InvoiceConfigDto;
+import com.skapp.enterprise.invoice.payload.request.InvoiceConfigRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,10 @@ public class InvoiceConfigController {
 	private final InvoiceConfigService invoiceConfigService;
 
 	@Operation(summary = "Update global invoice configuration settings.",
-			description = "This endpoint allows updating specific fields of the global invoice configuration, "
-					+ "such as payment terms, and currency settings, without requiring a full replacement of the existing configuration.")
+			description = "This endpoint allows updating specific fields of the global invoice configuration")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN')")
 	@PatchMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> updateInvoiceConfig(@RequestBody InvoiceConfigDto dto) {
+	public ResponseEntity<ResponseEntityDto> updateInvoiceConfig(@RequestBody InvoiceConfigRequestDto dto) {
 
 		ResponseEntityDto updatedInvoiceConfig = invoiceConfigService.updateInvoiceConfig(dto);
 
@@ -35,8 +34,7 @@ public class InvoiceConfigController {
 	}
 
 	@Operation(summary = "Retrieve invoice global configuration settings.",
-			description = "This endpoint retrieves the current invoice configuration settings,"
-					+ " including payment terms and currency settings.")
+			description = "This endpoint retrieves the current invoice configuration settings")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getInvoiceConfig() {
