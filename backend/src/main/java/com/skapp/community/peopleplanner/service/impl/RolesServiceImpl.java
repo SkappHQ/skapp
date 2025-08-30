@@ -138,9 +138,9 @@ public class RolesServiceImpl implements RolesService {
 				|| isRoleDemoted(employeeRole.getAttendanceRole(), roleRequestDto.getAttendanceRole(),
 						Role.ATTENDANCE_MANAGER, Role.ATTENDANCE_ADMIN, Role.ATTENDANCE_EMPLOYEE)
 				|| isRoleDemoted(employeeRole.getLeaveRole(), roleRequestDto.getLeaveRole(), Role.LEAVE_MANAGER,
-						Role.LEAVE_ADMIN, Role.LEAVE_EMPLOYEE )
+						Role.LEAVE_ADMIN, Role.LEAVE_EMPLOYEE)
 				|| isRoleDemoted(employeeRole.getInvoiceRole(), roleRequestDto.getInvoiceRole(), Role.INVOICE_MANAGER,
-						Role.INVOICE_ADMIN , Role.INVOICE_NONE);
+						Role.INVOICE_ADMIN, Role.INVOICE_NONE);
 	}
 
 	private boolean isRoleDemoted(Role currentRole, Role newRole, Role managerRole, Role adminRole, Role employeeRole) {
