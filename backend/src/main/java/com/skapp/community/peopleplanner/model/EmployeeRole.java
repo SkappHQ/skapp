@@ -61,6 +61,10 @@ public class EmployeeRole {
 	@Column(name = "okr_role", length = 20, columnDefinition = "varchar(255)")
 	private Role okrRole;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "invoice_role", length = 20, columnDefinition = "varchar(255)")
+	private Role invoiceRole;
+
 	@Column(name = "is_super_admin", nullable = false)
 	private Boolean isSuperAdmin = false;
 
@@ -80,6 +84,7 @@ public class EmployeeRole {
 			this.attendanceRole = original.attendanceRole;
 			this.esignRole = original.esignRole;
 			this.okrRole = original.okrRole;
+			this.invoiceRole = original.invoiceRole;
 			this.pmRole = original.pmRole;
 			this.isSuperAdmin = original.isSuperAdmin;
 			this.changedDate = original.changedDate;
