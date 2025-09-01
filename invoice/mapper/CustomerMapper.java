@@ -13,7 +13,7 @@ public interface CustomerMapper {
 
 	@Mapping(target = "customerName", source = "name")
 	@Mapping(target = "projectIds", expression = "java(mapProjects(customer.getProjects()))")
-    CustomerDetailedResponseDto customerToCustomerDetailedResponseDto(Customer customer);
+	CustomerDetailedResponseDto customerToCustomerDetailedResponseDto(Customer customer);
 
 	default List<Long> mapProjects(List<Project> projects) {
 		return (projects == null) ? List.of() : projects.stream().map(Project::getProjectId).toList();
