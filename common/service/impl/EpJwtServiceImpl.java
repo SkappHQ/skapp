@@ -109,6 +109,7 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		Set<String> roles = super.getShortDurationRoles();
 		roles.add(AuthConstants.AUTH_ROLE + Role.ESIGN_ADMIN);
 		roles.add(AuthConstants.AUTH_ROLE + Role.PM_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.INVOICE_ADMIN);
 		return roles;
 	}
 
