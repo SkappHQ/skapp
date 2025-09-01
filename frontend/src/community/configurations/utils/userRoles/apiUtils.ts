@@ -12,7 +12,8 @@ export const transformRolesToDropdownFormat = (
     people: [],
     attendance: [],
     esign: [],
-    pm: []
+    pm: [],
+    invoice: []
   };
 
   rolesData.forEach((moduleData) => {

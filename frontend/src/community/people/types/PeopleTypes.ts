@@ -54,6 +54,7 @@ export interface L2SystemPermissionsType {
   attendanceRole?: Role;
   esignRole?: Role;
   pmRole?: Role;
+  invoiceRole?: Role;
 }
 
 export interface L2CommonDetailsType {

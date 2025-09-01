@@ -858,7 +858,9 @@
       "maxSupervisorCountReachedDescription": "The maximum limit of 3 Super Admins has been reached.",
       "head": "Directory | Skapp",
       "alert": "Alert",
-      "projectManagement": "Project Management"
+      "projectManagement": "Project Management",
+      "invoice": "Invoice",
+      "selectRole": "Select role"
     },
     "credentials": {
       "sectionOne": "Skapp Account Credentials",
