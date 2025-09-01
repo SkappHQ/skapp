@@ -16,7 +16,7 @@ public interface CustomerMapper {
     CustomerDetailedResponseDto customerToCustomerDetailedResponseDto(Customer customer);
 
 	default List<Long> mapProjects(List<Project> projects) {
-		return projects.stream().map(Project::getProjectId).toList();
+		return (projects == null) ? List.of() : projects.stream().map(Project::getProjectId).toList();
 	}
 
 }
