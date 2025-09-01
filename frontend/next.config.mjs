@@ -327,6 +327,18 @@ const nextConfig = {
       {
         source: "/projects",
         destination: "/enterprise/projects"
+      },
+      {
+        source: "/invoice",
+        destination: "/enterprise/invoice"
+      },
+      {
+        source: "/invoice/all",
+        destination: "/enterprise/invoice/all"
+      },
+      {
+        source: "/invoice/clients",
+        destination: "/enterprise/invoice/clients"
       }
     ];
   },

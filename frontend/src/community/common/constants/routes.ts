@@ -110,7 +110,12 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects"
+  PROJECTS: "/projects",
+  INVOICE: {
+    BASE: "/invoice",
+    ALL_INVOICES: "/invoice/all",
+    CLIENTS: "/invoice/clients"
+  }
 };
 
 export default ROUTES;
