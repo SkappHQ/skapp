@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "fin_invoice_config")
+@Table(name = "in_config")
 public class InvoiceConfig {
 
 	@Id
