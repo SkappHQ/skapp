@@ -1,0 +1,43 @@
+package com.skapp.enterprise.invoice.model;
+
+import com.skapp.enterprise.invoice.type.CurrencyType;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "in_customer")
+public class Customer {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
+
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "email")
+	private String email;
+
+	@Column(name = "address")
+	private String address;
+
+	@Column(name = "country")
+	private String country;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "currency")
+	private CurrencyType currency;
+
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	private List<CustomerContact> customerContacts;
+
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	private List<Project> projects;
+
+}

@@ -1,0 +1,34 @@
+package com.skapp.enterprise.invoice.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "in_customer_contact")
+public class CustomerContact {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
+
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "email")
+	private String email;
+
+	@Column(name = "contact_no", length = 15)
+	private String contactNo;
+
+	@Column(name = "job_title")
+	private String jobTitle;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
+
+}
