@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "in_customer_contact")
-public class CustomerContact {
+public class CustomerContact extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "in_customer")
-public class Customer {
+public class Customer extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
