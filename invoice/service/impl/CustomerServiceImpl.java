@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -71,27 +73,30 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private List<Project> initializeCustomerProjectMapping(Customer customer, List<Long> projectIds) {
 
+		List<Project> existingProjects = projectDao.findByProjectIdIn(projectIds);
+
+		Map<Long, Project> projectMap = existingProjects.stream()
+			.collect(Collectors.toMap(Project::getProjectId, project -> project));
+
 		List<Project> projectList = new ArrayList<>();
 
-		projectIds.forEach(projId -> {
-			// validate if the project is already mapped to any other customer
-			validateProjectToCustomer(projId);
+		for (Long projId : projectIds) {
+			// Validate if the project is already mapped to any other customer
+			Project existingProject = projectMap.get(projId);
+			if (existingProject != null && existingProject.getCustomer() != null) {
+				throw new ModuleException(
+						InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
+			}
+
+			// Create and map the project
 			Project project = new Project();
 			project.setCustomer(customer);
 			project.setProjectId(projId);
 
 			projectList.add(project);
-		});
+		}
 
 		return projectList;
-	}
-
-	private void validateProjectToCustomer(Long projectId) {
-
-		Project project = projectDao.findByProjectId(projectId).orElse(null);
-		if (project != null && project.getCustomer() != null) {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
-		}
 	}
 
 	private void validateCustomerEmail(String email) {
