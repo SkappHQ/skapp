@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CustomerDetailedReponseDto {
+public class CustomerDetailedResponseDto {
 
 	private Long id;
 

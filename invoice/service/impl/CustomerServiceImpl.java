@@ -8,7 +8,7 @@ import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
-import com.skapp.enterprise.invoice.payload.response.CustomerDetailedReponseDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
 import com.skapp.enterprise.invoice.service.CustomerService;
@@ -41,7 +41,7 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		Customer saved = customerDao.save(customer);
-		CustomerDetailedReponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(saved);
+		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(saved);
 
 		return new ResponseEntityDto(false, responseDto);
 
