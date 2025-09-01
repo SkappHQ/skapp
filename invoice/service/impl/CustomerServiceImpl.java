@@ -1,6 +1,7 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
@@ -8,13 +9,16 @@ import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
+import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
+import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import com.skapp.enterprise.invoice.service.CustomerService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,6 +51,25 @@ public class CustomerServiceImpl implements CustomerService {
 
 		return new ResponseEntityDto(false, responseDto);
 
+	}
+
+	@Override
+	public ResponseEntityDto getAllCustomers(CustomerFilterDto customerFilterDto) {
+
+		Page<Customer> customerPage = customerDao.findAllCustomers(customerFilterDto);
+
+		List<CustomerSummaryData> mappedCustomerData = customerPage.getContent()
+			.stream()
+			.map(customerMapper::customerToCustomerSummaryData)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(mappedCustomerData);
+		pageDto.setCurrentPage(customerPage.getNumber());
+		pageDto.setTotalItems(customerPage.getTotalElements());
+		pageDto.setTotalPages(customerPage.getTotalPages());
+
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	private Customer initializeCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
