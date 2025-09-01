@@ -9,54 +9,61 @@ import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
 
 @RequiredArgsConstructor
 public class CustomerRepositoryImpl implements CustomerRepository {
 
 	private final EntityManager entityManager;
 
-	@Override
-	public Page<Customer> findAllCustomers(CustomerFilterDto filterDto) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Customer> query = cb.createQuery(Customer.class);
-		Root<Customer> root = query.from(Customer.class);
+	public Page<Customer> findAllCustomers(CustomerFilterDto customerFilterDto, Pageable page) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		// Build predicates based on filterDto
+		CriteriaQuery<Customer> criteriaQuery = criteriaBuilder.createQuery(Customer.class);
+		Root<Customer> root = criteriaQuery.from(Customer.class);
+
 		List<Predicate> predicates = new ArrayList<>();
 
-		query.where(cb.and(predicates.toArray(new Predicate[0])));
-
-		Order sortOrder = filterDto.getSortOrder() == Sort.Direction.ASC ? cb.asc(root.get("name"))
-				: cb.desc(root.get("name"));
-
-		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
-			String pattern = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
-			Predicate keywordPredicate = cb.like(cb.lower(root.get("name")), pattern);
-			query.where(keywordPredicate);
+		if (customerFilterDto.getSearchKeyword() != null && !customerFilterDto.getSearchKeyword().isEmpty()) {
+			predicates.add(findByName(customerFilterDto.getSearchKeyword(), criteriaBuilder, root));
 		}
 
-		query.orderBy(sortOrder);
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		criteriaQuery.where(predArray);
 
-		// Create paginated query
-		TypedQuery<Customer> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult(filterDto.getPage() * filterDto.getSize());
-		typedQuery.setMaxResults(filterDto.getSize());
+		if (customerFilterDto.getSearchKeyword() != null && !customerFilterDto.getSearchKeyword().isEmpty()) {
+			List<Order> orderList = new ArrayList<>();
+			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
+				.when(criteriaBuilder.like(root.get("name"), getSearchString(customerFilterDto.getSearchKeyword())),
+						1));
+			orderList.add(sortingOrder);
+			orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+			criteriaQuery.orderBy(orderList);
+		}
+		else {
+			criteriaQuery.distinct(true);
+			criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		}
 
-		// Fetch results
-		List<Customer> customers = typedQuery.getResultList();
+		TypedQuery<Customer> query = entityManager.createQuery(criteriaQuery);
 
-		// Count total records
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<Customer> countRoot = countQuery.from(Customer.class);
-		countQuery.select(cb.count(countRoot)).where(cb.and(predicates.toArray(new Predicate[0])));
-		Long totalRecords = entityManager.createQuery(countQuery).getSingleResult();
+		int totalRows = query.getResultList().size();
+		query.setFirstResult(page.getPageNumber() * page.getPageSize());
+		query.setMaxResults(page.getPageSize());
 
-		return new PageImpl<>(customers, PageRequest.of(filterDto.getPage(), filterDto.getSize()), totalRecords);
+		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	private Predicate findByName(String keyword, CriteriaBuilder criteriaBuilder, Root<Customer> customer) {
+		keyword = getSearchString(keyword);
+		return criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(customer.get("name")), keyword));
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.payload.request;
 
+import com.skapp.enterprise.invoice.type.CustomerSortKey;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,9 @@ public class CustomerFilterDto {
 	private int page = 0;
 
 	@Min(1)
-	private int size = 6;
+	private int size = 5;
+
+	private CustomerSortKey sortKey = CustomerSortKey.NAME;
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 

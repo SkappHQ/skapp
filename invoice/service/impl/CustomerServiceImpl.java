@@ -19,6 +19,9 @@ import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,7 +59,10 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public ResponseEntityDto getAllCustomers(CustomerFilterDto customerFilterDto) {
 
-		Page<Customer> customerPage = customerDao.findAllCustomers(customerFilterDto);
+		Pageable pageable = PageRequest.of(customerFilterDto.getPage(), customerFilterDto.getSize(),
+				Sort.by(customerFilterDto.getSortOrder(), customerFilterDto.getSortKey().toString()));
+
+		Page<Customer> customerPage = customerDao.findAllCustomers(customerFilterDto, pageable);
 
 		List<CustomerSummaryData> mappedCustomerData = customerPage.getContent()
 			.stream()
