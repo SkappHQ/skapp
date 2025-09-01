@@ -77,11 +77,7 @@ public class JwtServiceImpl implements JwtService {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put(AuthConstants.TOKEN_TYPE, TokenType.REFRESH);
 
-		Set<String> shortDurationRoles = new HashSet<>();
-		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN);
-		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_ADMIN);
-		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
-		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
+		Set<String> shortDurationRoles = getShortDurationRoles();
 
 		boolean hasShortDurationRole = userDetails.getAuthorities()
 			.stream()
@@ -199,6 +195,16 @@ public class JwtServiceImpl implements JwtService {
 	public SecretKey getSigningKey() {
 		byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
 		return Keys.hmacShaKeyFor(keyBytes);
+	}
+
+	protected Set<String> getShortDurationRoles() {
+		Set<String> roles = new HashSet<>();
+		roles.add(AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.ATTENDANCE_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
+		roles.add(AuthConstants.AUTH_ROLE + Role.OKR_ADMIN);
+		return roles;
 	}
 
 }

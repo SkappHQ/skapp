@@ -336,6 +336,23 @@ const SystemPermissionFormSection = ({
                 }
               />
             )}
+            <DropdownList
+              inputName={"pmRole"}
+              label={translateText(["projectManagement"])}
+              itemList={grantablePermission?.pm || []}
+              value={permissions.pmRole}
+              componentStyle={classes.dropdownListComponentStyles}
+              checkSelected
+              onChange={(event) =>
+                handleRoleDropdown("pmRole", event.target.value as Role)
+              }
+              isDisabled={
+                isProfileView ||
+                permissions.isSuperAdmin ||
+                isInputsDisabled ||
+                isReadOnly
+              }
+            />
           </Stack>
 
           {isUpdate &&

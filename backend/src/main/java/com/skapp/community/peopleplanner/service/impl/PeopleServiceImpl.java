@@ -231,6 +231,7 @@ public class PeopleServiceImpl implements PeopleService {
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewEmployeeTimeLineRecords(employee, requestDto);
+		invalidateUserCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -256,6 +257,7 @@ public class PeopleServiceImpl implements PeopleService {
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		updateSubscriptionQuantity(1L, true, false);
+		invalidateUserCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -283,7 +285,13 @@ public class PeopleServiceImpl implements PeopleService {
 		userDao.save(user);
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
+		invalidateUserCache();
+
 		return new ResponseEntityDto(false, requestDto);
+	}
+
+	protected void invalidateUserCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
 	}
 
 	protected void enterpriseValidations(String email) {
@@ -1217,6 +1225,7 @@ public class PeopleServiceImpl implements PeopleService {
 		updateSubscriptionQuantity(successCount, true, true);
 
 		addNewBulkUploadedEmployeeTimeLineRecords(totalResults);
+		invalidateUserCache();
 
 		return outValues.get();
 	}
@@ -2400,6 +2409,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		updateSubscriptionQuantity(1L, false, false);
 		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
+		invalidateUserCache();
 	}
 
 }
