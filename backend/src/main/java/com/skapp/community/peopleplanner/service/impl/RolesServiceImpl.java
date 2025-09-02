@@ -370,7 +370,7 @@ public class RolesServiceImpl implements RolesService {
 
 		if (userRoles != null && userRoles.getInvoiceRole() != null) {
 			Role invoiceRole = userRoles.getInvoiceRole();
-			EnumSet<Role> validInvoiceRoles = EnumSet.of(Role.INVOICE_MANAGER, Role.INVOICE_ADMIN);
+			EnumSet<Role> validInvoiceRoles = EnumSet.of(Role.INVOICE_MANAGER, Role.INVOICE_ADMIN, Role.INVOICE_NONE);
 			if (!validInvoiceRoles.contains(invoiceRole)) {
 				throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_INVOICE_ROLE,
 						new String[] { invoiceRole.name() });
