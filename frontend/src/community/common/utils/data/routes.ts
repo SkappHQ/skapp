@@ -197,8 +197,37 @@ const routes = [
       }
     ]
   },
+  //TODO: Check this permissions
   {
     id: "4",
+    name: "OKR",
+    url: ROUTES.OKR.BASE,
+    icon: IconName.PEOPLE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      ManagerTypes.PEOPLE_MANAGER,
+      EmployeeTypes.LEAVE_EMPLOYEE,
+      EmployeeTypes.PEOPLE_EMPLOYEE,
+      EmployeeTypes.ATTENDANCE_EMPLOYEE
+    ],
+    subTree: [
+      {
+        id: "4A",
+        name: "Teams",
+        url: ROUTES.OKR.TEAM_OBJECTIVES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.PEOPLE_ADMIN,
+          ManagerTypes.PEOPLE_MANAGER
+        ]
+      }
+    ]
+  },
+  {
+    id: "5",
     name: "Sign",
     url: ROUTES.SIGN.BASE,
     icon: IconName.DOCUMENTS_ICON,
@@ -211,7 +240,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "4A",
+        id: "5A",
         name: "Inbox",
         url: ROUTES.SIGN.INBOX,
         hasSubTree: false,
@@ -223,7 +252,7 @@ const routes = [
         ]
       },
       {
-        id: "4B",
+        id: "5B",
         name: "Sent",
         url: ROUTES.SIGN.SENT,
         hasSubTree: false,
@@ -247,7 +276,7 @@ const routes = [
     ]
   },
   {
-    id: "5",
+    id: "6",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -255,28 +284,28 @@ const routes = [
     requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN],
     subTree: [
       {
-        id: "5A",
+        id: "6A",
         name: "Time",
         url: ROUTES.CONFIGURATIONS.TIME,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
       },
       {
-        id: "5B",
+        id: "6B",
         name: "Attendance",
         url: ROUTES.CONFIGURATIONS.ATTENDANCE,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
       },
       {
-        id: "5C",
+        id: "6C",
         name: "Sign",
         url: ROUTES.CONFIGURATIONS.SIGN,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
       },
       {
-        id: "5D",
+        id: "7D",
         name: "User Roles",
         url: ROUTES.CONFIGURATIONS.USER_ROLES,
         hasSubTree: false,
@@ -304,7 +333,7 @@ const routes = [
   //   ]
   // },
   {
-    id: "7",
+    id: "8",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,
@@ -323,7 +352,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "7A",
+        id: "8A",
         name: "Account Settings",
         url: ROUTES.SETTINGS.ACCOUNT,
         hasSubTree: false,

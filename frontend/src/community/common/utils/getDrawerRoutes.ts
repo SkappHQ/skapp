@@ -80,6 +80,27 @@ const getDrawerRoutes = ({
 
       if (route?.name === "People") {
         const isNotPeopleEmployee = userRoles?.some((role) =>
+          [AdminTypes.PEOPLE_ADMIN, ManagerTypes.PEOPLE_MANAGER]?.includes(
+            role as AdminTypes | ManagerTypes
+          )
+        );
+
+        if (
+          !isNotPeopleEmployee &&
+          userRoles?.includes(EmployeeTypes.PEOPLE_EMPLOYEE)
+        ) {
+          return {
+            id: route?.id,
+            name: route?.name,
+            url: ROUTES.PEOPLE.DIRECTORY,
+            icon: route?.icon,
+            hasSubTree: false
+          };
+        }
+      }
+
+      if (route?.name === "People") {
+        const isNotPeopleEmployee = userRoles?.some((role) =>
           [AdminTypes.PEOPLE_ADMIN, ManagerTypes.PEOPLE_MANAGER].includes(
             role as AdminTypes | ManagerTypes
           )
