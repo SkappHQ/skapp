@@ -11,9 +11,8 @@ import com.skapp.community.okrplanner.payload.request.CompanyObjectiveRequestDto
 import com.skapp.community.okrplanner.repository.CompanyObjectiveDao;
 import com.skapp.community.okrplanner.repository.OkrConfigDao;
 import com.skapp.community.okrplanner.service.CompanyObjectiveService;
-import com.skapp.community.okrplanner.type.OkrTimePeriod;
+import com.skapp.community.okrplanner.util.OkrUtil;
 import jakarta.transaction.Transactional;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,7 +57,8 @@ public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
 		log.info("createCompanyObjective: execution started");
 
 		// Validate time period against OKR frequency
-		boolean isValid = isValidTimePeriod(requestDto.getTimePeriod());
+		boolean isValid = OkrUtil.isValidTimePeriod(requestDto.getTimePeriod(),
+				okrConfigDao.findFirstBy().orElse(null));
 		if (!isValid) {
 			log.error(String.format("Time period %s not allowed for configured OKR frequency",
 					requestDto.getTimePeriod()));
@@ -84,7 +84,8 @@ public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
 		}
 		CompanyObjective companyObjective = optionalCompanyObjective.get();
 		if (companyObjectiveRequestDto.getTimePeriod() != null) {
-			if (!isValidTimePeriod(companyObjectiveRequestDto.getTimePeriod())) {
+			if (!OkrUtil.isValidTimePeriod(companyObjectiveRequestDto.getTimePeriod(),
+					okrConfigDao.findFirstBy().orElse(null))) {
 				log.error(String.format("Time period %s not allowed for configured OKR frequency",
 						companyObjectiveRequestDto.getTimePeriod()));
 				throw new ModuleException(OkrMessageConstant.OKR_ERROR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY);
@@ -106,18 +107,6 @@ public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
 
 		log.info("updateCompanyObjective: execution ended");
 		return new ResponseEntityDto(false, companyObjective);
-	}
-
-	@Override
-	public ResponseEntityDto deleteCompanyObjective(Long id) {
-		return null;
-	}
-
-	private Boolean isValidTimePeriod(OkrTimePeriod requestedTimePeriod) {
-		return okrConfigDao.findFirstBy().map(config -> {
-			List<OkrTimePeriod> allowedPeriods = OkrTimePeriod.getByType(config.getFrequency());
-			return allowedPeriods.contains(requestedTimePeriod);
-		}).orElse(false);
 	}
 
 }

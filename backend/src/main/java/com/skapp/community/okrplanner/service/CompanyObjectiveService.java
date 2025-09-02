@@ -4,7 +4,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.okrplanner.payload.request.CompanyObjectiveFilterDto;
 import com.skapp.community.okrplanner.payload.request.CompanyObjectiveRequestDto;
 import jakarta.validation.Valid;
-import lombok.NonNull;
 
 public interface CompanyObjectiveService {
 
@@ -15,7 +14,5 @@ public interface CompanyObjectiveService {
 	ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
 
 	ResponseEntityDto updateCompanyObjective(Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto);
-
-	ResponseEntityDto deleteCompanyObjective(Long id);
 
 }

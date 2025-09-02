@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/company-objective")
+@RequestMapping("/v1/okr/company-objective")
 public class CompanyObjectiveController {
 
 	private final CompanyObjectiveService companyObjectiveService;
@@ -41,7 +41,7 @@ public class CompanyObjectiveController {
 
 	@Operation(summary = "Get company objectives by year",
 			description = "Retrieve the company objectives for a specific year")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE)")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getCompanyObjectivesByYear(
 			@Valid CompanyObjectiveFilterDto companyObjectiveFilterDto) {
@@ -50,7 +50,7 @@ public class CompanyObjectiveController {
 	}
 
 	@Operation(summary = "Get company objective by id", description = "Retrieve a specific company objective by Id")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE)")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE')")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<ResponseEntityDto> getCompanyObjective(@Valid @PathVariable Long id) {
 		ResponseEntityDto response = companyObjectiveService.findCompanyObjectiveById(id);

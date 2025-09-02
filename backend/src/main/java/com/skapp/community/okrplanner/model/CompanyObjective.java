@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "company_objective")
+@Table(name = "okr_company_objective")
 @Getter
 @Setter
 public class CompanyObjective {
