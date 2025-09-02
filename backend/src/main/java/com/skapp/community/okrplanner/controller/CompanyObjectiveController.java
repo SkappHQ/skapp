@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("v1/company-objective")
+@RequestMapping("/v1/company-objective")
 public class CompanyObjectiveController {
 
     private final CompanyObjectiveService companyObjectiveService;
@@ -26,7 +26,7 @@ public class CompanyObjectiveController {
     public ResponseEntity<ResponseEntityDto> createCompanyObjective(
             @RequestBody @Valid CompanyObjectiveRequestDto requestDto) {
         ResponseEntityDto response = companyObjectiveService.createCompanyObjective(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Operation(summary = "Update an existing company objective",
@@ -44,7 +44,8 @@ public class CompanyObjectiveController {
     @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE)")
     @GetMapping
     public ResponseEntity<ResponseEntityDto> getCompanyObjectivesByYear(@Valid CompanyObjectiveFilterDto companyObjectiveFilterDto) {
-        return new ResponseEntity<>(companyObjectiveService.loadCompanyObjectivesByYear(companyObjectiveFilterDto), HttpStatus.OK);
+        ResponseEntityDto response = companyObjectiveService.loadCompanyObjectivesByYear(companyObjectiveFilterDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Operation(summary = "Get company objective by id",
@@ -52,6 +53,7 @@ public class CompanyObjectiveController {
     @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN', 'ROLE_OKR_EMPLOYEE)")
     @GetMapping(value = "/{id}")
     public ResponseEntity<ResponseEntityDto> getCompanyObjective(@Valid @PathVariable Long id) {
-        return new ResponseEntity<>(companyObjectiveService.findCompanyObjectiveById(id), HttpStatus.OK);
+        ResponseEntityDto response = companyObjectiveService.findCompanyObjectiveById(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

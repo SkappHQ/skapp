@@ -33,16 +33,15 @@ public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
     private final OkrConfigDao okrConfigDao;
 
     @Override
-    public ResponseEntityDto loadCompanyObjectivesByYear(@NonNull CompanyObjectiveFilterDto companyObjectiveFilterDto) {
+    public ResponseEntityDto loadCompanyObjectivesByYear(CompanyObjectiveFilterDto companyObjectiveFilterDto) {
         log.info("loadCompanyObjectivesByYear: execution started");
         List<CompanyObjective> companyObjectives = companyObjectiveDao.findAllByYear(companyObjectiveFilterDto.getYear());
-        ResponseEntityDto responseEntityDto = new ResponseEntityDto(false, companyObjectives);
         log.info("loadCompanyObjectivesByYear: execution ended");
-        return responseEntityDto;
+        return new ResponseEntityDto(false, companyObjectives);
     }
 
     @Override
-    public ResponseEntityDto findCompanyObjectiveById(@NonNull Long id) {
+    public ResponseEntityDto findCompanyObjectiveById(Long id) {
         log.info("findCompanyObjectiveById: execution started");
         Optional<CompanyObjective> companyObjective = companyObjectiveDao.findById(id);
         if (companyObjective.isEmpty()) {
@@ -75,7 +74,7 @@ public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
 
     @Override
     @Transactional
-    public ResponseEntityDto updateCompanyObjective(@NonNull Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto) {
+    public ResponseEntityDto updateCompanyObjective(Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto) {
         log.info("updateCompanyObjective: execution started");
 
         Optional<CompanyObjective> optionalCompanyObjective = companyObjectiveDao.findById(id);

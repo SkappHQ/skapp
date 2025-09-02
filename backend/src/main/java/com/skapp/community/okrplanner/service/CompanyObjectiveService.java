@@ -8,14 +8,14 @@ import lombok.NonNull;
 
 public interface CompanyObjectiveService {
 
-	ResponseEntityDto loadCompanyObjectivesByYear(@Valid CompanyObjectiveFilterDto companyObjectiveFilterDto);
+    ResponseEntityDto loadCompanyObjectivesByYear(@Valid CompanyObjectiveFilterDto companyObjectiveFilterDto);
 
-	ResponseEntityDto findCompanyObjectiveById(@NonNull Long id);
+    ResponseEntityDto findCompanyObjectiveById(Long id);
 
-	ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
+    ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto);
 
-	ResponseEntityDto updateCompanyObjective(@NonNull Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto);
+    ResponseEntityDto updateCompanyObjective(Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto);
 
-	ResponseEntityDto deleteCompanyObjective(Long id);
+    ResponseEntityDto deleteCompanyObjective(Long id);
 
 }
