@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CompanyObjectiveDao extends JpaRepository<CompanyObjective, Long>, JpaSpecificationExecutor<CompanyObjective> {
+public interface CompanyObjectiveDao
+		extends JpaRepository<CompanyObjective, Long>, JpaSpecificationExecutor<CompanyObjective> {
 
-    List<CompanyObjective> findAllByYear(Integer year);
+	List<CompanyObjective> findAllByYear(Integer year);
+
 }

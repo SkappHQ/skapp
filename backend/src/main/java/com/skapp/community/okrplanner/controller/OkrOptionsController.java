@@ -17,21 +17,20 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "OKR Options Controller", description = "Operations related to objectives and key results options")
 public class OkrOptionsController {
 
-    private final OkrOptionsService okrOptionsService;
+	private final OkrOptionsService okrOptionsService;
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
-    @GetMapping("/okr-frequency")
-    public ResponseEntity<ResponseEntityDto> getOkrFrequency() {
-        ResponseEntityDto response = new ResponseEntityDto(false, okrOptionsService.getOkrFrequency());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@GetMapping("/okr-frequency")
+	public ResponseEntity<ResponseEntityDto> getOkrFrequency() {
+		ResponseEntityDto response = new ResponseEntityDto(false, okrOptionsService.getOkrFrequency());
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
-    @GetMapping("/okr-company-objective-time")
-    public ResponseEntity<ResponseEntityDto> getOkrCompanyObjectiveTime() {
-        ResponseEntityDto response = new ResponseEntityDto(false,
-                okrOptionsService.getOkrCompanyObjectiveTime());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@GetMapping("/okr-company-objective-time")
+	public ResponseEntity<ResponseEntityDto> getOkrCompanyObjectiveTime() {
+		ResponseEntityDto response = new ResponseEntityDto(false, okrOptionsService.getOkrCompanyObjectiveTime());
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 }

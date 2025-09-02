@@ -9,5 +9,6 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class CompanyObjectiveFilterDto {
 
-    private Integer year;
+	private Integer year;
+
 }

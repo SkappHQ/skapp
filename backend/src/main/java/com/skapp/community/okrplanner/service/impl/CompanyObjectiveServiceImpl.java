@@ -26,95 +26,98 @@ import java.util.Optional;
 @Slf4j
 public class CompanyObjectiveServiceImpl implements CompanyObjectiveService {
 
-    private final CompanyObjectiveDao companyObjectiveDao;
+	private final CompanyObjectiveDao companyObjectiveDao;
 
-    private final CompanyObjectiveMapper companyObjectiveMapper;
+	private final CompanyObjectiveMapper companyObjectiveMapper;
 
-    private final OkrConfigDao okrConfigDao;
+	private final OkrConfigDao okrConfigDao;
 
-    @Override
-    public ResponseEntityDto loadCompanyObjectivesByYear(CompanyObjectiveFilterDto companyObjectiveFilterDto) {
-        log.info("loadCompanyObjectivesByYear: execution started");
-        List<CompanyObjective> companyObjectives = companyObjectiveDao.findAllByYear(companyObjectiveFilterDto.getYear());
-        log.info("loadCompanyObjectivesByYear: execution ended");
-        return new ResponseEntityDto(false, companyObjectives);
-    }
+	@Override
+	public ResponseEntityDto loadCompanyObjectivesByYear(CompanyObjectiveFilterDto companyObjectiveFilterDto) {
+		log.info("loadCompanyObjectivesByYear: execution started");
+		List<CompanyObjective> companyObjectives = companyObjectiveDao
+			.findAllByYear(companyObjectiveFilterDto.getYear());
+		log.info("loadCompanyObjectivesByYear: execution ended");
+		return new ResponseEntityDto(false, companyObjectives);
+	}
 
-    @Override
-    public ResponseEntityDto findCompanyObjectiveById(Long id) {
-        log.info("findCompanyObjectiveById: execution started");
-        Optional<CompanyObjective> companyObjective = companyObjectiveDao.findById(id);
-        if (companyObjective.isEmpty()) {
-            throw new EntityNotFoundException(OkrMessageConstant.OKR_ERROR_COMPANY_OBJECTIVE_NOT_FOUND);
-        }
-        log.info("findCompanyObjectiveById: execution ended");
-        return new ResponseEntityDto(false, companyObjective);
-    }
+	@Override
+	public ResponseEntityDto findCompanyObjectiveById(Long id) {
+		log.info("findCompanyObjectiveById: execution started");
+		Optional<CompanyObjective> companyObjective = companyObjectiveDao.findById(id);
+		if (companyObjective.isEmpty()) {
+			throw new EntityNotFoundException(OkrMessageConstant.OKR_ERROR_COMPANY_OBJECTIVE_NOT_FOUND);
+		}
+		log.info("findCompanyObjectiveById: execution ended");
+		return new ResponseEntityDto(false, companyObjective);
+	}
 
-    @Override
-    @Transactional
-    public ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto) {
-        log.info("createCompanyObjective: execution started");
+	@Override
+	@Transactional
+	public ResponseEntityDto createCompanyObjective(CompanyObjectiveRequestDto requestDto) {
+		log.info("createCompanyObjective: execution started");
 
-        // Validate time period against OKR frequency
-        boolean isValid = isValidTimePeriod(requestDto.getTimePeriod());
-        if (!isValid) {
-            log.error(String.format("Time period %s not allowed for configured OKR frequency",
-                    requestDto.getTimePeriod()));
-            throw new ModuleException(OkrMessageConstant.OKR_ERROR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY);
-        }
+		// Validate time period against OKR frequency
+		boolean isValid = isValidTimePeriod(requestDto.getTimePeriod());
+		if (!isValid) {
+			log.error(String.format("Time period %s not allowed for configured OKR frequency",
+					requestDto.getTimePeriod()));
+			throw new ModuleException(OkrMessageConstant.OKR_ERROR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY);
+		}
 
-        CompanyObjective companyObjective = companyObjectiveMapper
-                .companyObjectiveRequestDtoToCompanyObjective(requestDto);
-        companyObjectiveDao.save(companyObjective);
+		CompanyObjective companyObjective = companyObjectiveMapper
+			.companyObjectiveRequestDtoToCompanyObjective(requestDto);
+		companyObjectiveDao.save(companyObjective);
 
-        log.info("createCompanyObjective: execution ended");
-        return new ResponseEntityDto(false, companyObjective);
-    }
+		log.info("createCompanyObjective: execution ended");
+		return new ResponseEntityDto(false, companyObjective);
+	}
 
-    @Override
-    @Transactional
-    public ResponseEntityDto updateCompanyObjective(Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto) {
-        log.info("updateCompanyObjective: execution started");
+	@Override
+	@Transactional
+	public ResponseEntityDto updateCompanyObjective(Long id, CompanyObjectiveRequestDto companyObjectiveRequestDto) {
+		log.info("updateCompanyObjective: execution started");
 
-        Optional<CompanyObjective> optionalCompanyObjective = companyObjectiveDao.findById(id);
-        if (optionalCompanyObjective.isEmpty()) {
-            throw new EntityNotFoundException(OkrMessageConstant.OKR_ERROR_COMPANY_OBJECTIVE_NOT_FOUND);
-        }
-        CompanyObjective companyObjective = optionalCompanyObjective.get();
-        if (companyObjectiveRequestDto.getTimePeriod() != null) {
-            if (!isValidTimePeriod(companyObjectiveRequestDto.getTimePeriod())) {
-                log.error(String.format("Time period %s not allowed for configured OKR frequency",
-                        companyObjectiveRequestDto.getTimePeriod()));
-                throw new ModuleException(OkrMessageConstant.OKR_ERROR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY);
-            }
-            companyObjective.setTimePeriod(companyObjectiveRequestDto.getTimePeriod());
-        }
-        if (companyObjectiveRequestDto.getTitle() != null && !companyObjectiveRequestDto.getTitle().equalsIgnoreCase(companyObjective.getTitle())) {
-            companyObjective.setTitle(companyObjectiveRequestDto.getTitle());
-        }
-        if (companyObjectiveRequestDto.getDescription() != null && !companyObjectiveRequestDto.getDescription().equalsIgnoreCase(companyObjective.getDescription())) {
-            companyObjective.setDescription(companyObjectiveRequestDto.getDescription());
-        }
-        if (companyObjectiveRequestDto.getYear() != null) {
-            companyObjective.setYear(companyObjectiveRequestDto.getYear());
-        }
-        companyObjective = companyObjectiveDao.save(companyObjective);
+		Optional<CompanyObjective> optionalCompanyObjective = companyObjectiveDao.findById(id);
+		if (optionalCompanyObjective.isEmpty()) {
+			throw new EntityNotFoundException(OkrMessageConstant.OKR_ERROR_COMPANY_OBJECTIVE_NOT_FOUND);
+		}
+		CompanyObjective companyObjective = optionalCompanyObjective.get();
+		if (companyObjectiveRequestDto.getTimePeriod() != null) {
+			if (!isValidTimePeriod(companyObjectiveRequestDto.getTimePeriod())) {
+				log.error(String.format("Time period %s not allowed for configured OKR frequency",
+						companyObjectiveRequestDto.getTimePeriod()));
+				throw new ModuleException(OkrMessageConstant.OKR_ERROR_TIME_PERIOD_DOES_NOT_MATCH_FREQUENCY);
+			}
+			companyObjective.setTimePeriod(companyObjectiveRequestDto.getTimePeriod());
+		}
+		if (companyObjectiveRequestDto.getTitle() != null
+				&& !companyObjectiveRequestDto.getTitle().equalsIgnoreCase(companyObjective.getTitle())) {
+			companyObjective.setTitle(companyObjectiveRequestDto.getTitle());
+		}
+		if (companyObjectiveRequestDto.getDescription() != null
+				&& !companyObjectiveRequestDto.getDescription().equalsIgnoreCase(companyObjective.getDescription())) {
+			companyObjective.setDescription(companyObjectiveRequestDto.getDescription());
+		}
+		if (companyObjectiveRequestDto.getYear() != null) {
+			companyObjective.setYear(companyObjectiveRequestDto.getYear());
+		}
+		companyObjective = companyObjectiveDao.save(companyObjective);
 
-        log.info("updateCompanyObjective: execution ended");
-        return new ResponseEntityDto(false, companyObjective);
-    }
+		log.info("updateCompanyObjective: execution ended");
+		return new ResponseEntityDto(false, companyObjective);
+	}
 
-    @Override
-    public ResponseEntityDto deleteCompanyObjective(Long id) {
-        return null;
-    }
+	@Override
+	public ResponseEntityDto deleteCompanyObjective(Long id) {
+		return null;
+	}
 
-    private Boolean isValidTimePeriod(OkrTimePeriod requestedTimePeriod) {
-        return okrConfigDao.findFirstBy().map(config -> {
-            List<OkrTimePeriod> allowedPeriods = OkrTimePeriod.getByType(config.getFrequency());
-            return allowedPeriods.contains(requestedTimePeriod);
-        }).orElse(false);
-    }
+	private Boolean isValidTimePeriod(OkrTimePeriod requestedTimePeriod) {
+		return okrConfigDao.findFirstBy().map(config -> {
+			List<OkrTimePeriod> allowedPeriods = OkrTimePeriod.getByType(config.getFrequency());
+			return allowedPeriods.contains(requestedTimePeriod);
+		}).orElse(false);
+	}
 
 }
