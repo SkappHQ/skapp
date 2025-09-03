@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.Controller.v1;
+package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.InvoiceConfigRequestDto;
