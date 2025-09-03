@@ -1,6 +1,5 @@
 package com.skapp.enterprise.invoice.payload.response;
 
-import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +24,6 @@ public class CustomerDetailedResponseDto {
 
 	private List<Long> projectIds;
 
-	private List<CustomerContact> customerContacts;
+	private List<CustomerContactResponseDto> customerContacts;
 
 }
