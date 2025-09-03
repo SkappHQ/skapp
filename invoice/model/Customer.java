@@ -2,7 +2,16 @@ package com.skapp.enterprise.invoice.model;
 
 import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.CurrencyType;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
