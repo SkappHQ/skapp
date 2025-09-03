@@ -72,7 +72,11 @@
     "verificationCodeLabel": "Verification code",
     "workEmailValidationTitle": "Invalid Account Type",
     "workEmailValidationDescription": "Please use a business email to signup",
-    "workEmailValidationError": "Please enter a business email (in corporate domain)"
+    "workEmailValidationError": "Please enter a business email (in corporate domain)",
+    "googleAuthErrorTitle": "Google Authentication Error",
+    "googleAuthErrorDescription": "Failed to authenticate with Google. Please try again.",
+    "microsoftAuthErrorTitle": "Microsoft Authentication Error",
+    "microsoftAuthErrorDescription": "Failed to authenticate with Microsoft. Please try again."
   },
   "signIn": {
     "pageHeading": "Log in",
