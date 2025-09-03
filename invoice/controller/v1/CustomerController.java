@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("v1/ep/invoice/customer")
+@RequestMapping("/v1/ep/invoice/customer")
 public class CustomerController {
 
 	private final CustomerService customerService;
@@ -35,7 +35,7 @@ public class CustomerController {
 	}
 
 	@Operation(summary = "Get paginated list of all customers", description = "Returns a paginated list of customers.")
-	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getAllCustomers(@Valid CustomerFilterDto customerFilterDto) {
 		ResponseEntityDto response = customerService.getAllCustomers(customerFilterDto);

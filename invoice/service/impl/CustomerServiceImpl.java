@@ -3,7 +3,6 @@ package com.skapp.enterprise.invoice.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -15,6 +14,7 @@ import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import com.skapp.enterprise.invoice.service.CustomerService;
+import com.skapp.enterprise.invoice.service.CustomerValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +39,8 @@ public class CustomerServiceImpl implements CustomerService {
 	private final CustomerMapper customerMapper;
 
 	private final ProjectDao projectDao;
+
+	private final CustomerValidationService customerValidationService;
 
 	@Override
 	public ResponseEntityDto createCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
@@ -81,20 +83,23 @@ public class CustomerServiceImpl implements CustomerService {
 	private Customer initializeCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
 
 		Customer customer = new Customer();
+
+		customerValidationService.validateCustomerName(customerCreateRequestDto.getCustomerName());
 		customer.setName(customerCreateRequestDto.getCustomerName());
 		customer.setCurrency(CurrencyType.USD);
 
-		if (customerCreateRequestDto.getBillingDetails() != null) {
-			customer.setEmail(customerCreateRequestDto.getBillingDetails().getEmail());
+		if (customerCreateRequestDto.getCustomerBillingDetails() != null) {
+			customer.setEmail(customerCreateRequestDto.getCustomerBillingDetails().getEmail());
 
 			// validate if the email pattern is a valid email & check if email already
 			// exists
-			validateCustomerEmail(customer.getEmail());
+			customerValidationService
+				.validateCustomerBillingDetails(customerCreateRequestDto.getCustomerBillingDetails());
 
-			customer.setAddress(customerCreateRequestDto.getBillingDetails().getAddress());
-			customer.setCountry(customerCreateRequestDto.getBillingDetails().getCountry());
-			customer.setCurrency(customerCreateRequestDto.getBillingDetails().getCurrency() != null
-					? customerCreateRequestDto.getBillingDetails().getCurrency() : CurrencyType.USD);
+			customer.setAddress(customerCreateRequestDto.getCustomerBillingDetails().getAddress());
+			customer.setCountry(customerCreateRequestDto.getCustomerBillingDetails().getCountry());
+			customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null
+					? customerCreateRequestDto.getCustomerBillingDetails().getCurrency() : CurrencyType.USD);
 		}
 
 		return customer;
@@ -126,19 +131,6 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return projectList;
-	}
-
-	private void validateCustomerEmail(String email) {
-
-		if (email != null) {
-			Validations.validateEmail(email);
-
-			if (customerDao.existsByEmail(email)) {
-				throw new ModuleException(
-						InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_EMAIL_ALREADY_EXISTS);
-			}
-		}
-
 	}
 
 }
