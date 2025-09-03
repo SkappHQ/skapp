@@ -91,6 +91,7 @@ interface Props {
     secondaryButton?: string;
   };
   isCloseButton?: boolean;
+  isProjectsEmpty?: boolean;
 }
 
 const ContentLayout = ({
@@ -121,7 +122,8 @@ const ContentLayout = ({
   customStyles,
   ariaDescribedBy,
   showBackButtonTooltip = true,
-  isCloseButton = false
+  isCloseButton = false,
+  isProjectsEmpty = false
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -334,7 +336,7 @@ const ContentLayout = ({
                 }}
               />
             )}
-            {primaryButtonText && (
+            {(!isProjectsEmpty && primaryButtonText) && (
               <Button
                 isFullWidth={isBelow600}
                 buttonStyle={primaryButtonType ?? ButtonStyle.PRIMARY}
