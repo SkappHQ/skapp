@@ -114,15 +114,15 @@ export const organizationSetupValidation = (
   translateText: TranslatorFunctionType
 ) =>
   Yup.object({
-     organizationName: Yup.string()
+    organizationName: Yup.string()
       .required(translateText(["orgNameRequiredError"]))
       .max(
-      characterLengths.ORGANIZATION_NAME_LENGTH,
-      translateText(["orgNameLengthError"])
-    ),
+        characterLengths.ORGANIZATION_NAME_LENGTH,
+        translateText(["orgNameLengthError"])
+      ),
     country: Yup.string().required(translateText(["countryRequiredError"])),
     organizationTimeZone: Yup.string().required(
-          translateText(["timezoneRequiredError"])
+      translateText(["timezoneRequiredError"])
     )
   });
 
