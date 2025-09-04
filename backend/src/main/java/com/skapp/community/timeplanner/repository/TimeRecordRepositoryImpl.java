@@ -366,8 +366,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		query.multiselect(timeRecord.get(TimeRecord_.timeRecordId), employee.get(Employee_.employeeId),
 				timeRecord.get(TimeRecord_.date),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0),
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
@@ -392,60 +392,86 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			.collect(Collectors.toList());
 	}
 
-	@Override
-	public List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
-			LocalDate startDate, LocalDate endDate, int limit, long offset) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+    @Override
+    public List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+                                                                      LocalDate startDate, LocalDate endDate, int limit, long offset) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
-		Root<Employee> employee = query.from(Employee.class);
+        List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1))
+                .collect(Collectors.toList());
 
-		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
-		Join<EmployeeTeam, Team> team = employeeTeam.join(EmployeeTeam_.team, JoinType.LEFT);
+        List<EmployeeTimeRecord> allResults = new ArrayList<>();
 
-		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
+        for (Long employeeId : employeeIds) {
+            if (teamIds != null && !teamIds.isEmpty() && !isEmployeeInTeams(employeeId, teamIds)) {
+                continue;
+            }
 
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
-		predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
-		predicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+            for (LocalDate currentDate : dateRange) {
+                CriteriaQuery<Tuple> query = cb.createTupleQuery();
+                Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
+                Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee, JoinType.LEFT);
 
-		if (teamIds != null && !teamIds.isEmpty()) {
-			predicates.add(team.get(Team_.teamId).in(teamIds));
-		}
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId));
+                predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), currentDate));
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null),
-				employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
-				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
-						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
-						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
-						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
-						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
-						timeSlot.get(TimeSlot_.isManualEntry))));
+                query.multiselect(
+                        cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
+                        cb.literal(employeeId),
+                        cb.literal(currentDate),
+                        cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0),
+                        cb.coalesce(timeRecord.get(TimeRecord_.breakHours), 0.0),
+                        cb.nullLiteral(String.class)
+                );
 
-		query.where(predicates.toArray(new Predicate[0]));
-		query.groupBy(timeRecord.get(TimeRecord_.date), employee.get(Employee_.employeeId),
-				timeRecord.get(TimeRecord_.timeRecordId), employee.get(Employee_.firstName));
-		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)), cb.asc(employee.get(Employee_.firstName)));
+                query.where(predicates.toArray(new Predicate[0]));
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query)
-			.setMaxResults(limit)
-			.setFirstResult((int) offset);
+                List<Tuple> results = entityManager.createQuery(query).getResultList();
 
-		return typedQuery.getResultList()
-			.stream()
-			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), // timeRecordId
-					tuple.get(1, Long.class), // employeeId
-					tuple.get(2, LocalDate.class), // date
-					tuple.get(3, Float.class), // workedHours
-					tuple.get(4, Float.class), // breakHours
-					tuple.get(5, String.class) // timeSlots JSON
-			))
-			.collect(Collectors.toList());
-	}
+                if (results.isEmpty()) {
+                    allResults.add(new EmployeeTimeRecordImpl(
+                            null,
+                            employeeId,
+                            currentDate,
+                            0.0f,
+                            0.0f,
+                            null
+                    ));
+                } else {
+
+                    Tuple tuple = results.get(0);
+                    allResults.add(new EmployeeTimeRecordImpl(
+                            tuple.get(0, Long.class),
+                            tuple.get(1, Long.class),
+                            tuple.get(2, LocalDate.class),
+                            tuple.get(3, Float.class),
+                            tuple.get(4, Float.class),
+                            tuple.get(5, String.class)
+                    ));
+                }
+            }
+        }
+
+        return allResults.stream()
+                .skip(offset)
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isEmployeeInTeams(Long employeeId, List<Long> teamIds) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<EmployeeTeam> employeeTeam = query.from(EmployeeTeam.class);
+
+        query.select(cb.count(employeeTeam));
+        query.where(
+                cb.equal(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+                employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds)
+        );
+
+        return entityManager.createQuery(query).getSingleResult() > 0;
+    }
 
 	@Override
 	public List<TimeRecordsByEmployeesDto> getTimeRecordsByEmployees(List<Long> employeeIds, LocalDate startDate,
@@ -465,8 +491,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		predicates.add(cb.or(cb.and(joinPredicates.toArray(new Predicate[0])),
 				cb.isNull(timeRecord.get(TimeRecord_.timeRecordId))));
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), null), timeRecord.get(TimeRecord_.date),
-				employee.get(Employee_.employeeId), cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0f));
+		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
+				timeRecord.get(TimeRecord_.date), employee.get(Employee_.employeeId),
+				cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
 
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)));
@@ -506,7 +533,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			Root<TimeRecord> trRoot = dateQuery.from(TimeRecord.class);
 
 			dateQuery.multiselect(cb.literal(currentDate).alias("date"),
-					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0f).alias("workedHours"));
+					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0).alias("workedHours"));
 
 			Predicate employeeFilter = cb.equal(trRoot.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId);
 			Predicate dateFilter = cb.equal(trRoot.get(TimeRecord_.date), currentDate);
