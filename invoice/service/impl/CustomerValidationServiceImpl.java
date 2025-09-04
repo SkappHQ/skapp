@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerBillingDetailsDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
@@ -22,7 +23,7 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NAME_REQUIRED);
 		}
 
-		if (customerName.length() > 255) {
+		if (customerName.length() > InvoiceCommonConstant.CUSTOMER_NAME_LENGTH) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NAME_MAX_LENGTH_EXCEEDED);
 		}
 
