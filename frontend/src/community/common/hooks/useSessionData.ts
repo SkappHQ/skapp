@@ -38,6 +38,11 @@ const useSessionData = () => {
     [sessionData?.user?.roles]
   );
 
+  const isInvoiceModuleEnabled = useMemo(
+    () => sessionData?.user?.roles?.includes(AuthManagerType.INVOICE_MANAGER),
+    [sessionData?.user?.roles]
+  );
+
   const employeeDetails = useMemo(
     () => sessionData?.user?.employee,
     [sessionData?.user?.employee]
@@ -109,6 +114,7 @@ const useSessionData = () => {
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
+    isInvoiceModuleEnabled,
     employeeDetails,
     isSuperAdmin,
     isPeopleAdmin,

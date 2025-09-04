@@ -62,5 +62,14 @@ export const getSystemPermissionsDetailsChanges = (
     changes.pmRole = newSystemPermissions?.pmRole;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newSystemPermissions?.invoiceRole,
+      previousSystemPermissions?.invoiceRole
+    )
+  ) {
+    changes.invoiceRole = newSystemPermissions?.invoiceRole;
+  }
+
   return changes;
 };
