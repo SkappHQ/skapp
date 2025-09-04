@@ -116,16 +116,11 @@ export const organizationSetupValidation = (
   Yup.object({
     organizationName: Yup.string()
       .required(translateText(["orgNameRequiredError"]))
-      .matches(onlyLettersAndSpaces(), translateText(["orgNameCharacterError"]))
       .max(
         characterLengths.ORGANIZATION_NAME_LENGTH,
         translateText(["orgNameLengthError"])
       ),
     country: Yup.string().required(translateText(["countryRequiredError"])),
-    organizationWebsite: Yup.string().matches(
-      /^(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}$/,
-      translateText(["validCompanyWebsiteError"])
-    ),
     organizationTimeZone: Yup.string().required(
       translateText(["timezoneRequiredError"])
     )
