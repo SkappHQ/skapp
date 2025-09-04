@@ -26,5 +26,6 @@ export enum S3SignedUrlActions {
 export enum FileCategories {
   LEAVE_REQUEST = "",
   ORGANIZATION_LOGO = "",
-  PROFILE_PICTURES = ""
+  PROFILE_PICTURES = "",
+  SUPPORT_REQUEST = ""
 }
