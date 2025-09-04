@@ -47,6 +47,7 @@ import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -351,23 +352,23 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	@Override
 	public List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeIds, LocalDate startDate,
 			LocalDate endDate, int limit, long offset) {
+
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		CriteriaQuery<Employee> empQuery = cb.createQuery(Employee.class);
+		Root<Employee> empRoot = empQuery.from(Employee.class);
+		empQuery.select(empRoot).where(empRoot.get(Employee_.employeeId).in(employeeIds));
+		List<Employee> employees = entityManager.createQuery(empQuery).getResultList();
 
-		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
-		Root<Employee> employee = query.from(Employee.class);
-
+		CriteriaQuery<Tuple> trQuery = cb.createTupleQuery();
+		Root<TimeRecord> timeRecord = trQuery.from(TimeRecord.class);
 		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
 
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
-		predicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
-		predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
-
-		query.multiselect(timeRecord.get(TimeRecord_.timeRecordId), employee.get(Employee_.employeeId),
-				timeRecord.get(TimeRecord_.date),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), 0.0f),
-				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), 0.0f),
+		trQuery.multiselect(timeRecord.get(TimeRecord_.timeRecordId),
+				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), cb.literal(0.0f)),
+				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), cb.literal(0.0f)),
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
@@ -375,21 +376,41 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry))));
 
-		query.where(predicates.toArray(new Predicate[0]));
-		query.groupBy(timeRecord.get(TimeRecord_.date), employee.get(Employee_.employeeId),
-				timeRecord.get(TimeRecord_.timeRecordId), employee.get(Employee_.firstName));
-		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)), cb.asc(employee.get(Employee_.firstName)));
+		trQuery.where(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
+				cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query)
-			.setMaxResults(limit)
-			.setFirstResult((int) offset);
+		trQuery.groupBy(timeRecord.get(TimeRecord_.date),
+				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId),
+				timeRecord.get(TimeRecord_.timeRecordId));
 
-		return typedQuery.getResultList()
-			.stream()
-			.map(tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
-					tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
-					tuple.get(5, String.class)))
-			.collect(Collectors.toList());
+		List<Tuple> timeRecords = entityManager.createQuery(trQuery).getResultList();
+		Map<String, EmployeeTimeRecord> existingRecords = timeRecords.stream()
+			.collect(Collectors.toMap(tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class),
+					tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
+							tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
+							tuple.get(5, String.class))));
+
+		List<EmployeeTimeRecord> allRecords = new ArrayList<>();
+		for (LocalDate date : dateRange) {
+			for (Employee employee : employees) {
+				String key = date + "_" + employee.getEmployeeId();
+				EmployeeTimeRecord record = existingRecords.get(key);
+
+				if (record == null) {
+					record = new EmployeeTimeRecordImpl(null, employee.getEmployeeId(), date, 0.0f, 0.0f, null);
+				}
+				allRecords.add(record);
+			}
+		}
+
+		allRecords.sort((a, b) -> {
+			int dateCompare = a.getDate().compareTo(b.getDate());
+			if (dateCompare != 0)
+				return dateCompare;
+			return a.getEmployeeId().compareTo(b.getEmployeeId());
+		});
+
+		return allRecords.stream().skip(offset).limit(limit).collect(Collectors.toList());
 	}
 
 	@Override
