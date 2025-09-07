@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "in_tax")
-public class Tax {
+public class InvoiceTax {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class Tax {
     @Column(name = "tax_type", nullable = false)
     private String taxType;
 
-    @Column(name = "tax_percentage", precision = 10, scale = 2)
+    @Column(name = "tax_percentage")
     private Double taxPercentage;
 
     @ManyToOne(fetch = FetchType.LAZY)

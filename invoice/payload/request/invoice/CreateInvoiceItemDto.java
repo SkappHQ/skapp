@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.request;
+package com.skapp.enterprise.invoice.payload.request.invoice;
 
 import com.skapp.enterprise.invoice.type.DiscountType;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +15,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class CreateInvoiceItemDto {
 
-    @NotBlank(message = "Description is required")
+    @NotBlank(message = "Item name is required")
+    private String itemName;
+
     private String description;
 
     @NotNull(message = "Quantity is required")
@@ -29,8 +31,6 @@ public class CreateInvoiceItemDto {
     private DiscountType discountType;
 
     private Double discountValue;
-
-    private BigDecimal itemTaxPercentage;
 
     private Double amount;
 }

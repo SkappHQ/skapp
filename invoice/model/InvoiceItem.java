@@ -32,7 +32,10 @@ public class InvoiceItem {
     @Column(name = "invoice_id", nullable = false)
     private Long invoiceId;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "item_name", nullable = false)
+    private String itemName;
+
+    @Column(name = "description")
     private String description;
 
     @Column(name = "quantity")
@@ -47,9 +50,6 @@ public class InvoiceItem {
 
     @Column(name = "discount_value")
     private Double discountValue;
-
-    @Column(name = "item_tax_percentage", precision = 10, scale = 2)
-    private BigDecimal itemTaxPercentage;
 
     @Column(name = "amount")
     private Double amount;

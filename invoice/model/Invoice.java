@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,9 +63,6 @@ public class Invoice extends Auditable<String> {
     @Column(name = "status", nullable = false)
     private InvoiceStatus status;
 
-    @Column(name = "total_amount")
-    private Double totalAmount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "discount_type")
     private DiscountType discountType;
@@ -74,18 +70,27 @@ public class Invoice extends Auditable<String> {
     @Column(name = "discount_value")
     private Double discountValue;
 
-    @Column(name = "tax_percentage", precision = 10, scale = 2)
-    private BigDecimal taxPercentage;
-
     @Column(name = "invoice_terms")
     private String invoiceTerms;
 
     @Column(name = "invoice_notes")
     private String invoiceNotes;
 
+    @Column(name = "sub_total_amount")
+    private Double subTotalAmount;
+
+    @Column(name = "payable_total_amount")
+    private Double payableTotalAmount;
+
+    @Column(name = "invoice_logo", columnDefinition = "text")
+    private String invoiceLogo;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InvoiceItem> invoiceItems;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InvoiceExpense> invoiceExpenses;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InvoiceTax> invoiceTaxes;
 }

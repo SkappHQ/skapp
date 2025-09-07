@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -35,15 +36,18 @@ public class InvoiceExpense {
     @Column(name = "invoice_id", nullable = false)
     private Long invoiceId;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
     private ExpenseCategory category;
 
+    @Column(name = "date", nullable = false)
+    private LocalDateTime date;
+
     @Column(name = "amount")
-    private Double amount;;
+    private Double amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", insertable = false, updatable = false)

@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.request;
+package com.skapp.enterprise.invoice.payload.request.invoice;
 
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,13 +38,13 @@ public class CreateInvoiceRequestDto {
     @NotNull(message = "Status is required")
     private InvoiceStatus status;
 
-    private Double totalAmount;
+    private Double subTotalAmount;
+
+    private Double payableTotalAmount;
 
     private DiscountType discountType;
 
     private Double discountValue;
-
-    private BigDecimal taxPercentage;
 
     private String invoiceTerms;
 
@@ -57,4 +56,7 @@ public class CreateInvoiceRequestDto {
 
     @Valid
     private List<CreateInvoiceExpenseDto> invoiceExpenses;
+
+    @Valid
+    private List<CreateInvoiceTaxDto> invoiceTaxes;
 }

@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.request;
+package com.skapp.enterprise.invoice.payload.request.invoice;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
