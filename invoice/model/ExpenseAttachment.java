@@ -17,7 +17,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Data
 @Table(name = "in_expense_attachment")
 public class ExpenseAttachment {
 

@@ -212,7 +212,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 		double subtotal = itemsTotal + expensesTotal;
 
 		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
-			subtotal -= invoice.getDiscountValue();
+            if (invoice.getDiscountType() == DiscountType.PERCENTAGE) {
+                subtotal -= (subtotal * invoice.getDiscountValue() / 100.0);
+            } else {
+                subtotal -= invoice.getDiscountValue();
+            }
 		}
 
 		double totalTaxAmount = 0.0;
@@ -252,13 +256,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@Override
 	public ResponseEntityDto getInvoices(int page, int size, String sortBy, String sortDirection) {
-		try {
 			if (page < 0)
 				page = 0;
 			if (size < 1)
-				size = 20;
-			if (size > 100)
-				size = 100;
+				size = 10;
 
 			Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
 			Sort sort = Sort.by(direction, sortBy);
@@ -274,12 +275,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 					invoicePage.getSize());
 
 			return new ResponseEntityDto(false, invoiceListResponse);
-		}
-		catch (Exception e) {
-			System.err.println("Error in getInvoices: " + e.getMessage());
-			e.printStackTrace();
-			throw e;
-		}
 	}
 
 	@Override
