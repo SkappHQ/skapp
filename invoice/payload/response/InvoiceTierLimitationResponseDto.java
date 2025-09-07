@@ -11,10 +11,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class InvoiceTierLimitationResponseDto {
 
-    private long remainingCount;
+	private long remainingCount;
 
-    private long allocatedCount;
+	private long allocatedCount;
 
-    private boolean isLimitedReached;
+	private boolean isLimitedReached;
+
 }
-

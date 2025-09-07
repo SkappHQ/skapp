@@ -17,19 +17,20 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateInvoiceExpenseDto {
 
-    @NotBlank(message = "Name is required")
-    private String name;
+	@NotBlank(message = "Name is required")
+	private String name;
 
-    @NotNull(message = "Category is required")
-    private ExpenseCategory category;
+	@NotNull(message = "Category is required")
+	private ExpenseCategory category;
 
-    @NotNull(message = "Date is required")
-    private LocalDateTime date;
+	@NotNull(message = "Date is required")
+	private LocalDateTime date;
 
-    @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be positive")
-    private Double amount;
+	@NotNull(message = "Amount is required")
+	@Positive(message = "Amount must be positive")
+	private Double amount;
 
-    @Valid
-    private List<CreateExpenseAttachmentDto> attachments;
+	@Valid
+	private List<CreateExpenseAttachmentDto> attachments;
+
 }

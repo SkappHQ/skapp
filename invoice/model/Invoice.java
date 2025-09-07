@@ -29,68 +29,69 @@ import java.util.List;
 @Table(name = "in_invoice")
 public class Invoice extends Auditable<String> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, unique = true, updatable = false)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, unique = true, updatable = false)
+	private Long id;
 
-    @Column(name ="invoice_id")
-    private String invoiceId;
+	@Column(name = "invoice_id")
+	private String invoiceId;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+	@Column(name = "customer_id", nullable = false)
+	private Long customerId;
 
-    @Column(name = "project_id")
-    private Long projectId;
+	@Column(name = "project_id")
+	private Long projectId;
 
-    @Column(name = "invoice_date", nullable = false)
-    private LocalDateTime invoiceDate;
+	@Column(name = "invoice_date", nullable = false)
+	private LocalDateTime invoiceDate;
 
-    @Column(name = "due_date")
-    private LocalDateTime dueDate;
+	@Column(name = "due_date")
+	private LocalDateTime dueDate;
 
-    @Column(name = "billed_to")
-    private String billedTo;
+	@Column(name = "billed_to")
+	private String billedTo;
 
-    @Column(name = "pay_to")
-    private String payTo;
+	@Column(name = "pay_to")
+	private String payTo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "currency", nullable = false)
-    private CurrencyType currency;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "currency", nullable = false)
+	private CurrencyType currency;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private InvoiceStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private InvoiceStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type")
-    private DiscountType discountType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "discount_type")
+	private DiscountType discountType;
 
-    @Column(name = "discount_value")
-    private Double discountValue;
+	@Column(name = "discount_value")
+	private Double discountValue;
 
-    @Column(name = "invoice_terms")
-    private String invoiceTerms;
+	@Column(name = "invoice_terms")
+	private String invoiceTerms;
 
-    @Column(name = "invoice_notes")
-    private String invoiceNotes;
+	@Column(name = "invoice_notes")
+	private String invoiceNotes;
 
-    @Column(name = "sub_total_amount")
-    private Double subTotalAmount;
+	@Column(name = "sub_total_amount")
+	private Double subTotalAmount;
 
-    @Column(name = "payable_total_amount")
-    private Double payableTotalAmount;
+	@Column(name = "payable_total_amount")
+	private Double payableTotalAmount;
 
-    @Column(name = "invoice_logo", columnDefinition = "text")
-    private String invoiceLogo;
+	@Column(name = "invoice_logo", columnDefinition = "text")
+	private String invoiceLogo;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<InvoiceItem> invoiceItems;
+	@OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<InvoiceItem> invoiceItems;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<InvoiceExpense> invoiceExpenses;
+	@OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<InvoiceExpense> invoiceExpenses;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<InvoiceTax> invoiceTaxes;
+	@OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<InvoiceTax> invoiceTaxes;
+
 }

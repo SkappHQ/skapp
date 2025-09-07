@@ -1,10 +1,20 @@
 package com.skapp.enterprise.invoice.repository;
 
 import com.skapp.enterprise.invoice.model.Invoice;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.skapp.enterprise.invoice.type.InvoiceStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-@Repository
-public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+import java.time.LocalDateTime;
+
+public interface InvoiceRepository {
+
+	Page<Invoice> findInvoicesWithFilters(LocalDateTime invoiceDateFrom, LocalDateTime invoiceDateTo,
+			LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Long customerId, Long projectId, InvoiceStatus status,
+			Pageable pageable);
+
+	long countDueInvoices();
+
+	long countByCreatedDateBetween(LocalDateTime start, LocalDateTime end);
 
 }

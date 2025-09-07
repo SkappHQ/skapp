@@ -20,20 +20,21 @@ import lombok.Setter;
 @Table(name = "in_tax")
 public class InvoiceTax {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "invoice_id", nullable = false)
-    private Long invoiceId;
+	@Column(name = "invoice_id", nullable = false)
+	private Long invoiceId;
 
-    @Column(name = "tax_type", nullable = false)
-    private String taxType;
+	@Column(name = "tax_type", nullable = false)
+	private String taxType;
 
-    @Column(name = "tax_percentage")
-    private Double taxPercentage;
+	@Column(name = "tax_percentage")
+	private Double taxPercentage;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "invoice_id", insertable = false, updatable = false)
-    private Invoice invoice;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "invoice_id", insertable = false, updatable = false)
+	private Invoice invoice;
+
 }

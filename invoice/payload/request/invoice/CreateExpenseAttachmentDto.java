@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateExpenseAttachmentDto {
 
-    @NotBlank(message = "Attachment URL is required")
-    private String attachmentUrl;
+	@NotBlank(message = "Attachment URL is required")
+	private String attachmentUrl;
+
 }

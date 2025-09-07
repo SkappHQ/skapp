@@ -16,8 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Entity
 @Getter
 @Setter
@@ -25,36 +23,37 @@ import java.math.BigDecimal;
 @Table(name = "in_item")
 public class InvoiceItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "invoice_id", nullable = false)
-    private Long invoiceId;
+	@Column(name = "invoice_id", nullable = false)
+	private Long invoiceId;
 
-    @Column(name = "item_name", nullable = false)
-    private String itemName;
+	@Column(name = "item_name", nullable = false)
+	private String itemName;
 
-    @Column(name = "description")
-    private String description;
+	@Column(name = "description")
+	private String description;
 
-    @Column(name = "quantity")
-    private Integer quantity;
+	@Column(name = "quantity")
+	private Integer quantity;
 
-    @Column(name = "unit_price")
-    private Double unitPrice;
+	@Column(name = "unit_price")
+	private Double unitPrice;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type")
-    private DiscountType discountType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "discount_type")
+	private DiscountType discountType;
 
-    @Column(name = "discount_value")
-    private Double discountValue;
+	@Column(name = "discount_value")
+	private Double discountValue;
 
-    @Column(name = "amount")
-    private Double amount;
+	@Column(name = "amount")
+	private Double amount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "invoice_id", insertable = false, updatable = false)
-    private Invoice invoice;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "invoice_id", insertable = false, updatable = false)
+	private Invoice invoice;
+
 }

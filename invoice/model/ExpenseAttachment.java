@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Entity
 @Getter
 @Setter
@@ -22,17 +21,18 @@ import lombok.Setter;
 @Table(name = "in_expense_attachment")
 public class ExpenseAttachment {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "expense_id", nullable = false)
-    private Long expenseId;
+	@Column(name = "expense_id", nullable = false)
+	private Long expenseId;
 
-    @Column(name = "attachment_url", nullable = false, columnDefinition = "TEXT")
-    private String attachmentUrl;
+	@Column(name = "attachment_url", nullable = false, columnDefinition = "TEXT")
+	private String attachmentUrl;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "expense_id", insertable = false, updatable = false)
-    private InvoiceExpense expense;
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "expense_id", insertable = false, updatable = false)
+	private InvoiceExpense expense;
+
 }
