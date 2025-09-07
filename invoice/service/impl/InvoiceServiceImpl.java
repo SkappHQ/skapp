@@ -15,10 +15,13 @@ import com.skapp.enterprise.invoice.model.ExpenseAttachment;
 import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
+import com.skapp.enterprise.invoice.model.InvoiceTax;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
+import com.skapp.enterprise.invoice.payload.response.CreateInvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
@@ -26,6 +29,8 @@ import com.skapp.enterprise.invoice.payload.response.InvoiceSummaryResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
+import com.skapp.enterprise.invoice.service.InvoiceValidationService;
+import com.skapp.enterprise.invoice.type.DiscountType;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,6 +64,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final TenantDao tenantDao;
 
+	private final InvoiceValidationService invoiceValidationService;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto) {
@@ -68,53 +76,50 @@ public class InvoiceServiceImpl implements InvoiceService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_ENVELOPE_LIMIT_REACHED);
 		}
 
-		Invoice invoice = createInvoiceEntity(createInvoiceRequestDto);
+		invoiceValidationService.validateCreateInvoiceRequest(createInvoiceRequestDto);
+		invoiceValidationService.validateCreateInvoiceItemsRequest(createInvoiceRequestDto.getInvoiceItems());
+		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
+			invoiceValidationService.validateCreateInvoiceExpensesRequest(createInvoiceRequestDto.getInvoiceExpenses());
+		}
+		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceTaxes())) {
+			invoiceValidationService.validateCreateInvoiceTaxesRequest(createInvoiceRequestDto.getInvoiceTaxes());
+		}
 
-		// Save invoice first to get the generated ID
+		Invoice invoice = createInvoiceEntity(createInvoiceRequestDto);
 		Invoice savedInvoice = invoiceDao.save(invoice);
 
-		// Create and set invoice itemss
 		List<InvoiceItem> invoiceItems = createInvoiceItems(createInvoiceRequestDto.getInvoiceItems(), savedInvoice);
 		savedInvoice.setInvoiceItems(invoiceItems);
 
-		// Create and set invoice expenses if provided (without attachments first)
-		if (createInvoiceRequestDto.getInvoiceExpenses() != null
-				&& !createInvoiceRequestDto.getInvoiceExpenses().isEmpty()) {
+		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
 			List<InvoiceExpense> invoiceExpenses = createInvoiceExpensesWithoutAttachments(
 					createInvoiceRequestDto.getInvoiceExpenses(), savedInvoice);
 			savedInvoice.setInvoiceExpenses(invoiceExpenses);
 		}
 
-		// Create and set invoice taxes if provided
-		if (createInvoiceRequestDto.getInvoiceTaxes() != null && !createInvoiceRequestDto.getInvoiceTaxes().isEmpty()) {
-			List<com.skapp.enterprise.invoice.model.InvoiceTax> invoiceTaxes = createInvoiceTaxes(
-					createInvoiceRequestDto.getInvoiceTaxes(), savedInvoice);
+		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceTaxes())) {
+			List<InvoiceTax> invoiceTaxes = createInvoiceTaxes(createInvoiceRequestDto.getInvoiceTaxes(), savedInvoice);
 			savedInvoice.setInvoiceTaxes(invoiceTaxes);
 		}
 
-		// Calculate totals
 		calculateInvoiceTotals(savedInvoice);
-
-		// Save invoice with all child entities to get their IDs
 		Invoice invoiceWithChildIds = invoiceDao.save(savedInvoice);
 
-		// Now add attachments to expenses that have IDs
-		if (createInvoiceRequestDto.getInvoiceExpenses() != null
-				&& !createInvoiceRequestDto.getInvoiceExpenses().isEmpty()) {
+		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
 			addAttachmentsToExpenses(createInvoiceRequestDto.getInvoiceExpenses(),
 					invoiceWithChildIds.getInvoiceExpenses());
 		}
 
-		// Final save with attachments
 		Invoice finalInvoice = invoiceDao.save(invoiceWithChildIds);
 
-		return new ResponseEntityDto(false, finalInvoice.getId());
+		CreateInvoiceResponseDto responseDto = invoiceMapper.invoiceToCreateInvoiceResponseDto(finalInvoice);
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private Invoice createInvoiceEntity(CreateInvoiceRequestDto request) {
 		Invoice invoice = new Invoice();
 
-		// Generate a unique invoice ID
 		String generatedInvoiceId = generateInvoiceId();
 		invoice.setInvoiceId(generatedInvoiceId);
 
@@ -137,7 +142,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	private String generateInvoiceId() {
-		// Generate invoice ID in format: INV-YYYY-NNNNNN (e.g., INV-2024-000001)
 		String year = String.valueOf(java.time.LocalDate.now().getYear());
 		long timestamp = System.currentTimeMillis();
 		String uniqueNumber = String.format("%06d", timestamp % 1000000);
@@ -148,7 +152,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return itemDtos.stream().map(itemDto -> {
 			InvoiceItem item = new InvoiceItem();
 			item.setInvoice(invoice);
-			item.setInvoiceId(invoice.getId()); // Explicitly set the invoice_id
+			item.setInvoiceId(invoice.getId());
 			item.setItemName(itemDto.getItemName());
 			item.setDescription(itemDto.getDescription());
 			item.setQuantity(itemDto.getQuantity());
@@ -156,10 +160,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 			item.setDiscountType(itemDto.getDiscountType());
 			item.setDiscountValue(itemDto.getDiscountValue());
 
-			// Calculate item amount
 			double itemTotal = itemDto.getQuantity() * itemDto.getUnitPrice();
 			if (itemDto.getDiscountValue() != null && itemDto.getDiscountValue() > 0) {
-				if (itemDto.getDiscountType() == com.skapp.enterprise.invoice.type.DiscountType.PERCENTAGE) {
+				if (itemDto.getDiscountType() == DiscountType.PERCENTAGE) {
 					itemTotal = itemTotal - (itemTotal * itemDto.getDiscountValue() / 100);
 				}
 				else {
@@ -187,10 +190,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}).collect(Collectors.toList());
 	}
 
-	private List<com.skapp.enterprise.invoice.model.InvoiceTax> createInvoiceTaxes(
-			List<com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto> taxDtos, Invoice invoice) {
+	private List<InvoiceTax> createInvoiceTaxes(List<CreateInvoiceTaxDto> taxDtos, Invoice invoice) {
 		return taxDtos.stream().map(taxDto -> {
-			com.skapp.enterprise.invoice.model.InvoiceTax tax = new com.skapp.enterprise.invoice.model.InvoiceTax();
+			InvoiceTax tax = new InvoiceTax();
 			tax.setInvoice(invoice);
 			tax.setInvoiceId(invoice.getId());
 			tax.setTaxType(taxDto.getTaxType());
@@ -209,15 +211,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		double subtotal = itemsTotal + expensesTotal;
 
-		// Apply invoice-level discount
 		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
 			subtotal -= invoice.getDiscountValue();
 		}
 
-		// Apply taxes from the separate tax table
 		double totalTaxAmount = 0.0;
 		if (invoice.getInvoiceTaxes() != null) {
-			final double finalSubtotal = subtotal; // Make it effectively final for lambda
+			final double finalSubtotal = subtotal;
 			totalTaxAmount = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
 				if (tax.getTaxPercentage() != null) {
 					return finalSubtotal * (tax.getTaxPercentage() / 100);
@@ -237,8 +237,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			CreateInvoiceExpenseDto expenseDto = expenseDtos.get(i);
 			InvoiceExpense savedExpense = savedExpenses.get(i);
 
-			// Create attachments for the saved expense
-			if (expenseDto.getAttachments() != null && !expenseDto.getAttachments().isEmpty()) {
+			if (!CollectionUtils.isEmpty(expenseDto.getAttachments())) {
 				List<ExpenseAttachment> attachments = expenseDto.getAttachments().stream().map(attachmentDto -> {
 					ExpenseAttachment attachment = new ExpenseAttachment();
 					attachment.setExpense(savedExpense);
@@ -251,63 +250,28 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 	}
 
-	// Other method implementations remain the same...
 	@Override
 	public ResponseEntityDto getInvoices(int page, int size, String sortBy, String sortDirection) {
 		try {
-			// Validate pagination parameters
 			if (page < 0)
 				page = 0;
 			if (size < 1)
 				size = 20;
 			if (size > 100)
-				size = 100; // Maximum page size limit
+				size = 100;
 
-			// Create pageable with user-provided parameters
 			Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
 			Sort sort = Sort.by(direction, sortBy);
 			Pageable pageable = PageRequest.of(page, size, sort);
 
-			// Fetch paginated invoices from repository
 			Page<Invoice> invoicePage = invoiceDao.findAll(pageable);
 
-			// Enhanced debug logging
-			System.out.println("=== PAGINATION DEBUG ===");
-			System.out.println("Requested page: " + page + ", size: " + size + ", sortBy: " + sortBy + ", direction: "
-					+ sortDirection);
-			System.out.println("Total invoices in database: " + invoicePage.getTotalElements());
-			System.out.println("Invoices returned in this page: " + invoicePage.getContent().size());
-			System.out.println("Total pages: " + invoicePage.getTotalPages());
-			System.out.println("Current page number: " + invoicePage.getNumber());
-			System.out.println("Page size: " + invoicePage.getSize());
-
-			// Log each invoice and its items count
-			for (int i = 0; i < invoicePage.getContent().size(); i++) {
-				Invoice inv = invoicePage.getContent().get(i);
-				int itemsCount = inv.getInvoiceItems() != null ? inv.getInvoiceItems().size() : 0;
-				System.out.println("Invoice " + (i + 1) + ": ID=" + inv.getId() + ", InvoiceID=" + inv.getInvoiceId()
-						+ ", Items=" + itemsCount);
-			}
-
-			// Convert invoices to response DTOs using mapper
 			List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
 				.invoicesToInvoiceResponseDtos(invoicePage.getContent());
-			System.out.println("Mapped invoice DTOs count: " + invoiceResponseDtos.size());
 
-			// Log each mapped DTO
-			for (int i = 0; i < invoiceResponseDtos.size(); i++) {
-				InvoiceResponseDto dto = invoiceResponseDtos.get(i);
-				System.out.println("Mapped DTO " + (i + 1) + ": ID=" + dto.getId() + ", InvoiceID=" + dto.getInvoiceId()
-						+ ", ItemCount=" + dto.getItemCount());
-			}
-
-			// Create paginated response
 			InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
 					invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
 					invoicePage.getSize());
-
-			System.out.println("Final response - Invoices in list: " + invoiceListResponse.getInvoices().size());
-			System.out.println("=== END PAGINATION DEBUG ===");
 
 			return new ResponseEntityDto(false, invoiceListResponse);
 		}
@@ -320,67 +284,32 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@Override
 	public ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto) {
-		try {
-			// Validate pagination parameters
-			int page = invoiceFilterRequestDto.getPage();
-			int size = invoiceFilterRequestDto.getSize();
-			String sortBy = invoiceFilterRequestDto.getSortBy();
-			String sortDirection = invoiceFilterRequestDto.getSortDirection();
 
-			if (page < 0)
-				page = 0;
-			if (size < 1)
-				size = 20;
-			if (size > 100)
-				size = 100; // Maximum page size limit
+		invoiceValidationService.validateInvoiceFilterRequest(invoiceFilterRequestDto);
 
-			// Create pageable with user-provided parameters
-			Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
-			Sort sort = Sort.by(direction, sortBy);
-			Pageable pageable = PageRequest.of(page, size, sort);
+		int page = invoiceFilterRequestDto.getPage();
+		int size = invoiceFilterRequestDto.getSize();
+		String sortBy = invoiceFilterRequestDto.getSortBy();
+		String sortDirection = invoiceFilterRequestDto.getSortDirection();
 
-			// Fetch filtered invoices from repository
-			Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto.getInvoiceDateFrom(),
-					invoiceFilterRequestDto.getInvoiceDateTo(), invoiceFilterRequestDto.getDueDateFrom(),
-					invoiceFilterRequestDto.getDueDateTo(), invoiceFilterRequestDto.getCustomerId(),
-					invoiceFilterRequestDto.getProjectId(), invoiceFilterRequestDto.getStatus(), pageable);
+		Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
+		Sort sort = Sort.by(direction, sortBy);
+		Pageable pageable = PageRequest.of(page, size, sort);
 
-			// Enhanced debug logging
-			System.out.println("=== FILTER DEBUG ===");
-			System.out.println("Filters applied:");
-			System.out.println("  Invoice Date From: " + invoiceFilterRequestDto.getInvoiceDateFrom());
-			System.out.println("  Invoice Date To: " + invoiceFilterRequestDto.getInvoiceDateTo());
-			System.out.println("  Due Date From: " + invoiceFilterRequestDto.getDueDateFrom());
-			System.out.println("  Due Date To: " + invoiceFilterRequestDto.getDueDateTo());
-			System.out.println("  Customer ID: " + invoiceFilterRequestDto.getCustomerId());
-			System.out.println("  Project ID: " + invoiceFilterRequestDto.getProjectId());
-			System.out.println("  Status: " + invoiceFilterRequestDto.getStatus());
-			System.out.println("Pagination - page: " + page + ", size: " + size + ", sortBy: " + sortBy
-					+ ", direction: " + sortDirection);
-			System.out.println("Total filtered invoices: " + invoicePage.getTotalElements());
-			System.out.println("Invoices in this page: " + invoicePage.getContent().size());
-			System.out.println("Total pages: " + invoicePage.getTotalPages());
+		Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto.getInvoiceDateFrom(),
+				invoiceFilterRequestDto.getInvoiceDateTo(), invoiceFilterRequestDto.getDueDateFrom(),
+				invoiceFilterRequestDto.getDueDateTo(), invoiceFilterRequestDto.getCustomerId(),
+				invoiceFilterRequestDto.getProjectId(), invoiceFilterRequestDto.getStatus(), pageable);
 
-			// Convert invoices to response DTOs using mapper
-			List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
-				.invoicesToInvoiceResponseDtos(invoicePage.getContent());
+		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
+			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
 
-			// Create paginated response
-			InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
-					invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
-					invoicePage.getSize());
+		InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
+				invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
+				invoicePage.getSize());
 
-			System.out
-				.println("Final filtered response - Invoices in list: " + invoiceListResponse.getInvoices().size());
-			System.out.println("=== END FILTER DEBUG ===");
+		return new ResponseEntityDto(false, invoiceListResponse);
 
-			return new ResponseEntityDto(false, invoiceListResponse);
-		}
-		catch (Exception e) {
-			System.err.println("Error in getFilteredInvoices: " + e.getMessage());
-			e.printStackTrace();
-			throw e;
-		}
 	}
 
 	@Override
@@ -459,9 +388,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 			else {
 				startDateTime = null;
 				endDateTime = null;
+				allocatedInvoiceCount = -1;
 				usedInvoiceCount = invoiceDao.count();
-				allocatedInvoiceCount = Long.MAX_VALUE;
-				remainingCount = Long.MAX_VALUE;
+				remainingCount = -1;
 				limitedReached = false;
 			}
 
