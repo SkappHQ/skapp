@@ -10,4 +10,6 @@ public interface CustomerService {
 
 	ResponseEntityDto getAllCustomers(CustomerFilterDto customerFilterDto);
 
+	ResponseEntityDto getCustomerById(Long id);
+
 }

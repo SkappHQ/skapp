@@ -1,5 +1,7 @@
 package com.skapp.enterprise.invoice.service.impl;
 
+import com.google.firebase.database.annotations.NotNull;
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -78,6 +80,18 @@ public class CustomerServiceImpl implements CustomerService {
 		pageDto.setTotalPages(customerPage.getTotalPages());
 
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	public ResponseEntityDto getCustomerById(@NotNull Long id) {
+
+		Customer customer = customerDao.findById(id)
+			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
+
+		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(customer);
+
+		return new ResponseEntityDto(false, responseDto);
+
 	}
 
 	private Customer initializeCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
