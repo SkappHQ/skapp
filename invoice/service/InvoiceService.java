@@ -9,8 +9,6 @@ public interface InvoiceService {
 
 	ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto);
 
-	ResponseEntityDto getInvoices(int page, int size, String sortBy, String sortDirection);
-
 	ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto);
 
 	ResponseEntityDto getInvoiceTierLimitations();

@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Setter
 public class InvoiceFilterRequestDto {
 
-	// Date range filters
 	private LocalDateTime invoiceDateFrom;
 
 	private LocalDateTime invoiceDateTo;
@@ -19,17 +18,15 @@ public class InvoiceFilterRequestDto {
 
 	private LocalDateTime dueDateTo;
 
-	// Entity filters
 	private Long customerId;
 
 	private Long projectId;
 
 	private InvoiceStatus status;
 
-	// Pagination parameters
 	private int page = 0;
 
-	private int size = 20;
+	private int size = 10;
 
 	private String sortBy = "id";
 

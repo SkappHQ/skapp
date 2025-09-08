@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,24 +36,11 @@ public class InvoiceController {
 		return new ResponseEntity<>(invoiceConfig, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Retrieve All invoices.",
-			description = "This endpoint retrieves paginated invoices list of the organization.")
+	@Operation(summary = "Retrieve invoices with optional filtering.",
+			description = "This endpoint retrieves paginated invoices list with optional filtering capabilities.")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getInvoices(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "id") String sortBy,
-			@RequestParam(defaultValue = "DESC") String sortDirection) {
-
-		ResponseEntityDto invoiceConfig = invoiceService.getInvoices(page, size, sortBy, sortDirection);
-
-		return new ResponseEntity<>(invoiceConfig, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Retrieve Filtered List of invoices.",
-			description = "This endpoint retrieves Filtered paginated invoices list of the organization.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
-	@PostMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getFilteredInvoices(
+	public ResponseEntity<ResponseEntityDto> getInvoices(
 			@Valid @RequestBody InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
 		ResponseEntityDto response = invoiceService.getFilteredInvoices(invoiceFilterRequestDto);

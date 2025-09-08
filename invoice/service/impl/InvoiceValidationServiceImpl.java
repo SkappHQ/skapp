@@ -95,7 +95,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (CollectionUtils.isEmpty(invoiceItems)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_ITEMS_REQUIRED);
 		}
-
 		for (int i = 0; i < invoiceItems.size(); i++) {
 			CreateInvoiceItemDto item = invoiceItems.get(i);
 			validateInvoiceItem(item);
@@ -152,7 +151,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_NAME_REQUIRED);
 		}
 
-		if (expense.getCategory() == null) {
+		if (expense.getCategory() == null || expense.getCategory().toString().trim().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_CATEGORY_REQUIRED);
 		}
 
@@ -293,39 +292,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	public void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto) {
 		if (invoiceSearchRequestDto.getInvoiceId() != null && invoiceSearchRequestDto.getInvoiceId().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID);
-		}
-	}
-
-	@Override
-	public void validateInvoiceGetRequest(int page, int size, String sortBy, String sortDirection) {
-		if (page < 0) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PAGE_NEGATIVE);
-		}
-		if (size <= 0) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_INVALID);
-		}
-		if (size > 100) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_EXCEEDED);
-		}
-		if (sortBy == null || sortBy.trim().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
-		}
-		boolean isValidSortField = false;
-		for (String field : ALLOWED_SORT_FIELDS) {
-			if (field.equalsIgnoreCase(sortBy.trim())) {
-				isValidSortField = true;
-				break;
-			}
-		}
-		if (!isValidSortField) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
-		}
-		if (sortDirection == null || sortDirection.trim().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
-		}
-		String dir = sortDirection.trim().toUpperCase();
-		if (!dir.equals("ASC") && !dir.equals("DESC")) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
 		}
 	}
 

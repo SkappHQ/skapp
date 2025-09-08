@@ -258,26 +258,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto getInvoices(int page, int size, String sortBy, String sortDirection) {
-		invoiceValidationService.validateInvoiceGetRequest(page, size, sortBy, sortDirection);
-
-		Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
-		Sort sort = Sort.by(direction, sortBy);
-		Pageable pageable = PageRequest.of(page, size, sort);
-
-		Page<Invoice> invoicePage = invoiceDao.findAll(pageable);
-
-		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
-			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
-
-		InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
-				invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
-				invoicePage.getSize());
-
-		return new ResponseEntityDto(false, invoiceListResponse);
-	}
-
-	@Override
 	public ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
 		invoiceValidationService.validateInvoiceFilterRequest(invoiceFilterRequestDto);
@@ -310,15 +290,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public ResponseEntityDto getInvoicesSummary() {
 		long totalInvoices = invoiceDao.count();
-		long paidInvoices = invoiceDao.countByStatus(InvoiceStatus.PAID);
-		long pendingInvoices = invoiceDao.countByStatus(InvoiceStatus.IN_PROGRESS);
-		long draftInvoices = invoiceDao.countByStatus(InvoiceStatus.DRAFT);
-		long cancelledInvoices = invoiceDao.countByStatus(InvoiceStatus.CANCELLED);
+		long dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
 		long overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
-		long dueInvoices = invoiceDao.countDueInvoices();
+		long paidInvoices = invoiceDao.countByStatus(InvoiceStatus.PAID);
+		long deletedInvoices = invoiceDao.countByStatus(InvoiceStatus.DELETED);
 
-		InvoiceSummaryResponseDto summary = new InvoiceSummaryResponseDto(totalInvoices, paidInvoices, pendingInvoices,
-				draftInvoices, cancelledInvoices, dueInvoices, overdueInvoices);
+		InvoiceSummaryResponseDto summary = new InvoiceSummaryResponseDto(totalInvoices, dueInvoices, overdueInvoices,
+				paidInvoices, deletedInvoices);
 
 		return new ResponseEntityDto(false, summary);
 	}

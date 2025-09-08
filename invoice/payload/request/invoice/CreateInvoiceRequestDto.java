@@ -4,8 +4,6 @@ import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,12 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateInvoiceRequestDto {
 
-	@NotNull(message = "Customer ID is required")
 	private Long customerId;
 
 	private Long projectId;
 
-	@NotNull(message = "Invoice date is required")
 	private LocalDateTime invoiceDate;
 
 	private LocalDateTime dueDate;
@@ -32,10 +28,8 @@ public class CreateInvoiceRequestDto {
 
 	private String payTo;
 
-	@NotNull(message = "Currency is required")
 	private CurrencyType currency;
 
-	@NotNull(message = "Status is required")
 	private InvoiceStatus status;
 
 	private Double subTotalAmount;
@@ -50,14 +44,10 @@ public class CreateInvoiceRequestDto {
 
 	private String invoiceNotes;
 
-	@Valid
-	@NotEmpty(message = "At least one invoice item is required")
 	private List<CreateInvoiceItemDto> invoiceItems;
 
-	@Valid
 	private List<CreateInvoiceExpenseDto> invoiceExpenses;
 
-	@Valid
 	private List<CreateInvoiceTaxDto> invoiceTaxes;
 
 }

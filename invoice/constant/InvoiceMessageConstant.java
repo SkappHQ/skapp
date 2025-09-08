@@ -31,10 +31,8 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	// Invoice items validation constants
 	INVOICE_ERROR_ITEMS_REQUIRED("invoice.error.items.required"),
 	INVOICE_ERROR_ITEM_NAME_REQUIRED("invoice.error.item.name.required"),
-	INVOICE_ERROR_ITEM_DESCRIPTION_REQUIRED("invoice.error.item.description.required"),
 	INVOICE_ERROR_ITEM_QUANTITY_INVALID("invoice.error.item.quantity.invalid"),
 	INVOICE_ERROR_ITEM_UNIT_PRICE_INVALID("invoice.error.item.unit.price.invalid"),
-	INVOICE_ERROR_ITEM_NEGATIVE_DISCOUNT("invoice.error.item.negative.discount"),
 	INVOICE_ERROR_ITEM_DISCOUNT_PERCENTAGE_EXCEEDED("invoice.error.item.discount.percentage.exceeded"),
 	INVOICE_ERROR_ITEM_DISCOUNT_EXCEEDS_TOTAL("invoice.error.item.discount.exceeds.total"),
 
@@ -47,10 +45,8 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	// Expense attachments validation constants
 	INVOICE_ERROR_EXPENSE_ATTACHMENT_URL_REQUIRED("invoice.error.expense.attachment.url.required"),
-	INVOICE_ERROR_EXPENSE_ATTACHMENT_INVALID_URL("invoice.error.expense.attachment.invalid.url"),
-	INVOICE_ERROR_EXPENSE_ATTACHMENT_URL_TOO_LONG("invoice.error.expense.attachment.url.too.long"),
 
-	// Invoice taxes validation constants
+    // Invoice taxes validation constants
 	INVOICE_ERROR_TAX_TYPE_REQUIRED("invoice.error.tax.type.required"),
 	INVOICE_ERROR_TAX_PERCENTAGE_INVALID("invoice.error.tax.percentage.invalid"),
 

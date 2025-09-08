@@ -134,23 +134,6 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 	}
 
 	@Override
-	public long countDueInvoices() {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Long> query = cb.createQuery(Long.class);
-		Root<Invoice> invoice = query.from(Invoice.class);
-
-		LocalDateTime now = LocalDateTime.now();
-
-		query.select(cb.count(invoice));
-		query.where(cb.and(cb.lessThan(invoice.get(Invoice_.dueDate), now),
-				cb.notEqual(invoice.get(Invoice_.status), InvoiceStatus.PAID),
-				cb.notEqual(invoice.get(Invoice_.status), InvoiceStatus.CANCELLED),
-				cb.notEqual(invoice.get(Invoice_.status), InvoiceStatus.OVERDUE)));
-
-		return entityManager.createQuery(query).getSingleResult();
-	}
-
-	@Override
 	public long countByCreatedDateBetween(LocalDateTime start, LocalDateTime end) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);

@@ -13,8 +13,6 @@ public interface InvoiceRepository {
 			LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Long customerId, Long projectId, InvoiceStatus status,
 			Pageable pageable);
 
-	long countDueInvoices();
-
 	long countByCreatedDateBetween(LocalDateTime start, LocalDateTime end);
 
 }
