@@ -32,6 +32,14 @@ public class EpCommonConstants {
 
 	public static final String TOKEN = "token=";
 
+	public static final String EMAIL = "email";
+
+	public static final String NAME = "name";
+
+	public static final String BEARER = "Bearer ";
+
+	public static final String PREFERRED_USERNAME = "preferred_username";
+
 	public static final String HTTP_POST_HEADER_VALUE = "application/x-www-form-urlencoded";
 
 	public static final String GOOGLE_PERMISSION_EMAIL_ADDRESS = "emailAddresses";
@@ -48,6 +56,12 @@ public class EpCommonConstants {
 
 	public final List<String> ENTERPRISE_GOOGLE_AUTH_SCOPES = Arrays
 		.asList("https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
+
+	public final String ENTERPRISE_MICROSOFT_AUTH_SCOPES = "openid profile email offline_access User.Read";
+
+	public final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
+
+	public final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
 
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 

@@ -36,7 +36,9 @@ public class TenantFilter extends OncePerRequestFilter {
 			"/v1/ep/organization/login-method", "/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect",
 			"/v1/validate/email", "/v1/ep/stripe/webhook", "/v2/ep/auth/sso/google/auth-url",
 			"/v2/ep/auth/sso/google/redirect", "/v2/ep/auth/signup/super-admin/sso/google",
-			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/s3/files/organization-setup/signed-url");
+			"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
+			"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v1/ep/esign/document-link/token-exchange",
+			"/v1/ep/s3/files/organization-setup/signed-url");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
