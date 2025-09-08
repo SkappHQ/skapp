@@ -66,6 +66,7 @@ import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIco
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
+import InstagramIcon from "~community/common/assets/Icons/InstagramIcon";
 import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
@@ -290,6 +291,7 @@ export const IconMapping: Partial<
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
+  [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon
   // Add more icons here as needed

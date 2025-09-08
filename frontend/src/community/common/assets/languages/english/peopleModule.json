@@ -623,7 +623,7 @@
       "major": "Major/Specialization",
       "startDate": "Start date",
       "endDate": "End date",
-      "enterCollege": "Enter college/institution name",
+      "enterCollege": "Enter college/institution",
       "enterDegree": "Enter degree",
       "enterMajor": "Enter major/specialization",
       "selectStartDate": "Select start date",
@@ -857,7 +857,10 @@
       "maxSupervisorCountReached": "Super Admin Count Reached.",
       "maxSupervisorCountReachedDescription": "The maximum limit of 3 Super Admins has been reached.",
       "head": "Directory | Skapp",
-      "alert": "Alert"
+      "alert": "Alert",
+      "projectManagement": "Project Management",
+      "invoice": "Invoice",
+      "selectRole": "Select role"
     },
     "credentials": {
       "sectionOne": "Skapp Account Credentials",

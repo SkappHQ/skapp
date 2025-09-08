@@ -97,7 +97,8 @@ const SystemPermissionFormSection = ({
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
-    isSuperAdmin
+    isSuperAdmin,
+    isInvoiceModuleEnabled
   } = useSessionData();
 
   const { handleNext } = useStepper();
@@ -114,7 +115,8 @@ const SystemPermissionFormSection = ({
         peopleRole: employee?.systemPermissions?.peopleRole,
         leaveRole: employee?.systemPermissions?.leaveRole,
         attendanceRole: employee?.systemPermissions?.attendanceRole,
-        esignRole: employee?.systemPermissions?.esignRole
+        esignRole: employee?.systemPermissions?.esignRole,
+        invoiceRole: employee?.systemPermissions?.invoiceRole
       };
 
       const errorsToShow = [];
@@ -327,6 +329,48 @@ const SystemPermissionFormSection = ({
                 checkSelected
                 onChange={(event) =>
                   handleRoleDropdown("esignRole", event.target.value as Role)
+                }
+                isDisabled={
+                  isProfileView ||
+                  permissions.isSuperAdmin ||
+                  isInputsDisabled ||
+                  isReadOnly
+                }
+              />
+            )}
+            <DropdownList
+              inputName={"pmRole"}
+              label={translateText(["projectManagement"])}
+              itemList={grantablePermission?.pm || []}
+              value={permissions.pmRole}
+              componentStyle={classes.dropdownListComponentStyles}
+              checkSelected
+              onChange={(event) =>
+                handleRoleDropdown("pmRole", event.target.value as Role)
+              }
+              isDisabled={
+                isProfileView ||
+                permissions.isSuperAdmin ||
+                isInputsDisabled ||
+                isReadOnly
+              }
+            />
+
+            {isInvoiceModuleEnabled && (
+              <DropdownList
+                inputName={"invoiceRole"}
+                label={translateText(["invoice"])}
+                itemList={grantablePermission?.invoice || []}
+                placeholder={translateText(["selectRole"])}
+                value={
+                  permissions.invoiceRole === Role.INVOICE_NONE
+                    ? ""
+                    : permissions.invoiceRole
+                }
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("invoiceRole", event.target.value as Role)
                 }
                 isDisabled={
                   isProfileView ||

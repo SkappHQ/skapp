@@ -1,0 +1,26 @@
+name: Build Spring Boot on PR
+
+on:
+  pull_request:
+    branches:
+      - '*'  # Run on PRs to any branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Setup Java
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'temurin'
+            java-version: '21'
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            ref: ${{ inputs.build_branch }}
+            path: skapp         
+        - name: Build Project
+          run: |
+            cd skapp/backend
+            mvn clean install -DskipTests

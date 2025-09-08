@@ -44,4 +44,6 @@ export interface AllowedGrantableRolesType {
   people: SelectOption[];
   attendance: SelectOption[];
   esign: SelectOption[];
+  pm: SelectOption[];
+  invoice: SelectOption[];
 }
