@@ -69,6 +69,7 @@ import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
 import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
+import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
@@ -289,7 +290,8 @@ export const IconMapping: Partial<
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
-  [IconName.INVOICE_ICON]: InvoiceIcon
+  [IconName.INVOICE_ICON]: InvoiceIcon,
+  [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon
   // Add more icons here as needed
 };
 
