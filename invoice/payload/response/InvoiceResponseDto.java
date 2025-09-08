@@ -48,13 +48,6 @@ public class InvoiceResponseDto {
 
 	private String invoiceLogo;
 
-	// Summary information
-	private Integer itemCount;
-
-	private Integer expenseCount;
-
-	private Integer taxCount;
-
 	// Audit fields
 	private String createdBy;
 

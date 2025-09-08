@@ -112,7 +112,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		Invoice finalInvoice = invoiceDao.save(invoiceWithChildIds);
 
-		CreateInvoiceResponseDto responseDto = invoiceMapper.invoiceToCreateInvoiceResponseDto(finalInvoice);
+		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(finalInvoice);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -212,11 +212,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 		double subtotal = itemsTotal + expensesTotal;
 
 		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
-            if (invoice.getDiscountType() == DiscountType.PERCENTAGE) {
-                subtotal -= (subtotal * invoice.getDiscountValue() / 100.0);
-            } else {
-                subtotal -= invoice.getDiscountValue();
-            }
+			if (invoice.getDiscountType() == DiscountType.PERCENTAGE) {
+				subtotal -= (subtotal * invoice.getDiscountValue() / 100.0);
+			}
+			else {
+				subtotal -= invoice.getDiscountValue();
+			}
 		}
 
 		double totalTaxAmount = 0.0;
@@ -256,25 +257,22 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@Override
 	public ResponseEntityDto getInvoices(int page, int size, String sortBy, String sortDirection) {
-			if (page < 0)
-				page = 0;
-			if (size < 1)
-				size = 10;
+		invoiceValidationService.validateInvoiceGetRequest(page, size, sortBy, sortDirection);
 
-			Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
-			Sort sort = Sort.by(direction, sortBy);
-			Pageable pageable = PageRequest.of(page, size, sort);
+		Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
+		Sort sort = Sort.by(direction, sortBy);
+		Pageable pageable = PageRequest.of(page, size, sort);
 
-			Page<Invoice> invoicePage = invoiceDao.findAll(pageable);
+		Page<Invoice> invoicePage = invoiceDao.findAll(pageable);
 
-			List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
-				.invoicesToInvoiceResponseDtos(invoicePage.getContent());
+		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
+			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
 
-			InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
-					invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
-					invoicePage.getSize());
+		InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
+				invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
+				invoicePage.getSize());
 
-			return new ResponseEntityDto(false, invoiceListResponse);
+		return new ResponseEntityDto(false, invoiceListResponse);
 	}
 
 	@Override
@@ -308,11 +306,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto searchInvoicesByName(InvoiceSearchRequestDto invoiceSearchRequestDto) {
-		return null;
-	}
-
-	@Override
 	public ResponseEntityDto getInvoicesSummary() {
 		long totalInvoices = invoiceDao.count();
 		long paidInvoices = invoiceDao.countByStatus(InvoiceStatus.PAID);
@@ -328,7 +321,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, summary);
 	}
 
-	@Override
+    @Override
+    public ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto) {
+        invoiceValidationService.validateInvoiceSearchRequest(invoiceSearchRequestDto);
+        List<Invoice> invoices = invoiceDao.findByInvoiceIdContaining(
+                invoiceSearchRequestDto.getInvoiceId());
+        return new ResponseEntityDto(false, invoiceMapper.invoicesToInvoiceResponseDtos(invoices));
+    }
+
+    @Override
 	public ResponseEntityDto getInvoiceTierLimitations() {
 		InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = processInvoiceTierLimitation();
 		return new ResponseEntityDto(false, invoiceTierLimitationResponseDto);

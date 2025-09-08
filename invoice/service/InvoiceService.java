@@ -15,8 +15,7 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceTierLimitations();
 
-	ResponseEntityDto searchInvoicesByName(InvoiceSearchRequestDto invoiceSearchRequestDto);
-
 	ResponseEntityDto getInvoicesSummary();
 
+    ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto);
 }

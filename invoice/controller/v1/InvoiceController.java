@@ -62,13 +62,12 @@ public class InvoiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	// Need to clarify the search parameters
 	@Operation(summary = "Search .", description = "This endpoint Search invoices by ???.")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> searchInvoicesByName(
 			@Valid InvoiceSearchRequestDto invoiceSearchRequestDto) {
-		ResponseEntityDto response = invoiceService.searchInvoicesByName(invoiceSearchRequestDto);
+		ResponseEntityDto response = invoiceService.searchInvoices(invoiceSearchRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
