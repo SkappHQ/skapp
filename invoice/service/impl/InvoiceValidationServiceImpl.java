@@ -70,7 +70,8 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			switch (request.getDiscountType()) {
 				case PERCENTAGE:
 					if (request.getDiscountValue() > 100) {
-						throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_DISCOUNT_PERCENTAGE_EXCEEDED);
+						throw new ValidationException(
+								InvoiceMessageConstant.INVOICE_ERROR_DISCOUNT_PERCENTAGE_EXCEEDED);
 					}
 					break;
 				case FLAT:
@@ -180,7 +181,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (!CollectionUtils.isEmpty(invoiceTaxes)) {
 			for (int i = 0; i < invoiceTaxes.size(); i++) {
 				CreateInvoiceTaxDto tax = invoiceTaxes.get(i);
-					validateInvoiceTax(tax);
+				validateInvoiceTax(tax);
 			}
 		}
 	}
@@ -288,46 +289,46 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		}
 	}
 
-    @Override
-    public void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto) {
-        if (invoiceSearchRequestDto.getInvoiceId() != null && invoiceSearchRequestDto.getInvoiceId().isEmpty()) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID);
-        }
-    }
+	@Override
+	public void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto) {
+		if (invoiceSearchRequestDto.getInvoiceId() != null && invoiceSearchRequestDto.getInvoiceId().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID);
+		}
+	}
 
-    @Override
-    public void validateInvoiceGetRequest(int page, int size, String sortBy, String sortDirection) {
-        if( page < 0) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PAGE_NEGATIVE);
-        }
-        if( size <= 0) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_INVALID);
-        }
-        if( size > 100) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_EXCEEDED);
-        }
-        if( sortBy == null || sortBy.trim().isEmpty()) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
-        }
-        String[] allowedSortFields = { "id", "invoiceId", "customerId", "projectId", "invoiceDate", "dueDate", "status",
-                "subTotalAmount", "payableTotalAmount", "createdDate" };
-        boolean isValidSortField = false;
-        for (String field : allowedSortFields) {
-            if (field.equalsIgnoreCase(sortBy.trim())) {
-                isValidSortField = true;
-                break;
-            }
-        }
-        if (!isValidSortField) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
-        }
-        if( sortDirection == null || sortDirection.trim().isEmpty()) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
-        }
-        String dir = sortDirection.trim().toUpperCase();
-        if( !dir.equals("ASC") && !dir.equals("DESC")) {
-            throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
-        }
-    }
+	@Override
+	public void validateInvoiceGetRequest(int page, int size, String sortBy, String sortDirection) {
+		if (page < 0) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PAGE_NEGATIVE);
+		}
+		if (size <= 0) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_INVALID);
+		}
+		if (size > 100) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_EXCEEDED);
+		}
+		if (sortBy == null || sortBy.trim().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
+		}
+		String[] allowedSortFields = { "id", "invoiceId", "customerId", "projectId", "invoiceDate", "dueDate", "status",
+				"subTotalAmount", "payableTotalAmount", "createdDate" };
+		boolean isValidSortField = false;
+		for (String field : allowedSortFields) {
+			if (field.equalsIgnoreCase(sortBy.trim())) {
+				isValidSortField = true;
+				break;
+			}
+		}
+		if (!isValidSortField) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
+		}
+		if (sortDirection == null || sortDirection.trim().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
+		}
+		String dir = sortDirection.trim().toUpperCase();
+		if (!dir.equals("ASC") && !dir.equals("DESC")) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
+		}
+	}
 
 }

@@ -167,5 +167,4 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		return entityManager.createQuery(query).getSingleResult();
 	}
 
-
 }

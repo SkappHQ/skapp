@@ -10,6 +10,6 @@ public interface InvoiceDao extends JpaRepository<Invoice, Long>, InvoiceReposit
 
 	Long countByStatus(InvoiceStatus status);
 
-    List<Invoice> findByInvoiceIdContaining(String id);
+	List<Invoice> findByInvoiceIdContaining(String id);
 
 }

@@ -6,5 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InvoiceSearchRequestDto {
-    private String InvoiceId;
+
+	private String InvoiceId;
+
 }

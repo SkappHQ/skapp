@@ -17,5 +17,6 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoicesSummary();
 
-    ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto);
+	ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto);
+
 }

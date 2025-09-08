@@ -21,7 +21,8 @@ public interface InvoiceValidationService {
 
 	void validateInvoiceFilterRequest(InvoiceFilterRequestDto invoiceFilterRequestDto);
 
-    void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto);
+	void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto);
 
-    void validateInvoiceGetRequest(int page, int size, String sortBy, String sortDirection);
+	void validateInvoiceGetRequest(int page, int size, String sortBy, String sortDirection);
+
 }

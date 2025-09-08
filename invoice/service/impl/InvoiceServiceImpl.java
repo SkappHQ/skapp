@@ -21,7 +21,6 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
-import com.skapp.enterprise.invoice.payload.response.CreateInvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
@@ -321,15 +320,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, summary);
 	}
 
-    @Override
-    public ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto) {
-        invoiceValidationService.validateInvoiceSearchRequest(invoiceSearchRequestDto);
-        List<Invoice> invoices = invoiceDao.findByInvoiceIdContaining(
-                invoiceSearchRequestDto.getInvoiceId());
-        return new ResponseEntityDto(false, invoiceMapper.invoicesToInvoiceResponseDtos(invoices));
-    }
+	@Override
+	public ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto) {
+		invoiceValidationService.validateInvoiceSearchRequest(invoiceSearchRequestDto);
+		List<Invoice> invoices = invoiceDao.findByInvoiceIdContaining(invoiceSearchRequestDto.getInvoiceId());
+		return new ResponseEntityDto(false, invoiceMapper.invoicesToInvoiceResponseDtos(invoices));
+	}
 
-    @Override
+	@Override
 	public ResponseEntityDto getInvoiceTierLimitations() {
 		InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = processInvoiceTierLimitation();
 		return new ResponseEntityDto(false, invoiceTierLimitationResponseDto);

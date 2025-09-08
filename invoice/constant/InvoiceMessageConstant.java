@@ -65,7 +65,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID("invoice.error.filter.customer.id.invalid"),
 	INVOICE_ERROR_FILTER_PROJECT_ID_INVALID("invoice.error.filter.project.id.invalid"),
 
-    INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID("invoice.error.search.invoice.id.invalid"),;
+	INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID("invoice.error.search.invoice.id.invalid"),;
 
 	private final String messageKey;
 
