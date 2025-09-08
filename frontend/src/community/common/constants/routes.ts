@@ -114,7 +114,7 @@ const ROUTES = {
   INVOICE: {
     BASE: "/invoice",
     ALL_INVOICES: "/invoice/all",
-    CLIENTS: "/invoice/clients"
+    CUSTOMERS: "/invoice/customers"
   }
 };
 
