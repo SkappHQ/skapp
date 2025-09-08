@@ -23,6 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 
+	private static final String[] ALLOWED_SORT_FIELDS = { "id", "invoiceId", "customerId", "projectId", "invoiceDate",
+			"dueDate", "status", "subTotalAmount", "payableTotalAmount", "createdDate" };
+
 	@Override
 	public void validateCreateInvoiceRequest(CreateInvoiceRequestDto createInvoiceRequestDto) {
 		validateRequiredFields(createInvoiceRequestDto);
@@ -218,11 +221,8 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
 		}
 
-		String[] allowedSortFields = { "id", "invoiceId", "customerId", "projectId", "invoiceDate", "dueDate", "status",
-				"subTotalAmount", "payableTotalAmount", "createdDate" };
-
 		boolean isValidSortField = false;
-		for (String field : allowedSortFields) {
+		for (String field : ALLOWED_SORT_FIELDS) {
 			if (field.equalsIgnoreCase(invoiceFilterRequestDto.getSortBy().trim())) {
 				isValidSortField = true;
 				break;
@@ -310,10 +310,8 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (sortBy == null || sortBy.trim().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
 		}
-		String[] allowedSortFields = { "id", "invoiceId", "customerId", "projectId", "invoiceDate", "dueDate", "status",
-				"subTotalAmount", "payableTotalAmount", "createdDate" };
 		boolean isValidSortField = false;
-		for (String field : allowedSortFields) {
+		for (String field : ALLOWED_SORT_FIELDS) {
 			if (field.equalsIgnoreCase(sortBy.trim())) {
 				isValidSortField = true;
 				break;

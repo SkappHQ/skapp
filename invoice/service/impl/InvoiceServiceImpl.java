@@ -55,6 +55,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Value("${invoice.allocated-free-tier-invoice-count}")
 	private long allocatedFreeTierInvoiceCount;
 
+	@Value("${invoice.allocated-pro-tier-invoice-count}")
+	private long allocatedProTierInvoiceCount;
+
 	private final InvoiceDao invoiceDao;
 
 	private final InvoiceMapper invoiceMapper;
@@ -375,7 +378,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 				startDateTime = getYearlyTierStartDate(tierStartedDate);
 				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
 				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
-				allocatedInvoiceCount = 20;
+				allocatedInvoiceCount = allocatedProTierInvoiceCount;
 				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
 				limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
 			}
