@@ -305,6 +305,36 @@ const routes = [
   // },
   {
     id: "7",
+    name: "Invoices",
+    url: ROUTES.INVOICE.BASE,
+    icon: IconName.INVOICE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
+    subTree: [
+      {
+        id: "7A",
+        name: "All Invoices",
+        url: ROUTES.INVOICE.ALL_INVOICES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          ManagerTypes.INVOICE_MANAGER
+        ]
+      },
+      {
+        id: "7B",
+        name: "Customers",
+        url: ROUTES.INVOICE.CUSTOMERS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          ManagerTypes.INVOICE_MANAGER
+        ]
+      }
+    ]
+  },
+  {
+    id: "8",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,
@@ -323,7 +353,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "7A",
+        id: "8A",
         name: "Account Settings",
         url: ROUTES.SETTINGS.ACCOUNT,
         hasSubTree: false,
