@@ -48,7 +48,6 @@ public class InvoiceResponseDto {
 
 	private String invoiceLogo;
 
-	// Audit fields
 	private String createdBy;
 
 	private LocalDateTime createdDate;

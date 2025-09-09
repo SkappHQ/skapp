@@ -2,7 +2,6 @@ package com.skapp.enterprise.invoice.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,7 +29,7 @@ public class InvoiceTax {
 	@Column(name = "tax_percentage")
 	private Double taxPercentage;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "invoice_id", nullable = false)
 	private Invoice invoice;
 

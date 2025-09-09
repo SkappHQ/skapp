@@ -1,5 +1,7 @@
 package com.skapp.enterprise.invoice.repository.impl;
 
+import com.skapp.enterprise.invoice.model.Customer;
+import com.skapp.enterprise.invoice.model.Customer_;
 import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.Invoice_;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
@@ -9,6 +11,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -85,7 +88,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		}
 
 		if (invoiceFilterRequestDto.getCustomerId() != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.customerId), invoiceFilterRequestDto.getCustomerId()));
+			Join<Invoice, Customer> customerJoin = invoice.join(Invoice_.customer);
+			predicates.add(cb.equal(customerJoin.get(Customer_.id), invoiceFilterRequestDto.getCustomerId()));
 		}
 
 		if (invoiceFilterRequestDto.getProjectId() != null) {

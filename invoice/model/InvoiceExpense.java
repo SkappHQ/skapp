@@ -45,7 +45,7 @@ public class InvoiceExpense {
 	@Column(name = "amount")
 	private Double amount;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "invoice_id", nullable = false)
 	private Invoice invoice;
 

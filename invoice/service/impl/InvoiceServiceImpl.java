@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -12,6 +13,7 @@ import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
+import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.ExpenseAttachment;
 import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
@@ -26,6 +28,7 @@ import com.skapp.enterprise.invoice.payload.response.InvoiceKPIResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
+import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
@@ -45,6 +48,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -68,6 +72,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final InvoiceValidationService invoiceValidationService;
 
+	private final CustomerDao customerDao;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto) {
@@ -78,6 +84,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
 		}
 
+		Optional<Customer> optionalCustomer = customerDao.findById(createInvoiceRequestDto.getCustomerId());
+
+		if (optionalCustomer.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND);
+		}
+
+		Customer customer = optionalCustomer.get();
+
 		invoiceValidationService.validateCreateInvoiceRequest(createInvoiceRequestDto);
 		invoiceValidationService.validateCreateInvoiceItemsRequest(createInvoiceRequestDto.getInvoiceItems());
 		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
@@ -87,7 +101,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			invoiceValidationService.validateCreateInvoiceTaxesRequest(createInvoiceRequestDto.getInvoiceTaxes());
 		}
 
-		Invoice invoice = createInvoiceEntity(createInvoiceRequestDto);
+		Invoice invoice = invoiceMapper.CreateInvoiceRequestDtoToInvoice(createInvoiceRequestDto);
+		invoice.setCustomer(customer);
 
 		List<InvoiceItem> invoiceItems = createInvoiceItems(createInvoiceRequestDto.getInvoiceItems(), invoice);
 		invoice.setInvoiceItems(invoiceItems);
@@ -111,30 +126,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
-	private Invoice createInvoiceEntity(CreateInvoiceRequestDto request) {
-		Invoice invoice = new Invoice();
-
-		String generatedInvoiceId = generateInvoiceId();
-		invoice.setInvoiceId(generatedInvoiceId);
-
-		invoice.setCustomerId(request.getCustomerId());
-		invoice.setProjectId(request.getProjectId());
-		invoice.setInvoiceDate(request.getInvoiceDate());
-		invoice.setDueDate(request.getDueDate());
-		invoice.setBilledTo(request.getBilledTo());
-		invoice.setPayTo(request.getPayTo());
-		invoice.setCurrency(request.getCurrency());
-		invoice.setStatus(request.getStatus());
-		invoice.setDiscountType(request.getDiscountType());
-		invoice.setDiscountValue(request.getDiscountValue());
-		invoice.setInvoiceTerms(request.getInvoiceTerms());
-		invoice.setInvoiceNotes(request.getInvoiceNotes());
-		invoice.setSubTotalAmount(request.getSubTotalAmount());
-		invoice.setPayableTotalAmount(request.getPayableTotalAmount());
-
-		return invoice;
-	}
-
 	private String generateInvoiceId() {
 		String year = String.valueOf(java.time.LocalDate.now().getYear());
 		long timestamp = System.currentTimeMillis();
@@ -144,15 +135,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private List<InvoiceItem> createInvoiceItems(List<CreateInvoiceItemDto> itemDtos, Invoice invoice) {
 		return itemDtos.stream().map(itemDto -> {
-			InvoiceItem item = new InvoiceItem();
-			item.setInvoice(invoice);
-			item.setItemName(itemDto.getItemName());
-			item.setDescription(itemDto.getDescription());
-			item.setQuantity(itemDto.getQuantity());
-			item.setUnitPrice(itemDto.getUnitPrice());
-			item.setDiscountType(itemDto.getDiscountType());
-			item.setDiscountValue(itemDto.getDiscountValue());
-
 			double itemTotal = itemDto.getQuantity() * itemDto.getUnitPrice();
 			if (itemDto.getDiscountValue() != null && itemDto.getDiscountValue() > 0) {
 				if (itemDto.getDiscountType() == DiscountType.PERCENTAGE) {
@@ -162,20 +144,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 					itemTotal -= itemDto.getDiscountValue();
 				}
 			}
-			item.setAmount(itemTotal);
-
+			itemDto.setAmount(itemTotal);
+			InvoiceItem item = invoiceMapper.CreateInvoiceItemDtoToInvoiceItem(itemDto);
+			item.setInvoice(invoice);
 			return item;
 		}).collect(Collectors.toList());
 	}
 
 	private List<InvoiceExpense> createInvoiceExpenses(List<CreateInvoiceExpenseDto> expenseDtos, Invoice invoice) {
 		return expenseDtos.stream().map(expenseDto -> {
-			InvoiceExpense expense = new InvoiceExpense();
+			InvoiceExpense expense = invoiceMapper.CreateInvoiceExpenseDtoToInvoiceExpense(expenseDto);
 			expense.setInvoice(invoice);
-			expense.setName(expenseDto.getName());
-			expense.setCategory(expenseDto.getCategory());
-			expense.setDate(expenseDto.getDate());
-			expense.setAmount(expenseDto.getAmount());
 
 			if (!CollectionUtils.isEmpty(expenseDto.getAttachments())) {
 				List<ExpenseAttachment> attachments = expenseDto.getAttachments().stream().map(attachmentDto -> {
@@ -193,10 +172,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private List<InvoiceTax> createInvoiceTaxes(List<CreateInvoiceTaxDto> taxDtos, Invoice invoice) {
 		return taxDtos.stream().map(taxDto -> {
-			InvoiceTax tax = new InvoiceTax();
+			InvoiceTax tax = invoiceMapper.CreateInvoiceTaxDtoToInvoiceTax(taxDto);
 			tax.setInvoice(invoice);
-			tax.setTaxType(taxDto.getTaxType());
-			tax.setTaxPercentage(taxDto.getTaxPercentage());
 			return tax;
 		}).collect(Collectors.toList());
 	}
@@ -255,9 +232,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
 			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
 
+		Boolean hasNext = invoicePage.getNumber() < invoicePage.getTotalPages() - 1;
+
+		Boolean hasPrevious = invoicePage.getNumber() > 0;
+
 		InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
 				invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
-				invoicePage.getSize());
+				invoicePage.getSize(), hasNext, hasPrevious);
 
 		return new ResponseEntityDto(false, invoiceListResponse);
 

@@ -58,7 +58,9 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FILTER_PROJECT_ID_INVALID("invoice.error.filter.project.id.invalid"),
 
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
-	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached");
+	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
+
+	INVOICE_ERROR_CUSTOMER_NOT_FOUND("api.error.invoice.customer.not.found");
 
 	private final String messageKey;
 

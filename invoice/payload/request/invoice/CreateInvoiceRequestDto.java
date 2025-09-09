@@ -17,6 +17,8 @@ public class CreateInvoiceRequestDto {
 
 	private Long customerId;
 
+	private String invoiceId;
+
 	private Long projectId;
 
 	private LocalDateTime invoiceDate;

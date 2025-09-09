@@ -13,6 +13,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -31,14 +33,11 @@ public class Invoice extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, unique = true, updatable = false)
+	@Column(name = "id")
 	private Long id;
 
 	@Column(name = "invoice_id")
 	private String invoiceId;
-
-	@Column(name = "customer_id", nullable = false)
-	private Long customerId;
 
 	@Column(name = "project_id")
 	private Long projectId;
@@ -82,8 +81,12 @@ public class Invoice extends Auditable<String> {
 	@Column(name = "payable_total_amount")
 	private Double payableTotalAmount;
 
-	@Column(name = "invoice_logo", columnDefinition = "text")
+	@Column(name = "invoice_logo")
 	private String invoiceLogo;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "customer_id", updatable = false)
+	private Customer customer;
 
 	@OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<InvoiceItem> invoiceItems;
