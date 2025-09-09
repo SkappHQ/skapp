@@ -10,6 +10,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.common.util.DtoStringTrimmer;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
@@ -84,6 +85,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
 		}
 
+		DtoStringTrimmer.trimStrings(createInvoiceRequestDto);
+
 		Optional<Customer> optionalCustomer = customerDao.findById(createInvoiceRequestDto.getCustomerId());
 
 		if (optionalCustomer.isEmpty()) {
@@ -124,13 +127,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private String generateInvoiceId() {
-		String year = String.valueOf(java.time.LocalDate.now().getYear());
-		long timestamp = System.currentTimeMillis();
-		String uniqueNumber = String.format("%06d", timestamp % 1000000);
-		return "INV-" + year + "-" + uniqueNumber;
 	}
 
 	private List<InvoiceItem> createInvoiceItems(List<CreateInvoiceItemDto> itemDtos, Invoice invoice) {
@@ -216,6 +212,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
+		DtoStringTrimmer.trimStrings(invoiceFilterRequestDto);
 		invoiceValidationService.validateInvoiceFilterRequest(invoiceFilterRequestDto);
 
 		int page = invoiceFilterRequestDto.getPage();
@@ -263,69 +260,58 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private InvoiceTierLimitationResponseDto processInvoiceTierLimitation() {
 		String currentTenant = TenantContext.getCurrentTenant();
-		try {
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 
-			if (tenant == null) {
-				log.error("getInvoiceTierLimitations: Tenant not found: {}", currentTenant);
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
-
-			InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = new InvoiceTierLimitationResponseDto();
-			Tier tier = tenant.getTier();
-
-			LocalDateTime startDateTime;
-			LocalDateTime endDateTime;
-			long allocatedInvoiceCount;
-			long usedInvoiceCount;
-			long remainingCount;
-			boolean limitedReached = false;
-
-			if (tier == Tier.FREE) {
-				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
-				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
-				allocatedInvoiceCount = allocatedFreeTierInvoiceCount;
-				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
-				limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
-			}
-			else if (tier == Tier.PRO) {
-				if (tenant.getStripeSubscription() == null
-						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
-					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-				}
-				LocalDate tierStartedDate = DateTimeUtils
-					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
-				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
-				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
-				allocatedInvoiceCount = allocatedProTierInvoiceCount;
-				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
-				limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
-			}
-			else {
-				startDateTime = null;
-				endDateTime = null;
-				allocatedInvoiceCount = -1;
-				usedInvoiceCount = invoiceDao.count();
-				remainingCount = -1;
-				limitedReached = false;
-			}
-
-			invoiceTierLimitationResponseDto.setAllocatedCount(allocatedInvoiceCount);
-			invoiceTierLimitationResponseDto.setRemainingCount(remainingCount);
-			invoiceTierLimitationResponseDto.setLimitedReached(limitedReached);
-
-			return invoiceTierLimitationResponseDto;
+		if (tenant == null) {
+			log.error("getInvoiceTierLimitations: Tenant not found: {}", currentTenant);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
+					new String[] { currentTenant });
 		}
-		catch (Exception e) {
-			log.error("Error in processInvoiceTierLimitation: {}", e.getMessage(), e);
+
+		InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = new InvoiceTierLimitationResponseDto();
+		Tier tier = tenant.getTier();
+
+		LocalDateTime startDateTime;
+		LocalDateTime endDateTime;
+		long allocatedInvoiceCount;
+		long usedInvoiceCount;
+		long remainingCount;
+		boolean limitedReached = false;
+
+		if (tier == Tier.FREE) {
+			LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
+			startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+			endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+			usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
+			allocatedInvoiceCount = allocatedFreeTierInvoiceCount;
+			remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
+			limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
+		}
+		else if (tier == Tier.PRO) {
+			if (tenant.getStripeSubscription() == null
+					|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
+			}
+			LocalDate tierStartedDate = DateTimeUtils
+				.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
+			startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+			endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+			usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
+			allocatedInvoiceCount = allocatedProTierInvoiceCount;
+			remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
+			limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
+		}
+		else {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS);
 		}
+
+		invoiceTierLimitationResponseDto.setAllocatedCount(allocatedInvoiceCount);
+		invoiceTierLimitationResponseDto.setRemainingCount(remainingCount);
+		invoiceTierLimitationResponseDto.setLimitedReached(limitedReached);
+
+		return invoiceTierLimitationResponseDto;
 	}
 
 }

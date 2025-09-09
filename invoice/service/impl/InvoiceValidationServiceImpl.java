@@ -95,7 +95,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateInvoiceItem(CreateInvoiceItemDto item) {
-		if (item.getItemName() == null || item.getItemName().trim().isEmpty()) {
+		if (item.getItemName() == null || item.getItemName().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_ITEM_NAME_REQUIRED);
 		}
 
@@ -139,11 +139,11 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateInvoiceExpense(CreateInvoiceExpenseDto expense) {
-		if (expense.getName() == null || expense.getName().trim().isEmpty()) {
+		if (expense.getName() == null || expense.getName().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_NAME_REQUIRED);
 		}
 
-		if (expense.getCategory() == null || expense.getCategory().toString().trim().isEmpty()) {
+		if (expense.getCategory() == null || expense.getCategory().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_CATEGORY_REQUIRED);
 		}
 
@@ -163,7 +163,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 
 	private void validateExpenseAttachments(List<CreateExpenseAttachmentDto> attachments) {
 		attachments.forEach(attachment -> {
-			if (attachment.getAttachmentUrl() == null || attachment.getAttachmentUrl().trim().isEmpty()) {
+			if (attachment.getAttachmentUrl() == null || attachment.getAttachmentUrl().isEmpty()) {
 				throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_ATTACHMENT_URL_REQUIRED);
 			}
 		});
@@ -177,7 +177,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateInvoiceTax(CreateInvoiceTaxDto tax) {
-		if (tax.getTaxType() == null || tax.getTaxType().trim().isEmpty()) {
+		if (tax.getTaxType() == null || tax.getTaxType().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_TAX_TYPE_REQUIRED);
 		}
 
@@ -192,13 +192,13 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_REQUEST_NULL);
 		}
 
-		if (invoiceFilterRequestDto.getSortBy() == null || invoiceFilterRequestDto.getSortBy().trim().isEmpty()) {
+		if (invoiceFilterRequestDto.getSortBy() == null || invoiceFilterRequestDto.getSortBy().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_BY_INVALID);
 		}
 
 		boolean isValidSortField = false;
 		for (String field : ALLOWED_SORT_FIELDS) {
-			if (field.equalsIgnoreCase(invoiceFilterRequestDto.getSortBy().trim())) {
+			if (field.equalsIgnoreCase(invoiceFilterRequestDto.getSortBy())) {
 				isValidSortField = true;
 				break;
 			}
@@ -209,11 +209,11 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		}
 
 		if (invoiceFilterRequestDto.getSortDirection() == null
-				|| invoiceFilterRequestDto.getSortDirection().trim().isEmpty()) {
+				|| invoiceFilterRequestDto.getSortDirection().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
 		}
 
-		String sortDirection = invoiceFilterRequestDto.getSortDirection().trim().toUpperCase();
+		String sortDirection = invoiceFilterRequestDto.getSortDirection().toUpperCase();
 		if (!sortDirection.equals("ASC") && !sortDirection.equals("DESC")) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID);
 		}

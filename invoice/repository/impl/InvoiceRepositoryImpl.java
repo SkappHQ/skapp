@@ -64,8 +64,7 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (invoiceFilterRequestDto.getInvoiceId() != null
-				&& !invoiceFilterRequestDto.getInvoiceId().trim().isEmpty()) {
+		if (invoiceFilterRequestDto.getInvoiceId() != null && !invoiceFilterRequestDto.getInvoiceId().isEmpty()) {
 			predicates.add(cb.like(cb.lower(invoice.get(Invoice_.invoiceId)),
 					"%" + invoiceFilterRequestDto.getInvoiceId().toLowerCase() + "%"));
 		}
