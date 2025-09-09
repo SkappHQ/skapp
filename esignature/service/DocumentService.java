@@ -52,4 +52,6 @@ public interface DocumentService {
 
 	ResponseEntityDto getDocumentDimensions(Long id);
 
+	ResponseEntityDto generateImageListFromPdf(Long id);
+
 }

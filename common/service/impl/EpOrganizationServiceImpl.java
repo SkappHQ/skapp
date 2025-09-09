@@ -24,6 +24,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -72,13 +73,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationDao epOrganizationDao;
 
-	private final AttendanceConfigService attendanceConfigService;
-
 	private final EpCommonEmailService emailService;
-
-	private final LeaveTypeService leaveTypeService;
-
-	private final LeaveCycleService leaveCycleService;
 
 	private final TenantService tenantService;
 
@@ -94,10 +89,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
-	private final ObjectMapper objectMapper;
-
-	private final OrganizationConfigDao organizationConfigDao;
-
 	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
 	private final CacheService cacheService;
@@ -111,18 +102,17 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
 			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
 			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
-			TimeConfigDao timeConfigDao, EpOrganizationDao epOrganizationDao, EpCommonEmailService emailService,
-			TenantService tenantService, TenantContext tenantContext, EpCommonMapper epCommonMapper,
-			SuperAdminDao superAdminDao, UserDao userDao, ApplicationEventPublisher applicationEventPublisher,
-			EpOrganizationCalenderDao epOrganizationCalenderDao, EpOrganizationConfigDao epOrganizationConfigDao,
-			CacheService cacheService, DashboardEmailService dashboardEmailService) {
+			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
+			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
-				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao);
+				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
+				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
-		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
-		this.leaveTypeService = leaveTypeService;
-		this.leaveCycleService = leaveCycleService;
 		this.tenantService = tenantService;
 		this.tenantContext = tenantContext;
 		this.epCommonMapper = epCommonMapper;
@@ -130,8 +120,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.userDao = userDao;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
-		this.objectMapper = objectMapper;
-		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;

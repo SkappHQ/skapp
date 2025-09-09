@@ -32,6 +32,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
@@ -150,6 +151,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentLinkService documentLinkService;
 
 	private final AuditTrailService auditTrailService;
+
+	private final DocumentVersionDao documentVersionDao;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -1469,6 +1472,42 @@ public class DocumentServiceImpl implements DocumentService {
 		Map<Integer, PageDimensionResponseDto> result = documentProcessingService
 			.processDocumentDimensions(documentBytes);
 		return new ResponseEntityDto(false, result);
+	}
+
+	@Override
+	public ResponseEntityDto generateImageListFromPdf(Long id) {
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
+
+		Document document = documentRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		DocumentVersion documentVersion = documentVersionDao
+			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+		boolean isRecipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
+
+		if (!isRecipient) {
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
+			if (!isOwner) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+			}
+		}
+
+		if (documentVersion.getFilePath() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
+		}
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+		List<byte[]> imageList = documentProcessingService.convertPDFdocumentToImageList(documentBytes);
+		List<String> base64Images = imageList.stream()
+			.map(imgBytes -> Base64.getEncoder().encodeToString(imgBytes))
+			.toList();
+
+		return new ResponseEntityDto(false, base64Images);
 	}
 
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
