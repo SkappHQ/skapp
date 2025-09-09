@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -53,6 +54,8 @@ public class CustomerServiceImpl implements CustomerService {
 	private final CustomerContactDao customerContactDao;
 
 	private final CustomerValidationService customerValidationService;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	public ResponseEntityDto createCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
@@ -246,7 +249,8 @@ public class CustomerServiceImpl implements CustomerService {
 		customerContact.setIsActive(false);
 		customerContactDao.save(customerContact);
 
-		return new ResponseEntityDto(false, "Customer contact deleted successfully");
+		return new ResponseEntityDto(
+				messageUtil.getMessage(InvoiceMessageConstant.INVOICE_SUCCESS_DELETE_CUSTOMER_CONTACT), false);
 
 	}
 
