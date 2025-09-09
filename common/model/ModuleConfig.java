@@ -29,4 +29,7 @@ public class ModuleConfig {
 	@Column(name = "invoice_module")
 	private boolean invoiceModule;
 
+	@Column(name = "pm_module")
+	private boolean pmModule;
+
 }
