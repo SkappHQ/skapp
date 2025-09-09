@@ -7,10 +7,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CustomerContactDao extends JpaRepository<CustomerContact, Long>, CustomerContactRepository {
+public interface CustomerContactDao extends JpaRepository<CustomerContact, Long> {
 
 	boolean existsByEmail(String email);
 
 	Optional<CustomerContact> findByIdAndIsActive(Long id, boolean isActive);
+
+	boolean existsByEmailAndIdNot(String email, Long id);
 
 }

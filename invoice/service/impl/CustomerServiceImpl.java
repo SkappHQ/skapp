@@ -1,6 +1,5 @@
 package com.skapp.enterprise.invoice.service.impl;
 
-import com.google.firebase.database.annotations.NotNull;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
@@ -25,6 +24,7 @@ import com.skapp.enterprise.invoice.service.CustomerValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.CustomerStatus;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

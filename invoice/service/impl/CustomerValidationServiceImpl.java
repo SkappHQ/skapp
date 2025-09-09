@@ -58,7 +58,7 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_CONTACT_NAME_REQUIRED);
 		}
 
-		if ((customerContact == null || customerContact.getName() == null)
+		if (customerContactDetailsDto.getContactName() != null
 				&& customerContactDetailsDto.getContactName().length() > InvoiceCommonConstant.CUSTOMER_NAME_LENGTH) {
 			throw new ValidationException(
 					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_CONTACT_NAME_MAX_LENGTH_EXCEEDED);
@@ -78,7 +78,17 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 
 		Validations.validateEmail(customerContactDetailsDto.getEmail());
 
-		if (customerContactDao.existsByEmail(customerContactDetailsDto.getEmail())) {
+		boolean emailExists;
+
+		if (customerContact != null && customerContact.getId() != null) {
+			emailExists = customerContactDao.existsByEmailAndIdNot(customerContactDetailsDto.getEmail(),
+					customerContact.getId());
+		}
+		else {
+			emailExists = customerContactDao.existsByEmail(customerContactDetailsDto.getEmail());
+		}
+
+		if (emailExists) {
 			throw new ValidationException(
 					InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
