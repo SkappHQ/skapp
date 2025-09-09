@@ -163,6 +163,18 @@ const getDrawerRoutes = ({
         }
       }
 
+      if (route?.name === "Invoices") {
+        console.log("userRoles", userRoles);
+
+        const isInvoiceManager = userRoles?.includes(
+          ManagerTypes.INVOICE_MANAGER
+        );
+
+        if (!isInvoiceManager) {
+          return null;
+        }
+      }
+
       if (route?.name === "Settings") {
         const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
 
