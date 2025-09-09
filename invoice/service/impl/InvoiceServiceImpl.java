@@ -9,7 +9,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
-import com.skapp.enterprise.common.util.TierStartEndExtractor;
+import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.ExpenseAttachment;
@@ -305,8 +305,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			if (tier == Tier.FREE) {
 				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = TierStartEndExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
 				allocatedInvoiceCount = allocatedFreeTierInvoiceCount;
 				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
@@ -319,8 +319,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 				}
 				LocalDate tierStartedDate = DateTimeUtils
 					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
-				startDateTime = TierStartEndExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
 				allocatedInvoiceCount = allocatedProTierInvoiceCount;
 				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);

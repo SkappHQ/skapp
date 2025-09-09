@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @UtilityClass
-public class TierStartEndExtractor {
+public class TierStartEndDateExtractor {
 
 	private static final int LEAP_DAY = 29;
 
