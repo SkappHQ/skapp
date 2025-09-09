@@ -164,8 +164,6 @@ const getDrawerRoutes = ({
       }
 
       if (route?.name === "Invoices") {
-        console.log("userRoles", userRoles);
-
         const isInvoiceManager = userRoles?.includes(
           ManagerTypes.INVOICE_MANAGER
         );
