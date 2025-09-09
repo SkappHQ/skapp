@@ -3,7 +3,6 @@ package com.skapp.enterprise.invoice.payload.request.invoice;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

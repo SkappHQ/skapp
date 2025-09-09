@@ -2,8 +2,8 @@ package com.skapp.enterprise.invoice.repository.impl;
 
 import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.Invoice_;
+import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.repository.InvoiceRepository;
-import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -29,16 +29,13 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 	private EntityManager entityManager;
 
 	@Override
-	public Page<Invoice> findInvoicesWithFilters(String invoiceId, LocalDateTime invoiceDateFrom,
-			LocalDateTime invoiceDateTo, LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Long customerId,
-			Long projectId, InvoiceStatus status, Pageable pageable) {
+	public Page<Invoice> findInvoicesWithFilters(InvoiceFilterRequestDto invoiceFilterRequestDto, Pageable pageable) {
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
 		Root<Invoice> invoice = query.from(Invoice.class);
 
-		List<Predicate> predicates = buildPredicates(cb, invoice, invoiceId, invoiceDateFrom, invoiceDateTo,
-				dueDateFrom, dueDateTo, customerId, projectId, status);
+		List<Predicate> predicates = buildPredicates(cb, invoice, invoiceFilterRequestDto);
 
 		if (!predicates.isEmpty()) {
 			query.where(predicates.toArray(new Predicate[0]));
@@ -54,45 +51,49 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		typedQuery.setMaxResults(pageable.getPageSize());
 		List<Invoice> results = typedQuery.getResultList();
 
-		Long total = getTotalCount(cb, invoiceId, invoiceDateFrom, invoiceDateTo, dueDateFrom, dueDateTo, customerId,
-				projectId, status);
+		Long total = getTotalCount(cb, invoiceFilterRequestDto);
 
 		return new PageImpl<>(results, pageable, total);
 	}
 
-	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Invoice> invoice, String invoiceId,
-			LocalDateTime invoiceDateFrom, LocalDateTime invoiceDateTo, LocalDateTime dueDateFrom,
-			LocalDateTime dueDateTo, Long customerId, Long projectId, InvoiceStatus status) {
+	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Invoice> invoice,
+			InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (invoiceId != null && !invoiceId.trim().isEmpty()) {
-			predicates.add(cb.like(cb.lower(invoice.get(Invoice_.invoiceId)), "%" + invoiceId.toLowerCase() + "%"));
+		if (invoiceFilterRequestDto.getInvoiceId() != null
+				&& !invoiceFilterRequestDto.getInvoiceId().trim().isEmpty()) {
+			predicates.add(cb.like(cb.lower(invoice.get(Invoice_.invoiceId)),
+					"%" + invoiceFilterRequestDto.getInvoiceId().toLowerCase() + "%"));
 		}
-		if (invoiceDateFrom != null) {
-			predicates.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.invoiceDate), invoiceDateFrom));
+		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.invoiceDate),
+					invoiceFilterRequestDto.getInvoiceDateFrom()));
 		}
-		if (invoiceDateTo != null) {
-			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.invoiceDate), invoiceDateTo));
-		}
-
-		if (dueDateFrom != null) {
-			predicates.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), dueDateFrom));
-		}
-		if (dueDateTo != null) {
-			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), dueDateTo));
+		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
+			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.invoiceDate),
+					invoiceFilterRequestDto.getInvoiceDateTo()));
 		}
 
-		if (customerId != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.customerId), customerId));
+		if (invoiceFilterRequestDto.getDueDateFrom() != null) {
+			predicates
+				.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateFrom()));
+		}
+		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
+			predicates
+				.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getInvoiceDateTo()));
 		}
 
-		if (projectId != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.projectId), projectId));
+		if (invoiceFilterRequestDto.getCustomerId() != null) {
+			predicates.add(cb.equal(invoice.get(Invoice_.customerId), invoiceFilterRequestDto.getCustomerId()));
 		}
 
-		if (status != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.status), status));
+		if (invoiceFilterRequestDto.getProjectId() != null) {
+			predicates.add(cb.equal(invoice.get(Invoice_.projectId), invoiceFilterRequestDto.getProjectId()));
+		}
+
+		if (invoiceFilterRequestDto.getStatus() != null) {
+			predicates.add(cb.equal(invoice.get(Invoice_.status), invoiceFilterRequestDto.getStatus()));
 		}
 
 		return predicates;
@@ -119,16 +120,12 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		return orders;
 	}
 
-	private Long getTotalCount(CriteriaBuilder cb, String invoiceId, LocalDateTime invoiceDateFrom,
-			LocalDateTime invoiceDateTo, LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Long customerId,
-			Long projectId, InvoiceStatus status) {
-
+	private Long getTotalCount(CriteriaBuilder cb, InvoiceFilterRequestDto invoiceFilterRequestDto) {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<Invoice> countRoot = countQuery.from(Invoice.class);
 		countQuery.select(cb.count(countRoot));
 
-		List<Predicate> predicates = buildPredicates(cb, countRoot, invoiceId, invoiceDateFrom, invoiceDateTo,
-				dueDateFrom, dueDateTo, customerId, projectId, status);
+		List<Predicate> predicates = buildPredicates(cb, countRoot, invoiceFilterRequestDto);
 
 		if (!predicates.isEmpty()) {
 			countQuery.where(predicates.toArray(new Predicate[0]));

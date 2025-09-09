@@ -8,7 +8,6 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -256,13 +255,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (invoiceFilterRequestDto.getProjectId() != null
 				&& invoiceFilterRequestDto.getProjectId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PROJECT_ID_INVALID);
-		}
-	}
-
-	@Override
-	public void validateInvoiceSearchRequest(InvoiceSearchRequestDto invoiceSearchRequestDto) {
-		if (invoiceSearchRequestDto.getInvoiceId() != null && invoiceSearchRequestDto.getInvoiceId().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID);
 		}
 	}
 

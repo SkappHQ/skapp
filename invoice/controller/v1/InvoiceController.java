@@ -3,7 +3,6 @@ package com.skapp.enterprise.invoice.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -45,15 +44,6 @@ public class InvoiceController {
 
 		ResponseEntityDto response = invoiceService.getFilteredInvoices(invoiceFilterRequestDto);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Search .", description = "This endpoint Search invoices by ???.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
-	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> searchInvoicesByName(
-			@Valid InvoiceSearchRequestDto invoiceSearchRequestDto) {
-		ResponseEntityDto response = invoiceService.searchInvoices(invoiceSearchRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

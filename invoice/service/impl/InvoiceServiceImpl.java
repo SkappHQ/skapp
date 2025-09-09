@@ -22,10 +22,9 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
+import com.skapp.enterprise.invoice.payload.response.InvoiceKPIResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceKPIResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
@@ -251,11 +250,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		Sort sort = Sort.by(direction, sortBy);
 		Pageable pageable = PageRequest.of(page, size, sort);
 
-		Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto.getInvoiceId(),
-				invoiceFilterRequestDto.getInvoiceDateFrom(), invoiceFilterRequestDto.getInvoiceDateTo(),
-				invoiceFilterRequestDto.getDueDateFrom(), invoiceFilterRequestDto.getDueDateTo(),
-				invoiceFilterRequestDto.getCustomerId(), invoiceFilterRequestDto.getProjectId(),
-				invoiceFilterRequestDto.getStatus(), pageable);
+		Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto, pageable);
 
 		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
 			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
@@ -277,13 +272,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		InvoiceKPIResponseDto summary = new InvoiceKPIResponseDto(dueInvoices, overdueInvoices);
 
 		return new ResponseEntityDto(false, summary);
-	}
-
-	@Override
-	public ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto) {
-		invoiceValidationService.validateInvoiceSearchRequest(invoiceSearchRequestDto);
-		List<Invoice> invoices = invoiceDao.findByInvoiceIdContaining(invoiceSearchRequestDto.getInvoiceId());
-		return new ResponseEntityDto(false, invoiceMapper.invoicesToInvoiceResponseDtos(invoices));
 	}
 
 	@Override
