@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("v1/ep/invoice")
+@RequestMapping("/v1/ep/invoice")
 public class InvoiceController {
 
 	private final InvoiceService invoiceService;
