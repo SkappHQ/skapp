@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.model;
 
 import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.CurrencyType;
+import com.skapp.enterprise.invoice.type.CustomerStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,6 +44,10 @@ public class Customer extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "currency")
 	private CurrencyType currency;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private CustomerStatus status;
 
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
 	private List<CustomerContact> customerContacts;
