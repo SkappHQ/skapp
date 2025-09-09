@@ -24,9 +24,6 @@ public class InvoiceTax {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "invoice_id", nullable = false)
-	private Long invoiceId;
-
 	@Column(name = "tax_type", nullable = false)
 	private String taxType;
 
@@ -34,7 +31,7 @@ public class InvoiceTax {
 	private Double taxPercentage;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "invoice_id", insertable = false, updatable = false)
+	@JoinColumn(name = "invoice_id", nullable = false)
 	private Invoice invoice;
 
 }

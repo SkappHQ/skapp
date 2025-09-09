@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.common.util.TierStartEndExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.ExpenseAttachment;
@@ -24,7 +25,7 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceSearchRequestDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceSummaryResponseDto;
+import com.skapp.enterprise.invoice.payload.response.InvoiceKPIResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
@@ -75,7 +76,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = processInvoiceTierLimitation();
 
 		if (invoiceTierLimitationResponseDto.isLimitedReached()) {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_ENVELOPE_LIMIT_REACHED);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
 		}
 
 		invoiceValidationService.validateCreateInvoiceRequest(createInvoiceRequestDto);
@@ -88,33 +89,25 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 
 		Invoice invoice = createInvoiceEntity(createInvoiceRequestDto);
-		Invoice savedInvoice = invoiceDao.save(invoice);
 
-		List<InvoiceItem> invoiceItems = createInvoiceItems(createInvoiceRequestDto.getInvoiceItems(), savedInvoice);
-		savedInvoice.setInvoiceItems(invoiceItems);
+		List<InvoiceItem> invoiceItems = createInvoiceItems(createInvoiceRequestDto.getInvoiceItems(), invoice);
+		invoice.setInvoiceItems(invoiceItems);
 
 		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
-			List<InvoiceExpense> invoiceExpenses = createInvoiceExpensesWithoutAttachments(
-					createInvoiceRequestDto.getInvoiceExpenses(), savedInvoice);
-			savedInvoice.setInvoiceExpenses(invoiceExpenses);
+			List<InvoiceExpense> invoiceExpenses = createInvoiceExpenses(createInvoiceRequestDto.getInvoiceExpenses(),
+					invoice);
+			invoice.setInvoiceExpenses(invoiceExpenses);
 		}
 
 		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceTaxes())) {
-			List<InvoiceTax> invoiceTaxes = createInvoiceTaxes(createInvoiceRequestDto.getInvoiceTaxes(), savedInvoice);
-			savedInvoice.setInvoiceTaxes(invoiceTaxes);
+			List<InvoiceTax> invoiceTaxes = createInvoiceTaxes(createInvoiceRequestDto.getInvoiceTaxes(), invoice);
+			invoice.setInvoiceTaxes(invoiceTaxes);
 		}
 
-		calculateInvoiceTotals(savedInvoice);
-		Invoice invoiceWithChildIds = invoiceDao.save(savedInvoice);
+		calculateInvoiceTotals(invoice);
+		invoiceDao.save(invoice);
 
-		if (!CollectionUtils.isEmpty(createInvoiceRequestDto.getInvoiceExpenses())) {
-			addAttachmentsToExpenses(createInvoiceRequestDto.getInvoiceExpenses(),
-					invoiceWithChildIds.getInvoiceExpenses());
-		}
-
-		Invoice finalInvoice = invoiceDao.save(invoiceWithChildIds);
-
-		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(finalInvoice);
+		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -154,7 +147,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return itemDtos.stream().map(itemDto -> {
 			InvoiceItem item = new InvoiceItem();
 			item.setInvoice(invoice);
-			item.setInvoiceId(invoice.getId());
 			item.setItemName(itemDto.getItemName());
 			item.setDescription(itemDto.getDescription());
 			item.setQuantity(itemDto.getQuantity());
@@ -177,16 +169,24 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}).collect(Collectors.toList());
 	}
 
-	private List<InvoiceExpense> createInvoiceExpensesWithoutAttachments(List<CreateInvoiceExpenseDto> expenseDtos,
-			Invoice invoice) {
+	private List<InvoiceExpense> createInvoiceExpenses(List<CreateInvoiceExpenseDto> expenseDtos, Invoice invoice) {
 		return expenseDtos.stream().map(expenseDto -> {
 			InvoiceExpense expense = new InvoiceExpense();
 			expense.setInvoice(invoice);
-			expense.setInvoiceId(invoice.getId());
 			expense.setName(expenseDto.getName());
 			expense.setCategory(expenseDto.getCategory());
 			expense.setDate(expenseDto.getDate());
 			expense.setAmount(expenseDto.getAmount());
+
+			if (!CollectionUtils.isEmpty(expenseDto.getAttachments())) {
+				List<ExpenseAttachment> attachments = expenseDto.getAttachments().stream().map(attachmentDto -> {
+					ExpenseAttachment attachment = new ExpenseAttachment();
+					attachment.setExpense(expense);
+					attachment.setAttachmentUrl(attachmentDto.getAttachmentUrl());
+					return attachment;
+				}).collect(Collectors.toList());
+				expense.setAttachments(attachments);
+			}
 
 			return expense;
 		}).collect(Collectors.toList());
@@ -196,7 +196,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return taxDtos.stream().map(taxDto -> {
 			InvoiceTax tax = new InvoiceTax();
 			tax.setInvoice(invoice);
-			tax.setInvoiceId(invoice.getId());
 			tax.setTaxType(taxDto.getTaxType());
 			tax.setTaxPercentage(taxDto.getTaxPercentage());
 			return tax;
@@ -238,25 +237,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoice.setPayableTotalAmount(finalTotal);
 	}
 
-	private void addAttachmentsToExpenses(List<CreateInvoiceExpenseDto> expenseDtos,
-			List<InvoiceExpense> savedExpenses) {
-		for (int i = 0; i < expenseDtos.size(); i++) {
-			CreateInvoiceExpenseDto expenseDto = expenseDtos.get(i);
-			InvoiceExpense savedExpense = savedExpenses.get(i);
-
-			if (!CollectionUtils.isEmpty(expenseDto.getAttachments())) {
-				List<ExpenseAttachment> attachments = expenseDto.getAttachments().stream().map(attachmentDto -> {
-					ExpenseAttachment attachment = new ExpenseAttachment();
-					attachment.setExpense(savedExpense);
-					attachment.setExpenseId(savedExpense.getId());
-					attachment.setAttachmentUrl(attachmentDto.getAttachmentUrl());
-					return attachment;
-				}).collect(Collectors.toList());
-				savedExpense.setAttachments(attachments);
-			}
-		}
-	}
-
 	@Override
 	public ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
@@ -271,10 +251,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 		Sort sort = Sort.by(direction, sortBy);
 		Pageable pageable = PageRequest.of(page, size, sort);
 
-		Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto.getInvoiceDateFrom(),
-				invoiceFilterRequestDto.getInvoiceDateTo(), invoiceFilterRequestDto.getDueDateFrom(),
-				invoiceFilterRequestDto.getDueDateTo(), invoiceFilterRequestDto.getCustomerId(),
-				invoiceFilterRequestDto.getProjectId(), invoiceFilterRequestDto.getStatus(), pageable);
+		Page<Invoice> invoicePage = invoiceDao.findInvoicesWithFilters(invoiceFilterRequestDto.getInvoiceId(),
+				invoiceFilterRequestDto.getInvoiceDateFrom(), invoiceFilterRequestDto.getInvoiceDateTo(),
+				invoiceFilterRequestDto.getDueDateFrom(), invoiceFilterRequestDto.getDueDateTo(),
+				invoiceFilterRequestDto.getCustomerId(), invoiceFilterRequestDto.getProjectId(),
+				invoiceFilterRequestDto.getStatus(), pageable);
 
 		List<InvoiceResponseDto> invoiceResponseDtos = invoiceMapper
 			.invoicesToInvoiceResponseDtos(invoicePage.getContent());
@@ -288,15 +269,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto getInvoicesSummary() {
-		long totalInvoices = invoiceDao.count();
+	public ResponseEntityDto getInvoiceKPI() {
+
 		long dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
 		long overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
-		long paidInvoices = invoiceDao.countByStatus(InvoiceStatus.PAID);
-		long deletedInvoices = invoiceDao.countByStatus(InvoiceStatus.DELETED);
 
-		InvoiceSummaryResponseDto summary = new InvoiceSummaryResponseDto(totalInvoices, dueInvoices, overdueInvoices,
-				paidInvoices, deletedInvoices);
+		InvoiceKPIResponseDto summary = new InvoiceKPIResponseDto(dueInvoices, overdueInvoices);
 
 		return new ResponseEntityDto(false, summary);
 	}
@@ -339,8 +317,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			if (tier == Tier.FREE) {
 				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
 				allocatedInvoiceCount = allocatedFreeTierInvoiceCount;
 				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
@@ -353,8 +331,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 				}
 				LocalDate tierStartedDate = DateTimeUtils
 					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 				usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
 				allocatedInvoiceCount = allocatedProTierInvoiceCount;
 				remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
@@ -377,52 +355,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 		catch (Exception e) {
 			log.error("Error in processInvoiceTierLimitation: {}", e.getMessage(), e);
-			throw e;
-		}
-	}
-
-	private static final int LEAP_DAY = 29;
-
-	private static final java.time.Month FEBRUARY = java.time.Month.FEBRUARY;
-
-	private static final java.time.Month MARCH = java.time.Month.MARCH;
-
-	private static final int FIRST_DAY = 1;
-
-	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-		int year = today.getYear();
-		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
-		if (today.isBefore(thisYearStart)) {
-			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
-		}
-		return thisYearStart.atStartOfDay();
-	}
-
-	private LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
-		int month = tierStartedDate.getMonthValue();
-		int day = tierStartedDate.getDayOfMonth();
-		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
-			return java.time.Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY)
-					: LocalDate.of(year, MARCH, FIRST_DAY);
-		}
-		else {
-			return LocalDate.of(year, month, day);
-		}
-	}
-
-	private LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
-		int year = startDateTime.getYear() + 1;
-		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
-			if (java.time.Year.isLeap(year)) {
-				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
-			}
-			else {
-				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
-			}
-		}
-		else {
-			return startDateTime.plusYears(1);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS);
 		}
 	}
 

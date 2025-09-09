@@ -66,12 +66,12 @@ public class InvoiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Retrieve invoices Summary Data for the current tenant/organization",
-			description = "Provides the paid and due count of invoices.")
+	@Operation(summary = "Retrieve invoices KPI Data for the current tenant/organization",
+			description = "Provides the overdue and due count of invoices.")
 	@GetMapping(value = "summary", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getInvoicesSummary() {
-		ResponseEntityDto response = invoiceService.getInvoicesSummary();
+	public ResponseEntity<ResponseEntityDto> getInvoiceKPI() {
+		ResponseEntityDto response = invoiceService.getInvoiceKPI();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

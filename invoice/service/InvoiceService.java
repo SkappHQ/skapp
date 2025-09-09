@@ -13,7 +13,7 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceTierLimitations();
 
-	ResponseEntityDto getInvoicesSummary();
+	ResponseEntityDto getInvoiceKPI();
 
 	ResponseEntityDto searchInvoices(InvoiceSearchRequestDto invoiceSearchRequestDto);
 

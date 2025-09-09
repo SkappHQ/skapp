@@ -16,7 +16,6 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_VALIDATION_CUSTOMER_EMAIL_ALREADY_EXISTS("validation.customer.email.already-exists"),
 	INVOICE_ERROR_CUSTOMER_NAME_REQUIRED("validation.error.invoice.customer-name-required"),
 	INVOICE_ERROR_CUSTOMER_NAME_MAX_LENGTH_EXCEEDED("validation.error.invoice.customer-name-max-length-exceeded"),
-	INVOICE_ERROR_ENVELOPE_LIMIT_REACHED("invoice.error.envelope.limit-reached"),
 
 	// Main invoice validation constants
 	INVOICE_ERROR_CUSTOMER_ID_REQUIRED("invoice.error.customer.id.required"),
@@ -46,14 +45,11 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	// Expense attachments validation constants
 	INVOICE_ERROR_EXPENSE_ATTACHMENT_URL_REQUIRED("invoice.error.expense.attachment.url.required"),
 
-    // Invoice taxes validation constants
+	// Invoice taxes validation constants
 	INVOICE_ERROR_TAX_TYPE_REQUIRED("invoice.error.tax.type.required"),
 	INVOICE_ERROR_TAX_PERCENTAGE_INVALID("invoice.error.tax.percentage.invalid"),
 
 	// Invoice filter validation constants
-	INVOICE_ERROR_FILTER_PAGE_NEGATIVE("invoice.error.filter.page.negative"),
-	INVOICE_ERROR_FILTER_SIZE_INVALID("invoice.error.filter.size.invalid"),
-	INVOICE_ERROR_FILTER_SIZE_EXCEEDED("invoice.error.filter.size.exceeded"),
 	INVOICE_ERROR_FILTER_SORT_BY_INVALID("invoice.error.filter.sort.by.invalid"),
 	INVOICE_ERROR_FILTER_SORT_DIRECTION_INVALID("invoice.error.filter.sort.direction.invalid"),
 	INVOICE_ERROR_FILTER_DATE_RANGE_INVALID("invoice.error.filter.date.range.invalid"),
@@ -61,7 +57,10 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID("invoice.error.filter.customer.id.invalid"),
 	INVOICE_ERROR_FILTER_PROJECT_ID_INVALID("invoice.error.filter.project.id.invalid"),
 
-	INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID("invoice.error.search.invoice.id.invalid");
+	INVOICE_ERROR_SEARCH_INVOICE_ID_INVALID("invoice.error.search.invoice.id.invalid"),
+
+	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
+	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached");
 
 	private final String messageKey;
 

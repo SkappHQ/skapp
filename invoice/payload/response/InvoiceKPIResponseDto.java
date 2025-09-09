@@ -9,16 +9,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class InvoiceSummaryResponseDto {
+public class InvoiceKPIResponseDto {
 
-	private long totalInvoices;
+	private Long dueInvoices;
 
-	private long dueInvoices;
-
-	private long overdueInvoices;
-
-	private long paidInvoices;
-
-	private long deletedInvoices;
+	private Long overdueInvoices;
 
 }

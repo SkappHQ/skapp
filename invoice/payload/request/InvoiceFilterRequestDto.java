@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Setter
 public class InvoiceFilterRequestDto {
 
+	private String invoiceId;
+
 	private LocalDateTime invoiceDateFrom;
 
 	private LocalDateTime invoiceDateTo;

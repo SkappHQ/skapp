@@ -92,13 +92,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 
 	@Override
 	public void validateCreateInvoiceItemsRequest(List<CreateInvoiceItemDto> invoiceItems) {
-		if (CollectionUtils.isEmpty(invoiceItems)) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_ITEMS_REQUIRED);
-		}
-		for (int i = 0; i < invoiceItems.size(); i++) {
-			CreateInvoiceItemDto item = invoiceItems.get(i);
-			validateInvoiceItem(item);
-		}
+		invoiceItems.forEach(this::validateInvoiceItem);
 	}
 
 	private void validateInvoiceItem(CreateInvoiceItemDto item) {
@@ -136,13 +130,12 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	@Override
 	public void validateCreateInvoiceExpensesRequest(List<CreateInvoiceExpenseDto> invoiceExpenses) {
 		if (!CollectionUtils.isEmpty(invoiceExpenses)) {
-			for (int i = 0; i < invoiceExpenses.size(); i++) {
-				CreateInvoiceExpenseDto expense = invoiceExpenses.get(i);
+			invoiceExpenses.forEach(expense -> {
 				validateInvoiceExpense(expense);
 				if (!CollectionUtils.isEmpty(expense.getAttachments())) {
-					validateExpenseAttachments(expense.getAttachments(), i);
+					validateExpenseAttachments(expense.getAttachments());
 				}
-			}
+			});
 		}
 	}
 
@@ -164,27 +157,23 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		}
 
 		LocalDateTime now = LocalDateTime.now();
-		if (expense.getDate().isAfter(now.plusDays(1))) {
+		if (expense.getDate().isAfter(now)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_FUTURE_DATE_NOT_ALLOWED);
 		}
 	}
 
-	private void validateExpenseAttachments(List<CreateExpenseAttachmentDto> attachments, int expenseIndex) {
-		for (int i = 0; i < attachments.size(); i++) {
-			CreateExpenseAttachmentDto attachment = attachments.get(i);
+	private void validateExpenseAttachments(List<CreateExpenseAttachmentDto> attachments) {
+		attachments.forEach(attachment -> {
 			if (attachment.getAttachmentUrl() == null || attachment.getAttachmentUrl().trim().isEmpty()) {
 				throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_ATTACHMENT_URL_REQUIRED);
 			}
-		}
+		});
 	}
 
 	@Override
 	public void validateCreateInvoiceTaxesRequest(List<CreateInvoiceTaxDto> invoiceTaxes) {
 		if (!CollectionUtils.isEmpty(invoiceTaxes)) {
-			for (int i = 0; i < invoiceTaxes.size(); i++) {
-				CreateInvoiceTaxDto tax = invoiceTaxes.get(i);
-				validateInvoiceTax(tax);
-			}
+			invoiceTaxes.forEach(this::validateInvoiceTax);
 		}
 	}
 
@@ -202,18 +191,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	public void validateInvoiceFilterRequest(InvoiceFilterRequestDto invoiceFilterRequestDto) {
 		if (invoiceFilterRequestDto == null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_REQUEST_NULL);
-		}
-
-		if (invoiceFilterRequestDto.getPage() < 0) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PAGE_NEGATIVE);
-		}
-
-		if (invoiceFilterRequestDto.getSize() <= 0) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getSize() > 100) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_SIZE_EXCEEDED);
 		}
 
 		if (invoiceFilterRequestDto.getSortBy() == null || invoiceFilterRequestDto.getSortBy().trim().isEmpty()) {
@@ -255,35 +232,29 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			}
 		}
 
-		// Validate that filter dates are not too far in the future
-		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime maxFutureDate = now.plusYears(10);
-
-		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null
-				&& invoiceFilterRequestDto.getInvoiceDateFrom().isAfter(maxFutureDate)) {
+		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
 		}
 
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null
-				&& invoiceFilterRequestDto.getInvoiceDateTo().isAfter(maxFutureDate)) {
+		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
 		}
 
-		if (invoiceFilterRequestDto.getDueDateFrom() != null
-				&& invoiceFilterRequestDto.getDueDateFrom().isAfter(maxFutureDate)) {
+		if (invoiceFilterRequestDto.getDueDateFrom() != null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
 		}
 
-		if (invoiceFilterRequestDto.getDueDateTo() != null
-				&& invoiceFilterRequestDto.getDueDateTo().isAfter(maxFutureDate)) {
+		if (invoiceFilterRequestDto.getDueDateTo() != null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
 		}
 
-		if (invoiceFilterRequestDto.getCustomerId() != null && invoiceFilterRequestDto.getCustomerId() <= 0) {
+		if (invoiceFilterRequestDto.getCustomerId() != null
+				&& invoiceFilterRequestDto.getCustomerId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID);
 		}
 
-		if (invoiceFilterRequestDto.getProjectId() != null && invoiceFilterRequestDto.getProjectId() <= 0) {
+		if (invoiceFilterRequestDto.getProjectId() != null
+				&& invoiceFilterRequestDto.getProjectId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PROJECT_ID_INVALID);
 		}
 	}

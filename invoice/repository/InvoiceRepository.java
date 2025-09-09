@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 public interface InvoiceRepository {
 
-	Page<Invoice> findInvoicesWithFilters(LocalDateTime invoiceDateFrom, LocalDateTime invoiceDateTo,
+	Page<Invoice> findInvoicesWithFilters(String invoiceId, LocalDateTime invoiceDateFrom, LocalDateTime invoiceDateTo,
 			LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Long customerId, Long projectId, InvoiceStatus status,
 			Pageable pageable);
 
