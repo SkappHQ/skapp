@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class Customer extends Auditable<String> {
 	private CustomerStatus status;
 
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	@Where(clause = "is_active = true")
 	private List<CustomerContact> customerContacts;
 
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
