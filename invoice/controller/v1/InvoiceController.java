@@ -40,7 +40,7 @@ public class InvoiceController {
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getInvoices(
-			@Valid @RequestBody InvoiceFilterRequestDto invoiceFilterRequestDto) {
+			@Valid InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
 		ResponseEntityDto response = invoiceService.getFilteredInvoices(invoiceFilterRequestDto);
 
