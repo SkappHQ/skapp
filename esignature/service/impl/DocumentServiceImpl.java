@@ -157,8 +157,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final ScheduleService scheduleService;
 
-	private final DocumentVersionDao documentVersionDao;
-
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
