@@ -37,7 +37,7 @@ public class EsignConfigController {
 	@Operation(summary = "Retrieve eSign global configuration settings.",
 			description = "This endpoint retrieves the current eSign configuration settings,"
 					+ " including expiration days, reminder days, and date format.")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_ADMIN', 'ESIGN_EMPLOYEE')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getEsignConfig() {
 
