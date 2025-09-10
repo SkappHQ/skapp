@@ -56,10 +56,16 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 		emailDynamicFields.setWorkEmail(user.getEmail());
 		emailDynamicFields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword(), secretKey));
 
-		if (user.getLoginMethod() == LoginMethod.GOOGLE || user.getLoginMethod() == LoginMethod.MICROSOFT) {
-			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO, emailDynamicFields,
+		if (user.getLoginMethod() == LoginMethod.GOOGLE) {
+			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_GOOGLE_SSO, emailDynamicFields,
 					emailDynamicFields.getWorkEmail());
 		}
+
+		else if (user.getLoginMethod() == LoginMethod.MICROSOFT) {
+			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_MICROSOFT_SSO, emailDynamicFields,
+					emailDynamicFields.getWorkEmail());
+		}
+
 		else if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
 			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1, emailDynamicFields,
 					emailDynamicFields.getWorkEmail());
