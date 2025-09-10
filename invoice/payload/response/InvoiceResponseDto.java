@@ -20,6 +20,8 @@ public class InvoiceResponseDto {
 
 	private Long customerId;
 
+	private String customerName;
+
 	private Long projectId;
 
 	private LocalDateTime invoiceDate;
@@ -47,13 +49,5 @@ public class InvoiceResponseDto {
 	private Double payableTotalAmount;
 
 	private String invoiceLogo;
-
-	private String createdBy;
-
-	private LocalDateTime createdDate;
-
-	private String lastModifiedBy;
-
-	private LocalDateTime lastModifiedDate;
 
 }
