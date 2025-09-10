@@ -15,6 +15,8 @@ public class DashboardEmailDynamicFields {
 
 	private String superAdminEmail;
 
+	private String superAdminName;
+
 	private String contactNumber;
 
 	private String upgradedDateTime;
@@ -24,5 +26,13 @@ public class DashboardEmailDynamicFields {
 	private String cancelledDateTime;
 
 	private String subscriptionStartDate;
+
+	private String issueType;
+
+	private String submittedDateTime;
+
+	private String details;
+
+	private int noOfAttachments = 0;
 
 }

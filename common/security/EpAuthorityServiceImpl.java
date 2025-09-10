@@ -58,6 +58,9 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 			if (auth.contains(ModuleType.ESIGN.name())) {
 				return moduleConfig.isEsignModule();
 			}
+			if (auth.contains(ModuleType.PM.name())) {
+				return moduleConfig.isPmModule();
+			}
 			if (auth.contains(ModuleType.INVOICE.name())) {
 				return moduleConfig.isInvoiceModule();
 			}
