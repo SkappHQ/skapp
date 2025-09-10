@@ -25,14 +25,14 @@ import java.util.List;
 @Order(1)
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
-	private static final String INTERNAL_API_PATH = "/internal/v1/ep/users";
+	private static final List<String> INTERNAL_API_PATHS = List.of("/internal/v1/ep/users", "/internal/v1/ep/versions");
 
 	@Value("${internal.api.key}")
 	private String expectedApiKey;
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-		return !request.getRequestURI().equals(INTERNAL_API_PATH);
+		return INTERNAL_API_PATHS.stream().noneMatch(path -> request.getRequestURI().equals(path));
 	}
 
 	@Override
