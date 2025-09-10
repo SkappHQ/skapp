@@ -10,15 +10,10 @@ import java.io.IOException;
 @JsonComponent
 public class TrimmingStringDeserializer extends JsonDeserializer<String> {
 
-    @Override
-    public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-            throws IOException {
-        String value = jsonParser.getValueAsString();
-        return value != null ? value.trim() : null;
-    }
+	@Override
+	public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+		String value = jsonParser.getValueAsString();
+		return value != null ? value.trim() : null;
+	}
+
 }
-
-
-
-
-
