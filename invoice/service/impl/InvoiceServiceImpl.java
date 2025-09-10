@@ -10,7 +10,6 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
-import com.skapp.enterprise.common.util.DtoStringTrimmer;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
@@ -84,8 +83,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		if (invoiceTierLimitationResponseDto.isLimitedReached()) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
 		}
-
-		DtoStringTrimmer.trimStrings(createInvoiceRequestDto);
 
 		Optional<Customer> optionalCustomer = customerDao.findById(createInvoiceRequestDto.getCustomerId());
 
@@ -212,7 +209,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public ResponseEntityDto getFilteredInvoices(InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
-		DtoStringTrimmer.trimStrings(invoiceFilterRequestDto);
 		invoiceValidationService.validateInvoiceFilterRequest(invoiceFilterRequestDto);
 
 		int page = invoiceFilterRequestDto.getPage();
