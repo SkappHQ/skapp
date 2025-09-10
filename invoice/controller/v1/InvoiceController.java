@@ -39,7 +39,8 @@ public class InvoiceController {
 			description = "This endpoint retrieves paginated invoices list with optional filtering capabilities.")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getFilteredInvoices(@Valid InvoiceFilterRequestDto invoiceFilterRequestDto) {
+	public ResponseEntity<ResponseEntityDto> getFilteredInvoices(
+			@Valid InvoiceFilterRequestDto invoiceFilterRequestDto) {
 
 		ResponseEntityDto response = invoiceService.getFilteredInvoices(invoiceFilterRequestDto);
 

@@ -22,7 +22,7 @@ public interface InvoiceMapper {
 	InvoiceConfigResponseDto invoiceConfigToInvoiceConfigResponseDto(InvoiceConfig invoiceConfig);
 
 	@Mapping(target = "customerId", source = "invoice.customer.id")
-    @Mapping(target = "customerName", source = "invoice.customer.name")
+	@Mapping(target = "customerName", source = "invoice.customer.name")
 	InvoiceResponseDto invoiceToInvoiceResponseDto(Invoice invoice);
 
 	@Mapping(target = "customerId", source = "invoice.customer.id")
