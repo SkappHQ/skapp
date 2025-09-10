@@ -77,13 +77,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationDao epOrganizationDao;
 
-	private final AttendanceConfigService attendanceConfigService;
-
 	private final EpCommonEmailService emailService;
-
-	private final LeaveTypeService leaveTypeService;
-
-	private final LeaveCycleService leaveCycleService;
 
 	private final TenantService tenantService;
 
@@ -98,10 +92,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
-
-	private final ObjectMapper objectMapper;
-
-	private final OrganizationConfigDao organizationConfigDao;
 
 	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
@@ -129,6 +119,12 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
 			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
+			DashboardEmailService dashboardEmailService) {
+			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
+			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
+			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
+			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
+			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
 			DashboardEmailService dashboardEmailService, ModuleService moduleService,
 			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService,
 			InvoiceConfigService invoiceConfigService) {
@@ -136,10 +132,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
 				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
-		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
-		this.leaveTypeService = leaveTypeService;
-		this.leaveCycleService = leaveCycleService;
 		this.tenantService = tenantService;
 		this.tenantContext = tenantContext;
 		this.epCommonMapper = epCommonMapper;
@@ -147,8 +140,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.userDao = userDao;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
-		this.objectMapper = objectMapper;
-		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
