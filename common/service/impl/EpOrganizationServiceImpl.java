@@ -56,6 +56,7 @@ import com.skapp.enterprise.common.service.TenantService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.EpOrganizationConfigType;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
+import com.skapp.enterprise.invoice.service.InvoiceConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -76,13 +77,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationDao epOrganizationDao;
 
-	private final AttendanceConfigService attendanceConfigService;
-
 	private final EpCommonEmailService emailService;
-
-	private final LeaveTypeService leaveTypeService;
-
-	private final LeaveCycleService leaveCycleService;
 
 	private final TenantService tenantService;
 
@@ -98,10 +93,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
 
-	private final ObjectMapper objectMapper;
-
-	private final OrganizationConfigDao organizationConfigDao;
-
 	private final EpOrganizationConfigDao epOrganizationConfigDao;
 
 	private final CacheService cacheService;
@@ -114,28 +105,38 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EsignConfigService esignConfigService;
 
+	private final InvoiceConfigService invoiceConfigService;
+
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final ObjectMapper objectMapper;
+
+	private final AttendanceConfigService attendanceConfigService;
+
+	private final LeaveTypeService leaveTypeService;
+
+	private final LeaveCycleService leaveCycleService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
 	public EpOrganizationServiceImpl(OrganizationDao organizationDao, CommonMapper commonMapper,
-			MessageUtil messageUtil, AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
-			LeaveCycleService leaveCycleService, UserService userService, OrganizationConfigDao organizationConfigDao,
-			ObjectMapper objectMapper, EncryptionDecryptionService encryptionDecryptionService,
+			MessageUtil messageUtil, UserService userService, EncryptionDecryptionService encryptionDecryptionService,
 			TimeConfigDao timeConfigDao, OkrConfigService okrConfigService, EpOrganizationDao epOrganizationDao,
 			EpCommonEmailService emailService, TenantService tenantService, TenantContext tenantContext,
 			EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao, UserDao userDao,
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
 			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
 			DashboardEmailService dashboardEmailService, ModuleService moduleService,
-			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService) {
+			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService,
+			InvoiceConfigService invoiceConfigService, OrganizationConfigDao organizationConfigDao,
+			ObjectMapper objectMapper, AttendanceConfigService attendanceConfigService,
+			LeaveTypeService leaveTypeService, LeaveCycleService leaveCycleService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
 				okrConfigService);
 		this.epOrganizationDao = epOrganizationDao;
-		this.attendanceConfigService = attendanceConfigService;
 		this.emailService = emailService;
-		this.leaveTypeService = leaveTypeService;
-		this.leaveCycleService = leaveCycleService;
 		this.tenantService = tenantService;
 		this.tenantContext = tenantContext;
 		this.epCommonMapper = epCommonMapper;
@@ -143,14 +144,18 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.userDao = userDao;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.epOrganizationCalenderDao = epOrganizationCalenderDao;
-		this.objectMapper = objectMapper;
-		this.organizationConfigDao = organizationConfigDao;
 		this.epOrganizationConfigDao = epOrganizationConfigDao;
 		this.cacheService = cacheService;
 		this.dashboardEmailService = dashboardEmailService;
 		this.moduleService = moduleService;
 		this.epGoogleCalenderService = epGoogleCalenderService;
 		this.esignConfigService = esignConfigService;
+		this.invoiceConfigService = invoiceConfigService;
+		this.organizationConfigDao = organizationConfigDao;
+		this.objectMapper = objectMapper;
+		this.attendanceConfigService = attendanceConfigService;
+		this.leaveTypeService = leaveTypeService;
+		this.leaveCycleService = leaveCycleService;
 	}
 
 	@Override
@@ -296,6 +301,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
 		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 		superAdminRoles.setEsignRole(Role.ESIGN_ADMIN);
+		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
 		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
 
@@ -388,6 +394,9 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		moduleService.setDefaultModules();
 		epGoogleCalenderService.setupOrganizationCalendar();
 		esignConfigService.setDefaultEsignConfigs();
+
+		EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+		invoiceConfigService.setDefaultInvoiceConfigs(organization.getOrganizationLogo(), organization.getCountry());
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

@@ -40,9 +40,15 @@ public class EpCommonEmailEmailServiceImpl implements EpCommonEmailService {
 		LoginMethod loginMethod = superAdmin.getLoginMethod();
 
 		if (loginMethod == LoginMethod.GOOGLE) {
-			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_SSO_CREATION_TENANT_URL, emailDynamicFields,
-					emailDynamicFields.getWorkEmail());
+			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_GOOGLE_SSO_CREATION_TENANT_URL,
+					emailDynamicFields, emailDynamicFields.getWorkEmail());
 		}
+
+		else if (loginMethod == LoginMethod.MICROSOFT) {
+			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_MICROSOFT_SSO_CREATION_TENANT_URL,
+					emailDynamicFields, emailDynamicFields.getWorkEmail());
+		}
+
 		else if (loginMethod == LoginMethod.CREDENTIALS) {
 			emailService.sendEmail(EpEmailBodyTemplates.COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL,
 					emailDynamicFields, emailDynamicFields.getWorkEmail());

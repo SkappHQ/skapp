@@ -176,6 +176,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		EmployeeRole employeeRole = super.setupBulkEmployeeRoles(employee);
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
 		employeeRole.setPmRole(Role.PM_EMPLOYEE);
+		employeeRole.setInvoiceRole(Role.INVOICE_NONE);
 		return employeeRole;
 	}
 
@@ -227,6 +228,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 				role.setLeaveRole(Role.LEAVE_EMPLOYEE);
 				role.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 				role.setEsignRole(Role.ESIGN_EMPLOYEE);
+				role.setInvoiceRole(Role.INVOICE_ADMIN);
 				rolesToUpdate.add(role);
 			}
 		}

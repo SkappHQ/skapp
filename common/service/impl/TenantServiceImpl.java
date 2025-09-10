@@ -68,6 +68,7 @@ public class TenantServiceImpl implements TenantService {
 		return switch (tenant.getLoginMethod().name()) {
 			case "CREDENTIALS" -> new ResponseEntityDto(false, LoginMethod.CREDENTIALS);
 			case "GOOGLE" -> new ResponseEntityDto(false, LoginMethod.GOOGLE);
+			case "MICROSOFT" -> new ResponseEntityDto(false, LoginMethod.MICROSOFT);
 			default -> throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENTITY_NOT_FOUND);
 		};
 	}

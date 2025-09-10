@@ -93,7 +93,9 @@ public class EPSecurityConfig {
 						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend",
 						"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/document-link/token/resend-status",
 						"/v1/ep/redis/load-all-users", "/v1/ep/redis/load-system-version",
-						"/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users", "/internal/v1/ep/versions")
+						"/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
+						"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
+						"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v2/ep/auth/signin/sso/microsoft", "/internal/v1/ep/versions")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
