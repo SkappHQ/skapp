@@ -31,4 +31,8 @@ public class Validation {
 		}
 	}
 
+	public static boolean isValidFilePath(String filePath) {
+		return filePath != null && !filePath.isEmpty() && !filePath.contains("..");
+	}
+
 }

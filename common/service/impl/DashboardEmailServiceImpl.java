@@ -8,6 +8,7 @@ import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.DashboardService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
+import com.skapp.enterprise.common.type.SupportRequestIssueType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,28 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 				superAdminEmail);
 	}
 
+	@Override
+	public void sendSupportRequestAppliedEmail(String tenantId, String superAdminEmail,
+			SupportRequestIssueType issueType, String details, int noOfAttachments) {
+		DashboardEmailOrganizationDetailsDto dashboardEmailOrganizationDetails = dashboardService
+			.getDashboardEmailOrganizationDetails(superAdminEmail);
+
+		DashboardEmailDynamicFields fields = new DashboardEmailDynamicFields();
+		fields.setSuperAdminName(dashboardEmailOrganizationDetails.getSuperAdminName());
+		fields.setCompanyName(dashboardEmailOrganizationDetails.getCompanyName());
+		fields.setIssueType(issueType.label);
+		fields.setDetails(details);
+		fields.setSubmittedDateTime(dashboardEmailOrganizationDetails.getCurrentTime());
+		fields.setTenantId(tenantId);
+		fields.setSuperAdminEmail(superAdminEmail != null ? superAdminEmail : "");
+		fields.setContactNumber(dashboardEmailOrganizationDetails.getContactNo() != null
+				? dashboardEmailOrganizationDetails.getContactNo() : "");
+		fields.setNoOfAttachments(noOfAttachments);
+
+		emailService.sendEmail(EpEmailMainTemplates.DASHBOARD_MAIN_TEMPLATE_V1,
+				EpEmailBodyTemplates.DASHBOARD_MODULE_SUPPORT_REQUEST_APPLIED, fields, organizationEmail);
+	}
+
 	private void sendDashboardEmail(EpEmailBodyTemplates template, String tenantId, String superAdminEmail) {
 		if (!profileActivator.isEpPrdProfile()) {
 			return;
@@ -62,6 +85,7 @@ public class DashboardEmailServiceImpl implements DashboardEmailService {
 		fields.setCompanyName(details.getCompanyName());
 		fields.setTenantId(tenantId);
 		fields.setSuperAdminEmail(superAdminEmail != null ? superAdminEmail : "");
+		fields.setSuperAdminName(details.getSuperAdminName());
 		fields.setContactNumber(details.getContactNo() != null ? details.getContactNo() : "");
 		if (details.getCurrentTime() != null) {
 			fields.setSignedUpDateTime(details.getCurrentTime());

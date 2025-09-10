@@ -37,7 +37,8 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL(
 			"dashboard-module-new-organization-started-core-free-trial"),
 	DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE("dashboard-module-trial-organization-converted-to-core"),
-	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core");
+	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core"),
+	DASHBOARD_MODULE_SUPPORT_REQUEST_APPLIED("dashboard-module-support-request-applied");
 
 	private final String templateId;
 

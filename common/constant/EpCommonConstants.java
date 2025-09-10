@@ -105,9 +105,13 @@ public class EpCommonConstants {
 
 	public static final String SENDER = "sender";
 
+	public static final String SUPER_ADMIN_NAME = "superAdminName";
+
 	public static final String VIA = " via ";
 
 	public static final String ESIGNATURE = "esignature";
+
+	public static final String DASHBOARD = "dashboard";
 
 	public static final String MODULE = "module";
 
