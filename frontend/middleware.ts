@@ -46,6 +46,11 @@ const superAdminRoutes = {
     ROUTES.SETTINGS.MODULES,
     ROUTES.SETTINGS.PAYMENT,
     ROUTES.REMOVE_PEOPLE,
+    ROUTES.SUBSCRIPTION,
+    ROUTES.PROJECTS,
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS,
     ROUTES.SUBSCRIPTION
   ]
 };
@@ -67,6 +72,11 @@ const adminRoutes = {
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
     ROUTES.CONFIGURATIONS.SIGN
+  ],
+  [AdminTypes.INVOICE_ADMIN]: [
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS
   ]
 };
 
@@ -92,6 +102,11 @@ const managerRoutes = {
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE
+  ],
+  [ManagerTypes.INVOICE_MANAGER]: [
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS
   ]
 };
 
@@ -299,6 +314,9 @@ export const config = {
     "/sign/sent/:path*",
     "/sign/complete/:path*",
     // Project routes
-    "/projects/:path*"
+    "/projects/:path*",
+    // Invoice routes
+    "/invoice",
+    "/invoice/:path*"
   ]
 };
