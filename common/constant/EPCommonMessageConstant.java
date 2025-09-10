@@ -163,7 +163,9 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key"),
 	EP_COMMON_ERROR_API_KEY_MISSING("ep.common.error.api-key-missing"),
 	EP_COMMON_ERROR_INVALID_API_KEY("ep.common.error.invalid-api-key"),
-	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),;
+	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),
+
+	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error");
 
 	private final String messageKey;
 
