@@ -87,7 +87,8 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 		super.setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
 		placeholders.put("module", module);
 		if (emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_EMAIL_VERIFY
-				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_SSO_CREATION_TENANT_URL
+				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_GOOGLE_SSO_CREATION_TENANT_URL
+				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_MICROSOFT_SSO_CREATION_TENANT_URL
 				&& emailTemplate != EpEmailBodyTemplates.COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_CREATED
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL
@@ -101,7 +102,8 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 		}
 
 		if (emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1
-				|| emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_SSO) {
+				|| emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_GOOGLE_SSO
+				|| emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_MICROSOFT_SSO) {
 			placeholders.put("tenantId", TenantContext.getCurrentTenant());
 		}
 
