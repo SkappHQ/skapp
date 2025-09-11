@@ -3,6 +3,7 @@ package com.skapp.enterprise.invoice.mapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
@@ -24,18 +25,24 @@ public interface CustomerMapper {
 	}
 
 	default List<CustomerContactResponseDto> mapCustomerContacts(List<CustomerContact> customerContacts) {
-		return (customerContacts == null) ? List.of() : customerContacts.stream().map(contact -> {
-			CustomerContactResponseDto dto = new CustomerContactResponseDto();
-			dto.setId(contact.getId());
-			dto.setName(contact.getName());
-			dto.setEmail(contact.getEmail());
-			dto.setContactNo(contact.getContactNo());
-			dto.setJobTitle(contact.getJobTitle());
-			return dto;
-		}).toList();
+		return (customerContacts == null) ? List.of()
+				: customerContacts.stream().filter(CustomerContact::getIsActive).map(contact -> {
+					CustomerContactResponseDto dto = new CustomerContactResponseDto();
+					dto.setId(contact.getId());
+					dto.setName(contact.getName());
+					dto.setEmail(contact.getEmail());
+					dto.setContactNo(contact.getContactNo());
+					dto.setJobTitle(contact.getJobTitle());
+					return dto;
+				}).toList();
 	}
 
 	@Mapping(target = "customerName", source = "name")
 	CustomerSummaryData customerToCustomerSummaryData(Customer customer);
+
+	@Mapping(target = "name", source = "contactName")
+	CustomerContact customerContactDetailsDtoToCustomerContact(CustomerContactDetailsDto customerContactDetailsDto);
+
+	CustomerContactResponseDto customerContactToCustomerContactResponseDto(CustomerContact customerContact);
 
 }

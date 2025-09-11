@@ -35,6 +35,9 @@ public class CustomerContact extends Auditable<String> {
 	@Column(name = "job_title")
 	private String jobTitle;
 
+	@Column(name = "is_active")
+	private Boolean isActive;
+
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
