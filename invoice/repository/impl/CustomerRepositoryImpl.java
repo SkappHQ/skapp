@@ -59,8 +59,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 		TypedQuery<Customer> query = entityManager.createQuery(criteriaQuery);
 
 		int totalRows = query.getResultList().size();
-		query.setFirstResult(page.getPageNumber() * page.getPageSize());
-		query.setMaxResults(page.getPageSize());
+
+		if (page.isPaged()) {
+			query.setFirstResult(page.getPageNumber() * page.getPageSize());
+			query.setMaxResults(page.getPageSize());
+		}
 
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}

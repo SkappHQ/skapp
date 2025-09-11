@@ -76,7 +76,9 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public ResponseEntityDto getAllCustomers(CustomerFilterDto customerFilterDto) {
 
-		Pageable pageable = PageRequest.of(customerFilterDto.getPage(), customerFilterDto.getSize(),
+		Pageable pageable = customerFilterDto.getSize() <= 0
+				? Pageable.unpaged()
+				: PageRequest.of(customerFilterDto.getPage(), customerFilterDto.getSize(),
 				Sort.by(customerFilterDto.getSortOrder(), customerFilterDto.getSortKey().toString()));
 
 		Page<Customer> customerPage = customerDao.findAllCustomers(customerFilterDto, pageable);
