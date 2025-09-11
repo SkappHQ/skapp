@@ -328,8 +328,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			Matcher matcher = pattern.matcher(lastInvoiceId);
 
 			if (matcher.matches()) {
-				int lastYear = Integer.parseInt(matcher.group(1));
-				if (lastYear < currentYear) {
+				int latestInvoiceIdYear = Integer.parseInt(matcher.group(1));
+				if (latestInvoiceIdYear < currentYear) {
 					nextInvoiceId = String.format("INV-%d-001", currentYear);
 				}
 				else {
@@ -361,12 +361,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 			sb.append(formattedNumber);
 			sb.append(lastInvoiceId.substring(matcher.end()));
 
-			String result = sb.toString();
-			return result;
+			return sb.toString();
 		}
 		else {
-			String result = lastInvoiceId + "-001";
-			return result;
+			return lastInvoiceId + "-001";
 		}
 	}
 
