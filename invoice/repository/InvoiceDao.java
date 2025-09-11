@@ -4,12 +4,12 @@ import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface InvoiceDao extends JpaRepository<Invoice, Long>, InvoiceRepository {
 
 	Long countByStatus(InvoiceStatus status);
 
-	List<Invoice> findByInvoiceIdContaining(String id);
+	Optional<Invoice> findFirstByCustomer_IdOrderByCreatedDateDesc(Long customerId);
 
 }

@@ -65,4 +65,12 @@ public class InvoiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Retrieve invoices ID ", description = "Provides an System generated sequential invoice id .")
+	@GetMapping(value = "invoice-id", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getInvoiceId(Long customerId) {
+		ResponseEntityDto response = invoiceService.getInvoiceId(customerId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
