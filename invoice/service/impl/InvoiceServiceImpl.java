@@ -322,33 +322,24 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		if (latestInvoice.isEmpty()) {
 			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
-		}
-		else {
+		} else {
 			String lastInvoiceId = latestInvoice.get().getInvoiceId();
-			if (isStandardInvoiceId(lastInvoiceId)) {
-				Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
-				Matcher matcher = pattern.matcher(lastInvoiceId);
-				matcher.matches();
+			Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
+			Matcher matcher = pattern.matcher(lastInvoiceId);
+
+			if (matcher.matches()) {
 				int latestInvoiceYear = Integer.parseInt(matcher.group(1));
 				if (latestInvoiceYear < currentYear) {
 					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
-				}
-				else {
+				} else {
 					nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
 				}
-			}
-			else {
+			} else {
 				nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
 			}
 		}
 
 		return new ResponseEntityDto(false, nextInvoiceId);
-	}
-
-	private boolean isStandardInvoiceId(String invoiceId) {
-		Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
-		Matcher matcher = pattern.matcher(invoiceId);
-		return matcher.matches();
 	}
 
 	private String generateNextInvoiceId(String lastInvoiceId) {
@@ -369,8 +360,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			sb.append(lastInvoiceId.substring(matcher.end()));
 
 			return sb.toString();
-		}
-		else {
+		} else {
 			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
 		}
 	}
