@@ -25,15 +25,16 @@ public interface CustomerMapper {
 	}
 
 	default List<CustomerContactResponseDto> mapCustomerContacts(List<CustomerContact> customerContacts) {
-		return (customerContacts == null) ? List.of() : customerContacts.stream().map(contact -> {
-			CustomerContactResponseDto dto = new CustomerContactResponseDto();
-			dto.setId(contact.getId());
-			dto.setName(contact.getName());
-			dto.setEmail(contact.getEmail());
-			dto.setContactNo(contact.getContactNo());
-			dto.setJobTitle(contact.getJobTitle());
-			return dto;
-		}).toList();
+		return (customerContacts == null) ? List.of()
+				: customerContacts.stream().filter(CustomerContact::getIsActive).map(contact -> {
+					CustomerContactResponseDto dto = new CustomerContactResponseDto();
+					dto.setId(contact.getId());
+					dto.setName(contact.getName());
+					dto.setEmail(contact.getEmail());
+					dto.setContactNo(contact.getContactNo());
+					dto.setJobTitle(contact.getJobTitle());
+					return dto;
+				}).toList();
 	}
 
 	@Mapping(target = "customerName", source = "name")
