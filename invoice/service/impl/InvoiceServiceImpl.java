@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -320,17 +321,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 		String nextInvoiceId;
 
 		if (latestInvoice.isEmpty()) {
-			nextInvoiceId = String.format("INV-%d-001", currentYear);
+			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
 		}
 		else {
 			String lastInvoiceId = latestInvoice.get().getInvoiceId();
-			Pattern pattern = Pattern.compile("INV-(\\d{4})-(\\d+)");
-			Matcher matcher = pattern.matcher(lastInvoiceId);
-
-			if (matcher.matches()) {
-				int latestInvoiceIdYear = Integer.parseInt(matcher.group(1));
-				if (latestInvoiceIdYear < currentYear) {
-					nextInvoiceId = String.format("INV-%d-001", currentYear);
+			if (isStandardInvoiceId(lastInvoiceId)) {
+				Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
+				Matcher matcher = pattern.matcher(lastInvoiceId);
+				matcher.matches();
+				int latestInvoiceYear = Integer.parseInt(matcher.group(1));
+				if (latestInvoiceYear < currentYear) {
+					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
 				}
 				else {
 					nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
@@ -342,6 +343,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 
 		return new ResponseEntityDto(false, nextInvoiceId);
+	}
+
+	private boolean isStandardInvoiceId(String invoiceId) {
+		Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
+		Matcher matcher = pattern.matcher(invoiceId);
+		return matcher.matches();
 	}
 
 	private String generateNextInvoiceId(String lastInvoiceId) {
@@ -364,7 +371,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			return sb.toString();
 		}
 		else {
-			return lastInvoiceId + "-001";
+			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
 		}
 	}
 
