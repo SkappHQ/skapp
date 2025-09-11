@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -49,6 +50,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -308,6 +311,58 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoiceTierLimitationResponseDto.setLimitedReached(limitedReached);
 
 		return invoiceTierLimitationResponseDto;
+	}
+
+	@Override
+	public ResponseEntityDto getInvoiceId(Long customerId) {
+		Optional<Invoice> latestInvoice = invoiceDao.findFirstByCustomer_IdOrderByCreatedDateDesc(customerId);
+
+		int currentYear = LocalDate.now().getYear();
+		String nextInvoiceId;
+
+		if (latestInvoice.isEmpty()) {
+			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
+		} else {
+			String lastInvoiceId = latestInvoice.get().getInvoiceId();
+			Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
+			Matcher matcher = pattern.matcher(lastInvoiceId);
+
+			if (matcher.matches()) {
+				int latestInvoiceYear = Integer.parseInt(matcher.group(1));
+				if (latestInvoiceYear < currentYear) {
+					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
+				} else {
+					nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
+				}
+			} else {
+				nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
+			}
+		}
+
+		return new ResponseEntityDto(false, nextInvoiceId);
+	}
+
+	private String generateNextInvoiceId(String lastInvoiceId) {
+
+		Pattern pattern = Pattern.compile("\\d+");
+		Matcher matcher = pattern.matcher(lastInvoiceId);
+
+		if (matcher.find()) {
+			String digits = matcher.group();
+			int currentNumber = Integer.parseInt(digits);
+			int nextNumber = currentNumber + 1;
+
+			String formattedNumber = String.format("%0" + digits.length() + "d", nextNumber);
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(lastInvoiceId, 0, matcher.start());
+			sb.append(formattedNumber);
+			sb.append(lastInvoiceId.substring(matcher.end()));
+
+			return sb.toString();
+		} else {
+			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
+		}
 	}
 
 }

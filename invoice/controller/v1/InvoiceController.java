@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,6 +63,14 @@ public class InvoiceController {
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getInvoiceKPI() {
 		ResponseEntityDto response = invoiceService.getInvoiceKPI();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve invoices ID ", description = "Provides an System generated sequential invoice id")
+	@GetMapping(value = "invoice-id", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getInvoiceId(@RequestParam Long customerId) {
+		ResponseEntityDto response = invoiceService.getInvoiceId(customerId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

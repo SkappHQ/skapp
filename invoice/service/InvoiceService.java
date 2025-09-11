@@ -14,4 +14,6 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceKPI();
 
+	ResponseEntityDto getInvoiceId(Long customerId);
+
 }
