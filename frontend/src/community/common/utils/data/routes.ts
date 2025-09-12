@@ -284,25 +284,25 @@ const routes = [
       }
     ]
   },
-  // {
-  //   id: "6",
-  //   name: "Projects",
-  //   url: ROUTES.PROJECTS,
-  //   icon: IconName.PROJECTS_ICON,
-  //   hasSubTree: false,
-  //   requiredAuthLevel: [
-  //     AdminTypes.SUPER_ADMIN,
-  //     AdminTypes.PEOPLE_ADMIN,
-  //     AdminTypes.LEAVE_ADMIN,
-  //     AdminTypes.ATTENDANCE_ADMIN,
-  //     ManagerTypes.PEOPLE_MANAGER,
-  //     ManagerTypes.LEAVE_MANAGER,
-  //     ManagerTypes.ATTENDANCE_MANAGER,
-  //     EmployeeTypes.PEOPLE_EMPLOYEE,
-  //     EmployeeTypes.LEAVE_EMPLOYEE,
-  //     EmployeeTypes.ATTENDANCE_EMPLOYEE
-  //   ]
-  // },
+  {
+    id: "6",
+    name: "Projects",
+    url: ROUTES.PROJECTS,
+    icon: IconName.PROJECTS_ICON,
+    hasSubTree: false,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      AdminTypes.LEAVE_ADMIN,
+      AdminTypes.ATTENDANCE_ADMIN,
+      ManagerTypes.PEOPLE_MANAGER,
+      ManagerTypes.LEAVE_MANAGER,
+      ManagerTypes.ATTENDANCE_MANAGER,
+      EmployeeTypes.PEOPLE_EMPLOYEE,
+      EmployeeTypes.LEAVE_EMPLOYEE,
+      EmployeeTypes.ATTENDANCE_EMPLOYEE
+    ]
+  },
   {
     id: "7",
     name: "Invoices",
