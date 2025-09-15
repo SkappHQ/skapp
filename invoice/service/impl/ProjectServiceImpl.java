@@ -34,8 +34,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Value("${graphql.client.url}")
 	private String graphqlServiceUrl;
 
-	@Autowired
-	private GraphQLWebClient graphQLWebClient;
+	private final GraphQLWebClient graphQLWebClient;
 
 	private final ObjectMapper objectMapper;
 

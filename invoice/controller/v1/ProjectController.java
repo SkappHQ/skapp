@@ -1,7 +1,6 @@
 package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
