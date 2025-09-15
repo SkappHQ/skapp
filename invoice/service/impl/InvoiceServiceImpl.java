@@ -322,7 +322,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		if (latestInvoice.isEmpty()) {
 			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
-		} else {
+		}
+		else {
 			String lastInvoiceId = latestInvoice.get().getInvoiceId();
 			Pattern pattern = Pattern.compile(InvoiceCommonConstant.INVOICE_STANDARD_ID_REGEX);
 			Matcher matcher = pattern.matcher(lastInvoiceId);
@@ -331,10 +332,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 				int latestInvoiceYear = Integer.parseInt(matcher.group(1));
 				if (latestInvoiceYear < currentYear) {
 					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
-				} else {
+				}
+				else {
 					nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
 				}
-			} else {
+			}
+			else {
 				nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
 			}
 		}
@@ -360,7 +363,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			sb.append(lastInvoiceId.substring(matcher.end()));
 
 			return sb.toString();
-		} else {
+		}
+		else {
 			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
 		}
 	}
