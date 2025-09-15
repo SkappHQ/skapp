@@ -27,6 +27,9 @@ public class Project extends Auditable<String> {
 	@Column(name = "project_id")
 	private Long projectId;
 
+	@Column(name = "project_key")
+	private String projectKey;
+
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
