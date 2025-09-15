@@ -320,11 +320,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 		int currentYear = LocalDate.now().getYear();
 		String nextInvoiceId;
 
-		if (latestInvoice.isEmpty()) {
+		if (latestInvoice.isEmpty() || latestInvoice.get().getInvoiceId() == null
+				|| latestInvoice.get().getInvoiceId().isEmpty()) {
 			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_STANDARD_START_ID_FORMAT, currentYear);
-		}
-		else {
-			nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
 		}
 		else {
 			String lastInvoiceId = latestInvoice.get().getInvoiceId();
@@ -334,14 +332,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 			if (matcher.matches()) {
 				String prefix = matcher.group(1);
 				int latestInvoiceYear = Integer.parseInt(matcher.group(2));
+				String sequenceStr = matcher.group(3);
+
 				if (latestInvoiceYear < currentYear) {
-					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_TEMPLATE, prefix, currentYear);
+					String resetSequence = String.format("%0" + sequenceStr.length() + "d", 1);
+					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_TEMPLATE, prefix, currentYear,
+							resetSequence);
 				}
 				else {
-					nextInvoiceId = String.format(InvoiceCommonConstant.INVOICE_START_ID_FORMAT, currentYear);
-				}
-				else {
-					nextInvoiceId = generateNextInvoiceId(lastInvoiceId);
+					int currentSequence = Integer.parseInt(sequenceStr);
+					int nextSequence = currentSequence + 1;
+					String formattedSequence = String.format("%0" + sequenceStr.length() + "d", nextSequence);
+					nextInvoiceId = String.format("%s-%d-%s", prefix, latestInvoiceYear, formattedSequence);
 				}
 			}
 			else {
