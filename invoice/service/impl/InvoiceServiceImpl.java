@@ -393,10 +393,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoiceValidationService.validateInvoiceStatusUpdateRequest(invoiceStatusUpdateRequestDto);
 		Optional<Invoice> optionalInvoice = invoiceDao.findById(invoiceStatusUpdateRequestDto.getInvoiceId());
 
-		if (optionalInvoice.isEmpty()) {
-			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
-		}
-
 		Invoice invoice = optionalInvoice.get();
 		invoice.setStatus(invoiceStatusUpdateRequestDto.getStatus());
 
