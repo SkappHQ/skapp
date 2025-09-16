@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.payload.response;
 
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.type.CurrencyType;
+import com.skapp.enterprise.invoice.type.CustomerStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,8 @@ public class CustomerDetailedResponseDto {
 	private String country;
 
 	private CurrencyType currency;
+
+	private CustomerStatus status;
 
 	private List<CustomerProjectDetailsDto> customerProjects;
 

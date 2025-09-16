@@ -39,6 +39,8 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 			predicates.add(findByName(customerFilterDto.getSearchKeyword(), criteriaBuilder, root));
 		}
 
+		predicates.add(criteriaBuilder.equal(root.get("status"), "ACTIVE"));
+
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray);
