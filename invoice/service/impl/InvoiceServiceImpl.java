@@ -3,12 +3,15 @@ package com.skapp.enterprise.invoice.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
@@ -20,6 +23,7 @@ import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
 import com.skapp.enterprise.invoice.model.InvoiceTax;
+import com.skapp.enterprise.invoice.payload.email.InvoiceReminderEmailDynamicFields;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
@@ -46,9 +50,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,6 +83,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private final InvoiceValidationService invoiceValidationService;
 
 	private final CustomerDao customerDao;
+
+    private  final EmailService emailService;
 
 	@Override
 	@Transactional
@@ -345,7 +354,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, nextInvoiceId);
 	}
 
-	private String generateNextInvoiceId(String lastInvoiceId) {
+    private String generateNextInvoiceId(String lastInvoiceId) {
 
 		Pattern pattern = Pattern.compile("\\d+");
 		Matcher matcher = pattern.matcher(lastInvoiceId);
@@ -368,5 +377,50 @@ public class InvoiceServiceImpl implements InvoiceService {
 			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
 		}
 	}
+
+    @Override
+    public ResponseEntityDto sendReminder(Long invoiceId) {
+        Invoice invoice = invoiceDao.findById(invoiceId)
+                .orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
+
+        Customer customer = invoice.getCustomer();
+
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        String formattedInvoiceDate = invoice.getInvoiceDate() != null
+                ? invoice.getInvoiceDate().format(dateFormatter)
+                : "Not specified";
+        String formattedDueDate = invoice.getDueDate() != null
+                ? invoice.getDueDate().format(dateFormatter)
+                : "Not specified";
+
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+        String formattedAmount = currencyFormatter.format(invoice.getPayableTotalAmount());
+
+        InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(
+                customer.getName(),
+                invoice.getInvoiceId(),
+                formattedInvoiceDate,
+                formattedDueDate,
+                formattedAmount,
+                invoice.getCurrency().name(),
+                "Your Company",
+                "",
+                "Invoice Payment Reminder"
+        );
+
+        emailService.sendEmail(
+                EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
+                EpEmailBodyTemplates.INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER,
+                emailData,
+                customer.getEmail()
+        );
+
+        log.info("Invoice reminder email sent successfully for invoice ID: {} to customer: {}",
+                invoiceId, customer.getEmail());
+
+        return new ResponseEntityDto(false, InvoiceMessageConstant.INVOICE_SUCCESS_EMAIL_REMINDER_SENT);
+    }
+
 
 }

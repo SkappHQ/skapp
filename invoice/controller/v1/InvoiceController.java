@@ -74,4 +74,16 @@ public class InvoiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+    @Operation(summary = "Send a reminder email to the recipient.",
+            description = "This endpoint sends a reminder email to the recipient.")
+    @PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
+    @PostMapping(value = "/reminder", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseEntityDto> sendReminder(@RequestParam Long invoiceId) {
+
+        ResponseEntityDto response = invoiceService.sendReminder(invoiceId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 }
