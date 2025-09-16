@@ -25,7 +25,8 @@ import java.util.List;
 @Order(1)
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
-	private static final List<String> INTERNAL_API_PATHS = List.of("/internal/v1/ep/users", "/internal/v1/ep/versions");
+	private static final List<String> INTERNAL_API_PATHS = List.of("/internal/v1/ep/users", "/internal/v1/ep/versions",
+			"/internal/v1/ep/jobs");
 
 	@Value("${internal.api.key}")
 	private String expectedApiKey;
