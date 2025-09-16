@@ -78,7 +78,7 @@ public class InvoiceController {
 	}
 
 	@Operation(summary = "Get invoice details by ID.",
-			description = "This endpoint retrives all the details of the invoice.")
+			description = "This endpoint retrieves all the details of the invoice.")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
 	@GetMapping(value = "/{invoiceId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getInvoiceById(@PathVariable Long invoiceId) {

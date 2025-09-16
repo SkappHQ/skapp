@@ -55,12 +55,4 @@ public class InvoiceDetailResponseDto {
 
 	private List<InvoiceTaxResponseDto> invoiceTaxes;
 
-	private LocalDateTime createdDate;
-
-	private LocalDateTime modifiedDate;
-
-	private String createdBy;
-
-	private String modifiedBy;
-
 }

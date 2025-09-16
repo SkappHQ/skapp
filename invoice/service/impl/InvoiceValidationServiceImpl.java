@@ -261,7 +261,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 
 	@Override
 	public void validateInvoiceStatusUpdateRequest(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto) {
-		if (invoiceStatusUpdateRequestDto.getInvoiceId() != null) {
+		if (invoiceStatusUpdateRequestDto.getInvoiceId() == null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
 		}
 	}
