@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.mapper;
 
+import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.model.InvoiceConfig;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
@@ -11,6 +12,11 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequest
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceConfigResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.CustomerResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceDetailResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceExpenseResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceItemResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceTaxResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -36,5 +42,19 @@ public interface InvoiceMapper {
 	InvoiceExpense CreateInvoiceExpenseDtoToInvoiceExpense(CreateInvoiceExpenseDto createInvoiceExpenseDto);
 
 	InvoiceTax CreateInvoiceTaxDtoToInvoiceTax(CreateInvoiceTaxDto createInvoiceTaxDto);
+
+	@Mapping(target = "customer", source = "invoice.customer")
+	@Mapping(target = "invoiceItems", source = "invoice.invoiceItems")
+	@Mapping(target = "invoiceExpenses", source = "invoice.invoiceExpenses")
+	@Mapping(target = "invoiceTaxes", source = "invoice.invoiceTaxes")
+	InvoiceDetailResponseDto invoiceToInvoiceDetailResponseDto(Invoice invoice);
+
+	CustomerResponseDto customerToCustomerResponseDto(Customer customer);
+
+	InvoiceItemResponseDto invoiceItemToInvoiceItemResponseDto(InvoiceItem invoiceItem);
+
+	InvoiceExpenseResponseDto invoiceExpenseToInvoiceExpenseResponseDto(InvoiceExpense invoiceExpense);
+
+	InvoiceTaxResponseDto invoiceTaxToInvoiceTaxResponseDto(InvoiceTax invoiceTax);
 
 }

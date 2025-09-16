@@ -3,6 +3,7 @@ package com.skapp.enterprise.invoice.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -12,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +74,27 @@ public class InvoiceController {
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getInvoiceId(@RequestParam Long customerId) {
 		ResponseEntityDto response = invoiceService.getInvoiceId(customerId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get invoice details by ID.",
+			description = "This endpoint retrives all the details of the invoice.")
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
+	@GetMapping(value = "/{invoiceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getInvoiceById(@PathVariable Long invoiceId) {
+		ResponseEntityDto response = invoiceService.getInvoiceById(invoiceId);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Update the status of an invoice.",
+			description = "This endpoint updates the status of an invoice.")
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
+	@PatchMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> updateInvoiceStatus(
+			@Valid @RequestBody InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto) {
+		ResponseEntityDto response = invoiceService.updateInvoiceStatus(invoiceStatusUpdateRequestDto);
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -3,6 +3,7 @@ package com.skapp.enterprise.invoice.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
@@ -25,10 +26,12 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceKPIResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceDetailResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
@@ -76,6 +79,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private final InvoiceValidationService invoiceValidationService;
 
 	private final CustomerDao customerDao;
+
+	private final EmailService emailService;
 
 	@Override
 	@Transactional
@@ -367,6 +372,39 @@ public class InvoiceServiceImpl implements InvoiceService {
 		else {
 			return lastInvoiceId + InvoiceCommonConstant.INVOICE_NUMBER_SUFFIX;
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getInvoiceById(Long invoiceId) {
+		Optional<Invoice> optionalInvoice = invoiceDao.findById(invoiceId);
+
+		if (optionalInvoice.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
+		}
+
+		Invoice invoice = optionalInvoice.get();
+		InvoiceDetailResponseDto invoiceDetailResponseDto = invoiceMapper.invoiceToInvoiceDetailResponseDto(invoice);
+		return new ResponseEntityDto(false, invoiceDetailResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto updateInvoiceStatus(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto) {
+
+		invoiceValidationService.validateInvoiceStatusUpdateRequest(invoiceStatusUpdateRequestDto);
+		Optional<Invoice> optionalInvoice = invoiceDao.findById(invoiceStatusUpdateRequestDto.getInvoiceId());
+
+		if (optionalInvoice.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
+		}
+
+		Invoice invoice = optionalInvoice.get();
+		invoice.setStatus(invoiceStatusUpdateRequestDto.getStatus());
+
+		invoiceDao.save(invoice);
+
+		InvoiceResponseDto invoiceResponseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
+
+		return new ResponseEntityDto(false, invoiceResponseDto);
 	}
 
 }
