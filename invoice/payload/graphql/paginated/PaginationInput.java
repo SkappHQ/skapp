@@ -13,9 +13,4 @@ public class PaginationInput {
 
 	private String search;
 
-	@Override
-	public String toString() {
-		return "Pagination{" + "cursor='" + cursor + '\'' + ", limit=" + limit + ", search='" + search + '\'' + '}';
-	}
-
 }
