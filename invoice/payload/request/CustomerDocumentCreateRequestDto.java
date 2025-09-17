@@ -9,13 +9,10 @@ import lombok.Setter;
 @Setter
 public class CustomerDocumentCreateRequestDto {
 
-    @NotBlank(message = "Document name is required")
-    private String name;
+	private String name;
 
-    @NotBlank(message = "Document URL is required")
-    private String documentUrl;
+	private String documentUrl;
 
-    @NotNull(message = "Customer ID is required")
-    private Long customerId;
+	private Long customerId;
 
 }

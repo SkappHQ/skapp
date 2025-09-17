@@ -6,12 +6,12 @@ import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
 
 public interface CustomerDocumentService {
 
-    ResponseEntityDto saveDocument(CustomerDocumentCreateRequestDto requestDto);
+	ResponseEntityDto saveDocument(CustomerDocumentCreateRequestDto requestDto);
 
-    ResponseEntityDto getDocumentById(Long id);
+	ResponseEntityDto getDocumentById(Long id);
 
-    ResponseEntityDto filterDocuments(CustomerDocumentFilterDto filterDto);
+	ResponseEntityDto filterDocuments(CustomerDocumentFilterDto filterDto);
 
-    ResponseEntityDto deleteDocumentById(Long id);
+	ResponseEntityDto deleteDocumentById(Long id);
 
 }

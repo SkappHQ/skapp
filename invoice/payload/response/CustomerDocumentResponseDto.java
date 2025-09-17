@@ -9,12 +9,18 @@ import java.time.LocalDateTime;
 @Setter
 public class CustomerDocumentResponseDto {
 
-    private Long id;
-    private String name;
-    private String documentUrl;
-    private Long customerId;
-    private String customerName;
-    private LocalDateTime createdDate;
-    private LocalDateTime lastModifiedDate;
+	private Long id;
+
+	private String name;
+
+	private String documentUrl;
+
+	private Long customerId;
+
+	private String customerName;
+
+	private LocalDateTime createdDate;
+
+	private LocalDateTime lastModifiedDate;
 
 }

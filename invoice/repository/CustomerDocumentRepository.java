@@ -11,13 +11,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomerDocumentRepository extends JpaRepository<CustomerDocument, Long> {
 
-    @Query("SELECT cd FROM CustomerDocument cd JOIN cd.customer c " +
-           "WHERE (:customerId IS NULL OR cd.customer.id = :customerId) " +
-           "AND (:name IS NULL OR LOWER(cd.name) LIKE LOWER(CONCAT('%', :name, '%')))")
-    Page<CustomerDocument> findFilteredDocuments(@Param("customerId") Long customerId,
-                                                  @Param("name") String name,
-                                                  Pageable pageable);
+	@Query("SELECT cd FROM CustomerDocument cd JOIN cd.customer c "
+			+ "WHERE (:customerId IS NULL OR cd.customer.id = :customerId) "
+			+ "AND (:name IS NULL OR LOWER(cd.name) LIKE LOWER(CONCAT('%', :name, '%')))")
+	Page<CustomerDocument> findFilteredDocuments(@Param("customerId") Long customerId, @Param("name") String name,
+			Pageable pageable);
 
-    Page<CustomerDocument> findByCustomerId(Long customerId, Pageable pageable);
+	Page<CustomerDocument> findByCustomerId(Long customerId, Pageable pageable);
 
 }

@@ -1,18 +1,15 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.CustomerDocumentMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerDocument;
-import com.skapp.enterprise.invoice.model.Invoice;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDocumentResponseDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceListResponseDto;
-import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerDocumentListResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.CustomerDocumentRepository;
 import com.skapp.enterprise.invoice.service.CustomerDocumentService;
@@ -33,47 +30,49 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 
-    private final CustomerDocumentRepository customerDocumentRepository;
-    private final CustomerDao customerDao;
-    private final CustomerDocumentMapper customerDocumentMapper;
+	private final CustomerDocumentRepository customerDocumentRepository;
 
-    @Override
-    @Transactional
-    public ResponseEntityDto saveDocument(CustomerDocumentCreateRequestDto requestDto) {
+	private final CustomerDao customerDao;
 
-        Optional<Customer> customer = customerDao.findById(requestDto.getCustomerId());
+	private final CustomerDocumentMapper customerDocumentMapper;
 
-        if (customer.isEmpty()) {
-            return null;
-        }
+	@Override
+	@Transactional
+	public ResponseEntityDto saveDocument(CustomerDocumentCreateRequestDto requestDto) {
 
-        CustomerDocument customerDocument = customerDocumentMapper
-                .customerDocumentCreateRequestDtoToCustomerDocument(requestDto);
-        customerDocument.setCustomer(customer.get());
+		Optional<Customer> customer = customerDao.findById(requestDto.getCustomerId());
 
-        CustomerDocument savedDocument = customerDocumentRepository.save(customerDocument);
-        CustomerDocumentResponseDto responseDto = customerDocumentMapper
-                .customerDocumentToCustomerDocumentResponseDto(savedDocument);
+		if (customer.isEmpty()) {
+			return null;
+		}
 
-        return new ResponseEntityDto(false, responseDto);
-    }
+		CustomerDocument customerDocument = customerDocumentMapper
+			.customerDocumentCreateRequestDtoToCustomerDocument(requestDto);
+		customerDocument.setCustomer(customer.get());
 
-    @Override
-    public ResponseEntityDto getDocumentById(Long id) {
+		CustomerDocument savedDocument = customerDocumentRepository.save(customerDocument);
+		CustomerDocumentResponseDto responseDto = customerDocumentMapper
+			.customerDocumentToCustomerDocumentResponseDto(savedDocument);
 
-        Optional<CustomerDocument> customerDocument = customerDocumentRepository.findById(id);
+		return new ResponseEntityDto(false, responseDto);
+	}
 
-        if (customerDocument.isEmpty()) {
-            return null;
-        }
+	@Override
+	public ResponseEntityDto getDocumentById(Long id) {
 
-        CustomerDocumentResponseDto responseDto = customerDocumentMapper
-                .customerDocumentToCustomerDocumentResponseDto(customerDocument.get());
+		Optional<CustomerDocument> customerDocument = customerDocumentRepository.findById(id);
 
-        return new ResponseEntityDto(false, responseDto);
-    }
+		if (customerDocument.isEmpty()) {
+			return null;
+		}
 
-    @Override
+		CustomerDocumentResponseDto responseDto = customerDocumentMapper
+			.customerDocumentToCustomerDocumentResponseDto(customerDocument.get());
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
     public ResponseEntityDto filterDocuments(CustomerDocumentFilterDto filterDto) {
 
         int page = filterDto.getPage();
@@ -85,31 +84,31 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<CustomerDocument> customerDocuments = customerDocumentRepository.findFilteredDocuments(filterDto.getCustomerId(),filterDto.getName(), pageable);
+        Page<CustomerDocument> customerDocumentsPage = customerDocumentRepository.findFilteredDocuments(filterDto.getCustomerId(),filterDto.getName(), pageable);
 
-        List<InvoiceResponseDto> invoiceResponseDtos = customerDocumentMapper
-                .(customerDocuments.getContent());
+        List<CustomerDocumentResponseDto> customerDocumentResponseDtos = customerDocumentMapper.customerDocumentsToCustomerDocumentResponseDtos(customerDocumentsPage.getContent());
 
-        Boolean hasNext = invoicePage.getNumber() < invoicePage.getTotalPages() - 1;
+        Boolean hasNext = customerDocumentsPage.getNumber() < customerDocumentsPage.getTotalPages() - 1;
 
-        Boolean hasPrevious = invoicePage.getNumber() > 0;
+        Boolean hasPrevious = customerDocumentsPage.getNumber() > 0;
 
-        InvoiceListResponseDto invoiceListResponse = new InvoiceListResponseDto(invoiceResponseDtos,
-                invoicePage.getTotalElements(), invoicePage.getTotalPages(), invoicePage.getNumber(),
-                invoicePage.getSize(), hasNext, hasPrevious);
+        CustomerDocumentListResponseDto customerDocumentListResponse = new CustomerDocumentListResponseDto(customerDocumentResponseDtos,
+                customerDocumentsPage.getTotalElements(), customerDocumentsPage.getTotalPages(), customerDocumentsPage.getNumber(),
+                customerDocumentsPage.getSize(), hasNext, hasPrevious);
 
-        return new ResponseEntityDto(false, invoiceListResponse);
+        return new ResponseEntityDto(false, customerDocumentListResponse);
     }
 
-    @Override
-    @Transactional
-    public ResponseEntityDto deleteDocumentById(Long id) {
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteDocumentById(Long id) {
 
-        CustomerDocument customerDocument = customerDocumentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer document not found with ID: " + id));
+		CustomerDocument customerDocument = customerDocumentRepository.findById(id)
+			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_FOUND));
 
-        customerDocumentRepository.delete(customerDocument);
+		customerDocumentRepository.delete(customerDocument);
 
-        return new ResponseEntityDto(false, "Customer document deleted successfully");
-    }
+		return new ResponseEntityDto(false, "Customer document deleted successfully");
+	}
+
 }

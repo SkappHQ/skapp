@@ -69,6 +69,9 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID("invoice.error.filter.customer.id.invalid"),
 	INVOICE_ERROR_FILTER_PROJECT_ID_INVALID("invoice.error.filter.project.id.invalid"),
 
+	// Customer document validation constants
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_FOUND("invoice.error.customer.document.not.found"),
+
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
 	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached");
 

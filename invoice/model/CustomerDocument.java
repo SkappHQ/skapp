@@ -1,6 +1,5 @@
 package com.skapp.enterprise.invoice.model;
 
-
 import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,19 +18,19 @@ import lombok.Setter;
 @Table(name = "in_customer_document")
 public class CustomerDocument extends Auditable<String> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, updatable = false)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-    @Column(name = "name")
-    private String name;
+	@Column(name = "name")
+	private String name;
 
-    @Column(name = "document_url", nullable = false)
-    private String documentUrl;
+	@Column(name = "document_url", nullable = false)
+	private String documentUrl;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
 
 }
