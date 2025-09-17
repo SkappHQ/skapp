@@ -5,6 +5,7 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 
 import java.util.List;
 
@@ -19,5 +20,7 @@ public interface InvoiceValidationService {
 	void validateCreateInvoiceTaxesRequest(List<CreateInvoiceTaxDto> invoiceTaxes);
 
 	void validateInvoiceFilterRequest(InvoiceFilterRequestDto invoiceFilterRequestDto);
+
+	void validateInvoiceStatusUpdateRequest(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto);
 
 }
