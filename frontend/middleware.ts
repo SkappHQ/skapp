@@ -317,6 +317,7 @@ export const config = {
     "/projects/:path*",
     // Invoice routes
     "/invoice",
-    "/invoice/:path*"
+    "/invoice/:path*",
+    "/invoice/create/:path*"
   ]
 };

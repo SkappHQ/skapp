@@ -16,7 +16,8 @@ export const drawerHiddenProtectedRoutes = [
   ROUTES.SIGN.CREATE_DOCUMENT,
   ROUTES.SIGN.SENT_INFO.BASE,
   ROUTES.SIGN.INBOX_INFO.BASE,
-  ROUTES.SIGN.DOCUMENT_ACCESS
+  ROUTES.SIGN.DOCUMENT_ACCESS,
+  ROUTES.INVOICE.CREATE.BASE
 ];
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
