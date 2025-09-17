@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -53,9 +53,9 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateDateConstraints(CreateInvoiceRequestDto request) {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDate today = LocalDate.now();
 
-		if (request.getInvoiceDate().isAfter(now.plusDays(1))) {
+		if (request.getInvoiceDate().isAfter(today.plusDays(1))) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FUTURE_DATE_NOT_ALLOWED);
 		}
 
@@ -156,8 +156,8 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_AMOUNT_INVALID);
 		}
 
-		LocalDateTime now = LocalDateTime.now();
-		if (expense.getDate().isAfter(now)) {
+		LocalDate today = LocalDate.now();
+		if (expense.getDate().isAfter(today)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_FUTURE_DATE_NOT_ALLOWED);
 		}
 	}
