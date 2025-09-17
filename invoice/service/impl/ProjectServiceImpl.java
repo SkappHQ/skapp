@@ -96,8 +96,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private HttpHeaders createHeaders(HttpServletRequest request) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("x-tenant-id", extractTenantId(request));
-		headers.set("x-api-key", internalApiKey);
+		headers.set(EpAuthConstants.TENANT_HEADER, extractTenantId(request));
+		headers.set(EpAuthConstants.API_KEY_HEADER, internalApiKey);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		return headers;
 	}
