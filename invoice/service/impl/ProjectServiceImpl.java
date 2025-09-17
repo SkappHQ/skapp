@@ -80,9 +80,9 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		catch (Exception e) {
 			log.error("Error parsing JSON response: ", e);
-		}
 
-		return new ResponseEntityDto(false, InvoiceCommonConstant.DEFAULT_PROJECT_RETURN_MESSAGE);
+		}
+		return new ResponseEntityDto(true, InvoiceCommonConstant.DEFAULT_ERROR_MESSAGE);
 	}
 
 	private String extractTenantId(HttpServletRequest request) {
