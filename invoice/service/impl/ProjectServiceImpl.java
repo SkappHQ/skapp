@@ -35,8 +35,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private final ObjectMapper objectMapper;
 
-	private final JwtService jwtService;
-
 	@Override
 	public ResponseEntityDto getAllProjects(ProjectFilterDto projectFilterDto, HttpServletRequest request) {
 
