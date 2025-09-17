@@ -8,7 +8,6 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
-import com.skapp.enterprise.invoice.payload.request.ProjectFilterDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +25,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +40,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private final RestTemplate restTemplate;
 
 	@Override
-	public ResponseEntityDto getAllProjects(ProjectFilterDto projectFilterDto, HttpServletRequest request) {
+	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
 
 		// Define the GraphQL query
 		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS;

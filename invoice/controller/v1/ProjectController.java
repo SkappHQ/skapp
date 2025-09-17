@@ -1,11 +1,9 @@
 package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.invoice.payload.request.ProjectFilterDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,9 +25,8 @@ public class ProjectController {
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getAllProjects(@Valid ProjectFilterDto projectFilterDto,
-			HttpServletRequest request) {
-		ResponseEntityDto response = projectService.getAllProjects(projectFilterDto, request);
+	public ResponseEntity<ResponseEntityDto> getAllProjects(HttpServletRequest request) {
+		ResponseEntityDto response = projectService.getAllProjects(request);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
