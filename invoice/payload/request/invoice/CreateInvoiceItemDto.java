@@ -16,6 +16,8 @@ public class CreateInvoiceItemDto {
 
 	private Integer quantity;
 
+	private String quantityType;
+
 	private Double unitPrice;
 
 	private DiscountType discountType;
