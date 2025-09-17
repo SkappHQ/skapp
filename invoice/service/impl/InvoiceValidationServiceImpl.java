@@ -55,7 +55,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	private void validateDateConstraints(CreateInvoiceRequestDto request) {
 		LocalDate today = LocalDate.now();
 
-		if (request.getInvoiceDate().isAfter(today.plusDays(1))) {
+		if (request.getInvoiceDate().isAfter(today)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FUTURE_DATE_NOT_ALLOWED);
 		}
 
