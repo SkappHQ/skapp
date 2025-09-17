@@ -11,6 +11,7 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequest
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceConfigResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
+import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceDetailResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -36,5 +37,11 @@ public interface InvoiceMapper {
 	InvoiceExpense CreateInvoiceExpenseDtoToInvoiceExpense(CreateInvoiceExpenseDto createInvoiceExpenseDto);
 
 	InvoiceTax CreateInvoiceTaxDtoToInvoiceTax(CreateInvoiceTaxDto createInvoiceTaxDto);
+
+	@Mapping(target = "customer", source = "invoice.customer")
+	@Mapping(target = "invoiceItems", source = "invoice.invoiceItems")
+	@Mapping(target = "invoiceExpenses", source = "invoice.invoiceExpenses")
+	@Mapping(target = "invoiceTaxes", source = "invoice.invoiceTaxes")
+	InvoiceDetailResponseDto invoiceToInvoiceDetailResponseDto(Invoice invoice);
 
 }
