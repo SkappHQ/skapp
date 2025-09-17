@@ -17,7 +17,6 @@ import graphql.kickstart.spring.webclient.boot.GraphQLResponse;
 import graphql.kickstart.spring.webclient.boot.GraphQLWebClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -33,8 +32,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Value("${graphql.client.url}")
 	private String graphqlServiceUrl;
-
-	private final GraphQLWebClient graphQLWebClient;
 
 	private final ObjectMapper objectMapper;
 
