@@ -232,22 +232,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			}
 		}
 
-		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getDueDateFrom() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getDueDateTo() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
-		}
-
 		if (invoiceFilterRequestDto.getCustomerId() != null
 				&& invoiceFilterRequestDto.getCustomerId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID);

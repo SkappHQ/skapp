@@ -73,20 +73,20 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		}
 		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null) {
 			predicates.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.invoiceDate),
-					invoiceFilterRequestDto.getInvoiceDateFrom()));
+					invoiceFilterRequestDto.getInvoiceDateFrom().atStartOfDay()));
 		}
 		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
 			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.invoiceDate),
-					invoiceFilterRequestDto.getInvoiceDateTo()));
+					invoiceFilterRequestDto.getInvoiceDateTo().atTime(23, 59, 59)));
 		}
 
 		if (invoiceFilterRequestDto.getDueDateFrom() != null) {
 			predicates
-				.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateFrom()));
+				.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateFrom().atStartOfDay()));
 		}
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
+		if (invoiceFilterRequestDto.getDueDateTo() != null) {
 			predicates
-				.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getInvoiceDateTo()));
+				.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateTo().atTime(23, 59, 59)));
 		}
 
 		if (invoiceFilterRequestDto.getCustomerId() != null) {

@@ -4,7 +4,7 @@ import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -12,13 +12,13 @@ public class InvoiceFilterRequestDto {
 
 	private String invoiceId;
 
-	private LocalDateTime invoiceDateFrom;
+	private LocalDate invoiceDateFrom;
 
-	private LocalDateTime invoiceDateTo;
+	private LocalDate invoiceDateTo;
 
-	private LocalDateTime dueDateFrom;
+	private LocalDate dueDateFrom;
 
-	private LocalDateTime dueDateTo;
+	private LocalDate dueDateTo;
 
 	private Long customerId;
 
