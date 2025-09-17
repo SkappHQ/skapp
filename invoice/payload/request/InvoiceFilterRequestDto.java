@@ -34,4 +34,6 @@ public class InvoiceFilterRequestDto {
 
 	private String sortDirection = "DESC";
 
+	private String searchKeyword;
+
 }

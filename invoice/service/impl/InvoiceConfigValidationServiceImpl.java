@@ -20,14 +20,10 @@ public class InvoiceConfigValidationServiceImpl implements InvoiceConfigValidati
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_REQUEST_NULL);
 		}
 
-		if (invoiceConfigDto.getInvoiceLogo() != null && !invoiceConfigDto.getInvoiceLogo().trim().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_LOGO_URL_INVALID);
-		}
-
 		if (invoiceConfigDto.getCountry() != null && !invoiceConfigDto.getCountry().trim().isEmpty()) {
 			Validations.validateCountry(invoiceConfigDto.getCountry());
 		}
-		if (invoiceConfigDto.getPaymentTerms() != null && !invoiceConfigDto.getPaymentTerms().trim().isEmpty()) {
+		if (invoiceConfigDto.getPaymentTerms() == null || invoiceConfigDto.getPaymentTerms().trim().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_PAYMENT_TERMS_INVALID);
 		}
 
