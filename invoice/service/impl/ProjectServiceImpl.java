@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Comparator;
@@ -52,13 +53,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
 
-		ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
-
-		if (responseEntity.getStatusCode().value() != InvoiceCommonConstant.SUCCESS_STATUS_CODE) {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
-		}
-
 		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+
+			if (responseEntity.getStatusCode().value() != InvoiceCommonConstant.SUCCESS_STATUS_CODE) {
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+			}
+
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(responseEntity.getBody());
 
@@ -77,6 +78,10 @@ public class ProjectServiceImpl implements ProjectService {
 
 				return new ResponseEntityDto(false, sortedInternalProjects);
 			}
+		}
+		catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
 		}
 		catch (Exception e) {
 			log.error("Error parsing JSON response: ", e);
