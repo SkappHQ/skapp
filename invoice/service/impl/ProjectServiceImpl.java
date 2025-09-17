@@ -1,25 +1,28 @@
 package com.skapp.enterprise.invoice.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.skapp.community.common.constant.AuthConstants;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
+import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
-import com.skapp.enterprise.invoice.payload.graphql.paginated.PaginationInput;
-import com.skapp.enterprise.invoice.payload.graphql.ProjectsWithPaginated;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
-import graphql.kickstart.spring.webclient.boot.GraphQLRequest;
-import graphql.kickstart.spring.webclient.boot.GraphQLResponse;
-import graphql.kickstart.spring.webclient.boot.GraphQLWebClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,66 +30,73 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectServiceImpl implements ProjectService {
 
-	@Value("${graphql.client.url}")
-	private String graphqlServiceUrl;
+	@Value("${pm.service.url}")
+	private String pmServiceUrl;
 
-	private final ObjectMapper objectMapper;
+	@Value("${internal.api.key}")
+	private String internalApiKey;
+
+	private final RestTemplate restTemplate;
 
 	@Override
 	public ResponseEntityDto getAllProjects(ProjectFilterDto projectFilterDto, HttpServletRequest request) {
 
 		// Define the GraphQL query
-		String query = ProjectGraphQLQueries.PROJECTS_WITH_PAGINATED;
+		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS;
 
-		PaginationInput pagination = new PaginationInput();
-		pagination.setLimit(projectFilterDto.getLimit());
-		pagination.setCursor(projectFilterDto.getCursor());
-		pagination.setSearch(projectFilterDto.getSearch());
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
 
-		ObjectNode paginationNode = objectMapper.valueToTree(pagination);
+		HttpHeaders headers = createHeaders(request);
 
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("pagination", paginationNode);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
 
-		GraphQLRequest graphQLRequest = GraphQLRequest.builder().query(query).variables(variables).build();
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
 
-		GraphQLResponse graphQLResponse = sendGraphQLRequest(graphQLRequest, request);
+		if (responseEntity.getStatusCode().value() != InvoiceCommonConstant.SUCCESS_STATUS_CODE) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+		}
 
-		ProjectsWithPaginated result = graphQLResponse.get("projectsWithPaginated", ProjectsWithPaginated.class);
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(responseEntity.getBody());
 
-		List<TenantProjectListResponseDto> projects = result.getEdges().stream().map(edge -> {
-			TenantProjectListResponseDto dto = new TenantProjectListResponseDto();
-			dto.setId(Long.parseLong(edge.getNode().getId()));
-			dto.setKey(edge.getNode().getKey());
-			dto.setName(edge.getNode().getName());
-			return dto;
-		}).collect(Collectors.toList());
+			if (jsonNode.has(InvoiceCommonConstant.DATA)
+					&& jsonNode.get(InvoiceCommonConstant.DATA).has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
 
-		return new ResponseEntityDto(false, projects);
-	}
+				List<TenantProjectListResponseDto> internalProjects = objectMapper.convertValue(
+						jsonNode.get(InvoiceCommonConstant.DATA).get(InvoiceCommonConstant.INTERNAL_PROJECTS),
+						objectMapper.getTypeFactory()
+							.constructCollectionType(List.class, TenantProjectListResponseDto.class));
 
-	private String extractAuthHeader(HttpServletRequest request) {
-		return request.getHeader(AuthConstants.AUTHORIZATION);
+				// Sort the internalProjects list by the 'name' field in ascending order
+				List<TenantProjectListResponseDto> sortedInternalProjects = internalProjects.stream()
+					.sorted(Comparator.comparing(TenantProjectListResponseDto::getName))
+					.toList();
+
+				return new ResponseEntityDto(false, sortedInternalProjects);
+			}
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+		}
+
+		return new ResponseEntityDto(false, null);
 	}
 
 	private String extractTenantId(HttpServletRequest request) {
 		return request.getHeader(EpAuthConstants.TENANT_HEADER);
 	}
 
-	private WebClient createWebClient(HttpServletRequest request) {
-		return WebClient.builder()
-			.baseUrl(graphqlServiceUrl)
-			.defaultHeader("Authorization", extractAuthHeader(request))
-			.defaultHeader("x-tenant-id", extractTenantId(request))
-			.build();
-	}
-
-	private GraphQLResponse sendGraphQLRequest(GraphQLRequest graphQLRequest, HttpServletRequest request) {
-		WebClient webClient = createWebClient(request);
-		GraphQLWebClient customGraphQLWebClient = GraphQLWebClient.newInstance(webClient, objectMapper);
-		return customGraphQLWebClient.post(graphQLRequest).block();
+	private HttpHeaders createHeaders(HttpServletRequest request) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("x-tenant-id", extractTenantId(request));
+		headers.set("x-api-key", internalApiKey);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		return headers;
 	}
 
 }

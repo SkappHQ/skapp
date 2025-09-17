@@ -13,4 +13,10 @@ public class InvoiceCommonConstant {
 
 	public static final String INVOICE_NUMBER_SUFFIX = "-001";
 
+	public static final String DATA = "data";
+
+	public static final String INTERNAL_PROJECTS = "internalProjects";
+
+	public static final int SUCCESS_STATUS_CODE = 200;
+
 }
