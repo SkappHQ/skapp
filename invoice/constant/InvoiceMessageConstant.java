@@ -72,7 +72,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
 	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
 
-	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),;
+	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects");
 
 	private final String messageKey;
 
