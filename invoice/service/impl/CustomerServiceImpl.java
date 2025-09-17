@@ -316,9 +316,7 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private List<Long> extractProjectIds(List<CustomerProjectDetailsDto> customerProjectDetailsList) {
-		return customerProjectDetailsList.stream()
-			.map(CustomerProjectDetailsDto::getProjectId)
-			.collect(Collectors.toList());
+		return customerProjectDetailsList.stream().map(CustomerProjectDetailsDto::getProjectId).toList();
 	}
 
 }

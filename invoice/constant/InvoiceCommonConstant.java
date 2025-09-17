@@ -19,4 +19,6 @@ public class InvoiceCommonConstant {
 
 	public static final int SUCCESS_STATUS_CODE = 200;
 
+	public static final String ACTIVE = "ACTIVE";
+
 }

@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.repository.impl;
 
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.repository.CustomerRepository;
@@ -39,7 +40,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 			predicates.add(findByName(customerFilterDto.getSearchKeyword(), criteriaBuilder, root));
 		}
 
-		predicates.add(criteriaBuilder.equal(root.get("status"), "ACTIVE"));
+		predicates.add(criteriaBuilder.equal(root.get("status"), InvoiceCommonConstant.ACTIVE));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
