@@ -21,4 +21,6 @@ public class InvoiceCommonConstant {
 
 	public static final String ACTIVE = "ACTIVE";
 
+	public static final String DEFAULT_PROJECT_RETURN_MESSAGE = "No projects found or an error occurred while fetching projects.";
+
 }
