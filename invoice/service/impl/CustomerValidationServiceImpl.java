@@ -87,7 +87,8 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 					customerContact.getId());
 		}
 		else {
-			emailExists = customerContactDao.existsByEmail(customerContactDetailsDto.getEmail());
+
+			emailExists = customerContactDao.existsByEmailAndIsActive(customerContactDetailsDto.getEmail(), true);
 		}
 
 		if (emailExists) {

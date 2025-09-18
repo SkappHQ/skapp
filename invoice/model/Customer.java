@@ -3,6 +3,8 @@ package com.skapp.enterprise.invoice.model;
 import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.CustomerStatus;
+import com.skapp.enterprise.invoice.type.InvoiceDateFormat;
+import com.skapp.enterprise.invoice.type.InvoiceNumberFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +46,14 @@ public class Customer extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "currency")
 	private CurrencyType currency;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "number_format")
+	private InvoiceNumberFormat numberFormat;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "date_format")
+	private InvoiceDateFormat dateFormat;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")

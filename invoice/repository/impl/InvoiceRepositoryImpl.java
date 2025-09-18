@@ -84,9 +84,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 			predicates
 				.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateFrom()));
 		}
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
-			predicates
-				.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getInvoiceDateTo()));
+		if (invoiceFilterRequestDto.getDueDateTo() != null) {
+			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateTo()));
 		}
 
 		if (invoiceFilterRequestDto.getCustomerId() != null) {
