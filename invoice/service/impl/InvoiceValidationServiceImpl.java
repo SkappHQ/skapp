@@ -8,13 +8,14 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpense
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -52,9 +53,9 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateDateConstraints(CreateInvoiceRequestDto request) {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDate today = LocalDate.now();
 
-		if (request.getInvoiceDate().isAfter(now.plusDays(1))) {
+		if (request.getInvoiceDate().isAfter(today)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FUTURE_DATE_NOT_ALLOWED);
 		}
 
@@ -155,8 +156,8 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_AMOUNT_INVALID);
 		}
 
-		LocalDateTime now = LocalDateTime.now();
-		if (expense.getDate().isAfter(now)) {
+		LocalDate today = LocalDate.now();
+		if (expense.getDate().isAfter(today)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_EXPENSE_FUTURE_DATE_NOT_ALLOWED);
 		}
 	}
@@ -231,22 +232,6 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			}
 		}
 
-		if (invoiceFilterRequestDto.getInvoiceDateFrom() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getDueDateFrom() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
-		}
-
-		if (invoiceFilterRequestDto.getDueDateTo() != null) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_DUE_DATE_RANGE_INVALID);
-		}
-
 		if (invoiceFilterRequestDto.getCustomerId() != null
 				&& invoiceFilterRequestDto.getCustomerId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID);
@@ -255,6 +240,14 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (invoiceFilterRequestDto.getProjectId() != null
 				&& invoiceFilterRequestDto.getProjectId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_FILTER_PROJECT_ID_INVALID);
+		}
+	}
+
+	@Override
+	public void validateInvoiceStatusUpdateRequest(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto) {
+		if (invoiceStatusUpdateRequestDto.getInvoiceId() == null
+				|| invoiceStatusUpdateRequestDto.getInvoiceId().toString().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
 		}
 	}
 

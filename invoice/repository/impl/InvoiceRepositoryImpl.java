@@ -40,6 +40,9 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 
 		List<Predicate> predicates = buildPredicates(cb, invoice, invoiceFilterRequestDto);
 
+		List<Predicate> searchPredicates = buildSearchPredicates(cb, invoice, invoiceFilterRequestDto);
+		predicates.addAll(searchPredicates);
+
 		if (!predicates.isEmpty()) {
 			query.where(predicates.toArray(new Predicate[0]));
 		}
@@ -81,9 +84,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 			predicates
 				.add(cb.greaterThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateFrom()));
 		}
-		if (invoiceFilterRequestDto.getInvoiceDateTo() != null) {
-			predicates
-				.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getInvoiceDateTo()));
+		if (invoiceFilterRequestDto.getDueDateTo() != null) {
+			predicates.add(cb.lessThanOrEqualTo(invoice.get(Invoice_.dueDate), invoiceFilterRequestDto.getDueDateTo()));
 		}
 
 		if (invoiceFilterRequestDto.getCustomerId() != null) {
@@ -121,6 +123,21 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		}
 
 		return orders;
+	}
+
+	private List<Predicate> buildSearchPredicates(CriteriaBuilder cb, Root<Invoice> invoice,
+			InvoiceFilterRequestDto invoiceFilterRequestDto) {
+
+		List<Predicate> searchPredicates = new ArrayList<>();
+		String searchKeyword = invoiceFilterRequestDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isEmpty()) {
+			String likePattern = "%" + searchKeyword.toLowerCase() + "%";
+
+			Join<Invoice, Customer> customerJoin = invoice.join(Invoice_.customer);
+			searchPredicates.add(cb.or(cb.like(cb.lower(invoice.get(Invoice_.invoiceId)), likePattern),
+					cb.like(cb.lower(customerJoin.get(Customer_.name)), likePattern)));
+		}
+		return searchPredicates;
 	}
 
 	private Long getTotalCount(CriteriaBuilder cb, InvoiceFilterRequestDto invoiceFilterRequestDto) {

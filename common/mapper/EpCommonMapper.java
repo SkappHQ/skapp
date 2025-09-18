@@ -2,6 +2,8 @@ package com.skapp.enterprise.common.mapper;
 
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.JobFamily;
+import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
@@ -15,10 +17,13 @@ import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.ApplySupportResponseDto;
 import com.skapp.enterprise.common.payload.response.DeviceTokenResponseDto;
 import com.skapp.enterprise.common.payload.response.EpCalendarConfigResponseDto;
+import com.skapp.enterprise.common.payload.response.EpJobResponseDto;
 import com.skapp.enterprise.common.payload.response.EpOrganizationResponseDto;
 import com.skapp.enterprise.common.payload.response.SupportRequestAttachmentDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface EpCommonMapper {
@@ -47,5 +52,7 @@ public interface EpCommonMapper {
 
 	SupportRequestAttachmentDto supportRequestAttachmentToSupportRequestAttachmentDto(
 			SupportRequestAttachment supportRequestAttachment);
+
+	List<EpJobResponseDto> jobFamilyListToEpJobResponseDtoList(List<JobFamily> jobFamilies);
 
 }

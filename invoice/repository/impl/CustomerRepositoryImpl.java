@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.repository.impl;
 
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.repository.CustomerRepository;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 
 import java.util.ArrayList;
@@ -38,23 +40,31 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 			predicates.add(findByName(customerFilterDto.getSearchKeyword(), criteriaBuilder, root));
 		}
 
+		predicates.add(criteriaBuilder.equal(root.get("status"), InvoiceCommonConstant.ACTIVE));
+
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray);
 
+		List<Order> orderList = new ArrayList<>();
+
 		if (customerFilterDto.getSearchKeyword() != null && !customerFilterDto.getSearchKeyword().isEmpty()) {
-			List<Order> orderList = new ArrayList<>();
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(root.get("name"), getSearchString(customerFilterDto.getSearchKeyword())),
 						1));
 			orderList.add(sortingOrder);
-			orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
-			criteriaQuery.orderBy(orderList);
 		}
 		else {
 			criteriaQuery.distinct(true);
-			criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+			if (customerFilterDto.getSortKey() != null) {
+				orderList.add(customerFilterDto.getSortOrder() == Sort.Direction.ASC
+						? criteriaBuilder.asc(root.get(customerFilterDto.getSortKey().name().toLowerCase()))
+						: criteriaBuilder.desc(root.get(customerFilterDto.getSortKey().name().toLowerCase())));
+			}
 		}
+
+		orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		criteriaQuery.orderBy(orderList);
 
 		TypedQuery<Customer> query = entityManager.createQuery(criteriaQuery);
 

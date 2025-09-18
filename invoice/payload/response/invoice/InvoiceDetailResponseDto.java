@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.response;
+package com.skapp.enterprise.invoice.payload.response.invoice;
 
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
@@ -8,19 +8,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class InvoiceResponseDto {
+public class InvoiceDetailResponseDto {
 
 	private Long id;
 
 	private String invoiceId;
-
-	private Long customerId;
-
-	private String customerName;
 
 	private Long projectId;
 
@@ -49,5 +46,13 @@ public class InvoiceResponseDto {
 	private Double payableTotalAmount;
 
 	private String invoiceLogo;
+
+	private CustomerResponseDto customer;
+
+	private List<InvoiceItemResponseDto> invoiceItems;
+
+	private List<InvoiceExpenseResponseDto> invoiceExpenses;
+
+	private List<InvoiceTaxResponseDto> invoiceTaxes;
 
 }

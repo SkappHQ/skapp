@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.request.invoice;
+package com.skapp.enterprise.invoice.payload.response.invoice;
 
 import com.skapp.enterprise.invoice.type.ExpenseCategory;
 import lombok.Getter;
@@ -6,12 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreateInvoiceExpenseDto {
+public class InvoiceExpenseResponseDto {
+
+	private Long id;
 
 	private String name;
 
@@ -20,7 +21,5 @@ public class CreateInvoiceExpenseDto {
 	private LocalDate date;
 
 	private Double amount;
-
-	private List<CreateExpenseAttachmentDto> attachments;
 
 }

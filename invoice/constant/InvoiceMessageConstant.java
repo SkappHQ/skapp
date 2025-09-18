@@ -72,7 +72,12 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
 	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
     INVOICE_ERROR_INVOICE_NOT_FOUND("invoice.error.not.found"),
-    INVOICE_SUCCESS_EMAIL_REMINDER_SENT("");
+    INVOICE_SUCCESS_EMAIL_REMINDER_SENT(""),
+	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
+
+	INVOICE_ERROR_INVOICE_ID_INVALID("invoice.error.id.invalid"),
+	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
+	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source");
 
 	private final String messageKey;
 

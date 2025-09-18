@@ -35,6 +35,9 @@ public class InvoiceItem {
 	@Column(name = "quantity")
 	private Integer quantity;
 
+	@Column(name = "quantity_type")
+	private String quantityType;
+
 	@Column(name = "unit_price")
 	private Double unitPrice;
 
