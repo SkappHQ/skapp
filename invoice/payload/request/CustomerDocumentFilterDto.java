@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.payload.request;
 
+import com.skapp.enterprise.invoice.type.DocumentStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,8 @@ public class CustomerDocumentFilterDto {
 	private Long customerId;
 
 	private String name;
+
+	private DocumentStatus documentStatus;
 
 	private int page = 0;
 

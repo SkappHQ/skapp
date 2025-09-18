@@ -3,8 +3,6 @@ package com.skapp.enterprise.invoice.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 public class CustomerDocumentResponseDto {
@@ -19,8 +17,6 @@ public class CustomerDocumentResponseDto {
 
 	private String customerName;
 
-	private LocalDateTime createdDate;
-
-	private LocalDateTime lastModifiedDate;
+	private String documentStatus;
 
 }

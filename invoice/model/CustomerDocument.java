@@ -1,8 +1,10 @@
 package com.skapp.enterprise.invoice.model;
 
-import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.invoice.type.DocumentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,7 +18,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "in_customer_document")
-public class CustomerDocument extends Auditable<String> {
+public class CustomerDocument {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +30,10 @@ public class CustomerDocument extends Auditable<String> {
 
 	@Column(name = "document_url", nullable = false)
 	private String documentUrl;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "document_status")
+	private DocumentStatus documentStatus;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "customer_id")
