@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface CustomerContactDao extends JpaRepository<CustomerContact, Long> {
 
-	boolean existsByEmail(String email);
+	boolean existsByEmailAndIsActive(String email, boolean isActive);
 
 	Optional<CustomerContact> findByIdAndIsActive(Long id, boolean isActive);
 
