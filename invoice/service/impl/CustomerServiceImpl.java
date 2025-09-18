@@ -25,6 +25,8 @@ import com.skapp.enterprise.invoice.service.CustomerService;
 import com.skapp.enterprise.invoice.service.CustomerValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.CustomerStatus;
+import com.skapp.enterprise.invoice.type.InvoiceDateFormat;
+import com.skapp.enterprise.invoice.type.InvoiceNumberFormat;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -141,6 +143,12 @@ public class CustomerServiceImpl implements CustomerService {
 			}
 			if (customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null) {
 				customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency());
+			}
+			if (customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat() != null) {
+				customer.setNumberFormat(customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat());
+			}
+			if (customerCreateRequestDto.getCustomerBillingDetails().getDateFormat() != null) {
+				customer.setDateFormat(customerCreateRequestDto.getCustomerBillingDetails().getDateFormat());
 			}
 
 		}
@@ -265,6 +273,8 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setName(customerCreateRequestDto.getCustomerName());
 		customer.setCurrency(CurrencyType.USD);
 		customer.setStatus(CustomerStatus.ACTIVE);
+		customer.setNumberFormat(InvoiceNumberFormat.US_UK);
+		customer.setDateFormat(InvoiceDateFormat.YYYY_MM_DD);
 
 		if (customerCreateRequestDto.getCustomerBillingDetails() != null) {
 			customer.setEmail(customerCreateRequestDto.getCustomerBillingDetails().getEmail());
@@ -278,6 +288,12 @@ public class CustomerServiceImpl implements CustomerService {
 			customer.setCountry(customerCreateRequestDto.getCustomerBillingDetails().getCountry());
 			customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null
 					? customerCreateRequestDto.getCustomerBillingDetails().getCurrency() : CurrencyType.USD);
+			customer.setNumberFormat(customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat() != null
+					? customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat()
+					: InvoiceNumberFormat.US_UK);
+			customer.setDateFormat(customerCreateRequestDto.getCustomerBillingDetails().getDateFormat() != null
+					? customerCreateRequestDto.getCustomerBillingDetails().getDateFormat()
+					: InvoiceDateFormat.YYYY_MM_DD);
 		}
 
 		return customer;

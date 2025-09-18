@@ -7,4 +7,6 @@ public interface ProjectService {
 
 	ResponseEntityDto getAllProjects(HttpServletRequest request);
 
+	ResponseEntityDto getProjectsByCustomer(HttpServletRequest request, Long customerId);
+
 }
