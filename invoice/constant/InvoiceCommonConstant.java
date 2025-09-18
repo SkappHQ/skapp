@@ -19,8 +19,6 @@ public class InvoiceCommonConstant {
 
 	public static final String INTERNAL_PROJECTS = "internalProjects";
 
-	public static final int SUCCESS_STATUS_CODE = 200;
-
 	public static final String ACTIVE = "ACTIVE";
 
 	public static final String DEFAULT_ERROR_MESSAGE = "An error occurred while fetching projects.";
