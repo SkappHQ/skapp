@@ -24,7 +24,7 @@ public class InvoiceFilterRequestDto {
 
 	private Long projectId;
 
-	private InvoiceStatus status;
+	private InvoiceStatus[] status;
 
 	private int page = 0;
 
