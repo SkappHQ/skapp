@@ -14,6 +14,7 @@ import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
+import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerContactDao;
@@ -24,6 +25,8 @@ import com.skapp.enterprise.invoice.service.CustomerService;
 import com.skapp.enterprise.invoice.service.CustomerValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.CustomerStatus;
+import com.skapp.enterprise.invoice.type.InvoiceDateFormat;
+import com.skapp.enterprise.invoice.type.InvoiceNumberFormat;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +65,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 		Customer customer = initializeCustomer(customerCreateRequestDto);
 
-		if (customerCreateRequestDto.getProjectIds() != null) {
-			customer.setProjects(initializeCustomerProjectMapping(customer, customerCreateRequestDto.getProjectIds()));
+		if (customerCreateRequestDto.getCustomerProjects() != null) {
+			customer.setProjects(
+					initializeCustomerProjectMapping(customer, customerCreateRequestDto.getCustomerProjects()));
 		}
 
 		Customer saved = customerDao.save(customer);
@@ -139,6 +143,12 @@ public class CustomerServiceImpl implements CustomerService {
 			}
 			if (customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null) {
 				customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency());
+			}
+			if (customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat() != null) {
+				customer.setNumberFormat(customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat());
+			}
+			if (customerCreateRequestDto.getCustomerBillingDetails().getDateFormat() != null) {
+				customer.setDateFormat(customerCreateRequestDto.getCustomerBillingDetails().getDateFormat());
 			}
 
 		}
@@ -263,6 +273,8 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setName(customerCreateRequestDto.getCustomerName());
 		customer.setCurrency(CurrencyType.USD);
 		customer.setStatus(CustomerStatus.ACTIVE);
+		customer.setNumberFormat(InvoiceNumberFormat.US_UK);
+		customer.setDateFormat(InvoiceDateFormat.YYYY_MM_DD);
 
 		if (customerCreateRequestDto.getCustomerBillingDetails() != null) {
 			customer.setEmail(customerCreateRequestDto.getCustomerBillingDetails().getEmail());
@@ -276,12 +288,21 @@ public class CustomerServiceImpl implements CustomerService {
 			customer.setCountry(customerCreateRequestDto.getCustomerBillingDetails().getCountry());
 			customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null
 					? customerCreateRequestDto.getCustomerBillingDetails().getCurrency() : CurrencyType.USD);
+			customer.setNumberFormat(customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat() != null
+					? customerCreateRequestDto.getCustomerBillingDetails().getNumberFormat()
+					: InvoiceNumberFormat.US_UK);
+			customer.setDateFormat(customerCreateRequestDto.getCustomerBillingDetails().getDateFormat() != null
+					? customerCreateRequestDto.getCustomerBillingDetails().getDateFormat()
+					: InvoiceDateFormat.YYYY_MM_DD);
 		}
 
 		return customer;
 	}
 
-	private List<Project> initializeCustomerProjectMapping(Customer customer, List<Long> projectIds) {
+	private List<Project> initializeCustomerProjectMapping(Customer customer,
+			List<CustomerProjectDetailsDto> customerProjectDetailsList) {
+
+		List<Long> projectIds = extractProjectIds(customerProjectDetailsList);
 
 		List<Project> existingProjects = projectDao.findByProjectIdIn(projectIds);
 
@@ -290,9 +311,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 		List<Project> projectList = new ArrayList<>();
 
-		for (Long projId : projectIds) {
+		for (CustomerProjectDetailsDto projectData : customerProjectDetailsList) {
 			// Validate if the project is already mapped to any other customer
-			Project existingProject = projectMap.get(projId);
+			Project existingProject = projectMap.get(projectData.getProjectId());
 			if (existingProject != null && existingProject.getCustomer() != null) {
 				throw new ModuleException(
 						InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
@@ -301,12 +322,17 @@ public class CustomerServiceImpl implements CustomerService {
 			// Create and map the project
 			Project project = new Project();
 			project.setCustomer(customer);
-			project.setProjectId(projId);
+			project.setProjectId(projectData.getProjectId());
+			project.setProjectKey(projectData.getProjectKey());
 
 			projectList.add(project);
 		}
 
 		return projectList;
+	}
+
+	private List<Long> extractProjectIds(List<CustomerProjectDetailsDto> customerProjectDetailsList) {
+		return customerProjectDetailsList.stream().map(CustomerProjectDetailsDto::getProjectId).toList();
 	}
 
 }

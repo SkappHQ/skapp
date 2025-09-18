@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -21,9 +21,9 @@ public class InvoiceDetailResponseDto {
 
 	private Long projectId;
 
-	private LocalDateTime invoiceDate;
+	private LocalDate invoiceDate;
 
-	private LocalDateTime dueDate;
+	private LocalDate dueDate;
 
 	private String billedTo;
 

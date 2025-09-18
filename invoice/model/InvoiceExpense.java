@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -40,7 +40,7 @@ public class InvoiceExpense {
 	private ExpenseCategory category;
 
 	@Column(name = "date", nullable = false)
-	private LocalDateTime date;
+	private LocalDate date;
 
 	@Column(name = "amount")
 	private Double amount;
