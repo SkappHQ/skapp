@@ -50,9 +50,10 @@ const NotificationsPopup = ({
   } = useSessionData();
 
   return (
+    <>
     <Box
       sx={{
-        maxHeight: isSmallPhoneScreen ? "44vh" : "calc(100vh - 25rem)",
+        maxHeight: isSmallPhoneScreen ? "44vh" : "calc(100vh - 30rem)",
         overflowY: "auto",
         "&::-webkit-scrollbar": {
           width: "0.25rem"
@@ -115,7 +116,11 @@ const NotificationsPopup = ({
               </MenuItem>
             )
           )}
-          <Button
+          
+        </>
+      )}
+    </Box>
+    <Button
             buttonStyle={ButtonStyle.TERTIARY}
             label={translateText(["viewAllNotificationsButtonText"])}
             endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
@@ -123,9 +128,7 @@ const NotificationsPopup = ({
             onClick={handelAllNotification}
             disabled={notifications?.length === 0}
           />
-        </>
-      )}
-    </Box>
+         </> 
   );
 };
 
