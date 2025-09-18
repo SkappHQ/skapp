@@ -84,7 +84,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 		customerValidationService.validateCustomerDocumentFilterDto(filterDto);
 		int page = filterDto.getPage();
 		int size = filterDto.getSize();
-		String sortBy = filterDto.getSortKey().toString();
+		String sortBy = filterDto.getSortKey().getField();
 		String sortDirection = filterDto.getSortOrder().toString();
 
 		Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
