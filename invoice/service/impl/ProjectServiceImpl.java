@@ -56,18 +56,21 @@ public class ProjectServiceImpl implements ProjectService {
 		try {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
 
-			if (responseEntity.getStatusCode().value() != InvoiceCommonConstant.SUCCESS_STATUS_CODE) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
 				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
 			}
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode jsonNode = objectMapper.readTree(responseEntity.getBody());
-
-			if (jsonNode.has(InvoiceCommonConstant.DATA)
-					&& jsonNode.get(InvoiceCommonConstant.DATA).has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+						.has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
 
 				List<TenantProjectListResponseDto> internalProjects = objectMapper.convertValue(
-						jsonNode.get(InvoiceCommonConstant.DATA).get(InvoiceCommonConstant.INTERNAL_PROJECTS),
+						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+							.get(InvoiceCommonConstant.INTERNAL_PROJECTS),
 						objectMapper.getTypeFactory()
 							.constructCollectionType(List.class, TenantProjectListResponseDto.class));
 
