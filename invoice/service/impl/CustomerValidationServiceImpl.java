@@ -124,7 +124,7 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 
 	@Override
 	public void validateCustomerDocumentFilterDto(CustomerDocumentFilterDto customerDocumentFilterDto) {
-		if ((customerDocumentFilterDto == null)) {
+		if (customerDocumentFilterDto == null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID);
 		}
 

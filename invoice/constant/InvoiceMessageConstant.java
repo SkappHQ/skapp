@@ -80,7 +80,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED("invoice.error.customer.document.name.required"),
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_URL_REQUIRED("invoice.error.customer.document.url.required"),
-	INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID("invoice.error.customer.document.filter.invalid"),;
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID("invoice.error.customer.document.filter.invalid");
 
 	private final String messageKey;
 
