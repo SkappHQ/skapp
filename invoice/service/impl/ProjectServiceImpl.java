@@ -11,6 +11,8 @@ import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerProjectPageDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
@@ -19,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -73,11 +76,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		else {
 
-			Customer customer = customerDao.findById(customerId)
-				.orElseThrow(
-						() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
-
-			List<Project> customerProjectList = projectDao.findByCustomer_Id(customerId);
+			List<Project> customerProjectList = getCustomerProjects(customerId);
 
 			List<TenantProjectListResponseDto> filteredProjects = internalProjects.stream()
 				.filter(internalProject -> customerProjectList.stream()
@@ -87,6 +86,84 @@ public class ProjectServiceImpl implements ProjectService {
 
 			return new ResponseEntityDto(false, filteredProjects);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getProjectsSummaryByCustomer(HttpServletRequest request,
+			ProjectFilterRequestDto projectFilterRequestDto) {
+
+		List<Project> customerProjectList = getCustomerProjects(projectFilterRequestDto.getCustomerId());
+
+		if (customerProjectList.isEmpty()) {
+			return new ResponseEntityDto(false, customerProjectList);
+		}
+
+		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request);
+
+		List<TenantProjectListResponseDto> filteredCustomerProjects = internalProjects.stream()
+			.filter(internalProject -> customerProjectList.stream()
+				.anyMatch(customerProject -> customerProject.getProjectId().equals(internalProject.getId())))
+			.filter(internalProject -> projectFilterRequestDto.getSearchKeyword() == null || internalProject.getName()
+				.toLowerCase()
+				.contains(projectFilterRequestDto.getSearchKeyword().toLowerCase()))
+			.toList();
+
+		List<TenantProjectListResponseDto> sortedInternalProjects = new ArrayList<>();
+
+		if (projectFilterRequestDto.getSortOrder() == Sort.Direction.ASC) {
+			sortedInternalProjects = filteredCustomerProjects.stream()
+				.sorted(Comparator.comparing(TenantProjectListResponseDto::getName))
+				.toList();
+		}
+		else {
+			sortedInternalProjects = filteredCustomerProjects.stream()
+				.sorted(Comparator.comparing(TenantProjectListResponseDto::getName).reversed())
+				.toList();
+		}
+
+		int page = projectFilterRequestDto.getPage();
+		int size = projectFilterRequestDto.getSize();
+		int totalItems = sortedInternalProjects.size();
+		int totalPages = 1;
+
+		List<TenantProjectListResponseDto> paginatedProjects = new ArrayList<>();
+
+		if (projectFilterRequestDto.getSize() == -1) {
+			paginatedProjects = sortedInternalProjects;
+
+		}
+		else {
+			int fromIndex = Math.min(page * size, totalItems);
+			int toIndex = Math.min(fromIndex + size, totalItems);
+			paginatedProjects = sortedInternalProjects.subList(fromIndex, toIndex);
+			totalPages = (int) Math.ceil((double) totalItems / size);
+		}
+
+		Long lastProjectId = null;
+
+		if (projectFilterRequestDto.getSortOrder() == Sort.Direction.ASC) {
+
+			lastProjectId = paginatedProjects.stream()
+				.map(TenantProjectListResponseDto::getId)
+				.max(Long::compare)
+				.orElse(null);
+		}
+		else {
+
+			lastProjectId = paginatedProjects.stream()
+				.map(TenantProjectListResponseDto::getId)
+				.min(Long::compare)
+				.orElse(null);
+		}
+
+		CustomerProjectPageDto customerProjectPageDto = new CustomerProjectPageDto();
+		customerProjectPageDto.setItems(paginatedProjects);
+		customerProjectPageDto.setCurrentPage(page);
+		customerProjectPageDto.setTotalItems((long) totalItems);
+		customerProjectPageDto.setTotalPages(totalPages);
+		customerProjectPageDto.setLastProjectId(lastProjectId);
+
+		return new ResponseEntityDto(false, customerProjectPageDto);
 	}
 
 	private String extractTenantId(HttpServletRequest request) {
@@ -147,6 +224,13 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 		return new ArrayList<>();
+	}
+
+	private List<Project> getCustomerProjects(Long customerId) {
+		Customer customer = customerDao.findById(customerId)
+			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
+
+		return projectDao.findByCustomer_Id(customerId);
 	}
 
 }

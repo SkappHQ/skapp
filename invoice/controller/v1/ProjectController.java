@@ -1,9 +1,11 @@
 package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,6 +41,17 @@ public class ProjectController {
 	public ResponseEntity<ResponseEntityDto> searchProjectsByName(HttpServletRequest request,
 			@RequestParam(value = "customerId", required = false) Long customerId) {
 		ResponseEntityDto response = projectService.getProjectsByCustomer(request, customerId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get all projects summary details of a customer",
+			description = "Returns a list of all projects summary details of a customer.")
+
+	@GetMapping(value = "/by-customer", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getProjectsByCustomer(HttpServletRequest request,
+			@Valid ProjectFilterRequestDto projectFilterRequestDto) {
+		ResponseEntityDto response = projectService.getProjectsSummaryByCustomer(request, projectFilterRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
