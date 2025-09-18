@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -43,10 +43,10 @@ public class Invoice extends Auditable<String> {
 	private Long projectId;
 
 	@Column(name = "invoice_date", nullable = false)
-	private LocalDateTime invoiceDate;
+	private LocalDate invoiceDate;
 
 	@Column(name = "due_date")
-	private LocalDateTime dueDate;
+	private LocalDate dueDate;
 
 	@Column(name = "billed_to")
 	private String billedTo;

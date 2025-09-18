@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -17,7 +17,7 @@ public class CreateInvoiceExpenseDto {
 
 	private ExpenseCategory category;
 
-	private LocalDateTime date;
+	private LocalDate date;
 
 	private Double amount;
 
