@@ -4,6 +4,7 @@ import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
+import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
@@ -16,12 +17,17 @@ import java.util.List;
 public interface CustomerMapper {
 
 	@Mapping(target = "customerName", source = "name")
-	@Mapping(target = "projectIds", expression = "java(mapProjects(customer.getProjects()))")
+	@Mapping(target = "customerProjects", expression = "java(mapProjects(customer.getProjects()))")
 	@Mapping(target = "customerContacts", expression = "java(mapCustomerContacts(customer.getCustomerContacts()))")
 	CustomerDetailedResponseDto customerToCustomerDetailedResponseDto(Customer customer);
 
-	default List<Long> mapProjects(List<Project> projects) {
-		return (projects == null) ? List.of() : projects.stream().map(Project::getProjectId).toList();
+	default List<CustomerProjectDetailsDto> mapProjects(List<Project> projects) {
+		return (projects == null) ? List.of() : projects.stream().map(project -> {
+			CustomerProjectDetailsDto dto = new CustomerProjectDetailsDto();
+			dto.setProjectId(project.getProjectId());
+			dto.setProjectKey(project.getProjectKey());
+			return dto;
+		}).toList();
 	}
 
 	default List<CustomerContactResponseDto> mapCustomerContacts(List<CustomerContact> customerContacts) {
