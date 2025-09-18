@@ -65,10 +65,30 @@ const useAddEntry = () => {
       toastType: ToastType.ERROR
     });
   };
+  // Enhanced onError to handle "No manager Found" 400 error
+  const enhancedOnError = (error: any) => {
+    if (
+      error?.response?.data?.results?.[0]?.message === "No managers found"
+    ) {
+      setToastMessage({
+      open: true,
+      title: translateText(["addTimeEntryNoManagerErrorTitle"]),
+      description: translateText(["managerMissingErrorDes"]),
+      toastType: ToastType.ERROR
+    });
+    } else {
+      setToastMessage({
+        open: true,
+        title: translateText(["addTimeEntryErrorTitle"]),
+        description: translateText(["addTimeEntryErrorDes"]),
+        toastType: ToastType.ERROR
+      });
+    }
+  };
 
   const { mutate: manualEntryMutate } = useAddManualTimeEntry(
     onSuccessManual,
-    onError
+    enhancedOnError
   );
 
   const { mutate: editClockInOutMutate } = useEditClockInOut(
