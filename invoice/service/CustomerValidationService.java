@@ -8,7 +8,7 @@ import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDeta
 
 public interface CustomerValidationService {
 
-    void validateCustomerName(String customerName);
+	void validateCustomerName(String customerName);
 
 	void validateCustomerBillingDetails(CustomerBillingDetailsDto customerBillingDetails);
 
@@ -18,11 +18,8 @@ public interface CustomerValidationService {
 	void validateCustomerContactDetails(CustomerContactDetailsDto customerContactDetailsDto,
 			CustomerContact customerContact);
 
+	void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto);
 
-
-    void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto);
-
-    void validateCustomerDocumentFilterDto(CustomerDocumentFilterDto filterDto);
-
+	void validateCustomerDocumentFilterDto(CustomerDocumentFilterDto filterDto);
 
 }

@@ -37,13 +37,13 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 
 	private final CustomerMapper customerMapper;
 
-    private final CustomerValidationService customerValidationService;
+	private final CustomerValidationService customerValidationService;
 
 	@Override
 	@Transactional
 	public ResponseEntityDto createDocument(CustomerDocumentCreateRequestDto requestDto) {
 
-        customerValidationService.validateCustomerDocumentCreateRequestDto(requestDto);
+		customerValidationService.validateCustomerDocumentCreateRequestDto(requestDto);
 
 		Optional<Customer> customer = customerDao.findById(requestDto.getCustomerId());
 
@@ -81,7 +81,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 	@Override
 	public ResponseEntityDto filterDocuments(CustomerDocumentFilterDto filterDto) {
 
-        customerValidationService.validateCustomerDocumentFilterDto(filterDto);
+		customerValidationService.validateCustomerDocumentFilterDto(filterDto);
 		int page = filterDto.getPage();
 		int size = filterDto.getSize();
 		String sortBy = filterDto.getSortBy();
