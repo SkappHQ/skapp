@@ -13,7 +13,9 @@ import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerProjectPageDto;
+import com.skapp.enterprise.invoice.payload.response.ProjectSummaryResponseDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
+import com.skapp.enterprise.invoice.payload.response.TenantProjectUserResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
 import com.skapp.enterprise.invoice.service.ProjectService;
@@ -52,7 +54,10 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
 
-		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request);
+		// Define the GraphQL query
+		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_BASE_DATA;
+
+		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request, query);
 
 		// Sort the internalProjects list by the 'name' field in ascending order
 		List<TenantProjectListResponseDto> sortedInternalProjects = internalProjects.stream()
@@ -65,7 +70,10 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public ResponseEntityDto getProjectsByCustomer(HttpServletRequest request, Long customerId) {
 
-		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request);
+		// Define the GraphQL query
+		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_BASE_DATA;
+
+		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request, query);
 
 		if (customerId == null) {
 			List<TenantProjectListResponseDto> sortedInternalProjects = internalProjects.stream()
@@ -98,9 +106,12 @@ public class ProjectServiceImpl implements ProjectService {
 			return new ResponseEntityDto(false, customerProjectList);
 		}
 
-		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request);
+		// Define the GraphQL query
+		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_MEMBERS_COUNT;
 
-		List<TenantProjectListResponseDto> filteredCustomerProjects = internalProjects.stream()
+		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
+
+		List<TenantProjectUserResponseDto> filteredCustomerProjects = internalProjects.stream()
 			.filter(internalProject -> customerProjectList.stream()
 				.anyMatch(customerProject -> customerProject.getProjectId().equals(internalProject.getId())))
 			.filter(internalProject -> projectFilterRequestDto.getSearchKeyword() == null || internalProject.getName()
@@ -108,16 +119,16 @@ public class ProjectServiceImpl implements ProjectService {
 				.contains(projectFilterRequestDto.getSearchKeyword().toLowerCase()))
 			.toList();
 
-		List<TenantProjectListResponseDto> sortedInternalProjects = new ArrayList<>();
+		List<TenantProjectUserResponseDto> sortedInternalProjects = new ArrayList<>();
 
 		if (projectFilterRequestDto.getSortOrder() == Sort.Direction.ASC) {
 			sortedInternalProjects = filteredCustomerProjects.stream()
-				.sorted(Comparator.comparing(TenantProjectListResponseDto::getName))
+				.sorted(Comparator.comparing(TenantProjectUserResponseDto::getName))
 				.toList();
 		}
 		else {
 			sortedInternalProjects = filteredCustomerProjects.stream()
-				.sorted(Comparator.comparing(TenantProjectListResponseDto::getName).reversed())
+				.sorted(Comparator.comparing(TenantProjectUserResponseDto::getName).reversed())
 				.toList();
 		}
 
@@ -126,16 +137,33 @@ public class ProjectServiceImpl implements ProjectService {
 		int totalItems = sortedInternalProjects.size();
 		int totalPages = 1;
 
-		List<TenantProjectListResponseDto> paginatedProjects = new ArrayList<>();
+		List<ProjectSummaryResponseDto> paginatedProjects = new ArrayList<>();
+
+		// get the count ProjectSummaryResponseDto
+		List<ProjectSummaryResponseDto> projectSummaryResponseList = new ArrayList<>();
+
+		sortedInternalProjects.forEach(proj -> {
+			ProjectSummaryResponseDto projectSummaryResponseDto = new ProjectSummaryResponseDto();
+
+			projectSummaryResponseDto.setProjectId(proj.getId());
+			projectSummaryResponseDto.setProjectKey(proj.getKey());
+			projectSummaryResponseDto.setProjectName(proj.getName());
+			projectSummaryResponseDto.setMemberCount(proj.getProjectUsers().size());
+			projectSummaryResponseDto.setMemberCount(proj.getProjectUsers().size());
+
+			projectSummaryResponseList.add(projectSummaryResponseDto);
+
+		});
 
 		if (projectFilterRequestDto.getSize() == -1) {
-			paginatedProjects = sortedInternalProjects;
+			paginatedProjects = projectSummaryResponseList;
 
 		}
+
 		else {
 			int fromIndex = Math.min(page * size, totalItems);
 			int toIndex = Math.min(fromIndex + size, totalItems);
-			paginatedProjects = sortedInternalProjects.subList(fromIndex, toIndex);
+			paginatedProjects = projectSummaryResponseList.subList(fromIndex, toIndex);
 			totalPages = (int) Math.ceil((double) totalItems / size);
 		}
 
@@ -144,14 +172,14 @@ public class ProjectServiceImpl implements ProjectService {
 		if (projectFilterRequestDto.getSortOrder() == Sort.Direction.ASC) {
 
 			lastProjectId = paginatedProjects.stream()
-				.map(TenantProjectListResponseDto::getId)
+				.map(ProjectSummaryResponseDto::getProjectId)
 				.max(Long::compare)
 				.orElse(null);
 		}
 		else {
 
 			lastProjectId = paginatedProjects.stream()
-				.map(TenantProjectListResponseDto::getId)
+				.map(ProjectSummaryResponseDto::getProjectId)
 				.min(Long::compare)
 				.orElse(null);
 		}
@@ -178,10 +206,7 @@ public class ProjectServiceImpl implements ProjectService {
 		return headers;
 	}
 
-	private List<TenantProjectListResponseDto> callExternalAPItoGetProjects(HttpServletRequest request) {
-
-		// Define the GraphQL query
-		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS;
+	private List<TenantProjectListResponseDto> callExternalAPItoGetProjects(HttpServletRequest request, String query) {
 
 		Map<String, Object> graphQLRequest = new HashMap<>();
 		graphQLRequest.put("query", query);
@@ -231,6 +256,52 @@ public class ProjectServiceImpl implements ProjectService {
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
 
 		return projectDao.findByCustomer_Id(customerId);
+	}
+
+	private List<TenantProjectUserResponseDto> callExternalAPItoGetProjectsWithUser(HttpServletRequest request,
+			String query) {
+
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
+
+		HttpHeaders headers = createHeaders(request);
+
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+			}
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+						.has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
+
+				List<TenantProjectUserResponseDto> internalProjects = objectMapper.convertValue(
+						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+							.get(InvoiceCommonConstant.INTERNAL_PROJECTS),
+						objectMapper.getTypeFactory()
+							.constructCollectionType(List.class, TenantProjectUserResponseDto.class));
+
+				return internalProjects;
+			}
+		}
+		catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+
+		}
+
+		return new ArrayList<>();
 	}
 
 }
