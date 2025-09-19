@@ -63,6 +63,7 @@ import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
+import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
@@ -134,9 +135,11 @@ import UserIcon from "~community/common/assets/Icons/UserIcon";
 import UserUploadIcon from "~community/common/assets/Icons/UserUploadIcon";
 import ViewIcon from "~community/common/assets/Icons/ViewIcon";
 import WaitingStatusIcon from "~community/common/assets/Icons/WaitingStatusIcon";
+import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
+import DueStatusIcon from "~community/common/assets/Icons/dueStatusIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
@@ -293,7 +296,10 @@ export const IconMapping: Partial<
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
-  [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon
+  [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
+  [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
+  [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
+  [IconName.DUE_STATUS_ICON]: DueStatusIcon
   // Add more icons here as needed
 };
 

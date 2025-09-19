@@ -10,6 +10,7 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
+import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
@@ -18,18 +19,21 @@ interface Props {
   tier: string;
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
+  tenantID?: string;
 }
 
 const getDrawerRoutes = ({
   userRoles,
   tier,
   isEnterprise,
-  globalLoginMethod
+  globalLoginMethod,
+  tenantID
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
         userRoles,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID
       })
     : routes;
 
@@ -168,7 +172,14 @@ const getDrawerRoutes = ({
           ManagerTypes.INVOICE_MANAGER
         );
 
-        if (!isInvoiceManager) {
+        if (!isInvoiceManager || !needsToShow(tenantID as string)) {
+          return null;
+        }
+      }
+
+      if (route?.name === "Projects") {
+
+        if (!needsToShow(tenantID as string)) {
           return null;
         }
       }
