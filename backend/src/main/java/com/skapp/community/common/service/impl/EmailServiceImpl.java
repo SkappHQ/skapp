@@ -56,6 +56,14 @@ public class EmailServiceImpl implements EmailService {
 		processEmailDetails(EmailMainTemplates.MAIN_TEMPLATE_V1, emailTemplate, dynamicFieldsObject, recipient);
 	}
 
+	@Override
+	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFieldsObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType) {
+		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFieldsObject, recipient,
+				attachmentData, attachmentName, attachmentContentType);
+	}
+
 	private void processEmailDetails(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
 			Object dynamicFieldsObject, String recipient) {
 		try {
@@ -87,6 +95,42 @@ public class EmailServiceImpl implements EmailService {
 		}
 		catch (Exception e) {
 			log.error("Unexpected error in email sending process: {}", e.getMessage(), e);
+		}
+	}
+
+	private void processEmailDetailsWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFieldsObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType) {
+		try {
+			if (emailTemplate == null || recipient == null) {
+				log.error("Email template or recipient is null");
+				return;
+			}
+
+			EmailTemplateMetadata templateDetails = getTemplateDetails(emailTemplate.getTemplateId());
+			if (templateDetails == null) {
+				log.error("Template not found for ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			String module = findModuleForTemplate(emailTemplate.getTemplateId());
+			if (module == null) {
+				log.error("Module not found for template ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			Map<String, String> placeholders = convertDtoToMap(dynamicFieldsObject);
+			placeholders.replaceAll(this::getLocalizedEnumValue);
+
+			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
+
+			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
+
+			asyncEmailSender.sendMailWithAttachment(recipient, templateDetails.getSubject(), emailBody, placeholders,
+					attachmentData, attachmentName, attachmentContentType);
+		}
+		catch (Exception e) {
+			log.error("Unexpected error in email sending process with attachment: {}", e.getMessage(), e);
 		}
 	}
 

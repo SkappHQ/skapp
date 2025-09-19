@@ -12,4 +12,8 @@ public interface EmailService {
 	void sendEmail(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate, Object dynamicFeildsObject,
 			String recipient);
 
+	void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFeildsObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType);
+
 }

@@ -57,6 +57,32 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 		}
 	}
 
+	@Override
+	public void sendMailWithAttachment(String to, String subject, String htmlBody, Map<String, String> placeholders,
+			byte[] attachmentData, String attachmentName, String attachmentContentType) {
+		try {
+			JavaMailSender emailSender = createJavaMailSender();
+			MimeMessage mimeMessage = emailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			helper.setTo(to);
+			helper.setSubject(subject);
+			helper.setText(htmlBody, true);
+
+			if (attachmentData != null && attachmentName != null && attachmentContentType != null) {
+				helper.addAttachment(attachmentName, () -> new java.io.ByteArrayInputStream(attachmentData),
+						attachmentContentType);
+			}
+
+			emailSender.send(mimeMessage);
+			log.info("Email sent successfully to {} with attachment: {}", to,
+					attachmentName != null ? attachmentName : "none");
+
+		}
+		catch (MessagingException e) {
+			log.error("Error sending email: {}", e.getMessage());
+		}
+	}
+
 	private JavaMailSender createJavaMailSender() {
 		Optional<OrganizationConfig> optionalOrganizationConfig = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
