@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.service.impl;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -86,7 +88,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final CustomerDao customerDao;
 
-    private  final EmailService emailService;
+	private final EmailService emailService;
 
 	@Override
 	@Transactional
@@ -365,7 +367,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, nextInvoiceId);
 	}
 
-    private String generateNextInvoiceId(String lastInvoiceId) {
+	private String generateNextInvoiceId(String lastInvoiceId) {
 
 		Pattern pattern = Pattern.compile("\\d+");
 		Matcher matcher = pattern.matcher(lastInvoiceId);
@@ -418,49 +420,211 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, invoiceResponseDto);
 	}
 
-    @Override
-    public ResponseEntityDto sendReminder(Long invoiceId) {
-        Invoice invoice = invoiceDao.findById(invoiceId)
-                .orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
+	@Override
+	public ResponseEntityDto sendReminder(Long invoiceId) {
+		Invoice invoice = invoiceDao.findById(invoiceId)
+			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 
-        Customer customer = invoice.getCustomer();
+		Customer customer = invoice.getCustomer();
 
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String formattedInvoiceDate = invoice.getInvoiceDate().format(dateFormatter);
+		String formattedDueDate = invoice.getDueDate().format(dateFormatter);
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        String formattedInvoiceDate = invoice.getInvoiceDate() != null
-                ? invoice.getInvoiceDate().format(dateFormatter)
-                : "Not specified";
-        String formattedDueDate = invoice.getDueDate() != null
-                ? invoice.getDueDate().format(dateFormatter)
-                : "Not specified";
+		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+		String formattedAmount = currencyFormatter.format(invoice.getPayableTotalAmount());
 
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
-        String formattedAmount = currencyFormatter.format(invoice.getPayableTotalAmount());
+		InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(customer.getName(),
+				invoice.getInvoiceId(), formattedInvoiceDate, formattedDueDate, formattedAmount,
+				invoice.getCurrency().name(), "Invoice Payment Reminder");
 
-        InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(
-                customer.getName(),
-                invoice.getInvoiceId(),
-                formattedInvoiceDate,
-                formattedDueDate,
-                formattedAmount,
-                invoice.getCurrency().name(),
-                "Your Company",
-                "",
-                "Invoice Payment Reminder"
-        );
+		try {
+			String html = generateInvoiceHtml(invoice);
 
-        emailService.sendEmail(
-                EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
-                EpEmailBodyTemplates.INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER,
-                emailData,
-                customer.getEmail()
-        );
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.toStream(baos);
+			builder.run();
 
-        log.info("Invoice reminder email sent successfully for invoice ID: {} to customer: {}",
-                invoiceId, customer.getEmail());
+			byte[] pdfBytes = baos.toByteArray();
 
-        return new ResponseEntityDto(false, InvoiceMessageConstant.INVOICE_SUCCESS_EMAIL_REMINDER_SENT);
-    }
+			// Generate PDF filename with invoice ID
+			String pdfFileName = String.format("Invoice_%s.pdf", invoice.getInvoiceId());
 
+			emailService.sendEmailWithAttachment(EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
+					EpEmailBodyTemplates.INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER, emailData, customer.getEmail(),
+					pdfBytes, pdfFileName, "application/pdf");
+
+			log.info("Invoice reminder email sent successfully for invoice ID: {} to customer: {} with PDF attachment",
+					invoiceId, customer.getEmail());
+
+			return new ResponseEntityDto(false, InvoiceMessageConstant.INVOICE_SUCCESS_EMAIL_REMINDER_SENT);
+		}
+		catch (Exception e) {
+			log.error("Failed to send invoice reminder email for invoice ID: {}", invoiceId, e);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_SENDING_EMAIL_REMINDER);
+		}
+	}
+
+	private String generateInvoiceHtml(Invoice invoice) {
+		StringBuilder html = new StringBuilder();
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		html.append("<!DOCTYPE html>");
+		html.append("<html><head>");
+		html.append("<meta charset='UTF-8'/>");
+		html.append("<style>");
+
+		// General
+		html.append("body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 20px; }");
+		html.append("h1,h2,h3,h4,h5 { margin: 0; }");
+		html.append("table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }");
+		html.append("th, td { padding: 8px; border-bottom: 1px solid #eee; }");
+		html.append("th { background: #f8f9fa; font-weight: bold; font-size: 12px; }");
+		html.append("td { font-size: 12px; }");
+		html.append(".header-table td { border: none; padding: 0; }");
+		html.append(".invoice-title { font-size: 20px; font-weight: bold; }");
+		html.append(".section-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; }");
+		html.append(".summary-table td { border: none; padding: 4px; font-size: 12px; }");
+		html.append(".summary-table tr td:last-child { text-align: right; }");
+		html.append(".total { font-size: 16px; font-weight: bold; }");
+		html.append(".amount-due { font-size: 14px; font-weight: bold; margin: 10px 0; }");
+		html.append("</style>");
+		html.append("</head><body>");
+
+		// Header with logo + Invoice info
+		html.append("<table class='header-table'>");
+		html.append("<tr>");
+		html.append("<td><div class='invoice-title'>Invoice</div></td>");
+		if (invoice.getInvoiceLogo() != null) {
+			html.append("<td style='text-align:right'><img src='")
+				.append("<img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/>")
+				.append("' style='height:60px'/></td>");
+		}
+		html.append("</tr>");
+		html.append("</table>");
+
+		// Invoice metadata
+		html.append("<table>");
+		html.append("<tr><td><strong>Invoice ID:</strong> ").append(invoice.getInvoiceId()).append("</td></tr>");
+		html.append("<tr><td><strong>Issued Date:</strong> ")
+			.append(invoice.getInvoiceDate().format(dateFormatter))
+			.append("</td></tr>");
+		html.append("<tr><td><strong>Due Date:</strong> ")
+			.append(invoice.getDueDate().format(dateFormatter))
+			.append("</td></tr>");
+		html.append("</table>");
+
+		// From / Billed To
+		html.append("<table>");
+		html.append("<tr>");
+		html.append("<td valign='top'><div class='section-title'>From</div>")
+			.append(invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company")
+			.append("</td>");
+		html.append("<td valign='top'><div class='section-title'>Billed To</div>")
+			.append(invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName())
+			.append("</td>");
+		html.append("</tr>");
+		html.append("</table>");
+
+		// Amount due highlight
+		html.append("<div class='amount-due'>")
+			.append(invoice.getCurrency())
+			.append(" ")
+			.append(String.format("%.2f", invoice.getPayableTotalAmount()))
+			.append(" due ")
+			.append(invoice.getDueDate().format(dateFormatter))
+			.append("</div>");
+
+		// Items table
+		html.append("<table>");
+		html.append("<thead><tr>");
+		html.append("<th>Description</th><th>Qty</th><th>Unit Type</th><th>Unit Price</th><th>Amount</th>");
+		html.append("</tr></thead><tbody>");
+		if (invoice.getInvoiceItems() != null) {
+			for (InvoiceItem item : invoice.getInvoiceItems()) {
+				html.append("<tr>")
+					.append("<td>")
+					.append(item.getDescription() != null ? item.getDescription() : item.getItemName())
+					.append("</td>")
+					.append("<td>")
+					.append(item.getQuantity() != null ? item.getQuantity() : 0)
+					.append("</td>")
+					.append("<td>")
+					.append(item.getQuantityType() != null ? item.getQuantityType() : "Units")
+					.append("</td>")
+					.append("<td>")
+					.append(invoice.getCurrency())
+					.append(" ")
+					.append(String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
+					.append("</td>")
+					.append("<td>")
+					.append(invoice.getCurrency())
+					.append(" ")
+					.append(String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0))
+					.append("</td>")
+					.append("</tr>");
+			}
+		}
+		html.append("</tbody></table>");
+
+		// Summary
+		html.append("<table class='summary-table'>");
+		html.append("<tr><td>Subtotal</td><td>")
+			.append(invoice.getCurrency())
+			.append(" ")
+			.append(String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0))
+			.append("</td></tr>");
+
+		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
+			html.append("<tr><td>Discount</td><td>-")
+				.append(invoice.getCurrency())
+				.append(" ")
+				.append(String.format("%.2f", invoice.getDiscountValue()))
+				.append("</td></tr>");
+		}
+
+		if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
+			double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
+				if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
+					return (invoice.getSubTotalAmount() * tax.getTaxPercentage()) / 100.0;
+				}
+				return 0.0;
+			}).sum();
+			html.append("<tr><td>Tax</td><td>")
+				.append(invoice.getCurrency())
+				.append(" ")
+				.append(String.format("%.2f", taxTotal))
+				.append("</td></tr>");
+		}
+
+		html.append("<tr class='total'><td>Total</td><td>")
+			.append(invoice.getCurrency())
+			.append(" ")
+			.append(String.format("%.2f",
+					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0))
+			.append("</td></tr>");
+		html.append("</table>");
+
+		// Notes & Terms
+		if (invoice.getInvoiceNotes() != null) {
+			html.append("<div class='section-title'>Notes</div>");
+			html.append("<p>").append(invoice.getInvoiceNotes()).append("</p>");
+		}
+
+		if (invoice.getInvoiceTerms() != null) {
+			html.append("<div class='section-title'>Payment Terms</div>");
+			html.append("<p>").append(invoice.getInvoiceTerms()).append("</p>");
+		}
+
+		// Footer
+		html.append(
+				"<hr/><p style='font-size:10px;text-align:center'>Made with <img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/> </p>");
+
+		html.append("</body></html>");
+
+		return html.toString();
+	}
 
 }

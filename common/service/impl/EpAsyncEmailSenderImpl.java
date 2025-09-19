@@ -7,6 +7,7 @@ import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
@@ -21,6 +22,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpAsyncEmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -97,6 +99,78 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 		}
 		catch (IOException e) {
 			log.error("Error sending email: {}", e.getMessage());
+		}
+	}
+
+	@Override
+	public void sendMailWithAttachment(String to, String subject, String htmlBody, Map<String, String> placeholders,
+			byte[] attachmentData, String attachmentName, String attachmentContentType) {
+		try {
+			String senderName = EpCommonConstants.APPLICATION_NAME;
+			if (placeholders != null) {
+				String module = placeholders.get(EpCommonConstants.MODULE);
+				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
+					if (!StringUtils.isNullOrBlank(sender)) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
+				else if (EpCommonConstants.DASHBOARD.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SUPER_ADMIN_NAME, "");
+					if (!StringUtils.isNullOrBlank(sender)) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
+			}
+
+			Email from = new Email(organizationEmail, senderName);
+			Email toEmail = new Email(to);
+			Content content = new Content("text/html", htmlBody);
+
+			Mail mail = new Mail();
+			mail.setFrom(from);
+			mail.setSubject(Objects.requireNonNull(placeholders).containsKey("envelopeSubject")
+					&& !placeholders.get("envelopeSubject").equalsIgnoreCase("null")
+							? subject + " " + placeholders.get("envelopeSubject") : subject);
+			mail.addContent(content);
+
+			// Add attachment if provided
+			if (attachmentData != null && attachmentName != null && attachmentContentType != null) {
+				Attachments attachment = new Attachments();
+				attachment.setContent(Base64.encodeBase64String(attachmentData));
+				attachment.setType(attachmentContentType);
+				attachment.setFilename(attachmentName);
+				attachment.setDisposition("attachment");
+				mail.addAttachments(attachment);
+			}
+
+			// set up send_At parameter to schedule email sending time
+			if (placeholders.containsKey("sendAt") && !placeholders.get("sendAt").equalsIgnoreCase("null")) {
+				mail.setSendAt(Long.parseLong(placeholders.get("sendAt")));
+				mail.setBatchId(placeholders.get("batchId"));
+			}
+
+			Personalization personalization = new Personalization();
+			personalization.addTo(toEmail);
+			mail.addPersonalization(personalization);
+
+			SendGrid sendGrid = new SendGrid(sendGridApiKey);
+			Request request = new Request();
+			request.setMethod(Method.POST);
+			request.setEndpoint(EpApiUriConstants.SENDGRID_POST_API);
+			request.setBody(mail.build());
+
+			Response response = sendGrid.api(request);
+
+			if (response.getStatusCode() == 429) {
+				throw new TooManyRequestsException(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
+			}
+
+			log.info("Email sent to {} from {} with attachment '{}' and status: {}", to, organizationEmail,
+					attachmentName, response.getStatusCode());
+		}
+		catch (IOException e) {
+			log.error("Error sending email with attachment: {}", e.getMessage());
 		}
 	}
 

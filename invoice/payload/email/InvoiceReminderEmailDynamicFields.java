@@ -21,10 +21,6 @@ public class InvoiceReminderEmailDynamicFields {
 
 	private String currency;
 
-	private String companyName;
-
-	private String invoiceUrl;
-
-    private String title;
+	private String title;
 
 }

@@ -17,9 +17,10 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceId(Long customerId);
 
-    ResponseEntityDto sendReminder(Long invoiceId);
 	ResponseEntityDto getInvoiceById(Long invoiceId);
 
 	ResponseEntityDto updateInvoiceStatus(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto);
+
+	ResponseEntityDto sendReminder(Long invoiceId);
 
 }

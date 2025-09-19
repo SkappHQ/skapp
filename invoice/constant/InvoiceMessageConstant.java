@@ -71,10 +71,10 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
 	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
-    INVOICE_ERROR_INVOICE_NOT_FOUND("invoice.error.not.found"),
+	INVOICE_ERROR_INVOICE_NOT_FOUND("invoice.error.not.found"),
 
-    INVOICE_SUCCESS_EMAIL_REMINDER_SENT("invoice.success.email.reminder.sent"),
-    INVOICE_ERROR_SENDING_EMAIL_REMINDER("invoice.error.sending.email.reminder"),
+	INVOICE_SUCCESS_EMAIL_REMINDER_SENT("invoice.success.email.reminder.sent"),
+	INVOICE_ERROR_SENDING_EMAIL_REMINDER("invoice.error.sending.email.reminder"),
 
 	INVOICE_ERROR_INVOICE_ID_INVALID("invoice.error.id.invalid"),
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
