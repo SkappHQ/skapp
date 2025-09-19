@@ -98,8 +98,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 			predicates.add(cb.equal(invoice.get(Invoice_.projectId), invoiceFilterRequestDto.getProjectId()));
 		}
 
-		if (invoiceFilterRequestDto.getStatus() != null && invoiceFilterRequestDto.getStatus().length > 0) {
-			predicates.add(invoice.get(Invoice_.status).in(Arrays.asList(invoiceFilterRequestDto.getStatus())));
+		if (invoiceFilterRequestDto.getStatus() != null && !invoiceFilterRequestDto.getStatus().isEmpty()) {
+			predicates.add(invoice.get(Invoice_.status).in(invoiceFilterRequestDto.getStatus()));
 		}
 
 		return predicates;
