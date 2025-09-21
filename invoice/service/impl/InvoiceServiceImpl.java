@@ -21,6 +21,7 @@ import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.ExpenseAttachment;
 import com.skapp.enterprise.invoice.model.Invoice;
+import com.skapp.enterprise.invoice.model.InvoiceConfig;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
 import com.skapp.enterprise.invoice.model.InvoiceTax;
@@ -37,6 +38,7 @@ import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceTierLimitationResponseDto;
 import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceDetailResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
+import com.skapp.enterprise.invoice.repository.InvoiceConfigRepository;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
@@ -45,6 +47,7 @@ import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,6 +57,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,6 +96,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private final CustomerDao customerDao;
 
 	private final EmailService emailService;
+
+    private final InvoiceConfigRepository invoiceConfigRepository;
 
 	@Override
 	@Transactional
@@ -425,6 +434,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 		Invoice invoice = invoiceDao.findById(invoiceId)
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 
+        InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
+            .orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+
 		Customer customer = invoice.getCustomer();
 
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -449,7 +461,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			byte[] pdfBytes = baos.toByteArray();
 
-			// Generate PDF filename with invoice ID
 			String pdfFileName = String.format("Invoice_%s.pdf", invoice.getInvoiceId());
 
 			emailService.sendEmailWithAttachment(EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
@@ -468,163 +479,114 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	private String generateInvoiceHtml(Invoice invoice) {
-		StringBuilder html = new StringBuilder();
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		try {
+			ClassPathResource resource = new ClassPathResource("enterprise/templates/pdf/invoice-v1.html");
+			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
-		html.append("<!DOCTYPE html>");
-		html.append("<html><head>");
-		html.append("<meta charset='UTF-8'/>");
-		html.append("<style>");
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-		// General
-		html.append("body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 20px; }");
-		html.append("h1,h2,h3,h4,h5 { margin: 0; }");
-		html.append("table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }");
-		html.append("th, td { padding: 8px; border-bottom: 1px solid #eee; }");
-		html.append("th { background: #f8f9fa; font-weight: bold; font-size: 12px; }");
-		html.append("td { font-size: 12px; }");
-		html.append(".header-table td { border: none; padding: 0; }");
-		html.append(".invoice-title { font-size: 20px; font-weight: bold; }");
-		html.append(".section-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; }");
-		html.append(".summary-table td { border: none; padding: 4px; font-size: 12px; }");
-		html.append(".summary-table tr td:last-child { text-align: right; }");
-		html.append(".total { font-size: 16px; font-weight: bold; }");
-		html.append(".amount-due { font-size: 14px; font-weight: bold; margin: 10px 0; }");
-		html.append("</style>");
-		html.append("</head><body>");
+			template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
+			template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
+			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
+			template = template.replace("{{currency}}", invoice.getCurrency().name());
+			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
+			template = template.replace("{{billedTo}}", invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
+			template = template.replace("{{subTotalAmount}}", String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
+			template = template.replace("{{payableTotalAmount}}", String.format("%.2f", invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
 
-		// Header with logo + Invoice info
-		html.append("<table class='header-table'>");
-		html.append("<tr>");
-		html.append("<td><div class='invoice-title'>Invoice</div></td>");
-		if (invoice.getInvoiceLogo() != null) {
-			html.append("<td style='text-align:right'><img src='")
-				.append("<img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/>")
-				.append("' style='height:60px'/></td>");
+			if (invoice.getInvoiceLogo() != null) {
+				template = template.replace("{{#invoiceLogo}}", "").replace("{{/invoiceLogo}}", "");
+			} else {
+				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
+			}
+
+			// Handle discount conditionally
+			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
+				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
+				template = template.replace("{{discountValue}}", String.format("%.2f", invoice.getDiscountValue()));
+			} else {
+				template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
+			}
+
+			// Handle tax conditionally
+			if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
+				double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
+					if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
+						return (invoice.getSubTotalAmount() * tax.getTaxPercentage()) / 100.0;
+					}
+					return 0.0;
+				}).sum();
+				template = template.replace("{{#hasTax}}", "").replace("{{/hasTax}}", "");
+				template = template.replace("{{taxTotal}}", String.format("%.2f", taxTotal));
+			} else {
+				template = removeConditionalBlock(template, "{{#hasTax}}", "{{/hasTax}}");
+			}
+
+			// Handle notes conditionally
+			if (invoice.getInvoiceNotes() != null && !invoice.getInvoiceNotes().trim().isEmpty()) {
+				template = template.replace("{{#invoiceNotes}}", "").replace("{{/invoiceNotes}}", "");
+				template = template.replace("{{invoiceNotes}}", invoice.getInvoiceNotes());
+			} else {
+				template = removeConditionalBlock(template, "{{#invoiceNotes}}", "{{/invoiceNotes}}");
+			}
+
+			// Handle terms conditionally
+			if (invoice.getInvoiceTerms() != null && !invoice.getInvoiceTerms().trim().isEmpty()) {
+				template = template.replace("{{#invoiceTerms}}", "").replace("{{/invoiceTerms}}", "");
+				template = template.replace("{{invoiceTerms}}", invoice.getInvoiceTerms());
+			} else {
+				template = removeConditionalBlock(template, "{{#invoiceTerms}}", "{{/invoiceTerms}}");
+			}
+
+			// Handle invoice items
+			template = processInvoiceItems(template, invoice);
+
+			return template;
+
+		} catch (IOException e) {
+			log.error("Error loading invoice template", e);
+			// Fallback to original method if template loading fails
+			return null;
 		}
-		html.append("</tr>");
-		html.append("</table>");
+	}
 
-		// Invoice metadata
-		html.append("<table>");
-		html.append("<tr><td><strong>Invoice ID:</strong> ").append(invoice.getInvoiceId()).append("</td></tr>");
-		html.append("<tr><td><strong>Issued Date:</strong> ")
-			.append(invoice.getInvoiceDate().format(dateFormatter))
-			.append("</td></tr>");
-		html.append("<tr><td><strong>Due Date:</strong> ")
-			.append(invoice.getDueDate().format(dateFormatter))
-			.append("</td></tr>");
-		html.append("</table>");
+	private String processInvoiceItems(String template, Invoice invoice) {
+		// Find the invoice items section
+		String startMarker = "{{#invoiceItems}}";
+		String endMarker = "{{/invoiceItems}}";
 
-		// From / Billed To
-		html.append("<table>");
-		html.append("<tr>");
-		html.append("<td valign='top'><div class='section-title'>From</div>")
-			.append(invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company")
-			.append("</td>");
-		html.append("<td valign='top'><div class='section-title'>Billed To</div>")
-			.append(invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName())
-			.append("</td>");
-		html.append("</tr>");
-		html.append("</table>");
+		int startIndex = template.indexOf(startMarker);
+		int endIndex = template.indexOf(endMarker);
 
-		// Amount due highlight
-		html.append("<div class='amount-due'>")
-			.append(invoice.getCurrency())
-			.append(" ")
-			.append(String.format("%.2f", invoice.getPayableTotalAmount()))
-			.append(" due ")
-			.append(invoice.getDueDate().format(dateFormatter))
-			.append("</div>");
+		if (startIndex == -1 || endIndex == -1) {
+			return template;
+		}
 
-		// Items table
-		html.append("<table>");
-		html.append("<thead><tr>");
-		html.append("<th>Description</th><th>Qty</th><th>Unit Type</th><th>Unit Price</th><th>Amount</th>");
-		html.append("</tr></thead><tbody>");
+		String itemTemplate = template.substring(startIndex + startMarker.length(), endIndex);
+
+		StringBuilder itemsHtml = new StringBuilder();
 		if (invoice.getInvoiceItems() != null) {
 			for (InvoiceItem item : invoice.getInvoiceItems()) {
-				html.append("<tr>")
-					.append("<td>")
-					.append(item.getDescription() != null ? item.getDescription() : item.getItemName())
-					.append("</td>")
-					.append("<td>")
-					.append(item.getQuantity() != null ? item.getQuantity() : 0)
-					.append("</td>")
-					.append("<td>")
-					.append(item.getQuantityType() != null ? item.getQuantityType() : "Units")
-					.append("</td>")
-					.append("<td>")
-					.append(invoice.getCurrency())
-					.append(" ")
-					.append(String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
-					.append("</td>")
-					.append("<td>")
-					.append(invoice.getCurrency())
-					.append(" ")
-					.append(String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0))
-					.append("</td>")
-					.append("</tr>");
+				String itemHtml = itemTemplate
+					.replace("{{description}}", item.getDescription() != null ? item.getDescription() : item.getItemName())
+					.replace("{{quantity}}", String.valueOf(item.getQuantity() != null ? item.getQuantity() : 0))
+					.replace("{{quantityType}}", item.getQuantityType() != null ? item.getQuantityType() : "Units")
+					.replace("{{currency}}", invoice.getCurrency().name())
+					.replace("{{unitPrice}}", String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
+					.replace("{{amount}}", String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0));
+				itemsHtml.append(itemHtml);
 			}
 		}
-		html.append("</tbody></table>");
+		return template.substring(0, startIndex) + itemsHtml.toString() + template.substring(endIndex + endMarker.length());
+	}
 
-		// Summary
-		html.append("<table class='summary-table'>");
-		html.append("<tr><td>Subtotal</td><td>")
-			.append(invoice.getCurrency())
-			.append(" ")
-			.append(String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0))
-			.append("</td></tr>");
-
-		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
-			html.append("<tr><td>Discount</td><td>-")
-				.append(invoice.getCurrency())
-				.append(" ")
-				.append(String.format("%.2f", invoice.getDiscountValue()))
-				.append("</td></tr>");
+	private String removeConditionalBlock(String template, String startTag, String endTag) {
+		int startIndex = template.indexOf(startTag);
+		int endIndex = template.indexOf(endTag);
+		if (startIndex != -1 && endIndex != -1) {
+			return template.substring(0, startIndex) + template.substring(endIndex + endTag.length());
 		}
-
-		if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
-			double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
-				if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
-					return (invoice.getSubTotalAmount() * tax.getTaxPercentage()) / 100.0;
-				}
-				return 0.0;
-			}).sum();
-			html.append("<tr><td>Tax</td><td>")
-				.append(invoice.getCurrency())
-				.append(" ")
-				.append(String.format("%.2f", taxTotal))
-				.append("</td></tr>");
-		}
-
-		html.append("<tr class='total'><td>Total</td><td>")
-			.append(invoice.getCurrency())
-			.append(" ")
-			.append(String.format("%.2f",
-					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0))
-			.append("</td></tr>");
-		html.append("</table>");
-
-		// Notes & Terms
-		if (invoice.getInvoiceNotes() != null) {
-			html.append("<div class='section-title'>Notes</div>");
-			html.append("<p>").append(invoice.getInvoiceNotes()).append("</p>");
-		}
-
-		if (invoice.getInvoiceTerms() != null) {
-			html.append("<div class='section-title'>Payment Terms</div>");
-			html.append("<p>").append(invoice.getInvoiceTerms()).append("</p>");
-		}
-
-		// Footer
-		html.append(
-				"<hr/><p style='font-size:10px;text-align:center'>Made with <img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/> </p>");
-
-		html.append("</body></html>");
-
-		return html.toString();
+		return template;
 	}
 
 }
