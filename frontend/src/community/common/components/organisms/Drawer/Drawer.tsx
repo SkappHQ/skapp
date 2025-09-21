@@ -112,7 +112,8 @@ const Drawer = (): JSX.Element => {
         userRoles: sessionData?.user?.roles,
         tier: sessionData?.user?.tier ?? "",
         isEnterprise,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID: sessionData?.user?.tenantId
       }),
     [sessionData, isEnterprise, globalLoginMethod]
   );
