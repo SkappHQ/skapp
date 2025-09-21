@@ -12,6 +12,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,8 +70,8 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 			helper.setText(htmlBody, true);
 
 			if (attachmentData != null && attachmentName != null && attachmentContentType != null) {
-				helper.addAttachment(attachmentName, () -> new java.io.ByteArrayInputStream(attachmentData),
-						attachmentContentType);
+				ByteArrayDataSource dataSource = new ByteArrayDataSource(attachmentData, attachmentContentType);
+				helper.addAttachment(attachmentName, dataSource);
 			}
 
 			emailSender.send(mimeMessage);

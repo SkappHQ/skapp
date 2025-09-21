@@ -58,14 +58,16 @@ public class EmailServiceImpl implements EmailService {
 
 	@Override
 	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
-			Object dynamicFieldsObject, String recipient, byte[] attachmentData, String attachmentName,
+			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
 			String attachmentContentType) {
-		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFieldsObject, recipient,
+
+		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFeildObject, recipient,
 				attachmentData, attachmentName, attachmentContentType);
 	}
 
 	private void processEmailDetails(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
 			Object dynamicFieldsObject, String recipient) {
+
 		try {
 			if (emailTemplate == null || recipient == null) {
 				log.error("Email template or recipient is null");
@@ -117,6 +119,16 @@ public class EmailServiceImpl implements EmailService {
 			if (module == null) {
 				log.error("Module not found for template ID: {}", emailTemplate.getTemplateId());
 				return;
+			}
+
+			if (attachmentData == null) {
+				throw new IllegalArgumentException("attachmentData must not be null");
+			}
+			if (attachmentName == null) {
+				throw new IllegalArgumentException("attachmentName must not be null");
+			}
+			if (attachmentContentType == null) {
+				throw new IllegalArgumentException("attachmentContentType must not be null");
 			}
 
 			Map<String, String> placeholders = convertDtoToMap(dynamicFieldsObject);

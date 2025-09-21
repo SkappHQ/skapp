@@ -13,7 +13,7 @@ public interface EmailService {
 			String recipient);
 
 	void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
-			Object dynamicFeildsObject, String recipient, byte[] attachmentData, String attachmentName,
+			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
 			String attachmentContentType);
 
 }
