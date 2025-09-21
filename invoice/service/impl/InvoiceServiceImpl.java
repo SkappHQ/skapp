@@ -97,7 +97,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final EmailService emailService;
 
-    private final InvoiceConfigRepository invoiceConfigRepository;
+	private final InvoiceConfigRepository invoiceConfigRepository;
 
 	@Override
 	@Transactional
@@ -434,8 +434,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 		Invoice invoice = invoiceDao.findById(invoiceId)
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 
-        InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
-            .orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
+			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
 		Customer customer = invoice.getCustomer();
 
@@ -490,13 +490,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
 			template = template.replace("{{currency}}", invoice.getCurrency().name());
 			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
-			template = template.replace("{{billedTo}}", invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
-			template = template.replace("{{subTotalAmount}}", String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
-			template = template.replace("{{payableTotalAmount}}", String.format("%.2f", invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
+			template = template.replace("{{billedTo}}",
+					invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
+			template = template.replace("{{subTotalAmount}}",
+					String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
+			template = template.replace("{{payableTotalAmount}}", String.format("%.2f",
+					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
 
 			if (invoice.getInvoiceLogo() != null) {
 				template = template.replace("{{#invoiceLogo}}", "").replace("{{/invoiceLogo}}", "");
-			} else {
+			}
+			else {
 				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
 			}
 
@@ -504,7 +508,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
 				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
 				template = template.replace("{{discountValue}}", String.format("%.2f", invoice.getDiscountValue()));
-			} else {
+			}
+			else {
 				template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
 			}
 
@@ -518,7 +523,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 				}).sum();
 				template = template.replace("{{#hasTax}}", "").replace("{{/hasTax}}", "");
 				template = template.replace("{{taxTotal}}", String.format("%.2f", taxTotal));
-			} else {
+			}
+			else {
 				template = removeConditionalBlock(template, "{{#hasTax}}", "{{/hasTax}}");
 			}
 
@@ -526,7 +532,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			if (invoice.getInvoiceNotes() != null && !invoice.getInvoiceNotes().trim().isEmpty()) {
 				template = template.replace("{{#invoiceNotes}}", "").replace("{{/invoiceNotes}}", "");
 				template = template.replace("{{invoiceNotes}}", invoice.getInvoiceNotes());
-			} else {
+			}
+			else {
 				template = removeConditionalBlock(template, "{{#invoiceNotes}}", "{{/invoiceNotes}}");
 			}
 
@@ -534,7 +541,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			if (invoice.getInvoiceTerms() != null && !invoice.getInvoiceTerms().trim().isEmpty()) {
 				template = template.replace("{{#invoiceTerms}}", "").replace("{{/invoiceTerms}}", "");
 				template = template.replace("{{invoiceTerms}}", invoice.getInvoiceTerms());
-			} else {
+			}
+			else {
 				template = removeConditionalBlock(template, "{{#invoiceTerms}}", "{{/invoiceTerms}}");
 			}
 
@@ -543,7 +551,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			return template;
 
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Error loading invoice template", e);
 			// Fallback to original method if template loading fails
 			return null;
@@ -568,16 +577,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 		if (invoice.getInvoiceItems() != null) {
 			for (InvoiceItem item : invoice.getInvoiceItems()) {
 				String itemHtml = itemTemplate
-					.replace("{{description}}", item.getDescription() != null ? item.getDescription() : item.getItemName())
+					.replace("{{description}}",
+							item.getDescription() != null ? item.getDescription() : item.getItemName())
 					.replace("{{quantity}}", String.valueOf(item.getQuantity() != null ? item.getQuantity() : 0))
 					.replace("{{quantityType}}", item.getQuantityType() != null ? item.getQuantityType() : "Units")
 					.replace("{{currency}}", invoice.getCurrency().name())
-					.replace("{{unitPrice}}", String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
+					.replace("{{unitPrice}}",
+							String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
 					.replace("{{amount}}", String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0));
 				itemsHtml.append(itemHtml);
 			}
 		}
-		return template.substring(0, startIndex) + itemsHtml.toString() + template.substring(endIndex + endMarker.length());
+		return template.substring(0, startIndex) + itemsHtml.toString()
+				+ template.substring(endIndex + endMarker.length());
 	}
 
 	private String removeConditionalBlock(String template, String startTag, String endTag) {
