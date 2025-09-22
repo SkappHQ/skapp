@@ -69,11 +69,20 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_FILTER_CUSTOMER_ID_INVALID("invoice.error.filter.customer.id.invalid"),
 	INVOICE_ERROR_FILTER_PROJECT_ID_INVALID("invoice.error.filter.project.id.invalid"),
 
+	// Customer document validation constants
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_FOUND("invoice.error.customer.document.not.found"),
+
 	INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS("invoice.error.fetching.tier.limitations"),
 	INVOICE_ERROR_INVOICE_LIMIT_REACHED("invoice.error.limit.reached"),
 
 	INVOICE_ERROR_INVOICE_NOT_FOUND("invoice.error.not.found"),
 	INVOICE_ERROR_INVOICE_ID_INVALID("invoice.error.id.invalid"),
+
+
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED("invoice.error.customer.document.name.required"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_URL_REQUIRED("invoice.error.customer.document.url.required"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID("invoice.error.customer.document.filter.invalid"),
+
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
 	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source");
 
