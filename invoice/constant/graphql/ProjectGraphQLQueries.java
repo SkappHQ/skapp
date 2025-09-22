@@ -6,6 +6,7 @@ public class ProjectGraphQLQueries {
 			+ "    id " + "    key " + "    name " + "  } " + "}";
 
 	public static final String INTERNAL_PROJECTS_MEMBERS_COUNT = "query InternalProjects { " + "  internalProjects { "
-			+ "    id " + "    key " + "    name " + "    projectUsers { " + "      userId " + "    } " + "  } " + "}";
+			+ "    id " + "    key " + "    name " + "    projectUsers { " + "      userId " + "      role " + "    } "
+			+ "  } " + "}";
 
 }

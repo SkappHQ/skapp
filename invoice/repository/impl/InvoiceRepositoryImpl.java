@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,6 +170,33 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		}
 		query.where(predicates.toArray(new Predicate[0]));
 		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	public LocalDate getLatestInvoiceDate(Long customerId, Long projectId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LocalDate> query = cb.createQuery(LocalDate.class);
+		Root<Invoice> invoice = query.from(Invoice.class);
+
+		// Select the maximum invoiceDate
+		query.select(cb.greatest(invoice.get(Invoice_.invoiceDate)));
+
+		// Add optional filters
+		List<Predicate> predicates = new ArrayList<>();
+		if (customerId != null) {
+			Join<Invoice, Customer> customerJoin = invoice.join(Invoice_.customer);
+			predicates.add(cb.equal(customerJoin.get(Customer_.id), customerId));
+		}
+		if (projectId != null) {
+			predicates.add(cb.equal(invoice.get(Invoice_.projectId), projectId));
+		}
+
+		if (!predicates.isEmpty()) {
+			query.where(predicates.toArray(new Predicate[0]));
+		}
+
+		// Execute the query
+		TypedQuery<LocalDate> typedQuery = entityManager.createQuery(query);
+		return typedQuery.getSingleResult();
 	}
 
 }

@@ -5,6 +5,8 @@ import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 
+import java.time.LocalDate;
+
 public interface InvoiceService {
 
 	ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto);
@@ -20,5 +22,7 @@ public interface InvoiceService {
 	ResponseEntityDto getInvoiceById(Long invoiceId);
 
 	ResponseEntityDto updateInvoiceStatus(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto);
+
+	LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId);
 
 }

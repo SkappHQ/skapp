@@ -412,4 +412,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, invoiceResponseDto);
 	}
 
+	@Override
+	public LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId) {
+
+		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
+	}
+
 }

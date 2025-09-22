@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
@@ -12,13 +15,12 @@ import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
-import com.skapp.enterprise.invoice.payload.response.CustomerProjectPageDto;
-import com.skapp.enterprise.invoice.payload.response.ProjectSummaryResponseDto;
-import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
-import com.skapp.enterprise.invoice.payload.response.TenantProjectUserResponseDto;
+import com.skapp.enterprise.invoice.payload.response.*;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
+import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.ProjectService;
+import com.skapp.enterprise.invoice.type.ProjectUserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -50,6 +53,10 @@ public class ProjectServiceImpl implements ProjectService {
 	private final ProjectDao projectDao;
 
 	private final CustomerDao customerDao;
+
+	private final PeopleReadService peopleReadService;
+
+	private final InvoiceService invoiceService;
 
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
@@ -149,7 +156,21 @@ public class ProjectServiceImpl implements ProjectService {
 			projectSummaryResponseDto.setProjectKey(proj.getKey());
 			projectSummaryResponseDto.setProjectName(proj.getName());
 			projectSummaryResponseDto.setMemberCount(proj.getProjectUsers().size());
-			projectSummaryResponseDto.setMemberCount(proj.getProjectUsers().size());
+
+			ProjectUsersResponseDto adminUser = findProjectAdminUser(proj.getProjectUsers());
+
+			if (adminUser != null) {
+
+				ResponseEntityDto userResponse = peopleReadService.getEmployeeById(adminUser.getUserId());
+
+				CreateEmployeeRequestDto employee = (CreateEmployeeRequestDto) userResponse.getResults().getFirst();
+
+				projectSummaryResponseDto.setAdminName(employee.getPersonal().getGeneral().getFirstName() + " "
+						+ employee.getPersonal().getGeneral().getLastName());
+			}
+
+			projectSummaryResponseDto.setLastInvoiceDate(invoiceService
+				.getCustomerProjectLastInvoiceDate(projectFilterRequestDto.getCustomerId(), proj.getId()));
 
 			projectSummaryResponseList.add(projectSummaryResponseDto);
 
@@ -302,6 +323,17 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 		return new ArrayList<>();
+	}
+
+	private ProjectUsersResponseDto findProjectAdminUser(List<ProjectUsersResponseDto> projectUsers) {
+
+		for (ProjectUsersResponseDto user : projectUsers) {
+			if (user.getRole() == ProjectUserRole.ADMIN) {
+				return user;
+			}
+		}
+		return null;
+
 	}
 
 }
