@@ -416,7 +416,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	public LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId) {
 
 		if (customerId == null || projectId == null) {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_FETCHED_FAILED);
 		}
 
 		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
