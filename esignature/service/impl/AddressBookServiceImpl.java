@@ -166,24 +166,37 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 	@Override
 	public ResponseEntityDto addCustomerToAddressBook(Customer customer, UserType type) {
-		AddressBook addressBook = new AddressBook();
-		addressBook.setCustomer(customer);
-		addressBook.setType(type);
-		addressBook = addressBookDao.save(addressBook);
-		userKeyService.generateAndStoreKeys(addressBook);
+		AddressBook addressBook = initializeAddressBook(customer, null, type);
 		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
 		return new ResponseEntityDto(false, addressBookResponseDto);
 	}
 
 	@Override
 	public ResponseEntityDto addCustomerContactToAddressBook(CustomerContact customerContact, UserType type) {
+
+		AddressBook addressBook = initializeAddressBook(null, customerContact, type);
+		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
+		return new ResponseEntityDto(false, addressBookResponseDto);
+	}
+
+	private AddressBook initializeAddressBook(Customer customer, CustomerContact customerContact, UserType type) {
+
 		AddressBook addressBook = new AddressBook();
-		addressBook.setCustomerContact(customerContact);
+
+		if (customer != null) {
+			addressBook.setCustomer(customer);
+
+		}
+
+		if (customerContact != null) {
+			addressBook.setCustomerContact(customerContact);
+		}
+
 		addressBook.setType(type);
 		addressBook = addressBookDao.save(addressBook);
 		userKeyService.generateAndStoreKeys(addressBook);
-		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
-		return new ResponseEntityDto(false, addressBookResponseDto);
+
+		return addressBook;
 	}
 
 }

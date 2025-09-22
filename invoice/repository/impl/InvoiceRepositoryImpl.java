@@ -182,17 +182,12 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 
 		// Add optional filters
 		List<Predicate> predicates = new ArrayList<>();
-		if (customerId != null) {
-			Join<Invoice, Customer> customerJoin = invoice.join(Invoice_.customer);
-			predicates.add(cb.equal(customerJoin.get(Customer_.id), customerId));
-		}
-		if (projectId != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.projectId), projectId));
-		}
 
-		if (!predicates.isEmpty()) {
-			query.where(predicates.toArray(new Predicate[0]));
-		}
+		Join<Invoice, Customer> customerJoin = invoice.join(Invoice_.customer);
+		predicates.add(cb.equal(customerJoin.get(Customer_.id), customerId));
+		predicates.add(cb.equal(invoice.get(Invoice_.projectId), projectId));
+
+		query.where(predicates.toArray(new Predicate[0]));
 
 		// Execute the query
 		TypedQuery<LocalDate> typedQuery = entityManager.createQuery(query);

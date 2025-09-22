@@ -415,6 +415,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId) {
 
+		if (customerId == null || projectId == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_LIMIT_REACHED);
+		}
+
 		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
 	}
 

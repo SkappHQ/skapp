@@ -107,6 +107,10 @@ public class ProjectServiceImpl implements ProjectService {
 	public ResponseEntityDto getProjectsSummaryByCustomer(HttpServletRequest request,
 			ProjectFilterRequestDto projectFilterRequestDto) {
 
+		if (projectFilterRequestDto.getCustomerId() == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
+		}
+
 		List<Project> customerProjectList = getCustomerProjects(projectFilterRequestDto.getCustomerId());
 
 		if (customerProjectList.isEmpty()) {
@@ -155,7 +159,8 @@ public class ProjectServiceImpl implements ProjectService {
 			projectSummaryResponseDto.setProjectId(proj.getId());
 			projectSummaryResponseDto.setProjectKey(proj.getKey());
 			projectSummaryResponseDto.setProjectName(proj.getName());
-			projectSummaryResponseDto.setMemberCount(proj.getProjectUsers().size());
+			projectSummaryResponseDto
+				.setMemberCount(proj.getProjectUsers() != null ? proj.getProjectUsers().size() : 0);
 
 			ProjectUsersResponseDto adminUser = findProjectAdminUser(proj.getProjectUsers());
 
@@ -326,6 +331,10 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	private ProjectUsersResponseDto findProjectAdminUser(List<ProjectUsersResponseDto> projectUsers) {
+
+		if (projectUsers.isEmpty()) {
+			return null;
+		}
 
 		for (ProjectUsersResponseDto user : projectUsers) {
 			if (user.getRole() == ProjectUserRole.ADMIN) {
