@@ -5,6 +5,11 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.repository.AddressBookDao;
+import com.skapp.enterprise.esignature.service.AddressBookService;
+import com.skapp.enterprise.esignature.service.ExternalUserService;
+import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -60,6 +65,12 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private final MessageUtil messageUtil;
 
+	private final AddressBookDao addressBookDao;
+
+	private final AddressBookService addressBookService;
+
+	private final ExternalUserService externalUserService;
+
 	@Override
 	public ResponseEntityDto createCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
 
@@ -70,8 +81,11 @@ public class CustomerServiceImpl implements CustomerService {
 					initializeCustomerProjectMapping(customer, customerCreateRequestDto.getCustomerProjects()));
 		}
 
-		Customer saved = customerDao.save(customer);
-		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(saved);
+		Customer savedCustomer = customerDao.save(customer);
+
+		checkAndAddToAddressBook(savedCustomer, null, savedCustomer.getEmail());
+
+		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(savedCustomer);
 
 		return new ResponseEntityDto(false, responseDto);
 
@@ -200,6 +214,9 @@ public class CustomerServiceImpl implements CustomerService {
 		customerContact.setCustomer(customer);
 
 		CustomerContact savedContact = customerContactDao.save(customerContact);
+
+		checkAndAddToAddressBook(null, savedContact, savedContact.getEmail());
+
 		CustomerContactResponseDto responseDto = customerMapper
 			.customerContactToCustomerContactResponseDto(savedContact);
 
@@ -333,6 +350,32 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private List<Long> extractProjectIds(List<CustomerProjectDetailsDto> customerProjectDetailsList) {
 		return customerProjectDetailsList.stream().map(CustomerProjectDetailsDto::getProjectId).toList();
+	}
+
+	private void checkAndAddToAddressBook(Customer customer, CustomerContact customerContact, String email) {
+
+		Optional<AddressBook> externalUserAddress = addressBookDao.findByExternalUserEmail(email);
+
+		if (externalUserAddress.isEmpty()) {
+			if (customer != null) {
+				addressBookService.addCustomerToAddressBook(customer, UserType.CUSTOMER);
+			}
+			if (customerContact != null) {
+				addressBookService.addCustomerContactToAddressBook(customerContact, UserType.CUSTOMER);
+			}
+		}
+		else {
+			externalUserService.deleteExternalUser(externalUserAddress.get().getId());
+			if (customer != null || customerContact != null) {
+				if (customer != null) {
+					addressBookService.addCustomerToAddressBook(customer, UserType.CUSTOMER);
+				}
+				if (customerContact != null) {
+					addressBookService.addCustomerContactToAddressBook(customerContact, UserType.CUSTOMER);
+				}
+			}
+		}
+
 	}
 
 }
