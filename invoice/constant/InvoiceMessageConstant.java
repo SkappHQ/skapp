@@ -79,7 +79,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_INVOICE_ID_INVALID("invoice.error.id.invalid"),
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
 	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source"),
-	INVOICE_PDF_TEMPLATE_NOT_FOUND("ep.invoice.pdf.template.not.found"),;
+	INVOICE_ERROR_PDF_TEMPLATE_NOT_FOUND("ep.invoice.pdf.template.not.found"),;
 
 	private final String messageKey;
 

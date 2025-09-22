@@ -576,7 +576,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 		catch (IOException e) {
 			log.error("Error loading invoice template", e);
-			return null;
+			throw  new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PDF_TEMPLATE_NOT_FOUND);
 		}
 	}
 
@@ -594,10 +594,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		String itemTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
-		StringBuilder itemsHtml = new StringBuilder();
+		String itemsHtml = "";
 		if (invoice.getInvoiceItems() != null) {
-			for (InvoiceItem item : invoice.getInvoiceItems()) {
-				String itemHtml = itemTemplate
+			itemsHtml = invoice.getInvoiceItems()
+				.stream()
+				.map(item -> itemTemplate
 					.replace("{{description}}",
 							item.getDescription() != null ? item.getDescription() : item.getItemName())
 					.replace("{{quantity}}", String.valueOf(item.getQuantity() != null ? item.getQuantity() : 0))
@@ -605,12 +606,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 					.replace("{{currency}}", invoice.getCurrency().name())
 					.replace("{{unitPrice}}",
 							String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
-					.replace("{{amount}}", String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0));
-				itemsHtml.append(itemHtml);
-			}
+					.replace("{{amount}}", String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0)))
+				.collect(Collectors.joining());
 		}
-		return template.substring(0, startIndex) + itemsHtml.toString()
-				+ template.substring(endIndex + endMarker.length());
+		return template.substring(0, startIndex) + itemsHtml + template.substring(endIndex + endMarker.length());
 	}
 
 	private String processInvoiceExpenses(String template, Invoice invoice) {
@@ -626,19 +625,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		String expenseTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
-		StringBuilder expensesHtml = new StringBuilder();
+		String expensesHtml = "";
 		if (invoice.getInvoiceExpenses() != null) {
-			for (InvoiceExpense expense : invoice.getInvoiceExpenses()) {
-				String expenseHtml = expenseTemplate
+			expensesHtml = invoice.getInvoiceExpenses()
+				.stream()
+				.map(expense -> expenseTemplate
 					.replace("{{description}}", expense.getName() != null ? expense.getName() : "Expense")
 					.replace("{{currency}}", invoice.getCurrency().name())
 					.replace("{{amount}}",
-							String.format("%.2f", expense.getAmount() != null ? expense.getAmount() : 0.0));
-				expensesHtml.append(expenseHtml);
-			}
+							String.format("%.2f", expense.getAmount() != null ? expense.getAmount() : 0.0)))
+				.collect(Collectors.joining());
 		}
-		return template.substring(0, startIndex) + expensesHtml.toString()
-				+ template.substring(endIndex + endMarker.length());
+		return template.substring(0, startIndex) + expensesHtml + template.substring(endIndex + endMarker.length());
 	}
 
 	private String removeConditionalBlock(String template, String startTag, String endTag) {
