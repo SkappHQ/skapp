@@ -434,9 +434,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 		Invoice invoice = invoiceDao.findById(invoiceId)
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 
-		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
-			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
-
 		Customer customer = invoice.getCustomer();
 
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -448,7 +445,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(customer.getName(),
 				invoice.getInvoiceId(), formattedInvoiceDate, formattedDueDate, formattedAmount,
-				invoice.getCurrency().name(), "Invoice Payment Reminder");
+				invoice.getCurrency().name(), InvoiceCommonConstant.INVOICE_RECEIVED_EMAIL_TITLE);
 
 		try {
 			String html = generateInvoiceHtml(invoice);
@@ -480,6 +477,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private String generateInvoiceHtml(Invoice invoice) {
 		try {
+			InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
+				.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+
 			ClassPathResource resource = new ClassPathResource("enterprise/templates/pdf/invoice-v1.html");
 			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
@@ -497,8 +497,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 			template = template.replace("{{payableTotalAmount}}", String.format("%.2f",
 					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
 
-			if (invoice.getInvoiceLogo() != null) {
-				template = template.replace("{{#invoiceLogo}}", "").replace("{{/invoiceLogo}}", "");
+			if (invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()) {
+				template = template.replace("{{#invoiceLogo}}", "")
+					.replace("{{/invoiceLogo}}", "")
+					.replace("{{invoiceLogo}}", invoice.getInvoiceLogo());
+			}
+			else if (invoiceConfig.getInvoiceLogo() != null) {
+				template = template.replace("{{#invoiceLogo}}", "")
+					.replace("{{/invoiceLogo}}", invoiceConfig.getInvoiceLogo());
 			}
 			else {
 				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
@@ -546,15 +552,30 @@ public class InvoiceServiceImpl implements InvoiceService {
 				template = removeConditionalBlock(template, "{{#invoiceTerms}}", "{{/invoiceTerms}}");
 			}
 
+			if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
+				double expenseTotal = invoice.getInvoiceExpenses()
+					.stream()
+					.mapToDouble(exp -> exp.getAmount() != null ? exp.getAmount() : 0.0)
+					.sum();
+				template = template.replace("{{#hasExpenses}}", "")
+					.replace("{{/hasExpenses}}", "")
+					.replace("{{expenseTotal}}", String.format("%.2f", expenseTotal));
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasExpenses}}", "{{/hasExpenses}}");
+			}
+
 			// Handle invoice items
 			template = processInvoiceItems(template, invoice);
+
+			// Handle invoice expenses
+			template = processInvoiceExpenses(template, invoice);
 
 			return template;
 
 		}
 		catch (IOException e) {
 			log.error("Error loading invoice template", e);
-			// Fallback to original method if template loading fails
 			return null;
 		}
 	}
@@ -589,6 +610,34 @@ public class InvoiceServiceImpl implements InvoiceService {
 			}
 		}
 		return template.substring(0, startIndex) + itemsHtml.toString()
+				+ template.substring(endIndex + endMarker.length());
+	}
+
+	private String processInvoiceExpenses(String template, Invoice invoice) {
+		String startMarker = "{{#invoiceExpenses}}";
+		String endMarker = "{{/invoiceExpenses}}";
+
+		int startIndex = template.indexOf(startMarker);
+		int endIndex = template.indexOf(endMarker);
+
+		if (startIndex == -1 || endIndex == -1) {
+			return template;
+		}
+
+		String expenseTemplate = template.substring(startIndex + startMarker.length(), endIndex);
+
+		StringBuilder expensesHtml = new StringBuilder();
+		if (invoice.getInvoiceExpenses() != null) {
+			for (InvoiceExpense expense : invoice.getInvoiceExpenses()) {
+				String expenseHtml = expenseTemplate
+					.replace("{{description}}", expense.getName() != null ? expense.getName() : "Expense")
+					.replace("{{currency}}", invoice.getCurrency().name())
+					.replace("{{amount}}",
+							String.format("%.2f", expense.getAmount() != null ? expense.getAmount() : 0.0));
+				expensesHtml.append(expenseHtml);
+			}
+		}
+		return template.substring(0, startIndex) + expensesHtml.toString()
 				+ template.substring(endIndex + endMarker.length());
 	}
 

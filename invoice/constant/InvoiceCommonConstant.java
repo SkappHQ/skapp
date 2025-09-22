@@ -25,4 +25,6 @@ public class InvoiceCommonConstant {
 
 	public static final String DEFAULT_ERROR_MESSAGE = "An error occurred while fetching projects.";
 
+	public static final String INVOICE_RECEIVED_EMAIL_TITLE = "Invoice Payment Reminder!";
+
 }
