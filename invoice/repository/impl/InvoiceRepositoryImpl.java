@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -98,8 +99,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 			predicates.add(cb.equal(invoice.get(Invoice_.projectId), invoiceFilterRequestDto.getProjectId()));
 		}
 
-		if (invoiceFilterRequestDto.getStatus() != null) {
-			predicates.add(cb.equal(invoice.get(Invoice_.status), invoiceFilterRequestDto.getStatus()));
+		if (invoiceFilterRequestDto.getStatus() != null && !invoiceFilterRequestDto.getStatus().isEmpty()) {
+			predicates.add(invoice.get(Invoice_.status).in(invoiceFilterRequestDto.getStatus()));
 		}
 
 		return predicates;

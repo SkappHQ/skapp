@@ -34,9 +34,9 @@ public class InvoiceController {
 	public ResponseEntity<ResponseEntityDto> createInvoice(
 			@Valid @RequestBody CreateInvoiceRequestDto createInvoiceRequestDto) {
 
-		ResponseEntityDto invoiceConfig = invoiceService.createInvoice(createInvoiceRequestDto);
+		ResponseEntityDto response = invoiceService.createInvoice(createInvoiceRequestDto);
 
-		return new ResponseEntity<>(invoiceConfig, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Retrieve invoices with optional filtering.",
