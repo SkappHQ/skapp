@@ -271,7 +271,7 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
 			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), externalUserJoin.get(ExternalUser_.ID))
 			.when(cb.isNotNull(customerJoin.get(Customer_.ID)), customerJoin.get(Customer_.ID))
-			.otherwise(customerContactJoin.get(CustomerContact_.ID));
+			.otherwise(customerContactJoin.get(CustomerContact_.CUSTOMER).get(Customer_.ID));
 
 		Expression<Object> email = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.email))
