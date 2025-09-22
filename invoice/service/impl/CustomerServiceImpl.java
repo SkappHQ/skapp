@@ -356,11 +356,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 		Optional<AddressBook> externalUserAddress = addressBookDao.findByExternalUserEmail(email);
 
-		boolean externalUserDeleted = false;
-		if (externalUserAddress.isPresent()) {
-			externalUserService.deleteExternalUser(externalUserAddress.get().getId());
-			externalUserDeleted = true;
-		}
+		externalUserAddress.ifPresent(addressBook -> externalUserService.deleteExternalUser(addressBook.getId()));
+
 		if (customer != null) {
 			addressBookService.addCustomerToAddressBook(customer, UserType.CUSTOMER);
 		}
