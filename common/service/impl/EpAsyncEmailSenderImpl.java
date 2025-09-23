@@ -165,7 +165,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 			.map(String::trim)
 			.anyMatch(tenant -> tenant.equals(TenantContext.getCurrentTenant())) ? emailRedirectAdminEmail
 					: originalEmail;
-
+		log.info("Email intended for {} is redirected to {}", originalEmail, toEmail);
 		return new Email(toEmail);
 	}
 
