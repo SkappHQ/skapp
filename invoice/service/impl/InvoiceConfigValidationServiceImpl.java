@@ -23,9 +23,6 @@ public class InvoiceConfigValidationServiceImpl implements InvoiceConfigValidati
 		if (invoiceConfigDto.getCountry() != null && !invoiceConfigDto.getCountry().trim().isEmpty()) {
 			Validations.validateCountry(invoiceConfigDto.getCountry());
 		}
-		if (invoiceConfigDto.getPaymentTerms() == null || invoiceConfigDto.getPaymentTerms().trim().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_PAYMENT_TERMS_INVALID);
-		}
 
 		if (invoiceConfigDto.getPayToAddress() != null && !invoiceConfigDto.getPayToAddress().trim().isEmpty()) {
 			Validations.validateAddress(invoiceConfigDto.getPayToAddress());

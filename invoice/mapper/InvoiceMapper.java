@@ -5,6 +5,7 @@ import com.skapp.enterprise.invoice.model.InvoiceConfig;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
 import com.skapp.enterprise.invoice.model.InvoiceTax;
+import com.skapp.enterprise.invoice.payload.request.InvoiceConfigRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
