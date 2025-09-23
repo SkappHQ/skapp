@@ -188,6 +188,10 @@ const nextConfig = {
         source: "/configurations/user-roles",
         destination: "/community/configurations/user-roles"
       },
+       {
+        source: "/configurations/invoice",
+        destination: "/enterprise/configurations/invoice"
+      },
       {
         source: "/configurations/user-roles/attendance",
         destination: "/community/configurations/user-roles/attendance"

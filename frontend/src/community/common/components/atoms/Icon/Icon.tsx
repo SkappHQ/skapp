@@ -15,6 +15,7 @@ import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
+import CameraIcon from "~community/common/assets/Icons/CameraIcon";
 import CancelledStatusIcon from "~community/common/assets/Icons/CancelledStatusIcon";
 import ChangeIcon from "~community/common/assets/Icons/ChangeIcon";
 import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
@@ -299,7 +300,8 @@ export const IconMapping: Partial<
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
-  [IconName.DUE_STATUS_ICON]: DueStatusIcon
+  [IconName.DUE_STATUS_ICON]: DueStatusIcon,
+  [IconName.CAMERA_ICON]: CameraIcon
   // Add more icons here as needed
 };
 
