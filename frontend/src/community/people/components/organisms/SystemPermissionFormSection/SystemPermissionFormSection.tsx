@@ -27,6 +27,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -98,7 +99,8 @@ const SystemPermissionFormSection = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isSuperAdmin,
-    isInvoiceModuleEnabled
+    isInvoiceModuleEnabled,
+    tenantID
   } = useSessionData();
 
   const { handleNext } = useStepper();
@@ -338,25 +340,28 @@ const SystemPermissionFormSection = ({
                 }
               />
             )}
-            <DropdownList
-              inputName={"pmRole"}
-              label={translateText(["projectManagement"])}
-              itemList={grantablePermission?.pm || []}
-              value={permissions.pmRole}
-              componentStyle={classes.dropdownListComponentStyles}
-              checkSelected
-              onChange={(event) =>
-                handleRoleDropdown("pmRole", event.target.value as Role)
-              }
-              isDisabled={
-                isProfileView ||
-                permissions.isSuperAdmin ||
-                isInputsDisabled ||
-                isReadOnly
-              }
-            />
 
-            {isInvoiceModuleEnabled && (
+            {needsToShow(tenantID as string) && (
+              <DropdownList
+                inputName={"pmRole"}
+                label={translateText(["projectManagement"])}
+                itemList={grantablePermission?.pm || []}
+                value={permissions.pmRole}
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("pmRole", event.target.value as Role)
+                }
+                isDisabled={
+                  isProfileView ||
+                  permissions.isSuperAdmin ||
+                  isInputsDisabled ||
+                  isReadOnly
+                }
+              />
+            )}
+
+            {isInvoiceModuleEnabled && needsToShow(tenantID as string) && (
               <DropdownList
                 inputName={"invoiceRole"}
                 label={translateText(["invoice"])}
