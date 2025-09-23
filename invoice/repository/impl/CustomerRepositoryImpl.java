@@ -36,8 +36,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
+		String searchKeyword = null;
+
 		if (customerFilterDto.getSearchKeyword() != null && !customerFilterDto.getSearchKeyword().isEmpty()) {
-			String searchKeyword = "%" + getSearchString(customerFilterDto.getSearchKeyword()) + "%";
+			searchKeyword = "%" + getSearchString(customerFilterDto.getSearchKeyword()).toLowerCase() + "%";
 			predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchKeyword));
 		}
 
@@ -50,7 +52,6 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 		List<Order> orderList = new ArrayList<>();
 
 		if (customerFilterDto.getSearchKeyword() != null && !customerFilterDto.getSearchKeyword().isEmpty()) {
-			String searchKeyword = "%" + getSearchString(customerFilterDto.getSearchKeyword()) + "%";
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchKeyword), 1));
 			orderList.add(sortingOrder);
