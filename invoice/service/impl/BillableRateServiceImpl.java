@@ -45,13 +45,11 @@ public class BillableRateServiceImpl implements BillableRateService {
 	public ResponseEntityDto createProjectMemberBillableRateData(Project customerProject,
 			List<ProjectUsersResponseDto> projectUsersResponseDto, ProjectMemberFilterDto projectMemberFilterDto) {
 
-		// check if already exists then ignore
 		List<BillableRate> existingMemberBillableRateData = billableRateDao
 			.findByProject_IdAndIsActive(customerProject.getId(), true);
 
 		HashMap<String, List<ProjectUsersResponseDto>> categorizedMemberData = categorizeMembersByStatus(
 				projectUsersResponseDto, existingMemberBillableRateData);
-		// else create,
 
 		if (categorizedMemberData.containsKey(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)) {
 			billableRateDao.saveAll(createBillableRateEntities(customerProject,
@@ -64,13 +62,10 @@ public class BillableRateServiceImpl implements BillableRateService {
 			markBillableRatesInactive(inactiveMemberIds);
 		}
 
-		List<BillableRate> finalMemberBillableRateData = billableRateDao
-			.findByProject_IdAndIsActive(customerProject.getId(), true);
-
-		List<BillableRate> pagedBillableRates = billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
+		List<BillableRate> allBillableRates = billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
 
 		List<ProjectMembersResponseDto> responseDtos = projectMapper
-			.memberBillableRateListToProjectMembersResponseDto(pagedBillableRates);
+			.memberBillableRateListToProjectMembersResponseDto(allBillableRates);
 
 		return new ResponseEntityDto(false, responseDtos);
 	}

@@ -249,10 +249,9 @@ public class ProjectServiceImpl implements ProjectService {
 		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
 
 		List<TenantProjectUserResponseDto> filteredCustomerProject = internalProjects.stream()
-			.filter(proj -> proj.getId() == project.getProjectId())
+			.filter(proj -> Objects.equals(proj.getId(), project.getProjectId()))
 			.toList();
 
-		// save in the BIllable Rate Table
 		return billableRateService.createProjectMemberBillableRateData(project,
 				filteredCustomerProject.getFirst().getProjectUsers(), projectMemberFilterRequestDto);
 
