@@ -12,12 +12,15 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
+import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.response.*;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
+import com.skapp.enterprise.invoice.service.BillableRateService;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import com.skapp.enterprise.invoice.type.ProjectUserRole;
@@ -57,6 +60,8 @@ public class ProjectServiceImpl implements ProjectService {
 	private final PeopleReadService peopleReadService;
 
 	private final InvoiceService invoiceService;
+
+	private final BillableRateService billableRateService;
 
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
@@ -218,6 +223,42 @@ public class ProjectServiceImpl implements ProjectService {
 		customerProjectPageDto.setLastProjectId(lastProjectId);
 
 		return new ResponseEntityDto(false, customerProjectPageDto);
+	}
+
+	@Override
+	public ResponseEntityDto getProjectMembers(HttpServletRequest request,
+			ProjectMemberFilterRequestDto projectMemberFilterRequestDto) {
+
+		if (projectMemberFilterRequestDto.getCustomerId() == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
+		}
+
+		if (projectMemberFilterRequestDto.getProjectId() == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PROJECT_ID_REQUIRED);
+		}
+
+		Optional<Project> optionalProject = projectDao.findByProjectIdAndCustomer_Id(
+				projectMemberFilterRequestDto.getProjectId(), projectMemberFilterRequestDto.getCustomerId());
+
+		if (optionalProject.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND);
+		}
+
+		Project project = optionalProject.get();
+
+		// Define the GraphQL query
+		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_MEMBERS_COUNT;
+
+		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
+
+		List<TenantProjectUserResponseDto> filteredCustomerProject = internalProjects.stream()
+			.filter(proj -> proj.getId() == project.getProjectId())
+			.toList();
+
+		// save in the BIllable Rate Table
+		return billableRateService.createProjectMemberBillableRateData(project,
+				filteredCustomerProject.getFirst().getProjectUsers());
+
 	}
 
 	private String extractTenantId(HttpServletRequest request) {

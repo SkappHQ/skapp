@@ -29,4 +29,12 @@ public class InvoiceCommonConstant {
 
 	public static final String DEFAULT_ERROR_MESSAGE = "An error occurred while fetching projects.";
 
+	public static final String TEAM_MEMBER_EXISTING = "NO_ACTION";
+
+	public static final String TEAM_MEMBER_ADDITION = "ADDED";
+
+	public static final String TEAM_MEMBER_REMOVAL = "REMOVED";
+
+	public static final Double DEFAULT_BILLABLE_RATE = 0.0;
+
 }

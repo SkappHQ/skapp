@@ -16,4 +16,6 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
 
 	List<Project> findByCustomer_Id(Long customerId);
 
+	Optional<Project> findByProjectIdAndCustomer_Id(Long projectId, Long customerId);
+
 }

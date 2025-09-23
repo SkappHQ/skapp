@@ -2,8 +2,8 @@ package com.skapp.enterprise.invoice.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 
 public interface ProjectService {
 
@@ -13,5 +13,8 @@ public interface ProjectService {
 
 	ResponseEntityDto getProjectsSummaryByCustomer(HttpServletRequest request,
 			ProjectFilterRequestDto projectFilterRequestDto);
+
+	ResponseEntityDto getProjectMembers(HttpServletRequest request,
+			ProjectMemberFilterRequestDto projectMemberFilterRequestDto);
 
 }

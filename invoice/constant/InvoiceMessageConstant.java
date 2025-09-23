@@ -84,7 +84,11 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID("invoice.error.customer.document.filter.invalid"),
 
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
-	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source");
+	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source"),
+	INVOICE_ERROR_PROJECT_ID_REQUIRED("invoice.error.project.id.required"),
+	INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND("invoice.error.customer.project.not.found"),
+
+	INVOICE_ERROR_BILLABLE_RATE_NOT_FOUND("invoice.error.project.member.billable.data.not.found");
 
 	private final String messageKey;
 
