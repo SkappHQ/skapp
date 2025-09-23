@@ -56,7 +56,7 @@ public class ProjectController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get all project's Team Members'",
+	@Operation(summary = "Get all project's Team Members",
 			description = "Returns a list of all team members in the project.")
 
 	@GetMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
