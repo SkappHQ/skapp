@@ -43,7 +43,21 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 
 		invoiceConfigValidationService.validateInvoiceConfigRequest(invoiceConfigDto);
 
-		invoiceMapper.updateInvoiceConfigFromDto(invoiceConfigDto, invoiceConfig);
+		if (invoiceConfigDto.getInvoiceLogo() != null) {
+			invoiceConfig.setInvoiceLogo(invoiceConfigDto.getInvoiceLogo());
+		}
+		if (invoiceConfigDto.getCurrency() != null) {
+			invoiceConfig.setCurrency(invoiceConfigDto.getCurrency());
+		}
+		if (invoiceConfigDto.getCountry() != null) {
+			invoiceConfig.setCountry(invoiceConfigDto.getCountry());
+		}
+		if (invoiceConfigDto.getPaymentTerms() != null) {
+			invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
+		}
+		if (invoiceConfigDto.getPayToAddress() != null) {
+			invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
+		}
 
 		invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
 		InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper

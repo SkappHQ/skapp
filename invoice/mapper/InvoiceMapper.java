@@ -5,7 +5,6 @@ import com.skapp.enterprise.invoice.model.InvoiceConfig;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
 import com.skapp.enterprise.invoice.model.InvoiceTax;
-import com.skapp.enterprise.invoice.payload.request.InvoiceConfigRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
@@ -13,19 +12,13 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceConfigResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InvoiceResponseDto;
 import com.skapp.enterprise.invoice.payload.response.invoice.InvoiceDetailResponseDto;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface InvoiceMapper {
-
-	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-	void updateInvoiceConfigFromDto(InvoiceConfigRequestDto dto, @MappingTarget InvoiceConfig entity);
 
 	InvoiceConfigResponseDto invoiceConfigToInvoiceConfigResponseDto(InvoiceConfig invoiceConfig);
 
