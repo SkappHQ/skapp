@@ -5,6 +5,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class InvoiceCommonConstant {
 
+	public static final String INVOICE_CONFIG_DEFAULT_PAYMENT_TERMS = "";
+
+	public static final String INVOICE_CONFIG_DEFAULT_ADDRESS = "";
+
 	public static final int CUSTOMER_NAME_LENGTH = 255;
 
 	public static final String INVOICE_STANDARD_START_ID_FORMAT = "INV-%d-001";
