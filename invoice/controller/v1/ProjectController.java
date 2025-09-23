@@ -33,8 +33,8 @@ public class ProjectController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get a projects all projects or by customer",
-			description = "Returns a list of all projects all projects or by customer.")
+	@Operation(summary = "Get all projects or by customer",
+			description = "Returns a list of all projects or by customer.")
 
 	@GetMapping(value = "/invoice-filter", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN')")
