@@ -1,7 +1,6 @@
 package com.skapp.enterprise.invoice.payload.request;
 
 import com.skapp.enterprise.invoice.type.ProjectMemberSortKey;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
