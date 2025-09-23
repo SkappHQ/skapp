@@ -5,6 +5,8 @@ import com.skapp.enterprise.esignature.payload.request.AddressBookFilterDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.MySignatureLinkDto;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.invoice.model.Customer;
+import com.skapp.enterprise.invoice.model.CustomerContact;
 
 public interface AddressBookService {
 
@@ -25,5 +27,9 @@ public interface AddressBookService {
 	ResponseEntityDto addUpdateMySignatureLink(MySignatureLinkDto mySignatureLinkDto);
 
 	ResponseEntityDto getMySignatureLink();
+
+	ResponseEntityDto addCustomerToAddressBook(Customer customer, UserType type);
+
+	ResponseEntityDto addCustomerContactToAddressBook(CustomerContact customerContact, UserType type);
 
 }
