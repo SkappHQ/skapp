@@ -4,13 +4,13 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.common.type.Tier;
@@ -95,10 +95,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final CustomerDao customerDao;
 
-	private final EmailService emailService;
+	private final EpEmailService epEmailService;
 
 	private final InvoiceConfigRepository invoiceConfigRepository;
-
 
 	@Override
 	@Transactional
@@ -459,9 +458,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			byte[] pdfBytes = baos.toByteArray();
 
-			String pdfFileName = String.format(InvoiceCommonConstant.INVOICE_PDF_FILE_NAME_FORMAT, invoice.getInvoiceId());
+			String pdfFileName = String.format(InvoiceCommonConstant.INVOICE_PDF_FILE_NAME_FORMAT,
+					invoice.getInvoiceId());
 
-			emailService.sendEmailWithAttachment(EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
+			epEmailService.sendEmailWithAttachment(EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
 					EpEmailBodyTemplates.INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER, emailData, customer.getEmail(),
 					pdfBytes, pdfFileName, InvoiceCommonConstant.INVOICE_FILE_TYPE);
 
@@ -484,100 +484,100 @@ public class InvoiceServiceImpl implements InvoiceService {
 			ClassPathResource resource = new ClassPathResource("enterprise/templates/pdf/en/invoice/invoice-v1.html");
 			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-		template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
-		template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
-		template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
-		template = template.replace("{{currency}}", invoice.getCurrency().name());
-		template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
-		template = template.replace("{{billedTo}}",
-				invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
-		template = template.replace("{{subTotalAmount}}",
-				String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
-		template = template.replace("{{payableTotalAmount}}", String.format("%.2f",
-				invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
+			template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
+			template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
+			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
+			template = template.replace("{{currency}}", invoice.getCurrency().name());
+			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
+			template = template.replace("{{billedTo}}",
+					invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
+			template = template.replace("{{subTotalAmount}}",
+					String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
+			template = template.replace("{{payableTotalAmount}}", String.format("%.2f",
+					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
 
-		if (invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()) {
-			template = template.replace("{{#invoiceLogo}}", "")
-				.replace("{{/invoiceLogo}}", "")
-				.replace("{{invoiceLogo}}", invoice.getInvoiceLogo());
-		}
-		else if (invoiceConfig.getInvoiceLogo() != null) {
-			template = template.replace("{{#invoiceLogo}}", "")
-				.replace("{{/invoiceLogo}}", invoiceConfig.getInvoiceLogo());
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
-		}
+			if (invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()) {
+				template = template.replace("{{#invoiceLogo}}", "")
+					.replace("{{/invoiceLogo}}", "")
+					.replace("{{invoiceLogo}}", invoice.getInvoiceLogo());
+			}
+			else if (invoiceConfig.getInvoiceLogo() != null) {
+				template = template.replace("{{#invoiceLogo}}", "")
+					.replace("{{/invoiceLogo}}", invoiceConfig.getInvoiceLogo());
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
+			}
 
-		// Handle discount conditionally
-		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
-			template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
-			template = template.replace("{{discountValue}}", String.format("%.2f", invoice.getDiscountValue()));
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
-		}
+			// Handle discount conditionally
+			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
+				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
+				template = template.replace("{{discountValue}}", String.format("%.2f", invoice.getDiscountValue()));
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
+			}
 
-		// Handle tax conditionally
-		if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
-			double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
-				if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
-					return (invoice.getSubTotalAmount() * tax.getTaxPercentage()) / 100.0;
-				}
-				return 0.0;
-			}).sum();
-			template = template.replace("{{#hasTax}}", "").replace("{{/hasTax}}", "");
-			template = template.replace("{{taxTotal}}", String.format("%.2f", taxTotal));
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#hasTax}}", "{{/hasTax}}");
-		}
+			// Handle tax conditionally
+			if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
+				double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
+					if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
+						return (invoice.getSubTotalAmount() * tax.getTaxPercentage()) / 100.0;
+					}
+					return 0.0;
+				}).sum();
+				template = template.replace("{{#hasTax}}", "").replace("{{/hasTax}}", "");
+				template = template.replace("{{taxTotal}}", String.format("%.2f", taxTotal));
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasTax}}", "{{/hasTax}}");
+			}
 
-		// Handle notes conditionally
-		if (invoice.getInvoiceNotes() != null && !invoice.getInvoiceNotes().trim().isEmpty()) {
-			template = template.replace("{{#invoiceNotes}}", "").replace("{{/invoiceNotes}}", "");
-			template = template.replace("{{invoiceNotes}}", invoice.getInvoiceNotes());
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#invoiceNotes}}", "{{/invoiceNotes}}");
-		}
+			// Handle notes conditionally
+			if (invoice.getInvoiceNotes() != null && !invoice.getInvoiceNotes().trim().isEmpty()) {
+				template = template.replace("{{#invoiceNotes}}", "").replace("{{/invoiceNotes}}", "");
+				template = template.replace("{{invoiceNotes}}", invoice.getInvoiceNotes());
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#invoiceNotes}}", "{{/invoiceNotes}}");
+			}
 
-		// Handle terms conditionally
-		if (invoice.getInvoiceTerms() != null && !invoice.getInvoiceTerms().trim().isEmpty()) {
-			template = template.replace("{{#invoiceTerms}}", "").replace("{{/invoiceTerms}}", "");
-			template = template.replace("{{invoiceTerms}}", invoice.getInvoiceTerms());
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#invoiceTerms}}", "{{/invoiceTerms}}");
-		}
+			// Handle terms conditionally
+			if (invoice.getInvoiceTerms() != null && !invoice.getInvoiceTerms().trim().isEmpty()) {
+				template = template.replace("{{#invoiceTerms}}", "").replace("{{/invoiceTerms}}", "");
+				template = template.replace("{{invoiceTerms}}", invoice.getInvoiceTerms());
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#invoiceTerms}}", "{{/invoiceTerms}}");
+			}
 
-		if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
-			double expenseTotal = invoice.getInvoiceExpenses()
-				.stream()
-				.mapToDouble(exp -> exp.getAmount() != null ? exp.getAmount() : 0.0)
-				.sum();
-			template = template.replace("{{#hasExpenses}}", "")
-				.replace("{{/hasExpenses}}", "")
-				.replace("{{expenseTotal}}", String.format("%.2f", expenseTotal));
-		}
-		else {
-			template = removeConditionalBlock(template, "{{#hasExpenses}}", "{{/hasExpenses}}");
-		}
+			if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
+				double expenseTotal = invoice.getInvoiceExpenses()
+					.stream()
+					.mapToDouble(exp -> exp.getAmount() != null ? exp.getAmount() : 0.0)
+					.sum();
+				template = template.replace("{{#hasExpenses}}", "")
+					.replace("{{/hasExpenses}}", "")
+					.replace("{{expenseTotal}}", String.format("%.2f", expenseTotal));
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasExpenses}}", "{{/hasExpenses}}");
+			}
 
-		// Handle invoice items
-		template = processInvoiceItems(template, invoice);
+			// Handle invoice items
+			template = processInvoiceItems(template, invoice);
 
-		// Handle invoice expenses
-		template = processInvoiceExpenses(template, invoice);
+			// Handle invoice expenses
+			template = processInvoiceExpenses(template, invoice);
 
 			return template;
 
 		}
 		catch (IOException e) {
 			log.error("Error loading invoice template", e);
-			throw  new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PDF_TEMPLATE_NOT_FOUND);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PDF_TEMPLATE_NOT_FOUND);
 		}
 	}
 

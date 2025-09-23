@@ -123,4 +123,61 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 		epAsyncEmailSender.cancelScheduledEmails(batchId, status);
 	}
 
+	@Override
+	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType) {
+
+		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFeildObject, recipient,
+				attachmentData, attachmentName, attachmentContentType);
+	}
+
+	private void processEmailDetailsWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFieldsObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType) {
+
+		try {
+			if (emailTemplate == null || recipient == null) {
+				log.error("Email template or recipient is null");
+				return;
+			}
+
+			EmailTemplateMetadata templateDetails = getTemplateDetails(emailTemplate.getTemplateId());
+			if (templateDetails == null) {
+				log.error("Template not found for ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			String module = findModuleForTemplate(emailTemplate.getTemplateId());
+			if (module == null) {
+				log.error("Module not found for template ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			if (attachmentData == null) {
+				throw new IllegalArgumentException("attachmentData must not be null");
+			}
+			if (attachmentName == null) {
+				throw new IllegalArgumentException("attachmentName must not be null");
+			}
+			if (attachmentContentType == null) {
+				throw new IllegalArgumentException("attachmentContentType must not be null");
+			}
+
+			Map<String, String> placeholders = convertDtoToMap(dynamicFieldsObject);
+			placeholders.replaceAll(this::getLocalizedEnumValue);
+
+			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
+
+			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
+
+			epAsyncEmailSender.sendMailWithAttachment(recipient, templateDetails.getSubject(), emailBody, placeholders,
+					attachmentData, attachmentName, attachmentContentType);
+
+		}
+		catch (Exception e) {
+			log.error("Unexpected error in email sending process: {}", e.getMessage(), e);
+		}
+	}
+
 }

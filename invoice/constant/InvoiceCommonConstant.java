@@ -25,9 +25,9 @@ public class InvoiceCommonConstant {
 
 	public static final String DEFAULT_ERROR_MESSAGE = "An error occurred while fetching projects.";
 
-    public static final String INVOICE_PDF_FILE_NAME_FORMAT = "Invoice_%s.pdf";
+	public static final String INVOICE_PDF_FILE_NAME_FORMAT = "Invoice_%s.pdf";
 
-    public static final String INVOICE_FILE_TYPE = "pdf";
+	public static final String INVOICE_FILE_TYPE = "pdf";
 
 	public static final String INVOICE_RECEIVED_EMAIL_TITLE = "Invoice Payment Reminder!";
 
