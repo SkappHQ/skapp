@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BillableRateDao extends JpaRepository<BillableRate, Long> {
+public interface BillableRateDao extends JpaRepository<BillableRate, Long>, BillableRateRepository {
 
 	List<BillableRate> findByProject_IdAndIsActive(Long customerProjectId, boolean isActive);
 

@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProjectMemberSortKey {
 
-	NAME("name");
+	NAME("fullName");
 
 	private final String sortField;
 

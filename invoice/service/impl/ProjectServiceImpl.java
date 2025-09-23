@@ -5,18 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
-import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
-import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.response.*;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
@@ -37,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -227,7 +224,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ResponseEntityDto getProjectMembers(HttpServletRequest request,
-			ProjectMemberFilterRequestDto projectMemberFilterRequestDto) {
+			ProjectMemberFilterDto projectMemberFilterRequestDto) {
 
 		if (projectMemberFilterRequestDto.getCustomerId() == null) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
@@ -257,7 +254,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		// save in the BIllable Rate Table
 		return billableRateService.createProjectMemberBillableRateData(project,
-				filteredCustomerProject.getFirst().getProjectUsers());
+				filteredCustomerProject.getFirst().getProjectUsers(), projectMemberFilterRequestDto);
 
 	}
 

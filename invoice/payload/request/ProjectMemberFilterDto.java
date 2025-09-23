@@ -8,13 +8,7 @@ import org.springframework.data.domain.Sort;
 
 @Getter
 @Setter
-public class ProjectMemberFilterRequestDto {
-
-	@Min(0)
-	private int page = 0;
-
-	@Min(-1)
-	private int size = -1;
+public class ProjectMemberFilterDto {
 
 	private ProjectMemberSortKey sortKey = ProjectMemberSortKey.NAME;
 

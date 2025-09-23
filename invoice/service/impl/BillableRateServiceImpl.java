@@ -1,6 +1,7 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -9,13 +10,19 @@ import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectMembersResponseDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectUsersResponseDto;
 import com.skapp.enterprise.invoice.repository.BillableRateDao;
+import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import com.skapp.enterprise.invoice.service.BillableRateService;
 import com.skapp.enterprise.invoice.type.BillableFrequency;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -36,7 +43,7 @@ public class BillableRateServiceImpl implements BillableRateService {
 
 	@Override
 	public ResponseEntityDto createProjectMemberBillableRateData(Project customerProject,
-			List<ProjectUsersResponseDto> projectUsersResponseDto) {
+			List<ProjectUsersResponseDto> projectUsersResponseDto, ProjectMemberFilterDto projectMemberFilterDto) {
 
 		// check if already exists then ignore
 		List<BillableRate> existingMemberBillableRateData = billableRateDao
@@ -47,8 +54,8 @@ public class BillableRateServiceImpl implements BillableRateService {
 		// else create,
 
 		if (categorizedMemberData.containsKey(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)) {
-			List<BillableRate> addedBillableRateData = billableRateDao.saveAll(createBillableRateEntities(
-					customerProject, categorizedMemberData.get(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)));
+			billableRateDao.saveAll(createBillableRateEntities(customerProject,
+					categorizedMemberData.get(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)));
 		}
 
 		List<Long> inactiveMemberIds = findInactiveMembers(projectUsersResponseDto, existingMemberBillableRateData);
@@ -60,8 +67,10 @@ public class BillableRateServiceImpl implements BillableRateService {
 		List<BillableRate> finalMemberBillableRateData = billableRateDao
 			.findByProject_IdAndIsActive(customerProject.getId(), true);
 
+		List<BillableRate> pagedBillableRates = billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
+
 		List<ProjectMembersResponseDto> responseDtos = projectMapper
-			.memberBillableRateListToProjectMembersResponseDto(finalMemberBillableRateData);
+			.memberBillableRateListToProjectMembersResponseDto(pagedBillableRates);
 
 		return new ResponseEntityDto(false, responseDtos);
 	}

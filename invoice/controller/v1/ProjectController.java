@@ -2,7 +2,7 @@ package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
-import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,10 +56,13 @@ public class ProjectController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get all project's Team Members'",
+			description = "Returns a list of all team members in the project.")
+
 	@GetMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getProjectsMembersByProject(HttpServletRequest request,
-			@Valid ProjectMemberFilterRequestDto projectMemberFilterRequestDto) {
+			@Valid ProjectMemberFilterDto projectMemberFilterRequestDto) {
 		ResponseEntityDto response = projectService.getProjectMembers(request, projectMemberFilterRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
