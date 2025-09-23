@@ -24,6 +24,8 @@ import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.EsignValidations;
+import com.skapp.enterprise.invoice.model.Customer;
+import com.skapp.enterprise.invoice.model.CustomerContact;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -160,6 +162,41 @@ public class AddressBookServiceImpl implements AddressBookService {
 		}
 
 		return new ResponseEntityDto(false, mySignatureLinkResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto addCustomerToAddressBook(Customer customer, UserType type) {
+		AddressBook addressBook = initializeAddressBook(customer, null, type);
+		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
+		return new ResponseEntityDto(false, addressBookResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto addCustomerContactToAddressBook(CustomerContact customerContact, UserType type) {
+
+		AddressBook addressBook = initializeAddressBook(null, customerContact, type);
+		AddressBookResponseDto addressBookResponseDto = esignMapper.addressBookToAddressBookResponseDto(addressBook);
+		return new ResponseEntityDto(false, addressBookResponseDto);
+	}
+
+	private AddressBook initializeAddressBook(Customer customer, CustomerContact customerContact, UserType type) {
+
+		AddressBook addressBook = new AddressBook();
+
+		if (customer != null) {
+			addressBook.setCustomer(customer);
+
+		}
+
+		if (customerContact != null) {
+			addressBook.setCustomerContact(customerContact);
+		}
+
+		addressBook.setType(type);
+		addressBook = addressBookDao.save(addressBook);
+		userKeyService.generateAndStoreKeys(addressBook);
+
+		return addressBook;
 	}
 
 }

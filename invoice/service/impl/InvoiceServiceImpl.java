@@ -4,6 +4,7 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
@@ -646,6 +647,16 @@ public class InvoiceServiceImpl implements InvoiceService {
 			return template.substring(0, startIndex) + template.substring(endIndex + endTag.length());
 		}
 		return template;
+	}
+
+	@Override
+	public LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId) {
+
+		if (customerId == null || projectId == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_FETCHED_FAILED);
+		}
+
+		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
 	}
 
 }

@@ -2,11 +2,14 @@ package com.skapp.enterprise.invoice.mapper;
 
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
+import com.skapp.enterprise.invoice.model.CustomerDocument;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerDocumentResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -50,5 +53,14 @@ public interface CustomerMapper {
 	CustomerContact customerContactDetailsDtoToCustomerContact(CustomerContactDetailsDto customerContactDetailsDto);
 
 	CustomerContactResponseDto customerContactToCustomerContactResponseDto(CustomerContact customerContact);
+
+	CustomerDocument customerDocumentCreateRequestDtoToCustomerDocument(CustomerDocumentCreateRequestDto dto);
+
+	@Mapping(target = "customerId", source = "customer.id")
+	@Mapping(target = "customerName", source = "customer.name")
+	CustomerDocumentResponseDto customerDocumentToCustomerDocumentResponseDto(CustomerDocument customerDocument);
+
+	List<CustomerDocumentResponseDto> customerDocumentsToCustomerDocumentResponseDtos(
+			List<CustomerDocument> customerDocuments);
 
 }

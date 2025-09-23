@@ -16,6 +16,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.TooManyRequestsException;
 import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpApiUriConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -28,6 +29,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -43,6 +45,34 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 	@Value("${organization.email}")
 	private String organizationEmail;
 
+	@Value("${email.redirect.tenants}")
+	private String emailRedirectTenants;
+
+	@Value("${email.redirect.admin-email}")
+	private String emailRedirectAdminEmail;
+
+	@Override
+	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
+		try {
+			String senderName = EpCommonConstants.APPLICATION_NAME;
+			if (placeholders != null) {
+				String module = placeholders.get(EpCommonConstants.MODULE);
+				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
+					if (!StringUtils.isNullOrBlank(sender)) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
+				else if (EpCommonConstants.DASHBOARD.equalsIgnoreCase(module)) {
+					String sender = placeholders.getOrDefault(EpCommonConstants.SUPER_ADMIN_NAME, "");
+					if (!StringUtils.isNullOrBlank(sender)) {
+						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
+					}
+				}
+			}
+			Email from = new Email(organizationEmail, senderName);
+			Email toEmail = createConditionalEmail(to);
+			Content content = new Content("text/html", htmlBody);
 	private Mail buildMail(String to, String subject, String htmlBody, Map<String, String> placeholders,
 			byte[] attachmentData, String attachmentName, String attachmentContentType) {
 		String senderName = EpCommonConstants.APPLICATION_NAME;
@@ -189,6 +219,15 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 		catch (IOException e) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_EMAIL_CANCEL_SCHEDULED_FAILED);
 		}
+	}
+
+	public Email createConditionalEmail(String originalEmail) {
+		String toEmail = Arrays.stream(emailRedirectTenants.split(","))
+			.map(String::trim)
+			.anyMatch(tenant -> tenant.equals(TenantContext.getCurrentTenant())) ? emailRedirectAdminEmail
+					: originalEmail;
+		log.info("Email intended for {} is redirected to {}", originalEmail, toEmail);
+		return new Email(toEmail);
 	}
 
 }

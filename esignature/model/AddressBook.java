@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.model;
 import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.type.MySignatureMethods;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.invoice.model.Customer;
+import com.skapp.enterprise.invoice.model.CustomerContact;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +37,14 @@ public class AddressBook {
 	@JoinColumn(name = "external_user_id")
 	private ExternalUser externalUser;
 
+	@OneToOne
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
+
+	@OneToOne
+	@JoinColumn(name = "customer_contact_id")
+	private CustomerContact customerContact;
+
 	@Enumerated(EnumType.STRING)
 	private UserType type;
 
@@ -58,6 +68,9 @@ public class AddressBook {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getId();
 		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getId() : customer.getId();
+		}
 
 		return internalUser.getUserId();
 	}
@@ -65,6 +78,9 @@ public class AddressBook {
 	public String getName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName() + " " + externalUser.getLastName();
+		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getName() : customer.getName();
 		}
 
 		return internalUser.getEmployee().getFirstName() + " " + internalUser.getEmployee().getLastName();
@@ -74,6 +90,9 @@ public class AddressBook {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getFirstName();
 		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getName() : customer.getName();
+		}
 
 		return internalUser.getEmployee().getFirstName();
 	}
@@ -81,6 +100,9 @@ public class AddressBook {
 	public String getLastName() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getLastName();
+		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getName() : customer.getName();
 		}
 
 		return internalUser.getEmployee().getLastName();
@@ -90,6 +112,9 @@ public class AddressBook {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getEmail();
 		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getEmail() : customer.getEmail();
+		}
 
 		return internalUser.getEmail();
 	}
@@ -97,6 +122,9 @@ public class AddressBook {
 	public String getPhone() {
 		if (type == UserType.EXTERNAL) {
 			return externalUser.getPhone();
+		}
+		else if (type == UserType.CUSTOMER) {
+			return customerContact != null ? customerContact.getContactNo() : null;
 		}
 
 		return internalUser.getEmployee().getPhone();
