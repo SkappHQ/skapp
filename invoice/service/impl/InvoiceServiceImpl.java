@@ -4,14 +4,17 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
+import com.skapp.enterprise.common.payload.response.AmazonS3SignedUrlResponseDto;
+import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.EpEmailService;
+import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.common.type.Tier;
@@ -22,12 +25,12 @@ import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.ExpenseAttachment;
 import com.skapp.enterprise.invoice.model.Invoice;
-import com.skapp.enterprise.invoice.model.InvoiceConfig;
 import com.skapp.enterprise.invoice.model.InvoiceExpense;
 import com.skapp.enterprise.invoice.model.InvoiceItem;
 import com.skapp.enterprise.invoice.model.InvoiceTax;
 import com.skapp.enterprise.invoice.payload.email.InvoiceReminderEmailDynamicFields;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ReminderEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
@@ -43,10 +46,12 @@ import com.skapp.enterprise.invoice.repository.InvoiceConfigRepository;
 import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
+import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -66,6 +71,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -99,6 +105,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private final EpEmailService epEmailService;
 
 	private final InvoiceConfigRepository invoiceConfigRepository;
+
+	private final AmazonS3Service amazonS3Service;
 
 	@Override
 	@Transactional
@@ -280,17 +288,22 @@ public class InvoiceServiceImpl implements InvoiceService {
 		return new ResponseEntityDto(false, invoiceTierLimitationResponseDto);
 	}
 
-	private InvoiceTierLimitationResponseDto processInvoiceTierLimitation() {
-		String currentTenant = TenantContext.getCurrentTenant();
+	private Tenant getTenant(String tenantName) {
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenant);
-		tenantContext.setTenantAndSwitchSchema(currentTenant);
+		Tenant tenant = tenantDao.findByTenantName(tenantName);
+		tenantContext.setTenantAndSwitchSchema(tenantName);
 
 		if (tenant == null) {
-			log.error("getInvoiceTierLimitations: Tenant not found: {}", currentTenant);
+			log.error("getInvoiceTierLimitations: Tenant not found: {}", tenantName);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-					new String[] { currentTenant });
+					new String[] { tenantName });
 		}
+		return tenant;
+	}
+
+	private InvoiceTierLimitationResponseDto processInvoiceTierLimitation() {
+		String currentTenant = TenantContext.getCurrentTenant();
+		Tenant tenant = getTenant(currentTenant);
 
 		InvoiceTierLimitationResponseDto invoiceTierLimitationResponseDto = new InvoiceTierLimitationResponseDto();
 		Tier tier = tenant.getTier();
@@ -431,26 +444,34 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto sendReminder(Long invoiceId) {
-		Invoice invoice = invoiceDao.findById(invoiceId)
-			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
+	public ResponseEntityDto sendReminder(ReminderEmailRequestDto reminderEmailRequestDto) {
 
+		String sentBy = TenantContext.getCurrentTenant();
+
+		Tenant tenant = getTenant(sentBy);
+		Tier tier = tenant.getTier();
+
+		Invoice invoice = invoiceDao.findById(reminderEmailRequestDto.getInvoiceId())
+			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 		Customer customer = invoice.getCustomer();
 
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		String formattedInvoiceDate = invoice.getInvoiceDate().format(dateFormatter);
 		String formattedDueDate = invoice.getDueDate().format(dateFormatter);
 
-		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+		CurrencyType currencyType = customer.getCurrency();
+
+		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+		currencyFormatter.setCurrency(Currency.getInstance(currencyType.name()));
+
 		String formattedAmount = currencyFormatter.format(invoice.getPayableTotalAmount());
 
-		InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(customer.getName(),
+		InvoiceReminderEmailDynamicFields emailData = new InvoiceReminderEmailDynamicFields(sentBy, customer.getName(),
 				invoice.getInvoiceId(), formattedInvoiceDate, formattedDueDate, formattedAmount,
-				invoice.getCurrency().name(), InvoiceCommonConstant.INVOICE_RECEIVED_EMAIL_TITLE);
+				reminderEmailRequestDto.getSubject(), reminderEmailRequestDto.getBody());
 
 		try {
-			String html = generateInvoiceHtml(invoice);
-
+			String html = generateInvoiceHtml(invoice, tier);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PdfRendererBuilder builder = new PdfRendererBuilder();
 			builder.withHtmlContent(html, null);
@@ -464,64 +485,56 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			epEmailService.sendEmailWithAttachment(EpEmailMainTemplates.INVOICE_MAIN_TEMPLATE_V1,
 					EpEmailBodyTemplates.INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER, emailData, customer.getEmail(),
-					pdfBytes, pdfFileName, InvoiceCommonConstant.INVOICE_FILE_TYPE);
+					pdfBytes, pdfFileName, InvoiceCommonConstant.INVOICE_FILE_TYPE,
+					reminderEmailRequestDto.getCcEmails());
 
 			log.info("Invoice reminder email sent successfully for invoice ID: {} to customer: {} with PDF attachment",
-					invoiceId, customer.getEmail());
+					reminderEmailRequestDto.getInvoiceId(), customer.getEmail());
 
 			return new ResponseEntityDto(false, InvoiceMessageConstant.INVOICE_SUCCESS_EMAIL_REMINDER_SENT);
 		}
 		catch (Exception e) {
-			log.error("Failed to send invoice reminder email for invoice ID: {}", invoiceId, e);
+			log.error("Failed to send invoice reminder email for invoice ID: {}",
+					reminderEmailRequestDto.getInvoiceId(), e);
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_SENDING_EMAIL_REMINDER);
 		}
 	}
 
-	private String generateInvoiceHtml(Invoice invoice) {
-		try {
-			InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
-				.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
+	private String generateInvoiceHtml(Invoice invoice, Tier tier) {
 
+		try {
 			ClassPathResource resource = new ClassPathResource("enterprise/templates/pdf/en/invoice/invoice-v1.html");
 			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-			template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
-			template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
-			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
-			template = template.replace("{{currency}}", invoice.getCurrency().name());
-			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
-			template = template.replace("{{billedTo}}",
-					invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
-			template = template.replace("{{subTotalAmount}}",
-					String.format("%.2f", invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0));
-			template = template.replace("{{payableTotalAmount}}", String.format("%.2f",
-					invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0));
+			String invoiceLogo = invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()
+					? invoice.getInvoiceLogo() : "";
+			AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
+			amazonS3SignedUrlRequestDto.setFolderPath(invoiceLogo);
+			amazonS3SignedUrlRequestDto.setAction(AmazonS3ActionType.DOWNLOAD);
 
-			if (invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()) {
-				template = template.replace("{{#invoiceLogo}}", "")
-					.replace("{{/invoiceLogo}}", "")
-					.replace("{{invoiceLogo}}", invoice.getInvoiceLogo());
-			}
-			else if (invoiceConfig.getInvoiceLogo() != null) {
-				template = template.replace("{{#invoiceLogo}}", "")
-					.replace("{{/invoiceLogo}}", invoiceConfig.getInvoiceLogo());
-			}
-			else {
-				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
-			}
+			ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
+			AmazonS3SignedUrlResponseDto amazonS3SignedUrlResponseDto = (AmazonS3SignedUrlResponseDto) response
+				.getResults()
+				.get(0);
 
-			// Handle discount conditionally
-			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
-				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
-				template = template.replace("{{discountValue}}", String.format("%.2f", invoice.getDiscountValue()));
-			}
-			else {
-				template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
-			}
+			String rawUrl = amazonS3SignedUrlResponseDto.getSignedUrl();
+			String invoiceLogoSignedUrl = StringEscapeUtils.escapeXml10(rawUrl);
 
-			// Handle tax conditionally
+			CurrencyType currencyType = invoice.getCurrency();
+			NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+			currencyFormatter.setCurrency(Currency.getInstance(currencyType.name()));
+
+			String payableTotalAmount = currencyFormatter
+				.format(invoice.getPayableTotalAmount() != null ? invoice.getPayableTotalAmount() : 0.0);
+			String subTotalAmount = currencyFormatter
+				.format(invoice.getSubTotalAmount() != null ? invoice.getSubTotalAmount() : 0.0);
+			String discountValueFormatted = invoice.getDiscountValue() != null
+					? currencyFormatter.format(invoice.getDiscountValue()) : currencyFormatter.format(0.0);
+			String taxTotalFormatted = currencyFormatter.format(0.0);
+			String expenseTotalFormatted = currencyFormatter.format(0.0);
+
 			if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
 				double taxTotal = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
 					if (tax.getTaxPercentage() != null && invoice.getSubTotalAmount() != null) {
@@ -529,14 +542,51 @@ public class InvoiceServiceImpl implements InvoiceService {
 					}
 					return 0.0;
 				}).sum();
+				taxTotalFormatted = currencyFormatter.format(taxTotal);
+			}
+
+			if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
+				double expenseTotal = invoice.getInvoiceExpenses()
+					.stream()
+					.mapToDouble(exp -> exp.getAmount() != null ? exp.getAmount() : 0.0)
+					.sum();
+				expenseTotalFormatted = currencyFormatter.format(expenseTotal);
+			}
+
+			template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
+			template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
+			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
+			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
+			template = template.replace("{{billedTo}}",
+					invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
+			template = template.replace("{{subTotalAmount}}", subTotalAmount);
+			template = template.replace("{{payableTotalAmount}}", payableTotalAmount);
+
+			if (invoiceLogoSignedUrl != null && tier != Tier.FREE) {
+				template = template.replace("{{#invoiceLogo}}", "")
+					.replace("{{/invoiceLogo}}", "")
+					.replace("{{invoiceLogo}}", invoiceLogoSignedUrl);
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
+			}
+
+			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
+				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
+				template = template.replace("{{discountValue}}", discountValueFormatted);
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasDiscount}}", "{{/hasDiscount}}");
+			}
+
+			if (invoice.getInvoiceTaxes() != null && !invoice.getInvoiceTaxes().isEmpty()) {
 				template = template.replace("{{#hasTax}}", "").replace("{{/hasTax}}", "");
-				template = template.replace("{{taxTotal}}", String.format("%.2f", taxTotal));
+				template = template.replace("{{taxTotal}}", taxTotalFormatted);
 			}
 			else {
 				template = removeConditionalBlock(template, "{{#hasTax}}", "{{/hasTax}}");
 			}
 
-			// Handle notes conditionally
 			if (invoice.getInvoiceNotes() != null && !invoice.getInvoiceNotes().trim().isEmpty()) {
 				template = template.replace("{{#invoiceNotes}}", "").replace("{{/invoiceNotes}}", "");
 				template = template.replace("{{invoiceNotes}}", invoice.getInvoiceNotes());
@@ -545,7 +595,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 				template = removeConditionalBlock(template, "{{#invoiceNotes}}", "{{/invoiceNotes}}");
 			}
 
-			// Handle terms conditionally
 			if (invoice.getInvoiceTerms() != null && !invoice.getInvoiceTerms().trim().isEmpty()) {
 				template = template.replace("{{#invoiceTerms}}", "").replace("{{/invoiceTerms}}", "");
 				template = template.replace("{{invoiceTerms}}", invoice.getInvoiceTerms());
@@ -555,23 +604,24 @@ public class InvoiceServiceImpl implements InvoiceService {
 			}
 
 			if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
-				double expenseTotal = invoice.getInvoiceExpenses()
-					.stream()
-					.mapToDouble(exp -> exp.getAmount() != null ? exp.getAmount() : 0.0)
-					.sum();
 				template = template.replace("{{#hasExpenses}}", "")
 					.replace("{{/hasExpenses}}", "")
-					.replace("{{expenseTotal}}", String.format("%.2f", expenseTotal));
+					.replace("{{expenseTotal}}", expenseTotalFormatted);
 			}
 			else {
 				template = removeConditionalBlock(template, "{{#hasExpenses}}", "{{/hasExpenses}}");
 			}
 
-			// Handle invoice items
-			template = processInvoiceItems(template, invoice);
+			if (tier == Tier.FREE) {
+				template = template.replace("{{#skappBranding}}", "").replace("{{/skappBranding}}", "");
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#skappBranding}}", "{{/skappBranding}}");
+			}
 
-			// Handle invoice expenses
-			template = processInvoiceExpenses(template, invoice);
+			template = processInvoiceItems(template, invoice, currencyFormatter);
+
+			template = processInvoiceExpenses(template, invoice, currencyFormatter);
 
 			return template;
 
@@ -582,7 +632,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 	}
 
-	private String processInvoiceItems(String template, Invoice invoice) {
+	private String processInvoiceItems(String template, Invoice invoice, NumberFormat currencyFormatter) {
 		String startMarker = "{{#invoiceItems}}";
 		String endMarker = "{{/invoiceItems}}";
 
@@ -604,16 +654,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 							item.getDescription() != null ? item.getDescription() : item.getItemName())
 					.replace("{{quantity}}", String.valueOf(item.getQuantity() != null ? item.getQuantity() : 0))
 					.replace("{{quantityType}}", item.getQuantityType() != null ? item.getQuantityType() : "Units")
-					.replace("{{currency}}", invoice.getCurrency().name())
 					.replace("{{unitPrice}}",
-							String.format("%.2f", item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
-					.replace("{{amount}}", String.format("%.2f", item.getAmount() != null ? item.getAmount() : 0.0)))
+							currencyFormatter.format(item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
+					.replace("{{amount}}", currencyFormatter.format(item.getAmount() != null ? item.getAmount() : 0.0)))
 				.collect(Collectors.joining());
 		}
 		return template.substring(0, startIndex) + itemsHtml + template.substring(endIndex + endMarker.length());
 	}
 
-	private String processInvoiceExpenses(String template, Invoice invoice) {
+	private String processInvoiceExpenses(String template, Invoice invoice, NumberFormat currencyFormatter) {
 		String startMarker = "{{#invoiceExpenses}}";
 		String endMarker = "{{/invoiceExpenses}}";
 
@@ -632,9 +681,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 				.stream()
 				.map(expense -> expenseTemplate
 					.replace("{{description}}", expense.getName() != null ? expense.getName() : "Expense")
-					.replace("{{currency}}", invoice.getCurrency().name())
 					.replace("{{amount}}",
-							String.format("%.2f", expense.getAmount() != null ? expense.getAmount() : 0.0)))
+							currencyFormatter.format(expense.getAmount() != null ? expense.getAmount() : 0.0)))
 				.collect(Collectors.joining());
 		}
 		return template.substring(0, startIndex) + expensesHtml + template.substring(endIndex + endMarker.length());

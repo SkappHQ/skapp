@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -54,27 +55,26 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 	@Override
 	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
 		try {
-			String senderName = EpCommonConstants.APPLICATION_NAME;
-			if (placeholders != null) {
-				String module = placeholders.get(EpCommonConstants.MODULE);
-				if (EpCommonConstants.ESIGNATURE.equalsIgnoreCase(module)) {
-					String sender = placeholders.getOrDefault(EpCommonConstants.SENDER, "");
-					if (!StringUtils.isNullOrBlank(sender)) {
-						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
-					}
-				}
-				else if (EpCommonConstants.DASHBOARD.equalsIgnoreCase(module)) {
-					String sender = placeholders.getOrDefault(EpCommonConstants.SUPER_ADMIN_NAME, "");
-					if (!StringUtils.isNullOrBlank(sender)) {
-						senderName = sender + EpCommonConstants.VIA + EpCommonConstants.APPLICATION_NAME;
-					}
-				}
+			Mail mail = buildMail(to, subject, htmlBody, placeholders, null, null, null, null);
+			SendGrid sendGrid = new SendGrid(sendGridApiKey);
+			Request request = new Request();
+			request.setMethod(Method.POST);
+			request.setEndpoint(EpApiUriConstants.SENDGRID_POST_API);
+			request.setBody(mail.build());
+
+			Response response = sendGrid.api(request);
+
+			if (response.getStatusCode() == 429) {
+				throw new TooManyRequestsException(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
 			}
-			Email from = new Email(organizationEmail, senderName);
-			Email toEmail = createConditionalEmail(to);
-			Content content = new Content("text/html", htmlBody);
+		}
+		catch (IOException e) {
+			log.error("Error sending email to {}: {}", to, e.getMessage());
+		}
+	}
+
 	private Mail buildMail(String to, String subject, String htmlBody, Map<String, String> placeholders,
-			byte[] attachmentData, String attachmentName, String attachmentContentType) {
+			byte[] attachmentData, String attachmentName, String attachmentContentType, List<String> ccEmails) {
 		String senderName = EpCommonConstants.APPLICATION_NAME;
 		if (placeholders != null) {
 			String module = placeholders.get(EpCommonConstants.MODULE);
@@ -92,7 +92,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 			}
 		}
 		Email from = new Email(organizationEmail, senderName);
-		Email toEmail = new Email(to);
+		Email toEmail = createConditionalEmail(to);
 		Content content = new Content("text/html", htmlBody);
 
 		Mail mail = new Mail();
@@ -118,39 +118,25 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 			mail.setBatchId(placeholders.get("batchId"));
 		}
 
+		// Add CC if provided
 		Personalization personalization = new Personalization();
 		personalization.addTo(toEmail);
+
+		if (ccEmails != null && !ccEmails.isEmpty()) {
+			for (String cc : ccEmails) {
+				personalization.addCc(new Email(cc));
+			}
+		}
 		mail.addPersonalization(personalization);
+
 		return mail;
 	}
 
 	@Override
-	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
-
-		try {
-			Mail mail = buildMail(to, subject, htmlBody, placeholders, null, null, null);
-			SendGrid sendGrid = new SendGrid(sendGridApiKey);
-			Request request = new Request();
-			request.setMethod(Method.POST);
-			request.setEndpoint(EpApiUriConstants.SENDGRID_POST_API);
-			request.setBody(mail.build());
-
-			Response response = sendGrid.api(request);
-
-			if (response.getStatusCode() == 429) {
-				throw new TooManyRequestsException(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
-			}
-		}
-		catch (IOException e) {
-			log.error("Error sending email to {}: {}", to, e.getMessage());
-		}
-	}
-
-	@Override
 	public void sendMailWithAttachment(String to, String subject, String htmlBody, Map<String, String> placeholders,
-			byte[] attachmentData, String attachmentName, String attachmentContentType) {
+			byte[] attachmentData, String attachmentName, String attachmentContentType, List<String> ccEmails) {
 		Mail mail = buildMail(to, subject, htmlBody, placeholders, attachmentData, attachmentName,
-				attachmentContentType);
+				attachmentContentType, ccEmails);
 		try {
 			SendGrid sendGrid = new SendGrid(sendGridApiKey);
 			Request request = new Request();

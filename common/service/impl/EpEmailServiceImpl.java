@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -126,15 +127,15 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 	@Override
 	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
 			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
-			String attachmentContentType) {
+			String attachmentContentType, List<String> ccEmails) {
 
 		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFeildObject, recipient,
-				attachmentData, attachmentName, attachmentContentType);
+				attachmentData, attachmentName, attachmentContentType, ccEmails);
 	}
 
 	private void processEmailDetailsWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
-			Object dynamicFieldsObject, String recipient, byte[] attachmentData, String attachmentName,
-			String attachmentContentType) {
+			Object dynamicFieldObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType, List<String> ccEmails) {
 
 		try {
 			if (emailTemplate == null || recipient == null) {
@@ -164,15 +165,23 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 				throw new IllegalArgumentException("attachmentContentType must not be null");
 			}
 
-			Map<String, String> placeholders = convertDtoToMap(dynamicFieldsObject);
+			Map<String, String> placeholders = convertDtoToMap(dynamicFieldObject);
 			placeholders.replaceAll(this::getLocalizedEnumValue);
 
 			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
 
 			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
 
-			epAsyncEmailSender.sendMailWithAttachment(recipient, templateDetails.getSubject(), emailBody, placeholders,
-					attachmentData, attachmentName, attachmentContentType);
+			String subject = templateDetails.getSubject();
+
+			java.lang.reflect.Method getSubjectMethod = dynamicFieldObject.getClass().getMethod("getSubject");
+			Object subjectValue = getSubjectMethod.invoke(dynamicFieldObject);
+			if (subjectValue instanceof String && !((String) subjectValue).isEmpty()) {
+				subject = (String) subjectValue;
+			}
+
+			epAsyncEmailSender.sendMailWithAttachment(recipient, subject, emailBody, placeholders, attachmentData,
+					attachmentName, attachmentContentType, ccEmails);
 
 		}
 		catch (Exception e) {

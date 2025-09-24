@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InvoiceReminderEmailDynamicFields {
 
+	private String sentBy;
+
 	private String customerName;
 
 	private String invoiceId;
@@ -19,8 +21,8 @@ public class InvoiceReminderEmailDynamicFields {
 
 	private String totalAmount;
 
-	private String currency;
+	private String subject;
 
-	private String title;
+	private String body;
 
 }

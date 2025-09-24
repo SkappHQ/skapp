@@ -2,6 +2,8 @@ package com.skapp.enterprise.common.service;
 
 import com.skapp.community.common.type.EmailTemplates;
 
+import java.util.List;
+
 public interface EpEmailService {
 
 	String obtainSendGridBatchId();
@@ -10,6 +12,6 @@ public interface EpEmailService {
 
 	void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
 			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
-			String attachmentContentType);
+			String attachmentContentType, List<String> ccEmails);
 
 }

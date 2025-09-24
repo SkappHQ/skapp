@@ -33,7 +33,7 @@ public class TenantServiceImpl implements TenantService {
 	@Transactional
 	public void createTenant(String tenantName, LoginMethod loginMethod, String email) {
 		migrationToolService.createMySqlTenantDatabase(tenantName);
-        migrationToolService.createPostgresqlTenantDatabase(tenantName);
+		migrationToolService.createPostgresqlTenantDatabase(tenantName);
 
 		Tenant tenant = new Tenant();
 

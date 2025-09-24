@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ReminderEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.service.InvoiceService;
@@ -101,10 +102,11 @@ public class InvoiceController {
 	@Operation(summary = "Send a reminder email to the recipient.",
 			description = "This endpoint sends a reminder email to the recipient.")
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
-	@PostMapping(value = "/reminder", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> sendReminder(@RequestParam Long invoiceId) {
+	@PostMapping(value = "/reminder", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> sendReminder(@Valid @RequestBody ReminderEmailRequestDto request) {
 
-		ResponseEntityDto response = invoiceService.sendReminder(invoiceId);
+		ResponseEntityDto response = invoiceService.sendReminder(request);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
