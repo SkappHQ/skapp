@@ -25,4 +25,6 @@ public interface InvoiceService {
 
 	LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId);
 
+	void handleInvoiceExpiration(Long invoiceId);
+
 }

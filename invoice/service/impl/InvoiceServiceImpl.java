@@ -10,6 +10,8 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
@@ -82,6 +84,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final EmailService emailService;
 
+	private final ScheduleService scheduleService;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto) {
@@ -128,6 +132,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		calculateInvoiceTotals(invoice);
 		invoiceDao.save(invoice);
+
+		if (invoice.getStatus() == InvoiceStatus.DUE && invoice.getDueDate() != null) {
+			String tenantId = TenantContext.getCurrentTenant();
+			scheduleService.scheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE,
+					invoice.getDueDate().plusDays(1).atStartOfDay());
+		}
 
 		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 
@@ -401,14 +411,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		invoiceValidationService.validateInvoiceStatusUpdateRequest(invoiceStatusUpdateRequestDto);
 		Optional<Invoice> optionalInvoice = invoiceDao.findById(invoiceStatusUpdateRequestDto.getInvoiceId());
-
 		Invoice invoice = optionalInvoice.get();
 		invoice.setStatus(invoiceStatusUpdateRequestDto.getStatus());
-
 		invoiceDao.save(invoice);
 
-		InvoiceResponseDto invoiceResponseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
+		String tenantId = TenantContext.getCurrentTenant();
+		if (invoice.getStatus() == InvoiceStatus.PAID || invoice.getStatus() == InvoiceStatus.DELETED) {
+			scheduleService.unScheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE);
+		}
+		else if (invoice.getStatus() == InvoiceStatus.DUE && invoice.getDueDate() != null) {
+			scheduleService.scheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE,
+					invoice.getDueDate().plusDays(1).atStartOfDay());
+		}
 
+		InvoiceResponseDto invoiceResponseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 		return new ResponseEntityDto(false, invoiceResponseDto);
 	}
 
@@ -420,6 +436,21 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 
 		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
+	}
+
+	@Override
+	public void handleInvoiceExpiration(Long Id) {
+
+		Invoice invoice = invoiceDao.getById(Id);
+		InvoiceStatus status = invoice.getStatus();
+		LocalDate dueDate = invoice.getDueDate();
+		if (status == InvoiceStatus.DUE && (dueDate != null && !dueDate.isAfter(LocalDate.now()))) {
+			InvoiceStatusUpdateRequestDto updateRequest = new InvoiceStatusUpdateRequestDto();
+			updateRequest.setInvoiceId(Id);
+			updateRequest.setStatus(InvoiceStatus.OVERDUE);
+			updateInvoiceStatus(updateRequest);
+			log.info("Invoice {} marked as OVERDUE by scheduler.", Id);
+		}
 	}
 
 }
