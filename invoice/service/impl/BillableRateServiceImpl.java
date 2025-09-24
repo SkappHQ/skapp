@@ -1,13 +1,11 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
-import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
@@ -15,15 +13,10 @@ import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRa
 import com.skapp.enterprise.invoice.payload.response.ProjectMembersResponseDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectUsersResponseDto;
 import com.skapp.enterprise.invoice.repository.BillableRateDao;
-import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import com.skapp.enterprise.invoice.service.BillableRateService;
 import com.skapp.enterprise.invoice.type.BillableFrequency;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -38,10 +31,8 @@ public class BillableRateServiceImpl implements BillableRateService {
 
 	private final EmployeeDao employeeDao;
 
-	private final ProjectMapper projectMapper;
-
 	@Override
-	public ResponseEntityDto createProjectMemberBillableRateData(Project customerProject,
+	public List<BillableRate> createProjectMemberBillableRateData(Project customerProject,
 			List<ProjectUsersResponseDto> projectUsersResponseDto, ProjectMemberFilterDto projectMemberFilterDto) {
 
 		List<BillableRate> existingMemberBillableRateData = billableRateDao
@@ -61,21 +52,11 @@ public class BillableRateServiceImpl implements BillableRateService {
 			markBillableRatesInactive(inactiveMemberIds);
 		}
 
-		List<BillableRate> allBillableRates = billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
-
-		List<ProjectMembersResponseDto> responseDtos = projectMapper
-			.memberBillableRateListToProjectMembersResponseDto(allBillableRates)
-			.stream()
-			.sorted(Sort.Direction.ASC == projectMemberFilterDto.getSortOrder()
-					? Comparator.comparing(ProjectMembersResponseDto::getName)
-					: Comparator.comparing(ProjectMembersResponseDto::getName).reversed())
-			.collect(Collectors.toList());
-
-		return new ResponseEntityDto(false, responseDtos);
+		return billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
 	}
 
 	@Override
-	public ResponseEntityDto updateTeamMemberBillableRates(Project project,
+	public List<BillableRate> updateTeamMemberBillableRates(Project project,
 			List<TeamMemberBillableRateUpdateRequestDto> teamMemberBillableRateUpdateRequestDtos) {
 
 		List<BillableRate> updatedBillableRates = new ArrayList<>();
@@ -99,12 +80,7 @@ public class BillableRateServiceImpl implements BillableRateService {
 				});
 		});
 
-		List<BillableRate> savedBillableRates = billableRateDao.saveAll(updatedBillableRates);
-
-		List<ProjectMembersResponseDto> responseDtos = projectMapper
-			.memberBillableRateListToProjectMembersResponseDto(savedBillableRates);
-
-		return new ResponseEntityDto(false, responseDtos);
+		return billableRateDao.saveAll(updatedBillableRates);
 	}
 
 	private HashMap<String, List<ProjectUsersResponseDto>> categorizeMembersByStatus(

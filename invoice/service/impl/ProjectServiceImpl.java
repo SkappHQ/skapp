@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
+import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
@@ -38,6 +41,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,11 +60,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private final CustomerDao customerDao;
 
-	private final PeopleReadService peopleReadService;
-
 	private final InvoiceService invoiceService;
 
 	private final BillableRateService billableRateService;
+
+	private final ProjectMapper projectMapper;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
@@ -166,16 +172,11 @@ public class ProjectServiceImpl implements ProjectService {
 			projectSummaryResponseDto
 				.setMemberCount(proj.getProjectUsers() != null ? proj.getProjectUsers().size() : 0);
 
-			ProjectUsersResponseDto adminUser = findProjectAdminUser(proj.getProjectUsers());
+			List<ProjectAdminResponseDto> adminUserList = findProjectAdminUser(proj.getProjectUsers());
 
-			if (adminUser != null) {
+			if (adminUserList != null && !adminUserList.isEmpty()) {
 
-				ResponseEntityDto userResponse = peopleReadService.getEmployeeById(adminUser.getUserId());
-
-				CreateEmployeeRequestDto employee = (CreateEmployeeRequestDto) userResponse.getResults().getFirst();
-
-				projectSummaryResponseDto.setAdminName(employee.getPersonal().getGeneral().getFirstName() + " "
-						+ employee.getPersonal().getGeneral().getLastName());
+				projectSummaryResponseDto.setAdmins(adminUserList);
 			}
 
 			projectSummaryResponseDto.setLastInvoiceDate(invoiceService
@@ -226,18 +227,18 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ResponseEntityDto getProjectMembers(HttpServletRequest request,
-			ProjectMemberFilterDto projectMemberFilterRequestDto) {
+			ProjectMemberFilterDto projectMemberFilterDto) {
 
-		if (projectMemberFilterRequestDto.getCustomerId() == null) {
+		if (projectMemberFilterDto.getCustomerId() == null) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
 		}
 
-		if (projectMemberFilterRequestDto.getProjectId() == null) {
+		if (projectMemberFilterDto.getProjectId() == null) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PROJECT_ID_REQUIRED);
 		}
 
 		Optional<Project> optionalProject = projectDao.findByProjectIdAndCustomer_Id(
-				projectMemberFilterRequestDto.getProjectId(), projectMemberFilterRequestDto.getCustomerId());
+				projectMemberFilterDto.getProjectId(), projectMemberFilterDto.getCustomerId());
 
 		if (optionalProject.isEmpty()) {
 			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND);
@@ -254,8 +255,18 @@ public class ProjectServiceImpl implements ProjectService {
 			.filter(proj -> Objects.equals(proj.getId(), project.getProjectId()))
 			.toList();
 
-		return billableRateService.createProjectMemberBillableRateData(project,
-				filteredCustomerProject.getFirst().getProjectUsers(), projectMemberFilterRequestDto);
+		List<BillableRate> allBillableRates = billableRateService.createProjectMemberBillableRateData(project,
+				filteredCustomerProject.getFirst().getProjectUsers(), projectMemberFilterDto);
+
+		List<ProjectMembersResponseDto> responseDto = projectMapper
+			.memberBillableRateListToProjectMembersResponseDto(allBillableRates)
+			.stream()
+			.sorted(Sort.Direction.ASC == projectMemberFilterDto.getSortOrder()
+					? Comparator.comparing(ProjectMembersResponseDto::getName)
+					: Comparator.comparing(ProjectMembersResponseDto::getName).reversed())
+			.collect(Collectors.toList());
+
+		return new ResponseEntityDto(false, responseDto);
 
 	}
 
@@ -278,7 +289,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 		Project project = optionalProject.get();
 
-		return billableRateService.updateTeamMemberBillableRates(project, teamMemberBillableRateUpdateRequestDtos);
+		List<BillableRate> savedBillableRates = billableRateService.updateTeamMemberBillableRates(project,
+				teamMemberBillableRateUpdateRequestDtos);
+
+		List<ProjectMembersResponseDto> responseDtos = projectMapper
+			.memberBillableRateListToProjectMembersResponseDto(savedBillableRates);
+
+		return new ResponseEntityDto(false, responseDtos);
 
 	}
 
@@ -392,7 +409,9 @@ public class ProjectServiceImpl implements ProjectService {
 		return new ArrayList<>();
 	}
 
-	private ProjectUsersResponseDto findProjectAdminUser(List<ProjectUsersResponseDto> projectUsers) {
+	private List<ProjectAdminResponseDto> findProjectAdminUser(List<ProjectUsersResponseDto> projectUsers) {
+
+		List<ProjectAdminResponseDto> adminList = new ArrayList<>();
 
 		if (projectUsers.isEmpty()) {
 			return null;
@@ -400,7 +419,20 @@ public class ProjectServiceImpl implements ProjectService {
 
 		for (ProjectUsersResponseDto user : projectUsers) {
 			if (user.getRole() == ProjectUserRole.ADMIN) {
-				return user;
+
+				Optional<Employee> optionalEmployee = employeeDao.findById(user.getUserId());
+
+				if (optionalEmployee.isPresent()) {
+
+					Employee employee = optionalEmployee.get();
+
+					ProjectAdminResponseDto projectAdminResponseDto = new ProjectAdminResponseDto();
+					projectAdminResponseDto.setAdminName(employee.getFullName());
+					projectAdminResponseDto.setAuthPic(employee.getAuthPic());
+					adminList.add(projectAdminResponseDto);
+				}
+
+				return adminList;
 			}
 		}
 		return null;
