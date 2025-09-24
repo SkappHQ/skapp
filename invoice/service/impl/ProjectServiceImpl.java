@@ -431,11 +431,9 @@ public class ProjectServiceImpl implements ProjectService {
 					projectAdminResponseDto.setAuthPic(employee.getAuthPic());
 					adminList.add(projectAdminResponseDto);
 				}
-
-				return adminList;
 			}
 		}
-		return null;
+		return adminList;
 
 	}
 
