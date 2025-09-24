@@ -11,7 +11,7 @@ public interface EpEmailService {
 	void cancelScheduledEmail(String batchId, String status);
 
 	void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
-			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
+			Object dynamicFieldObject, String recipient, byte[] attachmentData, String attachmentName,
 			String attachmentContentType, List<String> ccEmails);
 
 }

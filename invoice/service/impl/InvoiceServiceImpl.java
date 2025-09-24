@@ -461,7 +461,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		CurrencyType currencyType = customer.getCurrency();
 
-		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
 		currencyFormatter.setCurrency(Currency.getInstance(currencyType.name()));
 
 		String formattedAmount = currencyFormatter.format(invoice.getPayableTotalAmount());
@@ -523,7 +523,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			String invoiceLogoSignedUrl = StringEscapeUtils.escapeXml10(rawUrl);
 
 			CurrencyType currencyType = invoice.getCurrency();
-			NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+			NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
 			currencyFormatter.setCurrency(Currency.getInstance(currencyType.name()));
 
 			String payableTotalAmount = currencyFormatter
@@ -645,21 +645,22 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		String itemTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
-		String itemsHtml = "";
+		StringBuilder itemsHtmlBuilder = new StringBuilder();
 		if (invoice.getInvoiceItems() != null) {
-			itemsHtml = invoice.getInvoiceItems()
-				.stream()
-				.map(item -> itemTemplate
+			for (InvoiceItem item : invoice.getInvoiceItems()) {
+				itemsHtmlBuilder.append(itemTemplate
 					.replace("{{description}}",
 							item.getDescription() != null ? item.getDescription() : item.getItemName())
 					.replace("{{quantity}}", String.valueOf(item.getQuantity() != null ? item.getQuantity() : 0))
 					.replace("{{quantityType}}", item.getQuantityType() != null ? item.getQuantityType() : "Units")
 					.replace("{{unitPrice}}",
 							currencyFormatter.format(item.getUnitPrice() != null ? item.getUnitPrice() : 0.0))
-					.replace("{{amount}}", currencyFormatter.format(item.getAmount() != null ? item.getAmount() : 0.0)))
-				.collect(Collectors.joining());
+					.replace("{{amount}}",
+							currencyFormatter.format(item.getAmount() != null ? item.getAmount() : 0.0)));
+			}
 		}
-		return template.substring(0, startIndex) + itemsHtml + template.substring(endIndex + endMarker.length());
+
+		return template.substring(0, startIndex) + itemsHtmlBuilder + template.substring(endIndex + endMarker.length());
 	}
 
 	private String processInvoiceExpenses(String template, Invoice invoice, NumberFormat currencyFormatter) {
@@ -675,17 +676,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		String expenseTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
-		String expensesHtml = "";
+		StringBuilder expensesHtmlBuilder = new StringBuilder();
 		if (invoice.getInvoiceExpenses() != null) {
-			expensesHtml = invoice.getInvoiceExpenses()
-				.stream()
-				.map(expense -> expenseTemplate
+			for (InvoiceExpense expense : invoice.getInvoiceExpenses()) {
+				expensesHtmlBuilder.append(expenseTemplate
 					.replace("{{description}}", expense.getName() != null ? expense.getName() : "Expense")
 					.replace("{{amount}}",
-							currencyFormatter.format(expense.getAmount() != null ? expense.getAmount() : 0.0)))
-				.collect(Collectors.joining());
+							currencyFormatter.format(expense.getAmount() != null ? expense.getAmount() : 0.0)));
+			}
 		}
-		return template.substring(0, startIndex) + expensesHtml + template.substring(endIndex + endMarker.length());
+		return template.substring(0, startIndex) + expensesHtmlBuilder
+				+ template.substring(endIndex + endMarker.length());
 	}
 
 	private String removeConditionalBlock(String template, String startTag, String endTag) {

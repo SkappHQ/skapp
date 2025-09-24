@@ -126,10 +126,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 	@Override
 	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
-			Object dynamicFeildObject, String recipient, byte[] attachmentData, String attachmentName,
+			Object dynamicFieldObject, String recipient, byte[] attachmentData, String attachmentName,
 			String attachmentContentType, List<String> ccEmails) {
 
-		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFeildObject, recipient,
+		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFieldObject, recipient,
 				attachmentData, attachmentName, attachmentContentType, ccEmails);
 	}
 
