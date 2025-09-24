@@ -1,8 +1,10 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ReminderEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateExpenseAttachmentDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
@@ -35,6 +37,10 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateRequiredFields(CreateInvoiceRequestDto request) {
+		if (request.getInvoiceId() == null) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
+		}
+
 		if (request.getCustomerId() == null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
 		}
@@ -248,6 +254,28 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 		if (invoiceStatusUpdateRequestDto.getInvoiceId() == null
 				|| invoiceStatusUpdateRequestDto.getInvoiceId().toString().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
+		}
+	}
+
+	@Override
+	public void validateReminderEmailRequest(ReminderEmailRequestDto reminderEmailRequestDto) {
+		if (reminderEmailRequestDto == null) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_REQUEST_NULL);
+		}
+		if (reminderEmailRequestDto.getInvoiceId() == null) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
+		}
+		if (reminderEmailRequestDto.getTo() != null || !reminderEmailRequestDto.getTo().isEmpty()) {
+			Validations.validateEmail(reminderEmailRequestDto.getTo());
+		}
+		if (reminderEmailRequestDto.getSubject() == null || reminderEmailRequestDto.getSubject().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_REMINDER_SUBJECT_REQUIRED);
+		}
+		if (reminderEmailRequestDto.getBody() == null || reminderEmailRequestDto.getBody().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_REMINDER_BODY_REQUIRED);
+		}
+		if (reminderEmailRequestDto.getCcEmails() != null && !reminderEmailRequestDto.getCcEmails().isEmpty()) {
+			reminderEmailRequestDto.getCcEmails().forEach(Validations::validateEmail);
 		}
 	}
 

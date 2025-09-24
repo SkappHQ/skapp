@@ -446,6 +446,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public ResponseEntityDto sendReminder(ReminderEmailRequestDto reminderEmailRequestDto) {
 
+		invoiceValidationService.validateReminderEmailRequest(reminderEmailRequestDto);
 		String sentBy = TenantContext.getCurrentTenant();
 
 		Tenant tenant = getTenant(sentBy);
