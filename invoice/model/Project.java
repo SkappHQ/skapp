@@ -1,9 +1,16 @@
 package com.skapp.enterprise.invoice.model;
 
 import com.skapp.community.common.model.Auditable;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,5 +23,8 @@ public class Project extends Auditable<String> {
 
 	@Column(name = "project_key")
 	private String projectKey;
+
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<BillableRate> billableRates;
 
 }
