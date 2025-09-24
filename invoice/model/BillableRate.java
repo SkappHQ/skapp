@@ -6,13 +6,13 @@ import com.skapp.enterprise.invoice.type.BillableFrequency;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,11 +28,11 @@ public class BillableRate extends Auditable<String> {
 	@Column(name = "id", nullable = false, updatable = false)
 	private Long id;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "employee_id")
 	private Employee employee;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumns({ @JoinColumn(name = "project_id", referencedColumnName = "project_id"),
 			@JoinColumn(name = "customer_id", referencedColumnName = "customer_id") })
 	private Project project;
