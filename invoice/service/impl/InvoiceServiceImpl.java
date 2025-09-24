@@ -510,17 +510,21 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			String invoiceLogo = invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()
 					? invoice.getInvoiceLogo() : "";
-			AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
-			amazonS3SignedUrlRequestDto.setFolderPath(invoiceLogo);
-			amazonS3SignedUrlRequestDto.setAction(AmazonS3ActionType.DOWNLOAD);
+			String invoiceLogoSignedUrl = null;
+			if (invoiceLogo != null && invoiceLogo.startsWith("/")) {
+				invoiceLogo = invoiceLogo.substring(1);
+				AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
+				amazonS3SignedUrlRequestDto.setFolderPath(invoiceLogo);
+				amazonS3SignedUrlRequestDto.setAction(AmazonS3ActionType.DOWNLOAD);
 
-			ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
-			AmazonS3SignedUrlResponseDto amazonS3SignedUrlResponseDto = (AmazonS3SignedUrlResponseDto) response
-				.getResults()
-				.get(0);
+				ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
+				AmazonS3SignedUrlResponseDto amazonS3SignedUrlResponseDto = (AmazonS3SignedUrlResponseDto) response
+					.getResults()
+					.get(0);
 
-			String rawUrl = amazonS3SignedUrlResponseDto.getSignedUrl();
-			String invoiceLogoSignedUrl = StringEscapeUtils.escapeXml10(rawUrl);
+				String rawUrl = amazonS3SignedUrlResponseDto.getSignedUrl();
+				invoiceLogoSignedUrl = StringEscapeUtils.escapeXml10(rawUrl);
+			}
 
 			CurrencyType currencyType = invoice.getCurrency();
 			NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
@@ -571,6 +575,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 				template = removeConditionalBlock(template, "{{#invoiceLogo}}", "{{/invoiceLogo}}");
 			}
 
+			template = processInvoiceItems(template, invoice, currencyFormatter);
+
+			template = processInvoiceExpenses(template, invoice, currencyFormatter);
+
 			if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
 				template = template.replace("{{#hasDiscount}}", "").replace("{{/hasDiscount}}", "");
 				template = template.replace("{{discountValue}}", discountValueFormatted);
@@ -618,10 +626,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 			else {
 				template = removeConditionalBlock(template, "{{#skappBranding}}", "{{/skappBranding}}");
 			}
-
-			template = processInvoiceItems(template, invoice, currencyFormatter);
-
-			template = processInvoiceExpenses(template, invoice, currencyFormatter);
 
 			return template;
 
@@ -677,16 +681,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 		String expenseTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
 		StringBuilder expensesHtmlBuilder = new StringBuilder();
-		if (invoice.getInvoiceExpenses() != null) {
+		if (invoice.getInvoiceExpenses() != null && !invoice.getInvoiceExpenses().isEmpty()) {
 			for (InvoiceExpense expense : invoice.getInvoiceExpenses()) {
 				expensesHtmlBuilder.append(expenseTemplate
 					.replace("{{description}}", expense.getName() != null ? expense.getName() : "Expense")
 					.replace("{{amount}}",
 							currencyFormatter.format(expense.getAmount() != null ? expense.getAmount() : 0.0)));
 			}
+			return template.substring(0, startIndex) + expensesHtmlBuilder
+					+ template.substring(endIndex + endMarker.length());
 		}
-		return template.substring(0, startIndex) + expensesHtmlBuilder
-				+ template.substring(endIndex + endMarker.length());
+		else {
+			return removeConditionalBlock(template, "{{#invoiceExpenses}}", "{{/invoiceExpenses}}");
+		}
 	}
 
 	private String removeConditionalBlock(String template, String startTag, String endTag) {
