@@ -34,16 +34,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LeaveTypeServiceImpl implements LeaveTypeService {
 
-	@NonNull
 	private final LeaveTypeDao leaveTypeDao;
 
-	@NonNull
 	private final LeaveMapper leaveMapper;
 
-	@NonNull
 	private final UserService userService;
 
-	@NonNull
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
 	@Override
@@ -210,7 +206,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		if (!Objects.equals(leaveTypePatchRequestDto.getIsAttachment(), leaveType.getIsAttachment()))
 			leaveType.setIsAttachment(leaveTypePatchRequestDto.getIsAttachment());
 
-		if (Boolean.TRUE.equals(!leaveTypePatchRequestDto.getIsAttachment())
+		if (!leaveTypePatchRequestDto.getIsAttachment()
 				&& Boolean.TRUE.equals(leaveTypePatchRequestDto.getIsAttachmentMandatory())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_TYPE_UNABLE_TO_MAKE_ATTACHMENT_MANDATORY);
 		}
@@ -232,7 +228,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 			leaveType.setIsActive(leaveTypePatchRequestDto.getIsActive());
 			List<LeaveEntitlement> leaveEntitlements = leaveEntitlementDao.findAllByLeaveType(leaveType);
 			if (!leaveEntitlements.isEmpty() && leaveTypePatchRequestDto.getIsActive() != null) {
-				boolean isActive = Boolean.TRUE.equals(leaveTypePatchRequestDto.getIsActive());
+				boolean isActive = leaveTypePatchRequestDto.getIsActive();
 				leaveEntitlements.forEach(leaveEntitlement -> leaveEntitlement.setActive(isActive));
 				return leaveEntitlements;
 			}
@@ -241,8 +237,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	}
 
 	private void validateLeaveType(LeaveTypeRequestDto leaveType) {
-		if (Boolean.TRUE.equals(!leaveType.getIsAttachment())
-				&& Boolean.TRUE.equals(leaveType.getIsAttachmentMandatory())) {
+		if (!leaveType.getIsAttachment() && Boolean.TRUE.equals(leaveType.getIsAttachmentMandatory())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_TYPE_UNABLE_TO_MAKE_ATTACHMENT_MANDATORY);
 		}
 
@@ -250,7 +245,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_TYPE_ALREADY_EXISTS);
 		}
 
-		if (Boolean.TRUE.equals(!leaveType.getIsCarryForwardEnabled()) && leaveType.getMaxCarryForwardDays() > 0) {
+		if (!leaveType.getIsCarryForwardEnabled() && leaveType.getMaxCarryForwardDays() > 0) {
 			throw new ModuleException(
 					LeaveMessageConstant.LEAVE_ERROR_CANNOT_SET_CARRY_FORWARD_DAYS_IF_CARRY_FORWARD_DISABLED);
 		}

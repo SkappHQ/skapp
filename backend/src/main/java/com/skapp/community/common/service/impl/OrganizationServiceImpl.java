@@ -102,9 +102,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 		User currentUser = userService.getCurrentUser();
 		log.info("saveOrganization: execution started by user: {}", currentUser.getUserId());
 
-		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor()))
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
-
 		if (organizationDao.count() > 0)
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EXCEED_MAX_ORGANIZATION_COUNT);
 

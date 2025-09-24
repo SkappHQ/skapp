@@ -86,31 +86,31 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-	private final UserDao userDao;
+	protected final UserDao userDao;
 
-	private final UserDetailsService userDetailsService;
+	protected final UserDetailsService userDetailsService;
 
-	private final PeopleMapper peopleMapper;
+	protected final PeopleMapper peopleMapper;
 
-	private final EmployeeDao employeeDao;
+	protected final EmployeeDao employeeDao;
 
-	private final JwtService jwtService;
+	protected final JwtService jwtService;
 
-	private final AuthenticationManager authenticationManager;
+	protected final AuthenticationManager authenticationManager;
 
-	private final PasswordEncoder passwordEncoder;
+	protected final PasswordEncoder passwordEncoder;
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	private final CommonMapper commonMapper;
+	protected final CommonMapper commonMapper;
 
-	private final UserService userService;
+	protected final UserService userService;
 
 	private final PeopleEmailService peopleEmailService;
 
 	private final PeopleNotificationService peopleNotificationService;
 
-	private final EncryptionDecryptionService encryptionDecryptionService;
+	protected final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final ProfileActivator profileActivator;
 
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private final BulkContextService bulkContextService;
 
-	private final MessageUtil messageUtil;
+	protected final MessageUtil messageUtil;
 
 	private final RolesService rolesService;
 
