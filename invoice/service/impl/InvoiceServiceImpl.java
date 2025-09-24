@@ -441,7 +441,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public void handleInvoiceExpiration(Long Id) {
 
-		Invoice invoice = invoiceDao.getById(Id);
+		Optional<Invoice> optionalInvoice = invoiceDao.findById(Id);
+		if (optionalInvoice.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
+		}
+		Invoice invoice = optionalInvoice.get();
 		InvoiceStatus status = invoice.getStatus();
 		LocalDate dueDate = invoice.getDueDate();
 		if (status == InvoiceStatus.DUE && (dueDate != null && !dueDate.isAfter(LocalDate.now()))) {
