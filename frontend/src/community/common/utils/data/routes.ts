@@ -331,7 +331,7 @@ const routes = [
       {
         id: "7B",
         name: "Customers",
-        url: ROUTES.INVOICE.CUSTOMERS,
+        url: ROUTES.INVOICE.CUSTOMERS.BASE,
         hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,
