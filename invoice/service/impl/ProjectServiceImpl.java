@@ -11,10 +11,12 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
+import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.response.*;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
@@ -254,6 +256,29 @@ public class ProjectServiceImpl implements ProjectService {
 
 		return billableRateService.createProjectMemberBillableRateData(project,
 				filteredCustomerProject.getFirst().getProjectUsers(), projectMemberFilterRequestDto);
+
+	}
+
+	@Override
+	public ResponseEntityDto updateTeamMemberBillableRates(Long customerId, Long projectId,
+			List<TeamMemberBillableRateUpdateRequestDto> teamMemberBillableRateUpdateRequestDtos) {
+
+		if (customerId == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
+		}
+		if (projectId == null) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PROJECT_ID_REQUIRED);
+		}
+
+		Optional<Project> optionalProject = projectDao.findByProjectIdAndCustomer_Id(projectId, customerId);
+
+		if (optionalProject.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND);
+		}
+
+		Project project = optionalProject.get();
+
+		return billableRateService.updateTeamMemberBillableRates(project, teamMemberBillableRateUpdateRequestDtos);
 
 	}
 

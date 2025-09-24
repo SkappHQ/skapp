@@ -17,7 +17,8 @@ public interface ProjectMapper {
 			dto.setEmployeeId(billability.getEmployee().getEmployeeId());
 			dto.setName(billability.getEmployee().getFullName());
 			dto.setAuthPic(billability.getEmployee().getAuthPic());
-			dto.setJobTitle(billability.getEmployee().getJobTitle().getName());
+			dto.setJobTitle(billability.getEmployee().getJobTitle().getName() != null
+					? billability.getEmployee().getJobTitle().getName() : "");
 			dto.setBillableRate(billability.getBillableRate());
 			dto.setBillableFrequency(billability.getBillableFrequency());
 			return dto;

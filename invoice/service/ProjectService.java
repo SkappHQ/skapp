@@ -3,7 +3,10 @@ package com.skapp.enterprise.invoice.service;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 public interface ProjectService {
 
@@ -16,5 +19,8 @@ public interface ProjectService {
 
 	ResponseEntityDto getProjectMembers(HttpServletRequest request,
 			ProjectMemberFilterDto projectMemberFilterRequestDto);
+
+	ResponseEntityDto updateTeamMemberBillableRates(Long customerId, Long projectId,
+			List<TeamMemberBillableRateUpdateRequestDto> teamMemberBillableRateUpdateRequestDtos);
 
 }

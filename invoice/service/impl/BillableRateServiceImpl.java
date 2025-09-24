@@ -11,6 +11,7 @@ import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
+import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectMembersResponseDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectUsersResponseDto;
 import com.skapp.enterprise.invoice.repository.BillableRateDao;
@@ -25,9 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,7 +64,45 @@ public class BillableRateServiceImpl implements BillableRateService {
 		List<BillableRate> allBillableRates = billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
 
 		List<ProjectMembersResponseDto> responseDtos = projectMapper
-			.memberBillableRateListToProjectMembersResponseDto(allBillableRates);
+			.memberBillableRateListToProjectMembersResponseDto(allBillableRates)
+			.stream()
+			.sorted(Sort.Direction.ASC == projectMemberFilterDto.getSortOrder()
+					? Comparator.comparing(ProjectMembersResponseDto::getName)
+					: Comparator.comparing(ProjectMembersResponseDto::getName).reversed())
+			.collect(Collectors.toList());
+
+		return new ResponseEntityDto(false, responseDtos);
+	}
+
+	@Override
+	public ResponseEntityDto updateTeamMemberBillableRates(Project project,
+			List<TeamMemberBillableRateUpdateRequestDto> teamMemberBillableRateUpdateRequestDtos) {
+
+		List<BillableRate> updatedBillableRates = new ArrayList<>();
+
+		List<BillableRate> existingBillableRates = billableRateDao.findByProject_IdAndIsActive(project.getId(), true);
+
+		teamMemberBillableRateUpdateRequestDtos.forEach(updateRequest -> {
+			existingBillableRates.stream()
+				.filter(existingRate -> Objects.equals(existingRate.getId(), updateRequest.getId()))
+				.findFirst()
+				.ifPresent(existingRate -> {
+					if (updateRequest.getBillableRate() != null) {
+						existingRate.setBillableRate(updateRequest.getBillableRate());
+					}
+
+					if (updateRequest.getBillableFrequency() != null) {
+						existingRate.setBillableFrequency(updateRequest.getBillableFrequency());
+					}
+
+					updatedBillableRates.add(existingRate);
+				});
+		});
+
+		List<BillableRate> savedBillableRates = billableRateDao.saveAll(updatedBillableRates);
+
+		List<ProjectMembersResponseDto> responseDtos = projectMapper
+			.memberBillableRateListToProjectMembersResponseDto(savedBillableRates);
 
 		return new ResponseEntityDto(false, responseDtos);
 	}

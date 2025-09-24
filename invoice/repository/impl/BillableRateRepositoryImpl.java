@@ -46,11 +46,11 @@ public class BillableRateRepositoryImpl implements BillableRateRepository {
 		if (projectMemberFilterDto.getSearchKeyword() != null && !projectMemberFilterDto.getSearchKeyword().isEmpty()) {
 			List<Order> orderList = new ArrayList<>();
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(employeeJoin.get(Employee_.FIRST_NAME),
-						getSearchString(projectMemberFilterDto.getSearchKeyword())), 1)
-				.when(criteriaBuilder.like(employeeJoin.get(Employee_.LAST_NAME),
-						getSearchString(projectMemberFilterDto.getSearchKeyword())), 2)
-				.otherwise(4));
+				.when(criteriaBuilder.like(criteriaBuilder.lower(employeeJoin.get(Employee_.FIRST_NAME)),
+						getSearchString(projectMemberFilterDto.getSearchKeyword()).toLowerCase()), 1)
+				.when(criteriaBuilder.like(criteriaBuilder.lower(employeeJoin.get(Employee_.LAST_NAME)),
+						getSearchString(projectMemberFilterDto.getSearchKeyword()).toLowerCase()), 2)
+				.otherwise(3));
 			orderList.add(sortingOrder);
 			criteriaQuery.orderBy(orderList);
 		}
