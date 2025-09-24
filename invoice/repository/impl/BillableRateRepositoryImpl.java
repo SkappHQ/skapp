@@ -7,10 +7,14 @@ import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.repository.BillableRateRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.jpa.repository.query.QueryUtils;
 
 import java.util.ArrayList;
 import java.util.List;

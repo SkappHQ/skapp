@@ -4,11 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public enum BillableFrequency {
 
-	PER_HOUR("Per Hour"), PER_DAY("Per Day"), PER_WEEK("Per Week"), PER_MONTH("Per Month");
-
-	private final String value;
+	PER_HOUR, PER_DAY, PER_WEEK, PER_MONTH
 
 }
