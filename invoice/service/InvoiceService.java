@@ -15,7 +15,7 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceTierLimitations();
 
-	ResponseEntityDto getInvoiceKPI();
+	ResponseEntityDto getInvoiceKPI(Long customerId);
 
 	ResponseEntityDto getInvoiceId(Long customerId);
 

@@ -246,13 +246,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto getInvoiceKPI() {
-
-		long dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
-		long overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
-
+	public ResponseEntityDto getInvoiceKPI(Long customerId) {
+		long dueInvoices;
+		long overdueInvoices;
+		if (customerId == null) {
+			dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
+			overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
+		}
+		else {
+			dueInvoices = invoiceDao.countByCustomer_IdAndStatus(customerId, InvoiceStatus.DUE);
+			overdueInvoices = invoiceDao.countByCustomer_IdAndStatus(customerId, InvoiceStatus.OVERDUE);
+		}
 		InvoiceKPIResponseDto summary = new InvoiceKPIResponseDto(dueInvoices, overdueInvoices);
-
 		return new ResponseEntityDto(false, summary);
 	}
 
