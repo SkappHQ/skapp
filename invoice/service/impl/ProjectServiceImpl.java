@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -18,7 +19,6 @@ import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
-import com.skapp.enterprise.invoice.payload.response.CustomerProjectPageDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
 import com.skapp.enterprise.invoice.payload.response.TenantProjectUserResponseDto;
 import com.skapp.enterprise.invoice.payload.response.ProjectAdminResponseDto;
@@ -115,7 +115,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 			List<TenantProjectListResponseDto> filteredProjects = internalProjects.stream()
 				.filter(internalProject -> customerProjectList.stream()
-					.allMatch(customerProject -> customerProject.getProjectId().equals(internalProject.getId())))
+					.anyMatch(
+							customerProject -> customerProject.getId().getProjectId().equals(internalProject.getId())))
 				.sorted(Comparator.comparing(TenantProjectListResponseDto::getName))
 				.toList();
 
@@ -144,7 +145,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<TenantProjectUserResponseDto> filteredCustomerProjects = internalProjects.stream()
 			.filter(internalProject -> customerProjectList.stream()
-				.anyMatch(customerProject -> customerProject.getProjectId().equals(internalProject.getId())))
+				.anyMatch(customerProject -> customerProject.getId().getProjectId().equals(internalProject.getId())))
 			.filter(internalProject -> projectFilterRequestDto.getSearchKeyword() == null || internalProject.getName()
 				.toLowerCase()
 				.contains(projectFilterRequestDto.getSearchKeyword().toLowerCase()))
@@ -208,29 +209,11 @@ public class ProjectServiceImpl implements ProjectService {
 			totalPages = (int) Math.ceil((double) totalItems / size);
 		}
 
-		Long lastProjectId = null;
-
-		if (projectFilterRequestDto.getSortOrder() == Sort.Direction.ASC) {
-
-			lastProjectId = paginatedProjects.stream()
-				.map(ProjectSummaryResponseDto::getProjectId)
-				.max(Long::compare)
-				.orElse(null);
-		}
-		else {
-
-			lastProjectId = paginatedProjects.stream()
-				.map(ProjectSummaryResponseDto::getProjectId)
-				.min(Long::compare)
-				.orElse(null);
-		}
-
-		CustomerProjectPageDto customerProjectPageDto = new CustomerProjectPageDto();
+		PageDto customerProjectPageDto = new PageDto();
 		customerProjectPageDto.setItems(paginatedProjects);
 		customerProjectPageDto.setCurrentPage(page);
 		customerProjectPageDto.setTotalItems((long) totalItems);
 		customerProjectPageDto.setTotalPages(totalPages);
-		customerProjectPageDto.setLastProjectId(lastProjectId);
 
 		return new ResponseEntityDto(false, customerProjectPageDto);
 	}
@@ -247,7 +230,7 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PROJECT_ID_REQUIRED);
 		}
 
-		Optional<Project> optionalProject = projectDao.findByProjectIdAndCustomer_Id(
+		Optional<Project> optionalProject = projectDao.findById_ProjectIdAndId_Customer_Id(
 				projectMemberFilterDto.getProjectId(), projectMemberFilterDto.getCustomerId());
 
 		if (optionalProject.isEmpty()) {
@@ -262,7 +245,7 @@ public class ProjectServiceImpl implements ProjectService {
 		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
 
 		List<TenantProjectUserResponseDto> filteredCustomerProject = internalProjects.stream()
-			.filter(proj -> Objects.equals(proj.getId(), project.getProjectId()))
+			.filter(proj -> Objects.equals(proj.getId(), project.getId().getProjectId()))
 			.toList();
 
 		List<BillableRate> allBillableRates = billableRateService.createProjectMemberBillableRateData(project,
@@ -291,7 +274,7 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PROJECT_ID_REQUIRED);
 		}
 
-		Optional<Project> optionalProject = projectDao.findByProjectIdAndCustomer_Id(projectId, customerId);
+		Optional<Project> optionalProject = projectDao.findById_ProjectIdAndId_Customer_Id(projectId, customerId);
 
 		if (optionalProject.isEmpty()) {
 			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND);
@@ -370,7 +353,7 @@ public class ProjectServiceImpl implements ProjectService {
 		Customer customer = customerDao.findById(customerId)
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
 
-		return projectDao.findByCustomer_Id(customerId);
+		return projectDao.findById_Customer_Id(customerId);
 	}
 
 	private List<TenantProjectUserResponseDto> callExternalAPItoGetProjectsWithUser(HttpServletRequest request,

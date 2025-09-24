@@ -27,7 +27,7 @@ public interface CustomerMapper {
 	default List<CustomerProjectDetailsDto> mapProjects(List<Project> projects) {
 		return (projects == null) ? List.of() : projects.stream().map(project -> {
 			CustomerProjectDetailsDto dto = new CustomerProjectDetailsDto();
-			dto.setProjectId(project.getProjectId());
+			dto.setProjectId(project.getId().getProjectId());
 			dto.setProjectKey(project.getProjectKey());
 			return dto;
 		}).toList();

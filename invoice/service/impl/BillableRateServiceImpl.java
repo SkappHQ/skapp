@@ -1,7 +1,6 @@
 package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
-import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
@@ -39,20 +38,26 @@ public class BillableRateServiceImpl implements BillableRateService {
 			List<ProjectUsersResponseDto> projectUsersResponseDto, ProjectMemberFilterDto projectMemberFilterDto) {
 
 		List<BillableRate> existingMemberBillableRateData = billableRateDao
-			.findByProject_IdAndIsActive(customerProject.getId(), true);
+			.findByProject_Id_ProjectIdAndIsActive(customerProject.getId().getProjectId(), true);
 
-		HashMap<String, List<ProjectUsersResponseDto>> categorizedMemberData = categorizeMembersByStatus(
-				projectUsersResponseDto, existingMemberBillableRateData);
+		if (!existingMemberBillableRateData.isEmpty()) {
+			HashMap<String, List<ProjectUsersResponseDto>> categorizedMemberData = categorizeMembersByStatus(
+					projectUsersResponseDto, existingMemberBillableRateData);
 
-		if (categorizedMemberData.containsKey(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)) {
-			billableRateDao.saveAll(createBillableRateEntities(customerProject,
-					categorizedMemberData.get(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)));
+			if (categorizedMemberData.containsKey(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)) {
+				billableRateDao.saveAll(createBillableRateEntities(customerProject,
+						categorizedMemberData.get(InvoiceCommonConstant.TEAM_MEMBER_ADDITION)));
+			}
+
+			List<Long> inactiveMemberIds = findInactiveMembers(projectUsersResponseDto, existingMemberBillableRateData);
+
+			if (!inactiveMemberIds.isEmpty()) {
+				markBillableRatesInactive(inactiveMemberIds);
+			}
+
 		}
-
-		List<Long> inactiveMemberIds = findInactiveMembers(projectUsersResponseDto, existingMemberBillableRateData);
-
-		if (!inactiveMemberIds.isEmpty()) {
-			markBillableRatesInactive(inactiveMemberIds);
+		else {
+			billableRateDao.saveAll(createBillableRateEntities(customerProject, projectUsersResponseDto));
 		}
 
 		return billableRateDao.findAllProjectTeamMembers(projectMemberFilterDto);
@@ -64,7 +69,8 @@ public class BillableRateServiceImpl implements BillableRateService {
 
 		List<BillableRate> updatedBillableRates = new ArrayList<>();
 
-		List<BillableRate> existingBillableRates = billableRateDao.findByProject_IdAndIsActive(project.getId(), true);
+		List<BillableRate> existingBillableRates = billableRateDao
+			.findByProject_Id_ProjectIdAndIsActive(project.getId().getProjectId(), true);
 
 		teamMemberBillableRateUpdateRequestDtos.forEach(updateRequest -> {
 			existingBillableRates.stream()

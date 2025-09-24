@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface BillableRateDao extends JpaRepository<BillableRate, Long>, BillableRateRepository {
 
-	List<BillableRate> findByProject_IdAndIsActive(Long customerProjectId, boolean isActive);
+	List<BillableRate> findByProject_Id_ProjectIdAndIsActive(Long customerProjectId, boolean isActive);
 
 }

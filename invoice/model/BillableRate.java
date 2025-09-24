@@ -12,9 +12,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
 @Getter
 @Setter
@@ -32,7 +33,8 @@ public class BillableRate extends Auditable<String> {
 	private Employee employee;
 
 	@OneToOne
-	@JoinColumn(name = "customer_project_id")
+	@JoinColumns({ @JoinColumn(name = "project_id", referencedColumnName = "project_id"),
+			@JoinColumn(name = "customer_id", referencedColumnName = "customer_id") })
 	private Project project;
 
 	@Column(name = "billable_rate")
