@@ -56,10 +56,14 @@ import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.StripeService;
 import com.skapp.enterprise.common.service.ValidationService;
+import com.skapp.enterprise.common.type.Country;
 import com.skapp.enterprise.common.type.EpCacheKeys;
+import com.skapp.enterprise.common.type.LanguageCode;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
@@ -69,6 +73,7 @@ import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferManagersRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferSupervisorsRequestDto;
+import com.skapp.enterprise.people.payload.request.UpdateUserLanguageRequestDto;
 import com.skapp.enterprise.people.payload.response.EmployeeDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EmployeeManagerDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EmployeeTeamDetailsResponseDto;
@@ -94,6 +99,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -148,6 +154,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private final CacheService cacheService;
 
+	private final EpOrganizationDao epOrganizationDao;
+
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
 			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
@@ -166,7 +174,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
 			SpecialTenantConfig specialTenantConfig, ValidationService validationService,
-			EnvelopeService envelopeService, CacheService cacheService) {
+			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
@@ -195,6 +203,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		this.validationService = validationService;
 		this.envelopeService = envelopeService;
 		this.cacheService = cacheService;
+		this.epOrganizationDao = epOrganizationDao;
 	}
 
 	@Override
@@ -294,6 +303,29 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_EMPLOYEES_DEACTIVATED));
+	}
+
+	@Override
+	public ResponseEntityDto updateUserLanguage(UpdateUserLanguageRequestDto requestDto) {
+		User currentUser = userService.getCurrentUser();
+		currentUser.setLang(requestDto.getLang());
+		userDao.save(currentUser);
+
+		userVersionService.upgradeUserVersion(currentUser.getUserId(), VersionType.MAJOR);
+
+		return new ResponseEntityDto(false, epPeopleMapper.userToEpUserResponseWithLangDto(currentUser));
+	}
+
+	@Override
+	public ResponseEntityDto getCurrentUserLanguage() {
+		EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+		User currentUser = userService.getCurrentUser();
+
+		String lang = Optional.ofNullable(currentUser.getLang())
+			.orElseGet(() -> Country.SWEDEN.getCountry().equalsIgnoreCase(organization.getCountry())
+					? LanguageCode.SWEDISH.getCode() : LanguageCode.ENGLISH.getCode());
+
+		return new ResponseEntityDto(false, lang);
 	}
 
 	@Override

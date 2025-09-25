@@ -3,6 +3,8 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.JwtServiceImpl;
@@ -11,7 +13,11 @@ import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.repository.EpOrganizationDao;
+import com.skapp.enterprise.common.type.Country;
+import com.skapp.enterprise.common.type.LanguageCode;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import io.jsonwebtoken.io.Decoders;
@@ -39,14 +45,20 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 
 	private final TenantContext tenantContext;
 
+	private final EpOrganizationDao epOrganizationDao;
+
+	private final UserDao userDao;
+
 	@Value("${jwt.access-token.signing-key}")
 	private String jwtSigningKey;
 
 	public EpJwtServiceImpl(SystemVersionService systemVersionService, UserVersionService userVersionService,
-			TenantContext tenantContext, TenantDao tenantDao) {
+			TenantContext tenantContext, TenantDao tenantDao, EpOrganizationDao epOrganizationDao, UserDao userDao) {
 		super(systemVersionService, userVersionService);
 		this.tenantContext = tenantContext;
 		this.tenantDao = tenantDao;
+		this.epOrganizationDao = epOrganizationDao;
+		this.userDao = userDao;
 	}
 
 	@Override
@@ -65,6 +77,15 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
+			EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
+			User user = userDao.findById(userId)
+				.orElseThrow(() -> new AuthenticationException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+
+			String lang = Optional.ofNullable(user.getLang())
+				.orElseGet(() -> Country.SWEDEN.getCountry().equalsIgnoreCase(organization.getCountry())
+						? LanguageCode.SWEDISH.getCode() : LanguageCode.ENGLISH.getCode());
+
+			claims.put(EpAuthConstants.LANG, lang);
 		}
 
 		return claims;
