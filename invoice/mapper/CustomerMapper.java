@@ -28,7 +28,6 @@ public interface CustomerMapper {
 		return (projects == null) ? List.of() : projects.stream().map(project -> {
 			CustomerProjectDetailsDto dto = new CustomerProjectDetailsDto();
 			dto.setProjectId(project.getId().getProjectId());
-			dto.setProjectKey(project.getProjectKey());
 			return dto;
 		}).toList();
 	}

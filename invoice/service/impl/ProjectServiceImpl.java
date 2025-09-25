@@ -149,6 +149,7 @@ public class ProjectServiceImpl implements ProjectService {
 			.filter(internalProject -> projectFilterRequestDto.getSearchKeyword() == null || internalProject.getName()
 				.toLowerCase()
 				.contains(projectFilterRequestDto.getSearchKeyword().toLowerCase()))
+			.peek(filProj -> filProj.setKey(filProj.getKey()))
 			.toList();
 
 		List<TenantProjectUserResponseDto> sortedInternalProjects = new ArrayList<>();
