@@ -31,7 +31,7 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@Operation(summary = "Get a list of all projects in the tenant",
-			description = "Returns a list of projects created in the tenant.")
+			description = "Returns a list of projects not assigned to any customer that created in the tenant.")
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
