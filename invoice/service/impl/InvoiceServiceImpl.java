@@ -512,7 +512,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			String invoiceLogo = invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()
 					? invoice.getInvoiceLogo() : "";
 			String invoiceLogoSignedUrl = null;
-			if (invoiceLogo != null && invoiceLogo.startsWith("/")) {
+			if (invoiceLogo != null && !invoiceLogo.isEmpty() && tier != Tier.FREE) {
 				invoiceLogo = invoiceLogo.substring(1);
 				AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
 				amazonS3SignedUrlRequestDto.setFolderPath(invoiceLogo);
