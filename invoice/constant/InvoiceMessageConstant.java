@@ -94,7 +94,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_INVOICE_REMINDER_SUBJECT_REQUIRED("invoice.error.invoice.reminder.subject.required"),
 	INVOICE_ERROR_INVOICE_REMINDER_BODY_REQUIRED("invoice.error.invoice.reminder.body.required"),
-	INVOICE_ERROR_INVOICE_REMINDER_TO_REQUIRED("invoice.error.reminder.to.required");
+	INVOICE_ERROR_INVOICE_REMINDER_TO_REQUIRED("invoice.error.reminder.to.required"),
 
 	INVOICE_ERROR_PROJECT_ID_REQUIRED("invoice.error.project.id.required"),
 	INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND("invoice.error.customer.project.not.found"),
