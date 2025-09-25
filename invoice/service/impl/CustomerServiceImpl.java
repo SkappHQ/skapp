@@ -344,7 +344,6 @@ public class CustomerServiceImpl implements CustomerService {
 			// Create and map the project
 			Project project = new Project();
 			project.setId(projectKey);
-			;
 
 			projectList.add(project);
 		}
