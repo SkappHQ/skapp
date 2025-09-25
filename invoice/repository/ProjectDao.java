@@ -10,10 +10,12 @@ import java.util.Optional;
 @Repository
 public interface ProjectDao extends JpaRepository<Project, Long> {
 
-	Optional<Project> findByProjectId(Long projectId);
+	Optional<Project> findById_ProjectId(Long projectId);
 
-	List<Project> findByProjectIdIn(List<Long> projectIds);
+	List<Project> findById_ProjectIdIn(List<Long> projectIds);
 
-	List<Project> findByCustomer_Id(Long customerId);
+	List<Project> findById_Customer_Id(Long customerId);
+
+	Optional<Project> findById_ProjectIdAndId_Customer_Id(Long projectId, Long customerId);
 
 }

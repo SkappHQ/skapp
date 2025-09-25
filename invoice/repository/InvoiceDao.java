@@ -12,4 +12,6 @@ public interface InvoiceDao extends JpaRepository<Invoice, Long>, InvoiceReposit
 
 	Optional<Invoice> findFirstByCustomer_IdOrderByCreatedDateDesc(Long customerId);
 
+	Long countByCustomer_IdAndStatus(Long customerId, InvoiceStatus status);
+
 }

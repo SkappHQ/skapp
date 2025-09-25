@@ -16,7 +16,7 @@ public interface InvoiceService {
 
 	ResponseEntityDto getInvoiceTierLimitations();
 
-	ResponseEntityDto getInvoiceKPI();
+	ResponseEntityDto getInvoiceKPI(Long customerId);
 
 	ResponseEntityDto getInvoiceId(Long customerId);
 
@@ -27,5 +27,8 @@ public interface InvoiceService {
 	LocalDate getCustomerProjectLastInvoiceDate(Long customerId, Long projectId);
 
 	ResponseEntityDto sendReminder(ReminderEmailRequestDto request);
+
+	void handleInvoiceExpiration(Long invoiceId);
+
 
 }

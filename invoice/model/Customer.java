@@ -62,7 +62,7 @@ public class Customer extends Auditable<String> {
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
 	private List<CustomerContact> customerContacts;
 
-	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "id.customer", cascade = CascadeType.ALL)
 	private List<Project> projects;
 
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
