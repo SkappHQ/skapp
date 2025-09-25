@@ -80,9 +80,4 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
-	private Predicate findByName(String keyword, CriteriaBuilder criteriaBuilder, Root<Customer> customer) {
-		keyword = getSearchString(keyword);
-		return criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(customer.get("name")), keyword));
-	}
-
 }

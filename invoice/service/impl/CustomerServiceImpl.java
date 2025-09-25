@@ -15,6 +15,7 @@ import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.model.ProjectKey;
 import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
@@ -321,25 +322,28 @@ public class CustomerServiceImpl implements CustomerService {
 
 		List<Long> projectIds = extractProjectIds(customerProjectDetailsList);
 
-		List<Project> existingProjects = projectDao.findByProjectIdIn(projectIds);
+		List<Project> existingProjects = projectDao.findById_ProjectIdIn(projectIds);
 
 		Map<Long, Project> projectMap = existingProjects.stream()
-			.collect(Collectors.toMap(Project::getProjectId, project -> project));
+			.collect(Collectors.toMap(project -> project.getId().getProjectId(), project -> project));
 
 		List<Project> projectList = new ArrayList<>();
 
 		for (CustomerProjectDetailsDto projectData : customerProjectDetailsList) {
 			// Validate if the project is already mapped to any other customer
 			Project existingProject = projectMap.get(projectData.getProjectId());
-			if (existingProject != null && existingProject.getCustomer() != null) {
+			if (existingProject != null && existingProject.getId().getCustomer() != null) {
 				throw new ModuleException(
 						InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
 			}
 
+			ProjectKey projectKey = new ProjectKey();
+			projectKey.setProjectId(projectData.getProjectId());
+			projectKey.setCustomer(customer);
+
 			// Create and map the project
 			Project project = new Project();
-			project.setCustomer(customer);
-			project.setProjectId(projectData.getProjectId());
+			project.setId(projectKey);
 			project.setProjectKey(projectData.getProjectKey());
 
 			projectList.add(project);
