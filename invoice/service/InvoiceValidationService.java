@@ -1,6 +1,7 @@
 package com.skapp.enterprise.invoice.service;
 
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
+import com.skapp.enterprise.invoice.payload.request.ReminderEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceExpenseDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
@@ -22,5 +23,7 @@ public interface InvoiceValidationService {
 	void validateInvoiceFilterRequest(InvoiceFilterRequestDto invoiceFilterRequestDto);
 
 	void validateInvoiceStatusUpdateRequest(InvoiceStatusUpdateRequestDto invoiceStatusUpdateRequestDto);
+
+	void validateReminderEmailRequest(ReminderEmailRequestDto reminderEmailRequestDto);
 
 }

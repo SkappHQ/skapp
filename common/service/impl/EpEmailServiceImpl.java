@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -121,6 +122,71 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 	@Override
 	public void cancelScheduledEmail(String batchId, String status) {
 		epAsyncEmailSender.cancelScheduledEmails(batchId, status);
+	}
+
+	@Override
+	public void sendEmailWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFieldObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType, List<String> ccEmails) {
+
+		processEmailDetailsWithAttachment(emailMainTemplate, emailTemplate, dynamicFieldObject, recipient,
+				attachmentData, attachmentName, attachmentContentType, ccEmails);
+	}
+
+	private void processEmailDetailsWithAttachment(EmailTemplates emailMainTemplate, EmailTemplates emailTemplate,
+			Object dynamicFieldObject, String recipient, byte[] attachmentData, String attachmentName,
+			String attachmentContentType, List<String> ccEmails) {
+
+		try {
+			if (emailTemplate == null || recipient == null) {
+				log.error("Email template or recipient is null");
+				return;
+			}
+
+			EmailTemplateMetadata templateDetails = getTemplateDetails(emailTemplate.getTemplateId());
+			if (templateDetails == null) {
+				log.error("Template not found for ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			String module = findModuleForTemplate(emailTemplate.getTemplateId());
+			if (module == null) {
+				log.error("Module not found for template ID: {}", emailTemplate.getTemplateId());
+				return;
+			}
+
+			if (attachmentData == null) {
+				throw new IllegalArgumentException("attachmentData must not be null");
+			}
+			if (attachmentName == null) {
+				throw new IllegalArgumentException("attachmentName must not be null");
+			}
+			if (attachmentContentType == null) {
+				throw new IllegalArgumentException("attachmentContentType must not be null");
+			}
+
+			Map<String, String> placeholders = convertDtoToMap(dynamicFieldObject);
+			placeholders.replaceAll(this::getLocalizedEnumValue);
+
+			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
+
+			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
+
+			String subject = templateDetails.getSubject();
+
+			java.lang.reflect.Method getSubjectMethod = dynamicFieldObject.getClass().getMethod("getSubject");
+			Object subjectValue = getSubjectMethod.invoke(dynamicFieldObject);
+			if (subjectValue instanceof String && !((String) subjectValue).isEmpty()) {
+				subject = (String) subjectValue;
+			}
+
+			epAsyncEmailSender.sendMailWithAttachment(recipient, subject, emailBody, placeholders, attachmentData,
+					attachmentName, attachmentContentType, ccEmails);
+
+		}
+		catch (Exception e) {
+			log.error("Unexpected error in email sending process: {}", e.getMessage(), e);
+		}
 	}
 
 }

@@ -77,6 +77,10 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_INVOICE_FETCHED_FAILED("invoice.error.required.fields.missing"),
 
 	INVOICE_ERROR_INVOICE_NOT_FOUND("invoice.error.not.found"),
+
+	INVOICE_SUCCESS_EMAIL_REMINDER_SENT("invoice.success.email.reminder.sent"),
+	INVOICE_ERROR_SENDING_EMAIL_REMINDER("invoice.error.sending.email.reminder"),
+
 	INVOICE_ERROR_INVOICE_ID_INVALID("invoice.error.id.invalid"),
 
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED("invoice.error.customer.document.name.required"),
@@ -85,10 +89,18 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
 	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source"),
+
+	INVOICE_ERROR_PDF_TEMPLATE_NOT_FOUND("ep.invoice.pdf.template.not.found"),
+
+	INVOICE_ERROR_INVOICE_REMINDER_SUBJECT_REQUIRED("invoice.error.invoice.reminder.subject.required"),
+	INVOICE_ERROR_INVOICE_REMINDER_BODY_REQUIRED("invoice.error.invoice.reminder.body.required"),
+	INVOICE_ERROR_INVOICE_REMINDER_TO_REQUIRED("invoice.error.reminder.to.required"),
+
 	INVOICE_ERROR_PROJECT_ID_REQUIRED("invoice.error.project.id.required"),
 	INVOICE_ERROR_CUSTOMER_PROJECT_NOT_FOUND("invoice.error.customer.project.not.found"),
 
 	INVOICE_ERROR_BILLABLE_RATE_NOT_FOUND("invoice.error.project.member.billable.data.not.found");
+
 
 	private final String messageKey;
 
