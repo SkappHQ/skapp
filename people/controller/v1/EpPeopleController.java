@@ -3,6 +3,7 @@ package com.skapp.enterprise.people.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.people.payload.request.DeactivateUsersRequestDto;
 import com.skapp.enterprise.people.payload.request.TransferManagersAndSupervisorsRequestDto;
+import com.skapp.enterprise.people.payload.request.UpdateUserLanguageRequestDto;
 import com.skapp.enterprise.people.service.EpEmployeeTimelineService;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -88,6 +89,20 @@ public class EpPeopleController {
 	@PostMapping(value = "/deactivate-users")
 	public ResponseEntity<ResponseEntityDto> deactivateUsers(@RequestBody DeactivateUsersRequestDto employeeIds) {
 		ResponseEntityDto response = epPeopleService.deactivateUsers(employeeIds);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE','ROLE_ATTENDANCE_EMPLOYEE','ROLE_LEAVE_EMPLOYEE')")
+	@GetMapping(value = "/user/language")
+	public ResponseEntity<ResponseEntityDto> getCurrentUserLanguage() {
+		ResponseEntityDto response = epPeopleService.getCurrentUserLanguage();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE','ROLE_ATTENDANCE_EMPLOYEE','ROLE_LEAVE_EMPLOYEE')")
+	@PutMapping(value = "/user/language")
+	public ResponseEntity<ResponseEntityDto> updateUserLanguage(@RequestBody UpdateUserLanguageRequestDto requestDto) {
+		ResponseEntityDto response = epPeopleService.updateUserLanguage(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
