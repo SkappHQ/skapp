@@ -84,7 +84,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 		Customer savedCustomer = customerDao.save(customer);
 
-		checkAndAddToAddressBook(savedCustomer, null, savedCustomer.getEmail());
+		if (savedCustomer.getEmail() != null) {
+			checkAndAddToAddressBook(savedCustomer, null, savedCustomer.getEmail());
+		}
 
 		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(savedCustomer);
 
@@ -169,6 +171,7 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		Customer saved = customerDao.save(customer);
+
 		CustomerDetailedResponseDto responseDto = customerMapper.customerToCustomerDetailedResponseDto(saved);
 
 		return new ResponseEntityDto(false, responseDto);

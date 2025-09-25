@@ -61,7 +61,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Value("${pm.service.url}")
 	private String pmServiceUrl;
 
-	@Value("${internal.api.key}")
+	@Value("${pm.internal.api.key}")
 	private String internalApiKey;
 
 	private final RestTemplate restTemplate;
