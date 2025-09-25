@@ -21,9 +21,6 @@ public class Project extends Auditable<String> {
 	@EmbeddedId
 	private ProjectKey id;
 
-	@Column(name = "project_key")
-	private String projectKey;
-
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<BillableRate> billableRates;
 
