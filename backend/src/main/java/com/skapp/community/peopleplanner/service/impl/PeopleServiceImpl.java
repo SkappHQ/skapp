@@ -151,7 +151,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PeopleServiceImpl implements PeopleService {
 
-	private final UserService userService;
+	protected final UserService userService;
 
 	private final MessageUtil messageUtil;
 
@@ -193,7 +193,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected final ApplicationEventPublisher applicationEventPublisher;
 
-	private final UserVersionService userVersionService;
+	protected final UserVersionService userVersionService;
 
 	private final EmployeeValidationService employeeValidationService;
 

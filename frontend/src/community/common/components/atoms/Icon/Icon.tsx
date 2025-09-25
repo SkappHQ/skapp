@@ -15,6 +15,7 @@ import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
+import CameraIcon from "~community/common/assets/Icons/CameraIcon";
 import CancelledStatusIcon from "~community/common/assets/Icons/CancelledStatusIcon";
 import ChangeIcon from "~community/common/assets/Icons/ChangeIcon";
 import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
@@ -48,6 +49,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import DueStatusIcon from "~community/common/assets/Icons/DueStatusIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
@@ -139,7 +141,6 @@ import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
-import DueStatusIcon from "~community/common/assets/Icons/dueStatusIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
@@ -299,7 +300,8 @@ export const IconMapping: Partial<
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
-  [IconName.DUE_STATUS_ICON]: DueStatusIcon
+  [IconName.DUE_STATUS_ICON]: DueStatusIcon,
+  [IconName.CAMERA_ICON]: CameraIcon
   // Add more icons here as needed
 };
 
