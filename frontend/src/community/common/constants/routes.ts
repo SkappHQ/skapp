@@ -74,7 +74,8 @@ const ROUTES = {
     USER_ROLES: "/configurations/user-roles",
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
-      `/configurations/user-roles/${module}`
+      `/configurations/user-roles/${module}`,
+    INVOICE: "/configurations/invoice"
   },
   DASHBOARD: {
     BASE: "/dashboard",
