@@ -281,6 +281,13 @@ const routes = [
         url: ROUTES.CONFIGURATIONS.USER_ROLES,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
+      },
+      {
+        id: "5E",
+        name: "Invoice",
+        url: ROUTES.CONFIGURATIONS.INVOICE,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
       }
     ]
   },
@@ -324,7 +331,7 @@ const routes = [
       {
         id: "7B",
         name: "Customers",
-        url: ROUTES.INVOICE.CUSTOMERS,
+        url: ROUTES.INVOICE.CUSTOMERS.BASE,
         hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,

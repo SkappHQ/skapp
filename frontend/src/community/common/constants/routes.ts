@@ -74,7 +74,8 @@ const ROUTES = {
     USER_ROLES: "/configurations/user-roles",
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
-      `/configurations/user-roles/${module}`
+      `/configurations/user-roles/${module}`,
+    INVOICE: "/configurations/invoice"
   },
   DASHBOARD: {
     BASE: "/dashboard",
@@ -114,7 +115,11 @@ const ROUTES = {
   INVOICE: {
     BASE: "/invoice",
     ALL_INVOICES: "/invoice/allInvoices",
-    CUSTOMERS: "/invoice/customers"
+    CUSTOMERS: {
+      BASE: "/invoice/customers",
+      CUSTOMER_DETAILS: (id: number) =>
+        `/invoice/customers/customer-details/${id}`
+    }
   }
 };
 
