@@ -199,3 +199,29 @@ thead .sticky-col {
   z-index: 3;
   background: #f4f4f5;
 }
+
+/**
+ * CSS styles for TextArea component dynamic styling
+ */
+
+/* Apply hover styles when the hover-active class is present */
+.textarea-hover-active:hover {
+  background-color: var(--hover-bg-color) !important;
+  border-color: var(--hover-border-color) !important;
+}
+
+/* Apply focus styles when the focus-active class is present */
+.textarea-focus-active {
+  border-color: var(--focus-border-color) !important;
+  box-shadow: 0px 0px 4px 0px var(--focus-shadow-color) !important;
+}
+
+.hover-active:hover {
+  background-color: var(--hover-bg-color) !important;
+  border-color: var(--hover-border-color) !important;
+}
+/* Apply focus styles when the focus-active class is present */
+.focus-active {
+  border-color: var(--focus-border-color) !important;
+  box-shadow: 0px 0px 4px 0px var(--focus-shadow-color) !important;
+}
