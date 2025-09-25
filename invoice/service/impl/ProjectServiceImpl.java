@@ -16,6 +16,7 @@ import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
+import com.skapp.enterprise.invoice.model.ProjectKey;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
@@ -51,6 +52,7 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,12 +88,20 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request, query);
 
-		// Sort the internalProjects list by the 'name' field in ascending order
-		List<TenantProjectListResponseDto> sortedInternalProjects = internalProjects.stream()
+		List<Project> assignedProjects = projectDao.findAll();
+		Set<Long> assignedProjectIds = assignedProjects.stream()
+			.map(Project::getId)
+			.filter(Objects::nonNull)
+			.map(ProjectKey::getProjectId)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
+
+		List<TenantProjectListResponseDto> unassignedProjects = internalProjects.stream()
+			.filter(proj -> !assignedProjectIds.contains(proj.getId()))
 			.sorted(Comparator.comparing(TenantProjectListResponseDto::getName))
 			.toList();
 
-		return new ResponseEntityDto(false, sortedInternalProjects);
+		return new ResponseEntityDto(false, unassignedProjects);
 	}
 
 	@Override
