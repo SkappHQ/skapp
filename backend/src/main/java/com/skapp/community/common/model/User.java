@@ -56,6 +56,9 @@ public class User {
 	@Column(name = "previous_passwords")
 	private String previousPasswords;
 
+	@Column(name = "lang")
+	private String lang;
+
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	@PrimaryKeyJoinColumn
 	private Employee employee;
