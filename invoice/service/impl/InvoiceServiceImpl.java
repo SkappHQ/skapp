@@ -17,6 +17,8 @@ import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
+import com.skapp.enterprise.common.service.ScheduleService;
+import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
@@ -108,6 +110,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	private final AmazonS3Service amazonS3Service;
 
+	private final ScheduleService scheduleService;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createInvoice(CreateInvoiceRequestDto createInvoiceRequestDto) {
@@ -154,6 +158,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		calculateInvoiceTotals(invoice);
 		invoiceDao.save(invoice);
+
+		if (invoice.getStatus() == InvoiceStatus.DUE && invoice.getDueDate() != null) {
+			String tenantId = TenantContext.getCurrentTenant();
+			scheduleService.scheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE,
+					invoice.getDueDate().plusDays(1).atStartOfDay());
+		}
 
 		InvoiceResponseDto responseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 
@@ -272,13 +282,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 	}
 
 	@Override
-	public ResponseEntityDto getInvoiceKPI() {
-
-		long dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
-		long overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
-
+	public ResponseEntityDto getInvoiceKPI(Long customerId) {
+		long dueInvoices;
+		long overdueInvoices;
+		if (customerId == null) {
+			dueInvoices = invoiceDao.countByStatus(InvoiceStatus.DUE);
+			overdueInvoices = invoiceDao.countByStatus(InvoiceStatus.OVERDUE);
+		}
+		else {
+			dueInvoices = invoiceDao.countByCustomer_IdAndStatus(customerId, InvoiceStatus.DUE);
+			overdueInvoices = invoiceDao.countByCustomer_IdAndStatus(customerId, InvoiceStatus.OVERDUE);
+		}
 		InvoiceKPIResponseDto summary = new InvoiceKPIResponseDto(dueInvoices, overdueInvoices);
-
 		return new ResponseEntityDto(false, summary);
 	}
 
@@ -432,14 +447,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		invoiceValidationService.validateInvoiceStatusUpdateRequest(invoiceStatusUpdateRequestDto);
 		Optional<Invoice> optionalInvoice = invoiceDao.findById(invoiceStatusUpdateRequestDto.getInvoiceId());
-
 		Invoice invoice = optionalInvoice.get();
 		invoice.setStatus(invoiceStatusUpdateRequestDto.getStatus());
-
 		invoiceDao.save(invoice);
 
-		InvoiceResponseDto invoiceResponseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
+		String tenantId = TenantContext.getCurrentTenant();
+		if (invoice.getStatus() == InvoiceStatus.PAID || invoice.getStatus() == InvoiceStatus.DELETED) {
+			scheduleService.unScheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE);
+		}
+		else if (invoice.getStatus() == InvoiceStatus.DUE && invoice.getDueDate() != null) {
+			scheduleService.scheduleExpiration(invoice.getId(), tenantId, QuartzEntityType.INVOICE,
+					invoice.getDueDate().plusDays(1).atStartOfDay());
+		}
 
+		InvoiceResponseDto invoiceResponseDto = invoiceMapper.invoiceToInvoiceResponseDto(invoice);
 		return new ResponseEntityDto(false, invoiceResponseDto);
 	}
 
@@ -714,6 +735,25 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 
 		return invoiceDao.getLatestInvoiceDate(customerId, projectId);
+	}
+
+	@Override
+	public void handleInvoiceExpiration(Long Id) {
+
+		Optional<Invoice> optionalInvoice = invoiceDao.findById(Id);
+		if (optionalInvoice.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
+		}
+		Invoice invoice = optionalInvoice.get();
+		InvoiceStatus status = invoice.getStatus();
+		LocalDate dueDate = invoice.getDueDate();
+		if (status == InvoiceStatus.DUE && (dueDate != null && !dueDate.isAfter(LocalDate.now()))) {
+			InvoiceStatusUpdateRequestDto updateRequest = new InvoiceStatusUpdateRequestDto();
+			updateRequest.setInvoiceId(Id);
+			updateRequest.setStatus(InvoiceStatus.OVERDUE);
+			updateInvoiceStatus(updateRequest);
+			log.info("Invoice {} marked as OVERDUE by scheduler.", Id);
+		}
 	}
 
 }

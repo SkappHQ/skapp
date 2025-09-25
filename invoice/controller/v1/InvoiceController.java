@@ -62,11 +62,12 @@ public class InvoiceController {
 	}
 
 	@Operation(summary = "Retrieve invoices KPI Data for the current tenant/organization",
-			description = "Provides the overdue and due count of invoices.")
+			description = "Provides the overdue and due count of invoices. If customerId is provided, returns KPI for that customer only.")
 	@GetMapping(value = "summary", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getInvoiceKPI() {
-		ResponseEntityDto response = invoiceService.getInvoiceKPI();
+	public ResponseEntity<ResponseEntityDto> getInvoiceKPI(
+			@RequestParam(value = "customerId", required = false) Long customerId) {
+		ResponseEntityDto response = invoiceService.getInvoiceKPI(customerId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

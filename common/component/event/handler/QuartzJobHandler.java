@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.component.event.handler;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
+import com.skapp.enterprise.invoice.service.InvoiceService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -25,6 +26,8 @@ public class QuartzJobHandler implements Job {
 
 	private final EnvelopeService envelopeService;
 
+	private final InvoiceService invoiceService;
+
 	@Override
 	@Transactional
 	public void execute(JobExecutionContext context) {
@@ -43,6 +46,7 @@ public class QuartzJobHandler implements Job {
 
 			switch (entityType) {
 				case ENVELOPE -> envelopeService.expireEnvelope(entityId);
+				case INVOICE -> invoiceService.handleInvoiceExpiration(entityId);
 				default -> log.warn("No handler implemented for entity type: {}", entityType);
 			}
 

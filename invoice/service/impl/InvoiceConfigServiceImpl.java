@@ -2,7 +2,7 @@ package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.invoice.constant.InvoiceConfigDefaultConstants;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.InvoiceMapper;
 import com.skapp.enterprise.invoice.model.InvoiceConfig;
@@ -31,18 +31,33 @@ public class InvoiceConfigServiceImpl implements InvoiceConfigService {
 		invoiceConfig.setInvoiceLogo(organizationLogo);
 		invoiceConfig.setCurrency(CurrencyType.USD);
 		invoiceConfig.setCountry(country);
-		invoiceConfig.setPaymentTerms(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_PAYMENT_TERMS);
-		invoiceConfig.setPayToAddress(InvoiceConfigDefaultConstants.INVOICE_CONFIG_DEFAULT_ADDRESS);
+		invoiceConfig.setPaymentTerms(InvoiceCommonConstant.INVOICE_CONFIG_DEFAULT_PAYMENT_TERMS);
+		invoiceConfig.setPayToAddress(InvoiceCommonConstant.INVOICE_CONFIG_DEFAULT_ADDRESS);
 		invoiceConfigRepository.save(invoiceConfig);
 	}
 
 	@Override
 	public ResponseEntityDto updateInvoiceConfig(InvoiceConfigRequestDto invoiceConfigDto) {
-
 		InvoiceConfig invoiceConfig = invoiceConfigRepository.findFirstBy()
 			.orElseThrow(() -> new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CONFIG_NOT_FOUND));
 
 		invoiceConfigValidationService.validateInvoiceConfigRequest(invoiceConfigDto);
+
+		if (invoiceConfigDto.getInvoiceLogo() != null) {
+			invoiceConfig.setInvoiceLogo(invoiceConfigDto.getInvoiceLogo());
+		}
+		if (invoiceConfigDto.getCurrency() != null) {
+			invoiceConfig.setCurrency(invoiceConfigDto.getCurrency());
+		}
+		if (invoiceConfigDto.getCountry() != null) {
+			invoiceConfig.setCountry(invoiceConfigDto.getCountry());
+		}
+		if (invoiceConfigDto.getPaymentTerms() != null) {
+			invoiceConfig.setPaymentTerms(invoiceConfigDto.getPaymentTerms());
+		}
+		if (invoiceConfigDto.getPayToAddress() != null) {
+			invoiceConfig.setPayToAddress(invoiceConfigDto.getPayToAddress());
+		}
 
 		invoiceConfig = invoiceConfigRepository.save(invoiceConfig);
 		InvoiceConfigResponseDto invoiceConfigResponseDto = invoiceMapper
