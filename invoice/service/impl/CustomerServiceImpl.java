@@ -20,7 +20,6 @@ import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
-import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerContactDao;
