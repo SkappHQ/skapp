@@ -7,6 +7,7 @@ import attendanceModule from "~community/common/assets/languages/english/attenda
 import common from "~community/common/assets/languages/english/common.json";
 import configurations from "~community/common/assets/languages/english/configurations.json";
 import leaveModule from "~community/common/assets/languages/english/leaveModule.json";
+import okrModule from "~community/common/assets/languages/english/okrModule.json";
 import onboarding from "~community/common/assets/languages/english/onboarding.json";
 import peopleModule from "~community/common/assets/languages/english/peopleModule.json";
 
@@ -17,6 +18,7 @@ export const english = {
   peopleModule,
   leaveModule,
   attendanceModule,
+  okrModule,
   onboardingAria,
   attendanceAria,
   commonAria,
