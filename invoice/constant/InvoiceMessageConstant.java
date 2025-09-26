@@ -101,7 +101,6 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_BILLABLE_RATE_NOT_FOUND("invoice.error.project.member.billable.data.not.found");
 
-
 	private final String messageKey;
 
 }
