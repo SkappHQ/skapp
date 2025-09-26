@@ -534,7 +534,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 					? invoice.getInvoiceLogo() : "";
 			String invoiceLogoSignedUrl = null;
 			if (invoiceLogo != null && !invoiceLogo.isEmpty() && tier != Tier.FREE) {
-				invoiceLogo = invoiceLogo.substring(1);
 				AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
 				amazonS3SignedUrlRequestDto.setFolderPath(invoiceLogo);
 				amazonS3SignedUrlRequestDto.setAction(AmazonS3ActionType.DOWNLOAD);
@@ -588,7 +587,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			template = template.replace("{{subTotalAmount}}", subTotalAmount);
 			template = template.replace("{{payableTotalAmount}}", payableTotalAmount);
 
-			if (invoiceLogoSignedUrl != null && tier != Tier.FREE) {
+			if (invoiceLogoSignedUrl != null) {
 				template = template.replace("{{#invoiceLogo}}", "")
 					.replace("{{/invoiceLogo}}", "")
 					.replace("{{invoiceLogo}}", invoiceLogoSignedUrl);
