@@ -49,7 +49,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import DueStatusIcon from "~community/common/assets/Icons/DueStatusIcon";
+import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
@@ -300,7 +300,7 @@ export const IconMapping: Partial<
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
-  [IconName.DUE_STATUS_ICON]: DueStatusIcon,
+  [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
   [IconName.CAMERA_ICON]: CameraIcon
   // Add more icons here as needed
 };
