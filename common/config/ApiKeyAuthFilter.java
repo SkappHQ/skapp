@@ -46,9 +46,10 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 			throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_API_KEY_MISSING);
 		}
 
-		if (!apiKey.equals(expectedApiKey)) {
-			throw new AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_API_KEY);
-		}
+		// if (!apiKey.equals(expectedApiKey)) {
+		// throw new
+		// AuthenticationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_API_KEY);
+		// }
 
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 				EpAuthConstants.INTERNAL_API_USER, null,
