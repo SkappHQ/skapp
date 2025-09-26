@@ -1,7 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Button, IconButton, Typography } from "@mui/material";
-import React from "react";
 import Image from "next/image";
+import React from "react";
 
 import BasicModal from "~community/common/components/organisms/BasicModal/BasicModal";
 
@@ -110,7 +110,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
             <IconButton
               onClick={closeIconButton.onClick}
               size="small"
-              sx={{ mt: -0.5}}
+              sx={{ mt: -0.5 }}
             >
               <CloseIcon />
             </IconButton>

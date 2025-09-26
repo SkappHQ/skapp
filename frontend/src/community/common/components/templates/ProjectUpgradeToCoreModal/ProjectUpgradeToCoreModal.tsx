@@ -37,12 +37,14 @@ const ProjectUpgradeToCoreModal: React.FC<ProjectUpgradeToCoreModalProps> = ({
             <p
               style={{ color: "#666", marginBottom: "16px" }}
               className="body1"
-              dangerouslySetInnerHTML={{
-                __html: `
-              You can only create up to <b>5 projects</b> on the Free plan. Upgrade to Skapp Core to create more projects and scale your work without limits.`
-              }}
-            />
-            <p style={{ color: "#666" }} className="body1">{renderCustomMessage()}</p>
+            >
+              You can only create up to <strong>5 projects</strong> on the Free
+              plan. Upgrade to Skapp Core to create more projects and scale your
+              work without limits.
+            </p>
+            <p style={{ color: "#666" }} className="body1">
+              {renderCustomMessage()}
+            </p>
           </>
         )
       }}
