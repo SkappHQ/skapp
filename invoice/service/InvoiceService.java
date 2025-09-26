@@ -30,5 +30,4 @@ public interface InvoiceService {
 
 	void handleInvoiceExpiration(Long invoiceId);
 
-
 }
