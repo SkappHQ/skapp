@@ -77,9 +77,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 		Customer customer = initializeCustomer(customerCreateRequestDto);
 
-		if (customerCreateRequestDto.getCustomerProjects() != null) {
-			customer.setProjects(
-					initializeCustomerProjectMapping(customer, customerCreateRequestDto.getCustomerProjects()));
+		if (customerCreateRequestDto.getProjectIds() != null) {
+			customer.setProjects(initializeCustomerProjectMapping(customer, customerCreateRequestDto.getProjectIds()));
 		}
 
 		Customer savedCustomer = customerDao.save(customer);
@@ -144,6 +143,10 @@ public class CustomerServiceImpl implements CustomerService {
 		if (customerCreateRequestDto.getCustomerName() != null) {
 			customerValidationService.validateCustomerName(customerCreateRequestDto.getCustomerName());
 			customer.setName(customerCreateRequestDto.getCustomerName());
+		}
+
+		if (customerCreateRequestDto.getProjectIds() != null) {
+			customer.setProjects(initializeCustomerProjectMapping(customer, customerCreateRequestDto.getProjectIds()));
 		}
 
 		if (customerCreateRequestDto.getCustomerBillingDetails() != null) {
@@ -320,10 +323,7 @@ public class CustomerServiceImpl implements CustomerService {
 		return customer;
 	}
 
-	private List<Project> initializeCustomerProjectMapping(Customer customer,
-			List<CustomerProjectDetailsDto> customerProjectDetailsList) {
-
-		List<Long> projectIds = extractProjectIds(customerProjectDetailsList);
+	private List<Project> initializeCustomerProjectMapping(Customer customer, List<Long> projectIds) {
 
 		List<Project> existingProjects = projectDao.findById_ProjectIdIn(projectIds);
 
@@ -332,16 +332,16 @@ public class CustomerServiceImpl implements CustomerService {
 
 		List<Project> projectList = new ArrayList<>();
 
-		for (CustomerProjectDetailsDto projectData : customerProjectDetailsList) {
+		for (Long projectId : projectIds) {
 			// Validate if the project is already mapped to any other customer
-			Project existingProject = projectMap.get(projectData.getProjectId());
+			Project existingProject = projectMap.get(projectId);
 			if (existingProject != null && existingProject.getId().getCustomer() != null) {
 				throw new ModuleException(
 						InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
 			}
 
 			ProjectKey projectKey = new ProjectKey();
-			projectKey.setProjectId(projectData.getProjectId());
+			projectKey.setProjectId(projectId);
 			projectKey.setCustomer(customer);
 
 			// Create and map the project
@@ -352,10 +352,6 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return projectList;
-	}
-
-	private List<Long> extractProjectIds(List<CustomerProjectDetailsDto> customerProjectDetailsList) {
-		return customerProjectDetailsList.stream().map(CustomerProjectDetailsDto::getProjectId).toList();
 	}
 
 	private void checkAndAddToAddressBook(Customer customer, CustomerContact customerContact, String email) {

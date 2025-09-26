@@ -13,7 +13,7 @@ public class CustomerCreateRequestDto {
 
 	private String customerName;
 
-	private List<CustomerProjectDetailsDto> customerProjects;
+	private List<Long> projectIds;
 
 	private CustomerBillingDetailsDto customerBillingDetails;
 
