@@ -109,6 +109,8 @@ import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.common.payload.response.ValidationResult;
+import com.skapp.enterprise.common.service.ValidationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -204,6 +206,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeProgressionDao employeeProgressionDao;
 
 	private final EmployeeVisaDao employeeVisaDao;
+
+	private final ValidationService validationService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -2128,6 +2132,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (workEmail != null && workEmail.length() > PeopleConstants.MAX_EMAIL_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL_LENGTH,
 					new Object[] { PeopleConstants.MAX_EMAIL_LENGTH }));
+
+		if (workEmail != null) {
+			ValidationResult validationResult = validationService.validateEmail(workEmail);
+			if (!validationResult.getIsValid()) {
+				errors.add(messageUtil.getMessage(validationResult.getMessageKey()));
+			}
+		}
 	}
 
 	private void validateUserSupervisor(String supervisorEmail, List<String> errors) {
