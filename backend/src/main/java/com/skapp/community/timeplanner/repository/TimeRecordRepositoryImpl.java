@@ -365,6 +365,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeRecord> timeRecord = trQuery.from(TimeRecord.class);
 		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
 
+        //
 		trQuery.multiselect(timeRecord.get(TimeRecord_.timeRecordId),
 				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
 				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), cb.literal(0.0f)),
