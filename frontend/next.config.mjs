@@ -189,6 +189,10 @@ const nextConfig = {
         destination: "/community/configurations/user-roles"
       },
       {
+        source: "/configurations/invoice",
+        destination: "/enterprise/configurations/invoice"
+      },
+      {
         source: "/configurations/user-roles/attendance",
         destination: "/community/configurations/user-roles/attendance"
       },
@@ -327,6 +331,26 @@ const nextConfig = {
       {
         source: "/projects",
         destination: "/enterprise/projects"
+      },
+      {
+        source: "/invoice",
+        destination: "/enterprise/invoice"
+      },
+      {
+        source: "/invoice/allInvoices",
+        destination: "/enterprise/invoice/allInvoices"
+      },
+      {
+        source: "/invoice/customers",
+        destination: "/enterprise/invoice/customers"
+      },
+      {
+        source: "/invoice/create/:id",
+        destination: "/enterprise/invoice/create/:id"
+      },
+      {
+        source: "/invoice/customers/customer-details/:id",
+        destination: "/enterprise/invoice/customers/customer-details/:id"
       }
     ];
   },

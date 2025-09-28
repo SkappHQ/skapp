@@ -737,7 +737,8 @@ export const useGetEmployee = (memberId: number | undefined = undefined) => {
       return await authFetch.get(
         peoplesEndpoints.EMPLOYEE_BY_ID(memberId as number)
       );
-    }
+    },
+    refetchOnWindowFocus: false
   });
 };
 

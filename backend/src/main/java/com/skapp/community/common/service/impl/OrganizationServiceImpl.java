@@ -53,17 +53,17 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 	private final MessageUtil messageUtil;
 
-	private final AttendanceConfigService attendanceConfigService;
+	protected final AttendanceConfigService attendanceConfigService;
 
-	private final LeaveTypeService leaveTypeService;
+	protected final LeaveTypeService leaveTypeService;
 
-	private final LeaveCycleService leaveCycleService;
+	protected final LeaveCycleService leaveCycleService;
 
 	private final UserService userService;
 
-	private final OrganizationConfigDao organizationConfigDao;
+	protected final OrganizationConfigDao organizationConfigDao;
 
-	private final ObjectMapper objectMapper;
+	protected final ObjectMapper objectMapper;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
