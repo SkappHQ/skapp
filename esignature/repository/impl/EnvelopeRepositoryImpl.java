@@ -334,8 +334,7 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 
-		List<Envelope> results = typedQuery.getResultList();
-		return results.isEmpty() ? null : results.get(0);
+		return typedQuery.getResultStream().findFirst().orElse(null);
 	}
 
 }
