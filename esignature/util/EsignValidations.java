@@ -13,8 +13,6 @@ import static com.skapp.enterprise.esignature.constant.EsignConstants.ALLOWED_CH
 public class EsignValidations {
 
 	public static void validateExternalUserName(String name) {
-		if (name != null && !ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME.matcher(name.trim()).matches())
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME);
 
 		if (name != null && name.length() > EsignConstants.ESIGN_MAX_NAME_LENGTH_EXTERNAL_USER)
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME_LENGTH,
