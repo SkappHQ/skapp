@@ -252,7 +252,11 @@ const routes = [
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
     hasSubTree: true,
-    requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN],
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.ATTENDANCE_ADMIN,
+      AdminTypes.INVOICE_ADMIN
+    ],
     subTree: [
       {
         id: "5A",
