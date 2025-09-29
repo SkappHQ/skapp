@@ -1,264 +1,264 @@
 {
-  "confirmBackNavigation": {
-    "description": "Are you sure you want to leave? You will lose your progress."
+  "StorageToastMessage": {
+    "contactAdminText": "Please contact your administrator.",
+    "storageTitle": "Storage Limit Reached"
   },
-  "words": {
-    "days": "Days"
+  "appBar": {
+    "logout": "Logout",
+    "viewAccount": "View Account"
   },
   "commonComponents": {
-    "dragAndDrop": {
-      "description": "Drop the files here ...",
-      "dropFileDescription": "Drag and drop your file",
-      "supportFiles": "Supported Files",
-      "validAttachment": "Please upload an valid attachment before submitting",
-      "emptyAttachmentError": "No files attached",
-      "duplicateAttachmentsError": "Duplicate attachments are not allowed",
-      "maxAttachmentsError": "File limit Exceeded. The maximum file count allowed is {{maxFileSize}}.",
-      "attachmentSizeError": "{{fileSize}} file size exceeded.",
-      "attachmentTypeError": "Please upload files in one of the following formats: {{supportedFiles}}"
-    },
-    "filterButton": {
-      "placeholder": "Filter",
-      "allChip": "All",
-      "applyBtn": "Apply filters",
-      "resetBtn": "Reset filters"
-    },
     "advanceFilter": {
-      "placeholder": "Filters",
-      "noSelectedFilters": "No filters selected",
-      "selected": "Filters selected",
       "applyBtn": "Apply filters",
-      "resetBtn": "Reset Filters"
+      "noSelectedFilters": "No filters selected",
+      "placeholder": "Filters",
+      "resetBtn": "Reset Filters",
+      "selected": "Filters selected"
     },
-    "multiTeamSelector": {
-      "selected": "selected",
-      "allLabel": "All Employees",
-      "noTeamTxt": "No teams assigned "
+    "calendarDataRangePicker": {
+      "endDate": "End date",
+      "holidayExistsError": {
+        "description": "Selected date has been declared as a holiday.",
+        "title": "{{holidayName}}"
+      },
+      "label": "Select date(s)",
+      "leaveAlreadyAppliedError": {
+        "description": "You have already applied for a leave on the selected date.",
+        "title": "Already applied for a leave"
+      },
+      "multipleHolidaysExistsError": {
+        "description": "Selected dates has been declared as a holiday.",
+        "title": "{{holidayName}} +{{holidayCount}}"
+      },
+      "multipleLeavesAlreadyAppliedError": {
+        "description": "You have already applied for a leave on the selected dates.",
+        "title": "Already applied for a leave"
+      },
+      "onlyHalfDayLeaveAllowedError": {
+        "description": "Only half-day leaves are allowed for the selected leave type.",
+        "title": "Only Half day leaves are allowed"
+      },
+      "startDate": "Start date"
     },
     "dateRangePicker": {
       "label": "Date: "
     },
-    "calendarDataRangePicker": {
-      "label": "Select date(s)",
-      "startDate": "Start date",
-      "endDate": "End date",
-      "onlyHalfDayLeaveAllowedError": {
-        "title": "Only Half day leaves are allowed",
-        "description": "Only half-day leaves are allowed for the selected leave type."
-      },
-      "holidayExistsError": {
-        "title": "{{holidayName}}",
-        "description": "Selected date has been declared as a holiday."
-      },
-      "multipleHolidaysExistsError": {
-        "title": "{{holidayName}} +{{holidayCount}}",
-        "description": "Selected dates has been declared as a holiday."
-      },
-      "leaveAlreadyAppliedError": {
-        "title": "Already applied for a leave",
-        "description": "You have already applied for a leave on the selected date."
-      },
-      "multipleLeavesAlreadyAppliedError": {
-        "title": "Already applied for a leave",
-        "description": "You have already applied for a leave on the selected dates."
-      }
-    },
-    "durationSelector": {
-      "fullDay": "Full Day",
-      "halfDay": "Half Day",
-      "morning": "Morning",
-      "evening": "Evening"
-    },
-    "userPromptModal": {
-      "unsavedChangesModal": {
-        "title": "Are you sure?",
-        "description": "You are about to leave your current task, and any unsaved changes will be lost. Do you wish to resume your task or leave anyway?",
-        "resumeTaskBtn": "Resume task",
-        "leaveAnywayBtn": "Leave anyway"
-      },
-      "bulkUploadSummaryModal": {
-        "title": "Bulk Upload Summary",
-        "description": "{{successCount}} uploaded successfully, but {{failedCount}} encountered errors. Kindly download the error file for review and proceed with re-uploading the corrected template.",
-        "btn": "Download error file"
-      }
+    "dragAndDrop": {
+      "attachmentSizeError": "{{fileSize}} file size exceeded.",
+      "attachmentTypeError": "Please upload files in one of the following formats: {{supportedFiles}}",
+      "description": "Drop the files here ...",
+      "dropFileDescription": "Drag and drop your file",
+      "duplicateAttachmentsError": "Duplicate attachments are not allowed",
+      "emptyAttachmentError": "No files attached",
+      "maxAttachmentsError": "File limit Exceeded. The maximum file count allowed is {{maxFileSize}}.",
+      "supportFiles": "Supported Files",
+      "validAttachment": "Please upload an valid attachment before submitting"
     },
     "drawer": {
-      "getHelp": "Get Help",
-      "applyLeaveBtn": "Apply Leave"
+      "applyLeaveBtn": "Apply Leave",
+      "getHelp": "Get Help"
+    },
+    "durationSelector": {
+      "evening": "Evening",
+      "fullDay": "Full Day",
+      "halfDay": "Half Day",
+      "morning": "Morning"
+    },
+    "filterButton": {
+      "allChip": "All",
+      "applyBtn": "Apply filters",
+      "placeholder": "Filter",
+      "resetBtn": "Reset filters"
+    },
+    "multiTeamSelector": {
+      "allLabel": "All Employees",
+      "noTeamTxt": "No teams assigned ",
+      "selected": "selected"
+    },
+    "userPromptModal": {
+      "bulkUploadSummaryModal": {
+        "btn": "Download error file",
+        "description": "{{successCount}} uploaded successfully, but {{failedCount}} encountered errors. Kindly download the error file for review and proceed with re-uploading the corrected template.",
+        "title": "Bulk Upload Summary"
+      },
+      "unsavedChangesModal": {
+        "description": "You are about to leave your current task, and any unsaved changes will be lost. Do you wish to resume your task or leave anyway?",
+        "leaveAnywayBtn": "Leave anyway",
+        "resumeTaskBtn": "Resume task",
+        "title": "Are you sure?"
+      }
     }
   },
-  "durations": {
-    "fullDay": "Full day",
-    "halfDayMorning": "Half-day morning",
-    "halfDayEvening": "Half-day evening",
-    "days": "Days"
+  "commonError": {
+    "buttonText": "Back to home",
+    "description": "Something went wrong.",
+    "title": "Oops!"
+  },
+  "confirmBackNavigation": {
+    "description": "Are you sure you want to leave? You will lose your progress."
   },
   "dashboard": {
-    "pageHead": "Dashboard | Skapp",
-    "title": "Dashboard",
     "attendanceTab": "Attendance",
     "leaveTab": "Leave",
+    "leaves": "Leave Requests",
+    "pageHead": "Dashboard | Skapp",
     "peopleTab": "People",
-    "leaves": "Leave Requests"
+    "title": "Dashboard"
   },
-  "settings": {
-    "integrationPageHead": "Integrations | Skapp",
-    "pageHead": "Settings | Skapp",
-    "title": "Settings",
-    "saveChangesBtnText": "Save changes",
-    "cancelBtnText": "Cancel",
-    "securitySettingsTitle": "Security settings",
-    "securitySettingsDescription": "Reset your password when required to maintain your account's security",
-    "dropDownListLabel": "Global default login method",
-    "resetPasswordButtonText": "Reset password",
-    "organizationSettingsTitle": "Organization settings",
-    "organizationSettingsDescription": "Change the organizational settings you set up in the onboarding flow.",
-    "organizationDetailsButtonText": "Organization details",
-    "brandingSettingsButtonText": "Branding settings",
-    "emailServerSettingsTitle": "Email server settings",
-    "emailServerSettingsDescription": "Configure your email server settings to send emails from your organization's email address.",
-    "descriptionFive": "Change the organizational settings you set up in the onboarding flow.",
-    "setupEmailServerButtonText": "Setup email server",
-    "testEmailServerButtonText": "Test email server",
-    "customizeButtonText": "Customize",
-    "companyName": "Company name",
-    "companyWebsite": "Company website",
-    "country": "Country",
-    "companylogoLabel": "Company Logo",
-    "themeColorLabel": "Workplace theme color",
-    "themeColorToolTip": "The workplace theme will be reflected throughout your system",
-    "requireCompanyNameError": "Please enter the company name",
-    "requireCompanyWebsiteError": "Please enter the company website",
-    "maxCharacterLimitError": "Exceeding character limit. Please enter an URL with less than 100 characters.",
-    "validWebsiteUrlError": "The website should either be in the format of abc.tld or www.abc.tld",
-    "requireCountryError": "Please select the country",
-    "resetPasswordModalTitle": "Set new password",
-    "currentPasswordLabel": "Current password",
-    "currentPasswordPlaceholder": "Enter current password",
-    "newPasswordLabel": "New password",
-    "newPasswordPlaceholder": "Enter new password",
-    "confirmPasswordLabel": "Re enter password",
-    "confirmPasswordPlaceholder": "Re enter password",
-    "requireCurrentPasswordError": "Please enter the current password",
-    "setupEmailServerModalTitle": "Setup email server",
-    "enableEmailServerLabel": "Enable email server",
-    "emailServiceProviderLabel": "Email service provider",
-    "emailServiceProviderPlaceholder": "Select email service provider",
-    "usernameLabel": "Username",
-    "usernamePlaceholder": "Enter username",
-    "appPasswordLabel": "App password",
-    "appPasswordPlaceholder": "Enter app password",
-    "portNumberLabel": "Port number",
-    "notificationSettingsTitle": "Notification settings",
-    "notificationSettingsDescription": "Select the types of notifications you wish to enable to stay informed.",
-    "isLeaveRequestNotificationsEnabled": "Employee leave requests",
-    "isTimeEntryNotificationsEnabled": "Employee time entry requests",
-    "isLeaveRequestNudgeNotificationsEnabled": "Nudge notifications",
-    "notificationSettingsUpdateSuccessTitle": "Notification Settings Updated",
-    "notificationSettingsUpdateSuccessDescription": "Notification settings has been updated successfully.",
-    "recipientEmailAddressText": "Recipient email address",
-    "recipientEmailAddressPlaceholder": "Enter recipient email address",
-    "emailSubjectText": "Email subject",
-    "emailSubjectPlaceholder": "Enter email subject",
-    "emailBodyText": "Body",
-    "emailBodyPlaceholder": "Enter email body",
-    "sendEmailButtonText": "Send email",
-    "emailServiceProviderRequired": "Please select the email service provider",
-    "usernameRequired": "Please enter the username",
-    "appPasswordRequired": "Please enter the app password",
-    "emailRequiredError": "Please enter recipient email",
-    "emailValidError": "Please enter a valid email",
-    "emailLengthError": "Please enter a value within the character limit of 50",
-    "passwordIsNotValidTitle": "Password requirement not met",
-    "passwordIsNotValidDescription": "Please enter a password that matches all the requirements.",
-    "emailSentSuccessTitle": "Email Sent",
-    "emailSentSuccessDescription": "Test email has been sent successfully.",
-    "emailConfigSuccessTitle": "Email Configuration Successful",
-    "emailConfigSuccessDescription": "Email configuration has been completed successfully.",
-    "organizationDetailsUpdateSuccessTitle": "Organization Details Updated",
-    "organizationDetailsUpdateSuccessDescription": "Organization details have been updated successfully.",
-    "brandingSuccessTitle": "Branding settings updated",
-    "brandingSuccessDescription": "Branding settings have been updated successfully.",
-    "passwordChangeSuccessTitle": "Password Changed",
-    "passwordChangeSuccessDescription": "Password has been changed successfully.",
-    "usedPreviousPasswordError": "Please Choose a password you have not used before.",
-    "currentPasswordError": "Current password is incorrect",
-    "uploadLogoLabel": "Upload company logo/brandmark",
-    "timezoneLabel": "Timezone",
-    "companyDomainLabel": "Company domain",
-    "globalLogin": "Global login method",
-    "integrationTitle": "Integrations",
-    "googleCalendarText": "Google Calendar",
-    "googleCalendarDes": "Connect your Google Calendar to seamlessly sync your leave and stay updated across your schedules.",
-    "googleCalendarAddSuccessTitle": "Google Calendar Connected",
-    "googleCalendarAddSuccessDes": "Your Google Calendar connected successfully.",
-    "googleCalendarRemoveSuccessTitle": "Google Calendar Disconnected",
-    "googleCalendarRemoveSuccessDes": "Your Google Calendar disconnected successfully.",
-    "googleCalendarErrorTitle": "Oops! Something Went Wrong",
-    "googleCalendarAddErrorDes": "Failed to add Google Calendar. Please try again.",
-    "googleCalendarRemoveErrorDes": "Failed to remove Google Calendar. Please try again.",
-    "googleCalendarAccMismatchTitle": "No account found",
-    "googleCalendarAccMismatchDes": "Please use the account linked to your work email.",
-    "confirmDisconnectTitle": "Are you Sure?",
-    "confirmDisconnectMessage": "You are about to disconnect your Google Calendar from your account. This action will stop syncing your leave records with your calendar. Are you sure you want to proceed?",
-    "confirmBtn": "Confirm",
-    "cancelBtn": "Cancel",
-    "connectBtn": "Connect",
-    "disconnectBtn": "Disconnect"
+  "durations": {
+    "days": "Days",
+    "fullDay": "Full day",
+    "halfDayEvening": "Half-day evening",
+    "halfDayMorning": "Half-day morning"
   },
-  "unauthorized": {
-    "pageHead": "Access Denied | Skapp",
-    "title": "Access Denied",
-    "descriptionPartOne": "You do not have permission to access this page.",
-    "descriptionPartTwo": "For further support, please contact your administrator"
-  },
-  "notFound": {
-    "title": "Page Not Found!",
-    "description": "The requested content could not be found.",
-    "buttonText": "Back to home"
-  },
-  "commonError": {
-    "title": "Oops!",
-    "description": "Something went wrong.",
-    "buttonText": "Back to home"
-  },
-  "notifications": {
-    "liveNotificationsRetrieveError": "Unable to Load Notifications",
-    "liveNotificationsRetrieveErrorDescription": "We couldn't load your new notifications.",
-    "pageHead": "Notifications | Skapp",
-    "title": "Notifications",
-    "emptyScreenTitle": "No notifications",
-    "emptyScreenTitleUnread": "No unread notifications",
-    "emptyScreenDescription": "No new notifications available at the moment. When you get new notifications, they will show up here",
-    "viewAllNotificationsButtonText": "View all notifications",
-    "allFilterButtonText": "All",
-    "unreadFilterButtonText": "Unread",
-    "markAllAsReadButton": "Mark all as read"
-  },
-  "notificationSettings": {
-    "title": "Notification Settings",
-    "notificationDescription": "Choose the notifications you wish to activate"
-  },
-  "appBar": {
-    "viewAccount": "View Account",
-    "logout": "Logout"
+  "importantUpdate": {
+    "buttonText": "Sign in",
+    "description": "Oops! It seems the organization has updated a few things. Please sign in again.",
+    "title": "Important Update"
   },
   "noData": {
     "title": "No data available"
   },
+  "notFound": {
+    "buttonText": "Back to home",
+    "description": "The requested content could not be found.",
+    "title": "Page Not Found!"
+  },
+  "notificationSettings": {
+    "notificationDescription": "Choose the notifications you wish to activate",
+    "title": "Notification Settings"
+  },
+  "notifications": {
+    "allFilterButtonText": "All",
+    "emptyScreenDescription": "No new notifications available at the moment. When you get new notifications, they will show up here",
+    "emptyScreenTitle": "No notifications",
+    "emptyScreenTitleUnread": "No unread notifications",
+    "liveNotificationsRetrieveError": "Unable to Load Notifications",
+    "liveNotificationsRetrieveErrorDescription": "We couldn't load your new notifications.",
+    "markAllAsReadButton": "Mark all as read",
+    "pageHead": "Notifications | Skapp",
+    "title": "Notifications",
+    "unreadFilterButtonText": "Unread",
+    "viewAllNotificationsButtonText": "View all notifications"
+  },
+  "settings": {
+    "appPasswordLabel": "App password",
+    "appPasswordPlaceholder": "Enter app password",
+    "appPasswordRequired": "Please enter the app password",
+    "brandingSettingsButtonText": "Branding settings",
+    "brandingSuccessDescription": "Branding settings have been updated successfully.",
+    "brandingSuccessTitle": "Branding settings updated",
+    "cancelBtn": "Cancel",
+    "cancelBtnText": "Cancel",
+    "companyDomainLabel": "Company domain",
+    "companyName": "Company name",
+    "companyWebsite": "Company website",
+    "companylogoLabel": "Company Logo",
+    "confirmBtn": "Confirm",
+    "confirmDisconnectMessage": "You are about to disconnect your Google Calendar from your account. This action will stop syncing your leave records with your calendar. Are you sure you want to proceed?",
+    "confirmDisconnectTitle": "Are you Sure?",
+    "confirmPasswordLabel": "Re enter password",
+    "confirmPasswordPlaceholder": "Re enter password",
+    "connectBtn": "Connect",
+    "country": "Country",
+    "currentPasswordError": "Current password is incorrect",
+    "currentPasswordLabel": "Current password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "customizeButtonText": "Customize",
+    "descriptionFive": "Change the organizational settings you set up in the onboarding flow.",
+    "disconnectBtn": "Disconnect",
+    "dropDownListLabel": "Global default login method",
+    "emailBodyPlaceholder": "Enter email body",
+    "emailBodyText": "Body",
+    "emailConfigSuccessDescription": "Email configuration has been completed successfully.",
+    "emailConfigSuccessTitle": "Email Configuration Successful",
+    "emailLengthError": "Please enter a value within the character limit of 50",
+    "emailRequiredError": "Please enter recipient email",
+    "emailSentSuccessDescription": "Test email has been sent successfully.",
+    "emailSentSuccessTitle": "Email Sent",
+    "emailServerSettingsDescription": "Configure your email server settings to send emails from your organization's email address.",
+    "emailServerSettingsTitle": "Email server settings",
+    "emailServiceProviderLabel": "Email service provider",
+    "emailServiceProviderPlaceholder": "Select email service provider",
+    "emailServiceProviderRequired": "Please select the email service provider",
+    "emailSubjectPlaceholder": "Enter email subject",
+    "emailSubjectText": "Email subject",
+    "emailValidError": "Please enter a valid email",
+    "enableEmailServerLabel": "Enable email server",
+    "globalLogin": "Global login method",
+    "googleCalendarAccMismatchDes": "Please use the account linked to your work email.",
+    "googleCalendarAccMismatchTitle": "No account found",
+    "googleCalendarAddErrorDes": "Failed to add Google Calendar. Please try again.",
+    "googleCalendarAddSuccessDes": "Your Google Calendar connected successfully.",
+    "googleCalendarAddSuccessTitle": "Google Calendar Connected",
+    "googleCalendarDes": "Connect your Google Calendar to seamlessly sync your leave and stay updated across your schedules.",
+    "googleCalendarErrorTitle": "Oops! Something Went Wrong",
+    "googleCalendarRemoveErrorDes": "Failed to remove Google Calendar. Please try again.",
+    "googleCalendarRemoveSuccessDes": "Your Google Calendar disconnected successfully.",
+    "googleCalendarRemoveSuccessTitle": "Google Calendar Disconnected",
+    "googleCalendarText": "Google Calendar",
+    "integrationPageHead": "Integrations | Skapp",
+    "integrationTitle": "Integrations",
+    "isLeaveRequestNotificationsEnabled": "Employee leave requests",
+    "isLeaveRequestNudgeNotificationsEnabled": "Nudge notifications",
+    "isTimeEntryNotificationsEnabled": "Employee time entry requests",
+    "maxCharacterLimitError": "Exceeding character limit. Please enter an URL with less than 100 characters.",
+    "newPasswordLabel": "New password",
+    "newPasswordPlaceholder": "Enter new password",
+    "notificationSettingsDescription": "Select the types of notifications you wish to enable to stay informed.",
+    "notificationSettingsTitle": "Notification settings",
+    "notificationSettingsUpdateSuccessDescription": "Notification settings has been updated successfully.",
+    "notificationSettingsUpdateSuccessTitle": "Notification Settings Updated",
+    "organizationDetailsButtonText": "Organization details",
+    "organizationDetailsUpdateSuccessDescription": "Organization details have been updated successfully.",
+    "organizationDetailsUpdateSuccessTitle": "Organization Details Updated",
+    "organizationSettingsDescription": "Change the organizational settings you set up in the onboarding flow.",
+    "organizationSettingsTitle": "Organization settings",
+    "pageHead": "Settings | Skapp",
+    "passwordChangeSuccessDescription": "Password has been changed successfully.",
+    "passwordChangeSuccessTitle": "Password Changed",
+    "passwordIsNotValidDescription": "Please enter a password that matches all the requirements.",
+    "passwordIsNotValidTitle": "Password requirement not met",
+    "portNumberLabel": "Port number",
+    "recipientEmailAddressPlaceholder": "Enter recipient email address",
+    "recipientEmailAddressText": "Recipient email address",
+    "requireCompanyNameError": "Please enter the company name",
+    "requireCompanyWebsiteError": "Please enter the company website",
+    "requireCountryError": "Please select the country",
+    "requireCurrentPasswordError": "Please enter the current password",
+    "resetPasswordButtonText": "Reset password",
+    "resetPasswordModalTitle": "Set new password",
+    "saveChangesBtnText": "Save changes",
+    "securitySettingsDescription": "Reset your password when required to maintain your account's security",
+    "securitySettingsTitle": "Security settings",
+    "sendEmailButtonText": "Send email",
+    "setupEmailServerButtonText": "Setup email server",
+    "setupEmailServerModalTitle": "Setup email server",
+    "testEmailServerButtonText": "Test email server",
+    "themeColorLabel": "Workplace theme color",
+    "themeColorToolTip": "The workplace theme will be reflected throughout your system",
+    "timezoneLabel": "Timezone",
+    "title": "Settings",
+    "uploadLogoLabel": "Upload company logo/brandmark",
+    "usedPreviousPasswordError": "Please Choose a password you have not used before.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "usernameRequired": "Please enter the username",
+    "validWebsiteUrlError": "The website should either be in the format of abc.tld or www.abc.tld"
+  },
   "storageAvailability": {
-    "storageUsageReached": "Your storage usage has reached its limit.",
-    "increaseStorageText": "Increase your storage to handle your growing needs.",
+    "availableSpaceText": "   Your storage usage has reached {{availableSpace}}% limit.",
     "considerText": "Consider increasing your storage capacity to stay ahead of your usage needs",
-    "availableSpaceText": "   Your storage usage has reached {{availableSpace}}% limit."
+    "increaseStorageText": "Increase your storage to handle your growing needs.",
+    "storageUsageReached": "Your storage usage has reached its limit."
   },
-  "StorageToastMessage": {
-    "storageTitle": "Storage Limit Reached",
-    "contactAdminText": "Please contact your administrator."
+  "unauthorized": {
+    "descriptionPartOne": "You do not have permission to access this page.",
+    "descriptionPartTwo": "For further support, please contact your administrator",
+    "pageHead": "Access Denied | Skapp",
+    "title": "Access Denied"
   },
-  "importantUpdate": {
-    "title": "Important Update",
-    "description": "Oops! It seems the organization has updated a few things. Please sign in again.",
-    "buttonText": "Sign in"
+  "words": {
+    "days": "Days"
   }
 }
