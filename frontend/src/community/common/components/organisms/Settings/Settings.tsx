@@ -113,7 +113,7 @@ const SettingsSection: FC = () => {
 
   const { data: config } = useGetEmailServerConfig(isEnterpriseMode);
 
-  const { data: userLanguage, isLoading: isLanguageLoading, error: languageError } = useGetUserLanguage();
+  const { data: userLanguage, isLoading: isLanguageLoading } = useGetUserLanguage();
 
   const updateLanguageMutation = useUpdateUserLanguage(() => {
     // Language updated successfully
