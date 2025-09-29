@@ -4,12 +4,15 @@ import com.skapp.community.common.model.User_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting_;
 import com.skapp.enterprise.esignature.model.Envelope_;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeRepository;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
@@ -32,6 +35,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -130,6 +135,71 @@ public class EnvelopeRepositoryImpl implements EnvelopeRepository {
 
 		long total = countUserEnvelopes(currentUserId, filterDto);
 		return new PageImpl<>(envelopes, PageRequest.of(filterDto.getPage(), filterDto.getSize()), total);
+	}
+
+	@Override
+	public Page<EnvelopeNextData> getCurrentUserEnvelopesByExpireDate(Long currentUserId, int page, int size) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+		Root<Envelope> envelopeRoot = cq.from(Envelope.class);
+
+		Join<Envelope, Recipient> recipientJoin = envelopeRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
+		Join<Recipient, AddressBook> recipientAddressJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
+		Join<Envelope, AddressBook> ownerJoin = envelopeRoot.join(Envelope_.OWNER, JoinType.LEFT);
+		Join<Envelope, EnvelopeSetting> settingJoin = envelopeRoot.join(Envelope_.SETTING, JoinType.LEFT);
+
+		Predicate userCondition = cb.equal(recipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID),
+				currentUserId);
+		Predicate statusCondition = cb.equal(recipientJoin.get(Recipient_.STATUS), RecipientStatus.NEED_TO_SIGN);
+
+		cq.multiselect(envelopeRoot.get(Envelope_.id).alias("id"), envelopeRoot.get(Envelope_.subject).alias("subject"),
+				ownerJoin.get(AddressBook_.INTERNAL_USER).get(User_.EMAIL).alias("ownerEmail"),
+				settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE).alias("expiresAt"),
+				envelopeRoot.get(Envelope_.sentAt).alias("sentAt"))
+			.distinct(true);
+
+		cq.where(cb.and(userCondition, statusCondition));
+		cq.orderBy(cb.asc(settingJoin.get(EnvelopeSetting_.EXPIRATION_DATE)));
+
+		TypedQuery<Tuple> query = entityManager.createQuery(cq);
+		query.setFirstResult(page * size);
+		query.setMaxResults(size);
+
+		List<Tuple> results = query.getResultList();
+
+		List<EnvelopeNextData> envelopes = new ArrayList<>();
+		for (Tuple tuple : results) {
+			EnvelopeNextData data = new EnvelopeNextData();
+			data.setEnvelopeId(tuple.get("id", Long.class));
+			data.setSubject(tuple.get("subject", String.class));
+			data.setSenderEmail(tuple.get("ownerEmail", String.class));
+			data.setExpiresAt(tuple.get("expiresAt", LocalDate.class));
+			data.setSentAt(tuple.get("sentAt", LocalDateTime.class));
+			envelopes.add(data);
+		}
+
+		Long total = getNextEnvelopeCount(currentUserId, cb);
+
+		return new PageImpl<>(envelopes, PageRequest.of(page, size), total);
+	}
+
+	private Long getNextEnvelopeCount(Long currentUserId, CriteriaBuilder cb) {
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<Envelope> countRoot = countQuery.from(Envelope.class);
+
+		Join<Envelope, Recipient> countRecipientJoin = countRoot.join(Envelope_.RECIPIENTS, JoinType.INNER);
+		Join<Recipient, AddressBook> countRecipientAddressJoin = countRecipientJoin.join(Recipient_.ADDRESS_BOOK,
+				JoinType.INNER);
+
+		Predicate countUserCondition = cb
+			.equal(countRecipientAddressJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), currentUserId);
+		Predicate countStatusCondition = cb.equal(countRecipientJoin.get(Recipient_.STATUS),
+				RecipientStatus.NEED_TO_SIGN);
+
+		countQuery.select(cb.countDistinct(countRoot));
+		countQuery.where(cb.and(countUserCondition, countStatusCondition));
+
+		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<Envelope> envelopeRoot,

@@ -46,6 +46,7 @@ import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
@@ -71,6 +72,7 @@ import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
+import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
@@ -789,6 +791,29 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			log.error("Error generating signature certificate PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getCurrentUserNextEnvelopes(EnvelopeNextFilterDto envelopeNextFilterDto) {
+		log.info("getCurrentUserNextEnvelopes: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Page<EnvelopeNextData> envelopePage = envelopeDao.getCurrentUserEnvelopesByExpireDate(currentUser.getUserId(),
+				envelopeNextFilterDto.getPage(), envelopeNextFilterDto.getSize());
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(envelopePage.getContent());
+		pageDto.setCurrentPage(envelopePage.getNumber());
+		pageDto.setTotalItems(envelopePage.getTotalElements());
+		pageDto.setTotalPages(envelopePage.getTotalPages());
+
+		log.info("getCurrentUserNextEnvelopes: execution end");
+
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	private void validateUser(Long envelopeId, boolean isDocAccess) {
