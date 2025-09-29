@@ -58,3 +58,8 @@ export const applicationVersionEndpoints = {
 export const storageAvailabilityEndpoints = {
   GET_STORAGE_AVAILABILITY: `/file/storage/availability`
 };
+
+export const userLanguageEndpoints = {
+  GET_USER_LANGUAGE: `${moduleAPIPath.PEOPLE}/ep/user/language`,
+  UPDATE_USER_LANGUAGE: `${moduleAPIPath.PEOPLE}/ep/user/language`
+};

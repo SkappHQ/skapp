@@ -6,11 +6,13 @@ import {
   authenticationEndpoints,
   emailServerConfigEndpoints,
   notificationEndpoints,
-  organizationCreateEndpoints
+  organizationCreateEndpoints,
+  userLanguageEndpoints
 } from "./utils/ApiEndpoints";
 import {
   emailServerConfigQueryKeys,
-  notificationQueryKeys
+  notificationQueryKeys,
+  userLanguageQueryKeys
 } from "./utils/QueryKeys";
 
 export const useGetNotificationSettings = () => {
@@ -148,3 +150,40 @@ export const useUpdateOrganizationDetails = (onSuccess: () => void) => {
     }
   });
 };
+
+export const useGetUserLanguage = () => {
+  return useQuery({
+    queryKey: userLanguageQueryKeys.GET_USER_LANGUAGE,
+    queryFn: async () => {
+      const response = await authFetch.get(
+        userLanguageEndpoints.GET_USER_LANGUAGE
+      );
+      return response.data.results[0];
+    }
+  });
+};
+
+export const useUpdateUserLanguage = (onSuccess: () => void) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<
+    void,
+    Error,
+    { lang: string }
+  >({
+    mutationFn: (languageData: { lang: string }) =>
+      authFetch.put(
+        userLanguageEndpoints.UPDATE_USER_LANGUAGE,
+        languageData
+      ),
+    onSuccess: () => {
+      // Invalidate and refetch user language query
+      queryClient.invalidateQueries({
+        queryKey: userLanguageQueryKeys.GET_USER_LANGUAGE
+      });
+      onSuccess();
+    }
+  });
+};
+
+

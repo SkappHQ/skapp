@@ -31,3 +31,7 @@ export const applicationVersionInfoQueryKeys = {
 export const storageAvailabilityQueryKeys = {
   GET_STORAGE_AVAILABILITY: ["storage-availability"]
 };
+
+export const userLanguageQueryKeys = {
+  GET_USER_LANGUAGE: ["user-language"]
+};
