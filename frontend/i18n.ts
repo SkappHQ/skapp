@@ -3,9 +3,8 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
-import { englishAria } from "~community/common/assets/aria-labels/en/english";
 import { english } from "~community/common/assets/languages/en/english";
-import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/english/english";
+import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/en/english";
 
 const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
 
