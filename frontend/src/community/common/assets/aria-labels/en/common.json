@@ -1,61 +1,83 @@
 {
-  "skipToContent": {
-    "label": "Open skip to content menu",
-    "skipTo": "Skip to:",
-    "mainContent": "Main content",
-    "topBar": "Top bar",
-    "sideBar": "Side bar",
-    "quickSetup": "Quick Setup"
-  },
   "components": {
-    "pagination": {
-      "label": "pagination"
-    },
-    "emojiPicker": {
-      "icon": "Click me to open the emoji picker"
-    },
-    "colorPalette": {
-      "open": "Click me to open the color palette",
-      "close": "Click me to close the color palette",
-      "pickColor": "Select color {{color}}"
-    },
-    "backButton": "Click me to go to previous page",
-    "closeButton": "Click me to quit signing",
-    "filterBtn": "Filter all leave requests",
-    "inputDate": {
-      "tooltip": "tooltip",
-      "calendarIcon": "Click me to open {{name}} calendar"
-    },
     "appBar": {
       "appBar": "App bar",
       "menuIcon": "Expand menu"
     },
     "avatar": {
       "alt": "Employee avatar",
+      "changeProfileAvatar": "Change profile avatar",
       "removeProfilePicture": "Remove profile picture",
-      "uploadProfilePicture": "Upload profile picture",
-      "changeProfileAvatar": "Change profile avatar"
+      "uploadProfilePicture": "Upload profile picture"
+    },
+    "avatarSearch": {
+      "currentlySelected": "currently selected:"
+    },
+    "backButton": "Click me to go to previous page",
+    "closeButton": "Click me to quit signing",
+    "colorPalette": {
+      "close": "Click me to close the color palette",
+      "open": "Click me to open the color palette",
+      "pickColor": "Select color {{color}}"
     },
     "dragAndDrop": {
       "ariaLabel": "{{componentName}} File Upload",
       "uploadedFiles": {
-        "label": "Uploaded File: {{fileName}}",
-        "description": "Click on me to change the uploaded file"
+        "description": "Click on me to change the uploaded file",
+        "label": "Uploaded File: {{fileName}}"
       }
     },
     "drawer": {
+      "collapse": "Collapse navigation menu",
       "drawer": "Drawer",
-      "expand": "Expand navigation menu",
-      "collapse": "Collapse navigation menu"
+      "expand": "Expand navigation menu"
     },
-    "dropDown": { "label": "label", "dropDown": "Dropdown" },
+    "dropDown": {
+      "dropDown": "Dropdown",
+      "label": "label"
+    },
+    "emojiPicker": {
+      "icon": "Click me to open the emoji picker"
+    },
     "filledArrowIcon": {
-      "right": "Next",
-      "left": "Previous"
+      "left": "Previous",
+      "right": "Next"
+    },
+    "filterBtn": "Filter all leave requests",
+    "filterButton": {
+      "appliedFilter": "Applied filter {{filterLabel}}",
+      "label": "Filter options"
+    },
+    "iconChip": {
+      "label": "icon chip"
+    },
+    "inputDate": {
+      "calendarIcon": "Click me to open {{name}} calendar",
+      "tooltip": "tooltip"
+    },
+    "inputPhoneNumber": {
+      "countryCode": "country code",
+      "countryCodeDescription": "Country code +{{countryCode}}",
+      "phoneNumber": "phone number"
+    },
+    "itemSelector": {
+      "popperLabel": "Item Selector"
     },
     "modal": {
-      "modal": "{{title}} modal",
-      "closeIconBtn": "Close {{title}} modal"
+      "closeIconBtn": "Close {{title}} modal",
+      "modal": "{{title}} modal"
+    },
+    "multiSelectManagerSearch": {
+      "managerOptions": "Other supervisors options",
+      "searchManagers": "Search for managers",
+      "selected": "selected"
+    },
+    "pagination": {
+      "label": "pagination"
+    },
+    "search": {
+      "label": "Enter Search Keyword",
+      "searchSuggestions": "Search suggestions"
     },
     "switch": {
       "ariaLabel": "Switch on"
@@ -65,41 +87,8 @@
         "checkbox": "Select all rows"
       }
     },
-    "itemSelector": {
-      "popperLabel": "Item Selector"
-    },
-    "inputPhoneNumber": {
-      "countryCode": "country code",
-      "phoneNumber": "phone number",
-      "countryCodeDescription": "Country code +{{countryCode}}"
-    },
-    "search": {
-      "label": "Enter Search Keyword",
-      "searchSuggestions": "Search suggestions"
-    },
-    "iconChip": {
-      "label": "icon chip"
-    },
-    "filterButton": {
-      "appliedFilter": "Applied filter {{filterLabel}}",
-      "label": "Filter options"
-    },
-    "avatarSearch": {
-      "currentlySelected": "currently selected:"
-    },
-    "multiSelectManagerSearch": {
-      "searchManagers": "Search for managers",
-      "managerOptions": "Other supervisors options",
-      "selected": "selected"
-    },
     "toggleSwitch": {
       "label": "Toggle switch, {{option}} selected"
-    }
-  },
-  "modals": {
-    "resetPassword": {
-      "showPassword": "Show password",
-      "hidePassword": "Hide password"
     }
   },
   "contentLayout": {
@@ -110,7 +99,21 @@
     "contentAreaWithDrawer": "Main content area with drawer"
   },
   "dateRangePicker": {
-    "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date",
-    "noSelectedDateLabel": "Selected date range is from {{startDate}} to {{endDate}}. Press enter to select date"
+    "noSelectedDateLabel": "Selected date range is from {{startDate}} to {{endDate}}. Press enter to select date",
+    "selectedDateLabel": "Selected date from {{startDate}} to {{endDate}}. Press enter to change selected date"
+  },
+  "modals": {
+    "resetPassword": {
+      "hidePassword": "Hide password",
+      "showPassword": "Show password"
+    }
+  },
+  "skipToContent": {
+    "label": "Open skip to content menu",
+    "mainContent": "Main content",
+    "quickSetup": "Quick Setup",
+    "sideBar": "Side bar",
+    "skipTo": "Skip to:",
+    "topBar": "Top bar"
   }
 }

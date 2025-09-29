@@ -1,135 +1,131 @@
 {
-  "jobFamily": {
-    "addJobTitleButton": "Add job title",
-    "jobTitleField": "{{jobTitleName}} job title field",
-    "edit": "Edit",
-    "delete": "Delete job title",
-    "check": "Check",
-    "cancel": "Cancel",
-    "table": {
-      "actionColumn": {
-        "editButton": {
-          "label": "Edit {{jobFamilyName}} job family",
-          "description": ""
-        },
-        "deleteButton": {
-          "label": "Delete {{jobFamilyName}} job family",
-          "description": ""
-        }
-      }
-    }
-  },
-  "teams": {
-    "table": {
-      "actionColumn": {
-        "editButton": {
-          "label": "Edit {{teamName}} team",
-          "description": ""
-        },
-        "deleteButton": {
-          "label": "Delete {{teamName}} team",
-          "description": ""
-        }
-      }
-    },
-    "modal": {
-      "teamMemberRoleDropdown": "Select team member role dropdown"
-    }
-  },
   "addResource": {
-    "generalDetails": {
-      "selectGender": "Select gender",
-      "selectMaritalStatus": "Select marital status",
-      "addProfileAvatar": "Add profile avatar",
-      "enterNIN": "National Identification Number",
-      "passportNumber": "Passport Number"
+    "careerProgression": {
+      "careerProgressionTable": "Career progression table",
+      "selectCurrentEmploymentChecked": "Select current employment",
+      "selectEmploymentType": "Select employment type",
+      "selectJobFamily": "Select job family",
+      "selectJobTitle": "Select job title"
     },
     "contactDetails": {
       "contactNumber": "Contact number"
     },
-    "familyDetails": {
-      "selectGender": "Select gender",
-      "selectRelationship": "Select relationship",
-      "familyDetailsTable": "Family details table"
+    "diversityDetails": {
+      "selectEEOJobCategory": "Select EEO job category",
+      "selectEthnicity": "Select ethnicity"
     },
-    "healthAndOtherDetails": {
-      "selectBloodGroup": "Select blood group"
+    "educationDetails": {
+      "educationalDetailsTable": "Educational details table"
     },
     "emergencyDetails": {
       "selectRelationship": "Select relationship"
     },
     "employmentDetails": {
+      "enterEmployeeNo": "Employee number",
       "selectEmploymentAllocation": "Select employment allocation",
-      "selectMultipleTeams": "Select multiple teams dropdown",
-      "enterEmployeeNo": "Employee number"
+      "selectMultipleTeams": "Select multiple teams dropdown"
     },
-    "careerProgression": {
-      "selectEmploymentType": "Select employment type",
-      "selectJobFamily": "Select job family",
-      "selectJobTitle": "Select job title",
-      "selectCurrentEmploymentChecked": "Select current employment",
-      "careerProgressionTable": "Career progression table"
+    "entitlementDetails": {
+      "entitlementsTable": "Entitlements table"
     },
-    "diversityDetails": {
-      "selectEthnicity": "Select ethnicity",
-      "selectEEOJobCategory": "Select EEO job category"
+    "familyDetails": {
+      "familyDetailsTable": "Family details table",
+      "selectGender": "Select gender",
+      "selectRelationship": "Select relationship"
+    },
+    "generalDetails": {
+      "addProfileAvatar": "Add profile avatar",
+      "enterNIN": "National Identification Number",
+      "passportNumber": "Passport Number",
+      "selectGender": "Select gender",
+      "selectMaritalStatus": "Select marital status"
+    },
+    "healthAndOtherDetails": {
+      "selectBloodGroup": "Select blood group"
     },
     "previousEmploymentDetails": {
       "previousEmploymentTable": "Previous employment details table"
     },
     "visaDetails": {
       "visaDetailsTable": "Visa details table"
+    }
+  },
+  "directory": {
+    "addPeopleModal": {
+      "attendancePermissions": "Attendance Permissions",
+      "eSignPermissions": "E-sign Permissions",
+      "leavePermissions": "Leave Permissions",
+      "peoplePermissions": "People Permissions",
+      "superAdminToggle": "Super Admin Toggle"
     },
-    "educationDetails": {
-      "educationalDetailsTable": "Educational details table"
-    },
-    "entitlementDetails": {
-      "entitlementsTable": "Entitlements table"
+    "empty": "empty",
+    "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
+    "selectEmployee": "Select employee {{employeeName}}",
+    "sortBy": "Sort by: {{sortBy}}",
+    "sortDropdown": "Sort by Dropdown",
+    "uploadPeople": "Upload People",
+    "userBulkUpload": "User Bulk",
+    "userProfile": "User Profile of {{name}}"
+  },
+  "holiday": {
+    "deleteHoliday": "Delete {{holidayName}} holiday",
+    "disabled": "Disabled",
+    "enabled": "Enabled",
+    "holidayTable": "Holidays table for the year {{year}}",
+    "holidayTableRow": "Row: Date {{date}}; Duration {{duration}}; Holiday Name: {{holidayName}}; Delete holiday {{status}}",
+    "holidays": "Holidays",
+    "selectDateField": "Select the date field, required. Press Enter to open calendar",
+    "selectHoliday": "Select holiday {{holidayName}}",
+    "sortByDropdown": {
+      "chronologically": "Chronologically : ",
+      "currentSelection": "Current selection is",
+      "decToJan": "December to January",
+      "janToDec": "January to December",
+      "sort": "Sort by month",
+      "yearSelector": "Year selector"
     }
   },
   "individualLeaveAnalytics": {
     "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type"
   },
-  "peopleFormTable": {
-    "actionColumn": {
-      "editButton": "Select edit",
-      "deleteButton": "Select delete"
+  "jobFamily": {
+    "addJobTitleButton": "Add job title",
+    "cancel": "Cancel",
+    "check": "Check",
+    "delete": "Delete job title",
+    "edit": "Edit",
+    "jobTitleField": "{{jobTitleName}} job title field",
+    "table": {
+      "actionColumn": {
+        "deleteButton": {
+          "label": "Delete {{jobFamilyName}} job family"
+        },
+        "editButton": {
+          "label": "Edit {{jobFamilyName}} job family"
+        }
+      }
     }
   },
-  "holiday": {
-    "sortByDropdown": {
-      "sort": "Sort by month",
-      "chronologically": "Chronologically : ",
-      "janToDec": "January to December",
-      "decToJan": "December to January",
-      "yearSelector": "Year selector",
-      "currentSelection": "Current selection is"
-    },
-    "holidays": "Holidays",
-    "selectDateField": "Select the date field, required. Press Enter to open calendar",
-    "holidayTable": "Holidays table for the year {{year}}",
-    "selectHoliday": "Select holiday {{holidayName}}",
-    "holidayTableRow": "Row: Date {{date}}; Duration {{duration}}; Holiday Name: {{holidayName}}; Delete holiday {{status}}",
-    "deleteHoliday": "Delete {{holidayName}} holiday",
-    "enabled": "Enabled",
-    "disabled": "Disabled"
+  "peopleFormTable": {
+    "actionColumn": {
+      "deleteButton": "Select delete",
+      "editButton": "Select edit"
+    }
   },
-  "directory": {
-    "userBulkUpload": "User Bulk",
-    "uploadPeople": "Upload People",
-    "addPeopleModal": {
-      "superAdminToggle": "Super Admin Toggle",
-      "peoplePermissions": "People Permissions",
-      "leavePermissions": "Leave Permissions",
-      "attendancePermissions": "Attendance Permissions",
-      "eSignPermissions": "E-sign Permissions"
+  "teams": {
+    "modal": {
+      "teamMemberRoleDropdown": "Select team member role dropdown"
     },
-    "sortBy": "Sort by: {{sortBy}}",
-    "sortDropdown": "Sort by Dropdown",
-    "peopleTableRowPending": "Name: {{name}}, Status: Pending, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
-    "peopleTableRow": "Name: {{name}}, Job Title: {{jobTitle}}, Email: {{email}}, Teams: {{teams}}, Supervisor: {{supervisor}}. Click to go to Employee View",
-    "empty": "empty",
-    "userProfile": "User Profile of {{name}}",
-    "selectEmployee": "Select employee {{employeeName}}"
+    "table": {
+      "actionColumn": {
+        "deleteButton": {
+          "label": "Delete {{teamName}} team"
+        },
+        "editButton": {
+          "label": "Edit {{teamName}} team"
+        }
+      }
+    }
   }
 }

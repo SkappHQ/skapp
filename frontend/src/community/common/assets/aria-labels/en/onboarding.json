@@ -1,19 +1,19 @@
 {
   "signInForm": {
     "password": {
-      "showPassword": "Show password",
-      "hidePassword": "Hide password"
-    }
-  },
-  "signUpForm": {
-    "password": {
-      "showPassword": "Show password",
-      "hidePassword": "Hide password"
+      "hidePassword": "Hide password",
+      "showPassword": "Show password"
     }
   },
   "signUpFlowForm": {
     "form": "form",
-    "signInLinkSection": "Sign in link section",
-    "signInLink": "Sign in to your account"
+    "signInLink": "Sign in to your account",
+    "signInLinkSection": "Sign in link section"
+  },
+  "signUpForm": {
+    "password": {
+      "hidePassword": "Hide password",
+      "showPassword": "Show password"
+    }
   }
 }

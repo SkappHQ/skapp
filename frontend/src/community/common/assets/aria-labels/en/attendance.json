@@ -1,39 +1,39 @@
 {
+  "dashboards": {
+    "averageHoursWorkedNextDates": "next dates",
+    "averageHoursWorkedNextMonth": "next month",
+    "averageHoursWorkedPreviousDates": "previous dates",
+    "averageHoursWorkedPreviousMonth": "previous month",
+    "clockChart": "{{type}} chart - use arrow keys to navigate",
+    "clockInTrend": "Clock in trend",
+    "clockOutTrend": "Clock out trend",
+    "date": "Date",
+    "lateArrivalChart": "{{type}} late arrival trend - use arrow keys to navigate",
+    "lateArrivalTrendMonthly": "monthly late arrival trend",
+    "lateArrivalTrendMonthlyNext": "next month",
+    "lateArrivalTrendMonthlyPrevious": "previous month",
+    "lateArrivalTrendWeekly": "Weekly late arrival trend",
+    "lateArrivalTrendWeeklyNext": "next week",
+    "lateArrivalTrendWeeklyPrevious": "previous week",
+    "nextTimeSlots": "next time slots",
+    "previousTimeSlots": "previous time slots",
+    "todaysClockInsExtendedView": "Today's clock ins extended view",
+    "todaysLateArrivalsExtendedView": "Today's late arrivals extended view"
+  },
   "timeWidget": {
-    "widget": "Clock Widget",
+    "pauseTimer": "Take a break",
     "startTimer": "Resume timer",
-    "pauseTimer": "Take a break"
+    "widget": "Clock Widget"
   },
   "timesheet": {
     "dailyLogTable": {
       "holiday": "holiday",
       "leave": "leave",
-      "previousButton": "Click to go to previous",
-      "nextButton": "Click to go to next"
+      "nextButton": "Click to go to next",
+      "previousButton": "Click to go to previous"
     },
     "timeEntryRequestTable": {
       "filterButton": "Filter options"
     }
-  },
-  "dashboards": {
-    "todaysClockInsExtendedView": "Today's clock ins extended view",
-    "todaysLateArrivalsExtendedView": "Today's late arrivals extended view",
-    "clockInTrend": "Clock in trend",
-    "clockOutTrend": "Clock out trend",
-    "date": "Date",
-    "lateArrivalTrendWeekly": "Weekly late arrival trend",
-    "lateArrivalTrendMonthly": "monthly late arrival trend",
-    "previousTimeSlots": "previous time slots",
-    "nextTimeSlots": "next time slots",
-    "lateArrivalTrendWeeklyNext": "next week",
-    "lateArrivalTrendWeeklyPrevious": "previous week",
-    "lateArrivalTrendMonthlyNext": "next month",
-    "lateArrivalTrendMonthlyPrevious": "previous month",
-    "averageHoursWorkedNextMonth": "next month",
-    "averageHoursWorkedPreviousMonth": "previous month",
-    "averageHoursWorkedNextDates": "next dates",
-    "averageHoursWorkedPreviousDates": "previous dates",
-    "clockChart": "{{type}} chart - use arrow keys to navigate",
-    "lateArrivalChart": "{{type}} late arrival trend - use arrow keys to navigate"
   }
 }
