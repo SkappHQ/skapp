@@ -98,9 +98,6 @@ const LanguagePreferenceSection: FC<LanguagePreferenceSectionProps> = ({
   );
 };
 
-
-
-
 const SettingsSection: FC = () => {
   const translatedText = useTranslator("settings");
 
@@ -118,23 +115,16 @@ const SettingsSection: FC = () => {
 
   const { data: userLanguage, isLoading: isLanguageLoading, error: languageError } = useGetUserLanguage();
 
-  // Log the user language response to console for debugging
-  console.log("User language data:", userLanguage);
-  console.log("Is language loading:", isLanguageLoading);
-  console.log("Language error:", languageError);
-
   const updateLanguageMutation = useUpdateUserLanguage(() => {
-    console.log("Language updated successfully");
+    // Language updated successfully
   });
 
   const handleLanguageChange = (selectedLanguage: string) => {
     // Prevent multiple concurrent API calls
     if (updateLanguageMutation.isPending) {
-      console.log("Language update already in progress, ignoring request");
       return;
     }
 
-    console.log("Updating language to:", selectedLanguage);
     updateLanguageMutation.mutate({ lang: selectedLanguage });
   };
 

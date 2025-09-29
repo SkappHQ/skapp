@@ -304,8 +304,8 @@ export const IconMapping: Partial<
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
   [IconName.CAMERA_ICON]: CameraIcon,
-  [IconName.SWEDISH_FLAG_ICON]:SwedishFlagIcon,
-  [IconName.ENGLISH_FLAG_ICON]:EnglishFlagIcon
+  [IconName.SWEDISH_FLAG_ICON]: SwedishFlagIcon,
+  [IconName.ENGLISH_FLAG_ICON]: EnglishFlagIcon
 };
 
 const Icon = ({
