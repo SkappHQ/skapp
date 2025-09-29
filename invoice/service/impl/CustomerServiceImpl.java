@@ -149,10 +149,13 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		if (customerCreateRequestDto.getCustomerBillingDetails() != null) {
+			customerValidationService
+				.validateCustomerBillingDetails(customerCreateRequestDto.getCustomerBillingDetails());
 			if (customerCreateRequestDto.getCustomerBillingDetails().getEmail() != null) {
-				customerValidationService
-					.validateCustomerBillingDetails(customerCreateRequestDto.getCustomerBillingDetails());
 				customer.setEmail(customerCreateRequestDto.getCustomerBillingDetails().getEmail());
+			}
+			if (customerCreateRequestDto.getCustomerBillingDetails().getVatId() != null) {
+				customer.setVatId(customerCreateRequestDto.getCustomerBillingDetails().getVatId());
 			}
 			if (customerCreateRequestDto.getCustomerBillingDetails().getAddress() != null) {
 				customer.setAddress(customerCreateRequestDto.getCustomerBillingDetails().getAddress());
@@ -306,7 +309,7 @@ public class CustomerServiceImpl implements CustomerService {
 			// exists
 			customerValidationService
 				.validateCustomerBillingDetails(customerCreateRequestDto.getCustomerBillingDetails());
-
+			customer.setVatId(customerCreateRequestDto.getCustomerBillingDetails().getVatId());
 			customer.setAddress(customerCreateRequestDto.getCustomerBillingDetails().getAddress());
 			customer.setCountry(customerCreateRequestDto.getCustomerBillingDetails().getCountry());
 			customer.setCurrency(customerCreateRequestDto.getCustomerBillingDetails().getCurrency() != null

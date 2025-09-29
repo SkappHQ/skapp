@@ -37,6 +37,9 @@ public class Customer extends Auditable<String> {
 	@Column(name = "email")
 	private String email;
 
+	@Column(name = "vat_id")
+	private String vatId;
+
 	@Column(name = "address")
 	private String address;
 

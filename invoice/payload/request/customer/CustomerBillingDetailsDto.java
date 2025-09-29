@@ -12,6 +12,8 @@ public class CustomerBillingDetailsDto {
 
 	private String email;
 
+	private String vatId;
+
 	private String address;
 
 	private String country;
