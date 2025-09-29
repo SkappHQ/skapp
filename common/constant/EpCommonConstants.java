@@ -121,4 +121,6 @@ public class EpCommonConstants {
 
 	public static final String NON_PRD_CONFIG_PATH = "enterprise/validations/email-validation-non-prd.yml";
 
+	public static final String MOBILE_APP_LEAVE_URL = "com.skapp.app://LeaveRequests";
+
 }
