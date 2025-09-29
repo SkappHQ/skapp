@@ -4,7 +4,9 @@ import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 import { english } from "~community/common/assets/languages/en/english";
+import { swedish } from "~community/common/assets/languages/sv/swedish";
 import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/en/english";
+import { swedish as swedishEnterprise } from "~enterprise/common/assets/languages/sv/swedish";
 
 const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
 
@@ -18,6 +20,9 @@ i18n
     resources: {
       en: {
         translation: isEnterpriseMode ? enterpriseEnglish : english
+      },
+      sv: {
+        translation: isEnterpriseMode ? swedishEnterprise : swedish
       }
     },
     interpolation: {
