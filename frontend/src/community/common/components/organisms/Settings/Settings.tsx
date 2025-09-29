@@ -32,6 +32,71 @@ import DropdownList from "../../molecules/DropdownList/DropdownList";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
 import Icon from "../../atoms/Icon/Icon";
 
+interface LanguagePreferenceSectionProps {
+  userLanguage?: string;
+  isLanguageLoading: boolean;
+  updateLanguageMutationIsPending:boolean;
+  onLanguageChange: (language: string) => void;
+  translatedText: (keys: string[]) => string;
+}
+
+const LanguagePreferenceSection: FC<LanguagePreferenceSectionProps> = ({
+  userLanguage,
+  isLanguageLoading,
+  updateLanguageMutationIsPending,
+  onLanguageChange,
+  translatedText
+}) => {
+  const languageOptions = [
+    {
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Icon name={IconName.ENGLISH_FLAG_ICON} width="16" height="13" />
+          <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
+            English
+          </Typography>
+        </Box>
+      ),
+      value: "en"
+    },
+    {
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Icon name={IconName.SWEDISH_FLAG_ICON} width="16" height="13" />
+          <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
+            Swedish (Svenska)
+          </Typography>
+        </Box>
+      ),
+      value: "sv"
+    }
+  ];
+
+  return (
+    <Box sx={{ py: "1.5rem" }}>
+      <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+        {translatedText(["languagePreference"])}
+      </Typography>
+      <Typography variant="body1">
+        {translatedText(["languagePreferenceDescription"])}
+      </Typography>
+      <Box sx={{ mt: "1.25rem", maxWidth: "20rem" }}>
+        <DropdownList
+          inputName="LanguageDropdown"
+          placeholder={translatedText(["languagePreferencePlaceholder"])}
+          value={userLanguage || ""}
+          isDisabled={updateLanguageMutationIsPending || isLanguageLoading}
+          onChange={(event) => {
+            const target = event.target as HTMLInputElement;
+            onLanguageChange(target.value);
+          }}
+          itemList={languageOptions}
+          required={false}
+        />
+      </Box>
+    </Box>
+  );
+};
 
 
 
@@ -71,58 +136,6 @@ const SettingsSection: FC = () => {
 
     console.log("Updating language to:", selectedLanguage);
     updateLanguageMutation.mutate({ lang: selectedLanguage });
-  };
-
-  const LanguagePreferenceSection: FC = () => {
-    const languageOptions = [
-      {
-      label: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Icon name={IconName.ENGLISH_FLAG_ICON} width="16" height="13" />
-        <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
-          English
-        </Typography>
-        </Box>
-      ),
-      value: "en"
-      },
-      {
-      label: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Icon name={IconName.SWEDISH_FLAG_ICON} width="16" height="13" />
-        <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
-          Swedish (Svenska)
-        </Typography>
-        </Box>
-      ),
-      value: "sv"
-      }
-    ];
-
-    return (
-      <Box sx={{ py: "1.5rem" }}>
-        <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-          {translatedText(["languagePreference"])}
-        </Typography>
-        <Typography variant="body1">
-          {translatedText(["languagePreferenceDescription"])}
-        </Typography>
-        <Box sx={{ mt: "1.25rem", maxWidth: "20rem" }}>
-          <DropdownList
-            inputName="LanguageDropdown"
-            placeholder={translatedText(["languagePreferencePlaceholder"])}
-            value={userLanguage || ""}
-            isDisabled={updateLanguageMutation.isPending || isLanguageLoading}
-            onChange={(event) => {
-              const target = event.target as HTMLInputElement;
-              handleLanguageChange(target.value);
-            }}
-            itemList={languageOptions}
-            required={false}
-          />
-        </Box>
-      </Box>
-    );
   };
 
   const managerRoles = Object.values(ManagerTypes);
@@ -206,7 +219,13 @@ const SettingsSection: FC = () => {
             </>
           )}
 
-          <LanguagePreferenceSection />
+          <LanguagePreferenceSection
+            userLanguage={userLanguage}
+            isLanguageLoading={isLanguageLoading}
+            updateLanguageMutationIsPending={updateLanguageMutation.isPending}
+            onLanguageChange={handleLanguageChange}
+            translatedText={translatedText}
+          />
 
           <Divider />
           <Box sx={{ py: "1.5rem" }}>
