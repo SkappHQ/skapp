@@ -53,6 +53,7 @@ import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
+import EnglishFlagIcon from "~community/common/assets/Icons/EnglishFlagIcon";
 import EsignatureModuleIcon from "~community/common/assets/Icons/EsignatureModuleIcon";
 import ExpandIcon from "~community/common/assets/Icons/ExpandIcon";
 import EyeIcon from "~community/common/assets/Icons/EyeIcon";
@@ -124,6 +125,7 @@ import SkappIcon from "~community/common/assets/Icons/SkappIcon";
 import StampIcon from "~community/common/assets/Icons/StampIcon";
 import SuccessIcon from "~community/common/assets/Icons/SuccessIcon";
 import SuperAdminIcon from "~community/common/assets/Icons/SuperAdminIcon";
+import SwedishFlagIcon from "~community/common/assets/Icons/SwedishFlagIcon";
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
 import ThreeDotsIcon from "~community/common/assets/Icons/ThreeDotsIcon";
 import TickIcon from "~community/common/assets/Icons/TickIcon";
@@ -301,8 +303,9 @@ export const IconMapping: Partial<
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
-  [IconName.CAMERA_ICON]: CameraIcon
-  // Add more icons here as needed
+  [IconName.CAMERA_ICON]: CameraIcon,
+  [IconName.SWEDISH_FLAG_ICON]:SwedishFlagIcon,
+  [IconName.ENGLISH_FLAG_ICON]:EnglishFlagIcon
 };
 
 const Icon = ({

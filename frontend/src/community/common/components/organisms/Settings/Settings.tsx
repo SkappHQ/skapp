@@ -11,7 +11,7 @@ import {
 import { useSession } from "next-auth/react";
 import { FC } from "react";
 
-import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
+import { useGetEmailServerConfig, useGetUserLanguage, useUpdateUserLanguage } from "~community/common/api/settingsApi";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
@@ -28,7 +28,13 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import ManageSubscriptionSettingsSection from "~enterprise/settings/components/molecules/ManageSubscriptionSettingsSection/ManageSubscriptionSettingsSection";
 
 import Button from "../../atoms/Button/Button";
+import DropdownList from "../../molecules/DropdownList/DropdownList";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
+import Icon from "../../atoms/Icon/Icon";
+
+
+
+
 
 const SettingsSection: FC = () => {
   const translatedText = useTranslator("settings");
@@ -44,6 +50,80 @@ const SettingsSection: FC = () => {
   const isEnterpriseMode = useGetEnvironment() === appModes.ENTERPRISE;
 
   const { data: config } = useGetEmailServerConfig(isEnterpriseMode);
+
+  const { data: userLanguage, isLoading: isLanguageLoading, error: languageError } = useGetUserLanguage();
+
+  // Log the user language response to console for debugging
+  console.log("User language data:", userLanguage);
+  console.log("Is language loading:", isLanguageLoading);
+  console.log("Language error:", languageError);
+
+  const updateLanguageMutation = useUpdateUserLanguage(() => {
+    console.log("Language updated successfully");
+  });
+
+  const handleLanguageChange = (selectedLanguage: string) => {
+    // Prevent multiple concurrent API calls
+    if (updateLanguageMutation.isPending) {
+      console.log("Language update already in progress, ignoring request");
+      return;
+    }
+
+    console.log("Updating language to:", selectedLanguage);
+    updateLanguageMutation.mutate({ lang: selectedLanguage });
+  };
+
+  const LanguagePreferenceSection: FC = () => {
+    const languageOptions = [
+      {
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Icon name={IconName.ENGLISH_FLAG_ICON} width="16" height="13" />
+        <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
+          English
+        </Typography>
+        </Box>
+      ),
+      value: "en"
+      },
+      {
+      label: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Icon name={IconName.SWEDISH_FLAG_ICON} width="16" height="13" />
+        <Typography variant="body2" sx={{ fontWeight: 400, fontSize: '14px', lineHeight: '100%', letterSpacing: 0 }}>
+          Swedish (Svenska)
+        </Typography>
+        </Box>
+      ),
+      value: "sv"
+      }
+    ];
+
+    return (
+      <Box sx={{ py: "1.5rem" }}>
+        <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+          {translatedText(["languagePreference"])}
+        </Typography>
+        <Typography variant="body1">
+          {translatedText(["languagePreferenceDescription"])}
+        </Typography>
+        <Box sx={{ mt: "1.25rem", maxWidth: "20rem" }}>
+          <DropdownList
+            inputName="LanguageDropdown"
+            placeholder={translatedText(["languagePreferencePlaceholder"])}
+            value={userLanguage || ""}
+            isDisabled={updateLanguageMutation.isPending || isLanguageLoading}
+            onChange={(event) => {
+              const target = event.target as HTMLInputElement;
+              handleLanguageChange(target.value);
+            }}
+            itemList={languageOptions}
+            required={false}
+          />
+        </Box>
+      </Box>
+    );
+  };
 
   const managerRoles = Object.values(ManagerTypes);
 
@@ -126,6 +206,9 @@ const SettingsSection: FC = () => {
             </>
           )}
 
+          <LanguagePreferenceSection />
+
+          <Divider />
           <Box sx={{ py: "1.5rem" }}>
             <Typography variant="h2" sx={{ pb: "0.75rem" }}>
               {translatedText(["organizationSettingsTitle"])}
