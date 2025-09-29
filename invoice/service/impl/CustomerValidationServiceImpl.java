@@ -48,6 +48,18 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			}
 		}
 
+		if (customerBillingDetails.getVatId() != null) {
+			String vatId = customerBillingDetails.getVatId().trim();
+
+			if (vatId.length() > InvoiceCommonConstant.CUSTOMER_VAT_ID_LENGTH) {
+				throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_VAT_ID_MAX_LENGTH_EXCEEDED);
+			}
+
+			if (!vatId.matches(InvoiceCommonConstant.CUSTOMER_VAT_ID_REGEX)) {
+				throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_VAT_ID_INVALID_CHARACTERS);
+			}
+		}
+
 	}
 
 	@Override

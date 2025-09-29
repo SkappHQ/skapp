@@ -41,4 +41,8 @@ public class InvoiceCommonConstant {
 
 	public static final Double DEFAULT_BILLABLE_RATE = 0.0;
 
+	public static final int CUSTOMER_VAT_ID_LENGTH = 50;
+
+	public static final String CUSTOMER_VAT_ID_REGEX = "^[a-zA-Z0-9\\-/]*$";
+
 }
