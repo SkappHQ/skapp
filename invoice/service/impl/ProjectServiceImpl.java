@@ -17,21 +17,21 @@ import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.model.ProjectKey;
+import com.skapp.enterprise.invoice.payload.request.ImportTimeLogFilterDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
-import com.skapp.enterprise.invoice.payload.response.TenantProjectListResponseDto;
-import com.skapp.enterprise.invoice.payload.response.TenantProjectUserResponseDto;
-import com.skapp.enterprise.invoice.payload.response.ProjectAdminResponseDto;
-import com.skapp.enterprise.invoice.payload.response.ProjectMembersResponseDto;
-import com.skapp.enterprise.invoice.payload.response.ProjectSummaryResponseDto;
-import com.skapp.enterprise.invoice.payload.response.ProjectUsersResponseDto;
+import com.skapp.enterprise.invoice.payload.response.*;
+import com.skapp.enterprise.invoice.payload.response.project.*;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.ProjectDao;
 import com.skapp.enterprise.invoice.service.BillableRateService;
 import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.ProjectService;
+import com.skapp.enterprise.invoice.type.BillableFrequency;
+import com.skapp.enterprise.invoice.type.ImportTimeLogGroupKey;
 import com.skapp.enterprise.invoice.type.ProjectUserRole;
+import com.skapp.enterprise.people.service.EpUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,6 +80,8 @@ public class ProjectServiceImpl implements ProjectService {
 	private final ProjectMapper projectMapper;
 
 	private final EmployeeDao employeeDao;
+
+	private final EpUserService epUserService;
 
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
@@ -303,6 +306,171 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
+	@Override
+	public ResponseEntityDto importTimeLogs(HttpServletRequest request, ImportTimeLogFilterDto importTimeLogFilterDto) {
+
+		List<ImportTimeLogsResponseDto> importTimeLogsResponseDtos = new ArrayList<>();
+
+		if (importTimeLogFilterDto.getGroupBy() == ImportTimeLogGroupKey.RESOURCE) {
+
+			importTimeLogsResponseDtos = getResourceWiseTimeLogs(request, importTimeLogFilterDto);
+
+		}
+		else {
+			importTimeLogsResponseDtos = getTaskWiseTimeLogs(request, importTimeLogFilterDto);
+		}
+
+		return new ResponseEntityDto(false, importTimeLogsResponseDtos);
+	}
+
+	private List<ImportTimeLogsResponseDto> getTaskWiseTimeLogs(HttpServletRequest request,
+			ImportTimeLogFilterDto importTimeLogFilterDto) {
+
+		List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = callExternalAPItoGetTaskWiseTimeLogs(request,
+				importTimeLogFilterDto);
+
+		List<TaskWorkLogDto> allTaskWorkLogs = taskWiseTimeLogs.stream()
+			.flatMap(taskLog -> taskLog.getItemInfoWorkLog().stream())
+			.toList();
+
+		List<Long> employeeIds = allTaskWorkLogs.stream().map(TaskWorkLogDto::getUserId).distinct().toList();
+
+		List<Employee> users = epUserService.getUsersByIds(employeeIds);
+		List<BillableRate> memberBillableRates = billableRateService
+			.getBillableRatesByProjectId(importTimeLogFilterDto.getProjectId());
+
+		Map<Long, Employee> userMap = users.stream().collect(Collectors.toMap(Employee::getEmployeeId, user -> user));
+		Map<Long, BillableRate> rateMap = memberBillableRates.stream()
+			.collect(Collectors.toMap(rate -> rate.getEmployee().getEmployeeId(), rate -> rate));
+
+		List<ImportTimeLogsResponseDto> importTimeLogsResponseDtos = taskWiseTimeLogs.stream().map(taskLog -> {
+			ImportTimeLogsResponseDto dto = new ImportTimeLogsResponseDto();
+			dto.setDescription(taskLog.getTitle());
+
+			double totalTime = 0.0;
+			double totalAmount = 0.0;
+
+			Map<Long, Double> userTotalTimeMap = taskLog.getItemInfoWorkLog()
+				.stream()
+				.collect(Collectors.groupingBy(TaskWorkLogDto::getUserId,
+						Collectors.summingDouble(TaskWorkLogDto::getTime)));
+
+			for (Map.Entry<Long, Double> entry : userTotalTimeMap.entrySet()) {
+				Long userId = entry.getKey();
+				Double time = entry.getValue();
+
+				Employee user = userMap.get(userId);
+				BillableRate rate = rateMap.get(userId);
+
+				if (user != null && rate != null) {
+					double quantity = convertTimeToQuantity(time, rate.getBillableFrequency(),
+							importTimeLogFilterDto.getRoundOff());
+					totalTime += time;
+					totalAmount += calculateAmount(quantity, rate.getBillableRate(), rate.getBillableFrequency());
+				}
+			}
+
+			dto.setUnit(BillableFrequency.PER_HOUR);
+			dto.setQuantity(
+					convertTimeToQuantity(totalTime, BillableFrequency.PER_HOUR, importTimeLogFilterDto.getRoundOff()));
+			dto.setAmount(totalAmount);
+
+			return dto;
+		}).toList();
+
+		return importTimeLogsResponseDtos;
+
+	}
+
+	private List<ImportTimeLogsResponseDto> getResourceWiseTimeLogs(HttpServletRequest request,
+			ImportTimeLogFilterDto importTimeLogFilterDto) {
+
+		List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = callExternalAPItoGetResourceWiseTimeLogs(
+				request, importTimeLogFilterDto);
+
+		List<Long> employeeIds = resourceWiseTimeLogs.stream()
+			.map(TenantProjectResourceWiseTimeLogDto::getUserId)
+			.collect(Collectors.toList());
+
+		// get employee details from employeeId
+		List<Employee> users = epUserService.getUsersByIds(employeeIds);
+
+		// get employee rates from BillableRate table
+		List<BillableRate> memberBillableRates = billableRateService
+			.getBillableRatesByProjectId(importTimeLogFilterDto.getProjectId());
+
+		List<ImportTimeLogsResponseDto> importTimeLogsResponseDtos = new ArrayList<>();
+
+		resourceWiseTimeLogs.forEach(timeLog -> {
+			users.stream()
+				.filter(user -> Objects.equals(user.getEmployeeId(), timeLog.getUserId()))
+				.forEach(filteredUser -> {
+					memberBillableRates.stream()
+						.filter(rate -> Objects.equals(rate.getEmployee().getEmployeeId(), timeLog.getUserId()))
+						.forEach(filteredRate -> {
+
+							ImportTimeLogsResponseDto importTimeLogsResponseDto = new ImportTimeLogsResponseDto();
+							importTimeLogsResponseDto.setDescription(filteredUser.getFullName());
+							importTimeLogsResponseDto.setUnit(filteredRate.getBillableFrequency());
+							importTimeLogsResponseDto.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(),
+									importTimeLogsResponseDto.getUnit(), importTimeLogFilterDto.getRoundOff()));
+							importTimeLogsResponseDto.setRate(filteredRate.getBillableRate());
+							importTimeLogsResponseDto.setAmount(calculateAmount(importTimeLogsResponseDto.getQuantity(),
+									importTimeLogsResponseDto.getRate(), importTimeLogsResponseDto.getUnit()));
+
+							importTimeLogsResponseDtos.add(importTimeLogsResponseDto);
+
+						});
+				});
+		});
+
+		return importTimeLogsResponseDtos;
+	}
+
+	private Double convertTimeToQuantity(Double quantity, BillableFrequency billableFrequency, Boolean roundOff) {
+
+		if (roundOff != null && roundOff) {
+			quantity = (double) roundMinutesToNearest15(quantity.intValue());
+		}
+
+		switch (billableFrequency) {
+			case PER_HOUR:
+				return quantity / 60.0;
+			case PER_DAY:
+				// 1 day = 8 hours
+				return quantity * 60 / 480.0;
+			case PER_WEEK:
+				// 1 week = 5 days = 40 hours
+				return quantity * 60 / 2400.0;
+			case PER_MONTH:
+				// 1 month = 20 days = 160 hours
+				return quantity * 60 / 9600.0;
+			default:
+				return 0.0;
+		}
+
+	}
+
+	private Double calculateAmount(Double quantity, Double rate, BillableFrequency billableFrequency) {
+
+		switch (billableFrequency) {
+			case PER_HOUR:
+				return Math.round(quantity * rate * 100.0) / 100.0;
+			case PER_DAY:
+				// 1 day = 8 hours = 480 minutes
+				return Math.round(quantity * rate * 100.0) / 100.0;
+			case PER_WEEK:
+				// 1 week = 5 days = 40 hours = 2400 minutes
+				return Math.round(quantity * rate * 100.0) / 100.0;
+			case PER_MONTH:
+				// 1 month = 20 days = 160 hours = 9600 minutes
+				return Math.round(quantity * rate * 100.0) / 100.0;
+			default:
+				return 0.0;
+		}
+
+	}
+
 	private String extractTenantId(HttpServletRequest request) {
 		return request.getHeader(EpAuthConstants.TENANT_HEADER);
 	}
@@ -439,6 +607,126 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		return adminList;
 
+	}
+
+	private int roundMinutesToNearest15(int minutes) {
+		return Math.round(minutes / 15.0f) * 15;
+	}
+
+	private List<TenantProjectResourceWiseTimeLogDto> callExternalAPItoGetResourceWiseTimeLogs(
+			HttpServletRequest request, ImportTimeLogFilterDto importTimeLogFilterDto) {
+
+		String query = ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_RESOURCE;
+
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
+
+		Map<String, Object> input = new HashMap<>();
+		input.put("projectId", importTimeLogFilterDto.getProjectId());
+		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
+		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
+
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("input", input);
+
+		graphQLRequest.put("variables", variables);
+
+		HttpHeaders headers = createHeaders(request);
+
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+			}
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+						.has(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS)) {
+
+				List<TenantProjectResourceWiseTimeLogDto> resouseWiseTimeLogs = objectMapper.convertValue(
+						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+							.get(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS),
+						objectMapper.getTypeFactory()
+							.constructCollectionType(List.class, TenantProjectResourceWiseTimeLogDto.class));
+
+				return resouseWiseTimeLogs;
+			}
+		}
+		catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+
+		}
+
+		return new ArrayList<>();
+	}
+
+	private List<TenantProjectTaskWiseTimeLogDto> callExternalAPItoGetTaskWiseTimeLogs(HttpServletRequest request,
+			ImportTimeLogFilterDto importTimeLogFilterDto) {
+
+		String query = ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_TASK;
+
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
+
+		Map<String, Object> input = new HashMap<>();
+		input.put("projectId", importTimeLogFilterDto.getProjectId());
+		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
+		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
+
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("input", input);
+
+		graphQLRequest.put("variables", variables);
+
+		HttpHeaders headers = createHeaders(request);
+
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+			}
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+						.has(InvoiceCommonConstant.INTERNAL_TASK_TIME_LOGS)) {
+
+				List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = objectMapper.convertValue(
+						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
+							.get(InvoiceCommonConstant.INTERNAL_TASK_TIME_LOGS),
+						objectMapper.getTypeFactory()
+							.constructCollectionType(List.class, TenantProjectTaskWiseTimeLogDto.class));
+
+				return taskWiseTimeLogs;
+			}
+		}
+		catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+
+		}
+
+		return new ArrayList<>();
 	}
 
 }

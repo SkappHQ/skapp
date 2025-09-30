@@ -45,4 +45,8 @@ public class InvoiceCommonConstant {
 
 	public static final String CUSTOMER_VAT_ID_REGEX = "^[a-zA-Z0-9\\-/]*$";
 
+	public static final String INTERNAL_RESOURCE_TIME_LOGS = "internalUserWorklogsByProject";
+
+	public static final String INTERNAL_TASK_TIME_LOGS = "internalWorklogsByProject";
+
 }
