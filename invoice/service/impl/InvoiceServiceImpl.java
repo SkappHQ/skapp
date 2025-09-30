@@ -50,6 +50,7 @@ import com.skapp.enterprise.invoice.service.InvoiceService;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import com.skapp.enterprise.invoice.type.DiscountType;
+import com.skapp.enterprise.invoice.type.InvoiceDateFormat;
 import com.skapp.enterprise.invoice.type.InvoiceStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -477,11 +478,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND));
 		Customer customer = invoice.getCustomer();
 
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
 		String formattedInvoiceDate = invoice.getInvoiceDate().format(dateFormatter);
 		String formattedDueDate = invoice.getDueDate().format(dateFormatter);
 
-		CurrencyType currencyType = customer.getCurrency();
+		CurrencyType currencyType = invoice.getCurrency();
 
 		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
 		currencyFormatter.setCurrency(Currency.getInstance(currencyType.name()));
@@ -493,7 +494,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 				reminderEmailRequestDto.getSubject(), reminderEmailRequestDto.getBody());
 
 		try {
-			String html = generateInvoiceHtml(invoice, tier);
+			String html = generateInvoiceHtml(invoice, tier, customer.getVatId(), customer.getDateFormat());
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PdfRendererBuilder builder = new PdfRendererBuilder();
 			builder.withHtmlContent(html, null);
@@ -522,13 +523,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 	}
 
-	private String generateInvoiceHtml(Invoice invoice, Tier tier) {
+	private String generateInvoiceHtml(Invoice invoice, Tier tier, String customerVatId,
+			InvoiceDateFormat invoiceDateFormat) {
 
 		try {
 			ClassPathResource resource = new ClassPathResource("enterprise/templates/pdf/en/invoice/invoice-v1.html");
 			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
-			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(invoiceDateFormat.getValue());
 
 			String invoiceLogo = invoice.getInvoiceLogo() != null && !invoice.getInvoiceLogo().isEmpty()
 					? invoice.getInvoiceLogo() : "";
@@ -581,6 +583,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			template = template.replace("{{invoiceId}}", invoice.getInvoiceId() != null ? invoice.getInvoiceId() : "");
 			template = template.replace("{{invoiceDate}}", invoice.getInvoiceDate().format(dateFormatter));
 			template = template.replace("{{dueDate}}", invoice.getDueDate().format(dateFormatter));
+			template = template.replace("{{customerVatId}}", customerVatId != null ? customerVatId : "N/A");
 			template = template.replace("{{payTo}}", invoice.getPayTo() != null ? invoice.getPayTo() : "Your Company");
 			template = template.replace("{{billedTo}}",
 					invoice.getBilledTo() != null ? invoice.getBilledTo() : invoice.getCustomer().getName());
