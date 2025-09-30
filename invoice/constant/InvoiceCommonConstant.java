@@ -53,4 +53,6 @@ public class InvoiceCommonConstant {
 
 	public static final int WORKING_DAYS_PER_MONTH = 20;
 
+	public static final Double HUNDRED = 100.0;
+
 }
