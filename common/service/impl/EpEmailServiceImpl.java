@@ -98,6 +98,7 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
 			organization.ifPresent(value -> {
 				placeholders.put("appUrl", value.getAppUrl());
+				placeholders.put("appUrlMobile", value.getAppUrl());
 				placeholders.put("organizationName", value.getOrganizationName());
 			});
 		}
@@ -110,7 +111,13 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 		if (TenantContext.getCurrentTenant() != null
 				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)) {
-			placeholders.put("appUrl", "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin");
+			String appUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin";
+			placeholders.put("appUrl", appUrl);
+			placeholders.put("appUrlMobile", appUrl);
+		}
+
+		if (emailTemplate.toString().contains("LEAVE_MODULE")) {
+			placeholders.put("appUrlMobile", EpCommonConstants.MOBILE_APP_LEAVE_URL);
 		}
 	}
 
