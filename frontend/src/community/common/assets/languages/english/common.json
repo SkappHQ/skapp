@@ -204,7 +204,10 @@
     "confirmBtn": "Confirm",
     "cancelBtn": "Cancel",
     "connectBtn": "Connect",
-    "disconnectBtn": "Disconnect"
+    "disconnectBtn": "Disconnect",
+     "languagePreference":"Language Preference",
+    "languagePreferenceDescription":"Update your language preference to customize how content is displayed.",
+    "languagePreferencePlaceholder":"Choose your preferred language"
   },
   "unauthorized": {
     "pageHead": "Access Denied | Skapp",
