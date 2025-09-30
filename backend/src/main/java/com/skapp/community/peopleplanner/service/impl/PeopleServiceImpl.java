@@ -151,7 +151,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PeopleServiceImpl implements PeopleService {
 
-	private final UserService userService;
+	protected final UserService userService;
 
 	private final MessageUtil messageUtil;
 
@@ -193,7 +193,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected final ApplicationEventPublisher applicationEventPublisher;
 
-	private final UserVersionService userVersionService;
+	protected final UserVersionService userVersionService;
 
 	private final EmployeeValidationService employeeValidationService;
 
@@ -2128,6 +2128,15 @@ public class PeopleServiceImpl implements PeopleService {
 		if (workEmail != null && workEmail.length() > PeopleConstants.MAX_EMAIL_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL_LENGTH,
 					new Object[] { PeopleConstants.MAX_EMAIL_LENGTH }));
+
+		if (workEmail != null) {
+			try {
+				enterpriseValidations(workEmail);
+			}
+			catch (Exception e) {
+				errors.add(e.getMessage());
+			}
+		}
 	}
 
 	private void validateUserSupervisor(String supervisorEmail, List<String> errors) {

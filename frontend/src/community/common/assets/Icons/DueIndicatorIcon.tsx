@@ -2,7 +2,7 @@ import { JSX } from "react";
 
 import { IconProps } from "~community/common/types/IconTypes";
 
-const DueStatusIcon = ({
+const DueIndicatorIcon = ({
   fill = "none",
   width = "8",
   height = "8",
@@ -26,4 +26,4 @@ const DueStatusIcon = ({
   );
 };
 
-export default DueStatusIcon;
+export default DueIndicatorIcon;
