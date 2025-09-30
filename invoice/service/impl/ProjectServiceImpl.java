@@ -436,13 +436,13 @@ public class ProjectServiceImpl implements ProjectService {
 				return quantity / 60.0;
 			case PER_DAY:
 				// 1 day = 8 hours
-				return quantity * 60 / 480.0;
+				return quantity / 480.0;
 			case PER_WEEK:
 				// 1 week = 5 days = 40 hours
-				return quantity * 60 / 2400.0;
+				return quantity / 2400.0;
 			case PER_MONTH:
 				// 1 month = 20 days = 160 hours
-				return quantity * 60 / 9600.0;
+				return quantity / 9600.0;
 			default:
 				return 0.0;
 		}
