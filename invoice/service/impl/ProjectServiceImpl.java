@@ -378,7 +378,7 @@ public class ProjectServiceImpl implements ProjectService {
 					double quantity = convertTimeToQuantity(time, rate.getBillableFrequency(), defaultDailyHours,
 							workingDays, importTimeLogFilterDto.getRoundOff());
 					totalTime += time;
-					totalAmount += calculateAmount(quantity, rate.getBillableRate(), rate.getBillableFrequency());
+					totalAmount += calculateAmount(quantity, rate.getBillableRate());
 				}
 			}
 
@@ -429,8 +429,8 @@ public class ProjectServiceImpl implements ProjectService {
 					.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(), importTimeLogsResponseDto.getUnit(),
 							defaultDailyHours, workingDays, importTimeLogFilterDto.getRoundOff()));
 				importTimeLogsResponseDto.setRate(filteredRate.getBillableRate());
-				importTimeLogsResponseDto.setAmount(calculateAmount(importTimeLogsResponseDto.getQuantity(),
-						importTimeLogsResponseDto.getRate(), importTimeLogsResponseDto.getUnit()));
+				importTimeLogsResponseDto.setAmount(
+						calculateAmount(importTimeLogsResponseDto.getQuantity(), importTimeLogsResponseDto.getRate()));
 
 				importTimeLogsResponseDtos.add(importTimeLogsResponseDto);
 			}
@@ -463,9 +463,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	private Double calculateAmount(Double quantity, Double rate, BillableFrequency billableFrequency) {
+	private Double calculateAmount(Double quantity, Double rate) {
 
-		return Math.round(quantity * rate * 100.0) / 100.0;
+		return Math.round(quantity * rate * InvoiceCommonConstant.HUNDRED) / InvoiceCommonConstant.HUNDRED;
 
 	}
 
