@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -401,27 +400,26 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ImportTimeLogsResponseDto> importTimeLogsResponseDtos = new ArrayList<>();
 
+		Map<Long, Employee> userMap = users.stream().collect(Collectors.toMap(Employee::getEmployeeId, user -> user));
+		Map<Long, BillableRate> rateMap = memberBillableRates.stream()
+			.collect(Collectors.toMap(rate -> rate.getEmployee().getEmployeeId(), rate -> rate));
+
 		resourceWiseTimeLogs.forEach(timeLog -> {
-			users.stream()
-				.filter(user -> Objects.equals(user.getEmployeeId(), timeLog.getUserId()))
-				.forEach(filteredUser -> {
-					memberBillableRates.stream()
-						.filter(rate -> Objects.equals(rate.getEmployee().getEmployeeId(), timeLog.getUserId()))
-						.forEach(filteredRate -> {
+			Employee filteredUser = userMap.get(timeLog.getUserId());
+			BillableRate filteredRate = rateMap.get(timeLog.getUserId());
 
-							ImportTimeLogsResponseDto importTimeLogsResponseDto = new ImportTimeLogsResponseDto();
-							importTimeLogsResponseDto.setDescription(filteredUser.getFullName());
-							importTimeLogsResponseDto.setUnit(filteredRate.getBillableFrequency());
-							importTimeLogsResponseDto.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(),
-									importTimeLogsResponseDto.getUnit(), importTimeLogFilterDto.getRoundOff()));
-							importTimeLogsResponseDto.setRate(filteredRate.getBillableRate());
-							importTimeLogsResponseDto.setAmount(calculateAmount(importTimeLogsResponseDto.getQuantity(),
-									importTimeLogsResponseDto.getRate(), importTimeLogsResponseDto.getUnit()));
+			if (filteredUser != null && filteredRate != null) {
+				ImportTimeLogsResponseDto importTimeLogsResponseDto = new ImportTimeLogsResponseDto();
+				importTimeLogsResponseDto.setDescription(filteredUser.getFullName());
+				importTimeLogsResponseDto.setUnit(filteredRate.getBillableFrequency());
+				importTimeLogsResponseDto.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(),
+						importTimeLogsResponseDto.getUnit(), importTimeLogFilterDto.getRoundOff()));
+				importTimeLogsResponseDto.setRate(filteredRate.getBillableRate());
+				importTimeLogsResponseDto.setAmount(calculateAmount(importTimeLogsResponseDto.getQuantity(),
+						importTimeLogsResponseDto.getRate(), importTimeLogsResponseDto.getUnit()));
 
-							importTimeLogsResponseDtos.add(importTimeLogsResponseDto);
-
-						});
-				});
+				importTimeLogsResponseDtos.add(importTimeLogsResponseDto);
+			}
 		});
 
 		return importTimeLogsResponseDtos;
@@ -650,13 +648,13 @@ public class ProjectServiceImpl implements ProjectService {
 					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
 						.has(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS)) {
 
-				List<TenantProjectResourceWiseTimeLogDto> resouseWiseTimeLogs = objectMapper.convertValue(
+				List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = objectMapper.convertValue(
 						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
 							.get(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS),
 						objectMapper.getTypeFactory()
 							.constructCollectionType(List.class, TenantProjectResourceWiseTimeLogDto.class));
 
-				return resouseWiseTimeLogs;
+				return resourceWiseTimeLogs;
 			}
 		}
 		catch (RestClientException e) {
