@@ -49,4 +49,8 @@ public class InvoiceCommonConstant {
 
 	public static final String INTERNAL_TASK_TIME_LOGS = "internalWorklogsByProject";
 
+	public static final Double MINUTES_PER_HOUR = 60.0;
+
+	public static final int WORKING_DAYS_PER_MONTH = 20;
+
 }

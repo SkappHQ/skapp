@@ -8,6 +8,8 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.timeplanner.payload.response.TimeConfigResponseDto;
+import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
@@ -81,6 +83,8 @@ public class ProjectServiceImpl implements ProjectService {
 	private final EmployeeDao employeeDao;
 
 	private final EpUserService epUserService;
+
+	private final TimeService timeService;
 
 	@Override
 	public ResponseEntityDto getAllProjects(HttpServletRequest request) {
@@ -310,20 +314,29 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ImportTimeLogsResponseDto> importTimeLogsResponseDtos = new ArrayList<>();
 
+		ResponseEntityDto config = timeService.getDefaultTimeConfigurations();
+
+		TimeConfigResponseDto timeConfigResponseDto = (TimeConfigResponseDto) config.getResults().get(0);
+
+		Float defaultDailyHours = timeConfigResponseDto.getTotalHours();
+		int workingDays = config.getResults().size();
+
 		if (importTimeLogFilterDto.getGroupBy() == ImportTimeLogGroupKey.RESOURCE) {
 
-			importTimeLogsResponseDtos = getResourceWiseTimeLogs(request, importTimeLogFilterDto);
+			importTimeLogsResponseDtos = getResourceWiseTimeLogs(request, importTimeLogFilterDto, defaultDailyHours,
+					workingDays);
 
 		}
 		else {
-			importTimeLogsResponseDtos = getTaskWiseTimeLogs(request, importTimeLogFilterDto);
+			importTimeLogsResponseDtos = getTaskWiseTimeLogs(request, importTimeLogFilterDto, defaultDailyHours,
+					workingDays);
 		}
 
 		return new ResponseEntityDto(false, importTimeLogsResponseDtos);
 	}
 
 	private List<ImportTimeLogsResponseDto> getTaskWiseTimeLogs(HttpServletRequest request,
-			ImportTimeLogFilterDto importTimeLogFilterDto) {
+			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
 		List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = callExternalAPItoGetTaskWiseTimeLogs(request,
 				importTimeLogFilterDto);
@@ -362,16 +375,16 @@ public class ProjectServiceImpl implements ProjectService {
 				BillableRate rate = rateMap.get(userId);
 
 				if (user != null && rate != null) {
-					double quantity = convertTimeToQuantity(time, rate.getBillableFrequency(),
-							importTimeLogFilterDto.getRoundOff());
+					double quantity = convertTimeToQuantity(time, rate.getBillableFrequency(), defaultDailyHours,
+							workingDays, importTimeLogFilterDto.getRoundOff());
 					totalTime += time;
 					totalAmount += calculateAmount(quantity, rate.getBillableRate(), rate.getBillableFrequency());
 				}
 			}
 
 			dto.setUnit(BillableFrequency.PER_HOUR);
-			dto.setQuantity(
-					convertTimeToQuantity(totalTime, BillableFrequency.PER_HOUR, importTimeLogFilterDto.getRoundOff()));
+			dto.setQuantity(convertTimeToQuantity(totalTime, BillableFrequency.PER_HOUR, defaultDailyHours, workingDays,
+					importTimeLogFilterDto.getRoundOff()));
 			dto.setAmount(totalAmount);
 
 			return dto;
@@ -382,7 +395,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	private List<ImportTimeLogsResponseDto> getResourceWiseTimeLogs(HttpServletRequest request,
-			ImportTimeLogFilterDto importTimeLogFilterDto) {
+			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
 		List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = callExternalAPItoGetResourceWiseTimeLogs(
 				request, importTimeLogFilterDto);
@@ -412,8 +425,9 @@ public class ProjectServiceImpl implements ProjectService {
 				ImportTimeLogsResponseDto importTimeLogsResponseDto = new ImportTimeLogsResponseDto();
 				importTimeLogsResponseDto.setDescription(filteredUser.getFullName());
 				importTimeLogsResponseDto.setUnit(filteredRate.getBillableFrequency());
-				importTimeLogsResponseDto.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(),
-						importTimeLogsResponseDto.getUnit(), importTimeLogFilterDto.getRoundOff()));
+				importTimeLogsResponseDto
+					.setQuantity(convertTimeToQuantity(timeLog.getBillableTime(), importTimeLogsResponseDto.getUnit(),
+							defaultDailyHours, workingDays, importTimeLogFilterDto.getRoundOff()));
 				importTimeLogsResponseDto.setRate(filteredRate.getBillableRate());
 				importTimeLogsResponseDto.setAmount(calculateAmount(importTimeLogsResponseDto.getQuantity(),
 						importTimeLogsResponseDto.getRate(), importTimeLogsResponseDto.getUnit()));
@@ -425,24 +439,24 @@ public class ProjectServiceImpl implements ProjectService {
 		return importTimeLogsResponseDtos;
 	}
 
-	private Double convertTimeToQuantity(Double quantity, BillableFrequency billableFrequency, Boolean roundOff) {
+	private Double convertTimeToQuantity(Double quantity, BillableFrequency billableFrequency, Float defaultDailyHours,
+			int workingDays, Boolean roundOff) {
 
 		if (roundOff != null && roundOff) {
 			quantity = (double) roundMinutesToNearest15(quantity.intValue());
 		}
 
+		Double defaultDailyHoursInMinutes = Double.valueOf(defaultDailyHours) * InvoiceCommonConstant.MINUTES_PER_HOUR;
+
 		switch (billableFrequency) {
 			case PER_HOUR:
-				return quantity / 60.0;
+				return quantity / InvoiceCommonConstant.MINUTES_PER_HOUR;
 			case PER_DAY:
-				// 1 day = 8 hours
-				return quantity / 480.0;
+				return quantity / (defaultDailyHoursInMinutes);
 			case PER_WEEK:
-				// 1 week = 5 days = 40 hours
-				return quantity / 2400.0;
+				return quantity / (workingDays * defaultDailyHoursInMinutes);
 			case PER_MONTH:
-				// 1 month = 20 days = 160 hours
-				return quantity / 9600.0;
+				return quantity / (InvoiceCommonConstant.WORKING_DAYS_PER_MONTH * defaultDailyHoursInMinutes);
 			default:
 				return 0.0;
 		}
@@ -451,21 +465,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private Double calculateAmount(Double quantity, Double rate, BillableFrequency billableFrequency) {
 
-		switch (billableFrequency) {
-			case PER_HOUR:
-				return Math.round(quantity * rate * 100.0) / 100.0;
-			case PER_DAY:
-				// 1 day = 8 hours = 480 minutes
-				return Math.round(quantity * rate * 100.0) / 100.0;
-			case PER_WEEK:
-				// 1 week = 5 days = 40 hours = 2400 minutes
-				return Math.round(quantity * rate * 100.0) / 100.0;
-			case PER_MONTH:
-				// 1 month = 20 days = 160 hours = 9600 minutes
-				return Math.round(quantity * rate * 100.0) / 100.0;
-			default:
-				return 0.0;
-		}
+		return Math.round(quantity * rate * 100.0) / 100.0;
 
 	}
 
@@ -641,7 +641,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
 					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
-				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS);
 			}
 
 			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
@@ -659,7 +659,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		catch (RestClientException e) {
 			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE);
 		}
 		catch (Exception e) {
 			log.error("Error parsing JSON response: ", e);
