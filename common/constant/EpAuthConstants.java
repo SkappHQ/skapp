@@ -23,4 +23,6 @@ public class EpAuthConstants {
 
 	public static final String LANG = "lang";
 
+	public static final String PROJECT_KEY_HEADER = "x-project-key";
+
 }

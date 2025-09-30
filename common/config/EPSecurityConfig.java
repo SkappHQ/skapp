@@ -96,7 +96,7 @@ public class EPSecurityConfig {
 						"/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
 						"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
 						"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v2/ep/auth/signin/sso/microsoft",
-						"/internal/v1/ep/versions", "/internal/v1/ep/jobs")
+						"/internal/v1/ep/versions", "/internal/v1/ep/jobs", "/v1/ep/release/generate-pdf")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
