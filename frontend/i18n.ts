@@ -5,8 +5,8 @@ import { initReactI18next } from "react-i18next";
 
 import { english } from "~community/common/assets/languages/english";
 import { swedish } from "~community/common/assets/languages/swedish";
-import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/en/english";
-import { swedish as swedishEnterprise } from "~enterprise/common/assets/languages/sv/swedish";
+import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/english";
+import { swedish as swedishEnterprise } from "~enterprise/common/assets/languages/swedish";
 
 const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
 
