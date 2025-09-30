@@ -202,50 +202,23 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
 		Root<Invoice> invoice = query.from(Invoice.class);
 
-		invoice.fetch(Invoice_.invoiceTaxes, JoinType.LEFT);
 		invoice.fetch(Invoice_.customer, JoinType.LEFT);
+		invoice.fetch(Invoice_.invoiceItems, JoinType.LEFT);
 
 		Predicate idPredicate = cb.equal(invoice.get(Invoice_.id), id);
 		query.where(idPredicate);
-
 		query.distinct(true);
 
 		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
-		Invoice result = typedQuery.getSingleResult();
+		Optional<Invoice> result = typedQuery.getResultStream().findFirst();
 
-		fetchInvoiceItems(result);
-		fetchInvoiceExpenses(result);
+		// Explicitly load lazy collections
+		result.ifPresent(inv -> {
+			inv.getInvoiceTaxes().size();
+			inv.getInvoiceExpenses().size();
+		});
 
-		return Optional.of(result);
-
-	}
-
-	private void fetchInvoiceItems(Invoice invoice) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
-		Root<Invoice> invoiceRoot = query.from(Invoice.class);
-
-		invoiceRoot.fetch(Invoice_.invoiceItems, JoinType.LEFT);
-
-		Predicate idPredicate = cb.equal(invoiceRoot.get(Invoice_.id), invoice.getId());
-		query.where(idPredicate);
-
-		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
-		typedQuery.getSingleResult();
-	}
-
-	private void fetchInvoiceExpenses(Invoice invoice) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
-		Root<Invoice> invoiceRoot = query.from(Invoice.class);
-
-		invoiceRoot.fetch(Invoice_.invoiceExpenses, JoinType.LEFT);
-
-		Predicate idPredicate = cb.equal(invoiceRoot.get(Invoice_.id), invoice.getId());
-		query.where(idPredicate);
-
-		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
-		typedQuery.getSingleResult();
+		return result;
 	}
 
 }
