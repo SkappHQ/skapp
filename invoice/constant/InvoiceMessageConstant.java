@@ -101,7 +101,8 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_BILLABLE_RATE_NOT_FOUND("invoice.error.project.member.billable.data.not.found"),
 	INVOICE_ERROR_CUSTOMER_VAT_ID_MAX_LENGTH_EXCEEDED("invoice.error.customer.vat-id.max-length-exceeded"),
-	INVOICE_ERROR_CUSTOMER_VAT_ID_INVALID_CHARACTERS("invoice.error.customer.vat-id.invalid-characters");
+	INVOICE_ERROR_CUSTOMER_VAT_ID_INVALID_CHARACTERS("invoice.error.customer.vat-id.invalid-characters"),
+	INVOICE_ERROR_PDF_GENERATION_FAILED("invoice.error.pdf.generation.failed");
 
 	private final String messageKey;
 

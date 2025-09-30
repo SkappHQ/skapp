@@ -30,4 +30,6 @@ public interface InvoiceService {
 
 	void handleInvoiceExpiration(Long invoiceId);
 
+	byte[] getInvoicePdf(Long invoiceId);
+
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -24,8 +25,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class InvoiceRepositoryImpl implements InvoiceRepository {
@@ -193,6 +194,31 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		// Execute the query
 		TypedQuery<LocalDate> typedQuery = entityManager.createQuery(query);
 		return typedQuery.getSingleResult();
+	}
+
+	@Override
+	public Optional<Invoice> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
+		Root<Invoice> invoice = query.from(Invoice.class);
+
+		invoice.fetch(Invoice_.customer, JoinType.LEFT);
+		invoice.fetch(Invoice_.invoiceItems, JoinType.LEFT);
+
+		Predicate idPredicate = cb.equal(invoice.get(Invoice_.id), id);
+		query.where(idPredicate);
+		query.distinct(true);
+
+		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
+		Optional<Invoice> result = typedQuery.getResultStream().findFirst();
+
+		// Explicitly load lazy collections
+		result.ifPresent(inv -> {
+			inv.getInvoiceTaxes().size();
+			inv.getInvoiceExpenses().size();
+		});
+
+		return result;
 	}
 
 }

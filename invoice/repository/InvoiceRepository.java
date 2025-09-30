@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface InvoiceRepository {
 
@@ -15,5 +16,7 @@ public interface InvoiceRepository {
 	long countByCreatedDateBetween(LocalDateTime start, LocalDateTime end);
 
 	LocalDate getLatestInvoiceDate(Long customerId, Long projectId);
+
+	Optional<Invoice> findByIdWithAssociations(Long id);
 
 }

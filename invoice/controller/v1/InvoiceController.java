@@ -112,4 +112,13 @@ public class InvoiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get Invoice (PDF)",
+			description = "This endpoint retrieves the Invoice PDF for a given Invoice ID.")
+	@GetMapping(value = "/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN','ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<byte[]> getInvoicePdf(@RequestParam Long invoiceId) {
+		byte[] pdfBytes = invoiceService.getInvoicePdf(invoiceId);
+		return new ResponseEntity<>(pdfBytes, HttpStatus.OK);
+	}
+
 }
