@@ -758,4 +758,34 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 	}
 
+	@Override
+	public byte[] getInvoicePdf(Long invoiceId) {
+		Optional<Invoice> optionalInvoice = invoiceDao.findByIdWithAssociations(invoiceId);
+
+		if (optionalInvoice.isEmpty()) {
+			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_NOT_FOUND);
+		}
+
+		Invoice invoice = optionalInvoice.get();
+		String currentTenant = TenantContext.getCurrentTenant();
+		Tenant tenant = getTenant(currentTenant);
+		Tier tier = tenant.getTier();
+
+		try {
+			String html = generateInvoiceHtml(invoice, tier, invoice.getCustomer().getVatId(),
+					invoice.getCustomer().getDateFormat());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.toStream(baos);
+			builder.run();
+
+			return baos.toByteArray();
+		}
+		catch (Exception e) {
+			log.error("Failed to generate PDF for invoice ID: {}", invoiceId, e);
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_PDF_GENERATION_FAILED);
+		}
+	}
+
 }

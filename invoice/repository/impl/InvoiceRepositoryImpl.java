@@ -12,6 +12,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -24,8 +25,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class InvoiceRepositoryImpl implements InvoiceRepository {
@@ -193,6 +194,58 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 		// Execute the query
 		TypedQuery<LocalDate> typedQuery = entityManager.createQuery(query);
 		return typedQuery.getSingleResult();
+	}
+
+	@Override
+	public Optional<Invoice> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
+		Root<Invoice> invoice = query.from(Invoice.class);
+
+		invoice.fetch(Invoice_.invoiceTaxes, JoinType.LEFT);
+		invoice.fetch(Invoice_.customer, JoinType.LEFT);
+
+		Predicate idPredicate = cb.equal(invoice.get(Invoice_.id), id);
+		query.where(idPredicate);
+
+		query.distinct(true);
+
+		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
+		Invoice result = typedQuery.getSingleResult();
+
+		fetchInvoiceItems(result);
+		fetchInvoiceExpenses(result);
+
+		return Optional.of(result);
+
+	}
+
+	private void fetchInvoiceItems(Invoice invoice) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
+		Root<Invoice> invoiceRoot = query.from(Invoice.class);
+
+		invoiceRoot.fetch(Invoice_.invoiceItems, JoinType.LEFT);
+
+		Predicate idPredicate = cb.equal(invoiceRoot.get(Invoice_.id), invoice.getId());
+		query.where(idPredicate);
+
+		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
+		typedQuery.getSingleResult();
+	}
+
+	private void fetchInvoiceExpenses(Invoice invoice) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Invoice> query = cb.createQuery(Invoice.class);
+		Root<Invoice> invoiceRoot = query.from(Invoice.class);
+
+		invoiceRoot.fetch(Invoice_.invoiceExpenses, JoinType.LEFT);
+
+		Predicate idPredicate = cb.equal(invoiceRoot.get(Invoice_.id), invoice.getId());
+		query.where(idPredicate);
+
+		TypedQuery<Invoice> typedQuery = entityManager.createQuery(query);
+		typedQuery.getSingleResult();
 	}
 
 }
