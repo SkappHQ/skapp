@@ -525,7 +525,7 @@ public class ProjectServiceImpl implements ProjectService {
 			quantity = (double) roundMinutesToNearest15(quantity.intValue());
 		}
 
-		Double defaultDailyHoursInMinutes = Double.valueOf(defaultDailyHours) * InvoiceCommonConstant.MINUTES_PER_HOUR;
+		Double defaultDailyHoursInMinutes = defaultDailyHours * InvoiceCommonConstant.MINUTES_PER_HOUR;
 
 		switch (billableFrequency) {
 			case PER_HOUR:
@@ -543,7 +543,15 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	private int roundMinutesToNearest15(int minutes) {
-		return Math.round(minutes / 15.0f) * 15;
+
+		long rounded = Math.round(minutes / 15.0f) * 15L;
+		if (rounded > Integer.MAX_VALUE) {
+			return Integer.MAX_VALUE;
+		}
+		else if (rounded < Integer.MIN_VALUE) {
+			return Integer.MIN_VALUE;
+		}
+		return (int) rounded;
 	}
 
 	private <T> List<T> callExternalGraphQLApi(HttpServletRequest request, String query, Map<String, Object> variables,
