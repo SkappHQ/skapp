@@ -92,7 +92,8 @@ public class ProjectServiceImpl implements ProjectService {
 		// Define the GraphQL query
 		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_BASE_DATA;
 
-		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request, query);
+		List<TenantProjectListResponseDto> internalProjects = callExternalAPIToGetProjects(request, query,
+				InvoiceCommonConstant.INTERNAL_PROJECTS, TenantProjectListResponseDto.class);
 
 		List<Project> assignedProjects = projectDao.findAll();
 		Set<Long> assignedProjectIds = assignedProjects.stream()
@@ -116,7 +117,8 @@ public class ProjectServiceImpl implements ProjectService {
 		// Define the GraphQL query
 		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_BASE_DATA;
 
-		List<TenantProjectListResponseDto> internalProjects = callExternalAPItoGetProjects(request, query);
+		List<TenantProjectListResponseDto> internalProjects = callExternalAPIToGetProjects(request, query,
+				InvoiceCommonConstant.INTERNAL_PROJECTS, TenantProjectListResponseDto.class);
 
 		if (customerId == null) {
 			List<TenantProjectListResponseDto> sortedInternalProjects = internalProjects.stream()
@@ -157,7 +159,8 @@ public class ProjectServiceImpl implements ProjectService {
 		// Define the GraphQL query
 		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_MEMBERS_COUNT;
 
-		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
+		List<TenantProjectUserResponseDto> internalProjects = callExternalAPIToGetProjects(request, query,
+				InvoiceCommonConstant.INTERNAL_PROJECTS, TenantProjectUserResponseDto.class);
 
 		List<TenantProjectUserResponseDto> filteredCustomerProjects = internalProjects.stream()
 			.filter(internalProject -> customerProjectList.stream()
@@ -259,7 +262,8 @@ public class ProjectServiceImpl implements ProjectService {
 		// Define the GraphQL query
 		String query = ProjectGraphQLQueries.INTERNAL_PROJECTS_MEMBERS_COUNT;
 
-		List<TenantProjectUserResponseDto> internalProjects = callExternalAPItoGetProjectsWithUser(request, query);
+		List<TenantProjectUserResponseDto> internalProjects = callExternalAPIToGetProjects(request, query,
+				InvoiceCommonConstant.INTERNAL_PROJECTS, TenantProjectUserResponseDto.class);
 
 		List<TenantProjectUserResponseDto> filteredCustomerProject = internalProjects.stream()
 			.filter(proj -> Objects.equals(proj.getId(), project.getId().getProjectId()))
@@ -338,8 +342,9 @@ public class ProjectServiceImpl implements ProjectService {
 	private List<ImportTimeLogsResponseDto> getTaskWiseTimeLogs(HttpServletRequest request,
 			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
-		List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = callExternalAPItoGetTaskWiseTimeLogs(request,
-				importTimeLogFilterDto);
+		List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = callExternalAPIToGetTimeLogs(request,
+				importTimeLogFilterDto, ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_TASK,
+				InvoiceCommonConstant.INTERNAL_TASK_TIME_LOGS, TenantProjectTaskWiseTimeLogDto.class);
 
 		List<TaskWorkLogDto> allTaskWorkLogs = taskWiseTimeLogs.stream()
 			.flatMap(taskLog -> taskLog.getItemInfoWorkLog().stream())
@@ -397,8 +402,9 @@ public class ProjectServiceImpl implements ProjectService {
 	private List<ImportTimeLogsResponseDto> getResourceWiseTimeLogs(HttpServletRequest request,
 			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
-		List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = callExternalAPItoGetResourceWiseTimeLogs(
-				request, importTimeLogFilterDto);
+		List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = callExternalAPIToGetTimeLogs(request,
+				importTimeLogFilterDto, ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_RESOURCE,
+				InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS, TenantProjectResourceWiseTimeLogDto.class);
 
 		List<Long> employeeIds = resourceWiseTimeLogs.stream()
 			.map(TenantProjectResourceWiseTimeLogDto::getUserId)
@@ -439,36 +445,6 @@ public class ProjectServiceImpl implements ProjectService {
 		return importTimeLogsResponseDtos;
 	}
 
-	private Double convertTimeToQuantity(Double quantity, BillableFrequency billableFrequency, Float defaultDailyHours,
-			int workingDays, Boolean roundOff) {
-
-		if (roundOff != null && roundOff) {
-			quantity = (double) roundMinutesToNearest15(quantity.intValue());
-		}
-
-		Double defaultDailyHoursInMinutes = Double.valueOf(defaultDailyHours) * InvoiceCommonConstant.MINUTES_PER_HOUR;
-
-		switch (billableFrequency) {
-			case PER_HOUR:
-				return quantity / InvoiceCommonConstant.MINUTES_PER_HOUR;
-			case PER_DAY:
-				return quantity / (defaultDailyHoursInMinutes);
-			case PER_WEEK:
-				return quantity / (workingDays * defaultDailyHoursInMinutes);
-			case PER_MONTH:
-				return quantity / (InvoiceCommonConstant.WORKING_DAYS_PER_MONTH * defaultDailyHoursInMinutes);
-			default:
-				return 0.0;
-		}
-
-	}
-
-	private Double calculateAmount(Double quantity, Double rate) {
-
-		return Math.round(quantity * rate * InvoiceCommonConstant.HUNDRED) / InvoiceCommonConstant.HUNDRED;
-
-	}
-
 	private String extractTenantId(HttpServletRequest request) {
 		return request.getHeader(EpAuthConstants.TENANT_HEADER);
 	}
@@ -481,102 +457,11 @@ public class ProjectServiceImpl implements ProjectService {
 		return headers;
 	}
 
-	private List<TenantProjectListResponseDto> callExternalAPItoGetProjects(HttpServletRequest request, String query) {
-
-		Map<String, Object> graphQLRequest = new HashMap<>();
-		graphQLRequest.put("query", query);
-
-		HttpHeaders headers = createHeaders(request);
-
-		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
-
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
-
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
-					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
-				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
-			}
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
-					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-						.has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
-
-				List<TenantProjectListResponseDto> internalProjects = objectMapper.convertValue(
-						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-							.get(InvoiceCommonConstant.INTERNAL_PROJECTS),
-						objectMapper.getTypeFactory()
-							.constructCollectionType(List.class, TenantProjectListResponseDto.class));
-
-				return internalProjects;
-			}
-		}
-		catch (RestClientException e) {
-			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
-		}
-		catch (Exception e) {
-			log.error("Error parsing JSON response: ", e);
-
-		}
-
-		return new ArrayList<>();
-	}
-
 	private List<Project> getCustomerProjects(Long customerId) {
 		Customer customer = customerDao.findById(customerId)
 			.orElseThrow(() -> new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND));
 
 		return projectDao.findById_Customer_Id(customerId);
-	}
-
-	private List<TenantProjectUserResponseDto> callExternalAPItoGetProjectsWithUser(HttpServletRequest request,
-			String query) {
-
-		Map<String, Object> graphQLRequest = new HashMap<>();
-		graphQLRequest.put("query", query);
-
-		HttpHeaders headers = createHeaders(request);
-
-		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
-
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
-
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
-					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
-				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS);
-			}
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
-					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-						.has(InvoiceCommonConstant.INTERNAL_PROJECTS)) {
-
-				List<TenantProjectUserResponseDto> internalProjects = objectMapper.convertValue(
-						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-							.get(InvoiceCommonConstant.INTERNAL_PROJECTS),
-						objectMapper.getTypeFactory()
-							.constructCollectionType(List.class, TenantProjectUserResponseDto.class));
-
-				return internalProjects;
-			}
-		}
-		catch (RestClientException e) {
-			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE);
-		}
-		catch (Exception e) {
-			log.error("Error parsing JSON response: ", e);
-
-		}
-
-		return new ArrayList<>();
 	}
 
 	private List<ProjectAdminResponseDto> findProjectAdminUser(List<ProjectUsersResponseDto> projectUsers) {
@@ -607,93 +492,51 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
+	private Double calculateAmount(Double quantity, Double rate) {
+
+		return Math.round(quantity * rate * InvoiceCommonConstant.HUNDRED) / InvoiceCommonConstant.HUNDRED;
+
+	}
+
+	private Double convertTimeToQuantity(Double quantity, BillableFrequency billableFrequency, Float defaultDailyHours,
+			int workingDays, Boolean roundOff) {
+
+		if (roundOff != null && roundOff) {
+			quantity = (double) roundMinutesToNearest15(quantity.intValue());
+		}
+
+		Double defaultDailyHoursInMinutes = Double.valueOf(defaultDailyHours) * InvoiceCommonConstant.MINUTES_PER_HOUR;
+
+		switch (billableFrequency) {
+			case PER_HOUR:
+				return quantity / InvoiceCommonConstant.MINUTES_PER_HOUR;
+			case PER_DAY:
+				return quantity / (defaultDailyHoursInMinutes);
+			case PER_WEEK:
+				return quantity / (workingDays * defaultDailyHoursInMinutes);
+			case PER_MONTH:
+				return quantity / (InvoiceCommonConstant.WORKING_DAYS_PER_MONTH * defaultDailyHoursInMinutes);
+			default:
+				return 0.0;
+		}
+
+	}
+
 	private int roundMinutesToNearest15(int minutes) {
 		return Math.round(minutes / 15.0f) * 15;
 	}
 
-	private List<TenantProjectResourceWiseTimeLogDto> callExternalAPItoGetResourceWiseTimeLogs(
-			HttpServletRequest request, ImportTimeLogFilterDto importTimeLogFilterDto) {
-
-		String query = ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_RESOURCE;
-
+	//
+	private <T> List<T> callExternalAPIToGetProjects(HttpServletRequest request, String query, String dataKey,
+			Class<T> dtoClass) {
 		Map<String, Object> graphQLRequest = new HashMap<>();
 		graphQLRequest.put("query", query);
 
-		Map<String, Object> input = new HashMap<>();
-		input.put("projectId", importTimeLogFilterDto.getProjectId());
-		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
-		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
-
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("input", input);
-
-		graphQLRequest.put("variables", variables);
-
 		HttpHeaders headers = createHeaders(request);
-
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
 
 		try {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
-
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
-					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
-				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS);
-			}
-
-			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
-					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-						.has(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS)) {
-
-				List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = objectMapper.convertValue(
-						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-							.get(InvoiceCommonConstant.INTERNAL_RESOURCE_TIME_LOGS),
-						objectMapper.getTypeFactory()
-							.constructCollectionType(List.class, TenantProjectResourceWiseTimeLogDto.class));
-
-				return resourceWiseTimeLogs;
-			}
-		}
-		catch (RestClientException e) {
-			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE);
-		}
-		catch (Exception e) {
-			log.error("Error parsing JSON response: ", e);
-
-		}
-
-		return new ArrayList<>();
-	}
-
-	private List<TenantProjectTaskWiseTimeLogDto> callExternalAPItoGetTaskWiseTimeLogs(HttpServletRequest request,
-			ImportTimeLogFilterDto importTimeLogFilterDto) {
-
-		String query = ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_TASK;
-
-		Map<String, Object> graphQLRequest = new HashMap<>();
-		graphQLRequest.put("query", query);
-
-		Map<String, Object> input = new HashMap<>();
-		input.put("projectId", importTimeLogFilterDto.getProjectId());
-		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
-		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
-
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("input", input);
-
-		graphQLRequest.put("variables", variables);
-
-		HttpHeaders headers = createHeaders(request);
-
-		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
-
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
-
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
 
@@ -703,16 +546,10 @@ public class ProjectServiceImpl implements ProjectService {
 			}
 
 			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
-					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-						.has(InvoiceCommonConstant.INTERNAL_TASK_TIME_LOGS)) {
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA).has(dataKey)) {
 
-				List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = objectMapper.convertValue(
-						responseEntityJsonNode.get(InvoiceCommonConstant.DATA)
-							.get(InvoiceCommonConstant.INTERNAL_TASK_TIME_LOGS),
-						objectMapper.getTypeFactory()
-							.constructCollectionType(List.class, TenantProjectTaskWiseTimeLogDto.class));
-
-				return taskWiseTimeLogs;
+				return objectMapper.convertValue(responseEntityJsonNode.get(InvoiceCommonConstant.DATA).get(dataKey),
+						objectMapper.getTypeFactory().constructCollectionType(List.class, dtoClass));
 			}
 		}
 		catch (RestClientException e) {
@@ -721,10 +558,98 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		catch (Exception e) {
 			log.error("Error parsing JSON response: ", e);
-
 		}
-
 		return new ArrayList<>();
 	}
+
+	private <T> List<T> callExternalAPIToGetTimeLogs(HttpServletRequest request,
+			ImportTimeLogFilterDto importTimeLogFilterDto, String query, String dataKey, Class<T> dtoClass) {
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
+
+		Map<String, Object> input = new HashMap<>();
+		input.put("projectId", importTimeLogFilterDto.getProjectId());
+		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
+		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
+
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("input", input);
+
+		graphQLRequest.put("variables", variables);
+
+		HttpHeaders headers = createHeaders(request);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
+				throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS);
+			}
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA).has(dataKey)) {
+				return objectMapper.convertValue(responseEntityJsonNode.get(InvoiceCommonConstant.DATA).get(dataKey),
+						objectMapper.getTypeFactory().constructCollectionType(List.class, dtoClass));
+			}
+		}
+		catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE);
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+		}
+		return new ArrayList<>();
+	}
+
+
+	private <T> List<T> callExternalGraphQLApi(
+			HttpServletRequest request,
+			String query,
+			Map<String, Object> variables,
+			String dataKey,
+			Class<T> dtoClass,
+			InvoiceMessageConstant errorFetchingMessage,
+			InvoiceMessageConstant errorFetchingFromSourceMessage
+	) {
+		Map<String, Object> graphQLRequest = new HashMap<>();
+		graphQLRequest.put("query", query);
+		if (variables != null) {
+			graphQLRequest.put("variables", variables);
+		}
+
+		HttpHeaders headers = createHeaders(request);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode responseEntityJsonNode = objectMapper.readTree(responseEntity.getBody());
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.ERRORS)
+					&& !responseEntityJsonNode.get(InvoiceCommonConstant.ERRORS).isEmpty()) {
+				throw new ModuleException(errorFetchingMessage);
+			}
+
+			if (responseEntityJsonNode.has(InvoiceCommonConstant.DATA)
+					&& responseEntityJsonNode.get(InvoiceCommonConstant.DATA).has(dataKey)) {
+				return objectMapper.convertValue(
+						responseEntityJsonNode.get(InvoiceCommonConstant.DATA).get(dataKey),
+						objectMapper.getTypeFactory().constructCollectionType(List.class, dtoClass)
+				);
+			}
+		} catch (RestClientException e) {
+			log.error("Error making HTTP request to {}: {}", pmServiceUrl, e.getMessage());
+			throw new ModuleException(errorFetchingFromSourceMessage);
+		} catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+		}
+		return new ArrayList<>();
+	}
+
 
 }
