@@ -123,6 +123,10 @@ const ROUTES = {
     CREATE: {
       BASE: "/invoice/create",
       ID: (id: any) => `/invoice/create/${id}`
+    },
+    VIEW: {
+      BASE: "/invoice/view",
+      ID: (id: any) => `/invoice/view/${id}`
     }
   }
 };
@@ -134,14 +138,16 @@ const RESCRITED_DYNAMIC_ROUTES = {
     EDIT: "/people/directory/edit/"
   },
   INVOICE: {
-    CREATE: "/invoice/create/"
+    CREATE: "/invoice/create/",
+    VIEW: "/invoice/view/"
   }
 };
 
 export const employeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
   ROUTES.PEOPLE.ADD,
-  RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE,
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
