@@ -37,6 +37,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TimeRecordRepositoryImpl implements TimeRecordRepository {
@@ -557,20 +559,22 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date) {
+		log.info("getEmployeeClockInTrend: Starting execution with teams={}, date={}", teams, date);
 
 		List<TimeRecordTrendDto> result = new ArrayList<>();
-		LocalDateTime baseDateTime = date.atStartOfDay();
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		for (int hour = 0; hour < 24; hour++) {
 			for (int halfHour = 0; halfHour < 2; halfHour++) {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
+				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 
-				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
 				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 
 				List<Predicate> predicates = new ArrayList<>();
 
@@ -578,17 +582,24 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
 				}
 				else {
+					Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
 					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
 				}
 
-				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
+				predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
 				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
 
-				Expression<LocalTime> clockInLocalTime = cb.function("TIME", LocalTime.class,
-						cb.function("CONVERT_TZ", String.class,
-								cb.function("FROM_UNIXTIME", String.class,
-										cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)),
-								cb.literal("@@session.time_zone"), cb.literal(timeZone)));
+				// --- Bypass timezone conversion (active) ---
+				Expression<LocalTime> clockInLocalTime = cb.function("TIME", LocalTime.class, cb
+					.function("FROM_UNIXTIME", String.class, cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)));
+
+				/*
+				 * // --- Proper timezone conversion (commented) --- Expression<LocalTime>
+				 * clockInLocalTime = cb.function("TIME", LocalTime.class,
+				 * cb.function("CONVERT_TZ", String.class, cb.function("FROM_UNIXTIME",
+				 * String.class, cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)),
+				 * cb.literal("@@session.time_zone"), cb.literal(timeZone)));
+				 */
 
 				predicates.add(cb.greaterThanOrEqualTo(clockInLocalTime, slotStart));
 				predicates.add(cb.lessThan(clockInLocalTime, slotEnd));
@@ -598,13 +609,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slot = slotStartTime + " - " + slotEndTime;
-
 				result.add(new TimeRecordTrendDto() {
 					public String getSlot() {
-						return slot;
+						return slotLabel;
 					}
 
 					public int getCount() {
@@ -614,42 +621,54 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			}
 		}
 
+		long totalCount = result.stream().mapToInt(TimeRecordTrendDto::getCount).sum();
+		log.info("getEmployeeClockInTrend: Completed execution. Total clock-ins found: {} across all time slots",
+				totalCount);
+
 		return result;
 	}
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date) {
+		log.info("getEmployeeClockOutTrend: Starting execution with teams={}, date={}", teams, date);
+
 		List<TimeRecordTrendDto> result = new ArrayList<>();
-		LocalDateTime baseDateTime = date.atStartOfDay();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		for (int hour = 0; hour < 24; hour++) {
 			for (int halfHour = 0; halfHour < 2; halfHour++) {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
+				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 
-				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
 				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 
 				List<Predicate> predicates = new ArrayList<>();
-
 				if (teams.contains(-1L)) {
 					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
 				}
 				else {
+					Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
 					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
 				}
 
-				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
+				predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
 				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
 
-				Expression<LocalTime> clockOutLocalTime = cb.function("TIME", LocalTime.class,
-						cb.function("CONVERT_TZ", String.class,
-								cb.function("FROM_UNIXTIME", String.class,
-										cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)),
-								cb.literal("@@session.time_zone"), cb.literal(timeZone)));
+				// --- Bypass timezone conversion (active) ---
+				Expression<LocalTime> clockOutLocalTime = cb.function("TIME", LocalTime.class, cb
+					.function("FROM_UNIXTIME", String.class, cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)));
+
+				/*
+				 * // --- Proper timezone conversion (commented) --- Expression<LocalTime>
+				 * clockOutLocalTime = cb.function("TIME", LocalTime.class,
+				 * cb.function("CONVERT_TZ", String.class, cb.function("FROM_UNIXTIME",
+				 * String.class, cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)),
+				 * cb.literal("@@session.time_zone"), cb.literal(timeZone)));
+				 */
 
 				predicates.add(cb.greaterThanOrEqualTo(clockOutLocalTime, slotStart));
 				predicates.add(cb.lessThan(clockOutLocalTime, slotEnd));
@@ -659,21 +678,23 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				Long count = entityManager.createQuery(countQuery).getSingleResult();
 
-				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slot = slotStartTime + " - " + slotEndTime;
-
 				result.add(new TimeRecordTrendDto() {
 					public String getSlot() {
-						return slot;
+						return slotLabel;
 					}
 
 					public int getCount() {
 						return count != null ? count.intValue() : 0;
 					}
 				});
+
 			}
 		}
+
+		long totalCount = result.stream().mapToInt(TimeRecordTrendDto::getCount).sum();
+
+		log.info("getEmployeeClockOutTrend: Completed execution. Total clock-outs found: {} across all time slots",
+				totalCount);
 
 		return result;
 	}
