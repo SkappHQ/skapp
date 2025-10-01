@@ -10,26 +10,26 @@ import java.util.List;
 @Setter
 public class GenerateReleasePdfRequestDto {
 
-    private Long id;
+	private Long id;
 
-    private String name;
+	private String name;
 
-    private String description;
+	private String description;
 
-    private String environment;
+	private String environment;
 
-    private String projectName;
+	private String projectName;
 
-    private LocalDateTime releaseDate;
+	private LocalDateTime releaseDate;
 
-    private LocalDateTime startDate;
+	private LocalDateTime startDate;
 
-    private String status;
+	private String status;
 
-    private Long projectId;
+	private Long projectId;
 
-    private List<ProjectItemDto> projectItems;
+	private List<ProjectItemDto> projectItems;
 
-    private List<ApproverDto> approvers;
+	private List<ApproverDto> approvers;
 
 }
