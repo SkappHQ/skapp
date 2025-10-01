@@ -1,5 +1,8 @@
 package com.skapp.enterprise.invoice.constant.graphql;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ProjectGraphQLQueries {
 
 	public static final String INTERNAL_PROJECTS_BASE_DATA = "query InternalProjects { " + "  internalProjects { "

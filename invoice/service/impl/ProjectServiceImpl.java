@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLQueries;
+import com.skapp.enterprise.invoice.constant.graphql.ProjectGraphQLVariables;
 import com.skapp.enterprise.invoice.mapper.ProjectMapper;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -339,12 +340,14 @@ public class ProjectServiceImpl implements ProjectService {
 			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
 		Map<String, Object> input = new HashMap<>();
-		input.put("projectId", importTimeLogFilterDto.getProjectId());
-		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
-		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_PROJECT, importTimeLogFilterDto.getProjectId());
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_START_DATE,
+				String.valueOf(importTimeLogFilterDto.getStartDate()));
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_END_DATE,
+				String.valueOf(importTimeLogFilterDto.getEndDate()));
 
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("input", input);
+		variables.put(ProjectGraphQLVariables.INPUT, input);
 
 		List<TenantProjectTaskWiseTimeLogDto> taskWiseTimeLogs = callExternalGraphQLApi(request,
 				ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_TASK, variables,
@@ -393,7 +396,6 @@ public class ProjectServiceImpl implements ProjectService {
 				}
 			}
 
-			dto.setUnit(BillableFrequency.PER_HOUR);
 			dto.setQuantity(convertTimeToQuantity(totalTime, BillableFrequency.PER_HOUR, defaultDailyHours, workingDays,
 					importTimeLogFilterDto.getRoundOff()));
 			dto.setAmount(totalAmount);
@@ -409,12 +411,14 @@ public class ProjectServiceImpl implements ProjectService {
 			ImportTimeLogFilterDto importTimeLogFilterDto, Float defaultDailyHours, int workingDays) {
 
 		Map<String, Object> input = new HashMap<>();
-		input.put("projectId", importTimeLogFilterDto.getProjectId());
-		input.put("startDate", String.valueOf(importTimeLogFilterDto.getStartDate()));
-		input.put("endDate", String.valueOf(importTimeLogFilterDto.getEndDate()));
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_PROJECT, importTimeLogFilterDto.getProjectId());
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_START_DATE,
+				String.valueOf(importTimeLogFilterDto.getStartDate()));
+		input.put(ProjectGraphQLVariables.TIME_LOG_VARIABLE_END_DATE,
+				String.valueOf(importTimeLogFilterDto.getEndDate()));
 
 		Map<String, Object> variables = new HashMap<>();
-		variables.put("input", input);
+		variables.put(ProjectGraphQLVariables.INPUT, input);
 
 		List<TenantProjectResourceWiseTimeLogDto> resourceWiseTimeLogs = callExternalGraphQLApi(request,
 				ProjectGraphQLQueries.INTERNAL_TIME_LOGS_BY_PROJECT_RESOURCE, variables,
@@ -548,10 +552,10 @@ public class ProjectServiceImpl implements ProjectService {
 
 		Map<String, Object> graphQLRequest = new HashMap<>();
 
-		graphQLRequest.put("query", query);
+		graphQLRequest.put(ProjectGraphQLVariables.QUERY, query);
 
 		if (variables != null) {
-			graphQLRequest.put("variables", variables);
+			graphQLRequest.put(ProjectGraphQLVariables.VARIABLES, variables);
 		}
 
 		HttpHeaders headers = createHeaders(request);
