@@ -18,6 +18,8 @@ public class InvoiceItemResponseDto {
 
 	private Integer quantity;
 
+	private String quantityType;
+
 	private Double unitPrice;
 
 	private DiscountType discountType;
