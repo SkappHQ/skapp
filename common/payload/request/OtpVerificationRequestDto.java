@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.Length;
 public class OtpVerificationRequestDto {
 
 	@NotNull(message = "OTP is required")
-	@Length(min = 6, max = 6, message = "OTP must be 6 characters long")
+	@Length(min = 4, max = 4, message = "OTP must be 4 characters long")
 	private String otp;
 
 }

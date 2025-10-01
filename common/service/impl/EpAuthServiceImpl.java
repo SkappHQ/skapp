@@ -743,7 +743,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	private String generateOTP() {
-		return String.format("%06d", secureRandom.nextInt(999999));
+		return String.format("%04d", secureRandom.nextInt(9999));
 	}
 
 	private boolean validateOTP(String storedOTP, Instant expiryTime, String providedOTP) {
