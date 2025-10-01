@@ -17,6 +17,7 @@ import {
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { matchWhitespace } from "~community/common/regex/regexPatterns";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -72,6 +73,7 @@ interface Props {
   "validation-testid"?: string;
   keepHelperTextColor?: boolean;
   ariaLabel?: string;
+  centerError?: boolean;
 }
 
 const InputField = ({
@@ -119,7 +121,8 @@ const InputField = ({
   keepHelperTextColor = false,
   "data-testid": testId,
   "validation-testid": validationTestId,
-  ariaLabel
+  ariaLabel,
+  centerError = false
 }: Props): JSX.Element => {
   const theme = useTheme();
   const classes = styles(theme);
@@ -211,7 +214,13 @@ const InputField = ({
         {tooltip && (
           // TODO: Use Stack instead of Box if display is flex
           <Box
-            sx={classes.tooltipWrapper}
+            sx={{
+              ...classes.tooltipWrapper,
+              [theme.breakpoints.down("sm")]: {
+                position: "relative",
+                zIndex: ZIndexEnums.DEFAULT
+              }
+            }}
             onMouseOver={onTooltipHover}
             onMouseLeave={onTooltipBlur}
           >
@@ -222,6 +231,7 @@ const InputField = ({
               open={open}
               id={tooltipId}
               ariaDescription={tooltip}
+              maxWidth={theme.breakpoints.down("sm") ? "18rem" : "31.25rem"}
             />
           </Box>
         )}
@@ -279,7 +289,10 @@ const InputField = ({
       )}
       {!!error && (
         <Box
-          sx={{ mt: "0.5rem" }}
+          sx={{
+            mt: "0.5rem",
+            textAlign: centerError ? "center" : "left"
+          }}
           role="alert"
           aria-live="assertive"
           aria-atomic={true}
