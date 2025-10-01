@@ -351,6 +351,10 @@ const nextConfig = {
       {
         source: "/invoice/customers/customer-details/:id",
         destination: "/enterprise/invoice/customers/customer-details/:id"
+      },
+      {
+        source: "/invoice/customers/customer-details/projects/:id",
+        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
       }
     ];
   },
