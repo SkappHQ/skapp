@@ -302,7 +302,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 		superAdminRoles.setEsignRole(Role.ESIGN_ADMIN);
 		superAdminRoles.setPmRole(Role.PM_ADMIN);
-        superAdminRoles.setOkrRole(Role.OKR_ADMIN);
+		superAdminRoles.setOkrRole(Role.OKR_ADMIN);
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
 		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
