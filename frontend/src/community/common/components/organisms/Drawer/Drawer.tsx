@@ -49,6 +49,7 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -158,6 +159,8 @@ const Drawer = (): JSX.Element => {
       setOrgData(organizationDetails?.results[0]);
     }
   }, [organizationDetails, orgLoading]);
+
+  if (orgLoading) return <FullScreenLoader />;
 
   return (
     <StyledDrawer

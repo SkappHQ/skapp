@@ -2128,6 +2128,15 @@ public class PeopleServiceImpl implements PeopleService {
 		if (workEmail != null && workEmail.length() > PeopleConstants.MAX_EMAIL_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL_LENGTH,
 					new Object[] { PeopleConstants.MAX_EMAIL_LENGTH }));
+
+		if (workEmail != null) {
+			try {
+				enterpriseValidations(workEmail);
+			}
+			catch (Exception e) {
+				errors.add(e.getMessage());
+			}
+		}
 	}
 
 	private void validateUserSupervisor(String supervisorEmail, List<String> errors) {

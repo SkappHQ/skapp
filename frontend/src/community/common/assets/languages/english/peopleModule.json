@@ -557,6 +557,7 @@
       "quickAddSuccessDescription": "User has been added and an invitation has been sent successfully.",
       "quickAddErrorTitle": "Oops! Something went wrong",
       "quickAddErrorDescription": "Failed to add the resource. Please try again.",
+      "apiQuickAddErrorDescription": "Please enter a work email address.",
       "workEmailGoogle": "Work email must be a Google account.",
       "country": "Country",
       "selectCountry": "Select country"

@@ -328,7 +328,7 @@ export const useQuickAddEmployeeMutation = (onSuccess?: () => void) => {
         open: true,
         toastType: ToastType.ERROR,
         title: translateText(["quickAddErrorTitle"]),
-        description: translateText(["quickAddErrorDescription"])
+        description: translateText(["apiQuickAddErrorDescription"])
       });
     },
     onSettled: async () => {
