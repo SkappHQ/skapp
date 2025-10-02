@@ -45,6 +45,8 @@ public class CreateInvoiceRequestDto {
 
 	private String invoiceNotes;
 
+	private String invoiceLogo;
+
 	private List<CreateInvoiceItemDto> invoiceItems;
 
 	private List<CreateInvoiceExpenseDto> invoiceExpenses;
