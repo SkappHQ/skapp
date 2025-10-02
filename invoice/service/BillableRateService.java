@@ -17,4 +17,6 @@ public interface BillableRateService {
 	List<BillableRate> updateTeamMemberBillableRates(Project project,
 			List<TeamMemberBillableRateUpdateRequestDto> teamMemberBillableRateUpdateRequestDtos);
 
+	List<BillableRate> getBillableRatesByProjectId(Long projectId);
+
 }

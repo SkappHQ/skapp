@@ -42,7 +42,7 @@ public interface CustomerMapper {
 					dto.setContactNo(contact.getContactNo());
 					dto.setJobTitle(contact.getJobTitle());
 					return dto;
-				}).toList();
+				}).sorted(java.util.Comparator.comparing(CustomerContactResponseDto::getName)).toList();
 	}
 
 	@Mapping(target = "customerName", source = "name")

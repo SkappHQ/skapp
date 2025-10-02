@@ -1,4 +1,4 @@
-package com.skapp.enterprise.invoice.payload.response;
+package com.skapp.enterprise.invoice.payload.response.project;
 
 import lombok.Getter;
 import lombok.Setter;

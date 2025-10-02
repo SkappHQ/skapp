@@ -45,4 +45,14 @@ public class InvoiceCommonConstant {
 
 	public static final String CUSTOMER_VAT_ID_REGEX = "^[a-zA-Z0-9\\-/]*$";
 
+	public static final String INTERNAL_RESOURCE_TIME_LOGS = "internalUserWorklogsByProject";
+
+	public static final String INTERNAL_TASK_TIME_LOGS = "internalWorklogsByProject";
+
+	public static final Double MINUTES_PER_HOUR = 60.0;
+
+	public static final int WORKING_DAYS_PER_MONTH = 20;
+
+	public static final Double HUNDRED = 100.0;
+
 }

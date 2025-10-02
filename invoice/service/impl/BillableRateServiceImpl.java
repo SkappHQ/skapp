@@ -92,6 +92,13 @@ public class BillableRateServiceImpl implements BillableRateService {
 		return billableRateDao.saveAll(updatedBillableRates);
 	}
 
+	@Override
+	public List<BillableRate> getBillableRatesByProjectId(Long projectId) {
+
+		return billableRateDao.findByProject_Id_ProjectIdAndIsActive(projectId, true);
+
+	}
+
 	private HashMap<String, List<ProjectUsersResponseDto>> categorizeMembersByStatus(
 			List<ProjectUsersResponseDto> projectUsersResponseDtos, List<BillableRate> memberBillableRateData) {
 

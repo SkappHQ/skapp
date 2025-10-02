@@ -94,6 +94,16 @@ public class EpUserServiceImpl implements EpUserService {
 		return mappedUsers;
 	}
 
+	@Override
+	public List<Employee> getUsersByIds(List<Long> employeeIds) {
+		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+
+		List<Employee> employees = employeeDao.findEmployees(employeeIds, null, activeStatuses);
+
+		return employees;
+
+	}
+
 	private EpUserResponseDto mapEmployeeToUserDto(Employee employee) {
 		EpUserResponseDto dto = new EpUserResponseDto();
 		dto.setUserId(employee.getEmployeeId().toString());

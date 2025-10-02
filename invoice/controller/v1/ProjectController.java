@@ -1,6 +1,7 @@
 package com.skapp.enterprise.invoice.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.invoice.payload.request.ImportTimeLogFilterDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.TeamMemberBillableRateUpdateRequestDto;
@@ -83,6 +84,17 @@ public class ProjectController {
 			@RequestBody List<TeamMemberBillableRateUpdateRequestDto> TeamMemberBillableRateUpdateRequestDtos) {
 		ResponseEntityDto response = projectService.updateTeamMemberBillableRates(customerId, projectId,
 				TeamMemberBillableRateUpdateRequestDtos);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get Time logs of a project",
+			description = "Returns a list of all time logs in a project for the specified time range.")
+
+	@GetMapping(value = "/import-time", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> importTimeLogsByProject(HttpServletRequest request,
+			@Valid ImportTimeLogFilterDto importTimeLogFilterDto) {
+		ResponseEntityDto response = projectService.importTimeLogs(request, importTimeLogFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
