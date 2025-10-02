@@ -30,4 +30,6 @@ public class CommonEmailDynamicFields {
 
 	private String buttonText = EmailButtonText.COMMON_EMAIL_BUTTON_TEXT.name();
 
+	private String buttonTextMobile = EmailButtonText.COMMON_EMAIL_BUTTON_TEXT.name();
+
 }
