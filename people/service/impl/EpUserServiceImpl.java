@@ -173,6 +173,7 @@ public class EpUserServiceImpl implements EpUserService {
 		if (authPicPath == null || authPicPath.isEmpty()) {
 			return "";
 		}
+		authPicPath = EpCommonConstants.S3_PROFILE_PIC_THUMBNAIL_PATH + authPicPath;
 		return amazonS3Service.generateSignedUrl(AmazonS3ActionType.DOWNLOAD, authPicPath, "",
 				EpCommonConstants.CACHED_S3_SIGNED_URL_DURATION);
 	}
