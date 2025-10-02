@@ -8,6 +8,7 @@ import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
 import com.skapp.enterprise.common.payload.response.AmazonS3SignedUrlResponseDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,36 +98,10 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		try {
 			log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
 
-			String folderPath = amazonS3SignedUrlRequestDto.getFolderPath();
-			if (folderPath == null || folderPath.isEmpty()) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
-			}
-
-			String objectKey = bucketName + "/" + folderPath;
-
-			String signedUrl = switch (amazonS3SignedUrlRequestDto.getAction()) {
-				case UPLOAD -> {
-					PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-						.putObjectRequest(req -> req.bucket(bucketName)
-							.key(objectKey)
-							.contentType(amazonS3SignedUrlRequestDto.getFileType()))
-						.build();
-
-					yield s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
-				}
-				case DOWNLOAD -> {
-					GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-						.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
-						.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
-						.build();
-
-					yield s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
-				}
-			};
-
 			AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
-			responseDto.setSignedUrl(signedUrl);
+			responseDto.setSignedUrl(generateSignedUrl(amazonS3SignedUrlRequestDto.getAction(),
+					amazonS3SignedUrlRequestDto.getFolderPath(), amazonS3SignedUrlRequestDto.getFileType(),
+					EpCommonConstants.S3_SIGNED_URL_DURATION));
 
 			return new ResponseEntityDto(false, responseDto);
 		}
@@ -135,6 +110,35 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED,
 					new String[] { e.getMessage() });
 		}
+	}
+
+	@Override
+	public String generateSignedUrl(AmazonS3ActionType amazonS3Action, String folderPath, String fileType,
+			int durationInMinutes) {
+		if (folderPath == null || folderPath.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
+		}
+
+		String objectKey = bucketName + "/" + folderPath;
+
+		return switch (amazonS3Action) {
+			case UPLOAD -> {
+				PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+					.signatureDuration(Duration.ofMinutes(durationInMinutes))
+					.putObjectRequest(req -> req.bucket(bucketName).key(objectKey).contentType(fileType))
+					.build();
+
+				yield s3Presigner.presignPutObject(presignRequest).url().toExternalForm();
+			}
+			case DOWNLOAD -> {
+				GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+					.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
+					.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
+					.build();
+
+				yield s3Presigner.presignGetObject(presignRequest).url().toExternalForm();
+			}
+		};
 	}
 
 	@Override
