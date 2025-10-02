@@ -71,7 +71,7 @@ const routes = [
   },
   {
     id: "2",
-    name: "Leave",
+    name: "Time Off",
     url: ROUTES.LEAVE.BASE,
     icon: IconName.LEAVE_ICON,
     hasSubTree: true,
@@ -108,7 +108,7 @@ const routes = [
       },
       {
         id: "2B",
-        name: "All Leave Requests",
+        name: "All Time Off Requests",
         url: ROUTES.LEAVE.LEAVE_REQUESTS,
         hasSubTree: false,
         requiredAuthLevel: [
@@ -119,14 +119,14 @@ const routes = [
       },
       {
         id: "2C",
-        name: "Leave Entitlements",
+        name: "Time Off Entitlements",
         url: ROUTES.LEAVE.LEAVE_ENTITLEMENTS,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN]
       },
       {
         id: "2D",
-        name: "Leave Types",
+        name: "Time Off Types",
         url: ROUTES.LEAVE.LEAVE_TYPES,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN]

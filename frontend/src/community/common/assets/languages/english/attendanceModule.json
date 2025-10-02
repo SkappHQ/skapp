@@ -143,7 +143,7 @@
     "invalidClockOutDes": "Please enter a clock-out time that is later than the original clock-in time",
     "invalidEntryTitle": "Invalid Time Entry",
     "invalidEntryDes": "Clock in time cannot be the same as clock out time",
-    "leaveAnalyticsButtonTitle": "Leave Analytics",
+    "leaveAnalyticsButtonTitle": "Time Off Analytics",
     "individualTimeSheetAnalytics": {
       "chartTitle": "Worked Hours",
       "youHaveAlreadyLoggedTime": "You`ve already logged time",
@@ -169,7 +169,7 @@
     "closeButton": "Close Button",
     "clockInConfirmationDescription": "You have applied for a leave today. Are you sure you want to clock in?",
     "duration": "Duration",
-    "leaveType": "Leave Type",
+    "leaveType": "Time Off Type",
     "clockInAnyway": "Clock in anyway",
     "clockOutConfirmation": "Clock out confirmation",
     "clockOutTime": "Clock Out Time",
@@ -216,7 +216,7 @@
         "workedHours": "Worked Hours"
       }
     },
-    "stepLeave": "Leave",
+    "stepLeave": "Time Off",
     "stepTimeSheet": "Timesheet",
     "viewFullReport": "View full report",
     "members": "Members",
