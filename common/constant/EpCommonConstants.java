@@ -125,4 +125,6 @@ public class EpCommonConstants {
 
 	public static final String MOBILE_APP_LEAVE_URL = "com.skapp.app://LeaveRequests";
 
+	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
+
 }
