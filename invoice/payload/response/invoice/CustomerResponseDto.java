@@ -19,4 +19,6 @@ public class CustomerResponseDto {
 
 	private String country;
 
+	private String vatId;
+
 }

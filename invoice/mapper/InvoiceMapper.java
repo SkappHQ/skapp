@@ -39,6 +39,7 @@ public interface InvoiceMapper {
 	InvoiceTax CreateInvoiceTaxDtoToInvoiceTax(CreateInvoiceTaxDto createInvoiceTaxDto);
 
 	@Mapping(target = "customer", source = "invoice.customer")
+	@Mapping(target = "customer.vatId", source = "invoice.customer.vatId")
 	@Mapping(target = "invoiceItems", source = "invoice.invoiceItems")
 	@Mapping(target = "invoiceExpenses", source = "invoice.invoiceExpenses")
 	@Mapping(target = "invoiceTaxes", source = "invoice.invoiceTaxes")
