@@ -10,7 +10,6 @@ import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
-import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.model.TimeRecord_;
@@ -30,7 +29,6 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -42,7 +40,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -577,7 +574,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		log.info("getEmployeeClockInTrend: Starting execution with teams={}, timeZone={}, date={}", teams, timeZone,
 				date);
 
-		// First, fetch all time records for the date
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
 		Root<TimeRecord> timeRecord = dataQuery.from(TimeRecord.class);
@@ -601,71 +597,43 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
 
-		// Convert to timezone-aware LocalTime and count by slots
 		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
-		Map<String, Integer> slotCounts = new java.util.HashMap<>();
 
-		// Initialize all slots with 0
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
+		List<String> timeSlots = java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
-				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				slotCounts.put(slotLabel, 0);
-			}
-		}
+			}))
+			.collect(java.util.stream.Collectors.toList());
 
-		// Process each record and assign to appropriate slot
-		for (Tuple record : records) {
-			Long clockInTimeMillis = record.get(1, Long.class);
-			if (clockInTimeMillis != null) {
-				// Convert Unix timestamp to LocalTime in target timezone
+		Map<String, Long> slotCounts = records.stream()
+			.map(record -> record.get(1, Long.class))
+			.filter(java.util.Objects::nonNull)
+			.map(clockInTimeMillis -> {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockInTimeMillis);
-				java.time.ZonedDateTime zonedDateTime = instant.atZone(targetZone);
-				LocalTime clockInLocalTime = zonedDateTime.toLocalTime();
+				return instant.atZone(targetZone).toLocalTime();
+			})
+			.map(clockInLocalTime -> findTimeSlot(clockInLocalTime))
+			.filter(java.util.Objects::nonNull)
+			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
+					java.util.stream.Collectors.counting()));
 
-				// Find the appropriate slot
-				for (int hour = 0; hour < 24; hour++) {
-					for (int halfHour = 0; halfHour < 2; halfHour++) {
-						LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
-						LocalTime slotEnd = slotStart.plusMinutes(30);
-
-						if (!clockInLocalTime.isBefore(slotStart) && clockInLocalTime.isBefore(slotEnd)) {
-							String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
-									+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-							slotCounts.put(slotLabel, slotCounts.get(slotLabel) + 1);
-							break;
-						}
-					}
-				}
+		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
+			@Override
+			public String getSlot() {
+				return slotLabel;
 			}
-		}
 
-		// Build result list in the same order as before
-		List<TimeRecordTrendDto> result = new ArrayList<>();
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
-				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
-				LocalTime slotEnd = slotStart.plusMinutes(30);
-				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
-						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-
-				final int count = slotCounts.get(slotLabel);
-
-				result.add(new TimeRecordTrendDto() {
-					public String getSlot() {
-						return slotLabel;
-					}
-
-					public int getCount() {
-						return count;
-					}
-				});
+			@Override
+			public int getCount() {
+				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
 			}
-		}
+		}).collect(java.util.stream.Collectors.toList());
 
-		long totalCount = result.stream().mapToInt(TimeRecordTrendDto::getCount).sum();
+		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
 		log.info("getEmployeeClockInTrend: Completed execution. Total clock-ins found: {} across all time slots",
 				totalCount);
 
@@ -700,75 +668,65 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
 
-		// Convert to timezone-aware LocalTime and count by slots
 		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
-		Map<String, Integer> slotCounts = new java.util.HashMap<>();
 
-		// Initialize all slots with 0
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
+		List<String> timeSlots = java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
-				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				slotCounts.put(slotLabel, 0);
-			}
-		}
+			}))
+			.collect(java.util.stream.Collectors.toList());
 
-		// Process each record and assign to appropriate slot
-		for (Tuple record : records) {
-			Long clockOutTimeMillis = record.get(1, Long.class);
-			if (clockOutTimeMillis != null) {
-				// Convert Unix timestamp to LocalTime in target timezone
+		Map<String, Long> slotCounts = records.stream()
+			.map(record -> record.get(1, Long.class))
+			.filter(java.util.Objects::nonNull)
+			.map(clockOutTimeMillis -> {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockOutTimeMillis);
-				java.time.ZonedDateTime zonedDateTime = instant.atZone(targetZone);
-				LocalTime clockOutLocalTime = zonedDateTime.toLocalTime();
+				return instant.atZone(targetZone).toLocalTime();
+			})
+			.map(clockOutLocalTime -> findTimeSlot(clockOutLocalTime))
+			.filter(java.util.Objects::nonNull)
+			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
+					java.util.stream.Collectors.counting()));
 
-				// Find the appropriate slot
-				for (int hour = 0; hour < 24; hour++) {
-					for (int halfHour = 0; halfHour < 2; halfHour++) {
-						LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
-						LocalTime slotEnd = slotStart.plusMinutes(30);
-
-						if (!clockOutLocalTime.isBefore(slotStart) && clockOutLocalTime.isBefore(slotEnd)) {
-							String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
-									+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-							slotCounts.put(slotLabel, slotCounts.get(slotLabel) + 1);
-							break;
-						}
-					}
-				}
+		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
+			@Override
+			public String getSlot() {
+				return slotLabel;
 			}
-		}
 
-		// Build result list in the same order as before
-		List<TimeRecordTrendDto> result = new ArrayList<>();
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
-				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
-				LocalTime slotEnd = slotStart.plusMinutes(30);
-				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
-						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-
-				final int count = slotCounts.get(slotLabel);
-
-				result.add(new TimeRecordTrendDto() {
-					public String getSlot() {
-						return slotLabel;
-					}
-
-					public int getCount() {
-						return count;
-					}
-				});
+			@Override
+			public int getCount() {
+				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
 			}
-		}
+		}).collect(java.util.stream.Collectors.toList());
 
-		long totalCount = result.stream().mapToInt(TimeRecordTrendDto::getCount).sum();
+		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
 		log.info("getEmployeeClockOutTrend: Completed execution. Total clock-outs found: {} across all time slots",
 				totalCount);
 
 		return result;
+	}
+
+	private String findTimeSlot(LocalTime time) {
+		return java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
+
+				if (!time.isBefore(slotStart) && time.isBefore(slotEnd)) {
+					return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+							+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+				}
+				return null;
+			}))
+			.filter(java.util.Objects::nonNull)
+			.findFirst()
+			.orElse(null);
 	}
 
 }
