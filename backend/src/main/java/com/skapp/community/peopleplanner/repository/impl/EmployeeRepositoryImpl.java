@@ -907,7 +907,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), false));
-		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.TERMINATED));
+		predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 
 		Expression<LocalDate> terminationDate = root.get(Employee_.terminationDate);
 		predicates.add(criteriaBuilder.isNotNull(terminationDate));
