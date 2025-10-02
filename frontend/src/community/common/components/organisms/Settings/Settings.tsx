@@ -9,7 +9,7 @@ import {
   useTheme
 } from "@mui/material";
 import { useSession } from "next-auth/react";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
 import { appModes } from "~community/common/constants/configs";
@@ -30,7 +30,11 @@ import ManageSubscriptionSettingsSection from "~enterprise/settings/components/m
 import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
 
-const SettingsSection: FC = () => {
+interface SettingsSectionProps {
+  customSettingsComponent?: ReactNode;
+}
+
+const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) => {
   const translatedText = useTranslator("settings");
 
   const theme: Theme = useTheme();
@@ -123,6 +127,12 @@ const SettingsSection: FC = () => {
               </Box>
 
               <Divider />
+            </>
+          )}
+
+          {customSettingsComponent && (
+            <>
+              {customSettingsComponent}        
             </>
           )}
 
