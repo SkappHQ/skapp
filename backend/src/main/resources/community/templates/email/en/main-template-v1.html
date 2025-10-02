@@ -4,22 +4,6 @@
     <meta charset="UTF-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>{{subject}}</title>
-    <style>
-      .mobileButton {
-        display: none;
-      }
-      .desktopButton {
-        display: inline;
-      }
-      @media screen and (max-width: 640px) {
-        .mobileButton {
-          display: inline !important;
-        }
-        .desktopButton {
-          display: none !important;
-        }
-      }
-    </style>
   </head>
   <body style="background-color: #ffffff; padding: 20px">
     <div
@@ -141,7 +125,7 @@
                           </p>
                         </div>
 
-                        <div style="text-align: center" class="desktopButton">
+                        <div style="text-align: center">
                           <a
                             href="{{appUrl}}"
                             style="
@@ -188,73 +172,6 @@
                                               line-height: 24px;
                                             "
                                             >{{buttonText}}</span
-                                          >
-                                        </a>
-                                      </td>
-                                      <td style="padding-left: 8px">
-                                        <img
-                                          alt="arrow"
-                                          height="20"
-                                          src="https://imgs.skapp.com/email-right-arrow.png"
-                                          style="display: block"
-                                          width="20"
-                                        />
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                              </tr>
-                            </table>
-                          </a>
-                        </div>
-
-                        <div style="text-align: center" class="mobileButton">
-                          <a
-                            href="{{appUrlMobile}}"
-                            style="
-                              background-color: #93c5fd;
-                              color: #000;
-                              padding: 16px 40px;
-                              border-radius: 50px;
-                              text-decoration: none;
-                              font-size: 16px;
-                              display: inline-block;
-                              text-align: center;
-                              width: 100%;
-                              max-width: 370px;
-                              box-sizing: border-box;
-                            "
-                          >
-                            <table style="margin: 0 auto">
-                              <tr>
-                                <td
-                                  style="
-                                    padding: 0;
-                                    background-color: #93c5fd;
-                                    border-radius: 50px;
-                                  "
-                                >
-                                  <table
-                                    role="presentation"
-                                    style="display: inline-table"
-                                  >
-                                    <tr>
-                                      <td>
-                                        <a
-                                          href="{{appUrlMobile}}"
-                                          style="
-                                            color: #000;
-                                            text-decoration: none;
-                                            font-size: 16px;
-                                            font-family: Arial, sans-serif;
-                                          "
-                                        >
-                                          <span
-                                            style="
-                                              font-size: 16px;
-                                              line-height: 24px;
-                                            "
-                                            >{{buttonTextMobile}}</span
                                           >
                                         </a>
                                       </td>
