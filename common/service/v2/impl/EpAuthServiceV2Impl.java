@@ -560,7 +560,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		signInResponseDto.setAccessToken(accessToken);
 		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
-        user.setIsPasswordChangedForTheFirstTime(true);
+		user.setIsPasswordChangedForTheFirstTime(true);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
 		log.info("ssoMicrosoftSignIn: Tokens generated for userEmail: {}", user.getEmail());
