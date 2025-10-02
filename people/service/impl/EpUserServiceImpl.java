@@ -10,6 +10,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
+import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
@@ -104,6 +105,28 @@ public class EpUserServiceImpl implements EpUserService {
 
 	}
 
+	@Override
+	public List<EpUserAuthPicResponseDto> getUserAuthPicsByIdsOrSearch(List<Long> userIds, String search) {
+		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+
+		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
+
+		List<EpUserAuthPicResponseDto> mappedUserAuthPics = employees.stream()
+			.map(this::mapEmployeeToUserAuthPicDto)
+			.toList();
+
+		try {
+			String usersJson = objectMapper.writeValueAsString(mappedUserAuthPics);
+			EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_AUTH_PICS_CACHE_KEY;
+			cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		}
+		catch (JsonProcessingException e) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
+		}
+
+		return mappedUserAuthPics;
+	}
+
 	private EpUserResponseDto mapEmployeeToUserDto(Employee employee) {
 		EpUserResponseDto dto = new EpUserResponseDto();
 		dto.setUserId(employee.getEmployeeId().toString());
@@ -115,6 +138,13 @@ public class EpUserServiceImpl implements EpUserService {
 			dto.setLoginMethod(employee.getUser().getLoginMethod());
 		}
 
+		dto.setAuthPic(employee.getAuthPic());
+		return dto;
+	}
+
+	private EpUserAuthPicResponseDto mapEmployeeToUserAuthPicDto(Employee employee) {
+		EpUserAuthPicResponseDto dto = new EpUserAuthPicResponseDto();
+		dto.setUserId(employee.getEmployeeId().toString());
 		dto.setAuthPic(employee.getAuthPic());
 		return dto;
 	}
