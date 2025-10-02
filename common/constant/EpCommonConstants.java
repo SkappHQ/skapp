@@ -117,6 +117,8 @@ public class EpCommonConstants {
 
 	public static final int S3_SIGNED_URL_DURATION = 15;
 
+	public static final int CACHED_S3_SIGNED_URL_DURATION = 11520; // 8 days
+
 	public static final String PRD_CONFIG_PATH = "enterprise/validations/email-validation-prd.yml";
 
 	public static final String NON_PRD_CONFIG_PATH = "enterprise/validations/email-validation-non-prd.yml";

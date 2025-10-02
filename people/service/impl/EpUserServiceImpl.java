@@ -9,6 +9,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
@@ -169,7 +170,11 @@ public class EpUserServiceImpl implements EpUserService {
 	}
 
 	private String generateAuthPicUrl(String authPicPath) {
-		return amazonS3Service.generateSignedUrl(AmazonS3ActionType.DOWNLOAD, authPicPath, "");
+		if (authPicPath == null || authPicPath.isEmpty()) {
+			return "";
+		}
+		return amazonS3Service.generateSignedUrl(AmazonS3ActionType.DOWNLOAD, authPicPath, "",
+				EpCommonConstants.CACHED_S3_SIGNED_URL_DURATION);
 	}
 
 }

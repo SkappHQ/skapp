@@ -18,7 +18,8 @@ public interface AmazonS3Service {
 
 	ResponseEntityDto getSignedUrl(@Valid AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto);
 
-	String generateSignedUrl(AmazonS3ActionType amazonS3Action, String folderPath, String fileType);
+	String generateSignedUrl(AmazonS3ActionType amazonS3Action, String folderPath, String fileType,
+			int durationInMinutes);
 
 	ResponseEntityDto deleteFileFromS3(AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto);
 

@@ -100,7 +100,8 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 			AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
 			responseDto.setSignedUrl(generateSignedUrl(amazonS3SignedUrlRequestDto.getAction(),
-					amazonS3SignedUrlRequestDto.getFolderPath(), amazonS3SignedUrlRequestDto.getFileType()));
+					amazonS3SignedUrlRequestDto.getFolderPath(), amazonS3SignedUrlRequestDto.getFileType(),
+					EpCommonConstants.S3_SIGNED_URL_DURATION));
 
 			return new ResponseEntityDto(false, responseDto);
 		}
@@ -112,7 +113,8 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	}
 
 	@Override
-	public String generateSignedUrl(AmazonS3ActionType amazonS3Action, String folderPath, String fileType) {
+	public String generateSignedUrl(AmazonS3ActionType amazonS3Action, String folderPath, String fileType,
+			int durationInMinutes) {
 		if (folderPath == null || folderPath.isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_S3_FOLDER_PATH);
 		}
@@ -122,7 +124,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 		return switch (amazonS3Action) {
 			case UPLOAD -> {
 				PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
+					.signatureDuration(Duration.ofMinutes(durationInMinutes))
 					.putObjectRequest(req -> req.bucket(bucketName).key(objectKey).contentType(fileType))
 					.build();
 
