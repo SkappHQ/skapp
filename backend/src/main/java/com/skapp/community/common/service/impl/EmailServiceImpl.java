@@ -108,7 +108,7 @@ public class EmailServiceImpl implements EmailService {
 		}
 	}
 
-	private String getLocalizedEnumValue(String enumKey, String enumValue) {
+	protected String getLocalizedEnumValue(String enumKey, String enumValue) {
 		getEnumTranslationsStream();
 		return Optional.ofNullable(enumTranslationsMap.get(EmailServiceImpl.EMAIL_LANGUAGE))
 			.map(langMap -> langMap.get(enumKey))
@@ -186,7 +186,7 @@ public class EmailServiceImpl implements EmailService {
 		}
 	}
 
-	private EmailTemplateMetadata getTemplateDetails(String templateId) {
+	protected EmailTemplateMetadata getTemplateDetails(String templateId) {
 		loadTemplateDetails();
 		return templateDetailsMap.getOrDefault(EMAIL_LANGUAGE, Collections.emptyMap())
 			.values()
@@ -197,7 +197,7 @@ public class EmailServiceImpl implements EmailService {
 			.orElse(null);
 	}
 
-	private String findModuleForTemplate(String templateId) {
+	protected String findModuleForTemplate(String templateId) {
 		loadTemplateDetails();
 		return templateDetailsMap.getOrDefault(EMAIL_LANGUAGE, Collections.emptyMap())
 			.entrySet()
@@ -208,7 +208,7 @@ public class EmailServiceImpl implements EmailService {
 			.orElse(null);
 	}
 
-	private String buildEmailBody(EmailTemplateMetadata templateDetails, String module,
+	protected String buildEmailBody(EmailTemplateMetadata templateDetails, String module,
 			Map<String, String> placeholders, EmailTemplates emailMainTemplate) throws IOException {
 		String templatePath = buildTemplatePath(module, templateDetails.getId());
 		String body = replaceValuesToTemplate(templatePath, placeholders);
@@ -249,7 +249,7 @@ public class EmailServiceImpl implements EmailService {
 		return templateContent;
 	}
 
-	private Map<String, String> convertDtoToMap(Object data) {
+	protected Map<String, String> convertDtoToMap(Object data) {
 		Map<String, String> placeholders = new HashMap<>();
 		BeanMap beanMap = BeanMap.create(data);
 		for (Object entry : beanMap.entrySet()) {

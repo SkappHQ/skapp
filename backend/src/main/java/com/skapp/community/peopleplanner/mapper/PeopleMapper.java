@@ -136,6 +136,7 @@ public interface PeopleMapper {
 	EmployeeJobFamilyDto jobFamilyToEmployeeJobFamilyDto(JobFamily jobFamily);
 
 	@Mapping(target = "isSuperAdmin", source = "isSuperAdmin")
+	@Mapping(target = "okrRole", source = "okrRole")
 	EmployeeRoleResponseDto employeeRoleToEmployeeRoleResponseDto(EmployeeRole employeeRole);
 
 	@Mapping(target = "user.email", source = "employeeBulkDto.workEmail")
