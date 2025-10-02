@@ -267,6 +267,36 @@ const routes = [
   },
   {
     id: "6",
+    name: "Invoices",
+    url: ROUTES.INVOICE.BASE,
+    icon: IconName.INVOICE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
+    subTree: [
+      {
+        id: "6A",
+        name: "All Invoices",
+        url: ROUTES.INVOICE.ALL_INVOICES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          ManagerTypes.INVOICE_MANAGER
+        ]
+      },
+      {
+        id: "6B",
+        name: "Customers",
+        url: ROUTES.INVOICE.CUSTOMERS.BASE,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          ManagerTypes.INVOICE_MANAGER
+        ]
+      }
+    ]
+  },
+  {
+    id: "7",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -278,69 +308,39 @@ const routes = [
     ],
     subTree: [
       {
-        id: "6A",
+        id: "7A",
         name: "Time",
         url: ROUTES.CONFIGURATIONS.TIME,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
       },
       {
-        id: "6B",
+        id: "7B",
         name: "Attendance",
         url: ROUTES.CONFIGURATIONS.ATTENDANCE,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
       },
       {
-        id: "6C",
+        id: "7C",
         name: "Sign",
         url: ROUTES.CONFIGURATIONS.SIGN,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
       },
       {
-        id: "6D",
+        id: "7D",
         name: "User Roles",
         url: ROUTES.CONFIGURATIONS.USER_ROLES,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
       },
       {
-        id: "6E",
+        id: "7E",
         name: "Invoice",
         url: ROUTES.CONFIGURATIONS.INVOICE,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
-      }
-    ]
-  },
-  {
-    id: "7",
-    name: "Invoices",
-    url: ROUTES.INVOICE.BASE,
-    icon: IconName.INVOICE_ICON,
-    hasSubTree: true,
-    requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
-    subTree: [
-      {
-        id: "7A",
-        name: "All Invoices",
-        url: ROUTES.INVOICE.ALL_INVOICES,
-        hasSubTree: false,
-        requiredAuthLevel: [
-          AdminTypes.SUPER_ADMIN,
-          ManagerTypes.INVOICE_MANAGER
-        ]
-      },
-      {
-        id: "7B",
-        name: "Customers",
-        url: ROUTES.INVOICE.CUSTOMERS.BASE,
-        hasSubTree: false,
-        requiredAuthLevel: [
-          AdminTypes.SUPER_ADMIN,
-          ManagerTypes.INVOICE_MANAGER
-        ]
       }
     ]
   },

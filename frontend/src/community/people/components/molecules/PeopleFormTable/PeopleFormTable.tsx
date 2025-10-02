@@ -116,7 +116,10 @@ const PeopleFormTable: FC<Props> = ({
                     ? "0.75rem 0 0 0"
                     : index === headings.length - 1 && !actionsNeeded
                       ? "0 0.75rem 0 0"
-                      : "0 0 0 0"
+                      : "0 0 0 0",
+                ...(index === 0 && {
+                  width: "4.625rem", // same width as header
+                }),
               }}
             >
               <Typography
