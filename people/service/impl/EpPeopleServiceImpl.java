@@ -353,7 +353,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void invalidateUserAuthPicCache() {
-		EpCacheKeys userAuthPicCacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
+		EpCacheKeys userAuthPicCacheKey = EpCacheKeys.TENANT_ALL_USERS_AUTH_PICS_CACHE_KEY;
 		cacheService.invalidate(userAuthPicCacheKey.getKey());
 	}
 
