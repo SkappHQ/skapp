@@ -248,55 +248,6 @@ const routes = [
   },
   {
     id: "5",
-    name: "Configurations",
-    url: ROUTES.CONFIGURATIONS.BASE,
-    icon: IconName.CONFIGURATIONS_ICON,
-    hasSubTree: true,
-    requiredAuthLevel: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.ATTENDANCE_ADMIN,
-      AdminTypes.INVOICE_ADMIN
-    ],
-    subTree: [
-      {
-        id: "5A",
-        name: "Time",
-        url: ROUTES.CONFIGURATIONS.TIME,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: "5B",
-        name: "Attendance",
-        url: ROUTES.CONFIGURATIONS.ATTENDANCE,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
-      },
-      {
-        id: "5C",
-        name: "Sign",
-        url: ROUTES.CONFIGURATIONS.SIGN,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
-      },
-      {
-        id: "5D",
-        name: "User Roles",
-        url: ROUTES.CONFIGURATIONS.USER_ROLES,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: "5E",
-        name: "Invoice",
-        url: ROUTES.CONFIGURATIONS.INVOICE,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
-      }
-    ]
-  },
-  {
-    id: "6",
     name: "Projects",
     url: ROUTES.PROJECTS,
     icon: IconName.PROJECTS_ICON,
@@ -312,6 +263,55 @@ const routes = [
       EmployeeTypes.PEOPLE_EMPLOYEE,
       EmployeeTypes.LEAVE_EMPLOYEE,
       EmployeeTypes.ATTENDANCE_EMPLOYEE
+    ]
+  },
+  {
+    id: "6",
+    name: "Configurations",
+    url: ROUTES.CONFIGURATIONS.BASE,
+    icon: IconName.CONFIGURATIONS_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.ATTENDANCE_ADMIN,
+      AdminTypes.INVOICE_ADMIN
+    ],
+    subTree: [
+      {
+        id: "6A",
+        name: "Time",
+        url: ROUTES.CONFIGURATIONS.TIME,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
+      },
+      {
+        id: "6B",
+        name: "Attendance",
+        url: ROUTES.CONFIGURATIONS.ATTENDANCE,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
+      },
+      {
+        id: "6C",
+        name: "Sign",
+        url: ROUTES.CONFIGURATIONS.SIGN,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
+      },
+      {
+        id: "6D",
+        name: "User Roles",
+        url: ROUTES.CONFIGURATIONS.USER_ROLES,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
+      },
+      {
+        id: "6E",
+        name: "Invoice",
+        url: ROUTES.CONFIGURATIONS.INVOICE,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
+      }
     ]
   },
   {

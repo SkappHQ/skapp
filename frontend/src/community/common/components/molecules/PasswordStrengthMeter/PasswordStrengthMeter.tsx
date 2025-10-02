@@ -12,6 +12,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
   password: string;
+  compact?: boolean;
+  fontSize?: string;
+  showStrengthText?: boolean;
 }
 
 interface Validations {
@@ -22,7 +25,12 @@ interface Validations {
   length: boolean;
 }
 
-const PasswordStrengthMeter: React.FC<Props> = ({ password }) => {
+const PasswordStrengthMeter: React.FC<Props> = ({
+  password,
+  compact = false,
+  fontSize = "0.875rem",
+  showStrengthText = true
+}) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("onboarding", "resetPassword");
 
@@ -72,16 +80,32 @@ const PasswordStrengthMeter: React.FC<Props> = ({ password }) => {
     label,
     isValid
   }) => (
-    <Stack direction="row" alignItems="center" mb="0.5rem" spacing={1}>
+    <Stack
+      direction="row"
+      alignItems="center"
+      mb={compact ? "0.25rem" : "0.5rem"}
+      spacing={compact ? 0.5 : 1}
+    >
       {isValid ? (
-        <CheckCircleIcon sx={{ color: theme.palette.greens.dark }} />
+        <CheckCircleIcon
+          sx={{
+            color: theme.palette.greens.dark,
+            fontSize: compact ? "1rem" : "1.25rem"
+          }}
+        />
       ) : (
-        <RadioButtonUncheckedIcon sx={{ color: theme.palette.grey[300] }} />
+        <RadioButtonUncheckedIcon
+          sx={{
+            color: theme.palette.grey[300],
+            fontSize: compact ? "1rem" : "1.25rem"
+          }}
+        />
       )}
       <Typography
         sx={{
           color: isValid ? "inherit" : theme.palette.grey[700],
-          transition: "color 0.3s ease"
+          transition: "color 0.3s ease",
+          fontSize: fontSize
         }}
       >
         {label}
@@ -96,7 +120,7 @@ const PasswordStrengthMeter: React.FC<Props> = ({ password }) => {
           variant="determinate"
           value={passwordStrengthScore}
           sx={{
-            height: 3,
+            height: compact ? 2 : 3,
             borderRadius: 2,
             marginTop: "0.5rem",
             "& .MuiLinearProgress-bar": {
@@ -106,38 +130,44 @@ const PasswordStrengthMeter: React.FC<Props> = ({ password }) => {
           }}
         />
       </Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "0.25rem",
-          lineHeight: "2rem"
-        }}
-      >
-        <Typography
-          variant="caption"
-          style={{ fontSize: "1rem", fontWeight: 400 }}
-        >
-          {translateText(["PasswordStrength"])}
-        </Typography>
-        <Typography
-          variant="caption"
-          style={{
-            color: getPasswordStrengthColor(),
-            fontSize: "1rem"
+      {showStrengthText && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: compact ? "0.125rem" : "0.25rem",
+            lineHeight: compact ? "1.5rem" : "2rem"
           }}
         >
-          {passwordStrength}
-        </Typography>
-      </Box>
+          <Typography
+            variant="caption"
+            style={{
+              fontSize: compact ? "0.75rem" : "1rem",
+              fontWeight: 400
+            }}
+          >
+            {translateText(["PasswordStrength"])}
+          </Typography>
+          <Typography
+            variant="caption"
+            style={{
+              color: getPasswordStrengthColor(),
+              fontSize: compact ? "0.75rem" : "1rem"
+            }}
+          >
+            {passwordStrength}
+          </Typography>
+        </Box>
+      )}
 
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          mt: "1.25rem",
-          mr: "0.75rem"
+          mt: compact ? "0.75rem" : "1.25rem",
+          mr: compact ? "0.5rem" : "0.75rem",
+          gap: compact ? "1rem" : "0"
         }}
       >
         <Box>
