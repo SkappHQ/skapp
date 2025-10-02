@@ -450,17 +450,17 @@ const ApplyLeaveModal = () => {
               setAttachments(attachments.filter((a) => a !== attachment))
             }
           />
-          {!isApplyLeaveModalBtnDisabled ?
-          <LeaveSummary
-            leaveTypeName={selectedLeaveAllocationData.leaveType.name}
-            leaveTypeEmoji={selectedLeaveAllocationData.leaveType.emojiCode}
-            leaveDuration={selectedDuration}
-            startDate={selectedDates[0]}
-            endDate={selectedDates[1]}
-            resourceAvailability={resourceAvailability}
-            workingDays={workingDays}
-          /> : <></> }
-          
+          {!isApplyLeaveModalBtnDisabled && (
+            <LeaveSummary
+              leaveTypeName={selectedLeaveAllocationData.leaveType.name}
+              leaveTypeEmoji={selectedLeaveAllocationData.leaveType.emojiCode}
+              leaveDuration={selectedDuration}
+              startDate={selectedDates[0]}
+              endDate={selectedDates[1]}
+              resourceAvailability={resourceAvailability}
+              workingDays={workingDays}
+            />
+          )}
         </Stack>
       </Stack>
       <Stack sx={classes.btnWrapper}>
