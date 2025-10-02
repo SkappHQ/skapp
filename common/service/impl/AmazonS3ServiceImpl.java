@@ -132,7 +132,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 			}
 			case DOWNLOAD -> {
 				GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-					.signatureDuration(Duration.ofMinutes(EpCommonConstants.S3_SIGNED_URL_DURATION))
+					.signatureDuration(Duration.ofMinutes(durationInMinutes))
 					.getObjectRequest(req -> req.bucket(bucketName).key(objectKey))
 					.build();
 
