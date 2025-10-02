@@ -118,7 +118,11 @@ const ROUTES = {
     CUSTOMERS: {
       BASE: "/invoice/customers",
       CUSTOMER_DETAILS: (id: number) =>
-        `/invoice/customers/customer-details/${id}`
+        `/invoice/customers/customer-details/${id}`,
+      PROJECTS: {
+        BASE: "/invoice/customers/customer-details/projects",
+        ID: (id: number) => `/invoice/customers/customer-details/projects/${id}`
+      }
     },
     CREATE: {
       BASE: "/invoice/create",
