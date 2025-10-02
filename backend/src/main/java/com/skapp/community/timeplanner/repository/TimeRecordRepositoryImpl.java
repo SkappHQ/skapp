@@ -371,21 +371,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
-						// convert using CONVERT_TZ
-						// cb.literal("startTime"),
-						// cb.function("CONVERT_TZ", String.class,
-						// timeSlot.get(TimeSlot_.startTime),
-						// cb.literal("@@session.time_zone"),
-						// cb.literal(timeZone) // <-- pass requested timezone
-						// ),
-						// cb.literal("endTime"),
-						// cb.function("CONVERT_TZ", String.class,
-						// timeSlot.get(TimeSlot_.endTime),
-						// cb.literal("@@session.time_zone"),
-						// cb.literal(timeZone)
-						// ),
-						// */
-
 						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry))));
