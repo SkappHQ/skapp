@@ -74,7 +74,8 @@ const ROUTES = {
     USER_ROLES: "/configurations/user-roles",
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
-      `/configurations/user-roles/${module}`
+      `/configurations/user-roles/${module}`,
+    INVOICE: "/configurations/invoice"
   },
   DASHBOARD: {
     BASE: "/dashboard",
@@ -110,7 +111,28 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects"
+  PROJECTS: "/projects",
+  INVOICE: {
+    BASE: "/invoice",
+    ALL_INVOICES: "/invoice/allInvoices",
+    CUSTOMERS: {
+      BASE: "/invoice/customers",
+      CUSTOMER_DETAILS: (id: number) =>
+        `/invoice/customers/customer-details/${id}`,
+      PROJECTS: {
+        BASE: "/invoice/customers/customer-details/projects",
+        ID: (id: number) => `/invoice/customers/customer-details/projects/${id}`
+      }
+    },
+    CREATE: {
+      BASE: "/invoice/create",
+      ID: (id: any) => `/invoice/create/${id}`
+    },
+    VIEW: {
+      BASE: "/invoice/view",
+      ID: (id: any) => `/invoice/view/${id}`
+    }
+  }
 };
 
 export default ROUTES;
@@ -118,12 +140,18 @@ export default ROUTES;
 const RESCRITED_DYNAMIC_ROUTES = {
   PEOPLE: {
     EDIT: "/people/directory/edit/"
+  },
+  INVOICE: {
+    CREATE: "/invoice/create/",
+    VIEW: "/invoice/view/"
   }
 };
 
 export const employeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
-  ROUTES.PEOPLE.ADD
+  ROUTES.PEOPLE.ADD,
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE,
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];

@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum NotificationCategory {
 
-	PEOPLE("people"), LEAVE("leave"), ATTENDANCE("attendance");
+	PEOPLE("people"), LEAVE("leave"), ATTENDANCE("attendance"), OKR("okr");
 
 	private final String label;
 
