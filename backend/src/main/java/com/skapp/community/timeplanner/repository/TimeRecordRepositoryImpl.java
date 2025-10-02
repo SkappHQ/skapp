@@ -374,6 +374,21 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				cb.function("JSON_ARRAYAGG", String.class, cb.function("JSON_OBJECT", String.class,
 						cb.literal("timeSlotId"), timeSlot.get(TimeSlot_.timeSlotId), cb.literal("startTime"),
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
+						// convert using CONVERT_TZ
+						// cb.literal("startTime"),
+						// cb.function("CONVERT_TZ", String.class,
+						// timeSlot.get(TimeSlot_.startTime),
+						// cb.literal("@@session.time_zone"),
+						// cb.literal(timeZone) // <-- pass requested timezone
+						// ),
+						// cb.literal("endTime"),
+						// cb.function("CONVERT_TZ", String.class,
+						// timeSlot.get(TimeSlot_.endTime),
+						// cb.literal("@@session.time_zone"),
+						// cb.literal(timeZone)
+						// ),
+						// */
+
 						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry))));
@@ -559,12 +574,76 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date) {
-		log.info("getEmployeeClockInTrend: Starting execution with teams={}, date={}", teams, date);
+		log.info("getEmployeeClockInTrend: Starting execution with teams={}, timeZone={}, date={}", teams, timeZone,
+				date);
 
-		List<TimeRecordTrendDto> result = new ArrayList<>();
-
+		// First, fetch all time records for the date
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<TimeRecord> timeRecord = dataQuery.from(TimeRecord.class);
+		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
 
+		List<Predicate> dataPredicates = new ArrayList<>();
+
+		if (teams.contains(-1L)) {
+			dataPredicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+		}
+		else {
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+			dataPredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+		}
+
+		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
+		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
+
+		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockInTime));
+		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
+
+		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
+
+		// Convert to timezone-aware LocalTime and count by slots
+		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
+		Map<String, Integer> slotCounts = new java.util.HashMap<>();
+
+		// Initialize all slots with 0
+		for (int hour = 0; hour < 24; hour++) {
+			for (int halfHour = 0; halfHour < 2; halfHour++) {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
+				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+				slotCounts.put(slotLabel, 0);
+			}
+		}
+
+		// Process each record and assign to appropriate slot
+		for (Tuple record : records) {
+			Long clockInTimeMillis = record.get(1, Long.class);
+			if (clockInTimeMillis != null) {
+				// Convert Unix timestamp to LocalTime in target timezone
+				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockInTimeMillis);
+				java.time.ZonedDateTime zonedDateTime = instant.atZone(targetZone);
+				LocalTime clockInLocalTime = zonedDateTime.toLocalTime();
+
+				// Find the appropriate slot
+				for (int hour = 0; hour < 24; hour++) {
+					for (int halfHour = 0; halfHour < 2; halfHour++) {
+						LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+						LocalTime slotEnd = slotStart.plusMinutes(30);
+
+						if (!clockInLocalTime.isBefore(slotStart) && clockInLocalTime.isBefore(slotEnd)) {
+							String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+									+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+							slotCounts.put(slotLabel, slotCounts.get(slotLabel) + 1);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// Build result list in the same order as before
+		List<TimeRecordTrendDto> result = new ArrayList<>();
 		for (int hour = 0; hour < 24; hour++) {
 			for (int halfHour = 0; halfHour < 2; halfHour++) {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
@@ -572,42 +651,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 
-				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
-				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-
-				List<Predicate> predicates = new ArrayList<>();
-
-				if (teams.contains(-1L)) {
-					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
-				}
-				else {
-					Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
-					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
-				}
-
-				predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
-				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
-
-				// --- Bypass timezone conversion (active) ---
-				Expression<LocalTime> clockInLocalTime = cb.function("TIME", LocalTime.class, cb
-					.function("FROM_UNIXTIME", String.class, cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)));
-
-				/*
-				 * // --- Proper timezone conversion (commented) --- Expression<LocalTime>
-				 * clockInLocalTime = cb.function("TIME", LocalTime.class,
-				 * cb.function("CONVERT_TZ", String.class, cb.function("FROM_UNIXTIME",
-				 * String.class, cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)),
-				 * cb.literal("@@session.time_zone"), cb.literal(timeZone)));
-				 */
-
-				predicates.add(cb.greaterThanOrEqualTo(clockInLocalTime, slotStart));
-				predicates.add(cb.lessThan(clockInLocalTime, slotEnd));
-
-				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
-				countQuery.where(predicates.toArray(new Predicate[0]));
-
-				Long count = entityManager.createQuery(countQuery).getSingleResult();
+				final int count = slotCounts.get(slotLabel);
 
 				result.add(new TimeRecordTrendDto() {
 					public String getSlot() {
@@ -615,7 +659,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					}
 
 					public int getCount() {
-						return count != null ? count.intValue() : 0;
+						return count;
 					}
 				});
 			}
@@ -630,11 +674,75 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date) {
-		log.info("getEmployeeClockOutTrend: Starting execution with teams={}, date={}", teams, date);
+		log.info("getEmployeeClockOutTrend: Starting execution with teams={}, timeZone={}, date={}", teams, timeZone,
+				date);
 
-		List<TimeRecordTrendDto> result = new ArrayList<>();
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<TimeRecord> timeRecord = dataQuery.from(TimeRecord.class);
+		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
 
+		List<Predicate> dataPredicates = new ArrayList<>();
+
+		if (teams.contains(-1L)) {
+			dataPredicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+		}
+		else {
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+			dataPredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+		}
+
+		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
+		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
+
+		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockOutTime));
+		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
+
+		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
+
+		// Convert to timezone-aware LocalTime and count by slots
+		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
+		Map<String, Integer> slotCounts = new java.util.HashMap<>();
+
+		// Initialize all slots with 0
+		for (int hour = 0; hour < 24; hour++) {
+			for (int halfHour = 0; halfHour < 2; halfHour++) {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
+				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+				slotCounts.put(slotLabel, 0);
+			}
+		}
+
+		// Process each record and assign to appropriate slot
+		for (Tuple record : records) {
+			Long clockOutTimeMillis = record.get(1, Long.class);
+			if (clockOutTimeMillis != null) {
+				// Convert Unix timestamp to LocalTime in target timezone
+				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockOutTimeMillis);
+				java.time.ZonedDateTime zonedDateTime = instant.atZone(targetZone);
+				LocalTime clockOutLocalTime = zonedDateTime.toLocalTime();
+
+				// Find the appropriate slot
+				for (int hour = 0; hour < 24; hour++) {
+					for (int halfHour = 0; halfHour < 2; halfHour++) {
+						LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+						LocalTime slotEnd = slotStart.plusMinutes(30);
+
+						if (!clockOutLocalTime.isBefore(slotStart) && clockOutLocalTime.isBefore(slotEnd)) {
+							String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+									+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+							slotCounts.put(slotLabel, slotCounts.get(slotLabel) + 1);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// Build result list in the same order as before
+		List<TimeRecordTrendDto> result = new ArrayList<>();
 		for (int hour = 0; hour < 24; hour++) {
 			for (int halfHour = 0; halfHour < 2; halfHour++) {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
@@ -642,41 +750,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				String slotLabel = slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 
-				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
-				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-
-				List<Predicate> predicates = new ArrayList<>();
-				if (teams.contains(-1L)) {
-					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
-				}
-				else {
-					Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
-					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
-				}
-
-				predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
-				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
-
-				// --- Bypass timezone conversion (active) ---
-				Expression<LocalTime> clockOutLocalTime = cb.function("TIME", LocalTime.class, cb
-					.function("FROM_UNIXTIME", String.class, cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)));
-
-				/*
-				 * // --- Proper timezone conversion (commented) --- Expression<LocalTime>
-				 * clockOutLocalTime = cb.function("TIME", LocalTime.class,
-				 * cb.function("CONVERT_TZ", String.class, cb.function("FROM_UNIXTIME",
-				 * String.class, cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)),
-				 * cb.literal("@@session.time_zone"), cb.literal(timeZone)));
-				 */
-
-				predicates.add(cb.greaterThanOrEqualTo(clockOutLocalTime, slotStart));
-				predicates.add(cb.lessThan(clockOutLocalTime, slotEnd));
-
-				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
-				countQuery.where(predicates.toArray(new Predicate[0]));
-
-				Long count = entityManager.createQuery(countQuery).getSingleResult();
+				final int count = slotCounts.get(slotLabel);
 
 				result.add(new TimeRecordTrendDto() {
 					public String getSlot() {
@@ -684,15 +758,13 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					}
 
 					public int getCount() {
-						return count != null ? count.intValue() : 0;
+						return count;
 					}
 				});
-
 			}
 		}
 
 		long totalCount = result.stream().mapToInt(TimeRecordTrendDto::getCount).sum();
-
 		log.info("getEmployeeClockOutTrend: Completed execution. Total clock-outs found: {} across all time slots",
 				totalCount);
 
