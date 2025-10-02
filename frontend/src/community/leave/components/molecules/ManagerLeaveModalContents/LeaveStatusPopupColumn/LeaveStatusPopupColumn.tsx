@@ -14,6 +14,10 @@ interface Props {
   ariaLabel?: string;
   isReadOnly?: boolean;
   tabIndex?: number;
+   /**
+   * If true, displays a red asterisk next to the label to indicate that the field is required.
+   * This prop only affects the visual presentation and does not enforce validation.
+   */
   required?: boolean;
 }
 

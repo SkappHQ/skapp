@@ -87,7 +87,7 @@ const ManagerDeclineLeaveModal = ({
           setInputText={setReason}
           error={error}
           errorMessage={translateText(["EnterWhyDecline"])}
-          required={true}
+          required
         />
       </Box>
       <Stack spacing={2}>
