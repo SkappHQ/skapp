@@ -6,9 +6,13 @@ export interface TemplateSliceTypes
     | "isDrawerExpanded"
     | "expandedDrawerListItem"
     | "s3FileUrls"
+    | "drawerItemCounts"
     | "setIsDrawerExpanded"
     | "setExpandedDrawerListItem"
     | "setS3FileUrls"
+    | "setDrawerItemCount"
+    | "clearDrawerItemCount"
+    | "clearAllDrawerItemCounts"
   > {}
 
 export interface OrganizationSLiceTypes
