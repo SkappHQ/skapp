@@ -3,7 +3,10 @@ en:
     - id: people-module-user-invitation
       subject: You have been invited to Skapp!
 
-    - id: people-module-user-invitation-sso
+    - id: people-module-user-invitation-google-sso
+      subject: You have been invited to Skapp!
+
+    - id: people-module-user-invitation-microsoft-sso
       subject: You have been invited to Skapp!
 
     - id: people-module-user-termination
