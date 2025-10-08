@@ -9,6 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CheckEmailResponseDto {
 
-	private Boolean isEmailExists;
+	private Boolean isEmailAvailable;
 
 }

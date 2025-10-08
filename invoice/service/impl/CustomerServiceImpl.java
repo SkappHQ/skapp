@@ -306,7 +306,7 @@ public class CustomerServiceImpl implements CustomerService {
 					InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 		CheckEmailResponseDto checkEmailResponseDto = new CheckEmailResponseDto();
-		checkEmailResponseDto.setIsEmailExists(true);
+		checkEmailResponseDto.setIsEmailAvailable(true);
 		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
 

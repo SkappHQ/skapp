@@ -86,7 +86,7 @@ public class CustomerController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@GetMapping(value = "/contact/check-email", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/contact/check-email", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN', 'ROLE_INVOICE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> checkCustomerContactEmail(
 			@Valid @RequestBody CheckEmailRequestDto checkEmailRequestDto) {
