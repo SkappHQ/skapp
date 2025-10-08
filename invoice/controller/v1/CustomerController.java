@@ -5,6 +5,7 @@ import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
+import com.skapp.enterprise.invoice.payload.request.customer.CheckEmailRequestDto;
 import com.skapp.enterprise.invoice.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -83,6 +84,14 @@ public class CustomerController {
 			@Valid @RequestBody CustomerContactDetailsDto customerContactDetailsDto) {
 		ResponseEntityDto response = customerService.createCustomerContact(customerContactDetailsDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@GetMapping(value = "/contact/check-email", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN', 'ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> checkCustomerContactEmail(
+			@Valid @RequestBody CheckEmailRequestDto checkEmailRequestDto) {
+		ResponseEntityDto response = customerService.checkCustomerContactEmail(checkEmailRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Update a customer contact",
