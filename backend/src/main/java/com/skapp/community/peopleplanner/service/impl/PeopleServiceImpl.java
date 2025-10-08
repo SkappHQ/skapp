@@ -232,6 +232,7 @@ public class PeopleServiceImpl implements PeopleService {
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewEmployeeTimeLineRecords(employee, requestDto);
 		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -258,6 +259,7 @@ public class PeopleServiceImpl implements PeopleService {
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		updateSubscriptionQuantity(1L, true, false);
 		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -291,6 +293,10 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	protected void invalidateUserCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
+	}
+
+	protected void invalidateUserAuthPicCache() {
 		// This method is a placeholder for enterprise cache invalidation logic
 	}
 
@@ -354,7 +360,10 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setEeo);
 
 		// Common Information
-		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), employee::setAuthPic);
+		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), value -> {
+			employee.setAuthPic(value);
+			invalidateUserAuthPicCache();
+		});
 
 		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeePersonalInfo(requestDto, employee),
 				employee::setPersonalInfo);
@@ -1226,6 +1235,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		addNewBulkUploadedEmployeeTimeLineRecords(totalResults);
 		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return outValues.get();
 	}
@@ -2419,6 +2429,7 @@ public class PeopleServiceImpl implements PeopleService {
 		updateSubscriptionQuantity(1L, false, false);
 		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 		invalidateUserCache();
+		invalidateUserAuthPicCache();
 	}
 
 }
