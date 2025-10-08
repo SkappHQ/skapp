@@ -32,7 +32,7 @@ const ContentWithoutDrawer = ({ children }: Props) => {
           handleToastClick={toastMessage.handleToastClick}
           isIcon={toastMessage.isIcon}
           onClose={() => {
-            setToastMessage(initialState);
+            setToastMessage((state) => ({ ...state, open: false }));
           }}
         />
       </Stack>
