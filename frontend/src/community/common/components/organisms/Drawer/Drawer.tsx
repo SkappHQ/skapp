@@ -47,9 +47,9 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
-import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -87,12 +87,16 @@ const Drawer = (): JSX.Element => {
     isDrawerExpanded,
     expandedDrawerListItem,
     setExpandedDrawerListItem,
-    setOrgData
+    setOrgData,
+    drawerItemCounts,
+    setDrawerItemCount
   } = useCommonStore((state: CommonStoreTypes | any) => ({
     isDrawerExpanded: state.isDrawerExpanded,
     expandedDrawerListItem: state.expandedDrawerListItem,
     setExpandedDrawerListItem: state.setExpandedDrawerListItem,
-    setOrgData: state.setOrgData
+    setOrgData: state.setOrgData,
+    drawerItemCounts: state.drawerItemCounts,
+    setDrawerItemCount: state.setDrawerItemCount
   }));
 
   const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
@@ -159,6 +163,20 @@ const Drawer = (): JSX.Element => {
       setOrgData(organizationDetails?.results[0]);
     }
   }, [organizationDetails, orgLoading]);
+
+  // ===================================================================================
+  useEffect(() => {
+    // In a real scenario, this would come from an API call or real data
+    // For example: when you get projects data, you would set the count
+    // setDrawerItemCount("5", 5); // "5" is the Projects route ID
+
+    // Set counts for sub-items (examples)
+    setDrawerItemCount("2A", 3); // "My Requests" under Leave
+    setDrawerItemCount("2B", 7); // "All Leave Requests" under Leave
+    setDrawerItemCount("3A", 5); // "Directory" under People
+    setDrawerItemCount("4A", 12); // "Inbox" under Documents
+  }, [setDrawerItemCount]);
+  // ===================================================================================
 
   if (orgLoading) return <FullScreenLoader />;
 
@@ -255,6 +273,28 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
+                      {/* ===================================================================== */}
+                      {drawerItemCounts[routeId] &&
+                        drawerItemCounts[routeId] > 0 && (
+                          <Box>{drawerItemCounts[routeId]}</Box>
+                        )}
+                      {/* Badge Display */}
+                      {route?.badge && (
+                        <Box
+                          sx={{
+                            backgroundColor: route.badge.backgroundColor,
+                            color: route.badge.color,
+                            borderRadius: "4px",
+                            padding: "2px 6px",
+                            fontSize: "10px",
+                            fontWeight: "bold",
+                            textTransform: "uppercase"
+                          }}
+                        >
+                          {route.badge.text}
+                        </Box>
+                      )}
+                      {/* ===================================================================== */}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
@@ -341,6 +381,30 @@ const Drawer = (): JSX.Element => {
                                   )
                                 )}
                               />
+                              {/* ===================================================================== */}
+                              {drawerItemCounts[subTreeRoute.id] &&
+                                drawerItemCounts[subTreeRoute.id] > 0 && (
+                                  <Box>{drawerItemCounts[subTreeRoute.id]}</Box>
+                                )}
+                              {/* Badge Display for Sub-routes */}
+                              {(subTreeRoute as any)?.badge && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: (subTreeRoute as any).badge
+                                      .backgroundColor,
+                                    color: (subTreeRoute as any).badge.color,
+                                    borderRadius: "4px",
+                                    padding: "2px 6px",
+                                    fontSize: "10px",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase",
+                                    marginLeft: "8px"
+                                  }}
+                                >
+                                  {(subTreeRoute as any).badge.text}
+                                </Box>
+                              )}
+                              {/* ===================================================================== */}
                             </ListItemButton>
                           </ListItem>
                         ))}
