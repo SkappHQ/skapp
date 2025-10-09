@@ -7,7 +7,6 @@ export const templateSlice = (
   isDrawerExpanded: true,
   expandedDrawerListItem: "",
   s3FileUrls: {},
-  drawerItemCounts: {},
   setIsDrawerExpanded: (status: boolean) =>
     set((state: TemplateSliceTypes) => ({
       ...state,
@@ -22,26 +21,5 @@ export const templateSlice = (
     set((state: TemplateSliceTypes) => ({
       ...state,
       s3FileUrls: { ...state.s3FileUrls, ...fileUrls }
-    })),
-  setDrawerItemCount: (itemId: string, count: number) =>
-    set((state: TemplateSliceTypes) => ({
-      ...state,
-      drawerItemCounts: {
-        ...state.drawerItemCounts,
-        [itemId]: count
-      }
-    })),
-  clearDrawerItemCount: (itemId: string) =>
-    set((state: TemplateSliceTypes) => {
-      const { [itemId]: _removed, ...rest } = state.drawerItemCounts;
-      return {
-        ...state,
-        drawerItemCounts: rest
-      };
-    }),
-  clearAllDrawerItemCounts: () =>
-    set((state: TemplateSliceTypes) => ({
-      ...state,
-      drawerItemCounts: {}
     }))
 });

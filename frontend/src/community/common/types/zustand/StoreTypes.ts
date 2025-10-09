@@ -7,16 +7,12 @@ interface actionTypes {
   setIsDrawerExpanded: (status: boolean) => void;
   setExpandedDrawerListItem: (listItem: string) => void;
   setS3FileUrls: (fileUrls: Record<string, string>) => void;
-  setDrawerItemCount: (itemId: string, count: number) => void;
-  clearDrawerItemCount: (itemId: string) => void;
-  clearAllDrawerItemCounts: () => void;
 }
 
 export interface CommonStoreTypes extends actionTypes {
   isDrawerExpanded: boolean;
   expandedDrawerListItem: string;
   s3FileUrls: Record<string, string>;
-  drawerItemCounts: Record<string, number>;
 
   // Settings
   modalType: SettingsModalTypes;
