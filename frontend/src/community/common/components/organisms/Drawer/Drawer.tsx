@@ -161,28 +161,6 @@ const Drawer = (): JSX.Element => {
     }
   }, [organizationDetails, orgLoading]);
 
-  // ===================================================================================
-  // FUTURE USE: Badge Count Implementation
-  // To display badge counts on drawer items, use the store's setDrawerItemCount method.
-  // This can be called from anywhere in the application when data is available.
-  //
-  // Example usage:
-  // import { useCommonStore } from "~community/common/stores/commonStore";
-  // const { setDrawerItemCount } = useCommonStore();
-  //
-  // For main drawer items:
-  // setDrawerItemCount("5", 5); // Shows "5" badge on Projects route (ID: "5")
-  //
-  // For sub-drawer items:
-  // setDrawerItemCount("2A", 3); // Shows "3" badge on "My Requests" under Leave
-  // setDrawerItemCount("2B", 7); // Shows "7" badge on "All Leave Requests" under Leave
-  // setDrawerItemCount("3A", 5); // Shows "5" badge on "Directory" under People
-  // setDrawerItemCount("4A", 12); // Shows "12" badge on "Inbox" under Documents
-  //
-  // Note: The route.badge property in the drawer routes configuration will
-  // automatically display the Badge component when a count is set in the store.
-  // ===================================================================================
-
   if (orgLoading) return <FullScreenLoader />;
 
   return (
