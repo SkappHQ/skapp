@@ -67,7 +67,6 @@ const ContentWithDrawer = ({ children }: Props) => {
         handleToastClick={toastMessage.handleToastClick}
         isIcon={toastMessage.isIcon}
         onClose={() => {
-            
             setToastMessage((state) => ({ ...state, open: false }));
           }}
       />
