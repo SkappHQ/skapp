@@ -47,6 +47,7 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
+import Badge from "../../atoms/Badge/Badge";
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
@@ -87,16 +88,12 @@ const Drawer = (): JSX.Element => {
     isDrawerExpanded,
     expandedDrawerListItem,
     setExpandedDrawerListItem,
-    setOrgData,
-    drawerItemCounts,
-    setDrawerItemCount
+    setOrgData
   } = useCommonStore((state: CommonStoreTypes | any) => ({
     isDrawerExpanded: state.isDrawerExpanded,
     expandedDrawerListItem: state.expandedDrawerListItem,
     setExpandedDrawerListItem: state.setExpandedDrawerListItem,
-    setOrgData: state.setOrgData,
-    drawerItemCounts: state.drawerItemCounts,
-    setDrawerItemCount: state.setDrawerItemCount
+    setOrgData: state.setOrgData
   }));
 
   const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
@@ -165,17 +162,25 @@ const Drawer = (): JSX.Element => {
   }, [organizationDetails, orgLoading]);
 
   // ===================================================================================
-  useEffect(() => {
-    // In a real scenario, this would come from an API call or real data
-    // For example: when you get projects data, you would set the count
-    // setDrawerItemCount("5", 5); // "5" is the Projects route ID
-
-    // Set counts for sub-items (examples)
-    setDrawerItemCount("2A", 3); // "My Requests" under Leave
-    setDrawerItemCount("2B", 7); // "All Leave Requests" under Leave
-    setDrawerItemCount("3A", 5); // "Directory" under People
-    setDrawerItemCount("4A", 12); // "Inbox" under Documents
-  }, [setDrawerItemCount]);
+  // FUTURE USE: Badge Count Implementation
+  // To display badge counts on drawer items, use the store's setDrawerItemCount method.
+  // This can be called from anywhere in the application when data is available.
+  //
+  // Example usage:
+  // import { useCommonStore } from "~community/common/stores/commonStore";
+  // const { setDrawerItemCount } = useCommonStore();
+  //
+  // For main drawer items:
+  // setDrawerItemCount("5", 5); // Shows "5" badge on Projects route (ID: "5")
+  //
+  // For sub-drawer items:
+  // setDrawerItemCount("2A", 3); // Shows "3" badge on "My Requests" under Leave
+  // setDrawerItemCount("2B", 7); // Shows "7" badge on "All Leave Requests" under Leave
+  // setDrawerItemCount("3A", 5); // Shows "5" badge on "Directory" under People
+  // setDrawerItemCount("4A", 12); // Shows "12" badge on "Inbox" under Documents
+  //
+  // Note: The route.badge property in the drawer routes configuration will
+  // automatically display the Badge component when a count is set in the store.
   // ===================================================================================
 
   if (orgLoading) return <FullScreenLoader />;
@@ -273,28 +278,7 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
-                      {/* ===================================================================== */}
-                      {drawerItemCounts[routeId] &&
-                        drawerItemCounts[routeId] > 0 && (
-                          <Box>{drawerItemCounts[routeId]}</Box>
-                        )}
-                      {/* Badge Display */}
-                      {route?.badge && (
-                        <Box
-                          sx={{
-                            backgroundColor: route.badge.backgroundColor,
-                            color: route.badge.color,
-                            borderRadius: "4px",
-                            padding: "2px 6px",
-                            fontSize: "10px",
-                            fontWeight: "bold",
-                            textTransform: "uppercase"
-                          }}
-                        >
-                          {route.badge.text}
-                        </Box>
-                      )}
-                      {/* ===================================================================== */}
+                      {route?.badge && <Badge text={route.badge} />}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
@@ -381,30 +365,6 @@ const Drawer = (): JSX.Element => {
                                   )
                                 )}
                               />
-                              {/* ===================================================================== */}
-                              {drawerItemCounts[subTreeRoute.id] &&
-                                drawerItemCounts[subTreeRoute.id] > 0 && (
-                                  <Box>{drawerItemCounts[subTreeRoute.id]}</Box>
-                                )}
-                              {/* Badge Display for Sub-routes */}
-                              {(subTreeRoute as any)?.badge && (
-                                <Box
-                                  sx={{
-                                    backgroundColor: (subTreeRoute as any).badge
-                                      .backgroundColor,
-                                    color: (subTreeRoute as any).badge.color,
-                                    borderRadius: "4px",
-                                    padding: "2px 6px",
-                                    fontSize: "10px",
-                                    fontWeight: "bold",
-                                    textTransform: "uppercase",
-                                    marginLeft: "8px"
-                                  }}
-                                >
-                                  {(subTreeRoute as any).badge.text}
-                                </Box>
-                              )}
-                              {/* ===================================================================== */}
                             </ListItemButton>
                           </ListItem>
                         ))}
