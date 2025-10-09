@@ -303,10 +303,10 @@ public class CustomerServiceImpl implements CustomerService {
 		boolean emailExists = customerContactDao.existsByEmailAndIsActive(email, true);
 		CheckEmailResponseDto checkEmailResponseDto = new CheckEmailResponseDto();
 		if (emailExists) {
-			checkEmailResponseDto.setIsEmailAvailable(false);
+			checkEmailResponseDto.setEmailAlreadyExist(true);
 		}
 		else {
-			checkEmailResponseDto.setIsEmailAvailable(true);
+			checkEmailResponseDto.setEmailAlreadyExist(false);
 		}
 		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
