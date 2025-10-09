@@ -19,4 +19,7 @@ public class EpOrganization extends Organization {
 	@Column(name = "contact_no")
 	private String contactNo;
 
+	@Column(name = "partner_id")
+	private String partnerId;
+
 }

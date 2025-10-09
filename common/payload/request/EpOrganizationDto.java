@@ -12,4 +12,6 @@ public class EpOrganizationDto extends OrganizationDto {
 
 	private String contactNo;
 
+	private String partnerId;
+
 }
