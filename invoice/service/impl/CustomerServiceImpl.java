@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
@@ -19,7 +20,9 @@ import com.skapp.enterprise.invoice.model.ProjectKey;
 import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
+import com.skapp.enterprise.invoice.payload.request.customer.CheckEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
+import com.skapp.enterprise.invoice.payload.response.CheckEmailResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.repository.CustomerContactDao;
@@ -289,6 +292,23 @@ public class CustomerServiceImpl implements CustomerService {
 		return new ResponseEntityDto(
 				messageUtil.getMessage(InvoiceMessageConstant.INVOICE_SUCCESS_DELETE_CUSTOMER_CONTACT), false);
 
+	}
+
+	@Override
+	public ResponseEntityDto checkCustomerContactEmail(CheckEmailRequestDto checkEmailRequestDto) {
+		String email = checkEmailRequestDto.getEmail();
+		if (email == null || email.trim().isEmpty()) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_CONTACT_EMAIL_REQUIRED);
+		}
+		boolean emailExists = customerContactDao.existsByEmailAndIsActive(email, true);
+		CheckEmailResponseDto checkEmailResponseDto = new CheckEmailResponseDto();
+		if (emailExists) {
+			checkEmailResponseDto.setEmailAlreadyExist(true);
+		}
+		else {
+			checkEmailResponseDto.setEmailAlreadyExist(false);
+		}
+		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
 
 	private Customer initializeCustomer(CustomerCreateRequestDto customerCreateRequestDto) {

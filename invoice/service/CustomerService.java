@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
+import com.skapp.enterprise.invoice.payload.request.customer.CheckEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 
 public interface CustomerService {
@@ -23,5 +24,7 @@ public interface CustomerService {
 	ResponseEntityDto updateCustomerContact(Long id, CustomerContactDetailsDto customerContactDetailsDto);
 
 	ResponseEntityDto deleteCustomerContact(Long id);
+
+	ResponseEntityDto checkCustomerContactEmail(CheckEmailRequestDto checkEmailRequestDto);
 
 }
