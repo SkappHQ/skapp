@@ -23,7 +23,7 @@ const Badge: React.FC<BadgeProps> = ({ text }) => {
     >
       <span
         style={{
-          color: "white",
+          color: theme.palette.text.whiteText,
           fontWeight: 600,
           fontSize: "8px",
           lineHeight: "8px",
