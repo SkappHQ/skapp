@@ -301,11 +301,10 @@ public class CustomerServiceImpl implements CustomerService {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_CONTACT_EMAIL_REQUIRED);
 		}
 		boolean emailExists = customerContactDao.existsByEmailAndIsActive(email, true);
-		if (emailExists) {
-			throw new ValidationException(
-					InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_CONTACT_EMAIL_ALREADY_EXISTS);
-		}
 		CheckEmailResponseDto checkEmailResponseDto = new CheckEmailResponseDto();
+		if (emailExists) {
+			checkEmailResponseDto.setIsEmailAvailable(false);
+		}
 		checkEmailResponseDto.setIsEmailAvailable(true);
 		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
