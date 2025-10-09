@@ -305,7 +305,9 @@ public class CustomerServiceImpl implements CustomerService {
 		if (emailExists) {
 			checkEmailResponseDto.setIsEmailAvailable(false);
 		}
-		checkEmailResponseDto.setIsEmailAvailable(true);
+		else {
+			checkEmailResponseDto.setIsEmailAvailable(true);
+		}
 		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
 
