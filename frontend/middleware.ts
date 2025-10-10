@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import ROUTES, {
   employeeRestrictedRoutes,
+  invoiceEmployeeRestrictedRoutes,
   managerRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
@@ -50,7 +51,7 @@ const superAdminRoutes = {
     ROUTES.PROJECTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS,
+    ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.SUBSCRIPTION,
     ROUTES.CONFIGURATIONS.INVOICE
   ]
@@ -77,8 +78,9 @@ const adminRoutes = {
   [AdminTypes.INVOICE_ADMIN]: [
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS,
-    ROUTES.CONFIGURATIONS.INVOICE
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.CONFIGURATIONS.INVOICE,
+    ROUTES.INVOICE.CREATE.BASE
   ]
 };
 
@@ -108,7 +110,8 @@ const managerRoutes = {
   [ManagerTypes.INVOICE_MANAGER]: [
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.INVOICE.CREATE.BASE
   ]
 };
 
@@ -253,6 +256,15 @@ export default withAuth(
         roles
       );
       if (managerRedirect) return managerRedirect;
+
+      // Check invoice employee restricted routes
+      const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
+        request,
+        invoiceEmployeeRestrictedRoutes,
+        ManagerTypes.INVOICE_MANAGER,
+        roles
+      );
+      if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
 
       // Check employee restricted routes
       const employeeRedirect = checkRestrictedRoutesAndRedirect(
