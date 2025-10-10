@@ -43,13 +43,14 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
+import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
-import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -255,6 +256,7 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
+                      {route?.badge && <Badge text={route.badge} />}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
