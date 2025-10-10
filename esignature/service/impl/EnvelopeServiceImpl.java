@@ -94,6 +94,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -104,6 +105,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -871,370 +875,77 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private String generateSignatureCertificateHtml(SignatureCertificateResponseDto responseDto) {
-		StringBuilder htmlBuilder = new StringBuilder();
+		try {
+			ClassPathResource resource = new ClassPathResource(
+					"enterprise/templates/pdf/en/esignature/signature-certificate-v1.html");
+			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
 
-		// HTML structure with proper XML formatting for OpenHTMLToPDF
-		htmlBuilder.append("<!DOCTYPE html>");
-		htmlBuilder.append("<html><head>");
-		htmlBuilder.append("<meta charset='UTF-8'/>");
-		htmlBuilder.append(
-				"<link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap' rel='stylesheet' />");
-		htmlBuilder.append("<style>");
+			// Replace basic document information
+			template = template.replace("{{documentName}}", EsignUtil.escapeHtml(responseDto.getName()));
+			template = template.replace("{{documentUuid}}", EsignUtil.escapeHtml(responseDto.getUuid()));
 
-		// CSS Styles optimized for OpenHTMLToPDF
-		htmlBuilder.append("@page { ");
-		htmlBuilder.append("  size: A4; ");
-		htmlBuilder.append("  margin: 40px; ");
-		htmlBuilder.append("  @bottom-right { ");
-		htmlBuilder.append("    content: 'Page ' counter(page) '/' counter(pages); ");
-		htmlBuilder.append("    font-size: 11px; ");
-		htmlBuilder.append("    font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("    color: #666; ");
-		htmlBuilder.append("  } ");
-		htmlBuilder.append("} ");
+			// Replace status information
+			String statusClass = EsignUtil.getStatusClass(responseDto.getStatus());
+			String statusLabel = EsignUtil.getStatusLabel(responseDto.getStatus());
+			template = template.replace("{{statusClass}}", statusClass);
+			template = template.replace("{{statusLabel}}", statusLabel);
 
-		htmlBuilder.append("body { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  margin: 0; ");
-		htmlBuilder.append("  padding: 20px; ");
-		htmlBuilder.append("  font-size: 14px; ");
-		htmlBuilder.append("  line-height: 1.4; ");
-		htmlBuilder.append("  color: #333; ");
-		htmlBuilder.append("  background: white; ");
-		htmlBuilder.append("} ");
+			// Replace meta information
+			template = template.replace("{{senderName}}", EsignUtil.escapeHtml(responseDto.getOwner().getName()));
+			template = template.replace("{{enclosedDocuments}}",
+					EsignUtil.escapeHtml(responseDto.getDocuments().getFirst().getName()));
+			template = template.replace("{{dateCreated}}",
+					formatDate(responseDto.getSentAt(), responseDto.getOrganizationTimeZone()));
+			template = template.replace("{{timeZone}}",
+					EsignUtil.escapeHtml(getTimeZoneWithOffset(responseDto.getOrganizationTimeZone())));
 
-		// Header styles
-		htmlBuilder.append(".header { ");
-		htmlBuilder.append("  width: 100%; ");
-		htmlBuilder.append("  margin-bottom: 40px; ");
-		htmlBuilder.append("  position: relative; ");
-		htmlBuilder.append("} ");
+			// Replace recipients
+			String recipients = responseDto.getRecipients()
+				.stream()
+				.map(recipient -> recipient.getAddressBook().getFirstName() + " "
+						+ recipient.getAddressBook().getLastName())
+				.collect(Collectors.joining(", "));
+			template = template.replace("{{recipients}}", EsignUtil.escapeHtml(recipients));
 
-		htmlBuilder.append(".header-table { ");
-		htmlBuilder.append("  width: 100%; ");
-		htmlBuilder.append("  border-collapse: collapse; ");
-		htmlBuilder.append("} ");
+			// Process audit trails
+			template = processAuditTrails(template, responseDto);
 
-		htmlBuilder.append(".title { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-size: 20px; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  color: #000; ");
-		htmlBuilder.append("  margin: 0; ");
-		htmlBuilder.append("} ");
+			return template;
 
-		htmlBuilder.append(".logo { ");
-		htmlBuilder.append("  text-align: right; ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-size: 14px; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  color: #f97316; ");
-		htmlBuilder.append("} ");
+		}
+		catch (IOException e) {
+			log.error("Error loading signature certificate template", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
+		}
+	}
 
-		// Document info styles
-		htmlBuilder.append(".doc-section { ");
-		htmlBuilder.append("  margin-bottom: 5px; ");
-		htmlBuilder.append("  position: relative; ");
-		htmlBuilder.append("} ");
+	private String processAuditTrails(String template, SignatureCertificateResponseDto responseDto) {
+		String startMarker = "{{#auditTrails}}";
+		String endMarker = "{{/auditTrails}}";
 
-		htmlBuilder.append(".doc-header-table { ");
-		htmlBuilder.append("  width: 100%; ");
-		htmlBuilder.append("  border-collapse: collapse; ");
-		htmlBuilder.append("  margin-bottom: 5px; ");
-		htmlBuilder.append("} ");
+		int startIndex = template.indexOf(startMarker);
+		int endIndex = template.indexOf(endMarker);
 
-		htmlBuilder.append(".doc-name { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-size: 18px; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  margin: 0 0 5px 0; ");
-		htmlBuilder.append("  color: #000; ");
-		htmlBuilder.append("} ");
+		if (startIndex == -1 || endIndex == -1) {
+			return template;
+		}
 
-		htmlBuilder.append(".doc-id { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-size: 12px; ");
-		htmlBuilder.append("  color: #666; ");
-		htmlBuilder.append("  margin: 0; ");
-		htmlBuilder.append("} ");
+		String auditTemplate = template.substring(startIndex + startMarker.length(), endIndex);
 
-		// Status badge styles
-		htmlBuilder.append(".status-badge { ");
-		htmlBuilder.append("  text-align: right; ");
-		htmlBuilder.append("  vertical-align: middle; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-content { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  min-width: 130px; ");
-		htmlBuilder.append("  padding: 8px 16px; ");
-		htmlBuilder.append("  box-sizing: border-box; ");
-		htmlBuilder.append("  background: #F4F4F5; ");
-		htmlBuilder.append("  border-radius: 32px; ");
-		htmlBuilder.append("  font-size: 14px; ");
-		htmlBuilder.append("  color: #52525C; ");
-		htmlBuilder.append("  text-align: center; ");
-		htmlBuilder.append("  line-height: 24px; ");
-		htmlBuilder.append("  height: 34px; ");
-		htmlBuilder.append("  white-space: nowrap; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot { ");
-		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  width: 10px; ");
-		htmlBuilder.append("  height: 10px; ");
-		htmlBuilder.append("  border-radius: 50%; ");
-		htmlBuilder.append("  margin-right: 8px; ");
-		htmlBuilder.append("  margin-top: -4px; ");
-		htmlBuilder.append("  vertical-align: middle; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-text { ");
-		htmlBuilder.append("  display: inline-block; ");
-		htmlBuilder.append("  vertical-align: middle; ");
-		htmlBuilder.append("  font-size: 14px; ");
-		htmlBuilder.append("  margin-top: -2px; ");
-		htmlBuilder.append("  color: #52525C; ");
-		htmlBuilder.append("} ");
-
-		// Status-specific dot styles
-		htmlBuilder.append(".status-dot.completed { ");
-		htmlBuilder.append("  background: #4EA500; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot.waiting { ");
-		htmlBuilder.append("  border: 2px solid #FF9900; ");
-		htmlBuilder.append("  background: transparent; ");
-		htmlBuilder.append("  box-sizing: border-box; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot.need-to-sign { ");
-		htmlBuilder.append("  border: 2px solid #4EA500; ");
-		htmlBuilder.append("  background: transparent; ");
-		htmlBuilder.append("  box-sizing: border-box; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot.declined { ");
-		htmlBuilder.append("  border: 2px solid #F00011; ");
-		htmlBuilder.append("  background: transparent; ");
-		htmlBuilder.append("  box-sizing: border-box; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot.expired { ");
-		htmlBuilder.append("  background: #F00011; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".status-dot.voided { ");
-		htmlBuilder.append("  background: #000000; ");
-		htmlBuilder.append("} ");
-
-		// Meta information styles
-		htmlBuilder.append(".meta-section { ");
-		htmlBuilder.append("  margin-bottom: 10px; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".meta-table { ");
-		htmlBuilder.append("  width: 100%; ");
-		htmlBuilder.append("  border-collapse: collapse; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".meta-table td { ");
-		htmlBuilder.append("  padding: 8px 0; ");
-		htmlBuilder.append("  vertical-align: top; ");
-		htmlBuilder.append("  width: 50%; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".meta-label { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  color: #000; ");
-		htmlBuilder.append("  font-size: 14px; ");
-		htmlBuilder.append("  margin-bottom: 4px; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".meta-value { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-weight: 400; ");
-		htmlBuilder.append("  color: #666; ");
-		htmlBuilder.append("  font-size: 11px; ");
-		htmlBuilder.append("} ");
-
-		// Activities section styles
-		htmlBuilder.append(".activities-title { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  font-size: 16px; ");
-		htmlBuilder.append("  margin-bottom: 5px; ");
-		htmlBuilder.append("  color: #000; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".activities-table { ");
-		htmlBuilder.append("  width: 100%; ");
-		htmlBuilder.append("  border-collapse: collapse; ");
-		htmlBuilder.append("  font-size: 13px; ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  -fs-table-paginate: paginate; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".activities-table thead { ");
-		htmlBuilder.append("  background: #f8f9fa; ");
-		htmlBuilder.append("  display: table-header-group; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".activities-table th { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  text-align: left; ");
-		htmlBuilder.append("  padding: 10px 8px; ");
-		htmlBuilder.append("  font-weight: 600; ");
-		htmlBuilder.append("  color: #000; ");
-		htmlBuilder.append("  border-bottom: 1px solid #e0e0e0; ");
-		htmlBuilder.append("  font-size: 13px; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".activities-table tbody { ");
-		htmlBuilder.append("  display: table-row-group; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append(".activities-table td { ");
-		htmlBuilder.append("  font-family: 'Poppins', sans-serif; ");
-		htmlBuilder.append("  padding: 8px; ");
-		htmlBuilder.append("  border-bottom: 1px solid #f0f0f0; ");
-		htmlBuilder.append("  color: #666; ");
-		htmlBuilder.append("  font-size: 11px; ");
-		htmlBuilder.append("  font-weight: 400; ");
-		htmlBuilder.append("} ");
-
-		htmlBuilder.append("</style>");
-		htmlBuilder.append("</head><body>");
-
-		// Header
-		htmlBuilder.append("<div class='header'>");
-		htmlBuilder.append("<table class='header-table'>");
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<td><h1 class='title'>Document History</h1></td>");
-		htmlBuilder.append(
-				"<td class='logo'><img alt='Skapp Logo' src='http://images.skapp.com/logo-with-name-1.png' style='width: 101px; height: 55'/></td>");
-		htmlBuilder.append("</tr>");
-		htmlBuilder.append("</table>");
-		htmlBuilder.append("</div>");
-
-		// Document info section
-		htmlBuilder.append("<div class='doc-section'>"); // Reduced margin
-		htmlBuilder.append("<table class='doc-header-table'>");
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<td>");
-		htmlBuilder.append("<h2 class='doc-name'>").append(EsignUtil.escapeHtml(responseDto.getName())).append("</h2>");
-		htmlBuilder.append("<p class='doc-id'>").append(EsignUtil.escapeHtml(responseDto.getUuid())).append("</p>");
-		htmlBuilder.append("</td>");
-
-		htmlBuilder.append("<td class='status-badge'>");
-		String statusClass = EsignUtil.getStatusClass(responseDto.getStatus());
-		String statusLabel = EsignUtil.getStatusLabel(responseDto.getStatus());
-		htmlBuilder.append("<div class='status-content'>");
-		htmlBuilder.append("<span class='status-dot ").append(statusClass).append("'></span>");
-		htmlBuilder.append("<span class='status-text'>").append(statusLabel).append("</span>");
-		htmlBuilder.append("</div>");
-		htmlBuilder.append("</td>");
-
-		htmlBuilder.append("</tr>");
-		htmlBuilder.append("</table>");
-		htmlBuilder.append("</div>");
-
-		// Add horizontal line between document info and meta information sections
-		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
-
-		// Meta information section
-		htmlBuilder.append("<div class='meta-section'>");
-		htmlBuilder.append("<table class='meta-table'>");
-
-		// First row: Sender and Enclosed Documents
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<td>");
-		htmlBuilder.append("<div class='meta-label'>Sender</div>");
-		htmlBuilder.append("<div class='meta-value'>")
-			.append(EsignUtil.escapeHtml(responseDto.getOwner().getName()))
-			.append("</div>");
-		htmlBuilder.append("</td>");
-		htmlBuilder.append("<td>");
-		htmlBuilder.append("<div class='meta-label'>Enclosed Documents</div>");
-		htmlBuilder.append("<div class='meta-value'>")
-			.append(EsignUtil.escapeHtml(responseDto.getDocuments().getFirst().getName()))
-			.append("</div>");
-		htmlBuilder.append("</td>");
-		htmlBuilder.append("</tr>");
-
-		// Second row: Date Created and Time Zone
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<td>");
-		htmlBuilder.append("<div class='meta-label'>Date Created</div>");
-		htmlBuilder.append("<div class='meta-value'>")
-			.append(formatDate(responseDto.getSentAt(), responseDto.getOrganizationTimeZone()))
-			.append("</div>");
-		htmlBuilder.append("</td>");
-		htmlBuilder.append("<td>");
-		htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
-		htmlBuilder.append("<div class='meta-value'>")
-			.append(EsignUtil.escapeHtml(getTimeZoneWithOffset(responseDto.getOrganizationTimeZone())))
-			.append("</div>");
-		htmlBuilder.append("</td>");
-		htmlBuilder.append("</tr>");
-
-		// Third row: Recipients (spans both columns)
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<td colspan='2'>");
-		htmlBuilder.append("<div class='meta-label'>Recipients</div>");
-		htmlBuilder.append("<div class='meta-value'>");
-		String recipients = responseDto.getRecipients()
-			.stream()
-			.map(recipient -> recipient.getAddressBook().getFirstName() + " "
-					+ recipient.getAddressBook().getLastName())
-			.collect(Collectors.joining(", "));
-		htmlBuilder.append(EsignUtil.escapeHtml(recipients));
-		htmlBuilder.append("</div>");
-		htmlBuilder.append("</td>");
-		htmlBuilder.append("</tr>");
-
-		htmlBuilder.append("</table>");
-		htmlBuilder.append("</div>");
-
-		// Activities section
-		htmlBuilder.append("<h3 class='activities-title'>Activities</h3>");
-
-		// Add horizontal line between document info and meta information sections
-		htmlBuilder.append("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 10px 0;' />");
-
-		htmlBuilder.append("<table class='activities-table'>");
-		htmlBuilder.append("<thead>");
-		htmlBuilder.append("<tr>");
-		htmlBuilder.append("<th style='width: 28%;'>Time</th>");
-		htmlBuilder.append("<th style='width: 35%;'>User</th>");
-		htmlBuilder.append("<th style='width: 40%;'>Activity</th>");
-		htmlBuilder.append("</tr>");
-		htmlBuilder.append("</thead>");
-		htmlBuilder.append("<tbody>");
-
+		StringBuilder auditHtmlBuilder = new StringBuilder();
 		if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
 			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
-				htmlBuilder.append("<tr>");
-				htmlBuilder.append("<td>")
-					.append(EsignUtil
-						.escapeHtml(formatTimestamp(audit.getTimestamp(), responseDto.getOrganizationTimeZone())))
-					.append("</td>");
-				htmlBuilder.append("<td>").append(EsignUtil.escapeHtml(audit.getActionDoneByEmail())).append("</td>");
-				htmlBuilder.append("<td>")
-					.append(EsignUtil.escapeHtml(EsignUtil.getFormattedActionText(audit)))
-					.append("</td>");
-				htmlBuilder.append("</tr>");
+				auditHtmlBuilder.append(
+						auditTemplate
+							.replace("{{timestamp}}",
+									EsignUtil.escapeHtml(formatTimestamp(audit.getTimestamp(),
+											responseDto.getOrganizationTimeZone())))
+							.replace("{{userEmail}}", EsignUtil.escapeHtml(audit.getActionDoneByEmail()))
+							.replace("{{activity}}", EsignUtil.escapeHtml(EsignUtil.getFormattedActionText(audit))));
 			}
 		}
 
-		htmlBuilder.append("</tbody>");
-		htmlBuilder.append("</table>");
-
-		htmlBuilder.append("</body></html>");
-
-		return htmlBuilder.toString();
+		return template.substring(0, startIndex) + auditHtmlBuilder + template.substring(endIndex + endMarker.length());
 	}
 
 	private String formatDate(LocalDateTime dateTimeUtc, String timeZone) {
