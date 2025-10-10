@@ -111,6 +111,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -407,7 +410,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setStatus(EnvelopeStatus.WAITING);
 		envelope.setMessage(dto.getMessage());
 		envelope.setSubject(dto.getSubject());
-		envelope.setSentAt(LocalDateTime.now());
+		envelope.setSentAt(getCurrentUtcDateTime());
 		envelope.setSignType(dto.getSignType());
 		envelope.setUuid(generateAndEnsureUniqueUuidWithRetry());
 		return envelope;
@@ -768,7 +771,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
 
 		try {
-			// Generate HTML content for the certificate
 			String html = generateSignatureCertificateHtml(responseDto);
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1166,12 +1168,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		htmlBuilder.append("<tr>");
 		htmlBuilder.append("<td>");
 		htmlBuilder.append("<div class='meta-label'>Date Created</div>");
-		htmlBuilder.append("<div class='meta-value'>").append(formatDate(responseDto.getSentAt())).append("</div>");
+		htmlBuilder.append("<div class='meta-value'>")
+			.append(formatDate(responseDto.getSentAt(), responseDto.getOrganizationTimeZone()))
+			.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("<td>");
 		htmlBuilder.append("<div class='meta-label'>Time Zone</div>");
 		htmlBuilder.append("<div class='meta-value'>")
-			.append(EsignUtil.escapeHtml(responseDto.getOrganizationTimeZone()))
+			.append(EsignUtil.escapeHtml(getTimeZoneWithOffset(responseDto.getOrganizationTimeZone())))
 			.append("</div>");
 		htmlBuilder.append("</td>");
 		htmlBuilder.append("</tr>");
@@ -1214,7 +1218,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
 				htmlBuilder.append("<tr>");
 				htmlBuilder.append("<td>")
-					.append(EsignUtil.escapeHtml(formatTimestamp(audit.getTimestamp())))
+					.append(EsignUtil
+						.escapeHtml(formatTimestamp(audit.getTimestamp(), responseDto.getOrganizationTimeZone())))
 					.append("</td>");
 				htmlBuilder.append("<td>").append(EsignUtil.escapeHtml(audit.getActionDoneByEmail())).append("</td>");
 				htmlBuilder.append("<td>")
@@ -1232,14 +1237,31 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return htmlBuilder.toString();
 	}
 
-	private String formatDate(LocalDateTime localDateTime) {
-		// Format according to your requirements
+	private String formatDate(LocalDateTime dateTimeUtc, String timeZone) {
+		if (dateTimeUtc == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
+		}
+
+		ZoneId targetZone = ZoneId.of(timeZone);
+		ZonedDateTime zonedDateTime = dateTimeUtc.atZone(ZoneOffset.UTC).withZoneSameInstant(targetZone);
+
+		return DateTimeUtils.formatDateTimeEsignCert(zonedDateTime.toLocalDateTime());
+	}
+
+	private String formatTimestamp(Instant instant, String timeZone) {
+		if (instant == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
+		}
+		ZoneId zoneId = ZoneId.of(timeZone);
+		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zoneId);
 		return DateTimeUtils.formatDateTimeEsignCert(localDateTime);
 	}
 
-	private String formatTimestamp(Instant instant) {
-		// Format according to your requirements
-		return DateTimeUtils.formatInstantEsignCert(instant);
+	private String getTimeZoneWithOffset(String timeZoneId) {
+		ZoneId zone = ZoneId.of(timeZoneId);
+		ZoneOffset offset = zone.getRules().getOffset(Instant.now());
+		String offsetId = offset.getId().replace("Z", "+00:00");
+		return "(" + "GMT" + offsetId + ") " + timeZoneId;
 	}
 
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {

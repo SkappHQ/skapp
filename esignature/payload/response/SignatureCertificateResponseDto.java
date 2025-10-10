@@ -4,12 +4,14 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class SignatureCertificateResponseDto {
 
 	private Long id;
