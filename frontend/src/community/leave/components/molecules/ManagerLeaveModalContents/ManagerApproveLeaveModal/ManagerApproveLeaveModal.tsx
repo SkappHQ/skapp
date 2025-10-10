@@ -160,7 +160,11 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
   }, [attachment]);
 
   useEffect(() => {
-    if (environment === appModes.COMMUNITY && leaveAttachment) {
+    if (
+      environment === appModes.COMMUNITY &&
+      leaveAttachment &&
+      s3FileUrls[attachment as string]
+    ) {
       downloadFileToDevice(leaveAttachment);
     }
     setAttachment(null);
