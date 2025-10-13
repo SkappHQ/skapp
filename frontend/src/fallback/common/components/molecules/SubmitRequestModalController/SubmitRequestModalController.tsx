@@ -1,5 +1,5 @@
 const SubmitRequestModalController = () => {
-  return <div>SubmitRequestModalController</div>;
+  return <></>;
 };
 
 export default SubmitRequestModalController;
