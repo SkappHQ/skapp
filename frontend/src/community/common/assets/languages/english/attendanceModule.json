@@ -48,6 +48,8 @@
     "addTimeEntrySuccessDes": "Your time log has has been submitted for approval successfully",
     "addTimeEntryErrorTitle": "Oops! Something went wrong",
     "addTimeEntryErrorDes": "Failed to submit the time log. Please try again",
+    "addTimeEntryNoManagerErrorTitle":"No supervisor has been assigned",
+    "managerMissingErrorDes": "Please contact the administrator regarding your request",
     "dateInputLabel": "Date",
     "durationLabel": "Duration:",
     "leaveTypeLabel": "Type:",

@@ -37,8 +37,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.skapp.community.peopleplanner.util.PeopleUtil.makeFirstLetterUpper;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -137,6 +135,8 @@ public class JobServiceImpl implements JobService {
 
 		JobFamilyResponseDto jobFamilyResponseDto = peopleMapper.jobFamilyToJobFamilyResponseDto(jobFamily);
 
+		invalidateJobsCache();
+
 		log.info("addJobFamily: execution ended");
 		return new ResponseEntityDto(false, jobFamilyResponseDto);
 	}
@@ -199,6 +199,8 @@ public class JobServiceImpl implements JobService {
 
 		jobFamily.setJobTitles(filterActiveJobTitles(jobFamily.getJobTitles()));
 		JobFamilyResponseDto jobFamilyResponseDto = peopleMapper.jobFamilyToJobFamilyResponseDto(jobFamily);
+
+		invalidateJobsCache();
 
 		log.info("updateJobFamily: execution ended");
 		return new ResponseEntityDto(false, jobFamilyResponseDto);
@@ -280,7 +282,7 @@ public class JobServiceImpl implements JobService {
 		log.info("deleteJobTitle: execution started");
 
 		Optional<JobTitle> optionalJobTitle = jobTitleDao.findById(id);
-		if (optionalJobTitle.isEmpty() || Boolean.TRUE.equals(!optionalJobTitle.get().getIsActive())) {
+		if (optionalJobTitle.isEmpty() || !optionalJobTitle.get().getIsActive()) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_NOT_FOUND);
 		}
 		JobTitle jobTitle = optionalJobTitle.get();
@@ -292,6 +294,8 @@ public class JobServiceImpl implements JobService {
 
 		jobTitle.setIsActive(false);
 		jobTitleDao.save(jobTitle);
+
+		invalidateJobsCache();
 
 		log.info("deleteJobTitle: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_DELETE_JOB_TITLE),
@@ -320,9 +324,15 @@ public class JobServiceImpl implements JobService {
 		jobFamily.setActive(false);
 		jobFamilyDao.save(jobFamily);
 
+		invalidateJobsCache();
+
 		log.info("deleteJobFamily: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_DELETE_JOB_FAMILY),
 				false);
+	}
+
+	protected void invalidateJobsCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
 	}
 
 	private boolean isJobFamilyNameORTitleNameValid(String roleOrLevel) {
@@ -337,7 +347,7 @@ public class JobServiceImpl implements JobService {
 		levels.forEach(level -> {
 			if (level != null && !level.isEmpty()) {
 				JobTitle jobTitle = new JobTitle();
-				jobTitle.setName(makeFirstLetterUpper(level));
+				jobTitle.setName(level);
 				jobTitles.add(jobTitle);
 			}
 		});

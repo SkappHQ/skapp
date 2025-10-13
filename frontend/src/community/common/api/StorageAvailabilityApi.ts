@@ -4,7 +4,9 @@ import authFetch from "../utils/axiosInterceptor";
 import { storageAvailabilityEndpoints } from "./utils/ApiEndpoints";
 import { storageAvailabilityQueryKeys } from "./utils/QueryKeys";
 
-export const useStorageAvailability = () => {
+export const useStorageAvailability = (
+  isSessionDataAvailable: boolean = true
+) => {
   return useQuery({
     queryKey: storageAvailabilityQueryKeys.GET_STORAGE_AVAILABILITY,
     queryFn: async () => {
@@ -12,6 +14,7 @@ export const useStorageAvailability = () => {
         storageAvailabilityEndpoints.GET_STORAGE_AVAILABILITY
       );
       return response.data.results[0];
-    }
+    },
+    enabled: isSessionDataAvailable
   });
 };

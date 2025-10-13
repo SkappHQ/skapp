@@ -62,6 +62,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
 
@@ -185,6 +186,47 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.setMaxResults(page.getPageSize());
 
 		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	@Override
+	public List<Employee> findEmployees(List<Long> employeeIds, String searchTerm, Set<AccountStatus> accountStatuses) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+		Join<Employee, User> userJoin = root.join(Employee_.user, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		if (accountStatuses != null && !accountStatuses.isEmpty()) {
+			predicates.add(root.get(Employee_.accountStatus).in(accountStatuses));
+		}
+
+		if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+			String searchPattern = "%" + searchTerm.trim().toLowerCase() + "%";
+
+			List<Predicate> searchPredicates = new ArrayList<>();
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.firstName)), searchPattern));
+
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.lastName)), searchPattern));
+
+			searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)), searchPattern));
+
+			predicates.add(criteriaBuilder.or(searchPredicates.toArray(new Predicate[0])));
+		}
+		else if (employeeIds != null && !employeeIds.isEmpty()) {
+			predicates.add(root.get(Employee_.employeeId).in(employeeIds));
+		}
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root);
+		criteriaQuery.distinct(true);
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(Employee_.firstName)),
+				criteriaBuilder.asc(root.get(Employee_.lastName)));
+
+		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
+		return query.getResultList();
 	}
 
 	@Override
@@ -760,6 +802,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					criteriaBuilder.notEqual(terminationYear, currentYear)));
 		}
 		else {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 			predicates.add(criteriaBuilder.and(criteriaBuilder.isNotNull(root.get(Employee_.TERMINATION_DATE)),
 					criteriaBuilder.equal(terminationYear, currentYear)));
 		}
@@ -864,6 +907,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), false));
+		predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 
 		Expression<LocalDate> terminationDate = root.get(Employee_.terminationDate);
 		predicates.add(criteriaBuilder.isNotNull(terminationDate));

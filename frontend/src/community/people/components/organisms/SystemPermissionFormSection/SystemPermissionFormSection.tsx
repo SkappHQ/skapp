@@ -27,6 +27,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -97,7 +98,9 @@ const SystemPermissionFormSection = ({
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
-    isSuperAdmin
+    isSuperAdmin,
+    isInvoiceModuleEnabled,
+    tenantID
   } = useSessionData();
 
   const { handleNext } = useStepper();
@@ -114,7 +117,8 @@ const SystemPermissionFormSection = ({
         peopleRole: employee?.systemPermissions?.peopleRole,
         leaveRole: employee?.systemPermissions?.leaveRole,
         attendanceRole: employee?.systemPermissions?.attendanceRole,
-        esignRole: employee?.systemPermissions?.esignRole
+        esignRole: employee?.systemPermissions?.esignRole,
+        invoiceRole: employee?.systemPermissions?.invoiceRole
       };
 
       const errorsToShow = [];
@@ -152,7 +156,10 @@ const SystemPermissionFormSection = ({
       }
     }
     if (
-      employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE &&
+      (employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE ||
+        employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE ||
+        employee?.systemPermissions?.attendanceRole ===
+          Role.ATTENDANCE_EMPLOYEE) &&
       (initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN ||
         initialEmployee?.systemPermissions?.peopleRole ===
           Role.PEOPLE_MANAGER) &&
@@ -327,6 +334,51 @@ const SystemPermissionFormSection = ({
                 checkSelected
                 onChange={(event) =>
                   handleRoleDropdown("esignRole", event.target.value as Role)
+                }
+                isDisabled={
+                  isProfileView ||
+                  permissions.isSuperAdmin ||
+                  isInputsDisabled ||
+                  isReadOnly
+                }
+              />
+            )}
+
+            {needsToShow(tenantID as string) && (
+              <DropdownList
+                inputName={"pmRole"}
+                label={translateText(["projectManagement"])}
+                itemList={grantablePermission?.pm || []}
+                value={permissions.pmRole}
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("pmRole", event.target.value as Role)
+                }
+                isDisabled={
+                  isProfileView ||
+                  permissions.isSuperAdmin ||
+                  isInputsDisabled ||
+                  isReadOnly
+                }
+              />
+            )}
+
+            {isInvoiceModuleEnabled && needsToShow(tenantID as string) && (
+              <DropdownList
+                inputName={"invoiceRole"}
+                label={translateText(["invoice"])}
+                itemList={grantablePermission?.invoice || []}
+                placeholder={translateText(["selectRole"])}
+                value={
+                  permissions.invoiceRole === Role.INVOICE_NONE
+                    ? ""
+                    : permissions.invoiceRole
+                }
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("invoiceRole", event.target.value as Role)
                 }
                 isDisabled={
                   isProfileView ||

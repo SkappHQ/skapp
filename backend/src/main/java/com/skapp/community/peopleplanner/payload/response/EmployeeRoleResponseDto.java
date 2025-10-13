@@ -16,6 +16,10 @@ public class EmployeeRoleResponseDto {
 
 	private Role esignRole;
 
+	private Role okrRole;
+
+	private Role invoiceRole;
+
 	private Boolean isSuperAdmin;
 
 }

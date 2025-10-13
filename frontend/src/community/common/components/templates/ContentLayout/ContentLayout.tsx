@@ -191,7 +191,7 @@ const ContentLayout = ({
     }
   }, [data?.user?.tenantStatus]);
 
-  const { data: organizationDetails } = useGetOrganization();
+  const { data: organizationDetails } = useGetOrganization(!!data);
 
   const themeColor = shouldUseDefaultTheme(asPath)
     ? ThemeTypes.BLUE_THEME
@@ -211,14 +211,14 @@ const ContentLayout = ({
     setIsUserLimitExceeded: state.setIsUserLimitExceeded
   }));
 
-  const { data: storageAvailabilityData } = useStorageAvailability();
+  const { data: storageAvailabilityData } = useStorageAvailability(!!data);
 
   const usedStoragePercentage = useMemo(() => {
     return 100 - storageAvailabilityData?.availableSpace;
   }, [storageAvailabilityData]);
 
   const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
-    useCheckUserLimit(isEnterpriseMode);
+    useCheckUserLimit(isEnterpriseMode, !!data);
 
   useEffect(() => {
     if (isEnterpriseMode) {

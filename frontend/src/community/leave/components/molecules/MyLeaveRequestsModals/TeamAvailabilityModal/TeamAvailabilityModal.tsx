@@ -79,6 +79,7 @@ const TeamAvailabilityModal = () => {
                 <AvatarGroup
                   avatars={data.employees}
                   componentStyles={classes.componentStyles}
+                  isHoverModal = {true}
                 />
               )}
             </Stack>

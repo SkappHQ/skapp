@@ -45,10 +45,12 @@ import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
+import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
 
@@ -114,7 +116,8 @@ const Drawer = (): JSX.Element => {
         userRoles: sessionData?.user?.roles,
         tier: sessionData?.user?.tier ?? "",
         isEnterprise,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID: sessionData?.user?.tenantId
       }),
     [sessionData, isEnterprise, globalLoginMethod]
   );
@@ -165,6 +168,8 @@ const Drawer = (): JSX.Element => {
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
   };
+  
+  if (orgLoading) return <FullScreenLoader />;
 
   return (
     <StyledDrawer
@@ -259,6 +264,7 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
+                      {route?.badge && <Badge text={route.badge} />}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,

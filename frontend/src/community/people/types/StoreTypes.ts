@@ -33,6 +33,7 @@ import {
   EmployeeDataFilterTypes,
   EmployeeDataParamsTypes,
   EmployeeRoleType,
+  QuickAddEmployeePayload,
   QuickAddEmployeeResponse,
   Role
 } from "./EmployeeTypes";
@@ -145,6 +146,7 @@ interface actionsTypes {
   setBulkUploadUsers: (value: BulkEmployeeDetails[]) => void;
   setDirectoryModalType: (value: DirectoryModalTypes) => void;
   setSharedCredentialData: (data: QuickAddEmployeeResponse) => void;
+  setPendingAddResourceData: (data: QuickAddEmployeePayload | null) => void;
 
   //employeeDetailsSlice
   setEmployeeGeneralDetails: (
@@ -339,6 +341,7 @@ export interface Store extends actionsTypes {
   directoryModalType: DirectoryModalTypes;
   bulkUploadUsers: BulkEmployeeDetails[];
   sharedCredentialData: QuickAddEmployeeResponse | null;
+  pendingAddResourceData: QuickAddEmployeePayload | null;
 
   //employeeDetailsSlice
   employeeGeneralDetails: EmployeeGeneralDetailsTypes;

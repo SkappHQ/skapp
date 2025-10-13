@@ -151,7 +151,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PeopleServiceImpl implements PeopleService {
 
-	private final UserService userService;
+	protected final UserService userService;
 
 	private final MessageUtil messageUtil;
 
@@ -193,7 +193,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected final ApplicationEventPublisher applicationEventPublisher;
 
-	private final UserVersionService userVersionService;
+	protected final UserVersionService userVersionService;
 
 	private final EmployeeValidationService employeeValidationService;
 
@@ -231,6 +231,8 @@ public class PeopleServiceImpl implements PeopleService {
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewEmployeeTimeLineRecords(employee, requestDto);
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -256,6 +258,8 @@ public class PeopleServiceImpl implements PeopleService {
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		updateSubscriptionQuantity(1L, true, false);
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
 	}
@@ -283,7 +287,17 @@ public class PeopleServiceImpl implements PeopleService {
 		userDao.save(user);
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
+		invalidateUserCache();
+
 		return new ResponseEntityDto(false, requestDto);
+	}
+
+	protected void invalidateUserCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
+	}
+
+	protected void invalidateUserAuthPicCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
 	}
 
 	protected void enterpriseValidations(String email) {
@@ -346,7 +360,10 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setEeo);
 
 		// Common Information
-		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), employee::setAuthPic);
+		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), value -> {
+			employee.setAuthPic(value);
+			invalidateUserAuthPicCache();
+		});
 
 		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeePersonalInfo(requestDto, employee),
 				employee::setPersonalInfo);
@@ -1217,6 +1234,8 @@ public class PeopleServiceImpl implements PeopleService {
 		updateSubscriptionQuantity(successCount, true, true);
 
 		addNewBulkUploadedEmployeeTimeLineRecords(totalResults);
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
 
 		return outValues.get();
 	}
@@ -1691,10 +1710,6 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	public void validateFirstName(String firstName, List<String> errors) {
-		if (firstName != null && (!firstName.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME));
-		}
-
 		if (firstName != null && firstName.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH, "First Name" }));
@@ -1702,20 +1717,12 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	public void validateLastName(String lastName, List<String> errors) {
-		if (lastName != null && (!lastName.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME));
-		}
-
 		if (lastName != null && lastName.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH, "Last Name" }));
 	}
 
 	public void validateEmergencyContactName(String name, List<String> errors) {
-		if (name != null && (!name.trim().matches(Validation.NAME_REGEX))) {
-			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMERGENCY_CONTACT_NAME));
-		}
-
 		if (name != null && name.length() > PeopleConstants.MAX_NAME_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_NAME_LENGTH,
 					new Object[] { PeopleConstants.MAX_NAME_LENGTH }));
@@ -1897,7 +1904,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (employeeBulkDto.getIdentificationNo() != null)
 			employeeBulkDto.setIdentificationNo(employeeBulkDto.getIdentificationNo().toUpperCase());
-		Validations.isEmployeeNameValid(employeeBulkDto.getFirstName().concat(employeeBulkDto.getLastName()));
 
 		Employee employee = peopleMapper.employeeBulkDtoToEmployee(employeeBulkDto);
 		EmployeeDetailsDto employeeDetailsDto = peopleMapper.employeeBulkDtoToEmployeeDetailsDto(employeeBulkDto);
@@ -2132,6 +2138,15 @@ public class PeopleServiceImpl implements PeopleService {
 		if (workEmail != null && workEmail.length() > PeopleConstants.MAX_EMAIL_LENGTH)
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL_LENGTH,
 					new Object[] { PeopleConstants.MAX_EMAIL_LENGTH }));
+
+		if (workEmail != null) {
+			try {
+				enterpriseValidations(workEmail);
+			}
+			catch (Exception e) {
+				errors.add(e.getMessage());
+			}
+		}
 	}
 
 	private void validateUserSupervisor(String supervisorEmail, List<String> errors) {
@@ -2413,6 +2428,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 		updateSubscriptionQuantity(1L, false, false);
 		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
 	}
 
 }

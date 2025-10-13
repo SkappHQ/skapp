@@ -150,6 +150,7 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
         setFieldError={setFieldError}
         translateText={translateText}
         onSubmit={handleSubmit}
+        datesDisabled={isDeleteDisabled}
       />
       <Box sx={{ mt: "1rem" }}>
         <Button

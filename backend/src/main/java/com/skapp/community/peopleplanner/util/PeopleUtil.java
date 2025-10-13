@@ -58,7 +58,8 @@ public class PeopleUtil {
 			.filter(manager -> roles.contains(manager.getManager().getEmployeeRole().getPeopleRole())
 					|| roles.contains(manager.getManager().getEmployeeRole().getAttendanceRole())
 					|| roles.contains(manager.getManager().getEmployeeRole().getLeaveRole())
-					|| roles.contains(manager.getManager().getEmployeeRole().getEsignRole()))
+					|| roles.contains(manager.getManager().getEmployeeRole().getEsignRole())
+					|| roles.contains((manager.getManager().getEmployeeRole().getOkrRole())))
 			.toList();
 	}
 

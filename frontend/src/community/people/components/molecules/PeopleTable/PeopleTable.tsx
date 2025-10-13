@@ -237,10 +237,12 @@ const PeopleTable: FC<Props> = ({
                 color: employee?.isActive
                   ? "common.black"
                   : theme.palette.grey[700],
-                maxWidth: isPendingInvitationListOpen ? "9.5rem" : "12.625rem",
+                maxWidth: isPendingInvitationListOpen ? "13.425rem" : "13.425rem",
+                minWidth: isPendingInvitationListOpen ? "13.425rem" : "fit-content",
                 "& .MuiChip-label": {
                   pr: "0.3rem"
-                }
+                },
+                justifyContent: "flex-start",
               }}
             />
             {isPendingInvitationListOpen && (

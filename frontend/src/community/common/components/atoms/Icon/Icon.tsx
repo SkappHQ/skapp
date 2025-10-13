@@ -15,6 +15,7 @@ import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
+import CameraIcon from "~community/common/assets/Icons/CameraIcon";
 import CancelledStatusIcon from "~community/common/assets/Icons/CancelledStatusIcon";
 import ChangeIcon from "~community/common/assets/Icons/ChangeIcon";
 import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
@@ -48,6 +49,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
@@ -63,10 +65,15 @@ import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
+import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
+import InstagramIcon from "~community/common/assets/Icons/InstagramIcon";
+import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
+import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
+import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
@@ -130,6 +137,7 @@ import UserIcon from "~community/common/assets/Icons/UserIcon";
 import UserUploadIcon from "~community/common/assets/Icons/UserUploadIcon";
 import ViewIcon from "~community/common/assets/Icons/ViewIcon";
 import WaitingStatusIcon from "~community/common/assets/Icons/WaitingStatusIcon";
+import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
@@ -285,7 +293,15 @@ export const IconMapping: Partial<
   [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
-  [IconName.PROJECTS_ICON]: ProjectsIcon
+  [IconName.PROJECTS_ICON]: ProjectsIcon,
+  [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
+  [IconName.INSTAGRAM_ICON]: InstagramIcon,
+  [IconName.INVOICE_ICON]: InvoiceIcon,
+  [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
+  [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
+  [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
+  [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
+  [IconName.CAMERA_ICON]: CameraIcon
   // Add more icons here as needed
 };
 
