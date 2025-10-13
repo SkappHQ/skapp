@@ -147,11 +147,14 @@ const RESCRITED_DYNAMIC_ROUTES = {
   }
 };
 
-export const employeeRestrictedRoutes = [
-  RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
-  ROUTES.PEOPLE.ADD,
+export const invoiceEmployeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE,
   RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
+];
+
+export const employeeRestrictedRoutes = [
+  RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
+  ROUTES.PEOPLE.ADD
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
