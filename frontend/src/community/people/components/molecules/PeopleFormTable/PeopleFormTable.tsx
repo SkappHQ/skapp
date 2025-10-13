@@ -118,22 +118,28 @@ const PeopleFormTable: FC<Props> = ({
                       ? "0 0.75rem 0 0"
                       : "0 0 0 0",
                 ...(index === 0 && {
-                  width: "4.625rem" // same width as header
+                  width: "5%" // same width as header
+                }),
+                ...(index === 1 && {
+                  width: "15%" // auto width for 2nd column
                 }),
                 ...(index === 2 && {
-                  width: "250px" // auto width for 2nd column
+                  width: "15%" // auto width for 2nd column
                 }),
                 ...(index === 3 && {
-                  width: "300px" // Increase 4th column width
+                  width: "20%" // Increase 4th column width
                 }),
                 ...(index === 4 && {
-                  width: "200px" // Reduce 5th column width
+                  width: "14%" // Reduce 5th column width
                 }),
                 ...(index === 5 && {
-                  width: "200px" // Reduce 6th column width
+                  width: "14%" // Reduce 6th column width
+                }),
+                ...(index === 6 && {
+                  width: "10%" // Reduce 7th column width
                 }),
                 ...(index === 7 && {
-                  width: "150px" // Reduce 8th column width
+                  width: "8%" // Reduce 8th column width
                 }),
                 ...tableHeaderCellStyles
               }}
