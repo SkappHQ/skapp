@@ -79,9 +79,8 @@ const Avatar: FC<AvatarProps> = ({
       if (logoUrl) setImage(logoUrl);
       else if (src) setImage(src);
     } else if (environment === appModes.ENTERPRISE) {
-      if (src) setImage(src);
-      else{
-      setImage(s3FileUrls[src]);
+      if (src) {
+        setImage(s3FileUrls[src] ?? src);
       }
     }
   }, [logoUrl, src, s3FileUrls, environment]);
