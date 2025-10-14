@@ -41,6 +41,15 @@ public class BillableRateRepositoryImpl implements BillableRateRepository {
 			predicates.add(findByName(projectMemberFilterDto.getSearchKeyword(), criteriaBuilder, employeeJoin));
 		}
 
+		if (projectMemberFilterDto.getCustomerId() != null) {
+			predicates.add(criteriaBuilder.equal(root.get("project").get("id").get("customer").get("id"),
+					projectMemberFilterDto.getCustomerId()));
+		}
+		if (projectMemberFilterDto.getProjectId() != null) {
+			predicates.add(criteriaBuilder.equal(root.get("project").get("id").get("projectId"),
+					projectMemberFilterDto.getProjectId()));
+		}
+
 		predicates.add(criteriaBuilder.equal(root.get("isActive"), true));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
