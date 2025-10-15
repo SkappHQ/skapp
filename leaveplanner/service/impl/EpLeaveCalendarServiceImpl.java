@@ -18,6 +18,7 @@ import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
+import com.skapp.enterprise.common.service.EpMicrosoftCalendarService;
 import com.skapp.enterprise.common.service.impl.EpGoogleCalenderServiceImpl;
 import com.skapp.enterprise.leaveplanner.constant.EpLeaveMessageConstant;
 import com.skapp.enterprise.leaveplanner.model.CalendarEvent;
@@ -64,6 +65,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final EpGoogleCalenderServiceImpl epGoogleCalenderServiceImpl;
 
 	private final OrganizationService organizationService;
+
+	private final EpMicrosoftCalendarService epMicrosoftCalendarService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -147,6 +150,86 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		log.info("deleteOutOfOfficeEventsForLeave: execution ended");
 	}
 
+	@Override
+	public ResponseEntityDto getMicrosoftDateRangeAndWorkingHoursForLeave(Long id) {
+		log.info("getMicrosoftDateRangeAndWorkingHoursForLeave: execution started");
+
+		LeaveRequest leaveRequest = leaveRequestDao.findById(id).orElse(null);
+
+		if (leaveRequest == null) {
+			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		EpLeaveDurationAndWorkingHoursResponseDto responseDto = getEpLeaveDurationAndWorkingHoursResponseDto(
+				leaveRequest);
+
+		log.info("getMicrosoftDateRangeAndWorkingHoursForLeave: execution ended");
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto addMicrosoftOutOfOfficeEventsForLeave(
+			EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
+		log.info("addMicrosoftOutOfOfficeEventsForLeave: execution started");
+
+		if (Boolean.FALSE.equals(epMicrosoftCalendarService.getIsMicrosoftCalendarConnected())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
+
+		LeaveRequest leaveRequest = leaveRequestDao.findById(epOutOfOfficeEventRequestDto.getLeaveId()).orElse(null);
+
+		if (leaveRequest == null) {
+			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		if (epOutOfOfficeEventRequestDto.getDeclineMessage() != null) {
+			Validation.isValidDeclineMessage(epOutOfOfficeEventRequestDto.getDeclineMessage());
+		}
+
+		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
+
+		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null
+				&& epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled() != null) {
+			addMicrosoftOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, holidayObjects,
+					epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled(),
+					epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled(),
+					epOutOfOfficeEventRequestDto.getDeclineMessage());
+		}
+		else {
+			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_AUTO_DECLINE_MODE_NOT_FOUND);
+		}
+
+		log.info("addMicrosoftOutOfOfficeEventsForLeave: execution ended");
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_SUCCESS_CREATED_OUT_OF_OFFICE_EVENTS));
+	}
+
+	@Override
+	public void deleteMicrosoftOutOfOfficeEventsForLeave(LeaveRequest leaveRequest) {
+		log.info("deleteMicrosoftOutOfOfficeEventsForLeave: execution started");
+
+		try {
+			List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
+
+			if (calendarEvents != null && !calendarEvents.isEmpty()) {
+				String accessToken = epMicrosoftCalendarService
+					.generateMicrosoftAccessToken(leaveRequest.getEmployee().getUser());
+				for (CalendarEvent calendarEvent : calendarEvents) {
+					epMicrosoftCalendarService.deleteOutOfOfficeEvent(
+							encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
+							accessToken);
+				}
+			}
+		}
+		catch (ModuleException e) {
+			log.error("Error while deleting Microsoft out of office events for leave request", e);
+		}
+
+		log.info("deleteMicrosoftOutOfOfficeEventsForLeave: execution ended");
+	}
+
 	private void addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
 			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled,
 			Boolean isAutoDeclineEnabled, String declineMessage) {
@@ -215,6 +298,74 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		}
 	}
 
+	private void addMicrosoftOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
+			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled,
+			Boolean isAutoDeclineEnabled, String declineMessage) {
+		LocalDate startDate = leaveRequest.getStartDate();
+		LocalDate endDate = leaveRequest.getEndDate();
+		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
+
+		TimeConfig firstTimeConfig = timeConfigs.getFirst();
+		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
+		long totalHoursAsLong = firstTimeConfig.getTotalHours().longValue();
+
+		String autoDeclineMode = "none";
+
+		if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
+			autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled) ? "declineAll"
+					: "declineNew";
+		}
+
+		String accessToken = epMicrosoftCalendarService.generateMicrosoftAccessToken(userService.getCurrentUser());
+
+		if (startDate.equals(endDate)) {
+			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
+			long hoursToAdd = totalHoursAsLong;
+
+			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)
+					|| leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
+				hoursToAdd /= 2;
+			}
+
+			LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+
+			saveMicrosoftEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+
+			return;
+		}
+
+		if (startDate.isAfter(endDate)) {
+			LocalDate temp = startDate;
+			startDate = endDate;
+			endDate = temp;
+		}
+
+		LocalDate currentDate = startDate;
+		while (!currentDate.isAfter(endDate)) {
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs,
+					organizationService.getOrganizationTimeZone())) {
+				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
+						holidayObjects);
+				LocalDateTime startDateTime = currentDate.atTime(workStartAndEndTimes.getStartTime());
+				long hoursToAdd = totalHoursAsLong;
+
+				if (holidayDuration == HolidayDuration.HALF_DAY_MORNING) {
+					startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
+					hoursToAdd /= 2;
+				}
+				else if (holidayDuration == HolidayDuration.HALF_DAY_EVENING) {
+					hoursToAdd /= 2;
+				}
+
+				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+				saveMicrosoftEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode,
+						declineMessage);
+
+			}
+			currentDate = currentDate.plusDays(1);
+		}
+	}
+
 	private EpLeaveDurationAndWorkingHoursResponseDto getEpLeaveDurationAndWorkingHoursResponseDto(
 			LeaveRequest leaveRequest) {
 		EpLeaveDurationAndWorkingHoursResponseDto responseDto = new EpLeaveDurationAndWorkingHoursResponseDto();
@@ -262,6 +413,22 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		CalendarEvent calendarEvent = new CalendarEvent();
 
 		String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
+				startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
+
+		if (eventId != null) {
+			calendarEvent.setEventId(eventId);
+		}
+
+		calendarEvent.setLeaveRequest(leaveRequest);
+
+		calendarEventDao.save(calendarEvent);
+	}
+
+	private void saveMicrosoftEvent(LeaveRequest leaveRequest, LocalDateTime startDateTime, LocalDateTime endDateTime,
+			String accessToken, String autoDeclineMode, String declineMessage) {
+		CalendarEvent calendarEvent = new CalendarEvent();
+
+		String eventId = encryptionDecryptionService.encrypt(epMicrosoftCalendarService.createOutOfOfficeEvent(
 				startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
 
 		if (eventId != null) {

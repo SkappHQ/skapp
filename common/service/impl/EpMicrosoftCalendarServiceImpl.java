@@ -1,0 +1,581 @@
+package com.skapp.enterprise.common.service.impl;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.Organization;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.EncryptionDecryptionService;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.model.EmployeeCalendar;
+import com.skapp.enterprise.common.model.OrganizationCalendar;
+import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
+import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
+import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
+import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
+import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
+import com.skapp.enterprise.common.service.EpMicrosoftCalendarService;
+import com.skapp.enterprise.common.type.EpCalendarType;
+import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarService {
+
+	private final EncryptionDecryptionService encryptionDecryptionService;
+
+	private final TenantContext tenantContext;
+
+	private final EmployeeCalendarDao employeeCalendarDao;
+
+	private final UserService userService;
+
+	private final EpOrganizationCalenderDao epOrganizationCalenderDao;
+
+	private final UserDao userDao;
+
+	private final CalendarEventDao calendarEventDao;
+
+	private final MessageUtil messageUtil;
+
+	private final OrganizationDao organizationDao;
+
+	@Value("${encryptDecryptAlgorithm.secret}")
+	private String encryptSecret;
+
+	@Value("${microsoft.calendar.client-id}")
+	private String clientId;
+
+	@Value("${microsoft.calendar.client-secret}")
+	private String clientSecret;
+
+	@Value("${microsoft.calendar.tenant-id}")
+	private String tenantId;
+
+	@Value("${microsoft.calendar.backend-redirect-uri}")
+	private String backendRedirectURI;
+
+	private static final String MICROSOFT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
+
+	private static final String MICROSOFT_LOGIN_BASE_URL = "https://login.microsoftonline.com";
+
+	private static final String MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access";
+
+	@Override
+	public void setupOrganizationCalendar() {
+		log.info("setupOrganizationCalendar: execution started");
+
+		OrganizationCalendar organizationCalendar = new OrganizationCalendar();
+		organizationCalendar.setIsMicrosoftCalendarEnabled(false);
+		epOrganizationCalenderDao.save(organizationCalendar);
+
+		log.info("setupOrganizationCalendar: execution ended");
+	}
+
+	@Override
+	public String connectMicrosoftCalendar(EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
+		log.info("connectMicrosoftCalendar: execution started");
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<EpMicrosoftAuthRedirectDto> request = new HttpEntity<>(epMicrosoftAuthRedirectDto, headers);
+		ResponseEntity<String> response = restTemplate.postForEntity(backendRedirectURI, request, String.class);
+
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(response.getBody());
+
+			if (jsonNode.has(EpCommonConstants.RESULTS) && jsonNode.get(EpCommonConstants.RESULTS).isArray()
+					&& !jsonNode.get(EpCommonConstants.RESULTS).isEmpty()) {
+				String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asText();
+
+				log.info("connectMicrosoftCalendar: execution end");
+				return redirectUrl;
+			}
+		}
+		catch (Exception e) {
+			log.error("Error parsing JSON response: ", e);
+		}
+
+		log.info("connectMicrosoftCalendar: execution end");
+		return "/error";
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public ResponseEntityDto saveMicrosoftCalendarConfig(EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
+		log.info("saveMicrosoftCalendarConfig: execution started");
+
+		String encodedState = epMicrosoftAuthRedirectDto.getState();
+		String authorizationCode = epMicrosoftAuthRedirectDto.getCode();
+
+		if (encodedState.isEmpty()) {
+			log.error("saveMicrosoftCalendarConfig: State is empty");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
+		}
+
+		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String[] state = decryptedState.split(EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE);
+
+		if (state.length != 3) {
+			log.error("saveMicrosoftCalendarConfig: State is invalid");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
+		}
+
+		Long userId = Long.parseLong(state[0]);
+		String frontendRedirectUri = state[1];
+		String currentTenant = state[2];
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		log.info("saveMicrosoftCalendarConfig: User: {}, currentTenant: {}", userId, currentTenant);
+		validateFrontendUrl(frontendRedirectUri);
+
+		User currentUser = getUser(userId);
+
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.OUTLOOK, EpCalendarType.NONE));
+
+		if (employeeCalendar == null) {
+			employeeCalendar = new EmployeeCalendar();
+			employeeCalendar.setUser(currentUser);
+			employeeCalendar.setCalendarType(EpCalendarType.OUTLOOK);
+			employeeCalendar = employeeCalendarDao.save(employeeCalendar);
+		}
+
+		String tokenGenerated = "";
+
+		try {
+			validateMicrosoftCalendarAuthRedirectDto(epMicrosoftAuthRedirectDto);
+			String accessToken = exchangeCodeForTokens(authorizationCode);
+
+			if (accessToken != null) {
+				verifyConnectedEmailWithUserEmail(accessToken, currentUser);
+				String encryptedToken = encryptionDecryptionService.encrypt(accessToken, encryptSecret);
+				if (encryptedToken == null) {
+					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
+				}
+				employeeCalendar.setCalendarToken(encryptedToken);
+				tokenGenerated = accessToken;
+			}
+			else {
+				if (employeeCalendar.getCalendarToken() == null) {
+					throw new EntityNotFoundException(
+							EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+				}
+				tokenGenerated = employeeCalendar.getCalendarToken();
+			}
+
+			employeeCalendar.setIsEnabled(true);
+			employeeCalendar.setCalendarType(EpCalendarType.OUTLOOK);
+			employeeCalendarDao.save(employeeCalendar);
+		}
+		catch (Exception exception) {
+			log.error("saveMicrosoftCalendarConfig: {}", exception.getMessage(), exception);
+			rollbackCalendarConnect(currentUser, tokenGenerated);
+
+			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
+			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
+
+			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
+
+			return new ResponseEntityDto(false,
+					UriComponentsBuilder.fromUriString(frontendRedirectUri)
+						.queryParam("error", encodedErrorMessage)
+						.toUriString());
+		}
+
+		log.info("saveMicrosoftCalendarConfig: execution ended");
+		return new ResponseEntityDto(false, frontendRedirectUri);
+	}
+
+	@Override
+	public ResponseEntityDto isMicrosoftCalendarConnected() {
+		return new ResponseEntityDto(false, getIsMicrosoftCalendarConnected());
+	}
+
+	public Boolean getIsMicrosoftCalendarConnected() {
+		User currentUser = userService.getCurrentUser();
+		boolean isConnected = false;
+
+		try {
+			EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+					Set.of(EpCalendarType.OUTLOOK));
+
+			if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
+					&& !employeeCalendar.getCalendarToken().isEmpty()
+					&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
+				String accessToken = generateMicrosoftAccessToken(currentUser);
+				if (accessToken != null) {
+					isConnected = true;
+				}
+			}
+
+			List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+			if (organizationCalendars.isEmpty()
+					|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsMicrosoftCalendarEnabled())) {
+				isConnected = false;
+			}
+		}
+		catch (ModuleException e) {
+			log.error("Error checking Microsoft Calendar connection: ", e);
+			return false;
+		}
+
+		return isConnected;
+	}
+
+	@Override
+	public ResponseEntityDto getMicrosoftAuthUrl(EpMicrosoftConsentUrlDto epMicrosoftConsentUrlDto) {
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+		if (organizationCalendars.isEmpty() || organizationCalendars.getFirst().getIsMicrosoftCalendarEnabled() == null
+				|| !organizationCalendars.getFirst().getIsMicrosoftCalendarEnabled()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		log.info("getMicrosoftAuthUrl: execution started by user: {}", currentUser.getUserId());
+
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
+
+		String frontendRedirectUri = epMicrosoftConsentUrlDto.getFrontendRedirectUrl();
+
+		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
+			log.error("getMicrosoftAuthUrl: unable to get the organizational url");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL);
+		}
+
+		validateFrontendUrl(frontendRedirectUri);
+
+		String state = currentUser.getUserId() + EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE
+				+ frontendRedirectUri + EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE
+				+ TenantContext.getCurrentTenant();
+
+		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
+		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
+
+		try {
+			String authUrl = MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/authorize" + "?client_id="
+					+ clientId + "&response_type=code" + "&redirect_uri="
+					+ URLEncoder.encode(backendRedirectURI, StandardCharsets.UTF_8) + "&scope="
+					+ URLEncoder.encode(MICROSOFT_CALENDAR_SCOPES, StandardCharsets.UTF_8) + "&state=" + encodedState
+					+ "&response_mode=query";
+
+			responseDto.setAuthUrl(authUrl);
+		}
+		catch (Exception exception) {
+			log.error("getMicrosoftAuthUrl: {}", exception.getMessage(), exception);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_MICROSOFT_AUTH_URL);
+		}
+
+		log.info("getMicrosoftAuthUrl: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto disconnectMicrosoftCalendar() {
+		User currentUser = userService.getCurrentUser();
+
+		log.info("disconnectMicrosoftCalendar: execution started by user: {}", currentUser.getUserId());
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.OUTLOOK));
+
+		if (!employeeCalendar.getCalendarType().equals(EpCalendarType.OUTLOOK)
+				|| employeeCalendar.getCalendarToken() == null) {
+			log.error("disconnectMicrosoftCalendar: user {} is not connected to Microsoft Calendar",
+					currentUser.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DISCONNECT_FROM_MICROSOFT_CALENDAR);
+		}
+
+		disconnectCalendarFromDatabase(currentUser);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_DISCONNECT_MICROSOFT_CALENDAR), false);
+	}
+
+	@Override
+	public String generateMicrosoftAccessToken(@NonNull User user) {
+		log.info("MicrosoftCalendar: generateAccessToken: execution started for {}", user.getUserId());
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(user,
+				Set.of(EpCalendarType.OUTLOOK));
+
+		if (employeeCalendar == null || employeeCalendar.getCalendarToken() == null
+				|| employeeCalendar.getCalendarToken().isEmpty()
+				|| Boolean.FALSE.equals(employeeCalendar.getIsEnabled())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+		}
+
+		String refreshToken = employeeCalendar.getCalendarToken();
+
+		try {
+			String decryptedRefreshToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
+			return refreshAccessToken(decryptedRefreshToken);
+		}
+		catch (Exception exception) {
+			log.error("MicrosoftCalendar: generateAccessToken: {}", exception.getMessage(), exception);
+			employeeCalendar.setCalendarToken(null);
+			employeeCalendar.setIsEnabled(false);
+			employeeCalendar.setCalendarType(EpCalendarType.NONE);
+			employeeCalendarDao.save(employeeCalendar);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
+		}
+	}
+
+	@Override
+	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
+			String autoDeclineMode, String declineMessage) {
+		String organizationTimeZone = organizationDao.findTopByOrderByOrganizationIdDesc()
+			.map(Organization::getOrganizationTimeZone)
+			.orElse("UTC");
+
+		ZonedDateTime startInOrgTz = startDateTime.atZone(ZoneId.of(organizationTimeZone));
+		ZonedDateTime endInOrgTz = endDateTime.atZone(ZoneId.of(organizationTimeZone));
+
+		ZonedDateTime startUtc = startInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
+		ZonedDateTime endUtc = endInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
+
+		String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
+		String endFormatted = endUtc.format(DateTimeFormatter.ISO_INSTANT);
+
+		log.info("createOutOfOfficeEvent: startDateTime: {}, endDateTime: {}", startFormatted, endFormatted);
+
+		Map<String, Object> event = new HashMap<>();
+		event.put("subject", "Out of Office");
+		event.put("isAllDay", false);
+		event.put("showAs", "oof");
+		event.put("sensitivity", "private");
+
+		Map<String, Object> start = new HashMap<>();
+		start.put("dateTime", startFormatted);
+		start.put("timeZone", "UTC");
+		event.put("start", start);
+
+		Map<String, Object> end = new HashMap<>();
+		end.put("dateTime", endFormatted);
+		end.put("timeZone", "UTC");
+		event.put("end", end);
+
+		Map<String, Object> automaticReplies = new HashMap<>();
+		automaticReplies.put("status", "scheduled");
+		if (declineMessage != null && !declineMessage.isEmpty()) {
+			automaticReplies.put("internalReplyMessage", declineMessage);
+			automaticReplies.put("externalReplyMessage", declineMessage);
+		}
+
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.setBearerAuth(accessToken);
+
+			HttpEntity<Map<String, Object>> request = new HttpEntity<>(event, headers);
+			ResponseEntity<Map> response = restTemplate.postForEntity(MICROSOFT_GRAPH_BASE_URL + "/me/events", request,
+					Map.class);
+
+			if (response.getBody() != null && response.getBody().containsKey("id")) {
+				String eventId = (String) response.getBody().get("id");
+				log.info("MicrosoftCalendar: created Event: {}", eventId);
+				return eventId;
+			}
+		}
+		catch (Exception exception) {
+			log.error("MicrosoftCalendar: create Event: {}", exception.getMessage(), exception);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+		}
+
+		return null;
+	}
+
+	@Override
+	public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setBearerAuth(accessToken);
+
+			HttpEntity<Void> request = new HttpEntity<>(headers);
+			restTemplate.exchange(MICROSOFT_GRAPH_BASE_URL + "/me/events/" + eventId, HttpMethod.DELETE, request,
+					Void.class);
+
+			log.info("MicrosoftCalendar: deleted Event: {}", eventId);
+			calendarEventDao.deleteByEventId(eventId);
+		}
+		catch (Exception exception) {
+			log.error("MicrosoftCalendar: Error deleting Event {}: {}", eventId, exception.getMessage(), exception);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_MICROSOFT_CALENDAR);
+		}
+	}
+
+	private String exchangeCodeForTokens(String authorizationCode) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+			MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+			body.add("client_id", clientId);
+			body.add("client_secret", clientSecret);
+			body.add("code", authorizationCode);
+			body.add("grant_type", "authorization_code");
+			body.add("redirect_uri", backendRedirectURI);
+			body.add("scope", MICROSOFT_CALENDAR_SCOPES);
+
+			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+			ResponseEntity<Map> response = restTemplate
+				.postForEntity(MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/token", request, Map.class);
+
+			if (response.getBody() != null && response.getBody().containsKey("refresh_token")) {
+				return (String) response.getBody().get("refresh_token");
+			}
+		}
+		catch (Exception e) {
+			log.error("Error exchanging code for tokens: ", e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+		}
+		return null;
+	}
+
+	private String refreshAccessToken(String refreshToken) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+			MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+			body.add("client_id", clientId);
+			body.add("client_secret", clientSecret);
+			body.add("refresh_token", refreshToken);
+			body.add("grant_type", "refresh_token");
+			body.add("scope", MICROSOFT_CALENDAR_SCOPES);
+
+			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+			ResponseEntity<Map> response = restTemplate
+				.postForEntity(MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/token", request, Map.class);
+
+			if (response.getBody() != null && response.getBody().containsKey("access_token")) {
+				return (String) response.getBody().get("access_token");
+			}
+		}
+		catch (Exception e) {
+			log.error("Error refreshing access token: ", e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
+		}
+		return null;
+	}
+
+	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setBearerAuth(accessToken);
+
+			HttpEntity<Void> request = new HttpEntity<>(headers);
+			ResponseEntity<Map> response = restTemplate.exchange(MICROSOFT_GRAPH_BASE_URL + "/me", HttpMethod.GET,
+					request, Map.class);
+
+			if (response.getBody() != null && response.getBody().containsKey("mail")) {
+				String userEmail = (String) response.getBody().get("mail");
+				if (!currentUser.getEmail().equals(userEmail)) {
+					throw new ModuleException(
+							EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
+				}
+			}
+			else {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+			}
+		}
+		catch (Exception e) {
+			log.error("Error verifying user email: ", e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+		}
+	}
+
+	private User getUser(Long userId) {
+		Optional<User> currentUser = userDao.findById(userId);
+		if (currentUser.isEmpty()) {
+			log.error("saveMicrosoftCalendarConfig: User not found");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
+		}
+		return currentUser.get();
+	}
+
+	private void rollbackCalendarConnect(@NonNull User currentUser, @NonNull String generatedToken) {
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.OUTLOOK));
+
+		if (employeeCalendar.getCalendarType() != EpCalendarType.NONE || employeeCalendar.getCalendarToken() != null) {
+			disconnectCalendarFromDatabase(currentUser);
+		}
+	}
+
+	private void validateFrontendUrl(@NonNull String url) throws ModuleException {
+		try {
+			new URI(url);
+		}
+		catch (Exception e) {
+			log.error("validateUrl: url is invalid");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_INVALID_ORGANIZATION_URL);
+		}
+	}
+
+	private void disconnectCalendarFromDatabase(@NonNull User user) {
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(user,
+				Set.of(EpCalendarType.OUTLOOK));
+		employeeCalendar.setCalendarToken(null);
+		employeeCalendar.setIsEnabled(false);
+		employeeCalendarDao.save(employeeCalendar);
+	}
+
+	private void validateMicrosoftCalendarAuthRedirectDto(EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
+		if (epMicrosoftAuthRedirectDto.getError() != null && !epMicrosoftAuthRedirectDto.getError().isEmpty()
+				|| epMicrosoftAuthRedirectDto.getCode().isEmpty()) {
+			log.error("saveMicrosoftCalendarConfig: Error: {}", epMicrosoftAuthRedirectDto.getError());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+		}
+	}
+
+}
