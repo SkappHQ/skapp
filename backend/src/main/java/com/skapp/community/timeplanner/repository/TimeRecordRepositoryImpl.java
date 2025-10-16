@@ -10,7 +10,6 @@ import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
-import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.model.TimeRecord_;
@@ -30,18 +29,17 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -53,6 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TimeRecordRepositoryImpl implements TimeRecordRepository {
@@ -557,125 +556,162 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date) {
+		log.info("getEmployeeClockInTrend: Starting execution with teams={}, timeZone={}, date={}", teams, timeZone,
+				date);
 
-		List<TimeRecordTrendDto> result = new ArrayList<>();
-		LocalDateTime baseDateTime = date.atStartOfDay();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<TimeRecord> timeRecord = dataQuery.from(TimeRecord.class);
+		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
 
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
+		List<Predicate> dataPredicates = new ArrayList<>();
+
+		if (teams.contains(-1L)) {
+			dataPredicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+		}
+		else {
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+			dataPredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+		}
+
+		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
+		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
+
+		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockInTime));
+		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
+
+		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
+
+		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
+
+		List<String> timeSlots = java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
+				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+			}))
+			.collect(java.util.stream.Collectors.toList());
 
-				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
-				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
+		Map<String, Long> slotCounts = records.stream()
+			.map(record -> record.get(1, Long.class))
+			.filter(java.util.Objects::nonNull)
+			.map(clockInTimeMillis -> {
+				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockInTimeMillis);
+				return instant.atZone(targetZone).toLocalTime();
+			})
+			.map(clockInLocalTime -> findTimeSlot(clockInLocalTime))
+			.filter(java.util.Objects::nonNull)
+			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
+					java.util.stream.Collectors.counting()));
 
-				List<Predicate> predicates = new ArrayList<>();
-
-				if (teams.contains(-1L)) {
-					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
-				}
-				else {
-					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
-				}
-
-				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
-				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
-
-				Expression<LocalTime> clockInLocalTime = cb.function("TIME", LocalTime.class,
-						cb.function("CONVERT_TZ", String.class,
-								cb.function("FROM_UNIXTIME", String.class,
-										cb.quot(timeRecord.get(TimeRecord_.clockInTime), 1000)),
-								cb.literal("@@session.time_zone"), cb.literal(timeZone)));
-
-				predicates.add(cb.greaterThanOrEqualTo(clockInLocalTime, slotStart));
-				predicates.add(cb.lessThan(clockInLocalTime, slotEnd));
-
-				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
-				countQuery.where(predicates.toArray(new Predicate[0]));
-
-				Long count = entityManager.createQuery(countQuery).getSingleResult();
-
-				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slot = slotStartTime + " - " + slotEndTime;
-
-				result.add(new TimeRecordTrendDto() {
-					public String getSlot() {
-						return slot;
-					}
-
-					public int getCount() {
-						return count != null ? count.intValue() : 0;
-					}
-				});
+		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
+			@Override
+			public String getSlot() {
+				return slotLabel;
 			}
-		}
+
+			@Override
+			public int getCount() {
+				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
+			}
+		}).collect(java.util.stream.Collectors.toList());
+
+		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
+		log.info("getEmployeeClockInTrend: Completed execution. Total clock-ins found: {} across all time slots",
+				totalCount);
 
 		return result;
 	}
 
 	@Override
 	public List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date) {
-		List<TimeRecordTrendDto> result = new ArrayList<>();
-		LocalDateTime baseDateTime = date.atStartOfDay();
+		log.info("getEmployeeClockOutTrend: Starting execution with teams={}, timeZone={}, date={}", teams, timeZone,
+				date);
 
-		for (int hour = 0; hour < 24; hour++) {
-			for (int halfHour = 0; halfHour < 2; halfHour++) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> dataQuery = cb.createTupleQuery();
+		Root<TimeRecord> timeRecord = dataQuery.from(TimeRecord.class);
+		Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
+
+		List<Predicate> dataPredicates = new ArrayList<>();
+
+		if (teams.contains(-1L)) {
+			dataPredicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+		}
+		else {
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+			dataPredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
+		}
+
+		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
+		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
+
+		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockOutTime));
+		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
+
+		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
+
+		java.time.ZoneId targetZone = java.time.ZoneId.of(timeZone);
+
+		List<String> timeSlots = java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
+				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
+				LocalTime slotEnd = slotStart.plusMinutes(30);
+				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
+			}))
+			.collect(java.util.stream.Collectors.toList());
+
+		Map<String, Long> slotCounts = records.stream()
+			.map(record -> record.get(1, Long.class))
+			.filter(java.util.Objects::nonNull)
+			.map(clockOutTimeMillis -> {
+				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockOutTimeMillis);
+				return instant.atZone(targetZone).toLocalTime();
+			})
+			.map(clockOutLocalTime -> findTimeSlot(clockOutLocalTime))
+			.filter(java.util.Objects::nonNull)
+			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
+					java.util.stream.Collectors.counting()));
+
+		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
+			@Override
+			public String getSlot() {
+				return slotLabel;
+			}
+
+			@Override
+			public int getCount() {
+				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
+			}
+		}).collect(java.util.stream.Collectors.toList());
+
+		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
+		log.info("getEmployeeClockOutTrend: Completed execution. Total clock-outs found: {} across all time slots",
+				totalCount);
+
+		return result;
+	}
+
+	private String findTimeSlot(LocalTime time) {
+		return java.util.stream.IntStream.range(0, 24)
+			.boxed()
+			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
 				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
 				LocalTime slotEnd = slotStart.plusMinutes(30);
 
-				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-				CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-				Root<TimeRecord> timeRecord = countQuery.from(TimeRecord.class);
-				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee);
-				Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
-
-				List<Predicate> predicates = new ArrayList<>();
-
-				if (teams.contains(-1L)) {
-					predicates.add(cb.isNotNull(employee.get(Employee_.employeeId)));
+				if (!time.isBefore(slotStart) && time.isBefore(slotEnd)) {
+					return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+							+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 				}
-				else {
-					predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teams));
-				}
-
-				predicates.add(cb.equal(cb.function("DATE", LocalDate.class, timeRecord.get(TimeRecord_.date)), date));
-				predicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
-
-				Expression<LocalTime> clockOutLocalTime = cb.function("TIME", LocalTime.class,
-						cb.function("CONVERT_TZ", String.class,
-								cb.function("FROM_UNIXTIME", String.class,
-										cb.quot(timeRecord.get(TimeRecord_.clockOutTime), 1000)),
-								cb.literal("@@session.time_zone"), cb.literal(timeZone)));
-
-				predicates.add(cb.greaterThanOrEqualTo(clockOutLocalTime, slotStart));
-				predicates.add(cb.lessThan(clockOutLocalTime, slotEnd));
-
-				countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
-				countQuery.where(predicates.toArray(new Predicate[0]));
-
-				Long count = entityManager.createQuery(countQuery).getSingleResult();
-
-				String slotStartTime = slotStart.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slotEndTime = slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				String slot = slotStartTime + " - " + slotEndTime;
-
-				result.add(new TimeRecordTrendDto() {
-					public String getSlot() {
-						return slot;
-					}
-
-					public int getCount() {
-						return count != null ? count.intValue() : 0;
-					}
-				});
-			}
-		}
-
-		return result;
+				return null;
+			}))
+			.filter(java.util.Objects::nonNull)
+			.findFirst()
+			.orElse(null);
 	}
 
 }

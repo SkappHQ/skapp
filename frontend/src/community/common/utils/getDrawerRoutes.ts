@@ -74,7 +74,8 @@ const getDrawerRoutes = ({
               name: route?.name,
               url: ROUTES.DASHBOARD.BASE,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
@@ -98,7 +99,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.PEOPLE.DIRECTORY,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -124,7 +126,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.TIMESHEET.MY_TIMESHEET,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -159,7 +162,8 @@ const getDrawerRoutes = ({
               name: "My Leave Requests",
               url: ROUTES.LEAVE.MY_REQUESTS,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
@@ -178,7 +182,6 @@ const getDrawerRoutes = ({
       }
 
       if (route?.name === "Projects") {
-
         if (!needsToShow(tenantID as string)) {
           return null;
         }
@@ -204,7 +207,8 @@ const getDrawerRoutes = ({
             url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
 
@@ -214,7 +218,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.SETTINGS.ACCOUNT,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -276,7 +281,8 @@ const getDrawerRoutes = ({
             url: ROUTES.CONFIGURATIONS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       }
@@ -299,7 +305,8 @@ const getDrawerRoutes = ({
             name: "Inbox",
             url: ROUTES.SIGN.INBOX,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -318,7 +325,8 @@ const getDrawerRoutes = ({
             url: route?.url,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       } else if (isAuthorized) {
@@ -327,7 +335,8 @@ const getDrawerRoutes = ({
           name: route?.name,
           url: route?.url,
           icon: route?.icon,
-          hasSubTree: route?.hasSubTree
+          hasSubTree: route?.hasSubTree,
+          badge: route?.badge
         };
       }
     })

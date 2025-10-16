@@ -802,6 +802,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					criteriaBuilder.notEqual(terminationYear, currentYear)));
 		}
 		else {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 			predicates.add(criteriaBuilder.and(criteriaBuilder.isNotNull(root.get(Employee_.TERMINATION_DATE)),
 					criteriaBuilder.equal(terminationYear, currentYear)));
 		}
@@ -906,6 +907,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), false));
+		predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 
 		Expression<LocalDate> terminationDate = root.get(Employee_.terminationDate);
 		predicates.add(criteriaBuilder.isNotNull(terminationDate));

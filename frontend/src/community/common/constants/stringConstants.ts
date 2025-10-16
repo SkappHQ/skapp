@@ -52,7 +52,7 @@ export enum AuthStatus {
 
 export const PASSWORD_STRENGTH_MULTIPLIER = 20;
 
-export const VOID_MESSAGE_LENGTH = 200;
+export const VOID_MESSAGE_LENGTH = 255;
 
 export enum EmailProvider {
   GMAIL = "Gmail",
