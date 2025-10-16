@@ -110,7 +110,7 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_ITEM_QUANTITY_INVALID);
 		}
 
-		if (item.getUnitPrice() == null || item.getUnitPrice() < 0) {
+		if (item.getUnitPrice() == null || item.getUnitPrice() <= 0) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_ITEM_UNIT_PRICE_INVALID);
 		}
 
