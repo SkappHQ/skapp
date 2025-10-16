@@ -240,9 +240,8 @@ const PeopleTable: FC<Props> = ({
                 maxWidth: isPendingInvitationListOpen
                   ? "13.425rem"
                   : "18.425rem",
-                minWidth: isPendingInvitationListOpen
-                  ? "13.425rem"
-                  : "18.425rem",
+                minWidth: 0,
+                width: "fit-content",
                 "& .MuiChip-label": {
                   pr: "0.3rem"
                 },
