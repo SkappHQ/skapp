@@ -61,6 +61,7 @@ interface Props {
   labelStyles?: SxProps;
   ariaLabel?: string;
   checkSelected?: boolean;
+  typographyStyles?: SxProps;
 }
 
 const DropdownList: FC<Props> = ({
@@ -91,7 +92,8 @@ const DropdownList: FC<Props> = ({
   errorFocusOutlineNeeded = true,
   labelStyles,
   checkSelected,
-  ariaLabel
+  ariaLabel,
+  typographyStyles
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -164,7 +166,11 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
-              style: { maxHeight: 300, zIndex: ZIndexEnums.MODAL }
+              style: {
+                maxHeight: 300,
+                zIndex: ZIndexEnums.MODAL,
+                width: "max-content"
+              }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
@@ -230,7 +236,8 @@ const DropdownList: FC<Props> = ({
                       color:
                         value === menuItemValue
                           ? theme.palette.primary.dark
-                          : theme.palette.text.primary
+                          : theme.palette.text.primary,
+                      ...typographyStyles
                     }}
                   >
                     {label}
