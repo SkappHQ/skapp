@@ -340,39 +340,41 @@ const InputDate: FC<Props> = ({
               )
             : placeholder}
         </Typography>
-        <Box
-          role="button"
-          tabIndex={disabled ? -1 : 0}
-          aria-label={
-            accessibility?.ariaLabel
-              ? accessibility?.ariaLabel
-              : translateAria(["calendarIcon"], {
-                  name: lowerCaseLabel
-                })
-          }
-          onClick={(e: MouseEvent<HTMLElement>) =>
-            !(disabled || readOnly) && handleClick(e)
-          }
-          onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
-            if (shouldExpandDropdown(e.key)) {
-              e.preventDefault();
-              !(disabled || readOnly) && handleClick(e);
+        {!readOnly && (
+          <Box
+            role="button"
+            tabIndex={disabled ? -1 : 0}
+            aria-label={
+              accessibility?.ariaLabel
+                ? accessibility?.ariaLabel
+                : translateAria(["calendarIcon"], {
+                    name: lowerCaseLabel
+                  })
             }
-            if (shouldCollapseDropdown(e.key))
-              !(disabled || readOnly) && handleClose();
-          }}
-        >
-          <Icon
-            name={IconName.CALENDAR_ICON}
-            fill={
-              readOnly
-                ? theme.palette.grey[700]
-                : disabled
-                  ? theme.palette.grey[600]
-                  : "black"
+            onClick={(e: MouseEvent<HTMLElement>) =>
+              !(disabled || readOnly) && handleClick(e)
             }
-          />
-        </Box>
+            onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+              if (shouldExpandDropdown(e.key)) {
+                e.preventDefault();
+                !(disabled || readOnly) && handleClick(e);
+              }
+              if (shouldCollapseDropdown(e.key))
+                !(disabled || readOnly) && handleClose();
+            }}
+          >
+            <Icon
+              name={IconName.CALENDAR_ICON}
+              fill={
+                readOnly
+                  ? theme.palette.grey[700]
+                  : disabled
+                    ? theme.palette.grey[600]
+                    : "black"
+              }
+            />
+          </Box>
+        )}
       </Box>
 
       <Popper

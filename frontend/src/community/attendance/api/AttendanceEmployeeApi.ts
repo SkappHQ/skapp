@@ -240,7 +240,7 @@ export const useCancelTimeRequest = (
 
 export const useAddManualTimeEntry = (
   onSuccess: () => void,
-  onError: () => void
+  onEnhancedError: (error: any) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -248,8 +248,8 @@ export const useAddManualTimeEntry = (
       const url = employeeAttendanceEndpoints.ADD_MANUAL_ENTRY;
       return await authFetch.post(url, data);
     },
-    onError() {
-      onError();
+    onError(error) {
+      onEnhancedError(error);
     },
     onSuccess() {
       onSuccess();

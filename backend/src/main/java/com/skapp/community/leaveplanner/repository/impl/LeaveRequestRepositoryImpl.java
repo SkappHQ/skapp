@@ -24,6 +24,14 @@ import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFi
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportExportDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportQueryDto;
 import com.skapp.community.leaveplanner.repository.LeaveRequestRepository;
+import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
+import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
+import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
+import com.skapp.community.leaveplanner.repository.projection.LeaveUtilizationByEmployeeMonthly;
+import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
+import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
+import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
+import com.skapp.community.leaveplanner.repository.projection.TeamLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
@@ -62,8 +70,14 @@ import org.springframework.util.CollectionUtils;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getLeaveCycleEndYear;
 import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
@@ -1059,6 +1073,722 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 						keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.EMAIL)), keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), keyword));
+	}
+
+	@Override
+	public List<LeaveTrendByDay> findLeaveTrendAwayByDay(LocalDate startDate, LocalDate endDate,
+			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).filter(date -> {
+
+			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
+				int dayOfWeek = date.getDayOfWeek().getValue() % 7;
+				if (!workingDaysIndex.contains(dayOfWeek)) {
+					return false;
+				}
+			}
+			return holidayDates == null || !holidayDates.contains(date);
+		}).collect(Collectors.toList());
+
+		List<LeaveTrendByDay> result = new ArrayList<>();
+
+		for (LocalDate date : allDates) {
+			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+			Root<LeaveRequest> leaveRequest = countQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
+			Join<Employee, User> user = employee.join(Employee_.user);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.isActive), true));
+
+			countQuery.select(cb.countDistinct(employee.get(Employee_.employeeId)));
+			countQuery.where(predicates.toArray(new Predicate[0]));
+
+			Long count = entityManager.createQuery(countQuery).getSingleResult();
+
+			final LocalDate finalDate = date;
+			final Integer employeeCount = count.intValue();
+
+			result.add(new LeaveTrendByDay() {
+				public LocalDate getLeaveDate() {
+					return finalDate;
+				}
+
+				public Integer getEmployeeCount() {
+					return employeeCount;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(LeaveTrendByDay::getLeaveDate));
+		return result;
+	}
+
+	@Override
+	public List<LeaveTrendByMonth> findLeaveTrendAwayByMonth(LocalDate startDate, LocalDate endDate,
+			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).filter(date -> {
+			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
+				int dayOfWeek = date.getDayOfWeek().getValue() % 7;
+				if (!workingDaysIndex.contains(dayOfWeek)) {
+					return false;
+				}
+			}
+			return holidayDates == null || !holidayDates.contains(date);
+		}).collect(Collectors.toList());
+
+		Map<Integer, Set<Long>> employeesByMonth = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+			CriteriaQuery<Long> employeeQuery = cb.createQuery(Long.class);
+			Root<LeaveRequest> leaveRequest = employeeQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
+			Join<Employee, User> user = employee.join(Employee_.user);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.isActive), true));
+
+			employeeQuery.select(employee.get(Employee_.employeeId));
+			employeeQuery.where(predicates.toArray(new Predicate[0]));
+			employeeQuery.distinct(true);
+
+			List<Long> employeesOnLeave = entityManager.createQuery(employeeQuery).getResultList();
+
+			int month = date.getMonthValue();
+			employeesByMonth.computeIfAbsent(month, k -> new HashSet<>()).addAll(employeesOnLeave);
+		}
+
+		List<LeaveTrendByMonth> result = new ArrayList<>();
+		for (Map.Entry<Integer, Set<Long>> entry : employeesByMonth.entrySet()) {
+			final Integer month = entry.getKey();
+			final Integer count = entry.getValue().size();
+
+			result.add(new LeaveTrendByMonth() {
+				public Integer getKeyValue() {
+					return month;
+				}
+
+				public Integer getEmployeeCount() {
+					return count;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(LeaveTrendByMonth::getKeyValue));
+		return result;
+	}
+
+	public List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+
+		Map<String, Double> leaveCountsByTypeAndMonth = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+
+			if (workingDaysIndex != null && !workingDaysIndex.isEmpty()
+					&& !workingDaysIndex.contains(date.getDayOfWeek().getValue() % 7)) {
+				continue;
+			}
+
+			if (holidayDates != null && holidayDates.contains(date)) {
+				continue;
+			}
+
+			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
+			Join<Employee, User> user = employee.join(Employee_.user);
+			Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.leaveType);
+
+			Join<Employee, EmployeeTeam> employeeTeam = null;
+			if (teamIds != null && !teamIds.isEmpty()) {
+				employeeTeam = employee.join(Employee_.employeeTeams, JoinType.LEFT);
+			}
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
+
+			predicates.add(cb.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+
+			predicates.add(cb.equal(user.get(User_.isActive), true));
+
+			if (typeIds != null && !typeIds.isEmpty()) {
+				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
+			}
+
+			if (teamIds != null && !teamIds.isEmpty()) {
+				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+			}
+
+			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
+
+			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
+
+			for (Object[] result : results) {
+				Long leaveTypeId = (Long) result[0];
+				LeaveState leaveState = (LeaveState) result[1];
+
+				double leaveCount = 1.0;
+				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
+					leaveCount = 0.5;
+				}
+
+				int month = date.getMonthValue();
+				String key = leaveTypeId + ":" + month;
+
+				leaveCountsByTypeAndMonth.put(key, leaveCountsByTypeAndMonth.getOrDefault(key, 0.0) + leaveCount);
+			}
+		}
+
+		List<LeaveTypeBreakDown> result = new ArrayList<>();
+		for (Map.Entry<String, Double> entry : leaveCountsByTypeAndMonth.entrySet()) {
+			String[] keyParts = entry.getKey().split(":");
+			final Integer leaveTypeId = Integer.parseInt(keyParts[0]);
+			final Integer month = Integer.parseInt(keyParts[1]);
+			final Double leaveCount = entry.getValue();
+
+			result.add(new LeaveTypeBreakDown() {
+				public Integer getLeaveType() {
+					return leaveTypeId;
+				}
+
+				public Integer getKeyValue() {
+					return month;
+				}
+
+				public Double getLeaveCount() {
+					return leaveCount;
+				}
+			});
+		}
+
+		result.sort(
+				Comparator.comparing(LeaveTypeBreakDown::getKeyValue).thenComparing(LeaveTypeBreakDown::getLeaveType));
+
+		return result;
+	}
+
+	@Override
+	public List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
+			LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates, Long employeeId,
+			List<Long> typeIds) {
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidLeaveDate(date, workingDaysIndex, holidayDates))
+			.collect(Collectors.toList());
+
+		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+
+			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
+			Join<Employee, User> user = employee.join(Employee_.user);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
+
+			predicates.add(cb.equal(employee.get(Employee_.employeeId), employeeId));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+			predicates.add(cb.equal(user.get(User_.isActive), true));
+
+			if (typeIds != null && !typeIds.isEmpty()) {
+				predicates.add(leaveRequest.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
+			}
+
+			leaveQuery.multiselect(leaveRequest.get(LeaveRequest_.leaveType).get(LeaveType_.typeId),
+					leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
+
+			for (Object[] result : results) {
+				Long leaveTypeId = (Long) result[0];
+				LeaveState leaveState = (LeaveState) result[1];
+
+				float leaveCount = (leaveState == LeaveState.HALFDAY_MORNING
+						|| leaveState == LeaveState.HALFDAY_EVENING) ? 0.5f : 1.0f;
+
+				int month = date.getMonthValue();
+				String key = leaveTypeId + ":" + month;
+
+				leaveCountsByTypeAndMonth.put(key, leaveCountsByTypeAndMonth.getOrDefault(key, 0.0f) + leaveCount);
+			}
+		}
+
+		return convertToResultList(leaveCountsByTypeAndMonth);
+	}
+
+	private boolean isValidLeaveDate(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
+
+		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()
+				&& !workingDaysIndex.contains(date.getDayOfWeek().getValue() % 7)) {
+			return false;
+		}
+
+		return holidayDates == null || !holidayDates.contains(date);
+	}
+
+	private List<LeaveUtilizationByEmployeeMonthly> convertToResultList(Map<String, Float> leaveCountsByTypeAndMonth) {
+
+		List<LeaveUtilizationByEmployeeMonthly> result = new ArrayList<>();
+
+		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
+			String[] keyParts = entry.getKey().split(":");
+			final Integer leaveTypeId = Integer.parseInt(keyParts[0]);
+			final Integer month = Integer.parseInt(keyParts[1]);
+			final Float leaveCount = entry.getValue();
+
+			result.add(new LeaveUtilizationByEmployeeMonthly() {
+				public Integer getLeaveType() {
+					return leaveTypeId;
+				}
+
+				public Integer getMonthValue() {
+					return month;
+				}
+
+				public Float getLeaveCount() {
+					return leaveCount;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(LeaveUtilizationByEmployeeMonthly::getMonthValue)
+			.thenComparing(LeaveUtilizationByEmployeeMonthly::getLeaveType));
+
+		return result;
+	}
+
+	@Override
+	public List<OrganizationLeaveTrendForTheYear> findOrganizationLeaveTrendForTheYear(List<Integer> workingDaysIndex,
+			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
+			.collect(Collectors.toList());
+
+		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+
+			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
+			Join<Employee, User> user = employee.join(Employee_.USER);
+			Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.LEAVE_TYPE);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
+
+			if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
+				predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
+			}
+
+			predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
+
+			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID), leaveRequest.get(LeaveRequest_.LEAVE_STATE));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
+
+			int month = date.getMonthValue();
+			for (Object[] result : results) {
+				Long typeId = (Long) result[0];
+				LeaveState leaveState = (LeaveState) result[1];
+
+				String key = typeId + ":" + month;
+
+				float leaveCount = 1.0f;
+				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
+					leaveCount = 0.5f;
+				}
+
+				leaveCountsByTypeAndMonth.merge(key, leaveCount, Float::sum);
+			}
+		}
+
+		List<OrganizationLeaveTrendForTheYear> result = new ArrayList<>();
+		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
+			String[] keyParts = entry.getKey().split(":");
+			final Integer leaveTypeId = Integer.parseInt(keyParts[0]);
+			final Integer month = Integer.parseInt(keyParts[1]);
+			final Float leaveCount = entry.getValue();
+
+			result.add(new OrganizationLeaveTrendForTheYear() {
+				public Integer getLeaveType() {
+					return leaveTypeId;
+				}
+
+				public Integer getKeyValue() {
+					return month;
+				}
+
+				public Float getLeaveRequestCount() {
+					return leaveCount;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(OrganizationLeaveTrendForTheYear::getKeyValue)
+			.thenComparing(OrganizationLeaveTrendForTheYear::getLeaveType));
+
+		return result;
+	}
+
+	private boolean isValidWorkingDay(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
+		if (holidayDates != null && holidayDates.contains(date) && !holidayDates.isEmpty()) {
+			return false;
+		}
+
+		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
+			int weekday = (date.getDayOfWeek().getValue() - 1) % 7;
+			return workingDaysIndex.contains(weekday);
+		}
+
+		return true;
+	}
+
+	@Override
+	public List<TeamLeaveTrendForTheYear> findTeamLeaveTrendForTheYear(Long teamId, List<Integer> workingDays,
+			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
+			.collect(Collectors.toList());
+
+		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
+			Join<Employee, User> user = employee.join(Employee_.USER);
+			Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.LEAVE_TYPE);
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.EMPLOYEE_TEAMS);
+			Join<EmployeeTeam, Team> team = employeeTeam.join(EmployeeTeam_.TEAM);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.equal(team.get(Team_.TEAM_ID), teamId));
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
+
+			if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
+				predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
+			}
+
+			predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
+
+			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID), leaveRequest.get(LeaveRequest_.LEAVE_STATE));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
+
+			int month = date.getMonthValue();
+			for (Object[] result : results) {
+				Long typeId = (Long) result[0];
+				LeaveState leaveState = (LeaveState) result[1];
+
+				String key = typeId + ":" + month;
+
+				float leaveCount = 1.0f;
+				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
+					leaveCount = 0.5f;
+				}
+
+				leaveCountsByTypeAndMonth.merge(key, leaveCount, Float::sum);
+			}
+		}
+
+		List<TeamLeaveTrendForTheYear> result = new ArrayList<>();
+		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
+			String[] keyParts = entry.getKey().split(":");
+			final Integer leaveTypeId = Integer.parseInt(keyParts[0]);
+			final Integer month = Integer.parseInt(keyParts[1]);
+			final Float leaveCount = entry.getValue();
+
+			result.add(new TeamLeaveTrendForTheYear() {
+
+				public Integer getLeaveType() {
+					return leaveTypeId;
+				}
+
+				public Integer getKeyValue() {
+					return month;
+				}
+
+				public Float getLeaveRequestCount() {
+					return leaveCount;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(TeamLeaveTrendForTheYear::getKeyValue)
+			.thenComparing(TeamLeaveTrendForTheYear::getLeaveType));
+
+		return result;
+	}
+
+	@Override
+	public List<ManagerLeaveTrend> findLeaveTrendForTheManager(List<Long> teamIds, List<Integer> workingDays,
+			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate,
+			List<Long> employeeIds) {
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> query = cb.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> leaveRequest = query.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
+		Join<Employee, User> user = employee.join(Employee_.USER);
+		Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.LEAVE_TYPE);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		List<Predicate> teamOrEmployeePredicates = new ArrayList<>();
+
+		if (teamIds != null && !teamIds.isEmpty()) {
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.EMPLOYEE_TEAMS);
+			Join<EmployeeTeam, Team> team = employeeTeam.join(EmployeeTeam_.TEAM);
+			teamOrEmployeePredicates.add(team.get(Team_.TEAM_ID).in(teamIds));
+		}
+
+		if (employeeIds != null && !employeeIds.isEmpty()) {
+			teamOrEmployeePredicates.add(employee.get(Employee_.EMPLOYEE_ID).in(employeeIds));
+		}
+
+		if (!teamOrEmployeePredicates.isEmpty()) {
+			predicates.add(cb.or(teamOrEmployeePredicates.toArray(new Predicate[0])));
+		}
+
+		predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), endDate));
+		predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), startDate));
+
+		predicates
+			.add(leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+		predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
+		predicates.add(cb.equal(leaveType.get(LeaveType_.IS_ACTIVE), true));
+
+		if (leaveTypeIds != null && !leaveTypeIds.isEmpty()) {
+			predicates.add(leaveType.get(LeaveType_.TYPE_ID).in(leaveTypeIds));
+		}
+
+		query.select(leaveRequest).where(predicates.toArray(new Predicate[0]));
+
+		List<LeaveRequest> leaveRequests = entityManager.createQuery(query).getResultList();
+
+		Set<LocalDate> validDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
+			.collect(Collectors.toSet());
+
+		Map<Long, Map<Integer, Float>> leaveCountsByTypeAndMonth = new HashMap<>();
+
+		for (LeaveRequest lr : leaveRequests) {
+			LocalDate leaveStart = lr.getStartDate().isBefore(startDate) ? startDate : lr.getStartDate();
+			LocalDate leaveEnd = lr.getEndDate().isAfter(endDate) ? endDate : lr.getEndDate();
+
+			for (LocalDate date = leaveStart; !date.isAfter(leaveEnd); date = date.plusDays(1)) {
+				if (!validDates.contains(date))
+					continue;
+
+				Long leaveTypeId = lr.getLeaveType().getTypeId();
+				int month = date.getMonthValue();
+				float leaveCount = (lr.getLeaveState() == LeaveState.HALFDAY_MORNING
+						|| lr.getLeaveState() == LeaveState.HALFDAY_EVENING) ? 0.5f : 1.0f;
+
+				leaveCountsByTypeAndMonth.computeIfAbsent(leaveTypeId, k -> new HashMap<>())
+					.merge(month, leaveCount, Float::sum);
+			}
+		}
+
+		List<ManagerLeaveTrend> result = new ArrayList<>();
+
+		for (Map.Entry<Long, Map<Integer, Float>> outer : leaveCountsByTypeAndMonth.entrySet()) {
+			Long leaveTypeId = outer.getKey();
+			for (Map.Entry<Integer, Float> inner : outer.getValue().entrySet()) {
+				Integer month = inner.getKey();
+				Float count = inner.getValue();
+				result.add(new ManagerLeaveTrend() {
+					public Integer getLeaveType() {
+						return leaveTypeId.intValue();
+					}
+
+					public Integer getKeyValue() {
+						return month;
+					}
+
+					public Float getLeaveRequestCount() {
+						return count;
+					}
+				});
+			}
+		}
+
+		result
+			.sort(Comparator.comparing(ManagerLeaveTrend::getKeyValue).thenComparing(ManagerLeaveTrend::getLeaveType));
+
+		return result;
+	}
+
+	@Override
+	public Float findAllEmployeeRequestsByDateRangeQuery(LocalDate startDate, LocalDate endDate,
+			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
+			.collect(Collectors.toList());
+
+		float totalLeaveCount = 0.0f;
+
+		for (LocalDate date : allDates) {
+			CriteriaQuery<Float> leaveQuery = cb.createQuery(Float.class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
+			Join<Employee, User> user = employee.join(Employee_.USER);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
+
+			Expression<Float> leaveCountExpression = cb.<Float>selectCase()
+				.when(cb.or(cb.equal(leaveRequest.get(LeaveRequest_.LEAVE_STATE), LeaveState.HALFDAY_MORNING),
+						cb.equal(leaveRequest.get(LeaveRequest_.LEAVE_STATE), LeaveState.HALFDAY_EVENING)), 0.5f)
+				.otherwise(1.0f);
+
+			leaveQuery.select(cb.coalesce(cb.sum(leaveCountExpression), 0.0f));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			Float dayLeaveCount = entityManager.createQuery(leaveQuery).getSingleResult();
+			if (dayLeaveCount != null) {
+				totalLeaveCount += dayLeaveCount;
+			}
+		}
+
+		return totalLeaveCount;
+	}
+
+	@Override
+	public List<TeamLeaveCountByType> findTeamLeaveCountByType(Long teamId, List<Integer> workingDays,
+			List<LocalDate> holidayDates, LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
+			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
+			.collect(Collectors.toList());
+
+		Map<Integer, Float> leaveCountsByType = new HashMap<>();
+
+		for (LocalDate date : allDates) {
+			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
+			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
+			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.EMPLOYEE);
+			Join<Employee, User> user = employee.join(Employee_.USER);
+			Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.EMPLOYEE_TEAMS);
+			Join<EmployeeTeam, Team> team = employeeTeam.join(EmployeeTeam_.TEAM);
+			Join<LeaveRequest, LeaveType> leaveType = leaveRequest.join(LeaveRequest_.LEAVE_TYPE);
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			predicates.add(cb.equal(team.get(Team_.TEAM_ID), teamId));
+
+			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.START_DATE), date));
+			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.END_DATE), date));
+
+			predicates.add(
+					leaveRequest.get(LeaveRequest_.STATUS).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+
+			predicates.add(cb.equal(user.get(User_.IS_ACTIVE), true));
+
+			leaveQuery.multiselect(leaveType.get(LeaveType_.TYPE_ID).as(Integer.class),
+					leaveRequest.get(LeaveRequest_.LEAVE_STATE));
+			leaveQuery.where(predicates.toArray(new Predicate[0]));
+
+			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
+
+			for (Object[] result : results) {
+				Integer typeId = (Integer) result[0];
+				LeaveState leaveState = (LeaveState) result[1];
+
+				float leaveCount = (leaveState == LeaveState.HALFDAY_MORNING
+						|| leaveState == LeaveState.HALFDAY_EVENING) ? 0.5f : 1.0f;
+
+				leaveCountsByType.merge(typeId, leaveCount, Float::sum);
+			}
+		}
+
+		List<TeamLeaveCountByType> result = new ArrayList<>();
+		for (Map.Entry<Integer, Float> entry : leaveCountsByType.entrySet()) {
+			final Integer leaveTypeId = entry.getKey();
+			final Float leaveCount = entry.getValue();
+
+			result.add(new TeamLeaveCountByType() {
+				public Integer getLeaveType() {
+					return leaveTypeId;
+				}
+
+				public Float getLeaveDaysCount() {
+					return leaveCount;
+				}
+			});
+		}
+
+		result.sort(Comparator.comparing(TeamLeaveCountByType::getLeaveType));
+
+		return result;
 	}
 
 }
