@@ -62,6 +62,7 @@ interface Props {
   ariaLabel?: string;
   checkSelected?: boolean;
   typographyStyles?: SxProps;
+  enableTextWrapping?: boolean;
 }
 
 const DropdownList: FC<Props> = ({
@@ -93,7 +94,8 @@ const DropdownList: FC<Props> = ({
   labelStyles,
   checkSelected,
   ariaLabel,
-  typographyStyles
+  typographyStyles,
+  enableTextWrapping = false
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -169,7 +171,7 @@ const DropdownList: FC<Props> = ({
               style: {
                 maxHeight: 300,
                 zIndex: ZIndexEnums.MODAL,
-                width: "max-content"
+                ...(enableTextWrapping ? { width: "max-content" } : {})
               }
             }}
             sx={{
