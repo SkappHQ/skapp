@@ -11,12 +11,12 @@ public class EpValidationConstants {
 
 	public static final Set<String> RESTRICTED_SUBDOMAINS = Set.of("skapp", "skapp-dev", "skapp-qa", "skapp-stage",
 			"skapp-prod", "skapp-test", "admin", "api", "mail", "smtp", "pop", "ftp", "www", "hello", "no-reply",
-			"document", "docs");
+			"document", "docs", "migrations");
 
 	/**
 	 * Regular expression pattern to validate a valid company phone number. The phone
-	 * number should consist of 7 to 15 digits.
+	 * number should consist of 7 to 15 digits with spaces.
 	 */
-	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^.{7,15}$";
+	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^[+]?[0-9 ]{7,25}$";
 
 }

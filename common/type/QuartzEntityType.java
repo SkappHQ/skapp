@@ -2,7 +2,7 @@ package com.skapp.enterprise.common.type;
 
 public enum QuartzEntityType {
 
-	ENVELOPE;
+	ENVELOPE, INVOICE;
 
 	public static QuartzEntityType convertToUpperCase(String value) {
 

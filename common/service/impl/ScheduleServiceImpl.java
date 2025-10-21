@@ -14,6 +14,7 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -72,6 +73,33 @@ public class ScheduleServiceImpl implements ScheduleService {
 		}
 		catch (SchedulerException e) {
 			log.error("Failed to schedule expiration job for entity ID: {} in tenant: {}", entityId, tenantId, e);
+		}
+	}
+
+	@Override
+	public void unScheduleExpiration(Long entityId, String tenantId, QuartzEntityType entityType) {
+		try {
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
+			String entityTypeName = entityType.name();
+
+			TriggerKey triggerKey = TriggerKey.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId,
+					EXPIRATION_GROUP);
+
+			boolean result = scheduler.unscheduleJob(triggerKey);
+
+			if (result) {
+				log.info("Successfully unscheduled expiration trigger for {} with ID: {}", entityTypeName, entityId);
+			}
+			else {
+				log.warn("No expiration trigger found for {} with ID: {}", entityTypeName, entityId);
+			}
+		}
+		catch (SchedulerException e) {
+			log.error("Failed to unschedule expiration trigger for {} with ID: {}", entityType.name(), entityId, e);
+		}
+		finally {
+			tenantContext.setTenantAndSwitchSchema(tenantId);
 		}
 	}
 

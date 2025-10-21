@@ -1,5 +1,7 @@
 package com.skapp.enterprise.common.service.v2.impl;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -12,6 +14,10 @@ import com.google.api.services.people.v1.model.Person;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.microsoft.aad.msal4j.AuthorizationCodeParameters;
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -37,14 +43,19 @@ import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
-import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
-import com.skapp.enterprise.common.payload.v2.GoogleUserDetailsDto;
+import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
+import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
+import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
+import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
+import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
+import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
 import com.skapp.enterprise.common.util.Validation;
 import io.jsonwebtoken.Jwts;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,9 +66,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +81,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -105,24 +121,36 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private String encryptSecret;
 
 	@Value("${google.auth.client.id}")
-	private String clientId;
+	private String googleClientId;
 
 	@Value("${google.auth.client.secret}")
-	private String clientSecret;
+	private String googleClientSecret;
 
 	@Value("${google.auth.backend-redirect-uri}")
-	private String backendRedirectURI;
+	private String googleBackendRedirectURI;
 
-	private static GoogleUserDetailsDto getGoogleUserDetailsDto(Person profile, String userEmail) {
+	@Value("${microsoft.auth.client-id}")
+	private String microsoftClientId;
+
+	@Value("${microsoft.auth.client-secret}")
+	private String microsoftClientSecret;
+
+	@Value("${microsoft.auth.backend-redirect-uri}")
+	private String microsoftBackendRedirectURI;
+
+	@Value("${microsoft.auth.tenant-id}")
+	private String microsoftTenantId;
+
+	private static AuthUserDetailsDto getGoogleUserDetailsDto(Person profile, String userEmail) {
 		String authPicUrl = (profile.getPhotos() != null && !profile.getPhotos().isEmpty())
 				? profile.getPhotos().getFirst().getUrl() : null;
 		String name = (profile.getNames() != null && !profile.getNames().isEmpty())
 				? String.valueOf(profile.getNames().getFirst().getDisplayName()) : null;
-		GoogleUserDetailsDto googleUserDetailsDto = new GoogleUserDetailsDto();
-		googleUserDetailsDto.setEmail(userEmail);
-		googleUserDetailsDto.setAuthPicUrl(authPicUrl);
-		googleUserDetailsDto.setName(name);
-		return googleUserDetailsDto;
+		AuthUserDetailsDto authUserDetailsDto = new AuthUserDetailsDto();
+		authUserDetailsDto.setEmail(userEmail);
+		authUserDetailsDto.setAuthPicUrl(authPicUrl);
+		authUserDetailsDto.setName(name);
+		return authUserDetailsDto;
 	}
 
 	private SignInResponseDto getSignInResponseDto(String accessToken, String refreshToken,
@@ -144,33 +172,35 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignUp: SSO Signup flow executed");
+		log.info("ssoGoogleSignUp: SSO Signup flow started");
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
-		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
-
+		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
+		log.info("ssoGoogleSignUp: Google user details fetched for email: {}", authUserDetailsDto.getEmail());
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
+			log.info("ssoGoogleSignUp: Creating SuperAdmin for email: {}", authUserDetailsDto.getEmail());
 			SuperAdmin superAdmin = new SuperAdmin();
-			superAdmin.setEmail(googleUserDetailsDto.getEmail());
-			superAdmin.setFirstName(googleUserDetailsDto.getFirstName());
-			superAdmin.setLastName(googleUserDetailsDto.getLastName());
-			superAdmin.setAuthPic(googleUserDetailsDto.getAuthPicUrl());
+			superAdmin.setEmail(authUserDetailsDto.getEmail());
+			superAdmin.setFirstName(authUserDetailsDto.getFirstName());
+			superAdmin.setLastName(authUserDetailsDto.getLastName());
+			superAdmin.setAuthPic(authUserDetailsDto.getAuthPicUrl());
 			superAdmin.setLoginMethod(LoginMethod.GOOGLE);
 			superAdmin.setActive(true);
 			superAdmin.setVerified(true);
 
 			SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
+			log.info("ssoGoogleSignUp: SuperAdmin saved with ID: {}", savedSuperAdmin.getId());
 
-			String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
-			String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
+			log.info("ssoGoogleSignUp: Tokens generated for SuperAdmin ID: {}", savedSuperAdmin.getId());
 
-			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
+			SignInResponseDto signInResponseDto = createSuperAdminAndGenerateTokens(authUserDetailsDto,
+					LoginMethod.GOOGLE);
 
 			log.info("ssoGoogleSignUp: super admin flow: execution ended");
 			return new ResponseEntityDto(false, signInResponseDto);
 		}
 
-		log.info("ssoGoogleSignUp: execution ended");
+		log.info("ssoGoogleSignUp: execution ended (not master tenant)");
 		return new ResponseEntityDto(false, null);
 
 	}
@@ -180,20 +210,26 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		log.info("ssoGoogleSignIn: execution started");
 
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
-		GoogleUserDetailsDto googleUserDetailsDto = getUserDetailsByAccessToken(googleTokenResponse.getAccessToken());
+		log.info("ssoGoogleSignIn: Google token response received");
 
-		Optional<User> optionalUser = userDao.findByEmail(googleUserDetailsDto.getEmail());
+		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
+		log.info("ssoGoogleSignIn: Google user details fetched for email: {}", authUserDetailsDto.getEmail());
+
+		Optional<User> optionalUser = userDao.findByEmail(authUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
+			log.warn("ssoGoogleSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
+			log.warn("ssoGoogleSignIn: User account deactivated for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
+			log.warn("ssoGoogleSignIn: Employee not found for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -201,19 +237,22 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
+			log.info("ssoGoogleSignIn: Activating employee account for userEmail: {}", user.getEmail());
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}
 
-		String authPic = googleUserDetailsDto.getAuthPicUrl();
+		String authPic = authUserDetailsDto.getAuthPicUrl();
 
 		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
+			log.info("ssoGoogleSignIn: Updating authPic for userEmail: {}", user.getEmail());
 			userEmployee.setAuthPic(authPic);
 			isUpdated = true;
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
+			log.info("ssoGoogleSignIn: Employee record updated for userEmail: {}", user.getEmail());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
@@ -223,17 +262,19 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
+		log.info("ssoGoogleSignIn: Tokens generated for userEmail: {}", user.getEmail());
+
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
 		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoGoogleSignIn: execution ended");
+		log.info("ssoGoogleSignIn: execution ended for userEmail: {}", user.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
-	private GoogleUserDetailsDto getUserDetailsByAccessToken(String accessToken) {
+	private AuthUserDetailsDto getUserDetailsByGoogleAccessToken(String accessToken) {
 		try {
 			GoogleCredentials credentials = GoogleCredentials.create(new AccessToken(accessToken, null));
 
@@ -272,8 +313,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private GoogleTokenResponse validateCodeAndGetRefreshToken(String authorizationCode) {
 		try {
 			JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-			return new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(), jsonFactory, clientId, clientSecret,
-					authorizationCode, backendRedirectURI)
+			return new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(), jsonFactory, googleClientId,
+					googleClientSecret, authorizationCode, googleBackendRedirectURI)
 				.execute();
 		}
 		catch (Exception exception) {
@@ -288,35 +329,43 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String encodedState = epGoogleAuthRedirectDto.getState();
 		String authorizationCode = epGoogleAuthRedirectDto.getCode();
 
+		log.debug("getIdTokenAndRedirect: Received encodedState={}, code={}", encodedState, authorizationCode);
+
 		if (encodedState.isEmpty()) {
 			log.error("getIdTokenAndRedirect: State is empty");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
+		log.debug("getIdTokenAndRedirect: Decoded state={}", decodedState);
+
 		String frontendUrl = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		log.debug("getIdTokenAndRedirect: Decrypted frontendUrl={}", frontendUrl);
 
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("getIdTokenAndRedirect: State is invalid");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH);
 		}
 
+		log.debug("getIdTokenAndRedirect: Validating frontendUrl");
 		Validation.validateFrontendUrl(frontendUrl);
 
 		try {
+			log.debug("getIdTokenAndRedirect: Validating GoogleAuthRedirectDto");
 			Validation.validateGoogleAuthRedirectDto(epGoogleAuthRedirectDto);
 		}
 		catch (Exception exception) {
-			log.error("getIdTokenAndRedirect: {}", exception.getMessage(), exception);
+			log.error("getIdTokenAndRedirect: Validation failed - {}", exception.getMessage(), exception);
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
 
+			log.info("getIdTokenAndRedirect: Returning error redirect to frontendUrl={}", frontendUrl);
 			return UriComponentsBuilder.fromUriString(frontendUrl)
 				.queryParam("error", encodedErrorMessage)
 				.toUriString();
 		}
 
-		log.info("getIdTokenAndRedirect: execution ended");
+		log.info("getIdTokenAndRedirect: execution ended, redirecting to frontendUrl={} with code", frontendUrl);
 		return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("code", authorizationCode).toUriString();
 	}
 
@@ -324,34 +373,275 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	public ResponseEntityDto getGoogleAuthUrl(EpGoogleConsentUrlDto epGoogleConsentUrlDto) {
 		log.info("getGoogleAuthUrl: execution started");
 
-		EpGoogleAuthResponseDto responseDto = new EpGoogleAuthResponseDto();
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
 
 		String frontendRedirectUri = epGoogleConsentUrlDto.getFrontendRedirectUrl();
+		log.debug("getGoogleAuthUrl: Received frontendRedirectUri={}", frontendRedirectUri);
 
 		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
-			log.error("getAuthUrlGoogleCalendar: unable to the organizational url");
+			log.error("getAuthUrlGoogleCalendar: unable to fetch the organizational url");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL);
 		}
 
+		log.debug("getGoogleAuthUrl: Validating frontendRedirectUri");
 		com.skapp.enterprise.common.util.Validation.validateFrontendUrl(frontendRedirectUri);
 
 		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri, encryptSecret);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
+		log.debug("getGoogleAuthUrl: Encrypted and encoded state={}", encodedState);
 
 		try {
-			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(clientId,
-					backendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_AUTH_SCOPES)
+			log.debug("getGoogleAuthUrl: Building GoogleAuthorizationCodeRequestUrl");
+			GoogleAuthorizationCodeRequestUrl authorizationUrl = new GoogleAuthorizationCodeRequestUrl(googleClientId,
+					googleBackendRedirectURI, EpCommonConstants.ENTERPRISE_GOOGLE_AUTH_SCOPES)
 				.setAccessType(EpCommonConstants.ENTERPRISE_GOOGLE_ACCESS_TYPE)
 				.setState(encodedState);
 			String authUrl = authorizationUrl.build();
 			responseDto.setAuthUrl(authUrl);
+			log.info("getGoogleAuthUrl: Auth URL generated successfully");
 		}
 		catch (Exception exception) {
-			log.error("getGoogleAuthUrl: {}", exception.getMessage(), exception);
+			log.error("getGoogleAuthUrl: Exception occurred - {}", exception.getMessage(), exception);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL);
 		}
 		log.info("getGoogleAuthUrl: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto getMicrosoftAuthUrl(@Valid EpMicrosoftConsentUrlDto epMicrosoftConsentUrlDto) {
+		log.info("getMicrosoftAuthUrl: execution started");
+
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
+
+		String frontendRedirectUri = epMicrosoftConsentUrlDto.getFrontendRedirectUrl();
+		if (frontendRedirectUri == null || frontendRedirectUri.isEmpty()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL);
+		}
+
+		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri, encryptSecret);
+		String encodedState = Base64.getUrlEncoder().encodeToString(encryptedState.getBytes(StandardCharsets.UTF_8));
+
+		String authUrl = EpCommonConstants.ENTERPRISE_MICROSOFT_LOGIN_URL + microsoftTenantId + "/oauth2/v2.0/authorize"
+				+ "?client_id=" + microsoftClientId + "&response_type=code" + "&redirect_uri="
+				+ microsoftBackendRedirectURI + "&scope=" + EpCommonConstants.ENTERPRISE_MICROSOFT_AUTH_SCOPES
+				+ "&response_mode=query" + "&state=" + encodedState;
+
+		responseDto.setAuthUrl(authUrl);
+		log.info("getMicrosoftAuthUrl: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public String ssoMicrosoftSignInRedirect(@Valid EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
+		log.info("ssoMicrosoftSignInRedirect: execution started");
+		try {
+			String encodedState = epMicrosoftAuthRedirectDto.getState();
+			String authorizationCode = epMicrosoftAuthRedirectDto.getCode();
+
+			if (encodedState.isEmpty() || authorizationCode.isEmpty()) {
+				log.error("ssoMicrosoftSignInRedirect: State or Authorization Code is empty");
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
+			}
+
+			byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
+			String frontendUrl = encryptionDecryptionService.decrypt(new String(decodedBytes, StandardCharsets.UTF_8),
+					encryptSecret);
+
+			if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
+				log.error("ssoMicrosoftSignInRedirect: State is invalid");
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
+			}
+
+			Validation.validateFrontendUrl(frontendUrl);
+
+			log.info("ssoMicrosoftSignInRedirect: Redirecting to frontend with authorization code");
+			return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("code", authorizationCode).toUriString();
+		}
+		catch (Exception e) {
+			log.error("ssoMicrosoftSignInRedirect: Error occurred - {}", e.getMessage(), e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_CONNECTION);
+		}
+	}
+
+	@Override
+	public ResponseEntityDto ssoMicrosoftSignUp(EpSignUpMicrosoftDataDto epSignUpMicrosoftDataDto) {
+
+		log.info("ssoMicrosoftSignUp: execution started");
+
+		IAuthenticationResult result = getIdTokenFromMicrosoftAuthCode(epSignUpMicrosoftDataDto.getCode());
+
+		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByMicrosoftIdToken(result);
+		log.info("ssoMicrosoftSignUp: Microsoft user details fetched for email: {}", authUserDetailsDto.getEmail());
+
+		if (TenantContext.getCurrentTenant() == null
+				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
+			log.info("ssoMicrosoftSignUp: Creating SuperAdmin for email: {}", authUserDetailsDto.getEmail());
+			SuperAdmin superAdmin = new SuperAdmin();
+			superAdmin.setEmail(authUserDetailsDto.getEmail());
+			superAdmin.setFirstName(authUserDetailsDto.getFirstName());
+			superAdmin.setLastName(authUserDetailsDto.getLastName());
+			superAdmin.setAuthPic(authUserDetailsDto.getAuthPicUrl());
+			superAdmin.setLoginMethod(LoginMethod.MICROSOFT);
+			superAdmin.setActive(true);
+			superAdmin.setVerified(true);
+
+			SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
+			log.info("ssoMicrosoftSignUp: SuperAdmin saved with ID: {}", savedSuperAdmin.getId());
+
+			SignInResponseDto signInResponseDto = createSuperAdminAndGenerateTokens(authUserDetailsDto,
+					LoginMethod.MICROSOFT);
+			log.info("ssoMicrosoftSignUp: Tokens generated for SuperAdmin ID: {}", savedSuperAdmin.getId());
+			log.info("ssoMicrosoftSignUp: super admin flow: execution ended");
+			return new ResponseEntityDto(false, signInResponseDto);
+		}
+
+		log.info("ssoMicrosoftSignUp: execution ended (not master tenant)");
+		return new ResponseEntityDto(false, null);
+
+	}
+
+	@Override
+	public ResponseEntityDto ssoMicrosoftSignIn(EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto) {
+		log.info("ssoMicrosoftSignIn: execution started");
+		IAuthenticationResult result = getIdTokenFromMicrosoftAuthCode(epSignUpMicrosoftDataDto.getCode());
+
+		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByMicrosoftIdToken(result);
+		log.info("ssoMicrosoftSignIn: Microsoft user details fetched for email: {}", authUserDetailsDto.getEmail());
+
+		Optional<User> optionalUser = userDao.findByEmail(authUserDetailsDto.getEmail());
+		if (optionalUser.isEmpty()) {
+			log.warn("ssoMicrosoftSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		User user = optionalUser.get();
+		if (Boolean.FALSE.equals(user.getIsActive())) {
+			log.warn("ssoMicrosoftSignIn: User account deactivated for userEmail: {}", user.getEmail());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
+		}
+
+		Optional<Employee> employee = employeeDao.findById(user.getUserId());
+		if (employee.isEmpty()) {
+			log.warn("ssoMicrosoftSignIn: Employee not found for userEmail: {}", user.getEmail());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Employee userEmployee = employee.get();
+		boolean isUpdated = false;
+
+		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
+			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
+			isUpdated = true;
+			log.info("ssoMicrosoftSignIn: Activating employee account for userEmail: {}", user.getEmail());
+		}
+
+		String authPic = authUserDetailsDto.getAuthPicUrl();
+
+		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
+			userEmployee.setAuthPic(authPic);
+			isUpdated = true;
+			log.info("ssoMicrosoftSignIn: Updating authPic for userEmail: {}", user.getEmail());
+		}
+
+		if (isUpdated) {
+			employeeDao.save(userEmployee);
+			log.info("ssoMicrosoftSignIn: Employee record updated for userEmail: {}", user.getEmail());
+		}
+
+		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
+			.employeeToEmployeeSignInResponseDto(userEmployee);
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		SignInResponseDto signInResponseDto = new SignInResponseDto();
+		signInResponseDto.setAccessToken(accessToken);
+		signInResponseDto.setRefreshToken(refreshToken);
+		signInResponseDto.setEmployee(employeeSignInResponseDto);
+		user.setIsPasswordChangedForTheFirstTime(true);
+		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
+
+		log.info("ssoMicrosoftSignIn: Tokens generated for userEmail: {}", user.getEmail());
+		log.info("ssoMicrosoftSignIn: execution ended for userEmail: {}", user.getEmail());
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	private IAuthenticationResult getIdTokenFromMicrosoftAuthCode(String code) {
+		try {
+			ConfidentialClientApplication confidentialClientApplication = ConfidentialClientApplication
+				.builder(microsoftClientId, ClientCredentialFactory.createFromSecret(microsoftClientSecret))
+				.authority(EpCommonConstants.ENTERPRISE_MICROSOFT_LOGIN_URL + microsoftTenantId)
+				.build();
+
+			AuthorizationCodeParameters parameters = AuthorizationCodeParameters
+				.builder(code, new URI(microsoftBackendRedirectURI))
+				.build();
+
+			return confidentialClientApplication.acquireToken(parameters).get();
+		}
+		catch (MalformedURLException | URISyntaxException | ExecutionException e) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_AUTH_CODE);
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_AUTH_CODE);
+		}
+	}
+
+	private AuthUserDetailsDto getUserDetailsByMicrosoftIdToken(IAuthenticationResult result) {
+		DecodedJWT decodedJWT = JWT.decode(result.idToken());
+
+		String email = decodedJWT.getClaim(EpCommonConstants.EMAIL).asString();
+		if (email == null) {
+			email = decodedJWT.getClaim(EpCommonConstants.PREFERRED_USERNAME).asString();
+		}
+		String name = decodedJWT.getClaim(EpCommonConstants.NAME).asString();
+
+		String authPicUrl = null;
+		try {
+			String accessToken = result.accessToken();
+			String graphApiUrl = EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_API;
+
+			HttpRequestInitializer requestInitializer = request -> request.getHeaders()
+				.setAuthorization(EpCommonConstants.BEARER + accessToken);
+
+			HttpTransport httpTransport = new NetHttpTransport();
+			com.google.api.client.http.HttpRequest request = httpTransport.createRequestFactory(requestInitializer)
+				.buildGetRequest(new com.google.api.client.http.GenericUrl(graphApiUrl));
+
+			authPicUrl = request.execute().getHeaders().getLocation();
+		}
+		catch (IOException e) {
+			log.error("Failed to fetch profile picture from Microsoft Graph API", e);
+		}
+
+		AuthUserDetailsDto authUserDetailsDto = new AuthUserDetailsDto();
+		authUserDetailsDto.setEmail(email);
+		authUserDetailsDto.setName(name);
+		authUserDetailsDto.setAuthPicUrl(authPicUrl);
+
+		return authUserDetailsDto;
+	}
+
+	private SignInResponseDto createSuperAdminAndGenerateTokens(AuthUserDetailsDto authUserDetailsDto,
+			LoginMethod loginMethod) {
+		SuperAdmin superAdmin = new SuperAdmin();
+		superAdmin.setEmail(authUserDetailsDto.getEmail());
+		superAdmin.setFirstName(authUserDetailsDto.getFirstName());
+		superAdmin.setLastName(authUserDetailsDto.getLastName());
+		superAdmin.setAuthPic(authUserDetailsDto.getAuthPicUrl());
+		superAdmin.setLoginMethod(loginMethod);
+		superAdmin.setActive(true);
+		superAdmin.setVerified(true);
+
+		SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
+
+		String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
+		String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
+
+		return getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 	}
 
 	public String generateAccessToken(Long userId, UserDetails userDetails) {

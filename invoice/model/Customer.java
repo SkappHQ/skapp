@@ -1,0 +1,77 @@
+package com.skapp.enterprise.invoice.model;
+
+import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.invoice.type.CurrencyType;
+import com.skapp.enterprise.invoice.type.CustomerStatus;
+import com.skapp.enterprise.invoice.type.InvoiceDateFormat;
+import com.skapp.enterprise.invoice.type.InvoiceNumberFormat;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "in_customer")
+public class Customer extends Auditable<String> {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
+
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "email")
+	private String email;
+
+	@Column(name = "vat_id")
+	private String vatId;
+
+	@Column(name = "address")
+	private String address;
+
+	@Column(name = "country")
+	private String country;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "currency")
+	private CurrencyType currency;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "number_format")
+	private InvoiceNumberFormat numberFormat;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "date_format")
+	private InvoiceDateFormat dateFormat;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private CustomerStatus status;
+
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	private List<CustomerContact> customerContacts;
+
+	@OneToMany(mappedBy = "id.customer", cascade = CascadeType.ALL)
+	private List<Project> projects;
+
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	private List<Invoice> invoices;
+
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+	private List<CustomerDocument> customerDocuments;
+
+}

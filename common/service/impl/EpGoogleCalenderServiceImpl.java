@@ -42,7 +42,7 @@ import com.skapp.enterprise.common.model.EmployeeCalendar;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
-import com.skapp.enterprise.common.payload.response.EpGoogleAuthResponseDto;
+import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
 import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
@@ -118,6 +118,17 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 	@Value("${google.calendar.backend-redirect-uri}")
 	private String backendRedirectURI;
+
+	@Override
+	public void setupOrganizationCalendar() {
+		log.info("setupOrganizationCalendar: execution started");
+
+		OrganizationCalendar organizationCalendar = new OrganizationCalendar();
+		organizationCalendar.setIsGoogleCalendarEnabled(false);
+		epOrganizationCalenderDao.save(organizationCalendar);
+
+		log.info("setupOrganizationCalendar: execution ended");
+	}
 
 	@Override
 	public String connectGoogleCalendar(EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
@@ -319,7 +330,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		User currentUser = userService.getCurrentUser();
 		log.info("getAuthUrlGoogleCalendar: execution started by user: {}", currentUser.getUserId());
 
-		EpGoogleAuthResponseDto responseDto = new EpGoogleAuthResponseDto();
+		EpAuthUrlResponseDto responseDto = new EpAuthUrlResponseDto();
 
 		String frontendRedirectUri = epGoogleConsentUrlDto.getFrontendRedirectUrl();
 

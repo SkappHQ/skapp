@@ -32,6 +32,14 @@ public class EpCommonConstants {
 
 	public static final String TOKEN = "token=";
 
+	public static final String EMAIL = "email";
+
+	public static final String NAME = "name";
+
+	public static final String BEARER = "Bearer ";
+
+	public static final String PREFERRED_USERNAME = "preferred_username";
+
 	public static final String HTTP_POST_HEADER_VALUE = "application/x-www-form-urlencoded";
 
 	public static final String GOOGLE_PERMISSION_EMAIL_ADDRESS = "emailAddresses";
@@ -48,6 +56,12 @@ public class EpCommonConstants {
 
 	public final List<String> ENTERPRISE_GOOGLE_AUTH_SCOPES = Arrays
 		.asList("https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile");
+
+	public final String ENTERPRISE_MICROSOFT_AUTH_SCOPES = "openid profile email offline_access User.Read";
+
+	public final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
+
+	public final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
 
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 
@@ -91,17 +105,26 @@ public class EpCommonConstants {
 
 	public static final String SENDER = "sender";
 
+	public static final String SUPER_ADMIN_NAME = "superAdminName";
+
 	public static final String VIA = " via ";
 
 	public static final String ESIGNATURE = "esignature";
+
+	public static final String DASHBOARD = "dashboard";
 
 	public static final String MODULE = "module";
 
 	public static final int S3_SIGNED_URL_DURATION = 15;
 
-	// Redis TTL Constants
-	public static final int REDIS_TTL_CODE_CHALLENGE_CACHE_KEY = 5;
+	public static final int CACHED_S3_SIGNED_URL_DURATION = 8640; // 6 days
 
-	public static final int REDIS_TTL_USER_DATA_CACHE_KEY = 7;
+	public static final String PRD_CONFIG_PATH = "enterprise/validations/email-validation-prd.yml";
+
+	public static final String NON_PRD_CONFIG_PATH = "enterprise/validations/email-validation-non-prd.yml";
+
+	public static final String MOBILE_APP_LEAVE_URL = "com.skapp.app://LeaveRequests";
+
+	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
 
 }

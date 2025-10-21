@@ -1,11 +1,13 @@
 package com.skapp.enterprise.people.mapper;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
+import com.skapp.enterprise.common.payload.response.EpUserResponseWithLangDto;
 import com.skapp.enterprise.people.model.EmployeeTimeline;
 import com.skapp.enterprise.people.payload.response.EmployeeManagerDetailsResponseDto;
 import com.skapp.enterprise.people.payload.response.EmployeeTeamDetailsResponseDto;
@@ -40,5 +42,7 @@ public interface EpPeopleMapper {
 	@Mapping(target = "recordedBy",
 			expression = "java(employeeTimeline.getRecordedBy() != null ? employeeTimeline.getRecordedBy().getFullName() : null)")
 	EpEmployeeTimelineResponseDto employeeTimelineToEmployeeTimelineResponseDto(EmployeeTimeline employeeTimeline);
+
+	EpUserResponseWithLangDto userToEpUserResponseWithLangDto(User currentUser);
 
 }

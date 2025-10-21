@@ -8,4 +8,6 @@ public interface ScheduleService {
 
 	void scheduleExpiration(Long entityId, String tenantId, QuartzEntityType entityType, LocalDateTime expireAt);
 
+	void unScheduleExpiration(Long entityId, String tenantId, QuartzEntityType entityType);
+
 }

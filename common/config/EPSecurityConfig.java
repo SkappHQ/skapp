@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.config;
 
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.esignature.config.DocumentLinkAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,8 @@ public class EPSecurityConfig {
 
 	private final RequestMethodFilter requestMethodFilter;
 
+	private final ApiKeyAuthFilter apiKeyAuthFilter;
+
 	@Value("${cors.allowed-origins}")
 	private String allowedOrigins;
 
@@ -74,7 +77,8 @@ public class EPSecurityConfig {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
 			.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
-			.authorizeHttpRequests(auth -> auth
+			.authorizeHttpRequests(auth -> auth.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/versions")
+				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
 						"/error", "/v1/app-setup-status", "/robots.txt", "/ws/**", "/v1/ep/auth/signup/super-admin",
@@ -89,7 +93,11 @@ public class EPSecurityConfig {
 						"/v1/ep/auth/code-challenge/verify", "/v1/ep/esign/document-link/resend",
 						"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/document-link/token/resend-status",
 						"/v1/ep/redis/load-all-users", "/v1/ep/redis/load-system-version",
-						"/v1/ep/redis/load-all-user-versions")
+						"/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
+						"/internal/v1/ep/users/auth-pics", "/v2/ep/auth/sso/microsoft/auth-url",
+						"/v2/ep/auth/sso/microsoft/redirect", "/v2/ep/auth/signup/super-admin/sso/microsoft",
+						"/v2/ep/auth/signin/sso/microsoft", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
+						"/v1/ep/release/generate-pdf")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -106,6 +114,7 @@ public class EPSecurityConfig {
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(documentLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

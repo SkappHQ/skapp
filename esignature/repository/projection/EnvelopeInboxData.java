@@ -19,6 +19,8 @@ public class EnvelopeInboxData {
 
 	private String subject;
 
+	private String title;
+
 	private AddressBookBasicResponseDto sender;
 
 	private InboxStatus status;

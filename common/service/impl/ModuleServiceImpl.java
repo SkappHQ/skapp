@@ -30,6 +30,23 @@ public class ModuleServiceImpl implements ModuleService {
 
 	@Override
 	@Transactional
+	public void setDefaultModules() {
+		log.info("setDefaultModules: Setting default modules configuration");
+
+		ModuleConfig moduleConfig = new ModuleConfig();
+		moduleConfig.setId(1L);
+		moduleConfig.setLeaveModule(true);
+		moduleConfig.setAttendanceModule(true);
+		moduleConfig.setEsignModule(true);
+		moduleConfig.setInvoiceModule(true);
+		moduleConfig.setPmModule(true);
+
+		moduleDao.save(moduleConfig);
+		log.info("setDefaultModules: Default modules configuration set successfully");
+	}
+
+	@Override
+	@Transactional
 	public ResponseEntityDto updateModules(UpdateModulesRequestDto updateModulesRequestDto) {
 		log.info("Received request to update module: {}", updateModulesRequestDto);
 
@@ -63,6 +80,8 @@ public class ModuleServiceImpl implements ModuleService {
 			case LEAVE -> moduleConfig.setLeaveModule(isToggled);
 			case ATTENDANCE -> moduleConfig.setAttendanceModule(isToggled);
 			case ESIGN -> moduleConfig.setEsignModule(isToggled);
+			case INVOICE -> moduleConfig.setInvoiceModule(isToggled);
+			case PM -> moduleConfig.setPmModule(isToggled);
 			default -> throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_NAME);
 		}
 	}
@@ -75,6 +94,10 @@ public class ModuleServiceImpl implements ModuleService {
 			activeModules.add(ModuleType.ATTENDANCE.name());
 		if (moduleConfig.isEsignModule())
 			activeModules.add(ModuleType.ESIGN.name());
+		if (moduleConfig.isInvoiceModule())
+			activeModules.add(ModuleType.INVOICE.name());
+		if (moduleConfig.isPmModule())
+			activeModules.add(ModuleType.PM.name());
 		return activeModules.stream().sorted().toList();
 	}
 
@@ -103,6 +126,8 @@ public class ModuleServiceImpl implements ModuleService {
 			case LEAVE -> moduleConfig.isLeaveModule();
 			case ATTENDANCE -> moduleConfig.isAttendanceModule();
 			case ESIGN -> moduleConfig.isEsignModule();
+			case INVOICE -> moduleConfig.isInvoiceModule();
+			case PM -> moduleConfig.isPmModule();
 			default -> false;
 		};
 	}

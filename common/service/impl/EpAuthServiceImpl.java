@@ -193,14 +193,24 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
-		log.info("superAdminSignUp: execution started");
+		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
+		log.info("superAdminSignUp: validating first name");
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
+
+		log.info("superAdminSignUp: validating last name");
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
+
+		log.info("superAdminSignUp: validating email");
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
+
+		log.info("superAdminSignUp: validating password");
 		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
+
+		log.info("superAdminSignUp: checking business email validity");
 		validationService.checkBusinessEmailValidity(superAdminSignUpRequestDto.getEmail());
 
+		log.info("superAdminSignUp: mapping request DTO to SuperAdmin entity");
 		SuperAdmin superAdmin = epCommonMapper.createSuperAdminRequestDtoToSuperAdmin(superAdminSignUpRequestDto);
 		superAdmin.setPassword(passwordEncoder.encode(superAdminSignUpRequestDto.getPassword()));
 		superAdmin.setFirstName(superAdminSignUpRequestDto.getFirstName());
@@ -209,14 +219,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		superAdmin.setActive(true);
 		superAdmin.setVerified(false);
 
+		log.info("superAdminSignUp: saving SuperAdmin to database");
 		SuperAdmin savedSuperAdmin = superAdminDao.save(superAdmin);
 
+		log.info("superAdminSignUp: generating access and refresh tokens for superAdminEmail={}",
+				savedSuperAdmin.getEmail());
 		String accessToken = generateAccessToken(savedSuperAdmin.getId(), savedSuperAdmin);
 		String refreshToken = generateRefreshToken(savedSuperAdmin.getId(), savedSuperAdmin);
 
+		log.info("superAdminSignUp: preparing sign-in response DTO");
 		SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
-		log.info("superAdminSignUp: execution ended");
+		log.info("superAdminSignUp: execution ended for  superAdminEmail={}", savedSuperAdmin.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
@@ -238,13 +252,21 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto generateAndSendOTP() {
+		log.info("generateAndSendOTP: execution started");
+
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-		SuperAdmin superAdmin = superAdminDao.findById(userId)
-			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND));
+		log.info("generateAndSendOTP: fetched userId={}", userId);
+
+		SuperAdmin superAdmin = superAdminDao.findById(userId).orElseThrow(() -> {
+			log.warn("generateAndSendOTP: SuperAdmin not found for userId={}", userId);
+			return new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND);
+		});
 
 		Instant now = Instant.now();
 
 		if (superAdmin.getOtpExpiryTime() != null && now.isBefore(superAdmin.getOtpExpiryTime())) {
+			log.warn("generateAndSendOTP: OTP still valid for userId={}, expiryTime={}", userId,
+					superAdmin.getOtpExpiryTime());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_STILL_VALID);
 		}
 
@@ -255,14 +277,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			superAdmin.setVerificationCode(otp);
 			superAdmin.setOtpExpiryTime(expiryTime);
 			superAdminDao.save(superAdmin);
+			log.info("generateAndSendOTP: OTP generated and saved for userId={}", userId);
 
 			emailService.sendSuperAdminVerifyOtpEmail(superAdmin, otp);
+			log.info("generateAndSendOTP: OTP email sent to {}", superAdmin.getEmail());
 
+			log.info("generateAndSendOTP: execution ended successfully for userId={}", userId);
 			return new ResponseEntityDto(false,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND,
 							new String[] { superAdmin.getEmail() }));
 		}
 		catch (Exception e) {
+			log.error("generateAndSendOTP: Exception occurred for userId={}, error={}", userId, e.getMessage(), e);
 			return new ResponseEntityDto(true,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_GENERATION_OR_SEND));
 		}
@@ -273,15 +299,17 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		log.info("verifyOTP: execution started");
 
 		Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+		log.info("verifyOTP: fetched userId={}", userId);
+
 		SuperAdmin superAdmin = superAdminDao.findById(userId).orElse(null);
 		if (superAdmin == null) {
-			log.warn("verifyOTP: SuperAdmin not found");
+			log.warn("verifyOTP: SuperAdmin not found for userId={}", userId);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND);
 		}
 
 		try {
 			if (validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
-				log.warn("verifyOTP: Invalid or expired OTP provided");
+				log.warn("verifyOTP: Invalid or expired OTP provided for userId={}", userId);
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 			}
 
@@ -290,48 +318,54 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			superAdmin.setVerified(true);
 			superAdminDao.save(superAdmin);
 
-			log.info("verifyOTP: OTP verified successfully");
+			log.info("verifyOTP: OTP verified successfully for userId={}", userId);
 			return new ResponseEntityDto(false,
 					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
 		}
 		catch (Exception e) {
-			log.error("verifyOTP: Error in OTP verification", e);
+			log.error("verifyOTP: Error in OTP verification for userId={}, error={}", userId, e.getMessage(), e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
 		}
 	}
 
 	@Override
 	public ResponseEntityDto verifySubDomain(String subDomainName) {
+		log.info("verifySubDomain: execution started for subDomainName={}", subDomainName);
+
 		EpDomainAvailabilityResponseDto responseDto = new EpDomainAvailabilityResponseDto();
 		responseDto.setSubDomainName(subDomainName);
 		responseDto.setIsDomainAvailable(false);
 
 		if (subDomainName == null || subDomainName.isEmpty()) {
+			log.warn("verifySubDomain: subDomainName is null or empty");
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_REQUIRED.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
 		if (subDomainName.length() > EpCommonConstants.MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH) {
+			log.warn("verifySubDomain: subDomainName length exceeded for {}", subDomainName);
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_LENGTH_EXCEEDED.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
 		if (!subDomainName.matches(EpValidationConstants.VALID_COMPANY_DOMAIN_NAME_REGEXP)) {
+			log.warn("verifySubDomain: subDomainName does not match regex for {}", subDomainName);
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_INVALID.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
 		if (EpValidationConstants.RESTRICTED_SUBDOMAINS.contains(subDomainName.toLowerCase())) {
-			log.error("Attempted to create restricted subdomain: {}", subDomainName);
+			log.error("verifySubDomain: Attempted to create restricted subdomain: {}", subDomainName);
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RESTRICTED_SUBDOMAIN.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
 		if (tenantDao.findByTenantName(subDomainName) != null) {
+			log.warn("verifySubDomain: subDomainName not available: {}", subDomainName);
 			responseDto.setErrorMessage(messageUtil
 				.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_COMPANY_DOMAIN_NOT_AVAILABLE.getMessageKey()));
 			return new ResponseEntityDto(false, responseDto);
@@ -340,23 +374,28 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		responseDto.setIsDomainAvailable(true);
 		responseDto.setErrorMessage(null);
 
+		log.info("verifySubDomain: subDomainName is available: {}", subDomainName);
 		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignUp(EpSignUpGoogleDataDto epSignUpGoogleDataDto) {
+		log.info("ssoGoogleSignUp: execution started for email={}", epSignUpGoogleDataDto.getEmail());
+
 		Validation.isValidFirstName(epSignUpGoogleDataDto.getFirstName());
 		Validation.isValidLastName(epSignUpGoogleDataDto.getLastName());
 		Validation.validateEmail(epSignUpGoogleDataDto.getEmail());
 
 		DecodedJWT decodedJWT = validateAndGetDecodedJWT(epSignUpGoogleDataDto.getToken());
 		if (decodedJWT == null) {
+			log.error("ssoGoogleSignUp: Google token validation failed for email: {}",
+					epSignUpGoogleDataDto.getEmail());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CONNECTION);
 		}
 
 		if (TenantContext.getCurrentTenant() == null
 				|| TenantContext.getCurrentTenant().equals(EpCommonConstants.MASTER_DATABASE)) {
-			log.info("ssoGoogleSignUp: SSO Signup flow executed");
+			log.info("ssoGoogleSignUp: SSO Signup flow executed for email: {}", epSignUpGoogleDataDto.getEmail());
 			SuperAdmin superAdmin = epCommonMapper.createEpGoogleDataDtoToSuperAdmin(epSignUpGoogleDataDto);
 			superAdmin.setLoginMethod(LoginMethod.GOOGLE);
 			superAdmin.setFirstName(epSignUpGoogleDataDto.getFirstName());
@@ -372,37 +411,42 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 			SignInResponseDto signInResponseDto = getSignInResponseDto(accessToken, refreshToken, savedSuperAdmin);
 
-			log.info("ssoGoogleSignUp: execution ended");
+			log.info("ssoGoogleSignUp: execution ended for superAdminId={}", savedSuperAdmin.getId());
 			return new ResponseEntityDto(false, signInResponseDto);
 		}
 
+		log.info("ssoGoogleSignUp: execution ended with no action for email={}", epSignUpGoogleDataDto.getEmail());
 		return new ResponseEntityDto(false, null);
-
 	}
 
 	@Override
 	public ResponseEntityDto ssoGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto) {
-		log.info("ssoGoogleSignIn: execution started");
+		log.info("ssoGoogleSignIn: execution started for email={}", epSignUpGoogleDataDto.getEmail());
 
 		Validation.validateEmail(epSignUpGoogleDataDto.getEmail());
 
 		DecodedJWT decodedJWT = validateAndGetDecodedJWT(epSignUpGoogleDataDto.getToken());
 		if (decodedJWT == null) {
+			log.error("ssoGoogleSignIn: Google token validation failed for email: {}",
+					epSignUpGoogleDataDto.getEmail());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GOOGLE_CONNECTION);
 		}
 
 		Optional<User> optionalUser = userDao.findByEmail(epSignUpGoogleDataDto.getEmail());
 		if (optionalUser.isEmpty()) {
+			log.warn("ssoGoogleSignIn: User not found for email={}", epSignUpGoogleDataDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
+			log.warn("ssoGoogleSignIn: User account deactivated for userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
+			log.warn("ssoGoogleSignIn: Employee not found for userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -412,16 +456,20 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
+			log.info("ssoGoogleSignIn: Account status updated to ACTIVE for employeeId={}",
+					userEmployee.getEmployeeId());
 		}
 
 		if (epSignUpGoogleDataDto.getAuthPic() != null
 				&& !epSignUpGoogleDataDto.getAuthPic().equals(userEmployee.getAuthPic())) {
 			userEmployee.setAuthPic(epSignUpGoogleDataDto.getAuthPic());
 			isUpdated = true;
+			log.info("ssoGoogleSignIn: AuthPic updated for employeeId={}", userEmployee.getEmployeeId());
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
+			log.info("ssoGoogleSignIn: Employee entity updated for employeeId={}", userEmployee.getEmployeeId());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
@@ -437,12 +485,14 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoGoogleSignIn: execution ended");
+		log.info("ssoGoogleSignIn: execution ended for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
 	@Override
 	public ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto) {
+		log.info("sendPasswordResetOtp: execution started for email={}, tenantId={}", epPasswordResetDto.getEmail(),
+				epPasswordResetDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
@@ -454,23 +504,29 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		passwordResetOtp.setVerified(false);
 
 		passwordResetOtpDao.save(passwordResetOtp);
+		log.info("sendPasswordResetOtp: OTP generated and saved for userId={}", user.getUserId());
 		epCommonEmailService.sendPasswordResetOtpEmail(user, verificationCode);
+		log.info("sendPasswordResetOtp: OTP email sent to {}", user.getEmail());
 
 		return new ResponseEntityDto(false, "Password reset OTP sent successfully");
 	}
 
 	@Override
 	public ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto) {
+		log.info("resendVerifyPasswordResetOTP: execution started for email={}, tenantId={}",
+				epPasswordResetDto.getEmail(), epPasswordResetDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
 		String verificationCode = generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 		if (passwordResetOtp == null) {
+			log.warn("resendVerifyPasswordResetOTP: OTP not found for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 		}
 
 		if (passwordResetOtp.getVerificationCode() == null) {
+			log.warn("resendVerifyPasswordResetOTP: OTP already verified for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_ALREADY_VERIFIED);
 		}
 
@@ -480,7 +536,9 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		passwordResetOtp.setVerified(false);
 
 		passwordResetOtpDao.save(passwordResetOtp);
+		log.info("resendVerifyPasswordResetOTP: OTP regenerated and saved for userId={}", user.getUserId());
 		epCommonEmailService.sendPasswordResetOtpEmail(user, verificationCode);
+		log.info("resendVerifyPasswordResetOTP: OTP email resent to {}", user.getEmail());
 
 		return new ResponseEntityDto(false, "Password reset OTP resent successfully");
 	}
@@ -488,6 +546,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Override
 	@Transactional
 	public ResponseEntityDto verifyTenantAvailability(String subDomainName) {
+		log.info("verifyTenantAvailability: execution started for subDomainName={}", subDomainName);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 		TenantAvailabilityResponseDto responseDto = new TenantAvailabilityResponseDto();
@@ -498,18 +557,22 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		if (tenant != null) {
 			responseDto.setIsTenantAvailable(true);
 			responseDto.setTier(tenant.getTier());
+			log.info("verifyTenantAvailability: subDomainName={} is available", subDomainName);
 			return new ResponseEntityDto(false, responseDto);
 		}
 
+		log.info("verifyTenantAvailability: subDomainName={} is not available", subDomainName);
 		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
 	public ResponseEntityDto validateCodeChallenge(CodeChallengeRequestDto codeChallengeRequestDto) {
+		log.info("validateCodeChallenge: execution started for tenantId={}", TenantContext.getCurrentTenant());
 
 		String tenantId = TenantContext.getCurrentTenant();
 
 		if (tenantId == null || tenantId.isEmpty()) {
+			log.error("validateCodeChallenge: Tenant not found");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
 		}
 
@@ -517,15 +580,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
 
 		if (cachedUuid == null) {
+			log.error("validateCodeChallenge: Cached UUID not found for tenantId={}", tenantId);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
 		}
 
 		if (!Objects.equals(codeChallengeRequestDto.getCode(), cachedUuid)) {
+			log.warn("validateCodeChallenge: Unauthorized access attempt for tenantId={}", tenantId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
 		User user = userDao.findAll().getFirst();
 		if (user == null) {
+			log.error("validateCodeChallenge: User not found");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -534,6 +600,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 		cacheService.invalidate(cacheKey.format(tenantId));
+		log.info("validateCodeChallenge: Code challenge validated and tokens generated for userId={}",
+				user.getUserId());
 
 		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
 		codeChallengeResponseDto.setAccessToken(accessToken);
@@ -545,18 +613,21 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto verifyPasswordResetOTP(EpPasswordResetOtpVerifyDto epPasswordResetOtpVerifyDto) {
+		log.info("verifyPasswordResetOTP: execution started for email={}, tenantId={}",
+				epPasswordResetOtpVerifyDto.getEmail(), epPasswordResetOtpVerifyDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetOtpVerifyDto.getTenantId(),
 				epPasswordResetOtpVerifyDto.getEmail());
 		try {
 			PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 
 			if (passwordResetOtp == null) {
+				log.warn("verifyPasswordResetOTP: OTP not found for userId={}", user.getUserId());
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 			}
 
 			if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 					epPasswordResetOtpVerifyDto.getOtp())) {
-				log.warn("verifyPasswordResetOTP: Invalid or expired OTP provided");
+				log.warn("verifyPasswordResetOTP: Invalid or expired OTP provided for userId={}", user.getUserId());
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 			}
 
@@ -564,37 +635,45 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			passwordResetOtp.setOtpExpiryTime(null);
 			passwordResetOtp.setVerified(true);
 			passwordResetOtpDao.save(passwordResetOtp);
+			log.info("verifyPasswordResetOTP: OTP verified and updated for userId={}", user.getUserId());
 		}
 		catch (Exception e) {
-			log.error("verifyOTP: Error in OTP verification", e);
+			log.error("verifyPasswordResetOTP: Error in OTP verification for email={}",
+					epPasswordResetOtpVerifyDto.getEmail(), e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
 		}
 		return new ResponseEntityDto(false, "OTP verified successfully");
-
 	}
 
 	@Override
 	public ResponseEntityDto resetPassword(EpPasswordResetNewPasswordDto epPasswordResetNewPasswordDto) {
+		log.info("resetPassword: execution started for email={}, tenantId={}", epPasswordResetNewPasswordDto.getEmail(),
+				epPasswordResetNewPasswordDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetNewPasswordDto.getTenantId(),
 				epPasswordResetNewPasswordDto.getEmail());
 		createNewPassword(epPasswordResetNewPasswordDto.getNewPassword(), user);
+		log.info("resetPassword: Password reset successfully for userId={}", user.getUserId());
 
 		return new ResponseEntityDto(false, "Password reset successfully");
-
 	}
 
 	@Override
 	protected void validateTenantStatus(User user) {
 		String currentTenant = TenantContext.getCurrentTenant();
+		log.info("validateTenantStatus: execution started for tenant={}", currentTenant);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 		Tenant tenant = tenantDao.findByTenantName(currentTenant);
 		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		TenantStatus tenantStatus = tenant.getTenantStatus();
 		if (tenantStatus != null && tenantStatus != TenantStatus.ACTIVE
 				&& Boolean.FALSE.equals(user.getEmployee().getEmployeeRole().getIsSuperAdmin())) {
+			log.warn("validateTenantStatus: Tenant status not active for tenant={}, userId={}", currentTenant,
+					user.getUserId());
 			throw new ModuleException(
 					EPCommonMessageConstant.COMMON_ERROR_TENANT_STATUS_NOT_ACTIVE_CONTACT_SUPER_ADMIN);
 		}
+		log.info("validateTenantStatus: Tenant status validated for tenant={}, userId={}", currentTenant,
+				user.getUserId());
 	}
 
 	private DecodedJWT validateAndGetDecodedJWT(String token) {
@@ -664,7 +743,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	private String generateOTP() {
-		return String.format("%06d", secureRandom.nextInt(999999));
+		return String.format("%04d", secureRandom.nextInt(9999));
 	}
 
 	private boolean validateOTP(String storedOTP, Instant expiryTime, String providedOTP) {
@@ -698,11 +777,13 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			HttpHeaders headers = new HttpHeaders();
 			HttpEntity<?> requestEntity = new HttpEntity<>(headers);
 
+			log.debug("validateCaptcha: Sending request to reCAPTCHA verification endpoint");
 			ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity,
 					new ParameterizedTypeReference<>() {
 					});
 
 			Map<String, Object> responseBody = response.getBody();
+			log.debug("validateCaptcha: reCAPTCHA response received: {}", responseBody);
 
 			if (responseBody != null && Boolean.TRUE.equals(responseBody.get("success"))) {
 				log.info("validateCaptcha: reCAPTCHA validation succeeded");

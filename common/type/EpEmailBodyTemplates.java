@@ -11,7 +11,8 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	// Common Module Templates
 	COMMON_MODULE_EMAIL_VERIFY("common-module-email-verify"),
 	COMMON_MODULE_PASSWORD_RESET_OTP("common-module-password-reset-otp"),
-	COMMON_MODULE_SSO_CREATION_TENANT_URL("common-module-sso-creation-tenant-url"),
+	COMMON_MODULE_GOOGLE_SSO_CREATION_TENANT_URL("common-module-google-sso-creation-tenant-url"),
+	COMMON_MODULE_MICROSOFT_SSO_CREATION_TENANT_URL("common-module-microsoft-sso-creation-tenant-url"),
 	COMMON_MODULE_CREDENTIAL_BASED_CREATION_TENANT_URL("common-module-credential-based-creation-tenant-url"),
 
 	// E-Signature Module Templates esignature-module-document-viewer-email
@@ -36,7 +37,11 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL(
 			"dashboard-module-new-organization-started-core-free-trial"),
 	DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE("dashboard-module-trial-organization-converted-to-core"),
-	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core");
+	DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE("dashboard-module-organization-cancelled-core"),
+	DASHBOARD_MODULE_SUPPORT_REQUEST_APPLIED("dashboard-module-support-request-applied"),
+
+	// Invoice Module Templates
+	INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER("invoice-module-customer-invoice-email");
 
 	private final String templateId;
 

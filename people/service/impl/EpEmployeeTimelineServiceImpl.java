@@ -277,7 +277,8 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 				return responseDto;
 			})
 			.sorted(Comparator.comparing(EpEmployeeTimelineResponseListDto::getYear)
-				.thenComparing(e -> Integer.parseInt(e.getMonth())))
+				.thenComparing(e -> Integer.parseInt(e.getMonth()))
+				.reversed())
 			.toList();
 	}
 

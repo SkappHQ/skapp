@@ -53,6 +53,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_VALIDATION_RECAPTCHA_INVALID("ep.common.error.validation-recaptcha-invalid"),
 	EP_COMMON_ERROR_VALIDATE_GOOGLE_TOKEN("ep.common.error.validate-google-token"),
 	EP_COMMON_ERROR_GOOGLE_CONNECTION("ep.common.error.google-connection-error"),
+	EP_COMMON_ERROR_MICROSOFT_CONNECTION("ep.common.error.microsoft-connection-error"),
 	EP_COMMON_ERROR_TENANT_CREATE_FAILED("ep.common.error.tenant-create-failed"),
 	EP_COMMON_ERROR_TENANT_DELETE_FAILED("ep.common.error.tenant-delete-failed"),
 	EP_COMMON_ERROR_INVALID_TENANT("ep.common.error.invalid-tenant-id"),
@@ -75,6 +76,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_QUICK_SETUP_ALREADY_COMPLETED("ep.common.error.quick-setup-already-completed"),
 	EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED("ep.common.error.json-string-conversion-failed"),
 	EP_COMMON_ERROR_GOOGLE_STATE_MISMATCH("ep.common.error.google-state-mismatch"),
+	EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH("ep.common.error.microsoft-state-mismatch"),
 	EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-email-mismatch-with-current-user"),
 	EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR("ep.common.error.unable-to-connect-google-calendar"),
 	EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR("ep.common.error.unable-to-delete-google-calendar"),
@@ -116,6 +118,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_TIER("ep.common.error.invalid-tier"),
 	EP_COMMON_ERROR_SYSTEM_VERSION_MISMATCH("ep.common.error.system-version-mismatch"),
 	EP_COMMON_ERROR_INVALID_CACHE_KEY("ep.common.error.invalid-cache-key"),
+	EP_COMMON_ERROR_INVALID_AUTH_CODE("ep.common.error.invalid-auth-code"),
 	EP_COMMON_SUCCESS_SUBSCRIPTION_CANCELED("ep.common.success.subscription-canceled"),
 	EP_COMMON_ERROR_SUBSCRIPTION_CANCEL_FAILED("ep.common.error.subscription-cancel-failed"),
 	EP_COMMON_ERROR_SUBSCRIPTION_CREATION_FAILED("ep.common.error.subscription-creation-failed"),
@@ -157,7 +160,12 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_CLOUD_FRONT_PRIVATE_KEY_FAILED_TO_LOAD("ep.common.error.cloud-front-private-key-failed-to-load"),
 	EP_COMMON_ERROR_CLOUD_FRONT_SIGNED_COOKIES_GENERATION_FAILED(
 			"ep.common.error.cloud-front-signed-cookies-generation-failed"),
-	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key");
+	EP_COMMON_ERROR_CLOUD_FRONT_FAILED_TO_PARSE_PRIVATE_KEY("ep.common.error.cloud-front-failed-to-parse-private-key"),
+	EP_COMMON_ERROR_API_KEY_MISSING("ep.common.error.api-key-missing"),
+	EP_COMMON_ERROR_INVALID_API_KEY("ep.common.error.invalid-api-key"),
+	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),
+
+	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error");
 
 	private final String messageKey;
 

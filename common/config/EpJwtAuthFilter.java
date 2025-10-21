@@ -42,7 +42,7 @@ import java.util.Set;
 public class EpJwtAuthFilter extends OncePerRequestFilter {
 
 	private static final Set<String> PUBLIC_URLS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
-			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
+			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css", "/favicon.ico",
 			"/swagger-ui/swagger-ui-standalone-preset.js", "/swagger-ui/swagger-ui.css", "/v3/api-docs/swagger-config",
 			"/swagger-ui/swagger-ui-bundle.js", "/swagger-ui/swagger-initializer.js", "/swagger-ui/favicon-16x16.png",
 			"/swagger-ui/favicon-32x32.png", "/v1/auth", "/v1/app-setup-status", "/ws",
@@ -57,11 +57,15 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v2/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/code-challenge/verify",
 			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field", "/v1/ep/esign/envelopes/decline",
 			"/v1/ep/esign/envelopes/signature-certificate", "/v1/ep/esign/recipients/consent",
+			"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
+			"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v2/ep/auth/signin/sso/microsoft",
 			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trial/create",
 			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
 			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status",
 			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
-			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions");
+			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
+			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
+			"/v1/ep/release/generate-pdf");
 
 	private final JwtService jwtService;
 

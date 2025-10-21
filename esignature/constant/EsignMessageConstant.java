@@ -65,6 +65,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_USER_KEY_GENERATE("ep.esign.error.user.key.generate"),
 	ESIGN_ERROR_FAILED_TO_LOAD_IMAGE("ep.esign.error.failed.load.image"),
 	ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT("ep.esign.error.failed.process.pdf-document"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST("ep.esign.error.failed.convert.pdf-document.image-list"),
 	ESIGN_ERROR_FAILED_DOWNLOAD_FILE("ep.esign.error.failed.download.file"),
 	ESIGN_ERROR_FAILED_TO_UPLOAD_FILE("ep.esign.error.failed.upload.file"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE("ep.esign.error.failed.convert.file.to.byte"),
@@ -142,7 +143,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_LIMIT_REACHED("ep.esign.error.envelope.limit.reached"),
 	ESIGN_ERROR_ADDRESS_BOOK_MY_SIGNATURE_LINK_NOT_FOUND("ep.esign.error.address-book.my-signature-link.not-found"),
 	ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND("ep.esign.error.document.file-path.not-found"),
-	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST("ep.esign.error.failed.convert.pdf-document.image-list"),;
+	ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF("ep.esign.error.generate.signature.certificate.pdf");
 
 	private final String messageKey;
 

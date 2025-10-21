@@ -31,8 +31,8 @@ import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
@@ -114,7 +114,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
-	private final DocumentVersionRepository documentVersionRepository;
+	private final DocumentVersionDao documentVersionDao;
 
 	private final TenantContext tenantContext;
 
@@ -338,7 +338,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 
 		if (versionNumber != 0) {
-			documentVersion = documentVersionRepository.findByVersionNumberAndDocumentId(versionNumber, documentId)
+			documentVersion = documentVersionDao.findByVersionNumberAndDocumentId(versionNumber, documentId)
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
 		}
 		else {

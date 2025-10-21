@@ -13,4 +13,6 @@ public interface ModuleService {
 
 	boolean getCurrentModuleState(ModuleConfig moduleConfig, ModuleType moduleType);
 
+	void setDefaultModules();
+
 }

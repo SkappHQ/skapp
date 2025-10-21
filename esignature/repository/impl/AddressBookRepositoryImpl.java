@@ -16,6 +16,10 @@ import com.skapp.enterprise.esignature.repository.AddressBookRepository;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookSenderData;
 import com.skapp.enterprise.esignature.repository.projection.AddressBookUserData;
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.invoice.model.Customer;
+import com.skapp.enterprise.invoice.model.CustomerContact;
+import com.skapp.enterprise.invoice.model.CustomerContact_;
+import com.skapp.enterprise.invoice.model.Customer_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -48,8 +52,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		Join<AddressBook, ExternalUser> externalUserJoin = addressBookRoot.join(AddressBook_.EXTERNAL_USER,
 				JoinType.LEFT);
 		Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+		Join<AddressBook, Customer> customerJoin = addressBookRoot.join(AddressBook_.CUSTOMER, JoinType.LEFT);
+		Join<AddressBook, CustomerContact> customerContactJoin = addressBookRoot.join(AddressBook_.CUSTOMER_CONTACT,
+				JoinType.LEFT);
 
-		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
+		AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin,
+				customerJoin, customerContactJoin);
 
 		query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
 				user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
@@ -62,9 +70,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 		Join<AddressBook, ExternalUser> countExternalUserJoin = countRoot.join(AddressBook_.EXTERNAL_USER,
 				JoinType.LEFT);
 		Join<User, Employee> countEmployeeJoin = countInternalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+		Join<AddressBook, Customer> countCustomerJoin = countRoot.join(AddressBook_.CUSTOMER, JoinType.LEFT);
+		Join<AddressBook, CustomerContact> countCustomerContactJoin = countRoot.join(AddressBook_.CUSTOMER_CONTACT,
+				JoinType.LEFT);
 
 		AddressBookUserView countUser = getAddressBookUserView(cb, countInternalUserJoin, countEmployeeJoin,
-				countExternalUserJoin);
+				countExternalUserJoin, countCustomerJoin, countCustomerContactJoin);
 
 		countQuery.select(cb.count(countRoot));
 
@@ -161,8 +172,12 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 			Join<AddressBook, ExternalUser> externalUserJoin = addressBookRoot.join(AddressBook_.EXTERNAL_USER,
 					JoinType.LEFT);
 			Join<User, Employee> employeeJoin = internalUserJoin.join(User_.EMPLOYEE, JoinType.LEFT);
+			Join<AddressBook, Customer> customerJoin = addressBookRoot.join(AddressBook_.CUSTOMER, JoinType.LEFT);
+			Join<AddressBook, CustomerContact> customerContactJoin = addressBookRoot.join(AddressBook_.CUSTOMER_CONTACT,
+					JoinType.LEFT);
 
-			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin);
+			AddressBookUserView user = getAddressBookUserView(cb, internalUserJoin, employeeJoin, externalUserJoin,
+					customerJoin, customerContactJoin);
 
 			query.select(cb.construct(AddressBookUserData.class, addressBookRoot.get("id"), user.userId(), user.email(),
 					user.userType(), user.firstName(), user.lastName(), user.authPic(), user.phone()));
@@ -235,10 +250,13 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 	}
 
 	private AddressBookUserView getAddressBookUserView(CriteriaBuilder cb, Join<AddressBook, User> internalUserJoin,
-			Join<User, Employee> employeeJoin, Join<AddressBook, ExternalUser> externalUserJoin) {
+			Join<User, Employee> employeeJoin, Join<AddressBook, ExternalUser> externalUserJoin,
+			Join<AddressBook, Customer> customerJoin, Join<AddressBook, CustomerContact> customerContactJoin) {
 		Expression<Object> firstName = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.firstName))
-			.otherwise(externalUserJoin.get(ExternalUser_.FIRST_NAME));
+			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), externalUserJoin.get(ExternalUser_.FIRST_NAME))
+			.when(cb.isNotNull(customerJoin.get(Customer_.ID)), customerJoin.get(Customer_.NAME))
+			.otherwise(customerContactJoin.get(CustomerContact_.NAME));
 
 		Expression<Object> lastName = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.LAST_NAME))
@@ -246,19 +264,25 @@ public class AddressBookRepositoryImpl implements AddressBookRepository {
 
 		Expression<Object> phone = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), employeeJoin.get(Employee_.PHONE))
-			.otherwise(externalUserJoin.get(ExternalUser_.PHONE));
+			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), externalUserJoin.get(ExternalUser_.PHONE))
+			.otherwise(customerContactJoin.get(CustomerContact_.CONTACT_NO));
 
 		Expression<Object> userId = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.USER_ID))
-			.otherwise(externalUserJoin.get(ExternalUser_.ID));
+			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), externalUserJoin.get(ExternalUser_.ID))
+			.when(cb.isNotNull(customerJoin.get(Customer_.ID)), customerJoin.get(Customer_.ID))
+			.otherwise(customerContactJoin.get(CustomerContact_.CUSTOMER).get(Customer_.ID));
 
 		Expression<Object> email = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), internalUserJoin.get(User_.email))
-			.otherwise(externalUserJoin.get(ExternalUser_.email));
+			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), externalUserJoin.get(ExternalUser_.email))
+			.when(cb.isNotNull(customerJoin.get(Customer_.ID)), customerJoin.get(Customer_.email))
+			.otherwise(customerContactJoin.get(CustomerContact_.email));
 
 		Expression<Object> userType = cb.selectCase()
 			.when(cb.isNotNull(internalUserJoin.get(User_.USER_ID)), cb.literal("INTERNAL"))
-			.otherwise(cb.literal("EXTERNAL"));
+			.when(cb.isNotNull(externalUserJoin.get(ExternalUser_.ID)), cb.literal("EXTERNAL"))
+			.otherwise(cb.literal("CUSTOMER"));
 
 		Expression<Object> authPic = cb.selectCase()
 			.when(cb.and(cb.isNotNull(internalUserJoin.get(User_.USER_ID)),

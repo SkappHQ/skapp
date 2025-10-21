@@ -44,4 +44,28 @@ public class EsignConstants {
 	public static final Pattern ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME = Pattern.compile(
 			"^[\\p{L}\\p{M}'\\-\\/\\u00AF\\u02DA\\u00D8\\u00F8\\u0142\\u0060\\u005E\\u007E\\u00E7\\u00C7\\u00A8\\u00B4\\s]+$");
 
+	public static final String DOCUMENT_HISTORY_PREFIX = "Document History - ";
+
+	public static final String AUDIT_ACTION_CREATED_DOCUMENT = " created the document";
+
+	public static final String AUDIT_ACTION_SENT_DOCUMENT = " sent the document";
+
+	public static final String AUDIT_ACTION_VIEWED_DOCUMENT = " viewed the document";
+
+	public static final String AUDIT_ACTION_SIGNED_DOCUMENT = " signed the document";
+
+	public static final String AUDIT_ACTION_DOCUMENT_COMPLETED = "Document is completed";
+
+	public static final String AUDIT_ACTION_DOCUMENT_VOIDED = "Document made void";
+
+	public static final String AUDIT_ACTION_DECLINED_TO_SIGN = " declined to sign";
+
+	public static final String AUDIT_ACTION_DOCUMENT_EXPIRED = "Document expired";
+
+	public static final String AUDIT_ACTION_DOWNLOADED_DOCUMENT = " downloaded the document";
+
+	public static final String AUDIT_ACTION_TRANSFERRED_OWNERSHIP = " transferred ownership to ";
+
+	public static final String CURRENT_OWNER_METADATA_NAME = "currentOwner";
+
 }

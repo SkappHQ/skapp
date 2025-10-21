@@ -8,8 +8,6 @@ public interface TenantService {
 
 	void createTenant(String tenantName, LoginMethod loginMethod, String email);
 
-	void deleteTenant(String companyDomain);
-
 	ResponseEntityDto getTenant(String tenantName);
 
 	Tenant getCurrentTenantFromSwitchingSchemas();
