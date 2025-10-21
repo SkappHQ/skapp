@@ -127,4 +127,6 @@ public class EpCommonConstants {
 
 	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
 
+	public static final int OTP_GENERATION_DELAY_TIME_SECONDS = 30;
+
 }

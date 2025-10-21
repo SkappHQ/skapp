@@ -264,10 +264,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		Instant now = Instant.now();
 
-		if (superAdmin.getOtpExpiryTime() != null && now.isBefore(superAdmin.getOtpExpiryTime())) {
-			log.warn("generateAndSendOTP: OTP still valid for userId={}, expiryTime={}", userId,
-					superAdmin.getOtpExpiryTime());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_STILL_VALID);
+		if (superAdmin.getOtpExpiryTime() != null) {
+			Instant otpCreatedTime = superAdmin.getOtpExpiryTime().minusSeconds(otpExpirySeconds);
+			Instant cooldownEndTime = otpCreatedTime.plusSeconds(EpCommonConstants.OTP_GENERATION_DELAY_TIME_SECONDS);
+
+			if (now.isBefore(cooldownEndTime)) {
+				long secondsRemaining = cooldownEndTime.getEpochSecond() - now.getEpochSecond();
+				log.warn("generateAndSendOTP: Cannot generate new OTP yet. Wait {} more seconds. userId={}",
+						secondsRemaining, userId);
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_STILL_VALID);
+			}
+
+			log.info("generateAndSendOTP: Generating new OTP after cooldown period for userId={}", userId);
 		}
 
 		String otp = generateOTP();
