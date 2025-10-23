@@ -1337,10 +1337,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
 		}
-		else if (!declineEnvelopeRequestDto.getDeclineReason()
-			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
-			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
-		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 
 		envelope.getRecipients().forEach(recipientData -> {

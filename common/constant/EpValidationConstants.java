@@ -17,6 +17,6 @@ public class EpValidationConstants {
 	 * Regular expression pattern to validate a valid company phone number. The phone
 	 * number should consist of 7 to 15 digits with spaces.
 	 */
-	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^[+]?[0-9 ]{7,25}$";
+	public static final String VALID_COMPANY_PHONE_NUMBER_PATTERN = "^[+]?[0-9\\- ]{7,25}$";
 
 }
