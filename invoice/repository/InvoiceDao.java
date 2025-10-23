@@ -14,4 +14,6 @@ public interface InvoiceDao extends JpaRepository<Invoice, Long>, InvoiceReposit
 
 	Long countByCustomer_IdAndStatus(Long customerId, InvoiceStatus status);
 
+	Optional<Invoice> findByCustomer_IdAndInvoiceId(Long customerId, String invoiceId);
+
 }
