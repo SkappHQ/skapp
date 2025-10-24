@@ -14,6 +14,11 @@ interface Props {
   ariaLabel?: string;
   isReadOnly?: boolean;
   tabIndex?: number;
+   /**
+   * If true, displays a red asterisk next to the label to indicate that the field is required.
+   * This prop only affects the visual presentation and does not enforce validation.
+   */
+  required?: boolean;
 }
 
 const LeaveStatusPopupColumn: FC<Props> = ({
@@ -28,7 +33,8 @@ const LeaveStatusPopupColumn: FC<Props> = ({
   setInputTextAndKey,
   ariaLabel,
   isReadOnly = false,
-  tabIndex
+  tabIndex,
+  required
 }) => {
   const theme: Theme = useTheme();
   return (
@@ -49,6 +55,14 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         }}
       >
         {label}
+        {required && (
+          <Typography
+            component="span"
+            sx={{ color: theme.palette.error.contrastText }}
+          >
+            *
+          </Typography>
+        )}
       </Typography>
       <textarea
         id={id}

@@ -7,7 +7,6 @@ import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants
 import { isValidAlphaNumericName } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
-import { isValidNamePattern } from "~community/common/utils/validation";
 import { NationalityEnum } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3GeneralDetailsType } from "~community/people/types/PeopleTypes";
@@ -48,8 +47,9 @@ const useGeneralDetailsFormHandlers = ({ formik }: Props) => {
     const { name, value } = e.target;
 
     const isValid =
-      ((name === "firstName" || name === "middleName" || name === "lastName") &&
-        isValidNamePattern(value)) ||
+      name === "firstName" ||
+      name === "middleName" ||
+      name === "lastName" ||
       ((name === "passportNumber" || name === "nin") &&
         (value === "" || isValidAlphaNumericName().test(value))) ||
       ![

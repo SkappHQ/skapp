@@ -328,7 +328,7 @@ export const useQuickAddEmployeeMutation = (onSuccess?: () => void) => {
         open: true,
         toastType: ToastType.ERROR,
         title: translateText(["quickAddErrorTitle"]),
-        description: translateText(["quickAddErrorDescription"])
+        description: translateText(["apiQuickAddErrorDescription"])
       });
     },
     onSettled: async () => {
@@ -737,7 +737,8 @@ export const useGetEmployee = (memberId: number | undefined = undefined) => {
       return await authFetch.get(
         peoplesEndpoints.EMPLOYEE_BY_ID(memberId as number)
       );
-    }
+    },
+    refetchOnWindowFocus: false
   });
 };
 

@@ -43,10 +43,14 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
+import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
+import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
+import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
 
@@ -112,7 +116,8 @@ const Drawer = (): JSX.Element => {
         userRoles: sessionData?.user?.roles,
         tier: sessionData?.user?.tier ?? "",
         isEnterprise,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID: sessionData?.user?.tenantId
       }),
     [sessionData, isEnterprise, globalLoginMethod]
   );
@@ -157,6 +162,14 @@ const Drawer = (): JSX.Element => {
       setOrgData(organizationDetails?.results[0]);
     }
   }, [organizationDetails, orgLoading]);
+
+  const { setSubmitRequestModalType } = useCommonEnterpriseStore();
+
+  const handleOpenSubmitRequestModal = () => {
+    setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
+  };
+  
+  if (orgLoading) return <FullScreenLoader />;
 
   return (
     <StyledDrawer
@@ -251,6 +264,7 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
+                      {route?.badge && <Badge text={route.badge} />}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
@@ -372,16 +386,16 @@ const Drawer = (): JSX.Element => {
               />
             )}
             <MuiLink
-              href="https://docs.skapp.com"
-              target="_blank"
+              onClick={handleOpenSubmitRequestModal}
               variant="body1"
               color="inherit"
               underline="hover"
-              sx={classes.link}
+              sx={{ ...classes.link, cursor: "pointer" }}
               data-testid={appDrawerTestId.getHelpLink}
             >
               {translateText(["getHelp"])}
             </MuiLink>
+            <SubmitRequestModalController />
           </Stack>
         )}
       </Stack>

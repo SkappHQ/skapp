@@ -51,16 +51,6 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
 
     const [isMouseOn, setMouseOn] = useState(false);
 
-    const validUntil = useMemo(
-      () => (validTo ? new Date(validTo).setHours(23, 59, 59) : 0),
-      [validTo]
-    );
-
-    const isExpired = useMemo(
-      () => validUntil > 0 && validUntil < Date.now(),
-      [validUntil]
-    );
-
     const handleClick = (): void => {
       const showToast = (
         titleKey: string,
@@ -79,12 +69,6 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
         showToast(
           "noLeaveError.title",
           "noLeaveError.description",
-          ToastType.ERROR
-        );
-      } else if (isExpired) {
-        showToast(
-          "allocationExpiredError.title",
-          "allocationExpiredError.description",
           ToastType.ERROR
         );
       } else if (!managers) {
@@ -106,7 +90,7 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
         tabIndex={0}
         aria-disabled={!managers}
         sx={
-          !balanceInDays || !managers || isExpired
+          !balanceInDays || !managers
             ? mergeSx([classes.activeCard, classes.disabledCard])
             : classes.activeCard
         }
@@ -120,22 +104,15 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
           }
         }}
         aria-label={
-          !balanceInDays || isExpired
+          !balanceInDays
             ? translateAria(["entitlementOver"], { name })
             : `${name}  ${balanceInDays} / ${totalDaysAllocated} ${translateAria(["available"])}  `
         }
       >
-        <Stack
-          sx={classes.leftContent}
-          aria-hidden={isExpired || !balanceInDays}
-        >
+        <Stack sx={classes.leftContent} aria-hidden={!balanceInDays}>
           <Typography variant="body1">
             {name} &nbsp;
-            {isMouseOn &&
-              !!balanceInDays &&
-              managers &&
-              !isExpired &&
-              getEmoji(emojiCode)}
+            {isMouseOn && !!balanceInDays && managers && getEmoji(emojiCode)}
           </Typography>
           <Stack>
             <Stack sx={classes.amount}>
@@ -148,10 +125,10 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
           </Stack>
         </Stack>
         <Stack sx={classes.rightContent}>
-          {(!isMouseOn || !balanceInDays || !managers || isExpired) && (
+          {(!isMouseOn || !balanceInDays || !managers) && (
             <Box aria-hidden="true">{getEmoji(emojiCode)}</Box>
           )}
-          {isMouseOn && !!balanceInDays && managers && !isExpired && (
+          {isMouseOn && !!balanceInDays && managers && (
             <Button
               label={translateText(["applyBtn"])}
               onClick={handleClick}

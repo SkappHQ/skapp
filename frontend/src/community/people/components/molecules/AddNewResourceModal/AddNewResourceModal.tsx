@@ -11,7 +11,6 @@ import { peopleDirectoryTestId } from "~community/common/constants/testIds";
 import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { allowsLettersAndSpecialCharactersForNames } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import {
@@ -59,22 +58,28 @@ const AddNewResourceModal = () => {
     stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
   }));
 
-  const { setDirectoryModalType, setIsDirectoryModalOpen } = usePeopleStore(
-    (state) => ({
-      setDirectoryModalType: state.setDirectoryModalType,
-      setIsDirectoryModalOpen: state.setIsDirectoryModalOpen
-    })
-  );
+  const {
+    setDirectoryModalType,
+    setIsDirectoryModalOpen,
+    setPendingAddResourceData,
+    pendingAddResourceData
+  } = usePeopleStore((state) => ({
+    setDirectoryModalType: state.setDirectoryModalType,
+    setIsDirectoryModalOpen: state.setIsDirectoryModalOpen,
+    setPendingAddResourceData: state.setPendingAddResourceData,
+    pendingAddResourceData: state.pendingAddResourceData
+  }));
 
   const { resetPeopleSlice } = usePeopleStore((state) => state);
 
-  const initialValues = {
+  const initialValues = pendingAddResourceData || {
     firstName: "",
     lastName: "",
     email: ""
   };
 
   const handleSuccess = () => {
+    setPendingAddResourceData(null);
     if (ongoingQuickSetup.INVITE_EMPLOYEES) {
       setQuickSetupModalType(QuickSetupModalTypeEnums.IN_PROGRESS_START_UP);
       stopAllOngoingQuickSetup();
@@ -111,6 +116,10 @@ const AddNewResourceModal = () => {
   } = useCheckEmailAndIdentificationNoForQuickAdd(values.email, "");
 
   const closeModal = () => {
+    if (pendingAddResourceData) {
+      setDirectoryModalType(DirectoryModalTypes.UNSAVED_CHANGES);
+      return;
+    }
     setDirectoryModalType(DirectoryModalTypes.NONE);
     setIsDirectoryModalOpen(false);
     if (ongoingQuickSetup.INVITE_EMPLOYEES) {
@@ -160,15 +169,18 @@ const AddNewResourceModal = () => {
     const { name, value } = e.target;
 
     if (name === "firstName" || name === "lastName") {
-      if (
-        value.length > characterLengths.NAME_LENGTH ||
-        !allowsLettersAndSpecialCharactersForNames().test(value)
-      ) {
+      if (value.length > characterLengths.NAME_LENGTH) {
         return;
       }
     }
     setFieldValue(name, value);
     setFieldError(name, "");
+
+    const updatedValues = {
+      ...values,
+      [name]: value
+    };
+    setPendingAddResourceData(updatedValues);
   };
 
   const handleRefetch = () => {
@@ -204,6 +216,7 @@ const AddNewResourceModal = () => {
           labelStyles={{
             fontWeight: 500
           }}
+          componentStyle={{ width: "100%" }}
         />
         <InputField
           inputName="lastName"
@@ -217,6 +230,7 @@ const AddNewResourceModal = () => {
           labelStyles={{
             fontWeight: 500
           }}
+          componentStyle={{ width: "100%" }}
         />
       </Stack>
       <InputField
@@ -238,6 +252,7 @@ const AddNewResourceModal = () => {
         href={ROUTES.PEOPLE.ADD}
         onClick={() => {
           setDirectoryModalType(DirectoryModalTypes.NONE);
+          setPendingAddResourceData(null);
           resetPeopleSlice();
           setIsDirectoryModalOpen(false);
         }}
@@ -247,7 +262,9 @@ const AddNewResourceModal = () => {
           fontFamily: theme.typography.fontFamily,
           textDecoration: "underline",
           color: theme.palette.primary.dark,
-          marginTop: "1rem"
+          marginTop: "1rem",
+          marginLeft: "0.125rem",
+          width: "fit-content"
         }}
       >
         {generalTexts(["addFullProfile"])}
