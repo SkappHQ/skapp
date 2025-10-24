@@ -90,9 +90,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Value("${invoice.allocated-free-tier-invoice-count}")
 	private long allocatedFreeTierInvoiceCount;
 
-	@Value("${invoice.allocated-pro-tier-invoice-count}")
-	private long allocatedProTierInvoiceCount;
-
 	private final InvoiceDao invoiceDao;
 
 	private final InvoiceMapper invoiceMapper;
@@ -326,9 +323,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 		LocalDateTime startDateTime;
 		LocalDateTime endDateTime;
-		long allocatedInvoiceCount;
+		long allocatedInvoiceCount = 0;
 		long usedInvoiceCount;
-		long remainingCount;
+		long remainingCount = 0;
 		boolean limitedReached = false;
 
 		if (tier == Tier.FREE) {
@@ -339,23 +336,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 			allocatedInvoiceCount = allocatedFreeTierInvoiceCount;
 			remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
 			limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
-		}
-		else if (tier == Tier.PRO) {
-			if (tenant.getStripeSubscription() == null
-					|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-			}
-			LocalDate tierStartedDate = DateTimeUtils
-				.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
-			startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
-			endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
-			usedInvoiceCount = invoiceDao.countByCreatedDateBetween(startDateTime, endDateTime);
-			allocatedInvoiceCount = allocatedProTierInvoiceCount;
-			remainingCount = Math.max(allocatedInvoiceCount - usedInvoiceCount, 0);
-			limitedReached = usedInvoiceCount >= allocatedInvoiceCount;
-		}
-		else {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_FETCHING_INVOICE_TIER_LIMITATIONS);
 		}
 
 		invoiceTierLimitationResponseDto.setAllocatedCount(allocatedInvoiceCount);
