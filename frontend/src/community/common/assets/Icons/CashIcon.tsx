@@ -2,11 +2,11 @@ import { JSX } from "react";
 
 import { IconProps } from "~community/common/types/IconTypes";
 
-const CashIcon = ({ fill = "black" }: IconProps): JSX.Element => {
+const CashIcon = ({ fill = "black", height = "12", width = "18" }: IconProps): JSX.Element => {
   return (
     <svg
-      width="18"
-      height="12"
+      width={width}
+      height={height}
       viewBox="0 0 18 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
