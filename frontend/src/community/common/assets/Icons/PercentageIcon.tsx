@@ -5,14 +5,14 @@ import { IconProps } from "~community/common/types/IconTypes";
 
 const PercentageIcon = ({
   fill = theme.palette.text.secondary,
-  height = "12",
-  width = "12"
+  height = "13",
+  width = "18"
 }: IconProps): JSX.Element => {
   return (
     <svg
       width={width}
       height={height}
-      viewBox="0 0 12 12"
+      viewBox="0 0 12 13"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
