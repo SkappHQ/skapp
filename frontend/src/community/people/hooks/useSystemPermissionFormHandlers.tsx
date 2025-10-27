@@ -61,12 +61,19 @@ const useSystemPermissionFormHandlers = () => {
   const { data: roleLimitsData } = useGetRoleLimits(
     environment === appModes.ENTERPRISE
   );
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
 
   useEffect(() => {
     if (roleLimitsData) {
       setRoleLimits(roleLimitsData);
     }
   }, [roleLimitsData]);
+
+  useEffect(() => {
+    if (grantablePermission) {
+      setIsLoadingPermissions(false);
+    }
+  }, [grantablePermission]);
 
   useEffect(() => {
     setPermissions(employee?.systemPermissions || {});
@@ -226,7 +233,8 @@ const useSystemPermissionFormHandlers = () => {
     grantablePermission,
     handleRoleDropdown,
     handleSuperAdminToggle,
-    roleLimitMapping
+    roleLimitMapping,
+    isLoadingPermissions
   };
 };
 

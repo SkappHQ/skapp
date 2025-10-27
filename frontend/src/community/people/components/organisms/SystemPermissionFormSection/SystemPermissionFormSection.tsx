@@ -91,7 +91,8 @@ const SystemPermissionFormSection = ({
     grantablePermission,
     handleRoleDropdown,
     handleSuperAdminToggle,
-    roleLimitMapping
+    roleLimitMapping,
+    isLoadingPermissions
   } = useSystemPermissionFormHandlers();
 
   const {
@@ -324,7 +325,7 @@ const SystemPermissionFormSection = ({
                 />
               )}
 
-            {isEsignatureModuleEnabled && (
+            {isEsignatureModuleEnabled && !isLoadingPermissions && (
               <DropdownList
                 inputName={"esignRole"}
                 label={translateText(["eSignature"])}
@@ -344,7 +345,7 @@ const SystemPermissionFormSection = ({
               />
             )}
 
-            {needsToShow(tenantID as string) && (
+            {needsToShow(tenantID as string) && !isLoadingPermissions && (
               <DropdownList
                 inputName={"pmRole"}
                 label={translateText(["projectManagement"])}
@@ -364,30 +365,35 @@ const SystemPermissionFormSection = ({
               />
             )}
 
-            {isInvoiceModuleEnabled && needsToShow(tenantID as string) && (
-              <DropdownList
-                inputName={"invoiceRole"}
-                label={translateText(["invoice"])}
-                itemList={grantablePermission?.invoice || []}
-                placeholder={translateText(["selectRole"])}
-                value={
-                  permissions.invoiceRole === Role.INVOICE_NONE
-                    ? ""
-                    : permissions.invoiceRole
-                }
-                componentStyle={classes.dropdownListComponentStyles}
-                checkSelected
-                onChange={(event) =>
-                  handleRoleDropdown("invoiceRole", event.target.value as Role)
-                }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
-              />
-            )}
+            {isInvoiceModuleEnabled &&
+              needsToShow(tenantID as string) &&
+              !isLoadingPermissions && (
+                <DropdownList
+                  inputName={"invoiceRole"}
+                  label={translateText(["invoice"])}
+                  itemList={grantablePermission?.invoice || []}
+                  placeholder={translateText(["selectRole"])}
+                  value={
+                    permissions.invoiceRole === Role.INVOICE_NONE
+                      ? ""
+                      : permissions.invoiceRole
+                  }
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown(
+                      "invoiceRole",
+                      event.target.value as Role
+                    )
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
           </Stack>
 
           {isUpdate &&
