@@ -81,7 +81,9 @@ export const getLeaveRequestClasses = ({
       }
 
       return Array.from(uniqueLeaveClasses).join(" ");
-    } else {
+    }
+    
+    if (leaveRequests?.length !== 0) {
       const leaveClasses = leaveRequests?.map((request) => {
         switch (request.leaveState) {
           case LeaveStates.FULL_DAY:
