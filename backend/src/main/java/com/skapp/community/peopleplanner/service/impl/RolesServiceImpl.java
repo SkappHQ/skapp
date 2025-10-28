@@ -270,6 +270,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
 		defaultEmployeeRoles.setInvoiceRole(Role.INVOICE_NONE);
 		defaultEmployeeRoles.setPmRole(Role.PM_EMPLOYEE);
+		defaultEmployeeRoles.setOkrRole(Role.OKR_EMPLOYEE);
 		return defaultEmployeeRoles;
 	}
 
