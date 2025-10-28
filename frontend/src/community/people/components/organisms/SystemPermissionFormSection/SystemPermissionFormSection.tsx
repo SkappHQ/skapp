@@ -324,70 +324,79 @@ const SystemPermissionFormSection = ({
                 />
               )}
 
-            {isEsignatureModuleEnabled && (
-              <DropdownList
-                inputName={"esignRole"}
-                label={translateText(["eSignature"])}
-                itemList={grantablePermission?.esign || []}
-                value={permissions.esignRole}
-                componentStyle={classes.dropdownListComponentStyles}
-                checkSelected
-                onChange={(event) =>
-                  handleRoleDropdown("esignRole", event.target.value as Role)
-                }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
-              />
-            )}
+            {isEsignatureModuleEnabled &&
+              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.ADMIN) &&
+              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.SENDER) && (
+                <DropdownList
+                  inputName={"esignRole"}
+                  label={translateText(["eSignature"])}
+                  itemList={grantablePermission?.esign || []}
+                  value={permissions.esignRole}
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown("esignRole", event.target.value as Role)
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
 
-            {needsToShow(tenantID as string) && (
-              <DropdownList
-                inputName={"pmRole"}
-                label={translateText(["projectManagement"])}
-                itemList={grantablePermission?.pm || []}
-                value={permissions.pmRole}
-                componentStyle={classes.dropdownListComponentStyles}
-                checkSelected
-                onChange={(event) =>
-                  handleRoleDropdown("pmRole", event.target.value as Role)
-                }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
-              />
-            )}
+            {needsToShow(tenantID as string) &&
+              !isRoleMissing(RoleModuleEnum.PM, RoleNameEnum.ADMIN) && (
+                <DropdownList
+                  inputName={"pmRole"}
+                  label={translateText(["projectManagement"])}
+                  itemList={grantablePermission?.pm || []}
+                  value={permissions.pmRole}
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown("pmRole", event.target.value as Role)
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
 
-            {isInvoiceModuleEnabled && needsToShow(tenantID as string) && (
-              <DropdownList
-                inputName={"invoiceRole"}
-                label={translateText(["invoice"])}
-                itemList={grantablePermission?.invoice || []}
-                placeholder={translateText(["selectRole"])}
-                value={
-                  permissions.invoiceRole === Role.INVOICE_NONE
-                    ? ""
-                    : permissions.invoiceRole
-                }
-                componentStyle={classes.dropdownListComponentStyles}
-                checkSelected
-                onChange={(event) =>
-                  handleRoleDropdown("invoiceRole", event.target.value as Role)
-                }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
-              />
-            )}
+            {isInvoiceModuleEnabled &&
+              needsToShow(tenantID as string) &&
+              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.ADMIN) &&
+              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.MANAGER) && (
+                <DropdownList
+                  inputName={"invoiceRole"}
+                  label={translateText(["invoice"])}
+                  itemList={grantablePermission?.invoice || []}
+                  placeholder={translateText(["selectRole"])}
+                  value={
+                    permissions.invoiceRole === Role.INVOICE_NONE
+                      ? ""
+                      : permissions.invoiceRole
+                  }
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown(
+                      "invoiceRole",
+                      event.target.value as Role
+                    )
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
           </Stack>
 
           {isUpdate &&
