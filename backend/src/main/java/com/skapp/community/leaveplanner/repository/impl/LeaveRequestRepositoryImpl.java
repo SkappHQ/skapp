@@ -1481,8 +1481,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	private boolean isValidWorkingDay(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-		if (holidayDates != null && holidayDates.contains(date)) {
-			return false;
+		if (holidayDates != null && !holidayDates.isEmpty()) {
+			if (holidayDates.contains(date)) {
+				return false;
+			}
 		}
 
 		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()) {
