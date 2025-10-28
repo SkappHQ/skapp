@@ -47,6 +47,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.LeaveCycleConfigField;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -79,9 +80,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getLeaveCycleEndYear;
-import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
 
 @Component
 @RequiredArgsConstructor
@@ -592,7 +590,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			.get(LeaveCycleConfigField.DATE.getField())
 			.intValue();
 
-		int leaveCycleEndYear = getLeaveCycleEndYear(startMonth, startDate);
+		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 
@@ -638,7 +636,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				int endDate = leaveCycleConfig.get(LeaveCycleConfigField.END.getField())
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
-				int leaveCycleEndYear = getLeaveCycleEndYear(startMonth, startDate);
+				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
 
 				leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(
 						startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1, startMonth,
@@ -680,7 +678,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
 
-				int leaveCycleEndYear = getLeaveCycleEndYear(startMonth - 1, startDate);
+				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth - 1, startDate);
 
 				if (leaveRequestFilterDto.getStartDate() == null) {
 					leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(
@@ -1071,7 +1069,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder,
 			Join<LeaveRequest, Employee> employee, Join<Employee, User> userJoin) {
-		keyword = getSearchString(keyword);
+		keyword = PeopleUtil.getSearchString(keyword);
 		return criteriaBuilder.or(
 				criteriaBuilder.like(criteriaBuilder
 					.lower(criteriaBuilder.concat(criteriaBuilder.concat(employee.get(Employee_.FIRST_NAME), " "),
