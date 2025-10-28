@@ -21,6 +21,7 @@ import com.skapp.enterprise.common.model.OrganizationCalendar;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
 import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
+import com.skapp.enterprise.common.payload.response.MicrosoftTokenResponse;
 import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.repository.EpOrganizationCalenderDao;
 import com.skapp.enterprise.common.service.EpMicrosoftCalendarService;
@@ -43,19 +44,23 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URLDecoder;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -99,7 +104,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 	private static final String MICROSOFT_LOGIN_BASE_URL = "https://login.microsoftonline.com";
 
-	private static final String MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access";
+	private static final String MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access openid";
 
 	@Override
 	public void setupOrganizationCalendar() {
@@ -155,8 +160,11 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
 		}
 
-		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
-		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String decryptedState;
+		byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
+		String encryptedState = new String(decodedBytes, StandardCharsets.UTF_8);
+		decryptedState = encryptionDecryptionService.decrypt(encryptedState, encryptSecret);
+
 		String[] state = decryptedState.split(EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE);
 
 		if (state.length != 3) {
@@ -188,23 +196,29 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 		try {
 			validateMicrosoftCalendarAuthRedirectDto(epMicrosoftAuthRedirectDto);
-			String accessToken = exchangeCodeForTokens(authorizationCode);
+			MicrosoftTokenResponse result = exchangeCodeForTokens(authorizationCode);
 
-			if (accessToken != null) {
-				verifyConnectedEmailWithUserEmail(accessToken, currentUser);
-				String encryptedToken = encryptionDecryptionService.encrypt(accessToken, encryptSecret);
-				if (encryptedToken == null) {
+			if (result.getAccessToken() != null) {
+				verifyConnectedEmailWithUserEmail(result.getAccessToken(), currentUser);
+			}
+
+			if (result.getRefreshToken() != null) {
+				String encryptedRefreshToken = encryptionDecryptionService.encrypt(result.getRefreshToken(),
+						encryptSecret);
+				if (encryptedRefreshToken == null) {
 					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
 				}
-				employeeCalendar.setCalendarToken(encryptedToken);
-				tokenGenerated = accessToken;
-			}
-			else {
+				employeeCalendar.setCalendarToken(encryptedRefreshToken);
+				tokenGenerated = encryptedRefreshToken;
 				if (employeeCalendar.getCalendarToken() == null) {
 					throw new EntityNotFoundException(
 							EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 				}
 				tokenGenerated = employeeCalendar.getCalendarToken();
+			}
+			else {
+				throw new EntityNotFoundException(
+						EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 			}
 
 			employeeCalendar.setIsEnabled(true);
@@ -295,24 +309,20 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				+ TenantContext.getCurrentTenant();
 
 		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
-		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
+		String encodedState = Base64.getUrlEncoder()
+			.withoutPadding()
+			.encodeToString(encryptedState.getBytes(StandardCharsets.UTF_8));
 
-		try {
-			String authUrl = MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/authorize" + "?client_id="
-					+ clientId + "&response_type=code" + "&redirect_uri="
-					+ URLEncoder.encode(backendRedirectURI, StandardCharsets.UTF_8) + "&scope="
-					+ URLEncoder.encode(MICROSOFT_CALENDAR_SCOPES, StandardCharsets.UTF_8) + "&state=" + encodedState
-					+ "&response_mode=query";
+		String authUrl = MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/authorize" + "?client_id=" + clientId
+				+ "&response_type=code" + "&redirect_uri="
+				+ URLEncoder.encode(backendRedirectURI, StandardCharsets.UTF_8) + "&scope="
+				+ URLEncoder.encode(MICROSOFT_CALENDAR_SCOPES, StandardCharsets.UTF_8) + "&state=" + encodedState
+				+ "&response_mode=query";
 
-			responseDto.setAuthUrl(authUrl);
-		}
-		catch (Exception exception) {
-			log.error("getMicrosoftAuthUrl: {}", exception.getMessage(), exception);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GET_MICROSOFT_AUTH_URL);
-		}
+		responseDto.setAuthUrl(authUrl);
 
 		log.info("getMicrosoftAuthUrl: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(true, responseDto);
 	}
 
 	@Override
@@ -450,33 +460,30 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		}
 	}
 
-	private String exchangeCodeForTokens(String authorizationCode) {
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+	private MicrosoftTokenResponse exchangeCodeForTokens(String authorizationCode) {
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-			MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-			body.add("client_id", clientId);
-			body.add("client_secret", clientSecret);
-			body.add("code", authorizationCode);
-			body.add("grant_type", "authorization_code");
-			body.add("redirect_uri", backendRedirectURI);
-			body.add("scope", MICROSOFT_CALENDAR_SCOPES);
+		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+		body.add("client_id", clientId);
+		body.add("client_secret", clientSecret);
+		body.add("code", authorizationCode);
+		body.add("grant_type", "authorization_code");
+		body.add("redirect_uri", backendRedirectURI);
+		body.add("scope", MICROSOFT_CALENDAR_SCOPES);
 
-			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-			ResponseEntity<Map> response = restTemplate
-				.postForEntity(MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/token", request, Map.class);
+		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+		ResponseEntity<Map> response = restTemplate
+			.postForEntity(MICROSOFT_LOGIN_BASE_URL + "/" + tenantId + "/oauth2/v2.0/token", request, Map.class);
 
-			if (response.getBody() != null && response.getBody().containsKey("refresh_token")) {
-				return (String) response.getBody().get("refresh_token");
-			}
+		if (response.getBody() != null && response.getBody().containsKey("refresh_token")
+				&& response.getBody().containsKey("access_token")) {
+			String refreshToken = (String) response.getBody().get("refresh_token");
+			String accessToken = (String) response.getBody().get("access_token");
+			return new MicrosoftTokenResponse(accessToken, refreshToken);
 		}
-		catch (Exception e) {
-			log.error("Error exchanging code for tokens: ", e);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
-		}
-		return null;
+		throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 	}
 
 	private String refreshAccessToken(String refreshToken) {
