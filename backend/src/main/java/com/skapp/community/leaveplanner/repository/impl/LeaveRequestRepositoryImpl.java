@@ -1242,9 +1242,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
 			}
 
-			if (teamIds != null && !teamIds.isEmpty()) {
-				predicates.add(employeeTeam != null ? employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds)
-						: null);
+			if (teamIds != null && !teamIds.isEmpty() && employeeTeam != null) {
+				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
 			}
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
