@@ -110,6 +110,14 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
       setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
         EmploymentStatusTypes.ACTIVE
       ]);
+    } else if (isPendingInvitationListOpen) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.PENDING
+      ]);
+    } else {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE
+      ]);
     }
   }, [
     searchTerm,
