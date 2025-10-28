@@ -69,6 +69,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -95,7 +96,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	public static List<LocalDate> getAllDaysBetween(DayOfWeek day, LocalDate startDate, LocalDate endDate) {
 		List<LocalDate> removingDays = new ArrayList<>();
 
-		LocalDate currentDay = startDate.with(java.time.temporal.TemporalAdjusters.nextOrSame(day));
+		LocalDate currentDay = startDate.with(TemporalAdjusters.nextOrSame(day));
 
 		while (!currentDay.isAfter(endDate)) {
 			removingDays.add(currentDay);
@@ -591,7 +592,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			.get(LeaveCycleConfigField.DATE.getField())
 			.intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+		int leaveCycleEndYear = getLeaveCycleEndYear(startMonth, startDate);
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 
@@ -637,7 +638,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				int endDate = leaveCycleConfig.get(LeaveCycleConfigField.END.getField())
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
-				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+				int leaveCycleEndYear = getLeaveCycleEndYear(startMonth, startDate);
 
 				leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(
 						startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1, startMonth,
@@ -935,8 +936,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		Join<LeaveRequest, Employee> employee = root.join(LeaveRequest_.employee);
+		Join<Employee, User> user = employee.join(Employee_.user);
 		Join<Employee, EmployeeManager> employeeManager = employee.join(Employee_.employeeManagers);
 		Join<EmployeeManager, Employee> manager = employeeManager.join(EmployeeManager_.manager);
+
+		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
+		predicates.add(criteriaBuilder
+			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
 
 		predicates.add(criteriaBuilder.equal(manager.get(Employee_.employeeId), managerEmployeeId));
 		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.PENDING));
@@ -1089,7 +1095,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				}
 			}
 			return holidayDates == null || !holidayDates.contains(date);
-		}).collect(Collectors.toList());
+		}).toList();
 
 		List<LeaveTrendByDay> result = new ArrayList<>();
 
@@ -1145,7 +1151,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				}
 			}
 			return holidayDates == null || !holidayDates.contains(date);
-		}).collect(Collectors.toList());
+		}).toList();
 
 		Map<Integer, Set<Long>> employeesByMonth = new HashMap<>();
 
@@ -1199,7 +1205,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).toList();
 
 		Map<String, Double> leaveCountsByTypeAndMonth = new HashMap<>();
 
@@ -1239,7 +1245,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 
 			if (teamIds != null && !teamIds.isEmpty()) {
-				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+				predicates.add(employeeTeam != null ? employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds)
+						: null);
 			}
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
@@ -1302,7 +1309,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidLeaveDate(date, workingDaysIndex, holidayDates))
-			.collect(Collectors.toList());
+			.toList();
 
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
@@ -1399,7 +1406,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
-			.collect(Collectors.toList());
+			.toList();
 
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
@@ -1477,7 +1484,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	private boolean isValidWorkingDay(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-		if (holidayDates != null && holidayDates.contains(date) && !holidayDates.isEmpty()) {
+		if (holidayDates != null && holidayDates.contains(date)) {
 			return false;
 		}
 
@@ -1496,7 +1503,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
-			.collect(Collectors.toList());
+			.toList();
 
 		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
 
@@ -1684,7 +1691,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDaysIndex, holidayDates))
-			.collect(Collectors.toList());
+			.toList();
 
 		float totalLeaveCount = 0.0f;
 
@@ -1728,7 +1735,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
 			.filter(date -> isValidWorkingDay(date, workingDays, holidayDates))
-			.collect(Collectors.toList());
+			.toList();
 
 		Map<Integer, Float> leaveCountsByType = new HashMap<>();
 
