@@ -63,6 +63,8 @@ interface Props {
   checkSelected?: boolean;
   typographyStyles?: SxProps;
   enableTextWrapping?: boolean;
+  showSpinnerWhenNoData?: boolean;
+  noOptionsText?: string;
 }
 
 const DropdownList: FC<Props> = ({
@@ -95,7 +97,9 @@ const DropdownList: FC<Props> = ({
   checkSelected,
   ariaLabel,
   typographyStyles,
-  enableTextWrapping = false
+  enableTextWrapping = false,
+  showSpinnerWhenNoData = true,
+  noOptionsText
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -301,9 +305,15 @@ const DropdownList: FC<Props> = ({
               "aria-required": required
             }}
           >
-            <Box display={"flex"} justifyContent={"center"}>
-              <CircularProgress size={20} style={{ color: "black" }} />
-            </Box>
+            {showSpinnerWhenNoData ? (
+              <Box display={"flex"} justifyContent={"center"}>
+                <CircularProgress size={20} style={{ color: "black" }} />
+              </Box>
+            ) : (
+              <Typography variant="body2" sx={{ p: 1 }}>
+                {noOptionsText}
+              </Typography>
+            )}
           </Select>
         )}
       </Paper>
