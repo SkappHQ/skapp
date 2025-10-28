@@ -291,10 +291,14 @@ export enum NationalityEnum {
 export enum RoleModuleEnum {
   PEOPLE = "people",
   LEAVE = "leave",
-  ATTENDANCE = "attendance"
+  ATTENDANCE = "attendance",
+  ESIGN = "esign",
+  INVOICE = "invoice",
+  PM = "pm"
 }
 
 export enum RoleNameEnum {
   ADMIN = "Admin",
-  MANAGER = "Manager"
+  MANAGER = "Manager",
+  SENDER = "Sender"
 }
