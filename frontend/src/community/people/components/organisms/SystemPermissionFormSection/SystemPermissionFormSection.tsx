@@ -91,7 +91,7 @@ const SystemPermissionFormSection = ({
     grantablePermission,
     handleRoleDropdown,
     handleSuperAdminToggle,
-    roleLimitMapping,
+    roleLimitMapping
   } = useSystemPermissionFormHandlers();
 
   const {

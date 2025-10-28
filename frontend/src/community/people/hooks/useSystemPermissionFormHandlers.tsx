@@ -226,8 +226,7 @@ const useSystemPermissionFormHandlers = () => {
     grantablePermission,
     handleRoleDropdown,
     handleSuperAdminToggle,
-    roleLimitMapping,
-    isLoadingPermissions
+    roleLimitMapping
   };
 };
 
