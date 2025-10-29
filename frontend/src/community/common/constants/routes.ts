@@ -108,6 +108,17 @@ const ROUTES = {
       ID: (id: number) => `/sign/inbox/envelope/${id}`
     }
   },
+  OKR: {
+    BASE: "/community/okr",
+    OBJECTIVES: "/community/okr/objectives",
+    TEAM_OBJECTIVES: "/community/okr"
+    // KEY_RESULTS: "/okr/key-results",
+    // TEAM_KEY_RESULTS: "/okr/team-key-results",
+    // MY_OBJECTIVES: "/okr/my-objectives",
+    // MY_KEY_RESULTS: "/okr/my-key-results",
+    // ADD_EDIT_OBJECTIVE: (id?: string) => `/okr/objectives/${id}`,
+    // ADD_EDIT_KEY_RESULT: (id?: string) => `/okr/key-results/${id}`
+  },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",

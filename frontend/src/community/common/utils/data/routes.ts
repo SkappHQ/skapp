@@ -197,8 +197,37 @@ const routes = [
       }
     ]
   },
+  //TODO: Check this permissions
   {
     id: "4",
+    name: "OKR",
+    url: ROUTES.OKR.BASE,
+    icon: IconName.PEOPLE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      ManagerTypes.PEOPLE_MANAGER,
+      EmployeeTypes.LEAVE_EMPLOYEE,
+      EmployeeTypes.PEOPLE_EMPLOYEE,
+      EmployeeTypes.ATTENDANCE_EMPLOYEE
+    ],
+    subTree: [
+      {
+        id: "4A",
+        name: "Teams",
+        url: ROUTES.OKR.TEAM_OBJECTIVES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.PEOPLE_ADMIN,
+          ManagerTypes.PEOPLE_MANAGER
+        ]
+      }
+    ]
+  },
+  {
+    id: "5",
     name: "Sign",
     url: ROUTES.SIGN.BASE,
     icon: IconName.DOCUMENTS_ICON,
@@ -211,7 +240,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "4A",
+        id: "5A",
         name: "Inbox",
         url: ROUTES.SIGN.INBOX,
         hasSubTree: false,
@@ -223,7 +252,7 @@ const routes = [
         ]
       },
       {
-        id: "4B",
+        id: "5B",
         name: "Sent",
         url: ROUTES.SIGN.SENT,
         hasSubTree: false,
@@ -234,7 +263,7 @@ const routes = [
         ]
       },
       {
-        id: "4C",
+        id: "5C",
         name: "Contacts",
         url: ROUTES.SIGN.CONTACTS,
         hasSubTree: false,
@@ -247,7 +276,7 @@ const routes = [
     ]
   },
   {
-    id: "5",
+    id: "6",
     name: "Projects",
     url: ROUTES.PROJECTS,
     icon: IconName.PROJECTS_ICON,
@@ -267,7 +296,7 @@ const routes = [
     ]
   },
   {
-    id: "6",
+    id: "7",
     name: "Invoices",
     url: ROUTES.INVOICE.BASE,
     icon: IconName.INVOICE_ICON,
@@ -275,7 +304,7 @@ const routes = [
     requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
     subTree: [
       {
-        id: "6A",
+        id: "7A",
         name: "All Invoices",
         url: ROUTES.INVOICE.ALL_INVOICES,
         hasSubTree: false,
@@ -285,7 +314,7 @@ const routes = [
         ]
       },
       {
-        id: "6B",
+        id: "7B",
         name: "Customers",
         url: ROUTES.INVOICE.CUSTOMERS.BASE,
         hasSubTree: false,
@@ -297,7 +326,7 @@ const routes = [
     ]
   },
   {
-    id: "7",
+    id: "8",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -309,35 +338,35 @@ const routes = [
     ],
     subTree: [
       {
-        id: "7A",
+        id: "8A",
         name: "Time",
         url: ROUTES.CONFIGURATIONS.TIME,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
       },
       {
-        id: "7B",
+        id: "8B",
         name: "Attendance",
         url: ROUTES.CONFIGURATIONS.ATTENDANCE,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
       },
       {
-        id: "7C",
+        id: "8C",
         name: "Sign",
         url: ROUTES.CONFIGURATIONS.SIGN,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
       },
       {
-        id: "7D",
+        id: "8D",
         name: "User Roles",
         url: ROUTES.CONFIGURATIONS.USER_ROLES,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
       },
       {
-        id: "7E",
+        id: "8E",
         name: "Invoice",
         url: ROUTES.CONFIGURATIONS.INVOICE,
         hasSubTree: false,
@@ -346,7 +375,7 @@ const routes = [
     ]
   },
   {
-    id: "8",
+    id: "9",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,
@@ -365,7 +394,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "8A",
+        id: "9A",
         name: "Account Settings",
         url: ROUTES.SETTINGS.ACCOUNT,
         hasSubTree: false,
