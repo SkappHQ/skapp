@@ -102,7 +102,12 @@ export enum Role {
   ATTENDANCE_EMPLOYEE = "ATTENDANCE_EMPLOYEE",
   ESIGN_EMPLOYEE = "ESIGN_EMPLOYEE",
   ESIGN_SENDER = "ESIGN_SENDER",
-  ESIGN_ADMIN = "ESIGN_ADMIN"
+  ESIGN_ADMIN = "ESIGN_ADMIN",
+  PM_ADMIN = "PM_ADMIN",
+  PM_EMPLOYEE = "PM_EMPLOYEE",
+  INVOICE_ADMIN = "INVOICE_ADMIN",
+  INVOICE_MANAGER = "INVOICE_MANAGER",
+  INVOICE_NONE = "INVOICE_NONE"
 }
 
 export enum NationalityEnum {
@@ -286,10 +291,14 @@ export enum NationalityEnum {
 export enum RoleModuleEnum {
   PEOPLE = "people",
   LEAVE = "leave",
-  ATTENDANCE = "attendance"
+  ATTENDANCE = "attendance",
+  ESIGN = "esign",
+  INVOICE = "invoice",
+  PM = "pm"
 }
 
 export enum RoleNameEnum {
   ADMIN = "Admin",
-  MANAGER = "Manager"
+  MANAGER = "Manager",
+  SENDER = "Sender"
 }

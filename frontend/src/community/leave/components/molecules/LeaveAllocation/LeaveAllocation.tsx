@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
 import {
@@ -17,6 +17,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
@@ -31,9 +32,11 @@ import LeaveAllocationSkeleton from "./LeaveAllocationSkeleton";
 import styles from "./styles";
 
 const LeaveAllocation: FC = () => {
+  const translateText = useTranslator("leaveModule", "myRequests");
   const translateAria = useTranslator("leaveAria");
   const theme: Theme = useTheme();
   const classes = styles(theme);
+  const { isEmployee } = useSessionData();
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
@@ -103,6 +106,18 @@ const LeaveAllocation: FC = () => {
         }
       )}
     >
+      {isEmployee && (
+        <Typography
+          variant="h1"
+          sx={{
+            marginBottom: "1.5rem",
+            marginTop: "1.5rem"
+          }}
+        >
+          {translateText(["title"])}
+        </Typography>
+      )}
+      <Divider sx={{ mb: "1rem" }} />
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />

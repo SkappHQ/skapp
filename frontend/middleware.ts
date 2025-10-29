@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import ROUTES, {
   employeeRestrictedRoutes,
+  invoiceEmployeeRestrictedRoutes,
   managerRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
@@ -26,6 +27,7 @@ const commonRoutes = [
   ROUTES.NOTIFICATIONS,
   ROUTES.INTEGRATIONS,
   ROUTES.AUTH.VERIFY_RESET_PASSWORD,
+  ROUTES.PROJECTS,
   ROUTES.OKR.TEAM_OBJECTIVES
 ];
 
@@ -47,8 +49,13 @@ const superAdminRoutes = {
     ROUTES.SETTINGS.PAYMENT,
     ROUTES.REMOVE_PEOPLE,
     ROUTES.SUBSCRIPTION,
+    ROUTES.PROJECTS,
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.SUBSCRIPTION,
+    ROUTES.CONFIGURATIONS.INVOICE,
     ROUTES.OKR.TEAM_OBJECTIVES,
-    ROUTES.PROJECTS
   ]
 };
 
@@ -70,6 +77,13 @@ const adminRoutes = {
     ROUTES.SIGN.COMPLETE,
     ROUTES.CONFIGURATIONS.SIGN,
     ROUTES.OKR.TEAM_OBJECTIVES
+  ],
+  [AdminTypes.INVOICE_ADMIN]: [
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.CONFIGURATIONS.INVOICE,
+    ROUTES.INVOICE.CREATE.BASE    
   ]
 };
 
@@ -97,7 +111,14 @@ const managerRoutes = {
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
-    ROUTES.OKR.TEAM_OBJECTIVES
+    ROUTES.OKR.TEAM_OBJECTIVES,
+    ROUTES.SIGN.COMPLETE
+  ],
+  [ManagerTypes.INVOICE_MANAGER]: [
+    ROUTES.INVOICE.BASE,
+    ROUTES.INVOICE.ALL_INVOICES,
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.INVOICE.CREATE.BASE
   ]
 };
 
@@ -244,6 +265,15 @@ export default withAuth(
       );
       if (managerRedirect) return managerRedirect;
 
+      // Check invoice employee restricted routes
+      const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
+        request,
+        invoiceEmployeeRestrictedRoutes,
+        ManagerTypes.INVOICE_MANAGER,
+        roles
+      );
+      if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
+
       // Check employee restricted routes
       const employeeRedirect = checkRestrictedRoutesAndRedirect(
         request,
@@ -306,6 +336,10 @@ export const config = {
     "/sign/sent/:path*",
     "/sign/complete/:path*",
     // Project routes
-    "/projects/:path*"
+    "/projects/:path*",
+    // Invoice routes
+    "/invoice",
+    "/invoice/:path*",
+    "/invoice/create/:path*"
   ]
 };

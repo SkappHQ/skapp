@@ -10,6 +10,7 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
+import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
@@ -18,18 +19,21 @@ interface Props {
   tier: string;
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
+  tenantID?: string;
 }
 
 const getDrawerRoutes = ({
   userRoles,
   tier,
   isEnterprise,
-  globalLoginMethod
+  globalLoginMethod,
+  tenantID
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
         userRoles,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID
       })
     : routes;
 
@@ -70,7 +74,8 @@ const getDrawerRoutes = ({
               name: route?.name,
               url: ROUTES.DASHBOARD.BASE,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
@@ -115,7 +120,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.PEOPLE.DIRECTORY,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -141,7 +147,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.TIMESHEET.MY_TIMESHEET,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -176,11 +183,28 @@ const getDrawerRoutes = ({
               name: "My Leave Requests",
               url: ROUTES.LEAVE.MY_REQUESTS,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
           return;
+        }
+      }
+
+      if (route?.name === "Invoices") {
+        const isInvoiceManager = userRoles?.includes(
+          ManagerTypes.INVOICE_MANAGER
+        );
+
+        if (!isInvoiceManager || !needsToShow(tenantID as string)) {
+          return null;
+        }
+      }
+
+      if (route?.name === "Projects") {
+        if (!needsToShow(tenantID as string)) {
+          return null;
         }
       }
 
@@ -204,7 +228,8 @@ const getDrawerRoutes = ({
             url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
 
@@ -214,7 +239,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.SETTINGS.ACCOUNT,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -276,7 +302,8 @@ const getDrawerRoutes = ({
             url: ROUTES.CONFIGURATIONS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       }
@@ -299,7 +326,8 @@ const getDrawerRoutes = ({
             name: "Inbox",
             url: ROUTES.SIGN.INBOX,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -318,7 +346,8 @@ const getDrawerRoutes = ({
             url: route?.url,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       } else if (isAuthorized) {
@@ -327,7 +356,8 @@ const getDrawerRoutes = ({
           name: route?.name,
           url: route?.url,
           icon: route?.icon,
-          hasSubTree: route?.hasSubTree
+          hasSubTree: route?.hasSubTree,
+          badge: route?.badge
         };
       }
     })

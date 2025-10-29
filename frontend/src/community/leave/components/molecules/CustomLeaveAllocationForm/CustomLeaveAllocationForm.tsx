@@ -40,6 +40,7 @@ interface Props {
   setFieldError: (field: string, message: string | undefined) => void;
   translateText: (keys: string[]) => string;
   onSubmit: () => void;
+  datesDisabled?: boolean;
 }
 
 const CustomLeaveAllocationForm: React.FC<Props> = ({
@@ -48,7 +49,8 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
   setFieldValue,
   setFieldError,
   translateText,
-  onSubmit
+  onSubmit,
+  datesDisabled
 }) => {
   const [selectedValidFromDate, setSelectedValidFromDate] = useState<
     DateTime | undefined
@@ -387,6 +389,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
           selectedDate={selectedValidFromDate}
           setSelectedDate={setSelectedValidFromDate}
           initialMonthlyView={getMinDateOfYear(Number(selectedYear))}
+          disabled={datesDisabled}
         />
         <InputDate
           label={translateText(["expirationDate"])}
@@ -406,6 +409,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
           selectedDate={selectedValidToDate}
           setSelectedDate={setSelectedValidToDate}
           initialMonthlyView={getMaxDateOfYear(Number(selectedYear))}
+          disabled={datesDisabled}
         />
       </Stack>
     </Form>

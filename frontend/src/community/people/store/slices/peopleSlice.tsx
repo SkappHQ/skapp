@@ -93,7 +93,9 @@ const defaultEmployee: L1EmployeeType = {
     peopleRole: Role.PEOPLE_EMPLOYEE,
     leaveRole: Role.LEAVE_EMPLOYEE,
     attendanceRole: Role.ATTENDANCE_EMPLOYEE,
-    esignRole: Role.ESIGN_EMPLOYEE
+    esignRole: Role.ESIGN_EMPLOYEE,
+    pmRole: Role.PM_EMPLOYEE,
+    invoiceRole: Role.INVOICE_NONE
   },
   common: {
     employeeId: "",

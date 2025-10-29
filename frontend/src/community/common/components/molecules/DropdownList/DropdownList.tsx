@@ -61,6 +61,10 @@ interface Props {
   labelStyles?: SxProps;
   ariaLabel?: string;
   checkSelected?: boolean;
+  typographyStyles?: SxProps;
+  enableTextWrapping?: boolean;
+  showSpinnerWhenNoData?: boolean;
+  noOptionsText?: string;
 }
 
 const DropdownList: FC<Props> = ({
@@ -91,7 +95,11 @@ const DropdownList: FC<Props> = ({
   errorFocusOutlineNeeded = true,
   labelStyles,
   checkSelected,
-  ariaLabel
+  ariaLabel,
+  typographyStyles,
+  enableTextWrapping = false,
+  showSpinnerWhenNoData = true,
+  noOptionsText
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -164,7 +172,11 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
-              style: { maxHeight: 300, zIndex: ZIndexEnums.MODAL }
+              style: {
+                maxHeight: 300,
+                zIndex: ZIndexEnums.MODAL,
+                ...(enableTextWrapping ? { width: "max-content" } : {})
+              }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
@@ -230,7 +242,8 @@ const DropdownList: FC<Props> = ({
                       color:
                         value === menuItemValue
                           ? theme.palette.primary.dark
-                          : theme.palette.text.primary
+                          : theme.palette.text.primary,
+                      ...typographyStyles
                     }}
                   >
                     {label}
@@ -292,9 +305,15 @@ const DropdownList: FC<Props> = ({
               "aria-required": required
             }}
           >
-            <Box display={"flex"} justifyContent={"center"}>
-              <CircularProgress size={20} style={{ color: "black" }} />
-            </Box>
+            {showSpinnerWhenNoData ? (
+              <Box display={"flex"} justifyContent={"center"}>
+                <CircularProgress size={20} style={{ color: "black" }} />
+              </Box>
+            ) : (
+              <Typography variant="body2" sx={{ p: 1 }}>
+                {noOptionsText}
+              </Typography>
+            )}
           </Select>
         )}
       </Paper>
