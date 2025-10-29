@@ -50,6 +50,7 @@ import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
+import com.skapp.enterprise.common.service.EpMicrosoftCalendarService;
 import com.skapp.enterprise.common.service.EpOrganizationService;
 import com.skapp.enterprise.common.service.ModuleService;
 import com.skapp.enterprise.common.service.TenantService;
@@ -103,6 +104,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final EpGoogleCalenderService epGoogleCalenderService;
 
+	private final EpMicrosoftCalendarService epMicrosoftCalendarService;
+
 	private final EsignConfigService esignConfigService;
 
 	private final InvoiceConfigService invoiceConfigService;
@@ -128,10 +131,11 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			ApplicationEventPublisher applicationEventPublisher, EpOrganizationCalenderDao epOrganizationCalenderDao,
 			EpOrganizationConfigDao epOrganizationConfigDao, CacheService cacheService,
 			DashboardEmailService dashboardEmailService, ModuleService moduleService,
-			EpGoogleCalenderService epGoogleCalenderService, EsignConfigService esignConfigService,
-			InvoiceConfigService invoiceConfigService, OrganizationConfigDao organizationConfigDao,
-			ObjectMapper objectMapper, AttendanceConfigService attendanceConfigService,
-			LeaveTypeService leaveTypeService, LeaveCycleService leaveCycleService) {
+			EpGoogleCalenderService epGoogleCalenderService, EpMicrosoftCalendarService epMicrosoftCalendarService,
+			EsignConfigService esignConfigService, InvoiceConfigService invoiceConfigService,
+			OrganizationConfigDao organizationConfigDao, ObjectMapper objectMapper,
+			AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
+			LeaveCycleService leaveCycleService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
 				okrConfigService);
@@ -149,6 +153,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.dashboardEmailService = dashboardEmailService;
 		this.moduleService = moduleService;
 		this.epGoogleCalenderService = epGoogleCalenderService;
+		this.epMicrosoftCalendarService = epMicrosoftCalendarService;
 		this.esignConfigService = esignConfigService;
 		this.invoiceConfigService = invoiceConfigService;
 		this.organizationConfigDao = organizationConfigDao;
@@ -211,7 +216,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 	public ResponseEntityDto editCalendarConfigs(EpCalendarConfigRequestDto epCalendarConfigRequestDto) {
 		log.info("editCalendarConfigs: execution started");
 
-		if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null) {
+		if (epCalendarConfigRequestDto.getIsGoogleCalendarEnabled() == null
+				&& epCalendarConfigRequestDto.getIsMicrosoftCalendarEnabled() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_CANNOT_BE_EMPTY);
 		}
 
@@ -220,6 +226,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		if (organizationCalendars.isEmpty()) {
 			OrganizationCalendar newCalendar = new OrganizationCalendar();
 			newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+			newCalendar.setIsMicrosoftCalendarEnabled(epCalendarConfigRequestDto.getIsMicrosoftCalendarEnabled());
 			epOrganizationCalenderDao.save(newCalendar);
 			return new ResponseEntityDto(false, newCalendar);
 		}
@@ -227,12 +234,15 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			OrganizationCalendar existingOrganizationCalendar = organizationCalendars.getFirst();
 
 			if (!Objects.equals(existingOrganizationCalendar.getIsGoogleCalendarEnabled(),
-					epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())) {
+					epCalendarConfigRequestDto.getIsGoogleCalendarEnabled())
+					|| !Objects.equals(existingOrganizationCalendar.getIsMicrosoftCalendarEnabled(),
+							epCalendarConfigRequestDto.getIsMicrosoftCalendarEnabled())) {
 
 				epOrganizationCalenderDao.delete(existingOrganizationCalendar);
 
 				OrganizationCalendar newCalendar = new OrganizationCalendar();
 				newCalendar.setIsGoogleCalendarEnabled(epCalendarConfigRequestDto.getIsGoogleCalendarEnabled());
+				newCalendar.setIsMicrosoftCalendarEnabled(epCalendarConfigRequestDto.getIsMicrosoftCalendarEnabled());
 				epOrganizationCalenderDao.save(newCalendar);
 
 				log.info("editCalendarConfigs: execution ended successfully");
@@ -395,6 +405,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		leaveCycleService.setLeaveCycleDefaultConfigs();
 		moduleService.setDefaultModules();
 		epGoogleCalenderService.setupOrganizationCalendar();
+		epMicrosoftCalendarService.setupOrganizationCalendar();
 		esignConfigService.setDefaultEsignConfigs();
 
 		EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();

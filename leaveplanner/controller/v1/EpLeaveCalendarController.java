@@ -34,18 +34,4 @@ public class EpLeaveCalendarController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@GetMapping(value = "/microsoft/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getMicrosoftDateRangeAndWorkingHoursForLeave(@PathVariable Long id) {
-		ResponseEntityDto response = epLeaveCalendarService.getMicrosoftDateRangeAndWorkingHoursForLeave(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@PostMapping(value = "/microsoft/add-event", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> addMicrosoftOutOfOfficeEventsForLeave(
-			@RequestBody EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
-		ResponseEntityDto response = epLeaveCalendarService
-			.addMicrosoftOutOfOfficeEventsForLeave(epOutOfOfficeEventRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
 }

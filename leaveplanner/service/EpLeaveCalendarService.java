@@ -12,10 +12,4 @@ public interface EpLeaveCalendarService {
 
 	void deleteOutOfOfficeEventsForLeave(LeaveRequest leaveRequest);
 
-	ResponseEntityDto addMicrosoftOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto);
-
-	ResponseEntityDto getMicrosoftDateRangeAndWorkingHoursForLeave(Long id);
-
-	void deleteMicrosoftOutOfOfficeEventsForLeave(LeaveRequest leaveRequest);
-
 }

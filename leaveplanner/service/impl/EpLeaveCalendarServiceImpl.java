@@ -17,9 +17,12 @@ import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.model.EmployeeCalendar;
+import com.skapp.enterprise.common.repository.EmployeeCalendarDao;
 import com.skapp.enterprise.common.service.EpGoogleCalenderService;
 import com.skapp.enterprise.common.service.EpMicrosoftCalendarService;
 import com.skapp.enterprise.common.service.impl.EpGoogleCalenderServiceImpl;
+import com.skapp.enterprise.common.type.EpCalendarType;
 import com.skapp.enterprise.leaveplanner.constant.EpLeaveMessageConstant;
 import com.skapp.enterprise.leaveplanner.model.CalendarEvent;
 import com.skapp.enterprise.leaveplanner.payload.EpWorkingHoursDto;
@@ -28,6 +31,7 @@ import com.skapp.enterprise.leaveplanner.payload.response.EpLeaveDurationAndWork
 import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
 import com.skapp.enterprise.leaveplanner.type.EpGoogleCalendarAutoDeclineMode;
+import com.skapp.enterprise.leaveplanner.type.EpMicrosoftCalendarAutoDeclineMode;
 import com.skapp.enterprise.leaveplanner.util.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.skapp.community.leaveplanner.util.LeaveModuleUtil.getHolidayAvailabilityOnGivenDateRange;
 
@@ -54,8 +59,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 	private final EpGoogleCalenderService epGoogleCalenderService;
 
-	private final UserService userService;
-
 	private final CalendarEventDao calendarEventDao;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
@@ -67,6 +70,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final OrganizationService organizationService;
 
 	private final EpMicrosoftCalendarService epMicrosoftCalendarService;
+
+	private final EmployeeCalendarDao employeeCalendarDao;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -93,14 +98,30 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	public ResponseEntityDto addOutOfOfficeEventsForLeave(EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
 		log.info("addOutOfOfficeEventsForLeave: execution started");
 
-		if (Boolean.FALSE.equals(epGoogleCalenderServiceImpl.getIsGoogleCalenderConnected())) {
+		LeaveRequest leaveRequest = leaveRequestDao.findById(epOutOfOfficeEventRequestDto.getLeaveId()).orElse(null);
+		if (leaveRequest == null) {
+			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(
+				leaveRequest.getEmployee().getUser(), Set.of(EpCalendarType.OUTLOOK, EpCalendarType.GOOGLE));
+
+		if (employeeCalendar == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
 
-		LeaveRequest leaveRequest = leaveRequestDao.findById(epOutOfOfficeEventRequestDto.getLeaveId()).orElse(null);
-
-		if (leaveRequest == null) {
-			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
+		if (employeeCalendar.getCalendarType() == EpCalendarType.GOOGLE) {
+			if (Boolean.FALSE.equals(epGoogleCalenderServiceImpl.getIsGoogleCalenderConnected())) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+			}
+		}
+		else if (employeeCalendar.getCalendarType() == EpCalendarType.OUTLOOK) {
+			if (Boolean.FALSE.equals(epMicrosoftCalendarService.getIsMicrosoftCalendarConnected())) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
+			}
+		}
+		else {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 		}
 
 		if (epOutOfOfficeEventRequestDto.getDeclineMessage() != null) {
@@ -111,10 +132,11 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null
 				&& epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled() != null) {
+
 			addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, holidayObjects,
 					epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled(),
 					epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled(),
-					epOutOfOfficeEventRequestDto.getDeclineMessage());
+					epOutOfOfficeEventRequestDto.getDeclineMessage(), employeeCalendar.getCalendarType());
 		}
 		else {
 			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_AUTO_DECLINE_MODE_NOT_FOUND);
@@ -130,16 +152,39 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	public void deleteOutOfOfficeEventsForLeave(LeaveRequest leaveRequest) {
 		log.info("deleteOutOfOfficeEventsForLeave: execution started");
 
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(
+				leaveRequest.getEmployee().getUser(), Set.of(EpCalendarType.OUTLOOK, EpCalendarType.GOOGLE));
+
+		if (employeeCalendar == null) {
+			log.warn("No calendar configuration found for user, skipping calendar event deletion");
+			return;
+		}
+
 		try {
 			List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
 
 			if (calendarEvents != null && !calendarEvents.isEmpty()) {
-				String accessToken = epGoogleCalenderService
-					.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
-				for (CalendarEvent calendarEvent : calendarEvents) {
-					epGoogleCalenderService.deleteOutOfOfficeEvent(
-							encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
-							accessToken);
+
+				if (employeeCalendar.getCalendarType() == EpCalendarType.GOOGLE) {
+					String accessToken = epGoogleCalenderService
+						.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
+					for (CalendarEvent calendarEvent : calendarEvents) {
+						epGoogleCalenderService.deleteOutOfOfficeEvent(
+								encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
+								accessToken);
+					}
+				}
+				else if (employeeCalendar.getCalendarType() == EpCalendarType.OUTLOOK) {
+					String accessToken = epMicrosoftCalendarService
+						.generateMicrosoftAccessToken(leaveRequest.getEmployee().getUser());
+					for (CalendarEvent calendarEvent : calendarEvents) {
+						epMicrosoftCalendarService.deleteOutOfOfficeEvent(
+								encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
+								accessToken);
+					}
+				}
+				else {
+					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
 				}
 			}
 		}
@@ -150,89 +195,9 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		log.info("deleteOutOfOfficeEventsForLeave: execution ended");
 	}
 
-	@Override
-	public ResponseEntityDto getMicrosoftDateRangeAndWorkingHoursForLeave(Long id) {
-		log.info("getMicrosoftDateRangeAndWorkingHoursForLeave: execution started");
-
-		LeaveRequest leaveRequest = leaveRequestDao.findById(id).orElse(null);
-
-		if (leaveRequest == null) {
-			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
-		}
-
-		EpLeaveDurationAndWorkingHoursResponseDto responseDto = getEpLeaveDurationAndWorkingHoursResponseDto(
-				leaveRequest);
-
-		log.info("getMicrosoftDateRangeAndWorkingHoursForLeave: execution ended");
-
-		return new ResponseEntityDto(false, responseDto);
-	}
-
-	@Override
-	public ResponseEntityDto addMicrosoftOutOfOfficeEventsForLeave(
-			EpOutOfOfficeEventRequestDto epOutOfOfficeEventRequestDto) {
-		log.info("addMicrosoftOutOfOfficeEventsForLeave: execution started");
-
-		if (Boolean.FALSE.equals(epMicrosoftCalendarService.getIsMicrosoftCalendarConnected())) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CALENDAR_CONFIG_NOT_FOUND);
-		}
-
-		LeaveRequest leaveRequest = leaveRequestDao.findById(epOutOfOfficeEventRequestDto.getLeaveId()).orElse(null);
-
-		if (leaveRequest == null) {
-			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_LEAVE_REQUEST_NOT_FOUND);
-		}
-
-		if (epOutOfOfficeEventRequestDto.getDeclineMessage() != null) {
-			Validation.isValidDeclineMessage(epOutOfOfficeEventRequestDto.getDeclineMessage());
-		}
-
-		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
-
-		if (epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled() != null
-				&& epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled() != null) {
-			addMicrosoftOutOfOfficeOnValidDatesAndTimeWithoutHolidays(leaveRequest, holidayObjects,
-					epOutOfOfficeEventRequestDto.getIsAutoDeclineExistingEventsOnLeaveEnabled(),
-					epOutOfOfficeEventRequestDto.getIsAutoDeclineEnabled(),
-					epOutOfOfficeEventRequestDto.getDeclineMessage());
-		}
-		else {
-			throw new ModuleException(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_ERROR_AUTO_DECLINE_MODE_NOT_FOUND);
-		}
-
-		log.info("addMicrosoftOutOfOfficeEventsForLeave: execution ended");
-
-		return new ResponseEntityDto(false,
-				messageUtil.getMessage(EpLeaveMessageConstant.EP_LEAVE_CALENDAR_SUCCESS_CREATED_OUT_OF_OFFICE_EVENTS));
-	}
-
-	@Override
-	public void deleteMicrosoftOutOfOfficeEventsForLeave(LeaveRequest leaveRequest) {
-		log.info("deleteMicrosoftOutOfOfficeEventsForLeave: execution started");
-
-		try {
-			List<CalendarEvent> calendarEvents = calendarEventDao.findByLeaveRequest(leaveRequest);
-
-			if (calendarEvents != null && !calendarEvents.isEmpty()) {
-				String accessToken = epMicrosoftCalendarService
-					.generateMicrosoftAccessToken(leaveRequest.getEmployee().getUser());
-				for (CalendarEvent calendarEvent : calendarEvents) {
-					epMicrosoftCalendarService.deleteOutOfOfficeEvent(
-							encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
-							accessToken);
-				}
-			}
-		}
-		catch (ModuleException e) {
-			log.error("Error while deleting Microsoft out of office events for leave request", e);
-		}
-
-		log.info("deleteMicrosoftOutOfOfficeEventsForLeave: execution ended");
-	}
-
 	private void addOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
 			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled,
-			Boolean isAutoDeclineEnabled, String declineMessage) {
+			Boolean isAutoDeclineEnabled, String declineMessage, EpCalendarType calendarType) {
 		LocalDate startDate = leaveRequest.getStartDate();
 		LocalDate endDate = leaveRequest.getEndDate();
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
@@ -241,15 +206,33 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
 		long totalHoursAsLong = firstTimeConfig.getTotalHours().longValue();
 
-		String autoDeclineMode = EpGoogleCalendarAutoDeclineMode.DECLINE_NONE.getAutoDeclineMode();
-
-		if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
-			autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
-					? EpGoogleCalendarAutoDeclineMode.DECLINE_ALL_CONFLICTING_INVITATION.getAutoDeclineMode()
-					: EpGoogleCalendarAutoDeclineMode.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS.getAutoDeclineMode();
+		String autoDeclineMode;
+		if (calendarType == EpCalendarType.GOOGLE) {
+			autoDeclineMode = EpGoogleCalendarAutoDeclineMode.DECLINE_NONE.getAutoDeclineMode();
+			if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
+				autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
+						? EpGoogleCalendarAutoDeclineMode.DECLINE_ALL_CONFLICTING_INVITATION.getAutoDeclineMode()
+						: EpGoogleCalendarAutoDeclineMode.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS.getAutoDeclineMode();
+			}
+		}
+		else {
+			autoDeclineMode = EpMicrosoftCalendarAutoDeclineMode.DECLINE_NONE.getAutoDeclineMode();
+			if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
+				autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled)
+						? EpMicrosoftCalendarAutoDeclineMode.DECLINE_ALL_CONFLICTING_INVITATION.getAutoDeclineMode()
+						: EpMicrosoftCalendarAutoDeclineMode.DECLINE_ONLY_NEW_CONFLICTING_INVITATIONS
+							.getAutoDeclineMode();
+			}
 		}
 
-		String accessToken = epGoogleCalenderService.generateGoogleAccessToken(userService.getCurrentUser());
+		// Generate access token based on calendar type
+		String accessToken;
+		if (calendarType == EpCalendarType.GOOGLE) {
+			accessToken = epGoogleCalenderService.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
+		}
+		else {
+			accessToken = epMicrosoftCalendarService.generateMicrosoftAccessToken(leaveRequest.getEmployee().getUser());
+		}
 
 		if (startDate.equals(endDate)) {
 			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
@@ -262,104 +245,47 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 
 			LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
 
-			saveEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
-
-			return;
-		}
-
-		if (startDate.isAfter(endDate)) {
-			LocalDate temp = startDate;
-			startDate = endDate;
-			endDate = temp;
-		}
-
-		LocalDate currentDate = startDate;
-		while (!currentDate.isAfter(endDate)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs,
-					organizationService.getOrganizationTimeZone())) {
-				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
-						holidayObjects);
-				LocalDateTime startDateTime = currentDate.atTime(workStartAndEndTimes.getStartTime());
-				long hoursToAdd = totalHoursAsLong;
-
-				if (holidayDuration == HolidayDuration.HALF_DAY_MORNING) {
-					startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
-					hoursToAdd /= 2;
-				}
-				else if (holidayDuration == HolidayDuration.HALF_DAY_EVENING) {
-					hoursToAdd /= 2;
-				}
-
-				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+			if (calendarType == EpCalendarType.GOOGLE) {
 				saveEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
-
 			}
-			currentDate = currentDate.plusDays(1);
-		}
-	}
-
-	private void addMicrosoftOutOfOfficeOnValidDatesAndTimeWithoutHolidays(LeaveRequest leaveRequest,
-			List<Holiday> holidayObjects, Boolean isAutoDeclineExistingEventsOnLeaveEnabled,
-			Boolean isAutoDeclineEnabled, String declineMessage) {
-		LocalDate startDate = leaveRequest.getStartDate();
-		LocalDate endDate = leaveRequest.getEndDate();
-		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-
-		TimeConfig firstTimeConfig = timeConfigs.getFirst();
-		EpWorkingHoursDto workStartAndEndTimes = getWorkStartAndEndTimes(leaveRequest, firstTimeConfig);
-		long totalHoursAsLong = firstTimeConfig.getTotalHours().longValue();
-
-		String autoDeclineMode = "none";
-
-		if (Boolean.TRUE.equals(isAutoDeclineEnabled)) {
-			autoDeclineMode = Boolean.TRUE.equals(isAutoDeclineExistingEventsOnLeaveEnabled) ? "declineAll"
-					: "declineNew";
-		}
-
-		String accessToken = epMicrosoftCalendarService.generateMicrosoftAccessToken(userService.getCurrentUser());
-
-		if (startDate.equals(endDate)) {
-			LocalDateTime startDateTime = startDate.atTime(workStartAndEndTimes.getStartTime());
-			long hoursToAdd = totalHoursAsLong;
-
-			if (leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_MORNING)
-					|| leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)) {
-				hoursToAdd /= 2;
-			}
-
-			LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
-
-			saveMicrosoftEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
-
-			return;
-		}
-
-		if (startDate.isAfter(endDate)) {
-			LocalDate temp = startDate;
-			startDate = endDate;
-			endDate = temp;
-		}
-
-		LocalDate currentDate = startDate;
-		while (!currentDate.isAfter(endDate)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs,
-					organizationService.getOrganizationTimeZone())) {
-				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
-						holidayObjects);
-				LocalDateTime startDateTime = currentDate.atTime(workStartAndEndTimes.getStartTime());
-				long hoursToAdd = totalHoursAsLong;
-
-				if (holidayDuration == HolidayDuration.HALF_DAY_MORNING) {
-					startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
-					hoursToAdd /= 2;
-				}
-				else if (holidayDuration == HolidayDuration.HALF_DAY_EVENING) {
-					hoursToAdd /= 2;
-				}
-
-				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+			else {
 				saveMicrosoftEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode,
 						declineMessage);
+			}
+			return;
+		}
+
+		if (startDate.isAfter(endDate)) {
+			LocalDate temp = startDate;
+			startDate = endDate;
+			endDate = temp;
+		}
+
+		LocalDate currentDate = startDate;
+		while (!currentDate.isAfter(endDate)) {
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs,
+					organizationService.getOrganizationTimeZone())) {
+				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
+						holidayObjects);
+				LocalDateTime startDateTime = currentDate.atTime(workStartAndEndTimes.getStartTime());
+				long hoursToAdd = totalHoursAsLong;
+
+				if (holidayDuration == HolidayDuration.HALF_DAY_MORNING) {
+					startDateTime = startDateTime.plusHours(totalHoursAsLong / 2);
+					hoursToAdd /= 2;
+				}
+				else if (holidayDuration == HolidayDuration.HALF_DAY_EVENING) {
+					hoursToAdd /= 2;
+				}
+
+				LocalDateTime endDateTime = startDateTime.plusHours(hoursToAdd);
+				if (calendarType == EpCalendarType.GOOGLE) {
+					saveEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage);
+				}
+				else {
+					saveMicrosoftEvent(leaveRequest, startDateTime, endDateTime, accessToken, autoDeclineMode,
+							declineMessage);
+				}
 
 			}
 			currentDate = currentDate.plusDays(1);
