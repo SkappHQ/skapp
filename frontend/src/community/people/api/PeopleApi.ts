@@ -127,7 +127,8 @@ export const useGetEmployeeData =
           return lastPage.currentPage + 1;
         }
         return undefined;
-      }
+      },
+      refetchOnWindowFocus: false
     });
   };
 
