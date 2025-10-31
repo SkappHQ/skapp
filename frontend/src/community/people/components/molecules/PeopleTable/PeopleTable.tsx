@@ -189,6 +189,16 @@ const PeopleTable: FC<Props> = ({
 
   const columns = [
     { field: "name", headerName: translateText(["tableHeaders", "name"]) },
+    ...(isPendingInvitationListOpen
+      ? [
+          {
+            field: "pending",
+            headerName: translateText(["tableHeaders", "pending"]),
+            width: "0.5%",
+            align: "left"
+          }
+        ]
+      : []),
     {
       field: "jobTitle",
       headerName: translateText(["tableHeaders", "jobTitle"])
@@ -238,8 +248,8 @@ const PeopleTable: FC<Props> = ({
                   ? "common.black"
                   : theme.palette.grey[700],
                 maxWidth: isPendingInvitationListOpen
-                  ? "13.425rem"
-                  : "18.425rem",
+                  ? "14.425rem"
+                  : "14.75rem",
                 minWidth: 0,
                 width: "fit-content",
                 "& .MuiChip-label": {
@@ -248,26 +258,23 @@ const PeopleTable: FC<Props> = ({
                 justifyContent: "flex-start"
               }}
             />
-            {isPendingInvitationListOpen && (
-              <Stack
-                sx={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 1,
-                  backgroundColor: theme.palette.amber.light,
-                  color: theme.palette.amber.dark,
-                  padding: "0.25rem",
-                  borderRadius: 10,
-                  fontSize: "0.625rem"
-                }}
-              >
-                <Icon
-                  name={IconName.CLOCK_ICON}
-                  fill={theme.palette.amber.dark}
-                />
-                {translateText(["Pending"])}
-              </Stack>
-            )}
+          </Stack>
+        ),
+        pending: isPendingInvitationListOpen && (
+          <Stack
+            sx={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              gap: 1,
+              backgroundColor: theme.palette.amber.light,
+              color: theme.palette.amber.dark,
+              padding: "0.25rem",
+              borderRadius: 10,
+              fontSize: "0.625rem"
+            }}
+          >
+            <Icon name={IconName.CLOCK_ICON} fill={theme.palette.amber.dark} />
+            {translateText(["Pending"])}
           </Stack>
         ),
         jobTitle: (
