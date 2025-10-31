@@ -33,6 +33,7 @@ export const useGetOrganization = (isSessionDataAvailable: boolean = true) => {
       );
       return data;
     },
-    enabled: isSessionDataAvailable
+    enabled: isSessionDataAvailable,
+    refetchOnWindowFocus: false
   });
 };
