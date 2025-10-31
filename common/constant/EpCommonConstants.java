@@ -59,9 +59,9 @@ public class EpCommonConstants {
 
 	public final String ENTERPRISE_MICROSOFT_AUTH_SCOPES = "openid profile email offline_access User.Read";
 
-	public final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
+	public static final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
 
-	public final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
+	public static final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
 
 	public static final String ENTERPRISE_MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access openid";
 

@@ -240,6 +240,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		return new ResponseEntityDto(false, getIsMicrosoftCalendarConnected());
 	}
 
+	@Override
 	public Boolean getIsMicrosoftCalendarConnected() {
 		User currentUser = userService.getCurrentUser();
 		boolean isConnected = false;
@@ -265,10 +266,9 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			}
 		}
 		catch (ModuleException e) {
-			log.error("Error checking Microsoft Calendar connection: ", e);
+			log.error("Error checking Microsoft Calendar connection: {}", e.getMessage(), e);
 			return false;
 		}
-
 		return isConnected;
 	}
 
@@ -646,7 +646,8 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
 				Set.of(EpCalendarType.OUTLOOK));
 
-		if (employeeCalendar.getCalendarType() != EpCalendarType.NONE || employeeCalendar.getCalendarToken() != null) {
+		if (employeeCalendar.getCalendarType() == EpCalendarType.OUTLOOK
+				&& employeeCalendar.getCalendarToken() != null) {
 			disconnectCalendarFromDatabase(currentUser);
 		}
 	}
@@ -670,7 +671,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	private void validateMicrosoftCalendarAuthRedirectDto(EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
-		if (epMicrosoftAuthRedirectDto.getError() != null && !epMicrosoftAuthRedirectDto.getError().isEmpty()
+		if ((epMicrosoftAuthRedirectDto.getError() != null && !epMicrosoftAuthRedirectDto.getError().isEmpty())
 				|| epMicrosoftAuthRedirectDto.getCode().isEmpty()) {
 			log.error("saveMicrosoftCalendarConfig: Error: {}", epMicrosoftAuthRedirectDto.getError());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);

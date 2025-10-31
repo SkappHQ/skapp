@@ -225,7 +225,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			}
 		}
 
-		// Generate access token based on calendar type
 		String accessToken;
 		if (calendarType == EpCalendarType.GOOGLE) {
 			accessToken = epGoogleCalenderService.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
