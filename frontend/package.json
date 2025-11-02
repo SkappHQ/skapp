@@ -44,7 +44,7 @@
     "luxon": "^3.6.1",
     "luxon-business-days": "^3.0.1",
     "next": "^14.2.28",
-    "next-auth": "^4.24.7",
+    "next-auth": "^4.24.12",
     "papaparse": "^5.5.2",
     "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",
