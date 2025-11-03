@@ -92,6 +92,8 @@ const Tooltip: FC<Props> = ({
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onMouseEnter={() => !isDisabled && setOpen(true)} 
+        onMouseLeave={() => setOpen(false)} 
         style={{
           pointerEvents: isDisabled ? "none" : "auto", // Prevent interaction when disabled
           cursor: isDisabled ? "not-allowed" : "pointer", // Change cursor when disabled,
