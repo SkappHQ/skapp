@@ -2,6 +2,10 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.graph.models.*;
+import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.authentication.IAuthenticationProvider;
+import com.microsoft.graph.options.QueryOption;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -34,7 +38,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -53,11 +56,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -366,190 +370,150 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		}
 	}
 
-	@Override
-	public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
-			String autoDeclineMode, String declineMessage) {
-		String organizationTimeZone = organizationDao.findTopByOrderByOrganizationIdDesc()
-			.map(Organization::getOrganizationTimeZone)
-			.orElse("UTC");
+        private GraphServiceClient<?> createClient(String accessToken) {
+            IAuthenticationProvider authProvider = requestUrl -> CompletableFuture.completedFuture(accessToken);
+            return GraphServiceClient
+                .builder()
+                .authenticationProvider(authProvider)
+                .buildClient();
+        }
 
-		ZonedDateTime startInOrgTz = startDateTime.atZone(ZoneId.of(organizationTimeZone));
-		ZonedDateTime endInOrgTz = endDateTime.atZone(ZoneId.of(organizationTimeZone));
 
-		ZonedDateTime startUtc = startInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
-		ZonedDateTime endUtc = endInOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
+    @Override
+    public String createOutOfOfficeEvent(LocalDateTime startDateTime, LocalDateTime endDateTime, String accessToken,
+                                         String autoDeclineMode, String declineMessage) {
+        log.info("createOutOfOfficeEvent: execution started");
 
-		String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
-		String endFormatted = endUtc.format(DateTimeFormatter.ISO_INSTANT);
+        String organizationTimeZone = organizationDao.findTopByOrderByOrganizationIdDesc()
+            .map(Organization::getOrganizationTimeZone)
+            .orElse("UTC");
+        ZonedDateTime startOrgTz = startDateTime.atZone(ZoneId.of(organizationTimeZone));
+        ZonedDateTime endOrgTz = endDateTime.atZone(ZoneId.of(organizationTimeZone));
+        ZonedDateTime startUtc = startOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
+        ZonedDateTime endUtc = endOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
 
-		log.info("createOutOfOfficeEvent: startDateTime: {}, endDateTime: {}", startFormatted, endFormatted);
+        GraphServiceClient<?> graphClient = createClient(accessToken);
 
-		Map<String, Object> event = new HashMap<>();
-		event.put("subject", "Out of Office");
-		event.put("isAllDay", false);
-		event.put("showAs", "oof");
-		event.put("sensitivity", "private");
+        Event event = new Event();
+        event.subject = "Out of Office";
+        event.showAs = FreeBusyStatus.OOF;
+        event.sensitivity = Sensitivity.NORMAL;
+        event.isAllDay = false;
+        event.responseRequested = false;
+        ItemBody body = new ItemBody();
+        body.contentType = BodyType.TEXT;
+        body.content = declineMessage != null ? declineMessage : "Out of office";
+        event.body = body;
 
-		Map<String, Object> start = new HashMap<>();
-		start.put("dateTime", startFormatted);
-		start.put("timeZone", "UTC");
-		event.put("start", start);
+        DateTimeTimeZone start = new DateTimeTimeZone();
+        start.dateTime = startUtc.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        start.timeZone = "UTC";
+        event.start = start;
 
-		Map<String, Object> end = new HashMap<>();
-		end.put("dateTime", endFormatted);
-		end.put("timeZone", "UTC");
-		event.put("end", end);
+        DateTimeTimeZone end = new DateTimeTimeZone();
+        end.dateTime = endUtc.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        end.timeZone = "UTC";
+        event.end = end;
 
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.setBearerAuth(accessToken);
+        try {
+            Event createdEvent = graphClient.me().events().buildRequest().post(event);
+            log.info("MicrosoftCalendar: created Event: {}", createdEvent.id);
 
-			HttpEntity<Map<String, Object>> request = new HttpEntity<>(event, headers);
-			ResponseEntity<Map> response = restTemplate.postForEntity(
-					EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL + "/me/events", request, Map.class);
+            if ("declineAllConflictingInvitations".equals(autoDeclineMode)) {
+                declineConflictingEvents(startUtc, endUtc, accessToken, declineMessage, createdEvent.id);
+            }
+            if ("declineAllConflictingInvitations".equals(autoDeclineMode) ||
+                "declineOnlyNewConflictingInvitations".equals(autoDeclineMode)) {
+                setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
+            }
+            return createdEvent.id;
+        } catch (Exception ex) {
+            log.error("Error creating out-of-office event: {}", ex.getMessage(), ex);
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+        }
+    }
 
-			if (response.getBody() != null && response.getBody().containsKey("id")) {
-				String eventId = (String) response.getBody().get("id");
-				log.info("MicrosoftCalendar: created Event: {}", eventId);
+    private void setAutomaticReplies(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken, String declineMessage) {
+        String reply = (declineMessage != null && !declineMessage.isBlank()) ? declineMessage : "I am out of office.";
+        try {
+            GraphServiceClient<?> graphClient = createClient(accessToken);
 
-				if ("declineAllConflictingInvitations".equals(autoDeclineMode)) {
-					declineConflictingEvents(startUtc, endUtc, accessToken, declineMessage, eventId);
-				}
+            // Build automatic replies setting using SDK model classes
+            AutomaticRepliesSetting repliesSetting = new AutomaticRepliesSetting();
+            repliesSetting.status = AutomaticRepliesStatus.SCHEDULED;
+            repliesSetting.scheduledStartDateTime = new DateTimeTimeZone();
+            repliesSetting.scheduledStartDateTime.dateTime = startUtc.toLocalDateTime().toString();
+            repliesSetting.scheduledStartDateTime.timeZone = "UTC";
+            repliesSetting.scheduledEndDateTime = new DateTimeTimeZone();
+            repliesSetting.scheduledEndDateTime.dateTime = endUtc.toLocalDateTime().toString();
+            repliesSetting.scheduledEndDateTime.timeZone = "UTC";
+            repliesSetting.internalReplyMessage = reply;
+            repliesSetting.externalReplyMessage = reply;
+            // Set external audience to ALL
+            repliesSetting.externalAudience = ExternalAudienceScope.ALL;
 
-				if ("declineAllConflictingInvitations".equals(autoDeclineMode)
-						|| "declineOnlyNewConflictingInvitations".equals(autoDeclineMode)) {
-					setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
-				}
+            MailboxSettings mailboxSettings = new MailboxSettings();
+            mailboxSettings.automaticRepliesSetting = repliesSetting;
 
-				return eventId;
-			}
-		}
-		catch (Exception exception) {
-			log.error("MicrosoftCalendar: create Event: {}", exception.getMessage(), exception);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
-		}
+            // Patch via User object (Graph SDK 5.x pattern)
+            com.microsoft.graph.models.User graphUserPatch = new com.microsoft.graph.models.User();
+            graphUserPatch.mailboxSettings = mailboxSettings;
+            graphClient.me().buildRequest().patch(graphUserPatch);
+            log.info("Automatic replies scheduled via SDK ({} -> {})", startUtc, endUtc);
+        }
+        catch (Exception sdkEx) {
+            log.warn("SDK automatic replies patch failed ({}), attempting REST fallback: {}", sdkEx.getClass().getSimpleName(), sdkEx.getMessage());
+        }
+    }
 
-		return null;
-	}
+    private void declineConflictingEvents(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
+                                          String declineMessage, String newEventId) {
+        try {
+            GraphServiceClient<?> graphClient = createClient(accessToken);
+            String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
+            String endFormatted = endUtc.format(DateTimeFormatter.ISO_INSTANT);
+            List<Event> events = graphClient.me().calendarView()
+                .buildRequest(Arrays.asList(
+                    new QueryOption("startDateTime", startFormatted),
+                    new QueryOption("endDateTime", endFormatted)))
+                .get()
+                .getCurrentPage();
+            for (Event existing : events) {
+                if (existing.id == null || existing.id.equals(newEventId)) continue;
+                if (existing.responseStatus != null && existing.responseStatus.response == ResponseType.DECLINED) continue;
+                ZonedDateTime existingStart = parseEventDateTime(existing.start);
+                ZonedDateTime existingEnd = parseEventDateTime(existing.end);
+                if (existingStart != null && existingEnd != null && existingStart.isBefore(endUtc) && existingEnd.isAfter(startUtc)) {
+                    EventDeclineParameterSet declineParams = EventDeclineParameterSet
+                        .newBuilder()
+                        .withComment(declineMessage != null ? declineMessage : "Declined due to out-of-office leave.")
+                        .withSendResponse(true)
+                        .build();
+                    graphClient.me().events(existing.id).decline(declineParams).buildRequest().post();
+                    log.info("Declined conflicting event {}", existing.id);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error declining conflicting events: {}", e.getMessage(), e);
+        }
+    }
 
-	private void declineConflictingEvents(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
-			String declineMessage, String newEventId) {
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setBearerAuth(accessToken);
-
-			String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
-			String endFormatted = endUtc.format(DateTimeFormatter.ISO_INSTANT);
-
-			String calendarViewUrl = EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL
-					+ "/me/calendar/calendarView?startDateTime=" + startFormatted + "&endDateTime=" + endFormatted;
-			HttpEntity<Void> request = new HttpEntity<>(headers);
-			ResponseEntity<Map> response = restTemplate.exchange(calendarViewUrl, HttpMethod.GET, request, Map.class);
-
-			if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
-					&& response.getBody().containsKey("value")) {
-				List<Map<String, Object>> events = (List<Map<String, Object>>) response.getBody().get("value");
-
-				for (Map<String, Object> event : events) {
-					String eventId = (String) event.get("id");
-					if (eventId.equals(newEventId))
-						continue;
-
-					Map<String, Object> eventStart = (Map<String, Object>) event.get("start");
-					Map<String, Object> eventEnd = (Map<String, Object>) event.get("end");
-					ZonedDateTime eventStartTime = ZonedDateTime.parse((String) eventStart.get("dateTime"));
-					ZonedDateTime eventEndTime = ZonedDateTime.parse((String) eventEnd.get("dateTime"));
-
-					if (eventStartTime.isBefore(endUtc) && eventEndTime.isAfter(startUtc)) {
-						String declineUrl = EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL + "/me/events/"
-								+ eventId + "/decline";
-						Map<String, Object> declineBody = new HashMap<>();
-						declineBody.put("comment",
-								declineMessage != null ? declineMessage : "Declined due to out-of-office leave.");
-						declineBody.put("sendResponse", true);
-						HttpEntity<Map<String, Object>> declineRequest = new HttpEntity<>(declineBody, headers);
-						ResponseEntity<Void> declineResponse = restTemplate.exchange(declineUrl, HttpMethod.POST,
-								declineRequest, Void.class);
-
-						if (declineResponse.getStatusCode() != HttpStatus.ACCEPTED) {
-							log.warn("Failed to decline conflicting event {}: {}", eventId,
-									declineResponse.getStatusCode());
-						}
-					}
-				}
-			}
-		}
-		catch (Exception e) {
-			log.error("Error declining conflicting events", e);
-			// Optionally throw or continue
-		}
-	}
-
-	private void setAutomaticReplies(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
-			String declineMessage) {
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.setBearerAuth(accessToken);
-
-			String startFormatted = startUtc.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-			String endFormatted = endUtc.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-
-			Map<String, Object> body = new HashMap<>();
-			Map<String, Object> automaticRepliesSetting = new HashMap<>();
-			automaticRepliesSetting.put("status", "scheduled");
-			Map<String, Object> scheduledStart = new HashMap<>();
-			scheduledStart.put("dateTime", startFormatted);
-			scheduledStart.put("timeZone", "UTC");
-			automaticRepliesSetting.put("scheduledStartDateTime", scheduledStart);
-			Map<String, Object> scheduledEnd = new HashMap<>();
-			scheduledEnd.put("dateTime", endFormatted);
-			scheduledEnd.put("timeZone", "UTC");
-			automaticRepliesSetting.put("scheduledEndDateTime", scheduledEnd);
-			automaticRepliesSetting.put("internalReplyMessage",
-					declineMessage != null ? declineMessage : "I am out of office.");
-			automaticRepliesSetting.put("externalReplyMessage",
-					declineMessage != null ? declineMessage : "I am out of office.");
-			automaticRepliesSetting.put("externalAudience", "all");
-			body.put("automaticRepliesSetting", automaticRepliesSetting);
-
-			HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-			ResponseEntity<Void> response = restTemplate.exchange(
-					EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL + "/me/mailboxSettings", HttpMethod.PATCH,
-					request, Void.class);
-
-			if (response.getStatusCode() != HttpStatus.OK) {
-				log.warn("Failed to set automatic replies: {}", response.getStatusCode());
-			}
-		}
-		catch (Exception e) {
-			log.error("Error setting automatic replies", e);
-		}
-	}
-
-	@Override
-	public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setBearerAuth(accessToken);
-
-			HttpEntity<Void> request = new HttpEntity<>(headers);
-			restTemplate.exchange(EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL + "/me/events/" + eventId,
-					HttpMethod.DELETE, request, Void.class);
-
-			log.info("MicrosoftCalendar: deleted Event: {}", eventId);
-			calendarEventDao.deleteByEventId(eventId);
-		}
-		catch (Exception exception) {
-			log.error("MicrosoftCalendar: Error deleting Event {}: {}", eventId, exception.getMessage(), exception);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_MICROSOFT_CALENDAR);
-		}
-	}
+    @Override
+    public void deleteOutOfOfficeEvent(String eventId, String accessToken) {
+        try {
+            if (eventId == null || eventId.isBlank()) {
+                log.warn("deleteOutOfOfficeEvent: blank eventId");
+                return;
+            }
+            GraphServiceClient<?> graphClient = createClient(accessToken);
+            graphClient.me().events(eventId).buildRequest().delete();
+            log.info("MicrosoftCalendar: deleted Event: {}", eventId);
+            calendarEventDao.deleteByEventId(eventId);
+        } catch (Exception ex) {
+            log.error("MicrosoftCalendar: Error deleting Event {}: {}", eventId, ex.getMessage(), ex);
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_DELETE_MICROSOFT_CALENDAR);
+        }
+    }
 
 	private MicrosoftTokenResponse exchangeCodeForTokens(String authorizationCode) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -677,5 +641,19 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 		}
 	}
+
+    private ZonedDateTime parseEventDateTime(DateTimeTimeZone dateTimeTimeZone) {
+        if (dateTimeTimeZone == null || dateTimeTimeZone.dateTime == null) {
+            return null;
+        }
+        try {
+            ZoneId zone = ZoneId.of(dateTimeTimeZone.timeZone != null ? dateTimeTimeZone.timeZone : "UTC");
+            LocalDateTime local = LocalDateTime.parse(dateTimeTimeZone.dateTime.replace("Z",""));
+            return local.atZone(zone).withZoneSameInstant(ZoneId.of("UTC"));
+        } catch (Exception ex) {
+            log.warn("parseEventDateTime: unable to parse {}", dateTimeTimeZone.dateTime, ex);
+            return null;
+        }
+    }
 
 }
