@@ -249,29 +249,23 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		User currentUser = userService.getCurrentUser();
 		boolean isConnected = false;
 
-		try {
-			EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
-					Set.of(EpCalendarType.OUTLOOK));
+		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
+				Set.of(EpCalendarType.OUTLOOK));
 
-			if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
-					&& !employeeCalendar.getCalendarToken().isEmpty()
-					&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
-				String accessToken = generateMicrosoftAccessToken(currentUser);
-				if (accessToken != null) {
-					isConnected = true;
-				}
-			}
-
-			List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
-
-			if (organizationCalendars.isEmpty()
-					|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsMicrosoftCalendarEnabled())) {
-				isConnected = false;
+		if (employeeCalendar != null && employeeCalendar.getCalendarToken() != null
+				&& !employeeCalendar.getCalendarToken().isEmpty()
+				&& Boolean.TRUE.equals(employeeCalendar.getIsEnabled())) {
+			String accessToken = generateMicrosoftAccessToken(currentUser);
+			if (accessToken != null) {
+				isConnected = true;
 			}
 		}
-		catch (ModuleException e) {
-			log.error("Error checking Microsoft Calendar connection: {}", e.getMessage(), e);
-			return false;
+
+		List<OrganizationCalendar> organizationCalendars = epOrganizationCalenderDao.findAll();
+
+		if (organizationCalendars.isEmpty()
+				|| Boolean.FALSE.equals(organizationCalendars.getFirst().getIsMicrosoftCalendarEnabled())) {
+			isConnected = false;
 		}
 		return isConnected;
 	}
@@ -474,23 +468,25 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 						new QueryOption("endDateTime", endFormatted)))
 				.get()
 				.getCurrentPage();
-			for (Event existing : events) {
-				if (existing.id == null || existing.id.equals(newEventId))
-					continue;
-				if (existing.responseStatus != null && existing.responseStatus.response == ResponseType.DECLINED)
-					continue;
-				ZonedDateTime existingStart = parseEventDateTime(existing.start);
-				ZonedDateTime existingEnd = parseEventDateTime(existing.end);
-				if (existingStart != null && existingEnd != null && existingStart.isBefore(endUtc)
-						&& existingEnd.isAfter(startUtc)) {
+			events.stream()
+				.filter(existing -> existing.id != null && !existing.id.equals(newEventId))
+				.filter(existing -> existing.responseStatus == null
+						|| existing.responseStatus.response != ResponseType.DECLINED)
+				.filter(existing -> {
+					ZonedDateTime existingStart = parseEventDateTime(existing.start);
+					ZonedDateTime existingEnd = parseEventDateTime(existing.end);
+					return existingStart != null && existingEnd != null && existingStart.isBefore(endUtc)
+							&& existingEnd.isAfter(startUtc);
+				})
+				.forEach(existing -> {
 					EventDeclineParameterSet declineParams = EventDeclineParameterSet.newBuilder()
 						.withComment(declineMessage != null ? declineMessage : "Declined due to out-of-office leave.")
 						.withSendResponse(true)
 						.build();
 					graphClient.me().events(existing.id).decline(declineParams).buildRequest().post();
 					log.info("Declined conflicting event {}", existing.id);
-				}
-			}
+				});
+
 		}
 		catch (Exception e) {
 			log.error("Error declining conflicting events: {}", e.getMessage(), e);
@@ -505,9 +501,34 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				return;
 			}
 			GraphServiceClient<?> graphClient = createClient(accessToken);
+			Event oofEvent = graphClient.me().events(eventId).buildRequest().get();
+			if (oofEvent == null || oofEvent.start == null || oofEvent.end == null) {
+				log.warn("deleteOutOfOfficeEvent: OOF event not found or missing time info");
+				return;
+			}
+			String startDateTime = oofEvent.start.dateTime;
+			String endDateTime = oofEvent.end.dateTime;
+
+			List<Event> events = graphClient.me()
+				.calendarView()
+				.buildRequest(Arrays.asList(new QueryOption("startDateTime", startDateTime),
+						new QueryOption("endDateTime", endDateTime)))
+				.get()
+				.getCurrentPage();
+			events.stream()
+				.filter(event -> event.id != null && !event.id.equals(eventId))
+				.filter(event -> event.responseStatus != null && event.responseStatus.response == ResponseType.DECLINED)
+				.forEach(event -> {
+					EventAcceptParameterSet acceptParams = EventAcceptParameterSet.newBuilder()
+						.withSendResponse(true)
+						.build();
+					graphClient.me().events(event.id).accept(acceptParams).buildRequest().post();
+					log.info("Restored response for previously declined event {}", event.id);
+				});
 			graphClient.me().events(eventId).buildRequest().delete();
 			log.info("MicrosoftCalendar: deleted Event: {}", eventId);
-			calendarEventDao.deleteByEventId(eventId);
+			String encryptedEventId = encryptionDecryptionService.encrypt(eventId, encryptSecret);
+			calendarEventDao.deleteByEventId(encryptedEventId);
 		}
 		catch (Exception ex) {
 			log.error("MicrosoftCalendar: Error deleting Event {}: {}", eventId, ex.getMessage(), ex);
