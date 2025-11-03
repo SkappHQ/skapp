@@ -414,13 +414,22 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			log.info("MicrosoftCalendar: created Event: {} (start={}, end={}, sensitivity={}, showAs={})",
 					createdEvent.id, start.dateTime, end.dateTime, event.sensitivity, event.showAs);
 
-			if ("declineAllConflictingInvitations".equals(autoDeclineMode)) {
-				declineConflictingEvents(startUtc, endUtc, accessToken, declineMessage, createdEvent.id);
+			switch (autoDeclineMode) {
+				case "declineAllConflictingInvitations":
+					declineConflictingEvents(startUtc, endUtc, accessToken, declineMessage, createdEvent.id);
+					setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
+					break;
+
+				case "declineOnlyNewConflictingInvitations":
+					// Only set automatic replies for new events (cannot decline)
+					setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
+					break;
+
+				case "declineNone":
+				default:
+					break;
 			}
-			if ("declineAllConflictingInvitations".equals(autoDeclineMode)
-					|| "declineOnlyNewConflictingInvitations".equals(autoDeclineMode)) {
-				setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
-			}
+
 			return createdEvent.id;
 		}
 		catch (Exception ex) {
