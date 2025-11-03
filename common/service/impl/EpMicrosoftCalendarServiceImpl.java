@@ -175,7 +175,12 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		log.info("saveMicrosoftCalendarConfig: User: {}, currentTenant: {}", userId, currentTenant);
 		validateFrontendUrl(frontendRedirectUri);
 
-		User currentUser = getUser(userId);
+		Optional<User> currentUserOpt = userDao.findById(userId);
+		if (currentUserOpt.isEmpty()) {
+			log.error("saveMicrosoftCalendarConfig: User not found");
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
+		}
+		User currentUser = currentUserOpt.get();
 
 		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
 				Set.of(EpCalendarType.OUTLOOK, EpCalendarType.NONE));
@@ -480,7 +485,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				})
 				.forEach(existing -> {
 					EventDeclineParameterSet declineParams = EventDeclineParameterSet.newBuilder()
-						.withComment(declineMessage != null ? declineMessage : "Declined due to out-of-office leave.")
+						.withComment(declineMessage != null ? declineMessage : "Declined due to out-of-office.")
 						.withSendResponse(true)
 						.build();
 					graphClient.me().events(existing.id).decline(declineParams).buildRequest().post();
@@ -593,38 +598,18 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) {
 		try {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setBearerAuth(accessToken);
-
-			HttpEntity<Void> request = new HttpEntity<>(headers);
-			ResponseEntity<Map> response = restTemplate.exchange(
-					EpCommonConstants.ENTERPRISE_MICROSOFT_GRAPH_BASE_URL + "/me", HttpMethod.GET, request, Map.class);
-
-			if (response.getBody() != null && response.getBody().containsKey("mail")) {
-				String userEmail = (String) response.getBody().get("mail");
-				if (!currentUser.getEmail().equals(userEmail)) {
-					throw new ModuleException(
-							EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
-				}
-			}
-			else {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+			GraphServiceClient<?> graphClient = createClient(accessToken);
+			com.microsoft.graph.models.User graphUser = graphClient.me().buildRequest().get();
+			String userEmail = graphUser.mail;
+			if (userEmail == null || !currentUser.getEmail().equals(userEmail)) {
+				throw new ModuleException(
+						EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
 			}
 		}
 		catch (Exception e) {
-			log.error("Error verifying user email: ", e);
+			log.error("Error verifying user email via Graph SDK: ", e);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 		}
-	}
-
-	private User getUser(Long userId) {
-		Optional<User> currentUser = userDao.findById(userId);
-		if (currentUser.isEmpty()) {
-			log.error("saveMicrosoftCalendarConfig: User not found");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
-		}
-		return currentUser.get();
 	}
 
 	private void rollbackCalendarConnect(@NonNull User currentUser, @NonNull String generatedToken) {
