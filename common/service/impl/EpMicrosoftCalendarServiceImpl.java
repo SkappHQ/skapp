@@ -317,7 +317,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		responseDto.setAuthUrl(authUrl);
 
 		log.info("getMicrosoftAuthUrl: execution ended");
-		return new ResponseEntityDto(true, responseDto);
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
