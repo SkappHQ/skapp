@@ -84,7 +84,7 @@
     },
     "drawer": {
       "getHelp": "Get Help",
-      "applyLeaveBtn": "Apply Leave"
+      "applyLeaveBtn": "Apply Time Off"
     }
   },
   "durations": {
@@ -97,9 +97,9 @@
     "pageHead": "Dashboard | Skapp",
     "title": "Dashboard",
     "attendanceTab": "Attendance",
-    "leaveTab": "Leave",
+    "leaveTab": "Time Off",
     "peopleTab": "People",
-    "leaves": "Leave Requests"
+    "leaves": "Time Off Requests"
   },
   "settings": {
     "integrationPageHead": "Integrations | Skapp",
