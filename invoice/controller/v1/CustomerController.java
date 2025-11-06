@@ -94,6 +94,14 @@ public class CustomerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping(value = "/check-email", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_INVOICE_ADMIN', 'ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> checkCustomerEmail(
+			@Valid @RequestBody CheckEmailRequestDto checkEmailRequestDto) {
+		ResponseEntityDto response = customerService.checkCustomerEmail(checkEmailRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Update a customer contact",
 			description = "This endpoint updates an existing customer contact by their ID.")
 	@PatchMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

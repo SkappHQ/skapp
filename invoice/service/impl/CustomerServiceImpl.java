@@ -311,6 +311,23 @@ public class CustomerServiceImpl implements CustomerService {
 		return new ResponseEntityDto(false, checkEmailResponseDto);
 	}
 
+	@Override
+	public ResponseEntityDto checkCustomerEmail(CheckEmailRequestDto checkEmailRequestDto) {
+		String email = checkEmailRequestDto.getEmail();
+		if (email == null || email.trim().isEmpty()) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_CONTACT_EMAIL_REQUIRED);
+		}
+		boolean emailExists = customerDao.existsByEmail(email);
+		CheckEmailResponseDto checkEmailResponseDto = new CheckEmailResponseDto();
+		if (emailExists) {
+			checkEmailResponseDto.setEmailAlreadyExist(true);
+		}
+		else {
+			checkEmailResponseDto.setEmailAlreadyExist(false);
+		}
+		return new ResponseEntityDto(false, checkEmailResponseDto);
+	}
+
 	private Customer initializeCustomer(CustomerCreateRequestDto customerCreateRequestDto) {
 
 		Customer customer = new Customer();
