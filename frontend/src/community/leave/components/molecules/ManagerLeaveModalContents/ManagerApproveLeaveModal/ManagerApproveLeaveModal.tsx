@@ -149,6 +149,10 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
     }
   };
 
+  const getFileName = (url: string): string => {
+    return url.split("/").pop() || url;
+  };
+
   useEffect(() => {
     if (attachment) {
       if (environment === appModes.COMMUNITY) {
@@ -293,7 +297,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                           ariaLabel: `Attachment ${index + 1}`
                         }}
                         key={index}
-                        label={`Attachment ${index}`}
+                        label={`${getFileName(attachement.url)}`}
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",

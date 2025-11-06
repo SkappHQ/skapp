@@ -26,6 +26,10 @@ const AttachmentRow = ({ attachments }: Props) => {
     return null;
   }
 
+  const getFileName = (url: string): string => {
+    return url.split("/").pop() || url;
+  };
+
   return (
     <Stack
       sx={{
@@ -36,12 +40,11 @@ const AttachmentRow = ({ attachments }: Props) => {
       <Typography variant="body2" sx={{ fontSize: "1rem" }}>
         {translateText(["myLeaveRequests", "attachments"])}
       </Typography>
-
       <Box sx={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         {attachments.map((attachment, index) => (
           <IconChip
             key={index}
-            label={`${translateText(["myLeaveRequests", "uploadedAttachment"])} ${index + 1}`}
+            label={`${getFileName(attachment.url)}`}
             chipStyles={{
               backgroundColor: "grey.100",
               py: "0.75rem",
