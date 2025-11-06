@@ -97,7 +97,11 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
   }, [searchTerm, setSearchKeyword]);
 
   useEffect(() => {
-    if (searchTerm.length > 0 && !isRemovePeople) {
+    if (
+      searchTerm.length > 0 &&
+      !isRemovePeople &&
+      !isPendingInvitationListOpen
+    ) {
       setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
         EmploymentStatusTypes.ACTIVE,
         EmploymentStatusTypes.TERMINATED
