@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.DiscountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "in_item")
-public class InvoiceItem {
+public class InvoiceItem extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

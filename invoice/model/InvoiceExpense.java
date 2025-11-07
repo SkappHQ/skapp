@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.ExpenseCategory;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,7 +27,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Table(name = "in_expense")
-public class InvoiceExpense {
+public class InvoiceExpense extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
