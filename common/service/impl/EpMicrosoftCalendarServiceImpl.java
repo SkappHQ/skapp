@@ -518,7 +518,6 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 							&& event.getResponseStatus().getResponse() == ResponseType.Declined)
 					.forEach(event -> {
 						try {
-							// Update event response status to accepted
 							Event eventUpdate = new Event();
 							ResponseStatus responseStatus = new ResponseStatus();
 							responseStatus.setResponse(ResponseType.None);
