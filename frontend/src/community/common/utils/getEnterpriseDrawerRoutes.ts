@@ -49,7 +49,7 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
       }
 
       return {
-        id: "6",
+        id: "8",
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
         icon: IconName.SETTINGS_ICON,
@@ -68,14 +68,14 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
         ],
         subTree: [
           {
-            id: "6A",
+            id: "8B",
             name: "Modules",
             url: ROUTES.SETTINGS.MODULES,
             hasSubTree: false,
             requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
           },
           {
-            id: "6B",
+            id: "8A",
             name: "Account Settings",
             url: ROUTES.SETTINGS.ACCOUNT,
             hasSubTree: false,
@@ -93,7 +93,7 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
             ]
           },
           {
-            id: "6C",
+            id: "8C",
             name: "Integrations",
             url: ROUTES.SETTINGS.INTEGRATIONS,
             hasSubTree: false,
