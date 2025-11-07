@@ -51,9 +51,9 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/v1/ep/organization/login-method",
 			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp", "/v1/auth/refresh-token",
-			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/microsoft-calendar/redirect",
-			"/v1/validate/email", "/v1/ep/stripe/webhook", "/v1/ep/esign/document-link/access",
-			"/v2/ep/auth/sso/google/auth-url", "/v2/ep/auth/sso/google/redirect", "/v2/ep/auth/signin/sso/google",
+			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email",
+			"/v1/ep/stripe/webhook", "/v1/ep/esign/document-link/access", "/v2/ep/auth/sso/google/auth-url",
+			"/v2/ep/auth/sso/google/redirect", "/v2/ep/auth/signin/sso/google",
 			"/v2/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/code-challenge/verify",
 			"/v1/ep/esign/documents/sign", "/v1/ep/esign/documents/sign-field", "/v1/ep/esign/envelopes/decline",
 			"/v1/ep/esign/envelopes/signature-certificate", "/v1/ep/esign/recipients/consent",
@@ -65,7 +65,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
 			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
 			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
-			"/v1/ep/release/generate-pdf");
+			"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect");
 
 	private final JwtService jwtService;
 

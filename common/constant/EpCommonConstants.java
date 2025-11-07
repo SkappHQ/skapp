@@ -65,8 +65,6 @@ public class EpCommonConstants {
 
 	public static final String ENTERPRISE_MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access openid";
 
-	public static final String ENTERPRISE_MICROSOFT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
-
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 
 	public static final String JWT_ISSUER = "https://accounts.google.com";
@@ -132,5 +130,7 @@ public class EpCommonConstants {
 	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
 
 	public static final int OTP_GENERATION_DELAY_TIME_SECONDS = 30;
+
+	public static final int ENTERPRISE_MICROSOFT_CALENDAR_STATE_PARTS_COUNT = 3;
 
 }

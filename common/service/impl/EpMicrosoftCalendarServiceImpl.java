@@ -3,9 +3,8 @@ package com.skapp.enterprise.common.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.graph.models.*;
-import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.authentication.IAuthenticationProvider;
-import com.microsoft.graph.options.QueryOption;
+import com.microsoft.graph.serviceclient.GraphServiceClient;
+import com.microsoft.kiota.authentication.AuthenticationProvider;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -37,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -52,6 +50,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -60,8 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -150,7 +147,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		String encodedState = epMicrosoftAuthRedirectDto.getState();
 		String authorizationCode = epMicrosoftAuthRedirectDto.getCode();
 
-		if (encodedState.isEmpty()) {
+		if (encodedState == null || encodedState.isEmpty()) {
 			log.error("saveMicrosoftCalendarConfig: State is empty");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
 		}
@@ -162,7 +159,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 		String[] state = decryptedState.split(EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE);
 
-		if (state.length != 3) {
+		if (state.length != EpCommonConstants.ENTERPRISE_MICROSOFT_CALENDAR_STATE_PARTS_COUNT) {
 			log.error("saveMicrosoftCalendarConfig: State is invalid");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH);
 		}
@@ -172,7 +169,6 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		String currentTenant = state[2];
 		tenantContext.setTenantAndSwitchSchema(currentTenant);
 
-		log.info("saveMicrosoftCalendarConfig: User: {}, currentTenant: {}", userId, currentTenant);
 		validateFrontendUrl(frontendRedirectUri);
 
 		Optional<User> currentUserOpt = userDao.findById(userId);
@@ -227,7 +223,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		}
 		catch (Exception exception) {
 			log.error("saveMicrosoftCalendarConfig: {}", exception.getMessage(), exception);
-			rollbackCalendarConnect(currentUser, tokenGenerated);
+			rollbackCalendarConnect(currentUser);
 
 			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
 			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
@@ -316,7 +312,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		responseDto.setAuthUrl(authUrl);
 
 		log.info("getMicrosoftAuthUrl: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(true, responseDto);
 	}
 
 	@Override
@@ -338,7 +334,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		disconnectCalendarFromDatabase(currentUser);
 
 		return new ResponseEntityDto(
-				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_DISCONNECT_MICROSOFT_CALENDAR), false);
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_DISCONNECT_MICROSOFT_CALENDAR), true);
 	}
 
 	@Override
@@ -355,23 +351,23 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 		String refreshToken = employeeCalendar.getCalendarToken();
 
-		try {
-			String decryptedRefreshToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
-			return refreshAccessToken(decryptedRefreshToken);
-		}
-		catch (Exception exception) {
-			log.error("MicrosoftCalendar: generateAccessToken: {}", exception.getMessage(), exception);
+		String decryptedRefreshToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
+		if (decryptedRefreshToken == null || decryptedRefreshToken.isEmpty()) {
+			log.error("MicrosoftCalendar: generateAccessToken");
 			employeeCalendar.setCalendarToken(null);
 			employeeCalendar.setIsEnabled(false);
 			employeeCalendar.setCalendarType(EpCalendarType.NONE);
 			employeeCalendarDao.save(employeeCalendar);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR);
 		}
+		return refreshAccessToken(decryptedRefreshToken);
+
 	}
 
-	private GraphServiceClient<?> createClient(String accessToken) {
-		IAuthenticationProvider authProvider = requestUrl -> CompletableFuture.completedFuture(accessToken);
-		return GraphServiceClient.builder().authenticationProvider(authProvider).buildClient();
+	private GraphServiceClient createClient(String accessToken) {
+		AuthenticationProvider authProvider = (request, additionalData) -> request.headers.add("Authorization",
+				"Bearer " + accessToken);
+		return new GraphServiceClient(authProvider);
 	}
 
 	@Override
@@ -387,81 +383,81 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		ZonedDateTime startUtc = startOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
 		ZonedDateTime endUtc = endOrgTz.withZoneSameInstant(ZoneId.of("UTC"));
 
-		GraphServiceClient<?> graphClient = createClient(accessToken);
+		GraphServiceClient graphClient = createClient(accessToken);
 
 		Event event = new Event();
-		event.subject = "Out of Office";
-		event.showAs = FreeBusyStatus.OOF;
-		event.sensitivity = Sensitivity.PRIVATE;
-		event.isAllDay = false;
-		event.responseRequested = false;
+		event.setSubject("Out of Office");
+		event.setShowAs(FreeBusyStatus.Oof);
+		event.setSensitivity(Sensitivity.Private);
+		event.setIsAllDay(false);
+		event.setResponseRequested(false);
 		ItemBody body = new ItemBody();
-		body.contentType = BodyType.TEXT;
-		body.content = declineMessage != null ? declineMessage : "Out of office";
-		event.body = body;
+		body.setContentType(BodyType.Text);
+		body.setContent(declineMessage != null ? declineMessage : "Out of office");
+		event.setBody(body);
 
 		DateTimeTimeZone start = new DateTimeTimeZone();
-		start.dateTime = startUtc.format(DateTimeFormatter.ISO_INSTANT);
-		start.timeZone = "UTC";
-		event.start = start;
+		start.setDateTime(startUtc.format(DateTimeFormatter.ISO_INSTANT));
+		start.setTimeZone("UTC");
+		event.setStart(start);
 		DateTimeTimeZone end = new DateTimeTimeZone();
-		end.dateTime = endUtc.format(DateTimeFormatter.ISO_INSTANT);
-		end.timeZone = "UTC";
-		event.end = end;
+		end.setDateTime(endUtc.format(DateTimeFormatter.ISO_INSTANT));
+		end.setTimeZone("UTC");
+		event.setEnd(end);
 
-		try {
-			Event createdEvent = graphClient.me().events().buildRequest().post(event);
+		Event createdEvent = graphClient.me().events().post(event);
+		if (createdEvent != null && createdEvent.getId() != null) {
 			log.info("MicrosoftCalendar: created Event: {} (start={}, end={}, sensitivity={}, showAs={})",
-					createdEvent.id, start.dateTime, end.dateTime, event.sensitivity, event.showAs);
-
-			switch (autoDeclineMode) {
-				case "declineAllConflictingInvitations":
-					declineConflictingEvents(startUtc, endUtc, accessToken, declineMessage, createdEvent.id);
-					setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
-					break;
-
-				case "declineOnlyNewConflictingInvitations":
-					// Only set automatic replies for new events (cannot decline)
-					setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
-					break;
-
-				case "declineNone":
-				default:
-					break;
-			}
-
-			return createdEvent.id;
+					createdEvent.getId(), start.getDateTime(), end.getDateTime(), event.getSensitivity(),
+					event.getShowAs());
 		}
-		catch (Exception ex) {
-			log.error("Error creating out-of-office event: {}", ex.getMessage(), ex);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+
+		switch (autoDeclineMode) {
+			case "declineAllConflictingInvitations":
+				if (createdEvent != null && createdEvent.getId() != null) {
+					declineConflictingEvents(startUtc, endUtc, accessToken, createdEvent.getId());
+				}
+				setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
+				break;
+
+			case "declineOnlyNewConflictingInvitations":
+				// Only set automatic replies for new events (cannot decline)
+				setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
+				break;
+
+			case "declineNone":
+			default:
+				break;
 		}
+
+		return createdEvent != null ? createdEvent.getId() : null;
+
 	}
 
 	private void setAutomaticReplies(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
 			String declineMessage) {
 		String reply = (declineMessage != null && !declineMessage.isBlank()) ? declineMessage : "I am out of office.";
 		try {
-			GraphServiceClient<?> graphClient = createClient(accessToken);
+			GraphServiceClient graphClient = createClient(accessToken);
 
 			AutomaticRepliesSetting repliesSetting = new AutomaticRepliesSetting();
-			repliesSetting.status = AutomaticRepliesStatus.SCHEDULED;
-			repliesSetting.scheduledStartDateTime = new DateTimeTimeZone();
-			repliesSetting.scheduledStartDateTime.dateTime = startUtc.toLocalDateTime().toString();
-			repliesSetting.scheduledStartDateTime.timeZone = "UTC";
-			repliesSetting.scheduledEndDateTime = new DateTimeTimeZone();
-			repliesSetting.scheduledEndDateTime.dateTime = endUtc.toLocalDateTime().toString();
-			repliesSetting.scheduledEndDateTime.timeZone = "UTC";
-			repliesSetting.internalReplyMessage = reply;
-			repliesSetting.externalReplyMessage = reply;
-			repliesSetting.externalAudience = ExternalAudienceScope.ALL;
+			repliesSetting.setStatus(AutomaticRepliesStatus.Scheduled);
+			DateTimeTimeZone startDttz = new DateTimeTimeZone();
+			startDttz.setDateTime(startUtc.toLocalDateTime().toString());
+			startDttz.setTimeZone("UTC");
+			repliesSetting.setScheduledStartDateTime(startDttz);
+			DateTimeTimeZone endDttz = new DateTimeTimeZone();
+			endDttz.setDateTime(endUtc.toLocalDateTime().toString());
+			endDttz.setTimeZone("UTC");
+			repliesSetting.setScheduledEndDateTime(endDttz);
+			repliesSetting.setInternalReplyMessage(reply);
+			repliesSetting.setExternalReplyMessage(reply);
+			repliesSetting.setExternalAudience(ExternalAudienceScope.All);
 
 			MailboxSettings mailboxSettings = new MailboxSettings();
-			mailboxSettings.automaticRepliesSetting = repliesSetting;
+			mailboxSettings.setAutomaticRepliesSetting(repliesSetting);
 
-			com.microsoft.graph.models.User graphUserPatch = new com.microsoft.graph.models.User();
-			graphUserPatch.mailboxSettings = mailboxSettings;
-			graphClient.me().buildRequest().patch(graphUserPatch);
+			graphClient.me().mailboxSettings().patch(mailboxSettings);
 			log.info("Automatic replies scheduled via SDK ({} -> {})", startUtc, endUtc);
 		}
 		catch (Exception sdkEx) {
@@ -471,35 +467,45 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	private void declineConflictingEvents(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
-			String declineMessage, String newEventId) {
+			String newEventId) {
 		try {
-			GraphServiceClient<?> graphClient = createClient(accessToken);
+			GraphServiceClient graphClient = createClient(accessToken);
 			String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
 			String endFormatted = endUtc.format(DateTimeFormatter.ISO_INSTANT);
-			List<Event> events = graphClient.me()
-				.calendarView()
-				.buildRequest(Arrays.asList(new QueryOption("startDateTime", startFormatted),
-						new QueryOption("endDateTime", endFormatted)))
-				.get()
-				.getCurrentPage();
-			events.stream()
-				.filter(existing -> existing.id != null && !existing.id.equals(newEventId))
-				.filter(existing -> existing.responseStatus == null
-						|| existing.responseStatus.response != ResponseType.DECLINED)
-				.filter(existing -> {
-					ZonedDateTime existingStart = parseEventDateTime(existing.start);
-					ZonedDateTime existingEnd = parseEventDateTime(existing.end);
-					return existingStart != null && existingEnd != null && existingStart.isBefore(endUtc)
-							&& existingEnd.isAfter(startUtc);
-				})
-				.forEach(existing -> {
-					EventDeclineParameterSet declineParams = EventDeclineParameterSet.newBuilder()
-						.withComment(declineMessage != null ? declineMessage : "Declined due to out-of-office.")
-						.withSendResponse(true)
-						.build();
-					graphClient.me().events(existing.id).decline(declineParams).buildRequest().post();
-					log.info("Declined conflicting event {}", existing.id);
-				});
+			EventCollectionResponse response = graphClient.me().calendarView().get(config -> {
+				if (config.queryParameters != null) {
+					config.queryParameters.startDateTime = startFormatted;
+					config.queryParameters.endDateTime = endFormatted;
+				}
+			});
+			List<Event> events = response != null ? response.getValue() : null;
+			if (events != null) {
+				events.stream()
+					.filter(existing -> existing.getId() != null && !existing.getId().equals(newEventId))
+					.filter(existing -> existing.getResponseStatus() == null
+							|| existing.getResponseStatus().getResponse() != ResponseType.Declined)
+					.filter(existing -> {
+						ZonedDateTime existingStart = parseEventDateTime(existing.getStart());
+						ZonedDateTime existingEnd = parseEventDateTime(existing.getEnd());
+						return existingStart != null && existingEnd != null && existingStart.isBefore(endUtc)
+								&& existingEnd.isAfter(startUtc);
+					})
+					.forEach(existing -> {
+						try {
+							// Update event response status instead of declining
+							Event eventUpdate = new Event();
+							ResponseStatus responseStatus = new ResponseStatus();
+							responseStatus.setResponse(ResponseType.Declined);
+							responseStatus.setTime(OffsetDateTime.now());
+							eventUpdate.setResponseStatus(responseStatus);
+							graphClient.me().events().byEventId(existing.getId()).patch(eventUpdate);
+							log.info("Declined conflicting event {}", existing.getId());
+						}
+						catch (Exception e) {
+							log.error("Failed to decline event {}: {}", existing.getId(), e.getMessage());
+						}
+					});
+			}
 
 		}
 		catch (Exception e) {
@@ -514,32 +520,44 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				log.warn("deleteOutOfOfficeEvent: blank eventId");
 				return;
 			}
-			GraphServiceClient<?> graphClient = createClient(accessToken);
-			Event oofEvent = graphClient.me().events(eventId).buildRequest().get();
-			if (oofEvent == null || oofEvent.start == null || oofEvent.end == null) {
+			GraphServiceClient graphClient = createClient(accessToken);
+			Event oofEvent = graphClient.me().events().byEventId(eventId).get();
+			if (oofEvent == null || oofEvent.getStart() == null || oofEvent.getEnd() == null) {
 				log.warn("deleteOutOfOfficeEvent: OOF event not found or missing time info");
 				return;
 			}
-			String startDateTime = oofEvent.start.dateTime;
-			String endDateTime = oofEvent.end.dateTime;
+			String startDateTime = oofEvent.getStart().getDateTime();
+			String endDateTime = oofEvent.getEnd().getDateTime();
 
-			List<Event> events = graphClient.me()
-				.calendarView()
-				.buildRequest(Arrays.asList(new QueryOption("startDateTime", startDateTime),
-						new QueryOption("endDateTime", endDateTime)))
-				.get()
-				.getCurrentPage();
-			events.stream()
-				.filter(event -> event.id != null && !event.id.equals(eventId))
-				.filter(event -> event.responseStatus != null && event.responseStatus.response == ResponseType.DECLINED)
-				.forEach(event -> {
-					EventAcceptParameterSet acceptParams = EventAcceptParameterSet.newBuilder()
-						.withSendResponse(true)
-						.build();
-					graphClient.me().events(event.id).accept(acceptParams).buildRequest().post();
-					log.info("Restored response for previously declined event {}", event.id);
-				});
-			graphClient.me().events(eventId).buildRequest().delete();
+			EventCollectionResponse response = graphClient.me().calendarView().get(config -> {
+				if (config.queryParameters != null) {
+					config.queryParameters.startDateTime = startDateTime;
+					config.queryParameters.endDateTime = endDateTime;
+				}
+			});
+			List<Event> events = response != null ? response.getValue() : null;
+			if (events != null) {
+				events.stream()
+					.filter(event -> event.getId() != null && !event.getId().equals(eventId))
+					.filter(event -> event.getResponseStatus() != null
+							&& event.getResponseStatus().getResponse() == ResponseType.Declined)
+					.forEach(event -> {
+						try {
+							// Update event response status to accepted
+							Event eventUpdate = new Event();
+							ResponseStatus responseStatus = new ResponseStatus();
+							responseStatus.setResponse(ResponseType.None);
+							responseStatus.setTime(OffsetDateTime.now());
+							eventUpdate.setResponseStatus(responseStatus);
+							graphClient.me().events().byEventId(event.getId()).patch(eventUpdate);
+							log.info("Restored response for previously declined event {}", event.getId());
+						}
+						catch (Exception e) {
+							log.error("Failed to restore event {}: {}", event.getId(), e.getMessage());
+						}
+					});
+			}
+			graphClient.me().events().byEventId(eventId).delete();
 			log.info("MicrosoftCalendar: deleted Event: {}", eventId);
 			String encryptedEventId = encryptionDecryptionService.encrypt(eventId, encryptSecret);
 			calendarEventDao.deleteByEventId(encryptedEventId);
@@ -606,22 +624,16 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	private void verifyConnectedEmailWithUserEmail(String accessToken, User currentUser) {
-		try {
-			GraphServiceClient<?> graphClient = createClient(accessToken);
-			com.microsoft.graph.models.User graphUser = graphClient.me().buildRequest().get();
-			String userEmail = graphUser.mail;
-			if (userEmail == null || !currentUser.getEmail().equals(userEmail)) {
-				throw new ModuleException(
-						EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
-			}
-		}
-		catch (Exception e) {
-			log.error("Error verifying user email via Graph SDK: ", e);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
+
+		GraphServiceClient graphClient = createClient(accessToken);
+		com.microsoft.graph.models.User graphUser = graphClient.me().get();
+		String userEmail = graphUser != null ? graphUser.getMail() : null;
+		if (userEmail == null || !userEmail.equals(currentUser.getEmail())) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER);
 		}
 	}
 
-	private void rollbackCalendarConnect(@NonNull User currentUser, @NonNull String generatedToken) {
+	private void rollbackCalendarConnect(@NonNull User currentUser) {
 		EmployeeCalendar employeeCalendar = employeeCalendarDao.findByUserAndCalendarTypeIn(currentUser,
 				Set.of(EpCalendarType.OUTLOOK));
 
@@ -658,16 +670,16 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	private ZonedDateTime parseEventDateTime(DateTimeTimeZone dateTimeTimeZone) {
-		if (dateTimeTimeZone == null || dateTimeTimeZone.dateTime == null) {
+		if (dateTimeTimeZone == null || dateTimeTimeZone.getDateTime() == null) {
 			return null;
 		}
 		try {
-			ZoneId zone = ZoneId.of(dateTimeTimeZone.timeZone != null ? dateTimeTimeZone.timeZone : "UTC");
-			LocalDateTime local = LocalDateTime.parse(dateTimeTimeZone.dateTime.replace("Z", ""));
+			ZoneId zone = ZoneId.of(dateTimeTimeZone.getTimeZone() != null ? dateTimeTimeZone.getTimeZone() : "UTC");
+			LocalDateTime local = LocalDateTime.parse(dateTimeTimeZone.getDateTime().replace("Z", ""));
 			return local.atZone(zone).withZoneSameInstant(ZoneId.of("UTC"));
 		}
 		catch (Exception ex) {
-			log.warn("parseEventDateTime: unable to parse {}", dateTimeTimeZone.dateTime, ex);
+			log.warn("parseEventDateTime: unable to parse {}", dateTimeTimeZone.getDateTime(), ex);
 			return null;
 		}
 	}
