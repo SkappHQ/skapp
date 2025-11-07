@@ -17,6 +17,7 @@ export enum ZIndexEnums {
 export enum GlobalLoginMethod {
   CREDENTIALS = "CREDENTIALS",
   GOOGLE = "GOOGLE",
+  MICROSOFT = "MICROSOFT",
   NONE = ""
 }
 
