@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.exception;
 
+import com.azure.json.implementation.jackson.core.JsonProcessingException;
 import com.skapp.community.common.exception.GlobalExceptionHandler;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -15,6 +16,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -67,6 +69,17 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION)),
+				status);
+	}
+
+	@ExceptionHandler({ JsonProcessingException.class, HttpMessageNotReadableException.class })
+	public ResponseEntity<ResponseEntityDto> handleJsonParsingErrors(Exception e) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		logDetailedException(e, "INVALID_JSON_RESPONSE", e.getMessage(), status);
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, e.getMessage(),
+								EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED)),
 				status);
 	}
 

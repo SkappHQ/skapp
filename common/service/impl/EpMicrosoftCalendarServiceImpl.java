@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParseException;
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.kiota.authentication.AuthenticationProvider;
@@ -32,6 +33,7 @@ import com.skapp.enterprise.common.type.EpCalendarType;
 import com.skapp.enterprise.leaveplanner.repository.CalendarEventDao;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -110,6 +112,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	@Override
+	@SneakyThrows
 	public String connectMicrosoftCalendar(EpMicrosoftAuthRedirectDto epMicrosoftAuthRedirectDto) {
 		log.info("connectMicrosoftCalendar: execution started");
 
@@ -119,24 +122,20 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		HttpEntity<EpMicrosoftAuthRedirectDto> request = new HttpEntity<>(epMicrosoftAuthRedirectDto, headers);
 		ResponseEntity<String> response = restTemplate.postForEntity(backendRedirectURI, request, String.class);
 
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode jsonNode = objectMapper.readTree(response.getBody());
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-			if (jsonNode.has(EpCommonConstants.RESULTS) && jsonNode.get(EpCommonConstants.RESULTS).isArray()
-					&& !jsonNode.get(EpCommonConstants.RESULTS).isEmpty()) {
-				String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asText();
+		if (jsonNode.has(EpCommonConstants.RESULTS) && jsonNode.get(EpCommonConstants.RESULTS).isArray()
+				&& !jsonNode.get(EpCommonConstants.RESULTS).isEmpty()) {
 
-				log.info("connectMicrosoftCalendar: execution end");
-				return redirectUrl;
-			}
+			String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asText();
+			log.info("connectMicrosoftCalendar: execution end");
+			return redirectUrl;
 		}
-		catch (Exception e) {
-			log.error("Error parsing JSON response: ", e);
+		else {
+			throw new JsonParseException(
+					String.valueOf(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED));
 		}
-
-		log.info("connectMicrosoftCalendar: execution end");
-		return "/error";
 	}
 
 	@Override
@@ -188,54 +187,31 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			employeeCalendar = employeeCalendarDao.save(employeeCalendar);
 		}
 
-		String tokenGenerated = "";
+		validateMicrosoftCalendarAuthRedirectDto(epMicrosoftAuthRedirectDto);
+		MicrosoftTokenResponse result = exchangeCodeForTokens(authorizationCode);
 
-		try {
-			validateMicrosoftCalendarAuthRedirectDto(epMicrosoftAuthRedirectDto);
-			MicrosoftTokenResponse result = exchangeCodeForTokens(authorizationCode);
+		if (result.getAccessToken() != null) {
+			verifyConnectedEmailWithUserEmail(result.getAccessToken(), currentUser);
+		}
 
-			if (result.getAccessToken() != null) {
-				verifyConnectedEmailWithUserEmail(result.getAccessToken(), currentUser);
+		if (result.getRefreshToken() != null) {
+			String encryptedRefreshToken = encryptionDecryptionService.encrypt(result.getRefreshToken(), encryptSecret);
+			if (encryptedRefreshToken == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
 			}
-
-			if (result.getRefreshToken() != null) {
-				String encryptedRefreshToken = encryptionDecryptionService.encrypt(result.getRefreshToken(),
-						encryptSecret);
-				if (encryptedRefreshToken == null) {
-					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
-				}
-				employeeCalendar.setCalendarToken(encryptedRefreshToken);
-				tokenGenerated = encryptedRefreshToken;
-				if (employeeCalendar.getCalendarToken() == null) {
-					throw new EntityNotFoundException(
-							EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
-				}
-				tokenGenerated = employeeCalendar.getCalendarToken();
-			}
-			else {
+			employeeCalendar.setCalendarToken(encryptedRefreshToken);
+			if (employeeCalendar.getCalendarToken() == null) {
 				throw new EntityNotFoundException(
 						EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 			}
-
-			employeeCalendar.setIsEnabled(true);
-			employeeCalendar.setCalendarType(EpCalendarType.OUTLOOK);
-			employeeCalendarDao.save(employeeCalendar);
 		}
-		catch (Exception exception) {
-			log.error("saveMicrosoftCalendarConfig: {}", exception.getMessage(), exception);
-			rollbackCalendarConnect(currentUser);
-
-			String errorMessage = exception.getMessage() != null ? exception.getMessage() : "Unknown error";
-			String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
-
-			frontendRedirectUri = frontendRedirectUri.replace("success=true", "success=false");
-
-			return new ResponseEntityDto(false,
-					UriComponentsBuilder.fromUriString(frontendRedirectUri)
-						.queryParam("error", encodedErrorMessage)
-						.toUriString());
+		else {
+			throw new EntityNotFoundException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR);
 		}
 
+		employeeCalendar.setIsEnabled(true);
+		employeeCalendar.setCalendarType(EpCalendarType.OUTLOOK);
+		employeeCalendarDao.save(employeeCalendar);
 		log.info("saveMicrosoftCalendarConfig: execution ended");
 		return new ResponseEntityDto(false, frontendRedirectUri);
 	}
@@ -492,7 +468,6 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 					})
 					.forEach(existing -> {
 						try {
-							// Update event response status instead of declining
 							Event eventUpdate = new Event();
 							ResponseStatus responseStatus = new ResponseStatus();
 							responseStatus.setResponse(ResponseType.Declined);
