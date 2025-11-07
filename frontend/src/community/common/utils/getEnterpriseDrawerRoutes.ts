@@ -68,14 +68,14 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
         ],
         subTree: [
           {
-            id: "8A",
+            id: "8B",
             name: "Modules",
             url: ROUTES.SETTINGS.MODULES,
             hasSubTree: false,
             requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
           },
           {
-            id: "8B",
+            id: "8A",
             name: "Account Settings",
             url: ROUTES.SETTINGS.ACCOUNT,
             hasSubTree: false,
