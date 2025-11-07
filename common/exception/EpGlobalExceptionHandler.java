@@ -72,15 +72,4 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 				status);
 	}
 
-	@ExceptionHandler({ JsonProcessingException.class, HttpMessageNotReadableException.class })
-	public ResponseEntity<ResponseEntityDto> handleJsonParsingErrors(Exception e) {
-		HttpStatus status = HttpStatus.BAD_REQUEST;
-		logDetailedException(e, "INVALID_JSON_RESPONSE", e.getMessage(), status);
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, e.getMessage(),
-								EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED)),
-				status);
-	}
-
 }
