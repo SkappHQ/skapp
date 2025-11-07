@@ -339,7 +339,8 @@
       "jobTitle": "Job Title",
       "email": "Email",
       "team": "Teams",
-      "supervisor": "Supervisors"
+      "supervisor": "Supervisors",
+      "pending":""
     },
     "bulkUploadBtnTxt": "Add all your people in one go",
     "uploadCsvModalTitle": "Add people",
