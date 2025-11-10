@@ -97,7 +97,7 @@ public class EPSecurityConfig {
 						"/internal/v1/ep/users/auth-pics", "/v2/ep/auth/sso/microsoft/auth-url",
 						"/v2/ep/auth/sso/microsoft/redirect", "/v2/ep/auth/signup/super-admin/sso/microsoft",
 						"/v2/ep/auth/signin/sso/microsoft", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
-						"/v1/ep/release/generate-pdf")
+						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()

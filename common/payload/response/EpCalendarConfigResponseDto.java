@@ -9,4 +9,6 @@ public class EpCalendarConfigResponseDto {
 
 	private Boolean isGoogleCalendarEnabled;
 
+	private Boolean isMicrosoftCalendarEnabled;
+
 }
