@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.invoice.type.CurrencyType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +15,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "in_config")
-public class InvoiceConfig {
+public class InvoiceConfig extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
