@@ -13,4 +13,6 @@ public class CreateInvoiceTaxDto {
 
 	private Double taxPercentage;
 
+	private Double taxAmount;
+
 }
