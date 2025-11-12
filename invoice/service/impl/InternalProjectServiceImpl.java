@@ -52,14 +52,9 @@ public class InternalProjectServiceImpl implements InternalProjectService {
 
 	private Project initializeProjectMapping(Customer customer, Long projectId) {
 
-		Optional<Project> existingProjects = projectDao.findById_ProjectId(projectId);
+		Optional<Project> existingProjectsOpt = projectDao.findById_ProjectId(projectId);
 
-		Map<Long, Project> projectMap = existingProjects.stream()
-			.collect(Collectors.toMap(project -> project.getId().getProjectId(), project -> project));
-
-		// Validate if the project is already mapped to any other customer
-		Project existingProject = projectMap.get(projectId);
-		if (existingProject != null && existingProject.getId().getCustomer() != null) {
+		if (existingProjectsOpt.isEmpty()) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
 		}
 

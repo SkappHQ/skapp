@@ -80,6 +80,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
+	@Override
 	public List<Customer> findAllActiveCustomers() {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
