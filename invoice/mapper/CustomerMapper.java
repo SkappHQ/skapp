@@ -10,6 +10,7 @@ import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDeta
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDocumentResponseDto;
+import com.skapp.enterprise.invoice.payload.response.InternalCustomerResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -61,5 +62,14 @@ public interface CustomerMapper {
 
 	List<CustomerDocumentResponseDto> customerDocumentsToCustomerDocumentResponseDtos(
 			List<CustomerDocument> customerDocuments);
+
+	default List<InternalCustomerResponseDto> customerToInternalCustomerResponseDto(List<Customer> customers) {
+		return (customers == null) ? List.of() : customers.stream().map(cus -> {
+			InternalCustomerResponseDto dto = new InternalCustomerResponseDto();
+			dto.setId(cus.getId());
+			dto.setName(cus.getName());
+			return dto;
+		}).toList();
+	}
 
 }
