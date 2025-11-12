@@ -94,6 +94,7 @@ import PendingStatusIcon from "~community/common/assets/Icons/PendingStatusIcon"
 import PeopleIcon from "~community/common/assets/Icons/PeopleIcon";
 import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import PeopleRemoveIcon from "~community/common/assets/Icons/PeopleRemoveIcon";
+import PercentageIcon from "~community/common/assets/Icons/PercentageIcon";
 import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
@@ -301,7 +302,8 @@ export const IconMapping: Partial<
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
-  [IconName.CAMERA_ICON]: CameraIcon
+  [IconName.CAMERA_ICON]: CameraIcon,
+  [IconName.PERCENTAGE_ICON]: PercentageIcon
   // Add more icons here as needed
 };
 
