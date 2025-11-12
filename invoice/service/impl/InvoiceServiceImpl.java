@@ -222,30 +222,30 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 
 		double subtotal = itemsTotal + expensesTotal;
+		double discountedSubtotal = subtotal;
 
 		if (invoice.getDiscountValue() != null && invoice.getDiscountValue() > 0) {
 			if (invoice.getDiscountType() == DiscountType.PERCENTAGE) {
-				subtotal -= (subtotal * invoice.getDiscountValue() / 100.0);
+				discountedSubtotal -= (subtotal * invoice.getDiscountValue() / 100.0);
 			}
 			else {
-				subtotal -= invoice.getDiscountValue();
+				discountedSubtotal -= invoice.getDiscountValue();
 			}
 		}
 
+		final double discountedSubtotalForTax = discountedSubtotal;
 		double totalTaxAmount = 0.0;
 		if (invoice.getInvoiceTaxes() != null) {
-			final double finalSubtotal = subtotal;
 			totalTaxAmount = invoice.getInvoiceTaxes().stream().mapToDouble(tax -> {
 				if (tax.getTaxPercentage() != null) {
-					return finalSubtotal * (tax.getTaxPercentage() / 100);
+					return discountedSubtotalForTax * (tax.getTaxPercentage() / 100);
 				}
 				return 0.0;
 			}).sum();
 		}
-
-		double finalTotal = subtotal + totalTaxAmount;
+		double payableTotal = discountedSubtotal + totalTaxAmount;
 		invoice.setSubTotalAmount(subtotal);
-		invoice.setPayableTotalAmount(finalTotal);
+		invoice.setPayableTotalAmount(payableTotal);
 	}
 
 	@Override

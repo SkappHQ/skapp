@@ -11,7 +11,7 @@ public class InvoiceTaxResponseDto {
 
 	private Long id;
 
-	private String taxName;
+	private String taxType;
 
 	private Double taxPercentage;
 
