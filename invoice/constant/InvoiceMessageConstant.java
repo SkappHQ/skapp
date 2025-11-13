@@ -28,6 +28,7 @@ public enum InvoiceMessageConstant implements MessageConstant {
 			"validation.error.customer.customer-contact-email-already-exists"),
 	INVOICE_ERROR_CUSTOMER_CONTACT_NOT_FOUND("ep.invoice.error.customer.contact.not.found"),
 	INVOICE_SUCCESS_DELETE_CUSTOMER_CONTACT("api.success.invoice.delete-customer-contact"),
+	INVOICE_ERROR_CUSTOMERS_NOT_FOUND("ep.invoice.error.customers.not.found"),
 
 	// Main invoice validation constants
 	INVOICE_ERROR_CUSTOMER_ID_REQUIRED("invoice.error.customer.id.required"),

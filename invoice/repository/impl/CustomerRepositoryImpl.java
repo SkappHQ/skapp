@@ -80,4 +80,20 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
+	@Override
+	public List<Customer> findAllActiveCustomers() {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Customer> criteriaQuery = criteriaBuilder.createQuery(Customer.class);
+		Root<Customer> root = criteriaQuery.from(Customer.class);
+
+		criteriaQuery.select(root)
+			.orderBy(criteriaBuilder.asc(root.get("name")))
+			.where(criteriaBuilder.equal(root.get("status"), InvoiceCommonConstant.ACTIVE));
+
+		TypedQuery<Customer> query = entityManager.createQuery(criteriaQuery);
+
+		return query.getResultList();
+	}
+
 }

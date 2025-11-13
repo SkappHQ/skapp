@@ -77,7 +77,9 @@ public class EPSecurityConfig {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
 			.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
-			.authorizeHttpRequests(auth -> auth.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/versions")
+			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/versions",
+						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project")
 				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
@@ -97,7 +99,8 @@ public class EPSecurityConfig {
 						"/internal/v1/ep/users/auth-pics", "/v2/ep/auth/sso/microsoft/auth-url",
 						"/v2/ep/auth/sso/microsoft/redirect", "/v2/ep/auth/signup/super-admin/sso/microsoft",
 						"/v2/ep/auth/signin/sso/microsoft", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
-						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect")
+						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect",
+						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
