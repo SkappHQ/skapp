@@ -23,13 +23,6 @@ const AttachmentRow = ({ attachments }: Props) => {
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
 
-  const getDisplayFileName = (url: string) => {
-    const fileName = getFileNameOfAttachmentFromUrl(url);
-    return fileName === "unknown-file"
-      ? translateText(["myLeaveRequests", "uploadedAttachment"]) // or whatever translation key you want
-      : fileName;
-  };
-
   if (!attachments || attachments.length === 0) {
     return null;
   }
@@ -48,7 +41,7 @@ const AttachmentRow = ({ attachments }: Props) => {
         {attachments.map((attachment, index) => (
           <IconChip
             key={index}
-            label={getDisplayFileName(attachment.url)}
+            label={getFileNameOfAttachmentFromUrl(attachment.url) || translateText(["myLeaveRequests", "uploadedAttachment"])}
             chipStyles={{
               backgroundColor: "grey.100",
               py: "0.75rem",

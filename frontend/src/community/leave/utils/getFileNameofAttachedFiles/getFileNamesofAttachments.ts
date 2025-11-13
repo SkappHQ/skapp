@@ -1,13 +1,10 @@
-export const getFileNameOfAttachmentFromUrl = (url: string): string => {
+export const getFileNameOfAttachmentFromUrl = (url: string): string | undefined => {
   if (!url || typeof url !== "string") {
-    return "unknown-file";
+    return undefined;
   }
-  try {
-    const urlWithoutQuery = url.split("?")[0].split("#")[0];
-    const fileName = urlWithoutQuery.split("/").pop() || urlWithoutQuery;
-    return fileName ? decodeURIComponent(fileName) : "unknown-file";
-  } catch (error) {
-    const urlWithoutQuery = url.split("?")[0].split("#")[0];
-    return urlWithoutQuery.split("/").pop() || "unknown-file";
-  }
+
+  const splittedURL = url.split("?")[0].split("#")[0];
+  const fileName = splittedURL.split("/").pop() || undefined;
+
+  return fileName ? decodeURIComponent(fileName) : undefined;
 };

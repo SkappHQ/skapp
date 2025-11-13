@@ -298,12 +298,12 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                     leaveRequestData.attachments.map((attachment, index) => (
                       <IconChip
                         accessibility={{
-                          ariaLabel: `Attachment ${getDisplayFileName(
+                          ariaLabel: `Attachment ${getFileNameOfAttachmentFromUrl(
                             attachment.url
-                          )}`
+                          ) || translateText(["myLeaveRequests", "uploadedAttachment"])}`
                         }}
                         key={index}
-                        label={getDisplayFileName(attachment.url)}
+                        label={getFileNameOfAttachmentFromUrl(attachment.url) || translateText(["myLeaveRequests", "uploadedAttachment"])}
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",
