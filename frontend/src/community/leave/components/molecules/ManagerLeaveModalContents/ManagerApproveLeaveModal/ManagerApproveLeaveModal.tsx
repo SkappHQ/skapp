@@ -101,13 +101,6 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
     }
   }, [leaveRequestData.leaveType, isSuccess, setPopupType]);
 
-  const getDisplayFileName = (url: string) => {
-    const fileName = getFileNameOfAttachmentFromUrl(url);
-    return fileName === "unknown-file"
-      ? translateText(["uploadedAttachment"]) // or whatever translation key you want
-      : fileName;
-  };
-
   const downloadAttachment = (url: string) => {
     setAttachment(url);
     setCurrentAttachmentFormat(url.split(".")[1]);
@@ -298,12 +291,22 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                     leaveRequestData.attachments.map((attachment, index) => (
                       <IconChip
                         accessibility={{
-                          ariaLabel: `Attachment ${getFileNameOfAttachmentFromUrl(
-                            attachment.url
-                          ) || translateText(["myLeaveRequests", "uploadedAttachment"])}`
+                          ariaLabel: `Attachment ${
+                            getFileNameOfAttachmentFromUrl(attachment.url) ||
+                            translateText([
+                              "myLeaveRequests",
+                              "uploadedAttachment"
+                            ])
+                          }`
                         }}
                         key={index}
-                        label={getFileNameOfAttachmentFromUrl(attachment.url) || translateText(["myLeaveRequests", "uploadedAttachment"])}
+                        label={
+                          getFileNameOfAttachmentFromUrl(attachment.url) ||
+                          translateText([
+                            "myLeaveRequests",
+                            "uploadedAttachment"
+                          ])
+                        }
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",
