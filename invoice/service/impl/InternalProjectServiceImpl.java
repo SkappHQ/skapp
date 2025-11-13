@@ -38,6 +38,13 @@ public class InternalProjectServiceImpl implements InternalProjectService {
 			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND);
 		}
 
+		Optional<Project> existingMapping = projectDao.findById_ProjectIdAndId_Customer_Id(
+				internalProjectCreationRequestDto.getProjectId(), internalProjectCreationRequestDto.getCustomerId());
+
+		if (existingMapping.isPresent()) {
+			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
+		}
+
 		Project savedProject = projectDao
 			.save(initializeProjectMapping(optionalCustomer.get(), internalProjectCreationRequestDto.getProjectId()));
 
@@ -49,12 +56,6 @@ public class InternalProjectServiceImpl implements InternalProjectService {
 	}
 
 	private Project initializeProjectMapping(Customer customer, Long projectId) {
-
-		Optional<Project> existingProjectsOpt = projectDao.findById_ProjectId(projectId);
-
-		if (existingProjectsOpt.isPresent()) {
-			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
-		}
 
 		ProjectKey projectKey = new ProjectKey();
 		projectKey.setProjectId(projectId);

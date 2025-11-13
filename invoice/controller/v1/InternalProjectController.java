@@ -3,6 +3,7 @@ package com.skapp.enterprise.invoice.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.InternalProjectCreationRequestDto;
 import com.skapp.enterprise.invoice.service.InternalProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class InternalProjectController {
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> addProjectToCustomer(
-			@RequestBody InternalProjectCreationRequestDto internalProjectCreationRequestDto) {
+			@Valid @RequestBody InternalProjectCreationRequestDto internalProjectCreationRequestDto) {
 
 		ResponseEntityDto response = internalProjectService.createProjectForCustomer(internalProjectCreationRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
