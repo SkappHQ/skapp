@@ -15,6 +15,7 @@ import com.skapp.enterprise.invoice.repository.ProjectDao;
 import com.skapp.enterprise.invoice.service.InternalProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class InternalProjectServiceImpl implements InternalProjectService {
 	private final ProjectMapper projectMapper;
 
 	@Override
+	@Transactional
 	public ResponseEntityDto createProjectForCustomer(
 			InternalProjectCreationRequestDto internalProjectCreationRequestDto) {
 
