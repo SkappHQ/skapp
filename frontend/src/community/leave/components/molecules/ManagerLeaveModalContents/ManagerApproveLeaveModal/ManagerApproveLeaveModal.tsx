@@ -20,6 +20,7 @@ import {
   LeaveExtraPopupTypes,
   LeaveStatusTypes
 } from "~community/leave/types/LeaveRequestTypes";
+import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -100,6 +101,13 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
     }
   }, [leaveRequestData.leaveType, isSuccess, setPopupType]);
 
+  const getDisplayFileName = (url: string) => {
+    const fileName = getFileNameOfAttachmentFromUrl(url);
+    return fileName === "unknown-file"
+      ? translateText(["uploadedAttachment"]) // or whatever translation key you want
+      : fileName;
+  };
+
   const downloadAttachment = (url: string) => {
     setAttachment(url);
     setCurrentAttachmentFormat(url.split(".")[1]);
@@ -147,10 +155,6 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
     } catch (error) {
       console.error("Error downloading file from S3:", error);
     }
-  };
-
-  const getFileName = (url: string): string => {
-    return url.split("/").pop() || url;
   };
 
   useEffect(() => {
@@ -297,7 +301,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                           ariaLabel: `Attachment ${index + 1}`
                         }}
                         key={index}
-                        label={`${getFileName(attachement.url)}`}
+                        label={getDisplayFileName(attachement.url)}
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",

@@ -6,6 +6,7 @@ import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
 import { AttachmentType } from "~community/leave/types/EmployeeLeaveRequestTypes";
+import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 
 interface Props {
   attachments?: AttachmentType[];
@@ -22,13 +23,16 @@ const AttachmentRow = ({ attachments }: Props) => {
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
 
+  const getDisplayFileName = (url: string) => {
+    const fileName = getFileNameOfAttachmentFromUrl(url);
+    return fileName === "unknown-file"
+      ? translateText(["myLeaveRequests", "uploadedAttachment"]) // or whatever translation key you want
+      : fileName;
+  };
+
   if (!attachments || attachments.length === 0) {
     return null;
   }
-
-  const getFileName = (url: string): string => {
-    return url.split("/").pop() || url;
-  };
 
   return (
     <Stack
@@ -44,7 +48,7 @@ const AttachmentRow = ({ attachments }: Props) => {
         {attachments.map((attachment, index) => (
           <IconChip
             key={index}
-            label={`${getFileName(attachment.url)}`}
+            label={getDisplayFileName(attachment.url)}
             chipStyles={{
               backgroundColor: "grey.100",
               py: "0.75rem",
