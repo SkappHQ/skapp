@@ -85,10 +85,13 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 			String entityTypeName = entityType.name();
 
+			TriggerKey oldTriggerKey = TriggerKey.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId,
+					EXPIRATION_GROUP);
+
 			TriggerKey triggerKey = TriggerKey
 				.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId + DASH + tenantId, EXPIRATION_GROUP);
 
-			boolean result = scheduler.unscheduleJob(triggerKey);
+			boolean result = scheduler.unscheduleJob(triggerKey) || scheduler.unscheduleJob(oldTriggerKey);
 
 			if (result) {
 				log.info("Successfully unscheduled expiration trigger for {} with ID: {}", entityTypeName, entityId);
