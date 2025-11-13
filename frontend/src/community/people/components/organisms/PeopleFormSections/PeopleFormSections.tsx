@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { RefObject } from "react";
 
+import IndividualEmployeeDocumentView from "~community/attendance/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
@@ -103,6 +104,10 @@ const PeopleFormSections = ({
             selectedUser={Number(employeeId)}
           />
         );
+      case EditPeopleFormTypes.documents:
+        return (
+          <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
+        ); // Placeholder for Documents section
       default:
         return null;
     }

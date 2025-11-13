@@ -95,7 +95,8 @@ const DirectorySteppers = ({
     !isAccountView &&
     session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
-      : [])
+      : []),
+      "Documents"
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
