@@ -16,9 +16,7 @@ import com.skapp.enterprise.invoice.service.InternalProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +52,7 @@ public class InternalProjectServiceImpl implements InternalProjectService {
 
 		Optional<Project> existingProjectsOpt = projectDao.findById_ProjectId(projectId);
 
-		if (existingProjectsOpt.isEmpty()) {
+		if (existingProjectsOpt.isPresent()) {
 			throw new ModuleException(InvoiceMessageConstant.INVOICE_ERROR_VALIDATION_CUSTOMER_PROJECT_MAPPING_INVALID);
 		}
 
