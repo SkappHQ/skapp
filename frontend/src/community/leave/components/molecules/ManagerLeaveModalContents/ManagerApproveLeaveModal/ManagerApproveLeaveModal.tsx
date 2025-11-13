@@ -295,20 +295,22 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                 <Box>
                   {leaveRequestData.attachments &&
                     leaveRequestData.attachments.length > 0 &&
-                    leaveRequestData.attachments.map((attachement, index) => (
+                    leaveRequestData.attachments.map((attachment, index) => (
                       <IconChip
                         accessibility={{
-                          ariaLabel: `Attachment ${index + 1}`
+                          ariaLabel: `Attachment ${getDisplayFileName(
+                            attachment.url
+                          )}`
                         }}
                         key={index}
-                        label={getDisplayFileName(attachement.url)}
+                        label={getDisplayFileName(attachment.url)}
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",
                           px: "0.75rem"
                         }}
                         icon={<CopyIcon />}
-                        onClick={() => downloadAttachment(attachement.url)}
+                        onClick={() => downloadAttachment(attachment.url)}
                       />
                     ))}
                 </Box>
