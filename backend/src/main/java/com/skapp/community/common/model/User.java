@@ -67,6 +67,9 @@ public class User {
 	@PrimaryKeyJoinColumn
 	private UserSettings settings;
 
+	@Column(name = "is_guest", nullable = false)
+	private Boolean isGuest = false;
+
 	public List<String> getPreviousPasswordsList() {
 		if (previousPasswords == null || previousPasswords.isEmpty()) {
 			return new ArrayList<>();
