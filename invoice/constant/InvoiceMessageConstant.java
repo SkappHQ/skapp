@@ -107,7 +107,8 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_PDF_GENERATION_FAILED("invoice.error.pdf.generation.failed"),
 
 	INVOICE_ERROR_FETCHING_TIMELOGS("ep.invoice.error.fetching.timelogs"),
-	INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE("ep.invoice.error.fetching.timelogs.from.source");
+	INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE("ep.invoice.error.fetching.timelogs.from.source"),
+	INVOICE_ERROR_INVOICE_ID_REQUIRED("ep.invoice.error.invoice.id.required");
 
 	private final String messageKey;
 
