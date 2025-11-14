@@ -20,4 +20,6 @@ public class EpUserResponseDto {
 
 	private String authPic;
 
+	private Boolean isGuest;
+
 }

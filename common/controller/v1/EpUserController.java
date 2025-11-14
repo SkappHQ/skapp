@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.controller.v1;
 
+import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.people.service.EpUserService;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +37,17 @@ public class EpUserController {
 					example = "john") @RequestParam(value = "search", required = false) String search) {
 
 		List<EpUserResponseDto> response = epUserService.getUsersByIdsOrSearch(employeeIds, search);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/guest")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+	public ResponseEntity<List<EpUserResponseDto>> saveGuestUsers(@Parameter(name = "emails",
+			description = "List of guest user emails (comma-separated)",
+			example = "test1@test.example,  test2@test.example, test3@test.example", schema = @Schema(type = "array",
+					implementation = String.class)) @RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
+
+		List<EpUserResponseDto> response = epUserService.saveGuestUsers(epGuestUserRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
