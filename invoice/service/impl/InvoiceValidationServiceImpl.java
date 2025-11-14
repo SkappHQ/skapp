@@ -41,7 +41,10 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateRequiredFields(CreateInvoiceRequestDto request) {
-		if (request.getInvoiceId() == null || !request.getInvoiceId().matches(InvoiceCommonConstant.INVOICE_ID_REGEX)) {
+		if (request.getInvoiceId() == null || request.getInvoiceId().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_REQUIRED);
+		}
+		if (!request.getInvoiceId().matches(InvoiceCommonConstant.INVOICE_ID_REGEX)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
 		}
 
