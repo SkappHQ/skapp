@@ -1,5 +1,7 @@
-export const getFileNameOfAttachmentFromUrl = (url: string): string | undefined => {
-  if (!url || typeof url !== "string") {
+export const getFileNameOfAttachmentFromUrl = (
+  url: string
+): string | undefined => {
+  if (!url) {
     return undefined;
   }
 
