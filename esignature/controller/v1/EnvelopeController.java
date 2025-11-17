@@ -82,7 +82,7 @@ public class EnvelopeController {
 					+ "sender email, status, expiry date, and received date. Supports filtering by envelope status, "
 					+ "searching by subject or sender email, and sorting by expire and received dates.")
 	@GetMapping(value = "/inbox/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE', 'ESIGN_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getAllUserEnvelopesByUserId(
 			@Valid EnvelopeInboxFilterDto envelopeInboxFilterDto, @PathVariable Long userId) {
 		ResponseEntityDto response = envelopeService.getAllUserEnvelopesByUserId(envelopeInboxFilterDto, userId);
