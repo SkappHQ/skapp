@@ -541,7 +541,8 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 						try {
 
 							TentativelyAcceptPostRequestBody tentativeRequest = new TentativelyAcceptPostRequestBody();
-							tentativeRequest.setComment("Automatic Reply: Leave Request declined - marking as tentative");
+							tentativeRequest
+								.setComment("Automatic Reply: Leave Request declined - marking as tentative");
 							tentativeRequest.setSendResponse(true);
 
 							graphClient.me()
