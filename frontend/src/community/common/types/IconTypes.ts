@@ -160,6 +160,6 @@ export enum IconName {
   WARNING_ALERT_ICON = "WARNING_ALERT_ICON",
   DUE_STATUS_ICON = "DUE_STATUS_ICON",
   CAMERA_ICON = "CAMERA_ICON",
-  OUTLOOK_ICON="OUTLOOK_ICON",
+  OUTLOOK_ICON = "OUTLOOK_ICON"
   // add more icons in snake case
 }

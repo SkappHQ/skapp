@@ -3,7 +3,6 @@ import { JSX } from "react";
 import { IconProps } from "~community/common/types/IconTypes";
 
 const OutlookIcon = ({
-  fill = "black",
   width = "36",
   height = "36",
   id,
@@ -22,21 +21,12 @@ const OutlookIcon = ({
       {...svgProps}
     >
       <g clipPath="url(#clip0_9344_59870)">
-        <path 
-          d="M17.1093 17.1093H0V0H17.1093V17.1093Z" 
-          fill="#F1511B" 
-        />
-        <path 
-          d="M35.9988 17.1093H18.8896V0H35.9988V17.1093Z" 
-          fill="#80CC28" 
-        />
-        <path 
-          d="M17.1089 36.0019H0V18.8926H17.1089V36.0019Z" 
-          fill="#00ADEF" 
-        />
-        <path 
-          d="M35.9988 36.0019H18.8896V18.8926H35.9988V36.0019Z" 
-          fill="#FBBC09" 
+        <path d="M17.1093 17.1093H0V0H17.1093V17.1093Z" fill="#F1511B" />
+        <path d="M35.9988 17.1093H18.8896V0H35.9988V17.1093Z" fill="#80CC28" />
+        <path d="M17.1089 36.0019H0V18.8926H17.1089V36.0019Z" fill="#00ADEF" />
+        <path
+          d="M35.9988 36.0019H18.8896V18.8926H35.9988V36.0019Z"
+          fill="#FBBC09"
         />
       </g>
       <defs>
