@@ -65,6 +65,24 @@ const Tooltip: FC<Props> = ({
     setOpen(false);
   };
 
+  const handleMouseEnter = () => {
+    if (!isDisabled && controlledOpen === undefined) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (controlledOpen === undefined) {
+      setOpen(false);
+    }
+  };
+  /**
+   * controlledOpen implements the controlled/uncontrolled pattern:
+   * - When 'open' prop is provided: parent controls tooltip visibility
+   * - When 'open' prop is undefined: tooltip manages its own state via hover/focus
+   * This allows the same component to work for both simple hover tooltips
+   * and complex scenarios like form validation or guided tours.
+   */
   const isOpen = controlledOpen !== undefined ? controlledOpen : open;
 
   return (
@@ -92,6 +110,8 @@ const Tooltip: FC<Props> = ({
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         style={{
           pointerEvents: isDisabled ? "none" : "auto", // Prevent interaction when disabled
           cursor: isDisabled ? "not-allowed" : "pointer", // Change cursor when disabled,
