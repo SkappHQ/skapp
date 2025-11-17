@@ -16,9 +16,8 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 import { useGetEnvelopeLimitation } from "~enterprise/sign/api/EnvelopeLimitationApi";
 import {
-  useGetAllInbox,
-  useGetMySignatureLink,
-  useGetNeedToSignEnvelopeCount
+  useGetAllInboxByUserId,
+  useGetMySignatureLink
 } from "~enterprise/sign/api/InboxApi";
 import EnvelopeLimitModal from "~enterprise/sign/components/molecules/EnvelopeLimitModal/EnvelopeLimitModal";
 import { useESignStore } from "~enterprise/sign/store/signStore";
@@ -35,16 +34,15 @@ import {
 import { usePreserveFilters } from "~enterprise/sign/utils/EnvelopeTableUtils";
 
 import IndividualEmployeeDocumentViewTable from "./IndividualEmployeeDocumentTableView";
+import NewTable from "./newTable";
 
 interface Props {
   selectedUser: number;
 }
 
 const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
-  const translateText = useTranslator("eSignatureModule", "inbox");
+  const translateText = useTranslator("peopleModule", "inbox");
   const router = useRouter();
-  const theme = useTheme();
-  const { isESignSender } = useSessionData();
   const {
     inboxDataParams,
     setPage,
@@ -52,131 +50,59 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     setSortKey,
     setSortOrder,
     setStatusTypes,
-    setSearchTerm,
-    setShowEnvelopeLimitModal
+    setSearchTerm
   } = useESignStore();
 
-  const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set([0])); // Load first page by default
-  const [pageData, setPageData] = useState<Map<number, Envelope[]>>(new Map());
   const [isLoadingPage, setIsLoadingPage] = useState(false);
-  const [currentPageNumber, setCurrentPageNumber] = useState(0);
 
   // Current page params
-  const currentPageParams = useMemo(
-    () => ({
-      ...inboxDataParams,
-      page: 0,
-      size: 9999
-    }),
-    [inboxDataParams, currentPageNumber]
-  );
-
-  const { data: InboxEnvelopeData, isLoading: isInboxLoading } =
-    useGetAllInbox(currentPageParams);
-  const envelopes: Envelope[] = InboxEnvelopeData?.items || [];
   const UserData = selectedUser;
-  const { data: personalData, isLoading: isPersonalDataLoading } =
-    useGetUserPersonalDetails();
-  const { data: mySignatureData, isLoading: isMySignatureLoading } =
-    useGetMySignatureLink();
+  const {
+    data: InboxEnvelopeData,
+    isLoading: isInboxLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    error
+  } = useGetAllInboxByUserId(inboxDataParams, selectedUser);
+
+  //   const envelopes: Envelope[] = InboxEnvelopeData?.items || [];
+  const envelopes: Envelope[] = useMemo(() => {
+    if (!InboxEnvelopeData?.pages) {
+      console.log("No pages data:", InboxEnvelopeData);
+      return [];
+    }
+
+    const flattenedData = InboxEnvelopeData.pages.reduce((acc, page) => {
+      console.log("Processing page:", page);
+      const items = page?.items || [];
+      return [...acc, ...items];
+    }, [] as Envelope[]);
+
+    console.log("Flattened envelopes:", flattenedData.length, "items");
+    console.log("Flattened envelopes data:", flattenedData);
+    return flattenedData;
+  }, [InboxEnvelopeData?.pages]);
   const { setPreserveFilters } = usePreserveFilters({ type: TableType.INBOX });
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const hasSignature = !!(
-    mySignatureData?.mySignatureLink && mySignatureData?.mySignatureMethod
-  );
+  const totalItems = InboxEnvelopeData?.pages?.[0]?.totalItems || 0;
+  const totalPages = InboxEnvelopeData?.pages?.[0]?.totalPages || 0;
+  const currentPage = InboxEnvelopeData?.pages?.[0]?.currentPage || 0;
 
-  // Handle new page data
-  useEffect(() => {
-    if (InboxEnvelopeData && !isInboxLoading) {
-      setPageData((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(currentPageNumber, InboxEnvelopeData.items || []);
-        return newMap;
-      });
-      setLoadedPages((prev) => new Set([...prev, currentPageNumber]));
-      setIsLoadingPage(false);
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage) {
+        
+      fetchNextPage();
     }
-    console.log("InboxEnvelopeData", InboxEnvelopeData);
-  }, [InboxEnvelopeData, isInboxLoading, currentPageNumber]);
-
-  // Get current page envelopes
-  const currentPageEnvelopes = pageData.get(currentPageNumber) || [];
-
-  // Handle page load
-  const handlePageLoad = useCallback(
-    (page: number) => {
-      if (!loadedPages.has(page)) {
-        setIsLoadingPage(true);
-        setCurrentPageNumber(page);
-      }
-    },
-    [loadedPages]
-  );
-
-  // Handle page change
-  const handlePageChange = useCallback(
-    (page: number) => {
-      setCurrentPageNumber(page);
-      if (!loadedPages.has(page)) {
-        handlePageLoad(page);
-      }
-    },
-    [loadedPages, handlePageLoad]
-  );
-
-  // Reset cache when filters change
-  useEffect(() => {
-    setLoadedPages(new Set([0]));
-    setPageData(new Map());
-    setCurrentPageNumber(0);
   }, [
-    inboxDataParams.searchKeyword,
-    inboxDataParams.statusTypes,
-    inboxDataParams.sortKey,
-    inboxDataParams.sortOrder
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    InboxEnvelopeData?.pages?.length
   ]);
 
-  // Modified setters to reset cache
-  const handleSetSearchTerm = useCallback(
-    (term: string) => {
-      setSearchTerm(term);
-      setLoadedPages(new Set([0]));
-      setPageData(new Map());
-      setCurrentPageNumber(0);
-    },
-    [setSearchTerm]
-  );
-
-  const handleSetStatusTypes = useCallback(
-    (statuses: string) => {
-      setStatusTypes(statuses);
-      setLoadedPages(new Set([0]));
-      setPageData(new Map());
-      setCurrentPageNumber(0);
-    },
-    [setStatusTypes]
-  );
-
-  const handleSetSortKey = useCallback(
-    (sortKey: any) => {
-      setSortKey(sortKey);
-      setLoadedPages(new Set([0]));
-      setPageData(new Map());
-      setCurrentPageNumber(0);
-    },
-    [setSortKey]
-  );
-
-  const handleSetSortOrder = useCallback(
-    (sortOrder: any) => {
-      setSortOrder(sortOrder);
-      setLoadedPages(new Set([0]));
-      setPageData(new Map());
-      setCurrentPageNumber(0);
-    },
-    [setSortOrder]
-  );
   const handleRowClick = (envelope: Envelope) => {
     setPreserveFilters(true);
     router.push(ROUTES.SIGN.INBOX_INFO.ID(envelope.envelopeId));
@@ -240,34 +166,20 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     }
   ];
 
-  useEffect(() => {
-    if (
-      !isInboxLoading &&
-      !isPersonalDataLoading &&
-      !isMySignatureLoading &&
-      isInitialLoading
-    ) {
-      setIsInitialLoading(false);
-    }
-  }, [isInboxLoading, isPersonalDataLoading, isMySignatureLoading]);
-
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_ESIGN_INBOX_VIEWED,
     triggerOnMount: true
   });
 
-  if (isInitialLoading) {
-    return <FullScreenLoader />;
-  }
   return (
     <>
       <ContentLayout
         pageHead={translateText(["pageHead"])}
-        title={translateText(["title"])}
+        title={translateText(["allDocuments"])}
       >
         <>
           <IndividualEmployeeDocumentViewTable
-            pageTitle="inbox"
+            pageTitle=""
             isLoading={isInboxLoading}
             // Data
             envelopes={envelopes}
@@ -275,19 +187,16 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
             sortOptions={sortOptions}
             statusOptions={statusOptions}
             inboxDataParams={inboxDataParams}
-            loadedPages={loadedPages}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            currentPage={currentPage}
             isLoadingPage={isLoadingPage}
-            onPageLoad={handlePageLoad}
-            //Pagination
             currentSortOption={
               inboxDataParams.sortOrder === SortOrderTypes.DESC
                 ? SortOptionId.RECEIVED_CLOSE
                 : SortOptionId.RECEIVED_FAR
             }
-            currentPage={InboxEnvelopeData?.currentPage || 0}
-            itemsPerPage={inboxDataParams.size}
-            totalItems={InboxEnvelopeData?.totalItems}
-            totalPages={InboxEnvelopeData?.totalPages}
+            itemsPerPage={envelopes.length}
             searchTerm={inboxDataParams.searchKeyword}
             // Setters
             setSearchTerm={setSearchTerm}
@@ -297,6 +206,10 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
             setSortOrder={setSortOrder}
             setStatusTypes={setStatusTypes}
             onRowClick={handleRowClick}
+            hasNextPage={hasNextPage}
+            onLoadMore={handleLoadMore}
+            isFetchingNextPage={isFetchingNextPage}
+            initialItemsToShow={envelopes.length}
           />
         </>
       </ContentLayout>

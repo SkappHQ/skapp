@@ -1,34 +1,22 @@
 import { Box, Typography, useTheme } from "@mui/material";
+import { Table } from "@rootcodelabs/skapp-ui";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
-import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-import Table from "~community/common/components/molecules/Table/Table";
-import ROUTES from "~community/common/constants/routes";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
-import { TableNames } from "~enterprise/common/enums/Table";
 import EnvelopeTableStatusFilter, {
   StatusOption
 } from "~enterprise/sign/components/molecules/EnvelopeTableStatusFilter/EnvelopeTableStatusFilter";
-import { ItemsPerPage } from "~enterprise/sign/constants";
-import { Envelope, Recipient } from "~enterprise/sign/types/CommonEsignTypes";
+import { Envelope } from "~enterprise/sign/types/CommonEsignTypes";
 import {
   EnvelopeStatus,
   GetAllInboxParams,
@@ -45,6 +33,16 @@ import {
 } from "~enterprise/sign/utils/envelopeStatusUtils";
 
 import { Styles } from "./styles";
+
+interface TableColumn<T> {
+  key: string;
+  header: string;
+  width?: string; // e.g., '25%'
+  className?: string;
+  render?: (value: T[keyof T], row: T, index: number) => React.ReactNode;
+  columnAriaLabel?: string;
+  getCellAriaLabel?: (value: T[keyof T], row: T, index: number) => string;
+}
 
 interface IndividualEmployeeDocumentTableViewProps {
   pageTitle: string;
@@ -83,10 +81,8 @@ interface IndividualEmployeeDocumentTableViewProps {
 const IndividualEmployeeDocumentTableView: React.FC<
   IndividualEmployeeDocumentTableViewProps
 > = ({
-  pageTitle,
   envelopes,
   onRowClick,
-  tableHeaders,
   sortOptions,
   statusOptions,
   itemsPerPage,
@@ -101,16 +97,15 @@ const IndividualEmployeeDocumentTableView: React.FC<
   setSortOrder,
   setStatusTypes,
   currentSortOption: initialSortOption,
-  isInboxTable = true,
   showEmptyTableCreateButton = false,
-  isLoading = false,
+  isLoading,
   inboxDataParams,
   sentDataParams,
   loadedPages = new Set(),
-  isLoadingPage = false,
+  isLoadingPage,
   onPageLoad,
-  hasNextPage = false,
-  isFetchingNextPage = false,
+  hasNextPage,
+  isFetchingNextPage,
   onLoadMore,
   initialItemsToShow = 6
 }) => {
@@ -118,13 +113,13 @@ const IndividualEmployeeDocumentTableView: React.FC<
 
   const { data: UserData } = useSession();
   const userRoles = UserData?.user.roles || [];
-  const hasAdminRoles = userRoles.includes(AdminTypes.ESIGN_ADMIN);
-  const router = useRouter();
-  const translateText = useTranslator("eSignatureModule", pageTitle);
+  const hasAdminRoles = userRoles.includes(
+    AdminTypes.PEOPLE_ADMIN || AdminTypes.SUPER_ADMIN
+  );
+  const translateText = useTranslator("peopleModule", "inbox");
   const translateAria = useTranslator("eSignatureModuleAria", "components");
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
   const styles = Styles(theme);
 
@@ -137,83 +132,6 @@ const IndividualEmployeeDocumentTableView: React.FC<
     setDisplayedItems(initialItemsToShow);
   }, [envelopes.length, initialItemsToShow, searchTerm]);
 
-  // Intersection Observer for lazy loading
-  useEffect(() => {
-    const loadMoreTrigger = loadMoreTriggerRef.current;
-    const scrollContainer = scrollContainerRef.current;
-
-    if (!loadMoreTrigger || !scrollContainer) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting) {
-          // Check if we need to show more items from current data
-          if (displayedItems < envelopes.length) {
-            setDisplayedItems((prev) =>
-              Math.min(prev + initialItemsToShow, envelopes.length)
-            );
-          }
-          // Check if we need to fetch more data from server
-          else if (hasNextPage && !isFetchingNextPage && onLoadMore) {
-            console.log("Fetching more data from server...");
-            onLoadMore();
-          }
-        }
-      },
-      {
-        root: scrollContainer,
-        rootMargin: "200px",
-        threshold: 0.1
-      }
-    );
-
-    observer.observe(loadMoreTrigger);
-
-    return () => {
-      if (loadMoreTrigger) {
-        observer.unobserve(loadMoreTrigger);
-      }
-    };
-  }, [
-    displayedItems,
-    envelopes.length,
-    hasNextPage,
-    isFetchingNextPage,
-    onLoadMore,
-    initialItemsToShow
-  ]);
-
-  // Scroll percentage approach (80% threshold)
-  const handleScroll = useCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
-      const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
-
-      if (scrollPercentage >= 0.8) {
-        // Show more items from current data
-        if (displayedItems < envelopes.length) {
-          setDisplayedItems((prev) =>
-            Math.min(prev + initialItemsToShow, envelopes.length)
-          );
-        }
-        // Fetch more data from server
-        else if (hasNextPage && !isFetchingNextPage && onLoadMore) {
-          console.log("80% scroll reached - fetching more data...");
-          onLoadMore();
-        }
-      }
-    },
-    [
-      displayedItems,
-      envelopes.length,
-      hasNextPage,
-      isFetchingNextPage,
-      onLoadMore,
-      initialItemsToShow
-    ]
-  );
-
   const handleStatusFilter = (statuses: string) => {
     setStatusTypes(statuses);
   };
@@ -224,33 +142,126 @@ const IndividualEmployeeDocumentTableView: React.FC<
     }
   }, []);
 
-  const handlePageChange = useCallback(
-    (event: ChangeEvent<unknown>, value: number) => {
-      const newPage = value - 1;
-      setPage(newPage);
-
-      // Trigger lazy loading if page not loaded yet
-      if (onPageLoad && !loadedPages.has(newPage)) {
-        onPageLoad(newPage);
-      }
-
-      scrollToTop();
-    },
-    [setPage, onPageLoad, loadedPages, scrollToTop]
-  );
-
-  const shouldShowExpiringNotification = (
-    envelope: Envelope,
-    isInboxTable: boolean
-  ): boolean => {
+  const shouldShowExpiringNotification = (envelope: Envelope): boolean => {
     return (
-      isInboxTable &&
       IsExpiringSoon(envelope.expiresAt) &&
       envelope.status !== EnvelopeStatus.COMPLETED &&
       envelope.status !== EnvelopeStatus.DECLINED &&
       envelope.status !== EnvelopeStatus.VOID
     );
   };
+
+  // Render functions for each column
+  const renderName = (value: unknown, envelope: Envelope) => (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        width: "100%"
+      }}
+    >
+      <Box
+        sx={{
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Icon
+          name={IconName.FILE_ICON}
+          width="1.5rem"
+          height="1.5rem"
+          fill={theme.palette.primary.dark}
+        />
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "calc(100% - 2.25rem)"
+        }}
+      >
+        <Typography variant="label" sx={styles.truncatedText}>
+          {envelope.subject}
+        </Typography>
+        {hasAdminRoles && envelope.sender && (
+          <Typography
+            variant="caption"
+            color={theme.palette.text.secondary}
+            sx={styles.truncatedText}
+          >
+            {translateText(["sentBy"])} : {envelope.sender.email}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+
+  const renderSender = (value: unknown, envelope: Envelope) => (
+    <Avatar
+      firstName={envelope.sender?.firstName || ""}
+      lastName={envelope.sender?.lastName || ""}
+      src={envelope.sender?.profilePic || ""}
+    />
+  );
+
+  const renderReceivedOn = (value: unknown, envelope: Envelope) => (
+    <Typography variant="body1">
+      {formatISODateWithSuffix(envelope.receivedDate)}
+    </Typography>
+  );
+
+  const renderExpiresOn = (value: unknown, envelope: Envelope) => (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.5rem"
+      }}
+    >
+      {shouldShowExpiringNotification(envelope) ? (
+        <>
+          <Typography
+            variant="body1"
+            sx={{ color: theme.palette.text.darkerRedText }}
+          >
+            {formatISODateWithSuffix(envelope.expiresAt)}
+          </Typography>
+          <Icon
+            name={IconName.CLOCK_ICON}
+            width="1rem"
+            height="1rem"
+            fill={theme.palette.text.darkerRedText}
+          />
+        </>
+      ) : (
+        <Typography variant="body1">
+          {formatISODateWithSuffix(envelope.expiresAt)}
+        </Typography>
+      )}
+    </Box>
+  );
+
+  const renderStatus = (value: unknown, envelope: Envelope) => (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        borderRadius: "4rem",
+        backgroundColor: theme.palette.grey[50],
+        padding: "0.75rem 1.5rem 0.75rem 1.25rem"
+      }}
+    >
+      {GetEnvelopeStatusIcon(envelope.status)}
+      <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+        {translateText([GetStatusText(envelope.status)])}
+      </Typography>
+    </Box>
+  );
 
   const getTableRows = () => {
     if (totalItems === 0) return [];
@@ -262,13 +273,11 @@ const IndividualEmployeeDocumentTableView: React.FC<
       const statusText = translateText([GetStatusText(envelope.status)]);
       const senderName = envelope.sender
         ? `${envelope.sender.firstName} ${envelope.sender.lastName}`
-        : "Unknown Sender";
-      const dateLabel = isInboxTable
-        ? translateAria(["envelopeTable.receivedOn"])
-        : translateAria(["envelopeTable.createdOn"]);
-      const dateValue = isInboxTable
-        ? formatISODateWithSuffix(envelope.receivedDate)
-        : formatISODateWithSuffix(envelope.sentAt);
+        : translateText(["unknownSender"]);
+      const dateLabel = translateAria(["envelopeTable.receivedOn"]);
+
+      const dateValue = formatISODateWithSuffix(envelope.receivedDate);
+
       const expiryDate = formatISODateWithSuffix(envelope.expiresAt);
 
       const rowAriaLabel = translateAria(["envelopeTable.rowDescription"], {
@@ -286,137 +295,11 @@ const IndividualEmployeeDocumentTableView: React.FC<
         ariaLabel: {
           row: rowAriaLabel
         },
-        name: (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              width: "100%"
-            }}
-          >
-            <Box
-              sx={{
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <Icon
-                name={IconName.FILE_ICON}
-                width="1.5rem"
-                height="1.5rem"
-                fill={theme.palette.primary.dark}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                width: "calc(100% - 2.25rem)"
-              }}
-            >
-              <Typography variant="label" sx={styles.truncatedText}>
-                {envelope.subject}
-              </Typography>
-              {!isInboxTable && hasAdminRoles && envelope.sender && (
-                <Typography
-                  variant="caption"
-                  color={theme.palette.text.secondary}
-                  sx={styles.truncatedText}
-                >
-                  {translateText(["sentBy"])} : {envelope.sender.email}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        ),
-        sender: isInboxTable ? (
-          <Avatar
-            firstName={envelope.sender.firstName}
-            lastName={envelope.sender.lastName}
-            src={envelope.sender.profilePic || ""}
-          />
-        ) : (
-          <AvatarGroup
-            avatars={envelope.recipients.map((recipient: Recipient) => ({
-              firstName: recipient.addressBook.firstName,
-              lastName: recipient.addressBook.lastName,
-              image: recipient.addressBook.profilePic
-            }))}
-            componentStyles={{
-              ".MuiAvatarGroup-avatar": {
-                bgcolor: theme.palette.grey[100],
-                color: theme.palette.primary.dark,
-                fontSize: "0.875rem",
-                height: "2.5rem",
-                width: "2.5rem",
-                fontWeight: 400,
-                flexDirection: "row-reverse"
-              }
-            }}
-            max={2}
-          />
-        ),
-        receivedOn: (
-          <Typography variant="body1">
-            {isInboxTable
-              ? formatISODateWithSuffix(envelope.receivedDate)
-              : formatISODateWithSuffix(envelope.sentAt)}
-          </Typography>
-        ),
-        expiresOn: (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem"
-            }}
-          >
-            {shouldShowExpiringNotification(envelope, isInboxTable) ? (
-              <>
-                <Typography
-                  variant="body1"
-                  sx={{ color: theme.palette.text.darkerRedText }}
-                >
-                  {formatISODateWithSuffix(envelope.expiresAt)}
-                </Typography>
-                <Icon
-                  name={IconName.CLOCK_ICON}
-                  width="1rem"
-                  height="1rem"
-                  fill={theme.palette.text.darkerRedText}
-                />
-              </>
-            ) : (
-              <Typography variant="body1">
-                {formatISODateWithSuffix(envelope.expiresAt)}
-              </Typography>
-            )}
-          </Box>
-        ),
-        status: (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              borderRadius: "4rem",
-              backgroundColor: theme.palette.grey[50],
-              padding: "0.75rem 1.5rem 0.75rem 1.25rem"
-            }}
-          >
-            {GetEnvelopeStatusIcon(envelope.status)}
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.secondary }}
-            >
-              {translateText([GetStatusText(envelope.status)])}
-            </Typography>
-          </Box>
-        )
+        name: envelope.subject,
+        sender: envelope.sender,
+        receivedOn: dateValue,
+        expiresOn: envelope.expiresAt,
+        status: envelope.status
       };
     });
   };
@@ -439,11 +322,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
       />
       <EnvelopeTableStatusFilter
         statusOptions={statusOptions}
-        currentStatusTypes={
-          isInboxTable
-            ? inboxDataParams?.statusTypes
-            : sentDataParams?.statusTypes
-        }
+        currentStatusTypes={inboxDataParams?.statusTypes}
         onApplyFilters={(statuses) => {
           handleStatusFilter(statuses);
           setPage(0);
@@ -456,6 +335,64 @@ const IndividualEmployeeDocumentTableView: React.FC<
     </Box>
   );
 
+  const envelopeColumns: TableColumn<any>[] = [
+    {
+      key: "name",
+      header: translateText(["tableHeaders.documentName"]),
+      width: "35%",
+      render: renderName,
+      columnAriaLabel: "Document name",
+      getCellAriaLabel: (row: any) => `Document: ${row.subject}`,
+      className: "px-4"
+    },
+    {
+      key: "sender",
+      header: translateText(["tableHeaders.sender"]),
+      width: "10%",
+      render: renderSender,
+      columnAriaLabel: "Sender",
+      getCellAriaLabel: (row: any) => {
+        return `Sender: ${row.sender?.firstName} ${row.sender?.lastName}`;
+      },
+      className: "px-4"
+    },
+    {
+      key: "receivedOn",
+      header: translateText(["tableHeaders.recievedDate"]),
+      width: "20%",
+      render: renderReceivedOn,
+      columnAriaLabel: "Received date",
+      getCellAriaLabel: (row: any) => {
+        const date = formatISODateWithSuffix(row.receivedDate);
+        return `Received on: ${date}`;
+      },
+      className: "px-4"
+    },
+    {
+      key: "expiresOn",
+      header: translateText(["tableHeaders.expireDate"]),
+      width: "20%",
+      render: renderExpiresOn,
+      columnAriaLabel: "Expiration date",
+      getCellAriaLabel: (row: any) => {
+        const isExpiring = shouldShowExpiringNotification(row);
+        const date = formatISODateWithSuffix(row.expiresAt);
+        return `Expires on: ${date}${isExpiring ? " - Expiring soon!" : ""}`;
+      },
+      className: "px-4"
+    },
+    {
+      key: "status",
+      header: translateText(["tableHeaders.status"]),
+      width: "15%",
+      render: renderStatus,
+      columnAriaLabel: "Document status",
+      getCellAriaLabel: (row: any) =>
+        `Status: ${translateText([GetStatusText(row.status)])}`,
+      className: "px-4"
+    }
+  ];
+
   const renderActionRowTwoLeftButton = (
     <DropdownList
       inputName="sortOption"
@@ -464,41 +401,23 @@ const IndividualEmployeeDocumentTableView: React.FC<
         label: option.label,
         value: option.value
       }))}
-      ariaLabel={
-        isInboxTable
-          ? translateAria(["envelopeTable.sortInbox"])
-          : translateAria(["envelopeTable.sortSent"])
-      }
+      ariaLabel={translateAria(["envelopeTable.sortInbox"])}
       onChange={(event) => {
         const selectedOptionId = event.target.value as SortOptionId;
         setPage(0);
         setCurrentSortOption(selectedOptionId);
 
         if (setSortKey && setSortOrder) {
-          if (isInboxTable) {
-            setSortKey(SortKey.RECEIVED_DATE);
-            switch (selectedOptionId) {
-              case SortOptionId.RECEIVED_CLOSE:
-                setSortOrder(SortOrderTypes.DESC);
-                break;
-              case SortOptionId.RECEIVED_FAR:
-                setSortOrder(SortOrderTypes.ASC);
-                break;
-              default:
-                break;
-            }
-          } else {
-            setSortKey(SortKey.CREATED_DATE);
-            switch (selectedOptionId) {
-              case SortOptionId.CREATED_CLOSE:
-                setSortOrder(SortOrderTypes.DESC);
-                break;
-              case SortOptionId.CREATED_FAR:
-                setSortOrder(SortOrderTypes.ASC);
-                break;
-              default:
-                break;
-            }
+          setSortKey(SortKey.RECEIVED_DATE);
+          switch (selectedOptionId) {
+            case SortOptionId.RECEIVED_CLOSE:
+              setSortOrder(SortOrderTypes.DESC);
+              break;
+            case SortOptionId.RECEIVED_FAR:
+              setSortOrder(SortOrderTypes.ASC);
+              break;
+            default:
+              break;
           }
         }
         scrollToTop();
@@ -512,119 +431,45 @@ const IndividualEmployeeDocumentTableView: React.FC<
       checkSelected={true}
     />
   );
-
-  // Loading indicator component
-  const LoadingIndicator = () => (
-    <Box
-      ref={loadMoreTriggerRef}
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "1rem",
-        minHeight: "60px"
-      }}
-    >
-      {(isFetchingNextPage || displayedItems < envelopes.length) && (
-        <Typography variant="body2" color="textSecondary">
-          {isFetchingNextPage ? "Loading more..." : "Scroll for more"}
-        </Typography>
-      )}
-    </Box>
-  );
-
   return (
-    <Box
-      ref={scrollContainerRef}
-      onScroll={handleScroll}
-      //   sx={{
-      //     maxHeight: '70vh',
-      //     overflow: 'auto',
-      //     position: 'relative'
-      //   }}
-    >
-      <Table
-        tableName={TableNames.ENVELOPE}
-        headers={tableHeaders}
-        rows={getTableRows()}
-        isLoading={isLoading && displayedItems === 0}
-        checkboxSelection={{
-          isEnabled: false
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: "1.25rem"
         }}
-        actionToolbar={{
-          firstRow: {
-            leftButton: renderActionRowTwoLeftButton,
-            rightButton: renderActionRowTwoRightButton
-          },
-          customStyles: {
-            wrapper: {
-              paddingY: "1.5rem",
-              paddingX: "0rem"
-            }
-          }
-        }}
-        tableBody={{
-          emptyState: {
-            noData: {
-              title: translateText(["emptyTable.title"]),
-              description: translateText(["emptyTable.description"]),
-              customStyles: {
-                container: { width: "100%" }
-              },
-              button: showEmptyTableCreateButton
-                ? {
-                    buttonStyle: ButtonStyle.PRIMARY,
-                    label: translateText(["emptyTable.createButton"]),
-                    endIcon: IconName.ADD_ICON,
-                    shouldBlink: true,
-                    onClick: () => router.push(ROUTES.SIGN.CREATE_DOCUMENT)
-                  }
-                : undefined
-            }
-          },
-          loadingState: {
-            skeleton: {
-              rows: Math.min(initialItemsToShow, itemsPerPage)
-            }
-          },
-          onRowClick: onRowClick,
-          customStyles: {
-            row: {
-              active: styles.tableRow
-            },
-            cell: {
-              wrapper: {
-                borderBottom: "none"
-              }
-            }
-          }
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: false
-          },
-          customStyles: {
-            wrapper: styles.paginationWithNumOfRows
-          }
-        }}
-        customStyles={{
-          wrapper: styles.tableWrapper,
-          container: styles.tableActionRowWrapper,
-          table: {
-            borderSpacing: "0 1rem",
-            paddingX: "0.12rem",
-            backgroundColor:
-              totalItems > 0 ? theme.palette.background.paper : undefined
-          }
-        }}
-        tableContainerRef={tableContainerRef}
-      />
-
-      {/* Loading indicator at bottom */}
-      {totalItems > 0 && (hasNextPage || displayedItems < envelopes.length) && (
-        <LoadingIndicator />
-      )}
-    </Box>
+      >
+        {renderActionRowTwoLeftButton}
+        {renderActionRowTwoRightButton}
+      </Box>
+      <Box ref={scrollContainerRef}>
+        <Table
+          columns={envelopeColumns}
+          data={getTableRows()}
+          onRowClick={(row) => onRowClick && onRowClick(row)}
+          variant="card"
+          noDataState={{
+            icon: (
+              <Icon
+                name={IconName.FILE_ICON}
+                width="4rem"
+                height="4rem"
+                fill={theme.palette.grey[300]}
+              />
+            ),
+            title: translateText(["emptyTable.title"]),
+            description: translateText(["emptyTable.description"])
+          }}
+          hasMore={hasNextPage}
+          isLoading={isLoading || isFetchingNextPage}
+          scrollThreshold={0.8}
+          onLoadMore={onLoadMore}
+          infiniteScrollLoadingMessage="Loading Data..."
+        />
+      </Box>
+    </>
   );
 };
 

@@ -26,45 +26,9 @@ interface Props {
 const IndividualEmployeeDocumentView: FC<Props> = ({ selectedUser }) => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
-  const { employeeDetails, isProTier } = useSessionData();
-
   const { isDrawerToggled } = useCommonStore((state) => ({
     isDrawerToggled: state.isDrawerExpanded
   }));
-
-  const [month, setMonth] = useState(isProTier ? getCurrentMonth() : 1);
-
-  const { data: dailyLogData, isLoading: isDailyLogLoading } =
-    useGetDailyLogsByEmployeeId(
-      getStartAndEndDateOfTheMonth().start,
-      getStartAndEndDateOfTheMonth().end,
-      selectedUser,
-      isProTier
-    );
-
-  const dailyLogs = useMemo(() => {
-    return isProTier ? dailyLogData : dailyLogMockData;
-  }, [isProTier, dailyLogData]);
-
-  const { data: managerUtilizationData } = useGetIndividualUtilization(
-    selectedUser,
-    isProTier
-  );
-
-  const managerUtilizations = useMemo(() => {
-    return isProTier ? managerUtilizationData : managerUtilizationMockData;
-  }, [isProTier, managerUtilizationData]);
-
-  const { data: workHoursGraphData, isLoading: isWorkHoursGraphLoading } =
-    useGetIndividualWorkHourGraphData(
-      getMonthName(month)?.toUpperCase(),
-      selectedUser,
-      isProTier
-    );
-
-  const employeeWorkHoursDataset = useMemo(() => {
-    return isProTier ? workHoursGraphData : workHoursGraphMockData;
-  }, [isProTier, workHoursGraphData]);
 
   return (
     <PeopleLayout
@@ -78,7 +42,6 @@ const IndividualEmployeeDocumentView: FC<Props> = ({ selectedUser }) => {
       showDivider={false}
       pageHead={translateText(["individualTimeSheetAnalytics.title"])}
     >
-      {/* <UpgradeOverlay> */}
       <>
         <Grid container spacing={1}></Grid>
 
@@ -88,10 +51,9 @@ const IndividualEmployeeDocumentView: FC<Props> = ({ selectedUser }) => {
             marginTop: "1.5rem"
           }}
         >
-          <IndividualEmployeeInboxView selectedUser={2} />
+          <IndividualEmployeeInboxView selectedUser={selectedUser} />
         </Grid>
       </>
-      {/* </UpgradeOverlay> */}
     </PeopleLayout>
   );
 };
