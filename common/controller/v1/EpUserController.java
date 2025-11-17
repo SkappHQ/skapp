@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpUserService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +27,8 @@ public class EpUserController {
 
 	private final EpUserService epUserService;
 
+	private final EpGuestUserService epGuestUserService;
+
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<List<EpUserResponseDto>> getUsers(
@@ -40,17 +43,6 @@ public class EpUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/guest")
-	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserResponseDto>> saveGuestUsers(@Parameter(name = "emails",
-			description = "List of guest user emails (comma-separated)",
-			example = "test1@test.example,  test2@test.example, test3@test.example", schema = @Schema(type = "array",
-					implementation = String.class)) @RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
-
-		List<EpUserResponseDto> response = epUserService.saveGuestUsers(epGuestUserRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	@GetMapping("/auth-pics")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<List<EpUserAuthPicResponseDto>> getUserAuthPics(
@@ -62,6 +54,17 @@ public class EpUserController {
 					example = "john") @RequestParam(value = "search", required = false) String search) {
 
 		List<EpUserAuthPicResponseDto> response = epUserService.getUserAuthPicsByIdsOrSearch(employeeIds, search);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/guest")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+	public ResponseEntity<List<EpUserResponseDto>> saveGuestUsers(@Parameter(name = "emails",
+			description = "List of guest user emails (comma-separated)",
+			example = "test1@test.example,  test2@test.example, test3@test.example", schema = @Schema(type = "array",
+					implementation = String.class)) @RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
+
+		List<EpUserResponseDto> response = epGuestUserService.saveGuestUsers(epGuestUserRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -1,7 +1,6 @@
 package com.skapp.enterprise.people.service;
 
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.type.TenantStatus;
@@ -21,6 +20,6 @@ public interface EpUserService {
 
 	List<Employee> getUsersByIds(List<Long> employeeIds);
 
-	List<EpUserResponseDto> saveGuestUsers(EpGuestUserRequestDto epGuestUserRequestDto);
+	EpUserResponseDto mapEmployeeToUserDto(Employee employee);
 
 }
