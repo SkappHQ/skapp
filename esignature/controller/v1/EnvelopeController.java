@@ -77,6 +77,18 @@ public class EnvelopeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get paginated envelopes received to given user id",
+			description = "Returns a paginated list of envelopes received to given user id(inbox), including subject, "
+					+ "sender email, status, expiry date, and received date. Supports filtering by envelope status, "
+					+ "searching by subject or sender email, and sorting by expire and received dates.")
+	@GetMapping(value = "/inbox/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE', 'ESIGN_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getAllUserEnvelopesByUserId(
+			@Valid EnvelopeInboxFilterDto envelopeInboxFilterDto, @PathVariable Long userId) {
+		ResponseEntityDto response = envelopeService.getAllUserEnvelopesByUserId(envelopeInboxFilterDto, userId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Get paginated list of sent envelopes",
 			description = "Returns a paginated list of envelopes sent by the current user or by all users")
 	@GetMapping(value = "/sent/me", produces = MediaType.APPLICATION_JSON_VALUE)
