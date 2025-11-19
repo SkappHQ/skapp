@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { type NextRouter, useRouter } from "next/router";
-import { JSX, useEffect, useMemo } from "react";
+import { JSX, useEffect, useMemo, useState } from "react";
 
 import {
   useGetEmployeeLeaveStatus,
@@ -33,6 +33,8 @@ const ClockWidget = (): JSX.Element => {
     timeConfigData?.[0] as DefaultDayCapacityType
   );
 
+  const [hasHoveredAfterEnd, setHasHoveredAfterEnd] = useState(false);
+
   const {
     data: isTimeRequestAvailableToday,
     isLoading: isAvailabilityLoading
@@ -55,7 +57,9 @@ const ClockWidget = (): JSX.Element => {
     if (!isDisabled) return "";
     switch (status) {
       case AttendanceSlotType.END:
-        return translateText(["youHaveAlreadyLoggedTime"]);
+        return hasHoveredAfterEnd
+          ? translateText(["youHaveAlreadyLoggedTime"])
+          : "";
       case AttendanceSlotType.HOLIDAY:
         return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
       case AttendanceSlotType.NON_WORKING_DAY:
@@ -76,6 +80,19 @@ const ClockWidget = (): JSX.Element => {
   );
 
   useEffect(() => {
+    if (status !== AttendanceSlotType.END) {
+      setHasHoveredAfterEnd(false);
+    }
+  }, [status]);
+
+  // Handle mouse enter to track hover
+  const handleMouseEnter = () => {
+    if (status === AttendanceSlotType.END) {
+      setHasHoveredAfterEnd(true);
+    }
+  };
+
+  useEffect(() => {
     void getEmployeeStatusRefetch();
     void refetchLeaveStatusData();
   }, [router, getEmployeeStatusRefetch, refetchLeaveStatusData]);
@@ -89,6 +106,7 @@ const ClockWidget = (): JSX.Element => {
       component="div"
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
+      onMouseEnter={handleMouseEnter}
     >
       {showTimer && <Timer disabled={isDisabled} />}
       <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>
