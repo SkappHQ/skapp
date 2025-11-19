@@ -13,6 +13,7 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
+import { TableVariants } from "~community/people/enums/PeopleEnums";
 import EnvelopeTableStatusFilter, {
   StatusOption
 } from "~enterprise/sign/components/molecules/EnvelopeTableStatusFilter/EnvelopeTableStatusFilter";
@@ -23,8 +24,7 @@ import {
   GetAllSentParams,
   SortKey,
   SortOption,
-  SortOptionId,
-  TableHeader
+  SortOptionId
 } from "~enterprise/sign/types/ESignInboxTypes";
 import { IsExpiringSoon } from "~enterprise/sign/utils/EnvelopeTableUtils";
 import {
@@ -37,7 +37,7 @@ import { Styles } from "./styles";
 interface TableColumn<T> {
   key: string;
   header: string;
-  width?: string; // e.g., '25%'
+  width?: string;
   className?: string;
   render?: (value: T[keyof T], row: T, index: number) => React.ReactNode;
   columnAriaLabel?: string;
@@ -45,18 +45,12 @@ interface TableColumn<T> {
 }
 
 interface IndividualEmployeeDocumentTableViewProps {
-  pageTitle: string;
-  isInboxTable?: boolean;
-  showEmptyTableCreateButton?: boolean;
   isLoading?: boolean;
   envelopes: Envelope[];
   onRowClick?: (envelope: Envelope) => void;
-  tableHeaders: TableHeader[];
   sortOptions: SortOption[];
   statusOptions: StatusOption[];
-  itemsPerPage: number;
   searchTerm?: string;
-  currentPage: number;
   totalItems: number;
   totalPages: number;
   currentSortOption: SortOptionId;
@@ -64,14 +58,11 @@ interface IndividualEmployeeDocumentTableViewProps {
   sentDataParams?: GetAllSentParams;
   setSearchTerm: (searchTerm: string) => void;
   setPage: (page: number) => void;
-  setSize: (size: number) => void;
   setSortKey: (sortKey: SortKey) => void;
   setSortOrder: (sortOrder: SortOrderTypes) => void;
   setStatusTypes: (statuses: string) => void;
   loadedPages?: Set<number>;
-  isLoadingPage?: boolean;
   onPageLoad?: (page: number) => void;
-  // New props for infinite scroll
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
@@ -85,25 +76,16 @@ const IndividualEmployeeDocumentTableView: React.FC<
   onRowClick,
   sortOptions,
   statusOptions,
-  itemsPerPage,
   searchTerm,
-  currentPage,
   totalItems,
-  totalPages,
   setSearchTerm,
   setPage,
-  setSize,
   setSortKey,
   setSortOrder,
   setStatusTypes,
   currentSortOption: initialSortOption,
-  showEmptyTableCreateButton = false,
   isLoading,
   inboxDataParams,
-  sentDataParams,
-  loadedPages = new Set(),
-  isLoadingPage,
-  onPageLoad,
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
@@ -113,9 +95,10 @@ const IndividualEmployeeDocumentTableView: React.FC<
 
   const { data: UserData } = useSession();
   const userRoles = UserData?.user.roles || [];
-  const hasAdminRoles = userRoles.includes(
-    AdminTypes.PEOPLE_ADMIN || AdminTypes.SUPER_ADMIN
-  );
+  const hasAdminRoles =
+    userRoles.includes(AdminTypes.PEOPLE_ADMIN) ||
+    userRoles.includes(AdminTypes.SUPER_ADMIN);
+
   const translateText = useTranslator("peopleModule", "inbox");
   const translateAria = useTranslator("eSignatureModuleAria", "components");
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +135,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
   };
 
   // Render functions for each column
-  const renderName = (value: unknown, envelope: Envelope) => (
+  const renderName = (value: string, envelope: Envelope) => (
     <Box
       sx={{
         display: "flex",
@@ -199,7 +182,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
     </Box>
   );
 
-  const renderSender = (value: unknown, envelope: Envelope) => (
+  const renderSender = (value: string, envelope: Envelope) => (
     <Avatar
       firstName={envelope.sender?.firstName || ""}
       lastName={envelope.sender?.lastName || ""}
@@ -207,13 +190,13 @@ const IndividualEmployeeDocumentTableView: React.FC<
     />
   );
 
-  const renderReceivedOn = (value: unknown, envelope: Envelope) => (
+  const renderReceivedOn = (value: string, envelope: Envelope) => (
     <Typography variant="body1">
       {formatISODateWithSuffix(envelope.receivedDate)}
     </Typography>
   );
 
-  const renderExpiresOn = (value: unknown, envelope: Envelope) => (
+  const renderExpiresOn = (value: string, envelope: Envelope) => (
     <Box
       sx={{
         display: "flex",
@@ -341,8 +324,9 @@ const IndividualEmployeeDocumentTableView: React.FC<
       header: translateText(["tableHeaders.documentName"]),
       width: "35%",
       render: renderName,
-      columnAriaLabel: "Document name",
-      getCellAriaLabel: (row: any) => `Document: ${row.subject}`,
+      columnAriaLabel: translateText(["tableHeaders.documentName"]),
+      getCellAriaLabel: (row: any) =>
+        `${translateText(["tableHeaders.documentName"])}: ${row.subject}`,
       className: "px-4"
     },
     {
@@ -350,21 +334,21 @@ const IndividualEmployeeDocumentTableView: React.FC<
       header: translateText(["tableHeaders.sender"]),
       width: "10%",
       render: renderSender,
-      columnAriaLabel: "Sender",
+      columnAriaLabel: translateText(["tableHeaders.sender"]),
       getCellAriaLabel: (row: any) => {
-        return `Sender: ${row.sender?.firstName} ${row.sender?.lastName}`;
+        return `${translateText(["tableHeaders.sender"])} ${row.sender?.firstName} ${row.sender?.lastName}`;
       },
       className: "px-4"
     },
     {
       key: "receivedOn",
-      header: translateText(["tableHeaders.recievedDate"]),
+      header: translateText(["tableHeaders.receievedDate"]),
       width: "20%",
       render: renderReceivedOn,
-      columnAriaLabel: "Received date",
+      columnAriaLabel: translateText(["tableHeaders.receievedDate"]),
       getCellAriaLabel: (row: any) => {
         const date = formatISODateWithSuffix(row.receivedDate);
-        return `Received on: ${date}`;
+        return `${translateText(["tableHeaders.receievedDate"])} ${date}`;
       },
       className: "px-4"
     },
@@ -373,11 +357,11 @@ const IndividualEmployeeDocumentTableView: React.FC<
       header: translateText(["tableHeaders.expireDate"]),
       width: "20%",
       render: renderExpiresOn,
-      columnAriaLabel: "Expiration date",
+      columnAriaLabel: translateText(["tableHeaders.expireDate"]),
       getCellAriaLabel: (row: any) => {
         const isExpiring = shouldShowExpiringNotification(row);
         const date = formatISODateWithSuffix(row.expiresAt);
-        return `Expires on: ${date}${isExpiring ? " - Expiring soon!" : ""}`;
+        return `${translateText(["tableHeaders.expireDate"])}: ${date}${isExpiring ? `${translateText(["expireSoon"])}` : ""}`;
       },
       className: "px-4"
     },
@@ -386,9 +370,9 @@ const IndividualEmployeeDocumentTableView: React.FC<
       header: translateText(["tableHeaders.status"]),
       width: "15%",
       render: renderStatus,
-      columnAriaLabel: "Document status",
+      columnAriaLabel: translateText(["tableHeaders.status"]),
       getCellAriaLabel: (row: any) =>
-        `Status: ${translateText([GetStatusText(row.status)])}`,
+        `${translateText(["tableHeaders.status"])} ${translateText([GetStatusText(row.status)])}`,
       className: "px-4"
     }
   ];
@@ -449,7 +433,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
           columns={envelopeColumns}
           data={getTableRows()}
           onRowClick={(row) => onRowClick && onRowClick(row)}
-          variant="card"
+          variant={TableVariants.CARD}
           noDataState={{
             icon: (
               <Icon
@@ -466,7 +450,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
           isLoading={isLoading || isFetchingNextPage}
           scrollThreshold={0.8}
           onLoadMore={onLoadMore}
-          infiniteScrollLoadingMessage="Loading Data..."
+          infiniteScrollLoadingMessage={translateText(["loadingMore"])}
         />
       </Box>
     </>

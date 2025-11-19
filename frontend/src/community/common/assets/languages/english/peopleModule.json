@@ -195,6 +195,7 @@
     "employment": "Employment",
     "timeline": "Timeline",
     "leave": "Leave",
+    "documents": "Documents",
     "timesheet": "Timesheet",
     "teams": "Teams :",
     "joinedDate": "Joined Date :",
@@ -1061,15 +1062,17 @@
     "allDocuments": "All documents",
     "unknownSender": "Unknown sender",
     "sentBy": "Sent by",
+    "loadingMore": "Loading more documents...",
     "tableHeaders": {
       "documentName": "Name",
       "recipients": "Recipients",
-      "recievedDate": "Recieved on",
+      "receievedDate": "Receieved on",
       "expireDate": "Expires on",
       "status": "Status",
       "sender": "Sender",
       "position": "Position"
     },
+    "expireSoon": "Expiring soon",
     "emptyTable": {
       "title": "No documents to be displayed",
       "description": "Your Inbox is empty. Once you receive documents, they will be displayed here."
@@ -1085,8 +1088,8 @@
       "expired": "Expired"
     },
     "dateSort": {
-      "receivedClose": "Received date : newest to oldest",
-      "receivedFar": "Received date : oldest to newest"
+      "receivedClose": "Sort By : newest to oldest",
+      "receivedFar": "Sort By : oldest to newest"
     },
     "statusFilter": {
       "statusHeader": "Document Status",

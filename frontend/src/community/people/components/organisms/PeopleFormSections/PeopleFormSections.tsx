@@ -107,7 +107,7 @@ const PeopleFormSections = ({
       case EditPeopleFormTypes.documents:
         return (
           <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
-        ); // Placeholder for Documents section
+        ); 
       default:
         return null;
     }

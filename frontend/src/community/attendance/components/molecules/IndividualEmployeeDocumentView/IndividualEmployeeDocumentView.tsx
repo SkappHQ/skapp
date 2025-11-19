@@ -1,21 +1,9 @@
 import { Grid2 as Grid } from "@mui/material";
-import { FC, useMemo, useState } from "react";
+import { FC } from "react";
 
-import { useGetIndividualUtilization } from "~community/attendance/api/AttendanceAdminApi";
-import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
-import { useGetIndividualWorkHourGraphData } from "~community/attendance/api/attendanceManagerApi";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import {
-  getCurrentMonth,
-  getMonthName,
-  getStartAndEndDateOfTheMonth
-} from "~community/common/utils/dateTimeUtils";
-import dailyLogMockData from "~enterprise/attendance/data/dailyLogMockData";
-import managerUtilizationMockData from "~enterprise/attendance/data/managerUtilizationMockData.json";
-import workHoursGraphMockData from "~enterprise/attendance/data/workHoursGraphMockData.json";
 
 import IndividualEmployeeInboxView from "./IndividualEmployeeInboxView";
 
