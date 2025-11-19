@@ -285,7 +285,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				+ "?client_id=" + clientId + "&response_type=code" + "&redirect_uri="
 				+ URLEncoder.encode(backendRedirectURI, StandardCharsets.UTF_8) + "&scope="
 				+ URLEncoder.encode(EpCommonConstants.ENTERPRISE_MICROSOFT_CALENDAR_SCOPES, StandardCharsets.UTF_8)
-				+ "&state=" + encodedState + "&response_mode=query";
+				+ "&state=" + encodedState + "&response_mode=query" + "&prompt=select_account";
 
 		responseDto.setAuthUrl(authUrl);
 
