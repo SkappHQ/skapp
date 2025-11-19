@@ -2,40 +2,40 @@
   "dashboard": {
     "resourceAvailabilityTrendMonthlyNext": "next month",
     "resourceAvailabilityTrendMonthlyPrevious": "previous month",
-    "leaveUtilizationChart": "Leave utilization chart - use arrow keys to navigate"
+    "leaveUtilizationChart": "Time off Utilization chart - use arrow keys to navigate"
   },
   "myRequests": {
     "myLeaveAllocation": {
-      "myLeaveAllocationSection": "My Leave Allocation for the year {{year}}",
-      "selectYear": "Select Year for My Leave Allocation",
+      "myLeaveAllocationSection": "My Time Off Allocation for the year {{year}}",
+      "selectYear": "Select Year for My Time Off Allocation",
       "currentSelection": "current year selected is"
     },
     "myLeaveRequests": {
-      "myLeaveRequestsSection": "Accessing My Leave Requests",
-      "sortGroup": "Sort my leave requests dropdown",
+      "myLeaveRequestsSection": "Accessing My Time Off Requests",
+      "sortGroup": "Sort my time off requests dropdown",
       "sortBy": "Selected Sort Option is {{sortBy}}",
-      "filterSection": "Filter my leave requests",
-      "statusFilterSection": "Leave Status Filters",
-      "typeFilterSection": "Leave Type Filters",
+      "filterSection": "Filter my time off requests",
+      "statusFilterSection": "Time Off Status Filters",
+      "typeFilterSection": "Time Off Type Filters",
       "filterOption": "Filter Option, {{filterName}}",
       "filterSelected": "{{filterName}} selected",
       "downloadAttachment": "Download attachment",
       "sort": "Sort by",
-      "leaveRecordRow": "{{duration}} leave request record for the {{date}} of the leave type {{leaveType}} and the current status of the request is {{leaveStatus}}. Click to open modal"
+      "leaveRecordRow": "{{duration}} time off request record for the {{date}} of the time off type {{leaveType}} and the current status of the request is {{leaveStatus}}. Click to open modal"
     }
   },
   "allLeaveRequests": {
-    "allLeaveRequestPage": "All Leave Requests Page",
-    "sortGroup": "Sort all leave requests",
+    "allLeaveRequestPage": "All Time Off Requests Page",
+    "sortGroup": "Sort all time off requests",
     "sortBy": "Selected Sort Option is {{sortBy}}",
     "dateRangeFilter": "Date Range Filter, {{startDate}} to {{endDate}}",
-    "leaveDuration": "{{day}} leave on {{date}}",
-    "searchAllLeaveRequests": "Search All Leave Requests",
-    "allLeaveRequestTable": "Accessing All Leave Requests Table",
+    "leaveDuration": "{{day}} time off on {{date}}",
+    "searchAllLeaveRequests": "Search All Time Off Requests",
+    "allLeaveRequestTable": "Accessing All Time Off Requests Table",
     "employeeName": "Employee name, {{firstName}} {{lastName}}",
-    "leaveType": "Leave type, {{leaveType}}",
+    "leaveType": "Time off type, {{leaveType}}",
     "sort": "Sort by",
-    "leaveRecordRow": "Leave request record for {{name}}, {{duration}} leave on {{date}} for {{leaveType}} leave, current status is {{leaveStatus}}. Click to open modal"
+    "leaveRecordRow": "Time Off request record for {{name}}, {{duration}} time off on {{date}} for {{leaveType}} time off, current status is {{leaveStatus}}. Click to open modal"
   },
   "applyLeave": {
     "comment": {
@@ -43,8 +43,8 @@
       "icon": "Attach a file"
     },
     "calendar": {
-      "viewLeaveEntitlementBalance": "View leave entitlement balance",
-      "selectDateForLeave": "select the dates for leave",
+      "viewLeaveEntitlementBalance": "View time off entitlement balance",
+      "selectDateForLeave": "select the dates for time off",
       "back": "Back",
       "next": "Next",
       "selectedStartDate": "Selected Date for Start Date, ",
@@ -54,7 +54,7 @@
     "teamAvailabilityCard": {
       "dropdown": "Select team to check team availability"
     },
-    "confirmApplyLeave": "Confirm and Apply Leave"
+    "confirmApplyLeave": "Confirm and Apply Time Off"
   },
   "durationSelector": {
     "selectDuration": "Select duration",
@@ -71,16 +71,16 @@
   },
   "entitlement": {
     "leaveEntitlementTable": {
-      "select": "Leave entitlements by year"
+      "select": "Time off entitlements by year"
     },
     "customLeaveAllocationTable": {
-      "selectYear": "Custom leave allocations by year",
+      "selectYear": "Custom time off allocations by year",
       "filterButton": "Filter options",
       "filterOption": "{{filterName}} option"
     }
   },
   "leaveTypeCard": {
-    "entitlementOver": "{{name}} entitlements are over, please choose a different leave type",
+    "entitlementOver": "{{name}} entitlements are over, please choose a different time off type",
     "available": "available"
   }
 }
