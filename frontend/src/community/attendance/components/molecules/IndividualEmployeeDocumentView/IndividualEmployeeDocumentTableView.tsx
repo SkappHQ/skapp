@@ -93,8 +93,8 @@ const IndividualEmployeeDocumentTableView: React.FC<
 }) => {
   const theme = useTheme();
 
-  const { data: UserData } = useSession();
-  const userRoles = UserData?.user.roles || [];
+  const { data: userData } = useSession();
+  const userRoles = userData?.user.roles || [];
   const hasAdminRoles =
     userRoles.includes(AdminTypes.PEOPLE_ADMIN) ||
     userRoles.includes(AdminTypes.SUPER_ADMIN);

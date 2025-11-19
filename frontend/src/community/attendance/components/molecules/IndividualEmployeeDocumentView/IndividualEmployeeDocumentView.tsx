@@ -31,8 +31,6 @@ const IndividualEmployeeDocumentView: FC<Props> = ({ selectedUser }) => {
       pageHead={translateText(["individualTimeSheetAnalytics.title"])}
     >
       <>
-        <Grid container spacing={1}></Grid>
-
         <Grid
           size={{ xs: 12 }}
           sx={{

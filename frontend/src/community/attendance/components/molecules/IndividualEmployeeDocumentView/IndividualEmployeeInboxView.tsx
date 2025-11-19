@@ -39,9 +39,8 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
   } = useESignStore();
 
   // Current page params
-  const UserData = selectedUser;
   const {
-    data: InboxEnvelopeData,
+    data: inboxEnvelopeData,
     isLoading: isInboxLoading,
     isFetchingNextPage,
     fetchNextPage,
@@ -50,30 +49,29 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     error
   } = useGetAllInboxByUserId(inboxDataParams, selectedUser);
 
-  //   const envelopes: Envelope[] = InboxEnvelopeData?.items || [];
   const envelopes: Envelope[] = useMemo(() => {
-    if (!InboxEnvelopeData?.pages) {
+    if (!inboxEnvelopeData?.pages) {
       return [];
     }
 
-    const flattenedData = InboxEnvelopeData.pages.reduce((acc, page) => {
+    const flattenedData = inboxEnvelopeData.pages.reduce((acc, page) => {
       const items = page?.items || [];
       return [...acc, ...items];
     }, [] as Envelope[]);
     return flattenedData;
-  }, [InboxEnvelopeData?.pages]);
+  }, [inboxEnvelopeData?.pages]);
 
   const { setPreserveFilters } = usePreserveFilters({ type: TableType.INBOX });
 
-  const totalItems = InboxEnvelopeData?.pages?.[0]?.totalItems || 0;
-  const totalPages = InboxEnvelopeData?.pages?.[0]?.totalPages || 0;
-  const currentPage = InboxEnvelopeData?.pages?.[0]?.currentPage || 0;
+  const totalItems = inboxEnvelopeData?.pages?.[0]?.totalItems || 0;
+  const totalPages = inboxEnvelopeData?.pages?.[0]?.totalPages || 0;
+  const currentPage = inboxEnvelopeData?.pages?.[0]?.currentPage || 0;
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage) {
       fetchNextPage();
     }
-  }, [hasNextPage, fetchNextPage, InboxEnvelopeData?.pages?.length]);
+  }, [hasNextPage, fetchNextPage, inboxEnvelopeData?.pages?.length]);
 
   const handleRowClick = (envelope: Envelope) => {
     setPreserveFilters(true);
