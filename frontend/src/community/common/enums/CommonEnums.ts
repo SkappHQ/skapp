@@ -21,6 +21,11 @@ export enum GlobalLoginMethod {
   NONE = ""
 }
 
+export enum CalendarType {
+  GOOGLE = "GOOGLE",
+  MICROSOFT = "MICROSOFT"
+}
+
 export enum Modules {
   LEAVE = "LEAVE",
   ATTENDANCE = "ATTENDANCE",
