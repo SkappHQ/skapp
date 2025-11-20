@@ -126,6 +126,16 @@ export const useCalendarIntegrations = (
     isPending: isMicrosoftPending
   } = useIsMicrosoftCalendarConnected();
 
+  const createRedirectUrl = useCallback(
+    (baseUrl: string, calendarType: string) => {
+      const url = new URL(baseUrl);
+      url.searchParams.set("success", "true");
+      url.searchParams.set("type", calendarType);
+      return url.toString();
+    },
+    []
+  );
+
   // Update connection status when data loads
   useEffect(() => {
     if (isGoogleCalendarConnectedData !== undefined) {
@@ -159,9 +169,11 @@ export const useCalendarIntegrations = (
           if (isGoogleConnected) {
             setIsGoogleModalOpen(true);
           } else {
-            // Append calendar type to the redirect URL at connection time
-            const redirectUrlWithType = `${frontendRedirectUrl}${frontendRedirectUrl.includes('?') ? '&' : '?'}type=google`;
-            connectGoogle(redirectUrlWithType);
+            const redirectUrl = createRedirectUrl(
+              frontendRedirectUrl,
+              "google"
+            );
+            connectGoogle(redirectUrl);
           }
         },
         onDisconnect: () => {
@@ -190,9 +202,11 @@ export const useCalendarIntegrations = (
           if (isMicrosoftConnected) {
             setIsMicrosoftModalOpen(true);
           } else {
-            // Append calendar type to the redirect URL at connection time
-            const redirectUrlWithType = `${frontendRedirectUrl}${frontendRedirectUrl.includes('?') ? '&' : '?'}type=microsoft`;
-            connectMicrosoft(redirectUrlWithType);
+            const redirectUrl = createRedirectUrl(
+              frontendRedirectUrl,
+              "microsoft"
+            );
+            connectMicrosoft(redirectUrl);
           }
         },
         onDisconnect: () => {
