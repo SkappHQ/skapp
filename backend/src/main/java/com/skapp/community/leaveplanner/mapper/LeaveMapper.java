@@ -20,13 +20,7 @@ import com.skapp.community.leaveplanner.payload.request.AllLeaveRequestsResponse
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponseDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeRequestDto;
-import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveEntitlementReportExportDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestManagerResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
-import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
+import com.skapp.community.leaveplanner.payload.response.*;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
@@ -146,5 +140,12 @@ public interface LeaveMapper {
 	LeaveTypeBasicDetailsResponseDto leaveTypeToLeaveTypeBasicDetailsResponseDto(LeaveType leaveType);
 
 	LeaveRequestManagerResponseDto leaveRequestToLeaveRequestManagerResponseDto(LeaveRequest leaveRequest);
+
+	@Mapping(target = "userId", source = "employee.employeeId")
+	@Mapping(source = "viewed", target = "isViewed")
+	LeaveRequestWithUserResponseDto leaveRequestToLeaveRequestWithUserResponseDto(LeaveRequest leaveRequest);
+
+	List<LeaveRequestWithUserResponseDto> leaveRequestListToLeaveRequestWithUserResponseDtoList(
+			List<LeaveRequest> leaveRequests);
 
 }

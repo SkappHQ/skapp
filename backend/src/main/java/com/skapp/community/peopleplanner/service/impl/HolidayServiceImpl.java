@@ -468,4 +468,15 @@ public class HolidayServiceImpl implements HolidayService {
 		return holiday.getDate().isAfter(currentDate);
 	}
 
+	@Override
+	public ResponseEntityDto getHolidaysByDateRange(LocalDate startDate, LocalDate endDate) {
+		log.info("getHolidaysByDateRange: execution started for startDate: {}, endDate: {}", startDate, endDate);
+
+		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(startDate, endDate);
+		List<HolidayResponseDto> holidayResponseDtos = peopleMapper.holidaysToHolidayResponseDtoList(holidays);
+
+		log.info("getHolidaysByDateRange: execution ended. Found {} holidays", holidayResponseDtos.size());
+		return new ResponseEntityDto(false, holidayResponseDtos);
+	}
+
 }

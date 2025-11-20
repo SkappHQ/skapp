@@ -32,13 +32,9 @@ import com.skapp.community.leaveplanner.payload.request.LeavePatchRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponseDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
+import com.skapp.community.leaveplanner.payload.response.*;
+import com.skapp.enterprise.leaveplanner.payload.request.LeavesByEmployeeIdsFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilterDto;
-import com.skapp.community.leaveplanner.payload.response.GenericLeaveResponse;
-import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestManagerResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
-import com.skapp.community.leaveplanner.payload.response.ResourceAvailabilityCalendarResponseDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
@@ -1210,6 +1206,25 @@ public class LeaveServiceImpl implements LeaveService {
 		if (patchDate != null && !existingDate.isEqual(patchDate)) {
 			throw new ModuleException(errorMessage);
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getLeavesByEmployeeIdsWithUser(LeavesByEmployeeIdsFilterDto filterDto) {
+		log.info("getLeavesByEmployeeIdsWithUser: Execution started for employee IDs: {}", filterDto.getEmployeeIds());
+
+		LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
+		leaveRequestFilterDto.setStartDate(filterDto.getStartDate());
+		leaveRequestFilterDto.setEndDate(filterDto.getEndDate());
+
+		List<LeaveRequest> leaveRequests = leaveRequestDao
+			.findLeaveRequestsByDateRangeAndEmployees(leaveRequestFilterDto, filterDto.getEmployeeIds());
+
+		List<LeaveRequestWithUserResponseDto> leaveRequestResponseDtos = leaveMapper
+			.leaveRequestListToLeaveRequestWithUserResponseDtoList(leaveRequests);
+
+		log.info("getLeavesByEmployeeIdsWithUser: Execution completed. Found {} leave requests",
+				leaveRequestResponseDtos.size());
+		return new ResponseEntityDto(false, leaveRequestResponseDtos);
 	}
 
 }

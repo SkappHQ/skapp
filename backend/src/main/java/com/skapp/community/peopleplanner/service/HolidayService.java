@@ -19,4 +19,6 @@ public interface HolidayService {
 
 	ResponseEntityDto deleteSelectedHolidays(HolidaysDeleteRequestDto holidayDeleteDto);
 
+	ResponseEntityDto getHolidaysByDateRange(LocalDate startDate, LocalDate endDate);
+
 }

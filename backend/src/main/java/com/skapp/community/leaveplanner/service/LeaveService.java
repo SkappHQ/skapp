@@ -7,6 +7,7 @@ import com.skapp.community.leaveplanner.payload.ResourceAvailabilityCalendarFilt
 import com.skapp.community.leaveplanner.payload.request.LeavePatchRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
+import com.skapp.enterprise.leaveplanner.payload.request.LeavesByEmployeeIdsFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import jakarta.validation.Valid;
@@ -40,5 +41,7 @@ public interface LeaveService {
 	ResponseEntityDto leaveRequestAvailability(@Valid LeaveRequestAvailabilityFilterDto requestAvailabilityDto);
 
 	LeaveNotificationNudgeResponseDto getLeaveRequestIsNudge(@Valid Long leaveRequestId);
+
+	ResponseEntityDto getLeavesByEmployeeIdsWithUser(LeavesByEmployeeIdsFilterDto filterDto);
 
 }
