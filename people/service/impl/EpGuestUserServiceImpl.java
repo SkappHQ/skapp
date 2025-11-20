@@ -70,7 +70,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 				EmployeeRole employeeRole = new EmployeeRole();
 				employeeRole.setEmployee(employee);
-				employeeRole.setPmRole(Role.PM_EMPLOYEE);
+				employeeRole.setPmRole(Role.PM_GUEST);
 				employeeRole.setIsSuperAdmin(false);
 				employeeRoleDao.save(employeeRole);
 
@@ -87,6 +87,19 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		}
 
 		return List.of();
+	}
+
+	@Override
+	public User validateGuestUserEmail(String email) {
+		Validation.validateEmail(email);
+		return userDao.findByEmail(email)
+			.filter(User::getIsGuest)
+			.filter(u -> isActiveAccount(u.getEmployee().getAccountStatus()))
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+	}
+
+	private boolean isActiveAccount(AccountStatus status) {
+		return status != AccountStatus.TERMINATED && status != AccountStatus.DELETED;
 	}
 
 }

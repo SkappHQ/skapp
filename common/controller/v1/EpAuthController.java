@@ -4,6 +4,8 @@ import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
@@ -119,6 +121,20 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/signin/guest/send-otp")
+	public ResponseEntity<ResponseEntityDto> sendGuestUserSignInOtp(
+			@RequestBody EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		ResponseEntityDto response = epAuthService.sendGuestUserSignInOtp(epGuestUserSignInRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/signin/guest/verify-otp")
+	public ResponseEntity<ResponseEntityDto> verifyGuestUserSignInOtp(
+			@RequestBody EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto) {
+		ResponseEntityDto response = epAuthService.validateGuestUserSignInOtp(epGuestUserOtpVerifyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
