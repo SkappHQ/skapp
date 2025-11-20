@@ -23,6 +23,8 @@ public interface EnvelopeService {
 
 	ResponseEntityDto getAllUserEnvelopes(EnvelopeInboxFilterDto envelopeInboxFilterDto);
 
+	ResponseEntityDto getAllUserEnvelopesByUserId(EnvelopeInboxFilterDto envelopeInboxFilterDto, Long userId);
+
 	ResponseEntityDto getAllSentEnvelopes(EnvelopeSentFilterDto envelopeSentFilterDto);
 
 	ResponseEntityDto getSenderKPI();
