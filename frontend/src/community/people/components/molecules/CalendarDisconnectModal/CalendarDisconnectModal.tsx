@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import Modal from "~community/common/components/organisms/Modal/Modal";
+import { CalendarType } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -10,12 +11,14 @@ interface CalendarDisconnectModalProps {
   isModalOpen: boolean;
   onCloseModal: () => void;
   onConfirmDisconnect: () => void;
+  calendarType?: CalendarType;
 }
 
 const CalendarDisconnectModal = ({
   isModalOpen,
   onCloseModal,
   onConfirmDisconnect,
+  calendarType
 }: CalendarDisconnectModalProps) => {
   const translateText = useTranslator("settings");
 
@@ -26,7 +29,11 @@ const CalendarDisconnectModal = ({
       title={translateText(["confirmDisconnectTitle"])}
     >
       <Box>
-        <Typography>{translateText(["confirmDisconnectMessage"])}</Typography>
+        <Typography>
+          {calendarType === CalendarType.GOOGLE
+            ? translateText(["confirmGoogleDisconnectMessage"])
+            : translateText(["confirmMicrosoftDisconnectMessage"])}
+        </Typography>
         <Box
           sx={{
             display: "flex",
