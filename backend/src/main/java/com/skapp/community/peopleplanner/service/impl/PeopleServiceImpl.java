@@ -776,7 +776,7 @@ public class PeopleServiceImpl implements PeopleService {
 			if (primarySupervisor.getEmployeeId() != null && primarySupervisor.getEmployeeId() > 0) {
 				Long primaryId = primarySupervisor.getEmployeeId();
 				requestedSupervisorIds.add(primaryId);
-				
+
 				EmployeeManager existingManager = existingManagerMap.get(primaryId);
 
 				if (existingManager != null) {
