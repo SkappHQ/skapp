@@ -303,7 +303,7 @@ export enum RoleNameEnum {
   SENDER = "Sender"
 }
 
-export enum TableVariants {
-  DEFAULT = "default",
-  CARD = "card",
+export enum TableVariant {
+  DEFAULT,
+  CARD,
 }

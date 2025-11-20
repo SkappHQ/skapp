@@ -13,7 +13,7 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
-import { TableVariants } from "~community/people/enums/PeopleEnums";
+import { TableVariant } from "~community/people/enums/PeopleEnums";
 import EnvelopeTableStatusFilter, {
   StatusOption
 } from "~enterprise/sign/components/molecules/EnvelopeTableStatusFilter/EnvelopeTableStatusFilter";
@@ -433,7 +433,7 @@ const IndividualEmployeeDocumentTableView: React.FC<
           columns={envelopeColumns}
           data={getTableRows()}
           onRowClick={(row) => onRowClick && onRowClick(row)}
-          variant={TableVariants.CARD}
+          variant={TableVariant.CARD}
           noDataState={{
             icon: (
               <Icon
