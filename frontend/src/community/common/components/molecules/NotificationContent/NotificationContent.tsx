@@ -27,7 +27,7 @@ const NotificationContent = ({
     item.isViewed ||
     isLeaveModuleDisabled === true ||
     isAttendanceModuleDisabled === true;
-
+  const defaultAvatar = "/logo/skapp-thumbnail_16_16.svg";
   return (
     <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
       <Box>
@@ -35,13 +35,8 @@ const NotificationContent = ({
           firstName={""}
           lastName={""}
           alt={item.title}
-          src={
-            item.authPic === null ||
-            item.isCausedByCurrentUser ||
-            item.authPic === undefined
-              ? "/logo/skapp-thumbnail 16_16.svg"
-              : item.authPic
-          }
+          src={item.authPic ?? defaultAvatar}
+          staticImageSrc={defaultAvatar}
         />
       </Box>
       <Box sx={{ flex: 1 }}>

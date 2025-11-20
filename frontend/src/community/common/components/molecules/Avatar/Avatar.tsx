@@ -26,6 +26,7 @@ interface AvatarProps extends MuiAvatarProps {
   firstName: string;
   lastName: string;
   src: string;
+  staticImageSrc? : string;
   avatarStyles?: SxProps;
   getInputProps?: <T extends DropzoneInputProps>(props?: T) => T;
   handleUnSelectPhoto?: () => void;
@@ -43,6 +44,7 @@ const Avatar: FC<AvatarProps> = ({
   firstName,
   lastName,
   src,
+  staticImageSrc,
   avatarStyles,
   children,
   isOriginalImage = false,
@@ -84,6 +86,12 @@ const Avatar: FC<AvatarProps> = ({
       }
     }
   }, [logoUrl, src, s3FileUrls, environment]);
+
+  useEffect (()=>{
+    if (staticImageSrc) { 
+      setImage(staticImageSrc);
+    }
+  }, [staticImageSrc]);
 
   useEffect(() => {
     if (src || !s3FileUrls[src]) {
