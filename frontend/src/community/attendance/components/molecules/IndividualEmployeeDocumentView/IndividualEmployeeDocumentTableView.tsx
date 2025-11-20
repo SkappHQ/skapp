@@ -1,7 +1,6 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { Table } from "@rootcodelabs/skapp-ui";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
