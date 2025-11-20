@@ -7,7 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 interface NotificationParams {
   success?: string;
   error?: string;
-  type?: string; 
+  type?: string;
 }
 
 export const useCalendarNotifications = () => {
@@ -18,6 +18,8 @@ export const useCalendarNotifications = () => {
     (params: NotificationParams) => {
       const { success, error, type } = params;
       const userEmailMismatchError = "User email mismatch with current user";
+      //eslint-disable-next-line no-console
+      console.log("params received in showNotification:", params);
 
       const calendarType =
         type === "microsoft" || type === "outlook" ? "outlook" : "google";

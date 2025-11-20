@@ -154,13 +154,14 @@ export const useCalendarIntegrations = (
         calendarType: "google",
         isConnected: isGoogleConnected,
         onToggle: () => {
-          // Set calendar type before making the connection
           setCurrentCalendarType?.("google");
 
           if (isGoogleConnected) {
             setIsGoogleModalOpen(true);
           } else {
-            connectGoogle(frontendRedirectUrl);
+            // Append calendar type to the redirect URL at connection time
+            const redirectUrlWithType = `${frontendRedirectUrl}${frontendRedirectUrl.includes('?') ? '&' : '?'}type=google`;
+            connectGoogle(redirectUrlWithType);
           }
         },
         onDisconnect: () => {
@@ -184,13 +185,14 @@ export const useCalendarIntegrations = (
         calendarType: "microsoft",
         isConnected: isMicrosoftConnected,
         onToggle: () => {
-          // Set calendar type before making the connection
           setCurrentCalendarType?.("microsoft");
 
           if (isMicrosoftConnected) {
             setIsMicrosoftModalOpen(true);
           } else {
-            connectMicrosoft(frontendRedirectUrl);
+            // Append calendar type to the redirect URL at connection time
+            const redirectUrlWithType = `${frontendRedirectUrl}${frontendRedirectUrl.includes('?') ? '&' : '?'}type=microsoft`;
+            connectMicrosoft(redirectUrlWithType);
           }
         },
         onDisconnect: () => {
@@ -216,8 +218,6 @@ export const useCalendarIntegrations = (
     isConnectingMicrosoft,
     connectGoogle,
     connectMicrosoft,
-    disconnectGoogle,
-    disconnectMicrosoft,
     isGoogleModalOpen,
     isMicrosoftModalOpen,
     setCurrentCalendarType
