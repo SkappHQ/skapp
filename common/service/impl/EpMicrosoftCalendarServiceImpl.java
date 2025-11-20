@@ -542,7 +542,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 							TentativelyAcceptPostRequestBody tentativeRequest = new TentativelyAcceptPostRequestBody();
 							tentativeRequest
-								.setComment("Automatic Reply: Leave Request declined - marking as tentative");
+								.setComment("Automatic Reply: Leave Request declined - marking as not responded");
 							tentativeRequest.setSendResponse(true);
 
 							graphClient.me()
@@ -554,7 +554,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 							Event eventUpdate = new Event();
 							ResponseStatus responseStatus = new ResponseStatus();
-							responseStatus.setResponse(ResponseType.TentativelyAccepted);
+							responseStatus.setResponse(ResponseType.NotResponded);
 							responseStatus.setTime(OffsetDateTime.now());
 							eventUpdate.setResponseStatus(responseStatus);
 							graphClient.me().events().byEventId(event.getId()).patch(eventUpdate);
