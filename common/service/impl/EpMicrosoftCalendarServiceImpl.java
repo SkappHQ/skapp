@@ -3,8 +3,10 @@ package com.skapp.enterprise.common.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParseException;
+import com.microsoft.graph.users.item.events.item.decline.DeclinePostRequestBody;
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
+import com.microsoft.graph.users.item.events.item.tentativelyaccept.TentativelyAcceptPostRequestBody;
 import com.microsoft.kiota.authentication.AuthenticationProvider;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
@@ -283,7 +285,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				+ "?client_id=" + clientId + "&response_type=code" + "&redirect_uri="
 				+ URLEncoder.encode(backendRedirectURI, StandardCharsets.UTF_8) + "&scope="
 				+ URLEncoder.encode(EpCommonConstants.ENTERPRISE_MICROSOFT_CALENDAR_SCOPES, StandardCharsets.UTF_8)
-				+ "&state=" + encodedState + "&response_mode=query";
+				+ "&state=" + encodedState + "&response_mode=query" + "&prompt=select_account";
 
 		responseDto.setAuthUrl(authUrl);
 
@@ -391,7 +393,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		switch (autoDeclineMode) {
 			case "declineAllConflictingInvitations":
 				if (createdEvent != null && createdEvent.getId() != null) {
-					declineConflictingEvents(startUtc, endUtc, accessToken, createdEvent.getId());
+					declineConflictingEvents(startUtc, endUtc, accessToken, createdEvent.getId(), declineMessage);
 				}
 				setAutomaticReplies(startUtc, endUtc, accessToken, declineMessage);
 				break;
@@ -443,7 +445,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 	}
 
 	private void declineConflictingEvents(ZonedDateTime startUtc, ZonedDateTime endUtc, String accessToken,
-			String newEventId) {
+			String newEventId, String declineMessage) {
 		try {
 			GraphServiceClient graphClient = createClient(accessToken);
 			String startFormatted = startUtc.format(DateTimeFormatter.ISO_INSTANT);
@@ -468,13 +470,32 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 					})
 					.forEach(existing -> {
 						try {
+
+							DeclinePostRequestBody declineRequest = new DeclinePostRequestBody();
+							declineRequest.setComment(declineMessage);
+							declineRequest.setSendResponse(true);
+
+							graphClient.me().events().byEventId(existing.getId()).decline().post(declineRequest);
+							log.info("Sent decline response for conflicting event {}", existing.getId());
+
 							Event eventUpdate = new Event();
 							ResponseStatus responseStatus = new ResponseStatus();
 							responseStatus.setResponse(ResponseType.Declined);
 							responseStatus.setTime(OffsetDateTime.now());
 							eventUpdate.setResponseStatus(responseStatus);
+
+							if (existing.getBody() != null) {
+								ItemBody body = new ItemBody();
+								body.setContentType(existing.getBody().getContentType());
+								String existingContent = existing.getBody().getContent() != null
+										? existing.getBody().getContent() : "";
+								String updatedContent = existingContent + "\n\n[Auto-declined: " + declineMessage + "]";
+								body.setContent(updatedContent);
+								eventUpdate.setBody(body);
+							}
+
 							graphClient.me().events().byEventId(existing.getId()).patch(eventUpdate);
-							log.info("Declined conflicting event {}", existing.getId());
+							log.info("Updated status and added comment for conflicting event {}", existing.getId());
 						}
 						catch (Exception e) {
 							log.error("Failed to decline event {}: {}", existing.getId(), e.getMessage());
@@ -518,13 +539,26 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 							&& event.getResponseStatus().getResponse() == ResponseType.Declined)
 					.forEach(event -> {
 						try {
+
+							TentativelyAcceptPostRequestBody tentativeRequest = new TentativelyAcceptPostRequestBody();
+							tentativeRequest
+								.setComment("Automatic Reply: Leave Request declined - marking as not responded");
+							tentativeRequest.setSendResponse(true);
+
+							graphClient.me()
+								.events()
+								.byEventId(event.getId())
+								.tentativelyAccept()
+								.post(tentativeRequest);
+							log.info("Sent tentative response for previously declined event {}", event.getId());
+
 							Event eventUpdate = new Event();
 							ResponseStatus responseStatus = new ResponseStatus();
-							responseStatus.setResponse(ResponseType.None);
+							responseStatus.setResponse(ResponseType.NotResponded);
 							responseStatus.setTime(OffsetDateTime.now());
 							eventUpdate.setResponseStatus(responseStatus);
 							graphClient.me().events().byEventId(event.getId()).patch(eventUpdate);
-							log.info("Restored response for previously declined event {}", event.getId());
+							log.info("Restored response to tentative for previously declined event {}", event.getId());
 						}
 						catch (Exception e) {
 							log.error("Failed to restore event {}: {}", event.getId(), e.getMessage());
