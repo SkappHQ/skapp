@@ -19,6 +19,8 @@ interface Props {
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
   tenantID?: string;
+  organizationCalendarGoogleStatus?: boolean;
+  organizationCalendarMicrosoftStatus?: boolean;
 }
 
 const getDrawerRoutes = ({
@@ -26,13 +28,17 @@ const getDrawerRoutes = ({
   tier,
   isEnterprise,
   globalLoginMethod,
-  tenantID
+  tenantID,
+  organizationCalendarGoogleStatus,
+  organizationCalendarMicrosoftStatus
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
         userRoles,
         globalLoginMethod,
-        tenantID
+        tenantID,
+        organizationCalendarGoogleStatus,
+        organizationCalendarMicrosoftStatus
       })
     : routes;
 

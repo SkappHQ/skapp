@@ -86,6 +86,7 @@ import NewWindowIcon from "~community/common/assets/Icons/NewWindowIcon";
 import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import NudgeBellIcon from "~community/common/assets/Icons/NudgeBellIcon";
 import ObjectivesIcon from "~community/common/assets/Icons/ObjectivesIcon";
+import OutlookIcon from "~community/common/assets/Icons/OutlookIcon";
 import PaintTrayIcon from "~community/common/assets/Icons/PaintTrayIcon";
 import PauseIcon from "~community/common/assets/Icons/PauseIcon";
 import PdfIcon from "~community/common/assets/Icons/PdfIcon";
@@ -303,6 +304,7 @@ export const IconMapping: Partial<
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
   [IconName.CAMERA_ICON]: CameraIcon,
+  [IconName.OUTLOOK_ICON]: OutlookIcon,
   [IconName.PERCENTAGE_ICON]: PercentageIcon
   // Add more icons here as needed
 };
