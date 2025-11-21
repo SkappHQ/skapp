@@ -1066,7 +1066,7 @@
     "tableHeaders": {
       "documentName": "Name",
       "recipients": "Recipients",
-      "receievedDate": "Receieved on",
+      "receivedDate": "Receieved on",
       "expireDate": "Expires on",
       "status": "Status",
       "sender": "Sender",
