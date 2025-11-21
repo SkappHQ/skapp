@@ -16,6 +16,7 @@ import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { notificationDefaultImage } from "~community/common/types/notificationTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -82,16 +83,14 @@ const Avatar: FC<AvatarProps> = ({
       else if (src) setImage(src);
     } else if (environment === appModes.ENTERPRISE) {
       if (src) {
-        setImage(s3FileUrls[src] ?? src);
+        if (src === notificationDefaultImage) {
+          setImage(notificationDefaultImage);
+        } else {
+          setImage(s3FileUrls[src] ?? src);
+        }
       }
     }
   }, [logoUrl, src, s3FileUrls, environment]);
-
-  useEffect (()=>{
-    if (staticImageSrc) { 
-      setImage(staticImageSrc);
-    }
-  }, [staticImageSrc]);
 
   useEffect(() => {
     if (src || !s3FileUrls[src]) {

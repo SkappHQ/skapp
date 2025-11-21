@@ -3,7 +3,7 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { NotificationDataTypes } from "~community/common/types/notificationTypes";
+import { NotificationDataTypes, notificationDefaultImage } from "~community/common/types/notificationTypes";
 import { fromDateToRelativeTime } from "~community/common/utils/dateTimeUtils";
 import i18n from "~i18n";
 
@@ -27,7 +27,7 @@ const NotificationContent = ({
     item.isViewed ||
     isLeaveModuleDisabled === true ||
     isAttendanceModuleDisabled === true;
-  const defaultAvatar = "/logo/skapp-thumbnail_16_16.svg";
+  
   return (
     <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
       <Box>
@@ -35,8 +35,7 @@ const NotificationContent = ({
           firstName={""}
           lastName={""}
           alt={item.title}
-          src={item.authPic ?? defaultAvatar}
-          staticImageSrc={defaultAvatar}
+          src={item.authPic ?? notificationDefaultImage}
         />
       </Box>
       <Box sx={{ flex: 1 }}>
