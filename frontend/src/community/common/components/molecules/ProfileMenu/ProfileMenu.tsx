@@ -41,12 +41,12 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   } = usePeopleStore((state) => state);
 
   const handelViewAccount = async () => {
-    if (asPath !== ROUTES.PEOPLE.ACCOUNT) {
+    console.log("asPath", asPath);
+    if (asPath !== ROUTES.PEOPLE.ACCOUNT && !isPeopleManagerOrSuperAdmin) {
       resetEmployeeDataChanges();
       resetEmployeeData();
       resetPeopleSlice();
     }
-
     if (isPeopleManagerOrSuperAdmin) {
       setSelectedEmployeeId(employee?.employeeId as unknown as string);
       await router.push(ROUTES.PEOPLE.EDIT(employee?.employeeId));
