@@ -1,6 +1,5 @@
 package com.skapp.enterprise.invoice.controller.v1;
 
-import com.azure.core.annotation.Delete;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
