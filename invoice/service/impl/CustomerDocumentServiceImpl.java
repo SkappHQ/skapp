@@ -134,7 +134,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 		CustomerDocument customerDocument = optionalCustomerDocument.get();
 		String documentUrl = customerDocument.getDocumentUrl();
 
-		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, documentUrl);
+		try (InputStream imageStream = amazonS3Service.downloadFile(bucketName, bucketName + "/" + documentUrl);
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 			imageStream.transferTo(outputStream);
