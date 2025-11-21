@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import { useRouter } from "next/router";
-import { FC, useCallback, useMemo } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -44,15 +44,27 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     isLoading: isInboxLoading,
     isFetchingNextPage,
     fetchNextPage,
-    hasNextPage,
-   
-  } = useGetAllInboxByUserId(inboxDataParams, selectedUser);
+    hasNextPage
+  } = useGetAllInboxByUserId(inboxDataParams, selectedUser) as  {
+    data: {
+    pages: Array<{
+      items: Envelope[];
+      currentPage: number;
+      totalItems: number;
+      totalPages: number;
+    }>;
+    pageParams: unknown[];
+  } | undefined;
+  isLoading: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  }
 
   const envelopes: Envelope[] = useMemo(() => {
     if (!inboxEnvelopeData?.pages) {
       return [];
     }
-
     const flattenedData = inboxEnvelopeData.pages.reduce((acc, page) => {
       const items = page?.items || [];
       return [...acc, ...items];
@@ -61,7 +73,9 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
   }, [inboxEnvelopeData?.pages]);
 
   const { setPreserveFilters } = usePreserveFilters({ type: TableType.INBOX });
-
+  useEffect(() => {
+    console.log("inboxData", inboxEnvelopeData);
+  });
   const totalItems = inboxEnvelopeData?.pages?.[0]?.totalItems || 0;
   const totalPages = inboxEnvelopeData?.pages?.[0]?.totalPages || 0;
   const currentPage = inboxEnvelopeData?.pages?.[0]?.currentPage || 0;
@@ -70,7 +84,7 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     if (hasNextPage) {
       fetchNextPage();
     }
-  }, [hasNextPage, fetchNextPage, inboxEnvelopeData?.pages?.length]);
+  }, [hasNextPage, fetchNextPage]);
 
   const handleRowClick = (envelope: Envelope) => {
     setPreserveFilters(true);
