@@ -302,4 +302,3 @@ export enum RoleNameEnum {
   MANAGER = "Manager",
   SENDER = "Sender"
 }
-
