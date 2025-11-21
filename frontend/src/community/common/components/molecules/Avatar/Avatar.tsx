@@ -26,7 +26,7 @@ interface AvatarProps extends MuiAvatarProps {
   firstName: string;
   lastName: string;
   src: string;
-  staticImageSrc? : string;
+  staticImageSrc?: string;
   avatarStyles?: SxProps;
   getInputProps?: <T extends DropzoneInputProps>(props?: T) => T;
   handleUnSelectPhoto?: () => void;
