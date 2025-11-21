@@ -45,7 +45,8 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useGetAllInboxByUserId(inboxDataParams, selectedUser)
+   
+  } = useGetAllInboxByUserId(inboxDataParams, selectedUser);
 
   const envelopes: Envelope[] = useMemo(() => {
     if (!inboxEnvelopeData?.pages) {
