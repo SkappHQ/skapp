@@ -51,17 +51,13 @@ interface IndividualEmployeeDocumentTableViewProps {
   statusOptions: StatusOption[];
   searchTerm?: string;
   totalItems: number;
-  totalPages: number;
   currentSortOption: SortOptionId;
   inboxDataParams?: GetAllInboxParams;
-  sentDataParams?: GetAllSentParams;
   setSearchTerm: (searchTerm: string) => void;
   setPage: (page: number) => void;
   setSortKey: (sortKey: SortKey) => void;
   setSortOrder: (sortOrder: SortOrderTypes) => void;
   setStatusTypes: (statuses: string) => void;
-  loadedPages?: Set<number>;
-  onPageLoad?: (page: number) => void;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
@@ -360,7 +356,12 @@ const IndividualEmployeeDocumentTableView: React.FC<
       getCellAriaLabel: (row: any) => {
         const isExpiring = shouldShowExpiringNotification(row);
         const date = formatISODateWithSuffix(row.expiresAt);
-        return `${translateText(["tableHeaders.expireDate"])}: ${date}${isExpiring ? `${translateText(["expireSoon"])}` : ""}`;
+        const baseText = `${translateText(["tableHeaders.expireDate"])}: ${date}`;
+        if (isExpiring) {
+          const expiringSoonText = translateText(["expireSoon"]);
+          return `${baseText} ${expiringSoonText}`;
+        }
+        return baseText;
       },
       className: "px-4"
     },

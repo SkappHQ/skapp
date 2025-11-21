@@ -45,21 +45,23 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage
-  } = useGetAllInboxByUserId(inboxDataParams, selectedUser) as  {
-    data: {
-    pages: Array<{
-      items: Envelope[];
-      currentPage: number;
-      totalItems: number;
-      totalPages: number;
-    }>;
-    pageParams: unknown[];
-  } | undefined;
-  isLoading: boolean;
-  isFetchingNextPage: boolean;
-  fetchNextPage: () => void;
-  hasNextPage: boolean;
-  }
+  } = useGetAllInboxByUserId(inboxDataParams, selectedUser) as {
+    data:
+      | {
+          pages: Array<{
+            items: Envelope[];
+            currentPage: number;
+            totalItems: number;
+            totalPages: number;
+          }>;
+          pageParams: unknown[];
+        }
+      | undefined;
+    isLoading: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => void;
+    hasNextPage: boolean;
+  };
 
   const envelopes: Envelope[] = useMemo(() => {
     if (!inboxEnvelopeData?.pages) {
@@ -77,8 +79,6 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
     console.log("inboxData", inboxEnvelopeData);
   });
   const totalItems = inboxEnvelopeData?.pages?.[0]?.totalItems || 0;
-  const totalPages = inboxEnvelopeData?.pages?.[0]?.totalPages || 0;
-  const currentPage = inboxEnvelopeData?.pages?.[0]?.currentPage || 0;
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage) {
@@ -147,7 +147,6 @@ const IndividualEmployeeInboxView: FC<Props> = ({ selectedUser }) => {
         statusOptions={statusOptions}
         inboxDataParams={inboxDataParams}
         totalItems={totalItems}
-        totalPages={totalPages}
         currentSortOption={
           inboxDataParams.sortOrder === SortOrderTypes.DESC
             ? SortOptionId.RECEIVED_CLOSE
