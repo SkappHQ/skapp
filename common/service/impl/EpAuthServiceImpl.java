@@ -159,7 +159,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${jwt.refresh-token.short-duration.expiration-time}")
 	private Long jwtShortDurationRefreshTokenExpirationMs;
 
-    @Value("${jwt.refresh-token.extended-duration.expiration-time}")
+	@Value("${jwt.refresh-token.extended-duration.expiration-time}")
 	private Long jwtExtendedDurationRefreshTokenExpirationMs;
 
 	@Value("${jwt.access-token.expiration-time}")
@@ -821,25 +821,25 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
 
-        Set<String> extendedDurationRoles = new HashSet<>();
-        extendedDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PM_GUEST);
+		Set<String> extendedDurationRoles = new HashSet<>();
+		extendedDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PM_GUEST);
 
 		boolean hasShortDurationRole = userDetails.getAuthorities()
 			.stream()
 			.anyMatch(authority -> shortDurationRoles.contains(authority.getAuthority()));
 
-        boolean hasExtendedDurationRole = userDetails.getAuthorities()
-                .stream()
-                .anyMatch(authority -> extendedDurationRoles.contains(authority.getAuthority()));
+		boolean hasExtendedDurationRole = userDetails.getAuthorities()
+			.stream()
+			.anyMatch(authority -> extendedDurationRoles.contains(authority.getAuthority()));
 
-        long jwtRefreshTokenExpirationMs;
+		long jwtRefreshTokenExpirationMs;
 
 		if (hasShortDurationRole) {
 			jwtRefreshTokenExpirationMs = jwtShortDurationRefreshTokenExpirationMs;
 		}
-        else if (hasExtendedDurationRole) {
-            jwtRefreshTokenExpirationMs = jwtExtendedDurationRefreshTokenExpirationMs;
-        }
+		else if (hasExtendedDurationRole) {
+			jwtRefreshTokenExpirationMs = jwtExtendedDurationRefreshTokenExpirationMs;
+		}
 		else {
 			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;
 		}
