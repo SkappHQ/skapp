@@ -41,7 +41,6 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   } = usePeopleStore((state) => state);
 
   const handelViewAccount = async () => {
-    console.log("asPath", asPath);
     if (asPath !== ROUTES.PEOPLE.ACCOUNT && !isPeopleManagerOrSuperAdmin) {
       resetEmployeeDataChanges();
       resetEmployeeData();
