@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { RefObject } from "react";
 
-import IndividualEmployeeDocumentView from "~community/attendance/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
+
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
@@ -14,6 +14,7 @@ import EmergencyDetailsForm from "../EmergencyDetailsSection/EmergencyDetailsFor
 import EmploymentDetailsForm from "../EmploymentFormSection/EmploymentDetailsForm";
 import PersonalDetailsForm from "../PersonDetailsSection/PersonalDetailsForm";
 import SystemPermissionFormSection from "../SystemPermissionFormSection/SystemPermissionFormSection";
+import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 interface Props {
   employeeId?: number;
