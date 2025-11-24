@@ -148,10 +148,13 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 						new String[] { documentUrl });
 			}
 
+			// Extract the original filename with extension from documentUrl
+			String fileExtension = documentUrl.contains(".") ? documentUrl.substring(documentUrl.lastIndexOf('.')) : "";
+
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 			headers.setContentDisposition(
-					ContentDisposition.attachment().filename(customerDocument.getName() + ".pdf").build());
+					ContentDisposition.attachment().filename(customerDocument.getName() + fileExtension).build());
 			headers.setContentLength(response.length);
 
 			return new ResponseEntity<>(response, headers, HttpStatus.OK);
