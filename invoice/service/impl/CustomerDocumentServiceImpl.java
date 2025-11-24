@@ -202,7 +202,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 		customerDocumentDao.save(customerDocument);
 
 		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
-		amazonS3DeleteItemRequestDto.setFolderPath(optionalCustomerDocument.get().getDocumentUrl());
+		amazonS3DeleteItemRequestDto.setFolderPath(customerDocument.getDocumentUrl());
 
 		amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 
