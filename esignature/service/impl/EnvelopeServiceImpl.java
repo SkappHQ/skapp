@@ -336,6 +336,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
 
+		LocalDateTime sentAtTime = responseDto.getSentAt();
+
 		// Register a post-commit callback to handle scheduling after transaction commit
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
@@ -344,7 +346,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
 					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
 							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
-									LocalTime.MAX));
+									sentAtTime.toLocalTime()));
 				}
 			}
 		});
