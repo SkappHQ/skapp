@@ -41,15 +41,20 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   } = usePeopleStore((state) => state);
 
   const handelViewAccount = async () => {
-    if (asPath !== ROUTES.PEOPLE.ACCOUNT && !isPeopleManagerOrSuperAdmin) {
-      resetEmployeeDataChanges();
-      resetEmployeeData();
-      resetPeopleSlice();
-    }
     if (isPeopleManagerOrSuperAdmin) {
+      if (asPath !== ROUTES.PEOPLE.EDIT(employee?.employeeId)) {
+        resetEmployeeDataChanges();
+        resetEmployeeData();
+        resetPeopleSlice();
+      }
       setSelectedEmployeeId(employee?.employeeId as unknown as string);
       await router.push(ROUTES.PEOPLE.EDIT(employee?.employeeId));
     } else {
+      if (asPath !== ROUTES.PEOPLE.ACCOUNT) {
+        resetEmployeeDataChanges();
+        resetEmployeeData();
+        resetPeopleSlice();
+      }
       router.push(ROUTES.PEOPLE.ACCOUNT);
     }
 
