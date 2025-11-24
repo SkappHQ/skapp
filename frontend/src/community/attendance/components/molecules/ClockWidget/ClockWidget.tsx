@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { type NextRouter, useRouter } from "next/router";
-import { JSX, useEffect, useMemo, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   useGetEmployeeLeaveStatus,
@@ -69,7 +69,7 @@ const ClockWidget = (): JSX.Element => {
       default:
         return "";
     }
-  }, [isDisabled, status, translateText]);
+  }, [isDisabled, status, translateText, hasHoveredAfterEnd]);
 
   const showTimer = useMemo(
     () =>
@@ -86,11 +86,11 @@ const ClockWidget = (): JSX.Element => {
   }, [status]);
 
   // Handle mouse enter to track hover
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (status === AttendanceSlotType.END) {
       setHasHoveredAfterEnd(true);
     }
-  };
+  }, [status]);
 
   useEffect(() => {
     void getEmployeeStatusRefetch();
