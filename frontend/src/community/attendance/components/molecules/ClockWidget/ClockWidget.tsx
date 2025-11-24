@@ -33,8 +33,6 @@ const ClockWidget = (): JSX.Element => {
     timeConfigData?.[0] as DefaultDayCapacityType
   );
 
-  const [hasHoveredAfterEnd, setHasHoveredAfterEnd] = useState(false);
-
   const {
     data: isTimeRequestAvailableToday,
     isLoading: isAvailabilityLoading
@@ -57,9 +55,7 @@ const ClockWidget = (): JSX.Element => {
     if (!isDisabled) return "";
     switch (status) {
       case AttendanceSlotType.END:
-        return hasHoveredAfterEnd
-          ? translateText(["youHaveAlreadyLoggedTime"])
-          : "";
+        return translateText(["youHaveAlreadyLoggedTime"]);
       case AttendanceSlotType.HOLIDAY:
         return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
       case AttendanceSlotType.NON_WORKING_DAY:
@@ -106,7 +102,6 @@ const ClockWidget = (): JSX.Element => {
       component="div"
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
-      onMouseEnter={handleMouseEnter}
     >
       {showTimer && <Timer disabled={isDisabled} />}
       <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>

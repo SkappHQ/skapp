@@ -15,9 +15,17 @@ type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 interface Props {
   userRoles: Role[] | undefined;
   globalLoginMethod: GlobalLoginMethod;
+  tenantID?: string;
+  organizationCalendarGoogleStatus?: boolean;
+  organizationCalendarMicrosoftStatus?: boolean;
 }
 
-const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
+const getEnterpriseDrawerRoutes = ({
+  userRoles,
+  globalLoginMethod,
+  organizationCalendarGoogleStatus,
+  organizationCalendarMicrosoftStatus
+}: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
 
@@ -31,8 +39,18 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
       if (
         !isSuperAdmin &&
         !hasAdminOrManagerRoles &&
-        globalLoginMethod === GlobalLoginMethod.GOOGLE
+        (globalLoginMethod === GlobalLoginMethod.GOOGLE ||
+          globalLoginMethod === GlobalLoginMethod.MICROSOFT)
       ) {
+        if (
+          (globalLoginMethod === GlobalLoginMethod.GOOGLE &&
+            organizationCalendarGoogleStatus === false) ||
+          (globalLoginMethod === GlobalLoginMethod.MICROSOFT &&
+            organizationCalendarMicrosoftStatus === false)
+        ) {
+          return null;
+        }
+
         return {
           id: route?.id,
           name: "Integrations",
@@ -49,7 +67,7 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
       }
 
       return {
-        id: "6",
+        id: "8",
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
         icon: IconName.SETTINGS_ICON,
@@ -68,14 +86,14 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
         ],
         subTree: [
           {
-            id: "6A",
+            id: "8B",
             name: "Modules",
             url: ROUTES.SETTINGS.MODULES,
             hasSubTree: false,
             requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
           },
           {
-            id: "6B",
+            id: "8A",
             name: "Account Settings",
             url: ROUTES.SETTINGS.ACCOUNT,
             hasSubTree: false,
@@ -93,7 +111,7 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
             ]
           },
           {
-            id: "6C",
+            id: "8C",
             name: "Integrations",
             url: ROUTES.SETTINGS.INTEGRATIONS,
             hasSubTree: false,

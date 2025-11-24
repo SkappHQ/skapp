@@ -141,7 +141,7 @@ public class Employee extends Auditable<String> {
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
 	private List<EmployeeEmergency> employeeEmergencies;
 
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<EmployeeManager> employeeManagers;
 
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)

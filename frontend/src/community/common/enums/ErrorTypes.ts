@@ -3,3 +3,7 @@ export enum FileUploadErrorTypes {
   TOO_MANY_FILES_ERROR = "too-many-files",
   INVALID_FILE_TYPE_ERROR = "file-invalid-type"
 }
+
+export enum ErrorTypes {
+  EMAIL_MISMATCH_ERROR = "User email mismatch with current user",
+}
