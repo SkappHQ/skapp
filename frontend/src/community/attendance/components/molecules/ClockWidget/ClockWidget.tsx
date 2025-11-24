@@ -32,7 +32,7 @@ const ClockWidget = (): JSX.Element => {
   const { refetch: refetchLeaveStatusData } = useGetEmployeeLeaveStatus(
     timeConfigData?.[0] as DefaultDayCapacityType
   );
-
+  const [hasHoveredAfterEnd, setHasHoveredAfterEnd] = useState(false);
   const {
     data: isTimeRequestAvailableToday,
     isLoading: isAvailabilityLoading
@@ -54,7 +54,7 @@ const ClockWidget = (): JSX.Element => {
   const title = useMemo(() => {
     if (!isDisabled) return "";
     switch (status) {
-      case AttendanceSlotType.END:
+      case hasHoveredAfterEnd && AttendanceSlotType.END:
         return translateText(["youHaveAlreadyLoggedTime"]);
       case AttendanceSlotType.HOLIDAY:
         return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
@@ -87,7 +87,6 @@ const ClockWidget = (): JSX.Element => {
       setHasHoveredAfterEnd(true);
     }
   }, [status]);
-
   useEffect(() => {
     void getEmployeeStatusRefetch();
     void refetchLeaveStatusData();
@@ -102,6 +101,7 @@ const ClockWidget = (): JSX.Element => {
       component="div"
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
+      onMouseEnter={handleMouseEnter}
     >
       {showTimer && <Timer disabled={isDisabled} />}
       <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>
