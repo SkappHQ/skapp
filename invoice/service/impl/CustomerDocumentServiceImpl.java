@@ -189,6 +189,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto deleteDocument(Long id) {
 
 		Optional<CustomerDocument> optionalCustomerDocument = customerDocumentDao.findById(id);
