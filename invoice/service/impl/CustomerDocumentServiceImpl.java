@@ -167,6 +167,7 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto renameDocument(CustomerDocumentRenameRequestDto customerDocumentRenameRequestDto) {
 
 		Optional<CustomerDocument> optionalCustomerDocument = customerDocumentDao
