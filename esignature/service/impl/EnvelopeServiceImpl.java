@@ -346,7 +346,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
 					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
 							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
-									sentAtTime.toLocalTime()));
+									sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX));
 				}
 			}
 		});
