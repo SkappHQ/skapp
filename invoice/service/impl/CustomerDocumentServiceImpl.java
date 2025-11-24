@@ -19,6 +19,7 @@ import com.skapp.enterprise.invoice.repository.CustomerDao;
 import com.skapp.enterprise.invoice.repository.CustomerDocumentDao;
 import com.skapp.enterprise.invoice.service.CustomerDocumentService;
 import com.skapp.enterprise.invoice.service.CustomerValidationService;
+import com.skapp.enterprise.invoice.type.DocumentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -192,12 +193,17 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_FOUND);
 		}
 
+		CustomerDocument customerDocument = optionalCustomerDocument.get();
+
+		customerDocument.setDocumentStatus(DocumentStatus.DELETED);
+		customerDocumentDao.save(customerDocument);
+
 		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
 		amazonS3DeleteItemRequestDto.setFolderPath(optionalCustomerDocument.get().getDocumentUrl());
 
 		amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 
-		return null;
+		return new ResponseEntityDto(false, "File deleted successfully");
 	}
 
 }
