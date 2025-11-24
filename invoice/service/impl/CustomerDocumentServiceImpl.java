@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.mapper.CustomerMapper;
 import com.skapp.enterprise.invoice.model.Customer;
@@ -204,15 +205,21 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 
 		CustomerDocument customerDocument = optionalCustomerDocument.get();
 
-		customerDocument.setDocumentStatus(DocumentStatus.DELETED);
-		customerDocumentDao.save(customerDocument);
-
 		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
-		amazonS3DeleteItemRequestDto.setFolderPath(customerDocument.getDocumentUrl());
+		amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + customerDocument.getDocumentUrl());
 
-		amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
+		ResponseEntityDto s3Response = amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 
-		return new ResponseEntityDto(false, "File deleted successfully");
+		if (s3Response.getStatus().equalsIgnoreCase(InvoiceCommonConstant.SUCCESSFUL)) {
+
+			customerDocument.setDocumentStatus(DocumentStatus.DELETED);
+			customerDocumentDao.save(customerDocument);
+
+			return new ResponseEntityDto(false, "File deleted successfully");
+		}
+		else {
+			return new ResponseEntityDto(true, "File deletion unsuccessful");
+		}
 	}
 
 }

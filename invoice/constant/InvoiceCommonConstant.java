@@ -57,4 +57,6 @@ public class InvoiceCommonConstant {
 
 	public static final Double HUNDRED = 100.0;
 
+	public static final String SUCCESSFUL = "successful";
+
 }
