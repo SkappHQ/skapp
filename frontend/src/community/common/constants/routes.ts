@@ -117,6 +117,7 @@ const ROUTES = {
     ALL_INVOICES: "/invoice/allInvoices",
     CUSTOMERS: {
       BASE: "/invoice/customers",
+      CUSTOMER_PORTAL: "/invoice/customers/customer-portal",
       CUSTOMER_DETAILS: (id: number) =>
         `/invoice/customers/customer-details/${id}`,
       PROJECTS: {

@@ -363,6 +363,10 @@ const nextConfig = {
       {
         source: "/app-link",
         destination: "/enterprise/app-link"
+      },
+      {
+        source: "/invoice/customers/customer-portal",
+        destination: "/enterprise/invoice/customers/customer-portal"
       }
     ];
   },

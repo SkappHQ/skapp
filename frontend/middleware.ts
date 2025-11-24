@@ -27,7 +27,8 @@ const commonRoutes = [
   ROUTES.NOTIFICATIONS,
   ROUTES.INTEGRATIONS,
   ROUTES.AUTH.VERIFY_RESET_PASSWORD,
-  ROUTES.PROJECTS
+  ROUTES.PROJECTS,
+  ROUTES.INVOICE.CUSTOMERS.CUSTOMER_PORTAL
 ];
 
 // Specific role-based routes
@@ -170,6 +171,7 @@ export default withAuth(
       currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
       currentPath.startsWith(ROUTES.SIGN.SIGN) ||
       currentPath.startsWith(ROUTES.SIGN.INFO)
+      || currentPath === ROUTES.INVOICE.CUSTOMERS.CUSTOMER_PORTAL
     ) {
       return NextResponse.next();
     }
