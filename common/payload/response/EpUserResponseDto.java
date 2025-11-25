@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.payload.response;
 
 import com.skapp.community.common.type.LoginMethod;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,5 +20,7 @@ public class EpUserResponseDto {
 	private LoginMethod loginMethod;
 
 	private String authPic;
+
+	private AccountStatus accountStatus;
 
 }
