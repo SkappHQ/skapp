@@ -99,7 +99,8 @@
     "attendanceTab": "Attendance",
     "leaveTab": "Leave",
     "peopleTab": "People",
-    "leaves": "Leave Requests"
+    "leaves": "Leave Requests",
+    "myLeaveAllocations": "My Leave Allocations"
   },
   "settings": {
     "integrationPageHead": "Integrations | Skapp",

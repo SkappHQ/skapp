@@ -122,11 +122,14 @@ const ApplyLeaveModal = () => {
   }));
 
   const firstDateOfYear = useMemo(
-    () => getFirstDateOfYear(DateTime.now().year).toJSDate(),
-    []
+    () => getFirstDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
   );
 
-  const lastDateOfYear = useMemo(() => getMaxDateOfYear().toJSDate(), []);
+  const lastDateOfYear = useMemo(
+    () => getMaxDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
+  );
 
   const { data: timeConfig } = useDefaultCapacity();
 
