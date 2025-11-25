@@ -189,38 +189,30 @@ const Dashboard: NextPage = () => {
             : translateText(["title"])
         }
         isDividerVisible={!(data?.user && visibleTabs.length === 0)}
-        containerStyles={{ padding: "1rem 1rem 1rem 1rem" }}
         customRightContent={
           visibleTabs.length === 0 &&
           isEntitlementAvailableNextYear &&
           isEntitlementAvailableNextYear.length !== 0 ? (
-            <RoundedSelect
-              id="leave-allocations-year-dropdown"
-              value={selectedYear}
-              customStyles={{
-                menuProps: {
-                 
-                    sx: {
-                      paddingBottom: "1rem"
-                    }
-                  }
-                
-              }}
-              options={getCurrentAndNextYear()}
-              onChange={(event) => setSelectedYear(event?.target.value)}
-              renderValue={(selectedValue: string) => {
-                return (
-                  <Typography
-                    aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
-                  >
-                    {selectedValue}
-                  </Typography>
-                );
-              }}
-              accessibility={{
-                label: translateAria(["selectYear"])
-              }}
-            />
+            <div className="flex mb-2">
+              <RoundedSelect
+                id="leave-allocations-year-dropdown"
+                value={selectedYear}
+                options={getCurrentAndNextYear()}
+                onChange={(event) => setSelectedYear(event?.target.value)}
+                renderValue={(selectedValue: string) => {
+                  return (
+                    <Typography
+                      aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+                    >
+                      {selectedValue}
+                    </Typography>
+                  );
+                }}
+                accessibility={{
+                  label: translateAria(["selectYear"])
+                }}
+              />
+            </div>
           ) : (
             <></>
           )
