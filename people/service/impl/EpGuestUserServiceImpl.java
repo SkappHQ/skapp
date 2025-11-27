@@ -2,20 +2,24 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
+import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.util.EmailNameExtractor;
+import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.repository.EpEmployeeDao;
 import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpPeopleService;
@@ -43,6 +47,10 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EpPeopleService epPeopleService;
 
 	private final EpEmployeeDao epEmployeeDao;
+
+	private final MessageUtil messageUtil;
+
+	private final PeopleService peopleService;
 
 	@Override
 	@Transactional
@@ -94,12 +102,39 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return guestEmployees.stream().map(epUserService::mapEmployeeToUserDto).toList();
 	}
 
-    @Override
-    public EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
-        return null;
-    }
+	@Override
+	public EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
+		return null;
+	}
 
-    private boolean isValidGuestEmployee(User user) {
+	@Transactional
+	@Override
+	public ResponseEntityDto deleteGuestUser(String email) {
+		userDao.findByEmail(email)
+			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.DELETED, true));
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DELETED), false);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto deactivateGuestUser(String email) {
+		userDao.findByEmail(email)
+			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.DEACTIVATED, false));
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DEACTIVATED), false);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto activateGuestUser(String email) {
+		userDao.findByEmail(email)
+			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false));
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);
+	}
+
+	private boolean isValidGuestEmployee(User user) {
 		return user.getEmployee() != null && user.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE
 				&& isActiveAccount(user.getEmployee().getAccountStatus());
 	}

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class EpGuestUserInviteRequestDto {
 
-    private String createdBy;
+	private String createdBy;
 
 	private String email;
 
