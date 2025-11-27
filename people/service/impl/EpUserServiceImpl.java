@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.common.payload.response.EmployeeRolesDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.common.type.EpCacheKeys;
@@ -149,6 +150,11 @@ public class EpUserServiceImpl implements EpUserService {
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
 		dto.setAccountStatus(employee.getAccountStatus());
+
+		EmployeeRolesDto employeeRolesDto = new EmployeeRolesDto();
+		employeeRolesDto.setPmRole(employee.getEmployeeRole().getPmRole());
+
+		dto.setRoles(employeeRolesDto);
 
 		if (employee.getUser() != null) {
 			dto.setEmail(employee.getUser().getEmail());
