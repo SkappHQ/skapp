@@ -59,12 +59,11 @@ public class EpUserController {
 
 	@PostMapping("/guest")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserResponseDto>> saveGuestUsers(@Parameter(name = "emails",
-			description = "List of guest user emails (comma-separated)",
-			example = "test1@test.example,  test2@test.example, test3@test.example", schema = @Schema(type = "array",
+	public ResponseEntity<EpUserResponseDto> saveGuestUser(@Parameter(name = "email", description = "Guest user email",
+			example = "test1@test.example", schema = @Schema(type = "string",
 					implementation = String.class)) @RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
 
-		List<EpUserResponseDto> response = epGuestUserService.saveGuestUsers(epGuestUserRequestDto);
+		EpUserResponseDto response = epGuestUserService.saveGuestUsers(epGuestUserRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

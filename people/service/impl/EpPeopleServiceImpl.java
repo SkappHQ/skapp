@@ -357,6 +357,12 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		cacheService.invalidate(userAuthPicCacheKey.getKey());
 	}
 
+	@Override
+	public void invalidateAllUserCaches() {
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
+	}
+
 	private void transferTeamSupervisors(List<TransferSupervisorsRequestDto> supervisorsTransfer) {
 		for (TransferSupervisorsRequestDto transfer : supervisorsTransfer) {
 			Long currentSupervisorId = transfer.getSupervisorId();

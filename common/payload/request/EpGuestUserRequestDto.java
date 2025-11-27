@@ -11,6 +11,6 @@ public class EpGuestUserRequestDto {
 
 	private String createdBy;
 
-	private List<String> emails;
+	private String email;
 
 }

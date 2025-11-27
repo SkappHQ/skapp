@@ -37,8 +37,8 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 					Role.ESIGN_EMPLOYEE, null));
 
 		Optional.ofNullable(employeeRole.getPmRole())
-			.ifPresent(
-					role -> addRoleHierarchy(authorities, role, Role.PM_ADMIN, null, Role.PM_EMPLOYEE, Role.PM_GUEST));
+			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.PM_ADMIN, null, Role.PM_EMPLOYEE,
+					Role.PM_GUEST_EMPLOYEE));
 
 		Optional.ofNullable(employeeRole.getInvoiceRole())
 			.ifPresent(

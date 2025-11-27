@@ -43,7 +43,6 @@ import com.skapp.enterprise.common.constant.EpValidationConstants;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.GuestUserOtp;
 import com.skapp.enterprise.common.model.PasswordResetOtp;
 import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.model.master.Tenant;
@@ -59,7 +58,6 @@ import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.response.CodeChallengeResponseDto;
 import com.skapp.enterprise.common.payload.response.EpDomainAvailabilityResponseDto;
 import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDto;
-import com.skapp.enterprise.common.repository.GuestUserOtpDao;
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
@@ -149,8 +147,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final EpGuestUserService epGuestUserService;
 
-	private final GuestUserOtpDao guestUserOtpDao;
-
 	private final EpUserEmailService epUserEmailService;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
@@ -181,7 +177,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
 			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
-			GuestUserOtpDao guestUserOtpDao, EpUserEmailService epUserEmailService) {
+			EpUserEmailService epUserEmailService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -206,7 +202,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.tenantDao = tenantDao;
 		this.validationService = validationService;
 		this.epGuestUserService = epGuestUserService;
-		this.guestUserOtpDao = guestUserOtpDao;
 		this.epUserEmailService = epUserEmailService;
 	}
 
@@ -647,13 +642,13 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String otpCode = generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-		GuestUserOtp guestUserOtp = new GuestUserOtp();
-		guestUserOtp.setUserId(user.getUserId());
-		guestUserOtp.setOtpCode(otpCode);
-		guestUserOtp.setOtpExpiryTime(expiryTime);
-		guestUserOtp.setVerified(false);
+		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
+		passwordResetOtp.setUserId(user.getUserId());
+		passwordResetOtp.setVerificationCode(otpCode);
+		passwordResetOtp.setOtpExpiryTime(expiryTime);
+		passwordResetOtp.setVerified(false);
 
-		guestUserOtpDao.save(guestUserOtp);
+		passwordResetOtpDao.save(passwordResetOtp);
 		log.info("sendGuestUserSignInOtp: OTP generated and saved for userId={}", user.getUserId());
 		epUserEmailService.sendGuestUserOtpEmail(user, otpCode);
 		log.info("sendGuestUserSignInOtp: OTP email sent to {}", user.getEmail());
@@ -667,23 +662,23 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 				epGuestUserOtpVerifyRequestDto.getEmail(), TenantContext.getCurrentTenant());
 		User user = epGuestUserService.validateGuestUserEmail(epGuestUserOtpVerifyRequestDto.getEmail());
 
-		GuestUserOtp guestUserOtp = guestUserOtpDao.findById(user.getUserId()).orElse(null);
+		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 
-		if (guestUserOtp == null) {
+		if (passwordResetOtp == null) {
 			log.warn("validateGuestUserSignInOtp: OTP not found for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 		}
 
-		if (validateOTP(guestUserOtp.getOtpCode(), guestUserOtp.getOtpExpiryTime(),
+		if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 				epGuestUserOtpVerifyRequestDto.getOtp())) {
 			log.warn("validateGuestUserSignInOtp: Invalid or expired OTP provided for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 		}
 
-		guestUserOtp.setOtpCode(null);
-		guestUserOtp.setOtpExpiryTime(null);
-		guestUserOtp.setVerified(true);
-		guestUserOtpDao.save(guestUserOtp);
+		passwordResetOtp.setVerificationCode(null);
+		passwordResetOtp.setOtpExpiryTime(null);
+		passwordResetOtp.setVerified(true);
+		passwordResetOtpDao.save(passwordResetOtp);
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
@@ -822,7 +817,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
 
 		Set<String> extendedDurationRoles = new HashSet<>();
-		extendedDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PM_GUEST);
+		extendedDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PM_GUEST_EMPLOYEE);
 
 		boolean hasShortDurationRole = userDetails.getAuthorities()
 			.stream()

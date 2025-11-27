@@ -153,7 +153,6 @@ public class EpUserServiceImpl implements EpUserService {
 		if (employee.getUser() != null) {
 			dto.setEmail(employee.getUser().getEmail());
 			dto.setLoginMethod(employee.getUser().getLoginMethod());
-			dto.setIsGuest(employee.getUser().getIsGuest());
 		}
 
 		dto.setAuthPic(employee.getAuthPic());
