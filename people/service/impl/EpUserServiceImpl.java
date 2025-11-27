@@ -84,11 +84,11 @@ public class EpUserServiceImpl implements EpUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<EpUserResponseDto> getUsersByIdsOrSearch(List<Long> userIds, String search) {
+	public List<EpUserResponseDto> getAllUsersOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
 				AccountStatus.TERMINATED);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
 
 		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
 
@@ -114,10 +114,10 @@ public class EpUserServiceImpl implements EpUserService {
 	}
 
 	@Override
-	public List<EpUserAuthPicResponseDto> getUserAuthPicsByIdsOrSearch(List<Long> userIds, String search) {
+	public List<EpUserAuthPicResponseDto> getAllUserAuthPicsOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
 
 		if (employees.isEmpty()) {
 			return List.of();

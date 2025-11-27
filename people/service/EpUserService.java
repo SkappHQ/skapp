@@ -14,9 +14,9 @@ public interface EpUserService {
 
 	TenantStatus getCurrentUserTenantStatus();
 
-	List<EpUserResponseDto> getUsersByIdsOrSearch(List<Long> employeeIds, String search);
+	List<EpUserResponseDto> getAllUsersOrByIds(List<Long> employeeIds);
 
-	List<EpUserAuthPicResponseDto> getUserAuthPicsByIdsOrSearch(List<Long> employeeIds, String search);
+	List<EpUserAuthPicResponseDto> getAllUserAuthPicsOrByIds(List<Long> employeeIds);
 
 	List<Employee> getUsersByIds(List<Long> employeeIds);
 

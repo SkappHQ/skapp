@@ -5,8 +5,6 @@ import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpUserService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,38 +29,21 @@ public class EpUserController {
 
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserResponseDto>> getUsers(
-			@Parameter(name = "employeeIds", description = "List of employee IDs to retrieve (comma-separated)",
-					example = "1,2,3", schema = @Schema(type = "array", implementation = Long.class)) @RequestParam(
-							value = "employeeIds", required = false) List<Long> employeeIds,
-
-			@Parameter(name = "search", description = "Search term for user email, name, or employee ID",
-					example = "john") @RequestParam(value = "search", required = false) String search) {
-
-		List<EpUserResponseDto> response = epUserService.getUsersByIdsOrSearch(employeeIds, search);
+	public ResponseEntity<List<EpUserResponseDto>> getUsers(@RequestParam List<Long> employeeIds) {
+		List<EpUserResponseDto> response = epUserService.getAllUsersOrByIds(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/auth-pics")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserAuthPicResponseDto>> getUserAuthPics(
-			@Parameter(name = "employeeIds", description = "List of employee IDs to retrieve (comma-separated)",
-					example = "1,2,3", schema = @Schema(type = "array", implementation = Long.class)) @RequestParam(
-							value = "employeeIds", required = false) List<Long> employeeIds,
-
-			@Parameter(name = "search", description = "Search term for user email, name, or employee ID",
-					example = "john") @RequestParam(value = "search", required = false) String search) {
-
-		List<EpUserAuthPicResponseDto> response = epUserService.getUserAuthPicsByIdsOrSearch(employeeIds, search);
+	public ResponseEntity<List<EpUserAuthPicResponseDto>> getUserAuthPics(@RequestParam List<Long> employeeIds) {
+		List<EpUserAuthPicResponseDto> response = epUserService.getAllUserAuthPicsOrByIds(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/guest")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<EpUserResponseDto> saveGuestUser(@Parameter(name = "email", description = "Guest user email",
-			example = "test1@test.example", schema = @Schema(type = "string",
-					implementation = String.class)) @RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
-
+	public ResponseEntity<EpUserResponseDto> saveGuestUser(@RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
 		EpUserResponseDto response = epGuestUserService.saveGuestUsers(epGuestUserRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
