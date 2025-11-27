@@ -15,9 +15,17 @@ type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 interface Props {
   userRoles: Role[] | undefined;
   globalLoginMethod: GlobalLoginMethod;
+  tenantID?: string;
+  organizationCalendarGoogleStatus?: boolean;
+  organizationCalendarMicrosoftStatus?: boolean;
 }
 
-const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
+const getEnterpriseDrawerRoutes = ({
+  userRoles,
+  globalLoginMethod,
+  organizationCalendarGoogleStatus,
+  organizationCalendarMicrosoftStatus
+}: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
 
@@ -31,8 +39,18 @@ const getEnterpriseDrawerRoutes = ({ userRoles, globalLoginMethod }: Props) => {
       if (
         !isSuperAdmin &&
         !hasAdminOrManagerRoles &&
-        globalLoginMethod === GlobalLoginMethod.GOOGLE
+        (globalLoginMethod === GlobalLoginMethod.GOOGLE ||
+          globalLoginMethod === GlobalLoginMethod.MICROSOFT)
       ) {
+        if (
+          (globalLoginMethod === GlobalLoginMethod.GOOGLE &&
+            organizationCalendarGoogleStatus === false) ||
+          (globalLoginMethod === GlobalLoginMethod.MICROSOFT &&
+            organizationCalendarMicrosoftStatus === false)
+        ) {
+          return null;
+        }
+
         return {
           id: route?.id,
           name: "Integrations",

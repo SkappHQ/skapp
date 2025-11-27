@@ -17,7 +17,13 @@ export enum ZIndexEnums {
 export enum GlobalLoginMethod {
   CREDENTIALS = "CREDENTIALS",
   GOOGLE = "GOOGLE",
+  MICROSOFT = "MICROSOFT",
   NONE = ""
+}
+
+export enum CalendarType {
+  GOOGLE = "GOOGLE",
+  MICROSOFT = "MICROSOFT"
 }
 
 export enum Modules {

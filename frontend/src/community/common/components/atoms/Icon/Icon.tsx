@@ -86,6 +86,7 @@ import NewWindowIcon from "~community/common/assets/Icons/NewWindowIcon";
 import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import NudgeBellIcon from "~community/common/assets/Icons/NudgeBellIcon";
 import ObjectivesIcon from "~community/common/assets/Icons/ObjectivesIcon";
+import OutlookIcon from "~community/common/assets/Icons/OutlookIcon";
 import PaintTrayIcon from "~community/common/assets/Icons/PaintTrayIcon";
 import PauseIcon from "~community/common/assets/Icons/PauseIcon";
 import PdfIcon from "~community/common/assets/Icons/PdfIcon";
@@ -146,6 +147,7 @@ import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
 import MasterCardIcon from "~enterprise/settings/assets/Icons/MasterCardIcon";
 import VisaCardIcon from "~enterprise/settings/assets/Icons/VisaCardIcon";
+
 
 interface Props extends IconProps {
   name: IconName;
@@ -301,7 +303,8 @@ export const IconMapping: Partial<
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
-  [IconName.CAMERA_ICON]: CameraIcon
+  [IconName.CAMERA_ICON]: CameraIcon,
+  [IconName.OUTLOOK_ICON]: OutlookIcon,
   // Add more icons here as needed
 };
 
