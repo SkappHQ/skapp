@@ -84,7 +84,8 @@ public class EpUserServiceImpl implements EpUserService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<EpUserResponseDto> getUsersByIdsOrSearch(List<Long> userIds, String search) {
-		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
+				AccountStatus.TERMINATED);
 
 		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
 
@@ -104,7 +105,8 @@ public class EpUserServiceImpl implements EpUserService {
 
 	@Override
 	public List<Employee> getUsersByIds(List<Long> employeeIds) {
-		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
+				AccountStatus.TERMINATED);
 
 		return employeeDao.findEmployees(employeeIds, null, activeStatuses);
 
@@ -146,6 +148,7 @@ public class EpUserServiceImpl implements EpUserService {
 		dto.setUserId(employee.getEmployeeId().toString());
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
+		dto.setAccountStatus(employee.getAccountStatus());
 
 		if (employee.getUser() != null) {
 			dto.setEmail(employee.getUser().getEmail());
