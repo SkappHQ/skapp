@@ -45,8 +45,7 @@ const getEnterpriseDrawerRoutes = ({
         if (
           (globalLoginMethod === GlobalLoginMethod.GOOGLE &&
             organizationCalendarGoogleStatus === false) ||
-          (globalLoginMethod === GlobalLoginMethod.MICROSOFT &&
-            organizationCalendarMicrosoftStatus === false)
+          (globalLoginMethod === GlobalLoginMethod.MICROSOFT)
         ) {
           return null;
         }
