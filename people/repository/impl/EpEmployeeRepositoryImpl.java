@@ -84,4 +84,19 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 		return entityManager.createQuery(query).getResultList();
 	}
 
+	@Override
+	public List<Employee> getAllGuestUsers() {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> query = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> employeeRoot = query.from(Employee.class);
+		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.INNER);
+
+		Predicate pmGuestPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
+
+		query.where(pmGuestPredicate);
+		query.select(employeeRoot).distinct(true);
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 }

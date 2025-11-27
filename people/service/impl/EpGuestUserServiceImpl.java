@@ -15,6 +15,7 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.util.EmailNameExtractor;
+import com.skapp.enterprise.people.repository.EpEmployeeDao;
 import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import com.skapp.enterprise.people.service.EpUserService;
@@ -22,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Primary
@@ -37,6 +40,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EpUserService epUserService;
 
 	private final EpPeopleService epPeopleService;
+
+	private final EpEmployeeDao epEmployeeDao;
 
 	@Override
 	@Transactional
@@ -80,6 +85,12 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return userDao.findByEmail(email)
 			.filter(this::isValidGuestEmployee)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+	}
+
+	@Override
+	public List<EpUserResponseDto> getAllGuestUsers() {
+		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers();
+		return guestEmployees.stream().map(epUserService::mapEmployeeToUserDto).toList();
 	}
 
 	private boolean isValidGuestEmployee(User user) {

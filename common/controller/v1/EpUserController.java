@@ -48,4 +48,11 @@ public class EpUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/guest")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+	public ResponseEntity<List<EpUserResponseDto>> getGuestUsers() {
+		List<EpUserResponseDto> response = epGuestUserService.getAllGuestUsers();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
