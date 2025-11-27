@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.controller.v1;
 
-import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.people.service.EpGuestUserService;
@@ -41,12 +42,19 @@ public class EpUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/guest")
+	@PostMapping("/guest/invite")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<EpUserResponseDto> saveGuestUser(@RequestBody EpGuestUserRequestDto epGuestUserRequestDto) {
-		EpUserResponseDto response = epGuestUserService.saveGuestUsers(epGuestUserRequestDto);
+	public ResponseEntity<EpUserResponseDto> saveAndInviteGuestUser(@RequestBody EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
+		EpUserResponseDto response = epGuestUserService.saveAndInviteGuestUsers(epGuestUserInviteRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+    @PostMapping("/guest/re-invite")
+    @PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+    public ResponseEntity<EpUserResponseDto> reInviteGuestUser(@RequestBody EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
+        EpUserResponseDto response = epGuestUserService.reInviteGuestUsers(epGuestUserReInviteRequestDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 	@GetMapping("/guest")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
@@ -54,5 +62,4 @@ public class EpUserController {
 		List<EpUserResponseDto> response = epGuestUserService.getAllGuestUsers();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
 }

@@ -12,7 +12,8 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.payload.request.EpGuestUserRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.util.EmailNameExtractor;
 import com.skapp.enterprise.people.repository.EpEmployeeDao;
@@ -45,12 +46,12 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Override
 	@Transactional
-	public EpUserResponseDto saveGuestUsers(EpGuestUserRequestDto epGuestUserRequestDto) {
-		if (epGuestUserRequestDto == null || epGuestUserRequestDto.getEmail().isEmpty()) {
+	public EpUserResponseDto saveAndInviteGuestUsers(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
+		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
 
-		String email = epGuestUserRequestDto.getEmail();
+		String email = epGuestUserInviteRequestDto.getEmail();
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isEmpty()) {
 			User user = new User();
@@ -62,8 +63,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			employee.setFirstName(EmailNameExtractor.extractName(email));
 			employee.setAccountStatus(AccountStatus.PENDING);
 			employee.setUser(savedUser);
-			employee.setCreatedBy(epGuestUserRequestDto.getCreatedBy());
-			employee.setLastModifiedBy(epGuestUserRequestDto.getCreatedBy());
+			employee.setCreatedBy(epGuestUserInviteRequestDto.getCreatedBy());
+			employee.setLastModifiedBy(epGuestUserInviteRequestDto.getCreatedBy());
 			employeeDao.save(employee);
 
 			EmployeeRole employeeRole = new EmployeeRole();
@@ -93,7 +94,12 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return guestEmployees.stream().map(epUserService::mapEmployeeToUserDto).toList();
 	}
 
-	private boolean isValidGuestEmployee(User user) {
+    @Override
+    public EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
+        return null;
+    }
+
+    private boolean isValidGuestEmployee(User user) {
 		return user.getEmployee() != null && user.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE
 				&& isActiveAccount(user.getEmployee().getAccountStatus());
 	}
