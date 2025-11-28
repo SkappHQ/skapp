@@ -111,7 +111,10 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects",
+  PROJECTS: {
+    BASE: "/projects",
+    GUESTS: "/projects/guests"
+  },
   INVOICE: {
     BASE: "/invoice",
     ALL_INVOICES: "/invoice/allInvoices",

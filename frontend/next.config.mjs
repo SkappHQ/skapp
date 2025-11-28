@@ -333,6 +333,10 @@ const nextConfig = {
         destination: "/enterprise/projects"
       },
       {
+        source: "/projects/guests",
+        destination: "/enterprise/projects/guests"
+      },
+      {
         source: "/invoice",
         destination: "/enterprise/invoice"
       },
