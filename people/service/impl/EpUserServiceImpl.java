@@ -3,6 +3,8 @@ package com.skapp.enterprise.people.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -12,9 +14,9 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
+import com.skapp.enterprise.common.payload.response.EmployeeRolesDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
-import com.skapp.enterprise.common.payload.response.EmployeeRolesDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.common.type.EpCacheKeys;
@@ -44,6 +46,8 @@ public class EpUserServiceImpl implements EpUserService {
 	private final ObjectMapper objectMapper;
 
 	private final AmazonS3Service amazonS3Service;
+
+	private final UserDao userDao;
 
 	@Override
 	public Tier getCurrentUserTier() {
@@ -163,6 +167,15 @@ public class EpUserServiceImpl implements EpUserService {
 
 		dto.setAuthPic(employee.getAuthPic());
 		return dto;
+	}
+
+	@Override
+	public ResponseEntityDto getUserStatus(String email) {
+		AccountStatus guestUserStatus = userDao.findByEmail(email)
+			.map(user -> user.getEmployee().getAccountStatus())
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+
+		return new ResponseEntityDto(false, guestUserStatus);
 	}
 
 	private EpUserAuthPicResponseDto mapEmployeeToUserAuthPicDto(Employee employee) {

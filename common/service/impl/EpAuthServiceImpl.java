@@ -657,6 +657,39 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	@Override
+	public ResponseEntityDto resendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		log.info("resendGuestUserSignInOtp: execution started for email={}, tenantId={}",
+				epGuestUserSignInRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		User user = epGuestUserService.validateGuestUserEmail(epGuestUserSignInRequestDto.getEmail());
+
+		String otpCode = generateOTP();
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+
+		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
+		if (passwordResetOtp == null) {
+			log.warn("resendGuestUserSignInOtp: OTP not found for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
+		}
+
+		if (passwordResetOtp.getVerificationCode() == null) {
+			log.warn("resendGuestUserSignInOtp: OTP already verified for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_ALREADY_VERIFIED);
+		}
+
+		passwordResetOtp.setUserId(user.getUserId());
+		passwordResetOtp.setVerificationCode(otpCode);
+		passwordResetOtp.setOtpExpiryTime(expiryTime);
+		passwordResetOtp.setVerified(false);
+
+		passwordResetOtpDao.save(passwordResetOtp);
+		log.info("resendGuestUserSignInOtp: OTP regenerated and saved for userId={}", user.getUserId());
+		epUserEmailService.sendGuestUserOtpEmail(user, otpCode);
+		log.info("resendGuestUserSignInOtp: OTP email resent to {}", user.getEmail());
+
+		return new ResponseEntityDto(false, "Password reset OTP resent successfully");
+	}
+
+	@Override
 	public ResponseEntityDto validateGuestUserSignInOtp(EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto) {
 		log.info("validateGuestUserSignInOtp: execution started for email={}, tenantId={}",
 				epGuestUserOtpVerifyRequestDto.getEmail(), TenantContext.getCurrentTenant());

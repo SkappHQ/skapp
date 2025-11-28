@@ -65,9 +65,12 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
 			"/v1/ep/redis/load-system-version", "/v1/ep/redis/load-all-user-versions", "/internal/v1/ep/users",
 			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
-			"/internal/v1/ep/users/guest", "/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect",
-			"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project", "/v1/ep/auth/signin/guest/send-otp",
-			"/v1/ep/auth/signin/guest/verify-otp");
+			"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect", "/internal/v1/ep/invoice/customer",
+			"/internal/v1/ep/invoice/project", "/v1/ep/auth/signin/guest/send-otp",
+			"/v1/ep/auth/signin/guest/resend-otp", "/v1/ep/auth/status", "/v1/ep/auth/signin/guest/verify-otp",
+			"/internal/v1/ep/users/guest", "/internal/v1/ep/users/guest/invite", "/internal/v1/ep/users/guest/status",
+			"/internal/v1/ep/users/guest/re-invite", "/internal/v1/ep/users/guest/de-activate",
+			"/internal/v1/ep/users/guest/activate");
 
 	private final JwtService jwtService;
 

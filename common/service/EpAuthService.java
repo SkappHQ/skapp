@@ -45,4 +45,6 @@ public interface EpAuthService {
 
 	ResponseEntityDto sendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto);
 
+	ResponseEntityDto resendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto);
+
 }

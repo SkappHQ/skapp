@@ -27,7 +27,10 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
 	private static final List<String> INTERNAL_API_PATHS = List.of("/internal/v1/ep/users",
 			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
-			"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project", "/internal/v1/ep/users/guest");
+			"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project", "/internal/v1/ep/users/guest",
+			"/internal/v1/ep/users/guest/invite", "/internal/v1/ep/users/guest/status",
+			"/internal/v1/ep/users/guest/re-invite", "/internal/v1/ep/users/guest/de-activate",
+			"/internal/v1/ep/users/guest/activate");
 
 	@Value("${internal.api.key}")
 	private String expectedApiKey;

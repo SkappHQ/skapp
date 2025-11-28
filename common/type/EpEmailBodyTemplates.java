@@ -41,7 +41,10 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	DASHBOARD_MODULE_SUPPORT_REQUEST_APPLIED("dashboard-module-support-request-applied"),
 
 	// Invoice Module Templates
-	INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER("invoice-module-customer-invoice-email");
+	INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER("invoice-module-customer-invoice-email"),
+
+	// Guest User Templates
+	GUEST_MODULE_EMAIL_VERIFY("guest-module-email-verify"), GUEST_MODULE_INVITATION("guest-module-invitation");
 
 	private final String templateId;
 

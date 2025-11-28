@@ -94,13 +94,18 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_CREATED
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE
-				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE) {
+				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
 			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
 			organization.ifPresent(value -> {
 				placeholders.put("appUrl", value.getAppUrl());
-				placeholders.put("appUrlMobile", value.getAppUrl());
 				placeholders.put("organizationName", value.getOrganizationName());
 			});
+		}
+
+		if (emailTemplate == EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
+			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
+			organization.ifPresent(value -> placeholders.put("organizationName", value.getOrganizationName()));
 		}
 
 		if (emailTemplate == EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_V1
@@ -110,14 +115,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 		}
 
 		if (TenantContext.getCurrentTenant() != null
-				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)) {
+				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
 			String appUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin";
 			placeholders.put("appUrl", appUrl);
-			placeholders.put("appUrlMobile", appUrl);
-		}
-
-		if (emailTemplate.toString().contains("LEAVE_MODULE")) {
-			placeholders.put("appUrlMobile", EpCommonConstants.MOBILE_APP_LEAVE_URL);
 		}
 	}
 
