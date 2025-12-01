@@ -46,23 +46,23 @@ public class AuthorityServiceImpl implements AuthorityService {
 	private void addModuleRoleAuthorities(List<GrantedAuthority> authorities, EmployeeRole employeeRole) {
 		Optional.ofNullable(employeeRole.getPeopleRole())
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER,
-					Role.PEOPLE_EMPLOYEE));
+					Role.PEOPLE_EMPLOYEE, null));
 
 		Optional.ofNullable(employeeRole.getLeaveRole())
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.LEAVE_ADMIN, Role.LEAVE_MANAGER,
-					Role.LEAVE_EMPLOYEE));
+					Role.LEAVE_EMPLOYEE, null));
 
 		Optional.ofNullable(employeeRole.getAttendanceRole())
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.ATTENDANCE_ADMIN, Role.ATTENDANCE_MANAGER,
-					Role.ATTENDANCE_EMPLOYEE));
+					Role.ATTENDANCE_EMPLOYEE, null));
 
 		Optional.ofNullable(employeeRole.getOkrRole())
-			.ifPresent(
-					role -> addRoleHierarchy(authorities, role, Role.OKR_ADMIN, Role.OKR_MANAGER, Role.OKR_EMPLOYEE));
+			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.OKR_ADMIN, Role.OKR_MANAGER, Role.OKR_EMPLOYEE,
+					null));
 	}
 
 	protected void addRoleHierarchy(List<GrantedAuthority> authorities, Role currentRole, Role adminRole,
-			Role managerRole, Role employeeRole) {
+			Role managerRole, Role employeeRole, Role guestRole) {
 		if (currentRole == adminRole) {
 			authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + adminRole));
 			authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + managerRole));
@@ -74,6 +74,9 @@ public class AuthorityServiceImpl implements AuthorityService {
 		}
 		else if (currentRole == employeeRole) {
 			authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + employeeRole));
+		}
+		else if (currentRole == guestRole) {
+			authorities.add(new SimpleGrantedAuthority(AuthConstants.AUTH_ROLE + guestRole));
 		}
 	}
 
