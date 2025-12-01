@@ -109,8 +109,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto deleteGuestUser(String email) {
-		userDao.findByEmail(email)
+	public ResponseEntityDto deleteGuestUser(Long id) {
+		userDao.findById(id)
 			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.DELETED, true));
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DELETED), false);
@@ -118,8 +118,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto deactivateGuestUser(String email) {
-		userDao.findByEmail(email)
+	public ResponseEntityDto deactivateGuestUser(Long id) {
+		userDao.findById(id)
 			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.DEACTIVATED, false));
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DEACTIVATED), false);
@@ -127,8 +127,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto activateGuestUser(String email) {
-		userDao.findByEmail(email)
+	public ResponseEntityDto activateGuestUser(Long id) {
+		userDao.findById(id)
 			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false));
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);

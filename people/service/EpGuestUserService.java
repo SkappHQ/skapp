@@ -20,12 +20,12 @@ public interface EpGuestUserService {
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
 	@Transactional
-	ResponseEntityDto deleteGuestUser(String email);
+	ResponseEntityDto deleteGuestUser(Long id);
 
 	@Transactional
-	ResponseEntityDto deactivateGuestUser(String email);
+	ResponseEntityDto deactivateGuestUser(Long id);
 
 	@Transactional
-	ResponseEntityDto activateGuestUser(String email);
+	ResponseEntityDto activateGuestUser(Long id);
 
 }

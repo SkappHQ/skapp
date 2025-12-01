@@ -52,22 +52,22 @@ public class EpGuestUserController {
 
 	@PatchMapping("/de-activate")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<ResponseEntityDto> deActivateGuestUser(@RequestParam String email) {
-		ResponseEntityDto response = epGuestUserService.deactivateGuestUser(email);
+	public ResponseEntity<ResponseEntityDto> deActivateGuestUser(@RequestParam Long id) {
+		ResponseEntityDto response = epGuestUserService.deactivateGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PatchMapping("/activate")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<ResponseEntityDto> activateGuestUser(@RequestParam String email) {
-		ResponseEntityDto response = epGuestUserService.activateGuestUser(email);
+	public ResponseEntity<ResponseEntityDto> activateGuestUser(@RequestParam Long id) {
+		ResponseEntityDto response = epGuestUserService.activateGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping()
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<ResponseEntityDto> deleteGuestUser(@RequestParam String email) {
-		ResponseEntityDto response = epGuestUserService.deleteGuestUser(email);
+	public ResponseEntity<ResponseEntityDto> deleteGuestUser(@RequestParam Long id) {
+		ResponseEntityDto response = epGuestUserService.deleteGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
