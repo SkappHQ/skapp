@@ -329,8 +329,8 @@ const nextConfig = {
         destination: "/community/user-account"
       },
       {
-        source: "/projects",
-        destination: "/enterprise/projects"
+        source: "/projects/all",
+        destination: "/enterprise/projects/all"
       },
       {
         source: "/projects/guests",

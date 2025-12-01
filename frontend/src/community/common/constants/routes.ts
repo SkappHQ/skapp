@@ -112,7 +112,7 @@ const ROUTES = {
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
   PROJECTS: {
-    BASE: "/projects",
+    BASE: "/projects/all",
     GUESTS: "/projects/guests"
   },
   INVOICE: {
