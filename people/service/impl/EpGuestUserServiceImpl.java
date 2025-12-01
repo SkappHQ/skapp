@@ -14,7 +14,9 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
@@ -23,6 +25,7 @@ import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.repository.EpEmployeeDao;
 import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpPeopleService;
+import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -30,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Primary
@@ -51,6 +55,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final MessageUtil messageUtil;
 
 	private final PeopleService peopleService;
+
+	private final EpUserEmailService epUserEmailService;
 
 	@Override
 	@Transactional
@@ -82,6 +88,16 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			employeeRoleDao.save(employeeRole);
 
 			epPeopleService.invalidateAllUserCaches();
+
+			String invitationUrl = buildInvitationUrl(user);
+			Long createdBy = getCreatedBy(epGuestUserInviteRequestDto);
+			String adminName = getAdminName(createdBy);
+			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName,
+					epGuestUserInviteRequestDto.getProjectNames().toString());
+
+			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName,
+					epGuestUserInviteRequestDto.getProjectNames().toString());
+
 			return epUserService.mapEmployeeToUserDto(employee);
 		}
 
@@ -141,6 +157,24 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	private boolean isActiveAccount(AccountStatus status) {
 		return status != AccountStatus.TERMINATED && status != AccountStatus.DELETED;
+	}
+
+	private String buildInvitationUrl(User user) {
+		return String.format(EpCommonConstants.GUEST_USER_BASE_INVITE_URL, TenantContext.getCurrentTenant(),
+				user.getEmail());
+	}
+
+	private Long getCreatedBy(EpGuestUserInviteRequestDto dto) {
+		return Optional.ofNullable(dto.getCreatedBy()).map(Long::valueOf).orElse(null);
+	}
+
+	private String getAdminName(Long createdBy) {
+		if (createdBy == null) {
+			return EpCommonConstants.ADMIN;
+		}
+		return userDao.findById(createdBy)
+			.map(u -> u.getEmployee().getFirstName() + " " + u.getEmployee().getLastName())
+			.orElse(EpCommonConstants.ADMIN);
 	}
 
 }
