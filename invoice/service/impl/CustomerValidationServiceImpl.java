@@ -7,11 +7,14 @@ import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
+import com.skapp.enterprise.invoice.payload.request.CustomerDocumentRenameRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerBillingDetailsDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 import com.skapp.enterprise.invoice.repository.CustomerContactDao;
 import com.skapp.enterprise.invoice.repository.CustomerDao;
+import com.skapp.enterprise.invoice.repository.CustomerDocumentDao;
 import com.skapp.enterprise.invoice.service.CustomerValidationService;
+import com.skapp.enterprise.invoice.type.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,8 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 	private final CustomerDao customerDao;
 
 	private final CustomerContactDao customerContactDao;
+
+	private final CustomerDocumentDao customerDocumentDao;
 
 	@Override
 	public void validateCustomerName(String customerName) {
@@ -125,6 +130,12 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED);
 		}
 
+		if (validateCustomerActiveDocumentName(customerDocumentCreateRequestDto.getCustomerId(),
+				customerDocumentCreateRequestDto.getName())) {
+			throw new ValidationException(
+					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_DUPLICATE_NAME_PROVIDED);
+		}
+
 		if (customerDocumentCreateRequestDto.getDocumentUrl() == null
 				|| customerDocumentCreateRequestDto.getDocumentUrl().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_URL_REQUIRED);
@@ -141,6 +152,35 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID);
 		}
 
+	}
+
+	@Override
+	public void validateCustomerDocumentRenameRequestDto(Long customerId, Long documentId, String documentName) {
+
+		if (validateCustomerActiveDocumentNameForRename(customerId, documentId, documentName)) {
+			throw new ValidationException(
+					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_DUPLICATE_NAME_PROVIDED);
+		}
+
+	}
+
+	private boolean validateCustomerActiveDocumentName(Long customerId, String documentName) {
+		return customerDocumentDao.existsByCustomerIdAndNameAndDocumentStatus(customerId, documentName,
+				DocumentStatus.UPLOADED);
+
+	}
+
+	private boolean validateCustomerActiveDocumentNameForRename(Long customerId, Long documentId, String documentName) {
+		boolean allCustomerDocsNameAvailable = customerDocumentDao
+			.existsByCustomerIdAndNameAndDocumentStatus(customerId, documentName, DocumentStatus.UPLOADED);
+
+		boolean customerDocIdNameAvailable = customerDocumentDao.existsByIdAndNameAndDocumentStatus(documentId,
+				documentName, DocumentStatus.UPLOADED);
+
+		if (customerDocIdNameAvailable) {
+			return false;
+		}
+		return allCustomerDocsNameAvailable;
 	}
 
 }

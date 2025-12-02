@@ -183,6 +183,10 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 		}
 
 		CustomerDocument customerDocument = optionalCustomerDocument.get();
+
+		customerValidationService.validateCustomerDocumentRenameRequestDto(customerDocument.getCustomer().getId(),
+				customerDocument.getId(), customerDocumentRenameRequestDto.getNewName());
+
 		customerDocument.setName(customerDocumentRenameRequestDto.getNewName());
 
 		CustomerDocument savedCustomerDocument = customerDocumentDao.save(customerDocument);
