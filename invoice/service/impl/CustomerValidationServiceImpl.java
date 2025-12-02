@@ -7,7 +7,6 @@ import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
-import com.skapp.enterprise.invoice.payload.request.CustomerDocumentRenameRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerBillingDetailsDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 import com.skapp.enterprise.invoice.repository.CustomerContactDao;
@@ -27,6 +26,12 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 	private final CustomerContactDao customerContactDao;
 
 	private final CustomerDocumentDao customerDocumentDao;
+
+	private static final int CUSTOMER_DOCUMENT_NAME_MAX_LENGTH = 255;
+
+	private static final String CUSTOMER_DOCUMENT_NAME_REGEX = "^[a-zA-Z0-9\\s._-]+$";
+
+	private static final String CUSTOMER_DOCUMENT_NAME_SPECIAL_CHAR_REGEX = "^[._-].*|.*[._-]$";
 
 	@Override
 	public void validateCustomerName(String customerName) {
@@ -125,10 +130,7 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 	public void validateCustomerDocumentCreateRequestDto(
 			CustomerDocumentCreateRequestDto customerDocumentCreateRequestDto) {
 
-		if (customerDocumentCreateRequestDto.getName() == null
-				|| customerDocumentCreateRequestDto.getName().isEmpty()) {
-			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED);
-		}
+		validateCustomerDocumentNamePattern(customerDocumentCreateRequestDto.getName());
 
 		if (validateCustomerActiveDocumentName(customerDocumentCreateRequestDto.getCustomerId(),
 				customerDocumentCreateRequestDto.getName())) {
@@ -157,6 +159,8 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 	@Override
 	public void validateCustomerDocumentRenameRequestDto(Long customerId, Long documentId, String documentName) {
 
+		validateCustomerDocumentNamePattern(documentName);
+
 		if (validateCustomerActiveDocumentNameForRename(customerId, documentId, documentName)) {
 			throw new ValidationException(
 					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_DUPLICATE_NAME_PROVIDED);
@@ -181,6 +185,45 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			return false;
 		}
 		return allCustomerDocsNameAvailable;
+	}
+
+	private void validateCustomerDocumentNamePattern(String documentName) {
+
+		String trimmedName = documentName.trim();
+
+		if (documentName == null || documentName.isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED);
+		}
+
+		if (trimmedName.isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED);
+		}
+
+		if (trimmedName.length() > CUSTOMER_DOCUMENT_NAME_MAX_LENGTH) {
+			throw new ValidationException(
+					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_MAX_LENGTH_EXCEEDED);
+		}
+
+		if (!trimmedName.matches(CUSTOMER_DOCUMENT_NAME_REGEX)) {
+			throw new ValidationException(
+					InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_CHARACTERS);
+		}
+
+		// Check for path traversal attempts
+		if (trimmedName.contains("..") || trimmedName.contains("./") || trimmedName.contains("\\")) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_PATH);
+		}
+
+		// Check for consecutive special characters
+		if (trimmedName.matches(".*[._-]{2,}.*")) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_FORMAT);
+		}
+
+		// Check if name starts or ends with special characters
+		if (trimmedName.matches(CUSTOMER_DOCUMENT_NAME_SPECIAL_CHAR_REGEX)) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_FORMAT);
+		}
+
 	}
 
 }
