@@ -26,16 +26,6 @@ const Directory: NextPage = () => {
     isPendingInvitationListOpen
   } = usePeopleStore((state) => state);
 
-  const handleAddPeople = () => {
-    setIsDirectoryModalOpen(true);
-    setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
-  };
-
-  const handleBulkPeople = () => {
-    setIsDirectoryModalOpen(true);
-    setDirectoryModalType(DirectoryModalTypes.DOWNLOAD_CSV);
-  };
-
   useEffect(() => {
     typeof isPendingInvitationListOpen === "undefined" &&
       setIsPendingInvitationListOpen(false);
@@ -47,21 +37,31 @@ const Directory: NextPage = () => {
   }, []);
 
   return (
-    <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
-      primaryButtonText={isAdmin ? translateText(["addPeople"]) : undefined}
-      secondaryBtnText={isAdmin ? translateText(["addBulkPeople"]) : undefined}
-      secondaryBtnIconName={IconName.UP_ARROW_ICON}
-      onPrimaryButtonClick={handleAddPeople}
-      onSecondaryButtonClick={handleBulkPeople}
-      isDividerVisible
-    >
-      <Box>
-        <EmployeeData isRemovePeople={false} />
-        <DirectoryPopupController />
-      </Box>
-    </ContentLayout>
+    <>
+      <ContentLayout
+        pageHead={translateText(["pageHead"])}
+        title={translateText(["title"])}
+        primaryButtonText={isAdmin ? translateText(["addPeople"]) : undefined}
+        secondaryBtnText={
+          isAdmin ? translateText(["addBulkPeople"]) : undefined
+        }
+        secondaryBtnIconName={IconName.UP_ARROW_ICON}
+        onPrimaryButtonClick={() => {
+          setIsDirectoryModalOpen(true);
+          setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
+        }}
+        onSecondaryButtonClick={() => {
+          setIsDirectoryModalOpen(true);
+          setDirectoryModalType(DirectoryModalTypes.DOWNLOAD_CSV);
+        }}
+        isDividerVisible
+      >
+        <Box>
+          <EmployeeData isRemovePeople={false} />
+          <DirectoryPopupController />
+        </Box>
+      </ContentLayout>
+    </>
   );
 };
 
