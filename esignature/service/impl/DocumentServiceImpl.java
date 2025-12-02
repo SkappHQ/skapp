@@ -23,11 +23,13 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -1495,38 +1497,45 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@Override
 	public ResponseEntityDto generateImageListFromPdf(Long id) {
-		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
 
-		Document document = documentRepository.findById(id)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+		String documentFilePath = documentFile(id);
 
-		DocumentVersion documentVersion = documentVersionDao
-			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), id)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
-
-		boolean isRecipient = document.getEnvelope()
-			.getRecipients()
-			.stream()
-			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
-
-		if (!isRecipient) {
-			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
-			if (!isOwner) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
-			}
-		}
-
-		if (documentVersion.getFilePath() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
-		}
-
-		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentVersion.getFilePath());
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
 		List<byte[]> imageList = documentProcessingService.convertPDFdocumentToImageList(documentBytes);
 		List<String> base64Images = imageList.stream()
 			.map(imgBytes -> Base64.getEncoder().encodeToString(imgBytes))
 			.toList();
 
 		return new ResponseEntityDto(false, base64Images);
+	}
+
+	@Override
+	public ResponseEntityDto getImageListMetadataFromPdf(Long id) {
+
+		String documentFilePath = documentFile(id);
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
+
+		int documentNumOfPages = documentProcessingService.getNumberOfPages(documentBytes);
+
+		DocumentPdfConvertMetaResponseDto responseDto = new DocumentPdfConvertMetaResponseDto();
+		responseDto.setDocumentId(id);
+		responseDto.setNumberOfPages(documentNumOfPages);
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto generateImageListFromPdfPage(
+			DocumentPdfConvertFilterRequestDto documentPdfConvertFilterRequestDto) {
+
+		String documentFilePath = documentFile(documentPdfConvertFilterRequestDto.getDocumentId());
+
+		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
+		byte[] image = documentProcessingService.convertPDFdocumentToImage(documentBytes,
+				documentPdfConvertFilterRequestDto.getPage());
+
+		return new ResponseEntityDto(false, image);
 	}
 
 	private DocumentVersionField createSignedField(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
@@ -1588,6 +1597,35 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private record LatestDocumentData(byte[] fileBytes, DocumentVersion documentVersion) {
+	}
+
+	private String documentFile(Long id) {
+
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
+
+		Document document = documentRepository.findById(id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		DocumentVersion documentVersion = documentVersionDao
+			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), id)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+		boolean isRecipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
+
+		if (!isRecipient) {
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
+			if (!isOwner) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+			}
+		}
+
+		if (documentVersion.getFilePath() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
+		}
+		return documentVersion.getFilePath();
 	}
 
 }

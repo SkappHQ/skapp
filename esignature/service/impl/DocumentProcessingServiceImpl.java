@@ -286,6 +286,36 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
+	@Override
+	public byte[] convertPDFdocumentToImage(byte[] documentBytes, int pageNumber) {
+
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+
+			byte[] image;
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			int pageCount = document.getNumberOfPages();
+
+			if (pageNumber < 0 || pageNumber >= pageCount) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE);
+			}
+
+			BufferedImage bim = pdfRenderer.renderImageWithDPI(pageNumber, DPI);
+
+			try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				ImageIO.write(bim, PNG, baos);
+				image = baos.toByteArray();
+			}
+
+			return image;
+		}
+		catch (IOException e) {
+			log.error("Error converting PDF to image list: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST);
+		}
+
+	}
+
 	private PDPage getPage(PDDocument document, int pageNumber) {
 		if (pageNumber > document.getNumberOfPages()) {
 			throw new IllegalArgumentException(messageUtil.getMessage(
