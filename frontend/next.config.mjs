@@ -229,6 +229,10 @@ const nextConfig = {
         destination: "/enterprise/verify/reset-password"
       },
       {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
+      },
+      {
         source: "/forget-password",
         destination: "/enterprise/forget-password"
       },
