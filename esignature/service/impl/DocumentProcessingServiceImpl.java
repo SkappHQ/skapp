@@ -263,57 +263,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	@Override
 	public List<byte[]> convertPDFdocumentToImageList(byte[] documentBytes) {
-		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
-				PDDocument document = Loader.loadPDF(randomAccessRead)) {
 
-			List<byte[]> imageList = new ArrayList<>();
-			PDFRenderer pdfRenderer = new PDFRenderer(document);
-			int pageCount = document.getNumberOfPages();
+		return convertPDFPagesToImages(documentBytes, null);
 
-			for (int page = 0; page < pageCount; page++) {
-				BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DPI);
-
-				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					ImageIO.write(bim, PNG, baos);
-					imageList.add(baos.toByteArray());
-				}
-			}
-			return imageList;
-		}
-		catch (IOException e) {
-			log.error("Error converting PDF to image list: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST);
-		}
 	}
 
 	@Override
 	public byte[] convertPDFdocumentToImage(byte[] documentBytes, int pageNumber) {
 
-		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
-				PDDocument document = Loader.loadPDF(randomAccessRead)) {
-
-			byte[] image;
-			PDFRenderer pdfRenderer = new PDFRenderer(document);
-			int pageCount = document.getNumberOfPages();
-
-			if (pageNumber < 0 || pageNumber >= pageCount) {
-				throw new ModuleException(
-						EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_INVALID_PAGE);
-			}
-
-			BufferedImage bim = pdfRenderer.renderImageWithDPI(pageNumber, DPI);
-
-			try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				ImageIO.write(bim, PNG, baos);
-				image = baos.toByteArray();
-			}
-
-			return image;
-		}
-		catch (IOException e) {
-			log.error("Error converting PDF to image: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE);
-		}
+		List<byte[]> images = convertPDFPagesToImages(documentBytes, pageNumber);
+		return images.isEmpty() ? null : images.getFirst();
 
 	}
 
@@ -593,6 +552,44 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private record TextDimensions(float width, float height) {
+	}
+
+	private byte[] renderPageToImage(PDFRenderer pdfRenderer, int pageNumber) throws IOException {
+		BufferedImage bim = pdfRenderer.renderImageWithDPI(pageNumber, DPI);
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			ImageIO.write(bim, PNG, baos);
+			return baos.toByteArray();
+		}
+	}
+
+	private List<byte[]> convertPDFPagesToImages(byte[] documentBytes, Integer specificPage) {
+		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(documentBytes);
+				PDDocument document = Loader.loadPDF(randomAccessRead)) {
+
+			List<byte[]> imageList = new ArrayList<>();
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			int pageCount = document.getNumberOfPages();
+
+			if (specificPage != null) {
+				if (specificPage < 0 || specificPage >= pageCount) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_INVALID_PAGE);
+				}
+				imageList.add(renderPageToImage(pdfRenderer, specificPage));
+			}
+			else {
+				for (int page = 0; page < pageCount; page++) {
+					imageList.add(renderPageToImage(pdfRenderer, page));
+				}
+			}
+			return imageList;
+		}
+		catch (IOException e) {
+			log.error("Error converting PDF to image{}: {}", specificPage != null ? "" : " list", e.getMessage(), e);
+			throw new ModuleException(
+					specificPage != null ? EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE
+							: EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST);
+		}
 	}
 
 }
