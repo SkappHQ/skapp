@@ -40,6 +40,24 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
+const modulePermissions: Record<string, RoleTypes[]> = {
+  TIME: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.ATTENDANCE_ADMIN,
+    ManagerTypes.ATTENDANCE_MANAGER
+  ],
+  LEAVE: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.LEAVE_ADMIN,
+    ManagerTypes.LEAVE_MANAGER
+  ],
+  PEOPLE: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.PEOPLE_ADMIN,
+    ManagerTypes.PEOPLE_MANAGER
+  ]
+};
+
 const Dashboard: NextPage = () => {
   const { query } = useRouter();
 
@@ -102,23 +120,6 @@ const Dashboard: NextPage = () => {
   const { data } = useSession();
 
   // Permissions map for modules
-  const modulePermissions: Record<string, RoleTypes[]> = {
-    TIME: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.ATTENDANCE_ADMIN,
-      ManagerTypes.ATTENDANCE_MANAGER
-    ],
-    LEAVE: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.LEAVE_ADMIN,
-      ManagerTypes.LEAVE_MANAGER
-    ],
-    PEOPLE: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.PEOPLE_ADMIN,
-      ManagerTypes.PEOPLE_MANAGER
-    ]
-  };
 
   // Define tabs
   const tabs = [
