@@ -146,11 +146,11 @@ public class DocumentController {
 	}
 
 	@Operation(summary = "Retrieval of PDF to image Page by page",
-			description = "This endpoint converts a PDF document into a list of images page by page.")
+			description = "This endpoint converts a PDF document page into an image.")
 	@GetMapping(value = "/pdf-image", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getImageListFromPdfDocumentPage(
-			@Valid @RequestBody DocumentPdfConvertFilterRequestDto documentPdfConvertFilterRequestDto) {
+			@Valid DocumentPdfConvertFilterRequestDto documentPdfConvertFilterRequestDto) {
 		ResponseEntityDto response = documentService.generateImageListFromPdfPage(documentPdfConvertFilterRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

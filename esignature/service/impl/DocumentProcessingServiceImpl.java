@@ -297,7 +297,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			int pageCount = document.getNumberOfPages();
 
 			if (pageNumber < 0 || pageNumber >= pageCount) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE);
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_INVALID_PAGE);
 			}
 
 			BufferedImage bim = pdfRenderer.renderImageWithDPI(pageNumber, DPI);
@@ -310,8 +311,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			return image;
 		}
 		catch (IOException e) {
-			log.error("Error converting PDF to image list: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST);
+			log.error("Error converting PDF to image: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE);
 		}
 
 	}

@@ -1498,7 +1498,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto generateImageListFromPdf(Long id) {
 
-		String documentFilePath = documentFile(id);
+		String documentFilePath = getDocumentFilePath(id);
 
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
 		List<byte[]> imageList = documentProcessingService.convertPDFdocumentToImageList(documentBytes);
@@ -1512,7 +1512,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto getImageListMetadataFromPdf(Long id) {
 
-		String documentFilePath = documentFile(id);
+		String documentFilePath = getDocumentFilePath(id);
 
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
 
@@ -1529,7 +1529,7 @@ public class DocumentServiceImpl implements DocumentService {
 	public ResponseEntityDto generateImageListFromPdfPage(
 			DocumentPdfConvertFilterRequestDto documentPdfConvertFilterRequestDto) {
 
-		String documentFilePath = documentFile(documentPdfConvertFilterRequestDto.getDocumentId());
+		String documentFilePath = getDocumentFilePath(documentPdfConvertFilterRequestDto.getDocumentId());
 
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, documentFilePath);
 		byte[] image = documentProcessingService.convertPDFdocumentToImage(documentBytes,
@@ -1599,7 +1599,7 @@ public class DocumentServiceImpl implements DocumentService {
 	private record LatestDocumentData(byte[] fileBytes, DocumentVersion documentVersion) {
 	}
 
-	private String documentFile(Long id) {
+	private String getDocumentFilePath(Long id) {
 
 		AddressBook currentAddressBookUser = getCurrentAddressBookUser(getCurrentUsername());
 

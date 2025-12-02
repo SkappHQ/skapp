@@ -66,6 +66,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT("ep.esign.error.failed.process.pdf-document"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST("ep.esign.error.failed.convert.pdf-document.image-list"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE("ep.esign.error.failed.convert.pdf-document.image"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_INVALID_PAGE(
+			"ep.esign.error.failed.convert.pdf-document.image.invalid.page"),
 	ESIGN_ERROR_FAILED_DOWNLOAD_FILE("ep.esign.error.failed.download.file"),
 	ESIGN_ERROR_FAILED_TO_UPLOAD_FILE("ep.esign.error.failed.upload.file"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE("ep.esign.error.failed.convert.file.to.byte"),
