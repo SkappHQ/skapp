@@ -170,6 +170,10 @@ const Dashboard: NextPage = () => {
     nextYear.toString()
   );
 
+  const isLeaveOnlyView = data?.user && visibleTabs.length === 0;
+  const showYearSelector =
+    isLeaveOnlyView && isEntitlementAvailableNextYear?.length > 0;
+
   useGoogleAnalyticsEvent({
     onMountEventType:
       data?.user && visibleTabs.length === 0
@@ -191,9 +195,7 @@ const Dashboard: NextPage = () => {
         }
         isDividerVisible={!(data?.user && visibleTabs.length === 0)}
         customRightContent={
-          visibleTabs.length === 0 &&
-          isEntitlementAvailableNextYear &&
-          isEntitlementAvailableNextYear.length !== 0 ? (
+          showYearSelector ? (
             <div className="flex mb-2">
               <RoundedSelect
                 id="leave-allocations-year-dropdown"
@@ -220,7 +222,7 @@ const Dashboard: NextPage = () => {
         }
       >
         <>
-          {data?.user && visibleTabs.length === 0 ? (
+          {isLeaveOnlyView ? (
             <div>
               <LeaveAllocationSummary />
             </div>
