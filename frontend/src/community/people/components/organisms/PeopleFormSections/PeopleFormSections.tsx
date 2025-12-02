@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { RefObject } from "react";
 
+
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
@@ -13,6 +14,7 @@ import EmergencyDetailsForm from "../EmergencyDetailsSection/EmergencyDetailsFor
 import EmploymentDetailsForm from "../EmploymentFormSection/EmploymentDetailsForm";
 import PersonalDetailsForm from "../PersonDetailsSection/PersonalDetailsForm";
 import SystemPermissionFormSection from "../SystemPermissionFormSection/SystemPermissionFormSection";
+import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 interface Props {
   employeeId?: number;
@@ -103,6 +105,10 @@ const PeopleFormSections = ({
             selectedUser={Number(employeeId)}
           />
         );
+      case EditPeopleFormTypes.documents:
+        return (
+          <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
+        ); 
       default:
         return null;
     }

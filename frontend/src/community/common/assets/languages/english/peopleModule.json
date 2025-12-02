@@ -195,6 +195,7 @@
     "employment": "Employment",
     "timeline": "Timeline",
     "leave": "Leave",
+    "documents": "Documents",
     "timesheet": "Timesheet",
     "teams": "Teams :",
     "joinedDate": "Joined Date :",
@@ -1055,5 +1056,45 @@
     "eSignAdminLimitationDescription": "Only one E-sign admin account is allowed.",
     "userRoleLimitationTitle": "User Role Limit Reached",
     "userRoleLimitationDescription": "Failed to change user role. Please try again."
+  },
+  "inbox": {
+    "pageHead": "Documents | Skapp",
+    "allDocuments": "All documents",
+    "unknownSender": "Unknown sender",
+    "sentBy": "Sent by",
+    "loadingMore": "Loading more documents...",
+    "tableHeaders": {
+      "documentName": "Name",
+      "recipients": "Recipients",
+      "receivedDate": "Receieved on",
+      "expireDate": "Expires on",
+      "status": "Status",
+      "sender": "Sender",
+      "position": "Position"
+    },
+    "expireSoon": "Expiring soon",
+    "emptyTable": {
+      "title": "No documents to be displayed",
+      "description": "Your Inbox is empty. Once you receive documents, they will be displayed here."
+    },
+
+    "searchPlaceholder": "Search documents",
+    "documentStatus": {
+      "needToSign": "Need to sign",
+      "waitingForOthers": "Waiting",
+      "completed": "Completed",
+      "declined": "Declined",
+      "voided": "Void",
+      "expired": "Expired"
+    },
+    "dateSort": {
+      "receivedClose": "Sort By : newest to oldest",
+      "receivedFar": "Sort By : oldest to newest"
+    },
+    "statusFilter": {
+      "statusHeader": "Document Status",
+      "resetFilters": "Reset filters",
+      "applyFilters": "Apply filters"
+    }
   }
 }
