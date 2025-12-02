@@ -5,7 +5,11 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.payload.request.*;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import jakarta.validation.constraints.NotNull;
 
