@@ -183,7 +183,7 @@ const LeaveEntitlementTable = ({
       tableFoot={{
         pagination: {
           isEnabled: tableData ? tableData.totalPages > 1 : false,
-          currentPage: page,
+          currentPage: page-1,
           onChange: (_event: ChangeEvent<unknown>, value: number) => {
             setPage(value);
           },
