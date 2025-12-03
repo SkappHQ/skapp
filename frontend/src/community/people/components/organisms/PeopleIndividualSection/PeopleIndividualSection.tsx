@@ -20,7 +20,7 @@ import GeneralDetailsSection from "../PersonDetailsSection/SubSections/GeneralDe
 interface Props {
   employeeId: number;
   formRef?: RefObject<HTMLDivElement>;
-  isLoading?:boolean;
+  isLoading?: boolean;
 }
 
 const PeopleIndividualSection = ({ employeeId, formRef, isLoading }: Props) => {
@@ -47,7 +47,7 @@ const PeopleIndividualSection = ({ employeeId, formRef, isLoading }: Props) => {
       case EditPeopleFormTypes.personal:
         return (
           <>
-            <GeneralDetailsSection isReadOnly={true} isLoading={isLoading}/>
+            <GeneralDetailsSection isReadOnly={true} isLoading={isLoading} />
             {isManager && (
               <>
                 <PrimaryContactDetailsSection isReadOnly={true} />

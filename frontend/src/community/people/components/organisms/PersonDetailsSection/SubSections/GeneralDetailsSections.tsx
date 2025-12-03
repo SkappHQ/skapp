@@ -47,7 +47,7 @@ interface Props {
   isAdmin?: boolean;
   isInputsDisabled?: boolean;
   isAddFlow?: boolean;
-  isLoading?:boolean;
+  isLoading?: boolean;
 }
 
 const GeneralDetailsSection = forwardRef<FormMethods, Props>(
@@ -214,8 +214,8 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
         pageHead={translateText(["head"])}
       >
         {isLoading ? (
-          <EditAllInfoSkeleton/>
-        ): (
+          <EditAllInfoSkeleton />
+        ) : (
         <form onSubmit={formik.handleSubmit}>
           {isAddFlow && (
             <Stack
