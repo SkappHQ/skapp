@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
+import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
@@ -32,6 +33,10 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 	private static final String CUSTOMER_DOCUMENT_NAME_REGEX = "^[a-zA-Z0-9\\s._-]+$";
 
 	private static final String CUSTOMER_DOCUMENT_NAME_SPECIAL_CHAR_REGEX = "^[._-].*|.*[._-]$";
+
+	private static final String CUSTOMER_DOCUMENT_PATH = "invoice/customer-details/otherDocuments/invoice/";
+
+	private static final String CUSTOMER_DOCUMENT_NAME_PATTERN = "^\\d+_[A-Za-z0-9]+_\\d+\\.pdf$";
 
 	@Override
 	public void validateCustomerName(String customerName) {
@@ -128,7 +133,7 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 
 	@Override
 	public void validateCustomerDocumentCreateRequestDto(
-			CustomerDocumentCreateRequestDto customerDocumentCreateRequestDto) {
+			CustomerDocumentCreateRequestDto customerDocumentCreateRequestDto, Customer customer) {
 
 		validateCustomerDocumentNamePattern(customerDocumentCreateRequestDto.getName());
 
@@ -142,6 +147,8 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 				|| customerDocumentCreateRequestDto.getDocumentUrl().isEmpty()) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_URL_REQUIRED);
 		}
+
+		validateCustomerToDocument(customer, customerDocumentCreateRequestDto.getDocumentUrl());
 
 		if (customerDocumentCreateRequestDto.getCustomerId() == null) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_ID_REQUIRED);
@@ -224,6 +231,25 @@ public class CustomerValidationServiceImpl implements CustomerValidationService 
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_FORMAT);
 		}
 
+	}
+
+	private void validateCustomerToDocument(Customer customer, String documentUrl) {
+
+		String[] parts = documentUrl.split(CUSTOMER_DOCUMENT_PATH);
+
+		if (parts.length > 1) {
+			if (!parts[1].matches(CUSTOMER_DOCUMENT_NAME_PATTERN)) {
+				throw new ValidationException(
+						InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_DOES_NOT_MATCH_PATTERN);
+			}
+
+			String value = parts[1].trim().replaceAll("_.*$", "");
+
+			if (!value.equals(String.valueOf(customer.getId()))) {
+				throw new ValidationException(
+						InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_MATCHED_TO_CUSTOMER);
+			}
+		}
 	}
 
 }

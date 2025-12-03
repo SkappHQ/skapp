@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.service;
 
+import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
@@ -19,7 +20,7 @@ public interface CustomerValidationService {
 	void validateCustomerContactDetails(CustomerContactDetailsDto customerContactDetailsDto,
 			CustomerContact customerContact);
 
-	void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto);
+	void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto, Customer customer);
 
 	void validateCustomerDocumentFilterDto(CustomerDocumentFilterDto filterDto);
 

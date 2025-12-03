@@ -63,13 +63,13 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
 	@Transactional
 	public ResponseEntityDto createDocument(CustomerDocumentCreateRequestDto requestDto) {
 
-		customerValidationService.validateCustomerDocumentCreateRequestDto(requestDto);
-
 		Optional<Customer> customer = customerDao.findById(requestDto.getCustomerId());
 
 		if (customer.isEmpty()) {
 			throw new EntityNotFoundException(InvoiceMessageConstant.INVOICE_ERROR_CUSTOMER_NOT_FOUND);
 		}
+
+		customerValidationService.validateCustomerDocumentCreateRequestDto(requestDto, customer.get());
 
 		CustomerDocument customerDocument = customerMapper
 			.customerDocumentCreateRequestDtoToCustomerDocument(requestDto);
