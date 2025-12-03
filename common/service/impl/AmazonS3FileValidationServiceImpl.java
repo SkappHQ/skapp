@@ -7,7 +7,6 @@ import com.skapp.enterprise.common.service.AmazonS3FileValidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
