@@ -74,7 +74,7 @@ export const getLeaveRequestClasses = ({
   });
 
   if (isDateEnabled) {
-    if (holidays?.length && holidays.length > 0) {
+    if (holidays?.length) {
       const leaveClasses = generateLeaveClasses(leaveRequests);
 
       const uniqueLeaveClasses = new Set(leaveClasses);
