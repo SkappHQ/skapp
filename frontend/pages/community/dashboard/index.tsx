@@ -26,7 +26,6 @@ import LeaveAllocationSummary from "~community/leave/components/organisms/LeaveD
 import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard/LeaveDashboard";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
-import EmployeeCard from "~enterprise/APICTA/EmployeeCard";
 import APICTADashboard from "~enterprise/APICTA/dashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
@@ -177,9 +176,12 @@ const Dashboard: NextPage = () => {
         title={translateText(["title"])}
         isDividerVisible={true}
       >
-        <div style={{ marginTop: "1rem" }}>
-          <APICTADashboard />
-        </div>
+        <>
+          <div style={{ marginTop: "1rem" }}>
+            <APICTADashboard />
+          </div>
+          <LeaveManagerModalController />
+        </>
       </ContentLayout>
     );
   }
