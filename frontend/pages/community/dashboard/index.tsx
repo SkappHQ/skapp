@@ -32,7 +32,7 @@ import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
-import { shouldUseCustomDashboard } from "~enterprise/common/utils/commonUtil";
+import { tempShouldUseCustomDashboard } from "~enterprise/common/utils/commonUtil";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
@@ -93,7 +93,9 @@ const Dashboard: NextPage = () => {
   const { data } = useSession();
 
   // Check if current tenant should use custom dashboard
-  const useCustomDashboard = shouldUseCustomDashboard(data?.user?.tenantId);
+  const tempUseCustomDashboard = tempShouldUseCustomDashboard(
+    data?.user?.tenantId
+  );
 
   // Permissions map for modules
   const modulePermissions: Record<string, RoleTypes[]> = {
@@ -169,7 +171,7 @@ const Dashboard: NextPage = () => {
   }
 
   // Render custom dashboard for flagged tenants
-  if (useCustomDashboard) {
+  if (tempUseCustomDashboard) {
     return (
       <ContentLayout
         pageHead={translateText(["pageHead"])}
