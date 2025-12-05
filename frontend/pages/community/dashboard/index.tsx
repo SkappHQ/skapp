@@ -26,11 +26,14 @@ import LeaveAllocationSummary from "~community/leave/components/organisms/LeaveD
 import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard/LeaveDashboard";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
+import EmployeeCard from "~enterprise/APICTA/EmployeeCard";
+import APICTADashboard from "~enterprise/APICTA/dashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
+import { shouldUseCustomDashboard } from "~enterprise/common/utils/commonUtil";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
@@ -89,6 +92,9 @@ const Dashboard: NextPage = () => {
 
   const translateText = useTranslator("dashboard");
   const { data } = useSession();
+
+  // Check if current tenant should use custom dashboard
+  const useCustomDashboard = shouldUseCustomDashboard(data?.user?.tenantId);
 
   // Permissions map for modules
   const modulePermissions: Record<string, RoleTypes[]> = {
@@ -161,30 +167,46 @@ const Dashboard: NextPage = () => {
 
   if (showLoader && query.status === SUCCESS) {
     return <LogoColorLoader />;
-  } else {
+  }
+
+  // Render custom dashboard for flagged tenants
+  if (useCustomDashboard) {
     return (
       <ContentLayout
         pageHead={translateText(["pageHead"])}
-        title={
-          data?.user && visibleTabs.length === 0 ? "" : translateText(["title"])
-        }
-        isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+        title={translateText(["title"])}
+        isDividerVisible={true}
       >
-        <>
-          {data?.user && visibleTabs.length === 0 ? (
-            <div>
-              <LeaveAllocationSummary />
-            </div>
-          ) : (
-            <TabsContainer tabs={visibleTabs} />
-          )}
-
-          <VersionUpgradeModal />
-          <LeaveManagerModalController />
-        </>
+        <div style={{ marginTop: "1rem" }}>
+          <APICTADashboard />
+        </div>
       </ContentLayout>
     );
   }
+
+  // Default dashboard
+  return (
+    <ContentLayout
+      pageHead={translateText(["pageHead"])}
+      title={
+        data?.user && visibleTabs.length === 0 ? "" : translateText(["title"])
+      }
+      isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+    >
+      <>
+        {data?.user && visibleTabs.length === 0 ? (
+          <div>
+            <LeaveAllocationSummary />
+          </div>
+        ) : (
+          <TabsContainer tabs={visibleTabs} />
+        )}
+
+        <VersionUpgradeModal />
+        <LeaveManagerModalController />
+      </>
+    </ContentLayout>
+  );
 };
 
 export default Dashboard;
