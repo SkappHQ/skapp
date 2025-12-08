@@ -10,7 +10,6 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
-import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
@@ -182,15 +181,13 @@ const getDrawerRoutes = ({
           ManagerTypes.INVOICE_MANAGER
         );
 
-        if (!isInvoiceManager || !needsToShow(tenantID as string)) {
+        if (!isInvoiceManager) {
           return null;
         }
       }
 
       if (route?.name === "Projects") {
-        if (!needsToShow(tenantID as string)) {
-          return null;
-        }
+        return null;
       }
 
       if (route?.name === "Settings") {
