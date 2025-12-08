@@ -333,8 +333,8 @@ const nextConfig = {
         destination: "/community/user-account"
       },
       {
-        source: "/projects/all",
-        destination: "/enterprise/projects/all"
+        source: "/projects/list",
+        destination: "/enterprise/projects/list"
       },
       {
         source: "/projects/guests",
