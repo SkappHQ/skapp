@@ -40,7 +40,7 @@ export enum SenderTypes {
 export type AuthEmployeeType = {
   employeeId: number;
   firstName: string;
-  lastName: string;
+  lastName?: string | undefined;
   avatarUrl?: string;
   jobTitle?: string | null;
   authPic?: string | null;
