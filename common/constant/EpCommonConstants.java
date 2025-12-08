@@ -133,6 +133,6 @@ public class EpCommonConstants {
 
 	public static final int ENTERPRISE_MICROSOFT_CALENDAR_STATE_PARTS_COUNT = 3;
 
-	public static final String GUEST_USER_BASE_INVITE_URL = "https://%s.skapp.com/guest/verify?email=%s";
+	public static final String GUEST_USER_BASE_INVITE_URL = "https://%s.skapp.com/verify/guest?email=%s";
 
 }
