@@ -23,14 +23,16 @@ public class EpUserController {
 
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserResponseDto>> getUsers(@RequestParam List<Long> employeeIds) {
+	public ResponseEntity<List<EpUserResponseDto>> getUsers(
+			@RequestParam(value = "employeeIds", required = false) List<Long> employeeIds) {
 		List<EpUserResponseDto> response = epUserService.getAllUsersOrByIds(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/auth-pics")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserAuthPicResponseDto>> getUserAuthPics(@RequestParam List<Long> employeeIds) {
+	public ResponseEntity<List<EpUserAuthPicResponseDto>> getUserAuthPics(
+			@RequestParam(value = "employeeIds", required = false) List<Long> employeeIds) {
 		List<EpUserAuthPicResponseDto> response = epUserService.getAllUserAuthPicsOrByIds(employeeIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
