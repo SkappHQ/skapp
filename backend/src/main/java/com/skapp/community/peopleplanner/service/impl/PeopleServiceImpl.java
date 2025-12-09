@@ -770,34 +770,52 @@ public class PeopleServiceImpl implements PeopleService {
 			.collect(Collectors.toMap(em -> em.getManager().getEmployeeId(), em -> em,
 					(existing, replacement) -> existing));
 
-		if (primarySupervisor != null && primarySupervisor.getEmployeeId() != null) {
-			Long primaryId = primarySupervisor.getEmployeeId();
-			EmployeeManager primaryManager = existingManagerMap.get(primaryId);
+		Set<Long> requestedSupervisorIds = new HashSet<>();
 
-			if (primaryManager != null) {
-				primaryManager.setManagerType(ManagerType.PRIMARY);
-				primaryManager.setIsPrimaryManager(true);
-				result.add(primaryManager);
-			}
-			else {
-				Employee manager = employeeDao.findEmployeeByEmployeeId(primaryId);
-				if (manager != null) {
-					result.add(createEmployeeManager(employee, manager, ManagerType.PRIMARY, true));
+		if (primarySupervisor != null) {
+			if (primarySupervisor.getEmployeeId() != null && primarySupervisor.getEmployeeId() > 0) {
+				Long primaryId = primarySupervisor.getEmployeeId();
+				requestedSupervisorIds.add(primaryId);
+
+				EmployeeManager existingManager = existingManagerMap.get(primaryId);
+
+				if (existingManager != null) {
+					existingManager.setManagerType(ManagerType.PRIMARY);
+					existingManager.setIsPrimaryManager(true);
+					result.add(existingManager);
+				}
+				else {
+					Employee manager = employeeDao.findEmployeeByEmployeeId(primaryId);
+					if (manager != null) {
+						result.add(createEmployeeManager(employee, manager, ManagerType.PRIMARY, true));
+					}
 				}
 			}
 		}
+		else {
+			existingManagers.stream()
+				.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
+				.findFirst()
+				.ifPresent(em -> {
+					requestedSupervisorIds.add(em.getManager().getEmployeeId());
+					result.add(em);
+				});
+		}
 
-		if (otherSupervisors != null && !otherSupervisors.isEmpty()) {
+		if (otherSupervisors != null) {
 			otherSupervisors.stream()
 				.map(EmployeeEmploymentBasicDetailsManagerDetailsDto::getEmployeeId)
 				.filter(Objects::nonNull)
+				.filter(id -> id > 0)
+				.filter(id -> !requestedSupervisorIds.contains(id))
 				.forEach(secondaryId -> {
-					EmployeeManager secondaryManager = existingManagerMap.get(secondaryId);
+					requestedSupervisorIds.add(secondaryId);
+					EmployeeManager existingManager = existingManagerMap.get(secondaryId);
 
-					if (secondaryManager != null) {
-						secondaryManager.setManagerType(ManagerType.SECONDARY);
-						secondaryManager.setIsPrimaryManager(false);
-						result.add(secondaryManager);
+					if (existingManager != null) {
+						existingManager.setManagerType(ManagerType.SECONDARY);
+						existingManager.setIsPrimaryManager(false);
+						result.add(existingManager);
 					}
 					else {
 						Employee manager = employeeDao.findEmployeeByEmployeeId(secondaryId);
@@ -806,6 +824,12 @@ public class PeopleServiceImpl implements PeopleService {
 						}
 					}
 				});
+		}
+		else {
+			existingManagers.stream()
+				.filter(em -> em.getManagerType() == ManagerType.SECONDARY)
+				.filter(em -> !requestedSupervisorIds.contains(em.getManager().getEmployeeId()))
+				.forEach(result::add);
 		}
 
 		employee.getEmployeeManagers().clear();
