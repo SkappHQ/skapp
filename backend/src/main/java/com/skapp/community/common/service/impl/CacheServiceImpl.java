@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -28,6 +30,12 @@ public class CacheServiceImpl implements CacheService {
 	@Override
 	public void invalidate(String cacheKey) {
 		cache.invalidate(cacheKey);
+	}
+
+	@Override
+	public List<String> getValuesByPattern(String pattern) {
+		// Implemented in enterprise version
+		return Collections.emptyList();
 	}
 
 }
