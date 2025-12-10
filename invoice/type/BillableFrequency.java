@@ -1,7 +1,6 @@
 package com.skapp.enterprise.invoice.type;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public enum BillableFrequency {
