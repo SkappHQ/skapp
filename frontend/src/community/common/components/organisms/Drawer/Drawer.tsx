@@ -213,6 +213,14 @@ const Drawer = (): JSX.Element => {
               style={classes.logoImage}
               data-testid={appDrawerTestId.organizationLogo}
               onClick={() => router.push(ROUTES.DASHBOARD.BASE)}
+              onKeyDown={(e) => {
+                if (shouldActivateLink(e.key)) {
+                  e.preventDefault();
+                  router.push(ROUTES.DASHBOARD.BASE);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             />
           )}
         </Box>
