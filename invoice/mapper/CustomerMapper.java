@@ -11,6 +11,7 @@ import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDocumentResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InternalCustomerResponseDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerDocumentRenameResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -71,5 +72,10 @@ public interface CustomerMapper {
 			return dto;
 		}).toList();
 	}
+
+	@Mapping(target = "customerId", source = "customer.id")
+	@Mapping(target = "customerName", source = "customer.name")
+	CustomerDocumentRenameResponseDto customerDocumentToCustomerDocumentRenameResponseDto(
+			CustomerDocument customerDocument);
 
 }

@@ -88,6 +88,15 @@ public enum InvoiceMessageConstant implements MessageConstant {
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_REQUIRED("invoice.error.customer.document.name.required"),
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_URL_REQUIRED("invoice.error.customer.document.url.required"),
 	INVOICE_ERROR_CUSTOMER_DOCUMENT_FILTER_INVALID("invoice.error.customer.document.filter.invalid"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_DUPLICATE_NAME_PROVIDED("invoice.error.customer.document.name.already.exists"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_MAX_LENGTH_EXCEEDED(
+			"invoice.error.customer.document.name.exceeded.maximum.character.length"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_CHARACTERS(
+			"invoice.error.customer.document.name.invalid.character.available"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_PATH("invoice.error.customer.document.name.invalid.path"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_INVALID_FORMAT("invoice.error.customer.document.name.invalid.format"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NOT_MATCHED_TO_CUSTOMER("invoice.error.customer.document.not.matched.to.customer"),
+	INVOICE_ERROR_CUSTOMER_DOCUMENT_NAME_DOES_NOT_MATCH_PATTERN("invoice.error.customer.document.name.invalid.pattern"),
 
 	INVOICE_ERROR_FETCHING_PROJECTS("ep.invoice.error.fetching.projects"),
 	INVOICE_ERROR_FETCHING_PROJECTS_FROM_SOURCE("ep.invoice.error.fetching.projects.from.source"),
@@ -108,7 +117,8 @@ public enum InvoiceMessageConstant implements MessageConstant {
 
 	INVOICE_ERROR_FETCHING_TIMELOGS("ep.invoice.error.fetching.timelogs"),
 	INVOICE_ERROR_FETCHING_TIMELOGS_FROM_SOURCE("ep.invoice.error.fetching.timelogs.from.source"),
-	INVOICE_ERROR_INVOICE_ID_REQUIRED("ep.invoice.error.invoice.id.required");
+	INVOICE_ERROR_INVOICE_ID_REQUIRED("ep.invoice.error.invoice.id.required"),
+	INVOICE_ERROR_FAILED_TO_LOAD_CUSTOMER_DOCUMENT("invoice.error.customer.document.download.failed");
 
 	private final String messageKey;
 
