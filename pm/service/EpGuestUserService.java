@@ -1,21 +1,23 @@
-package com.skapp.enterprise.people.service;
+package com.skapp.enterprise.pm.service;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface EpGuestUserService {
 
-	EpUserResponseDto saveAndInviteGuestUsers(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto);
+	EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto);
 
 	User validateGuestUserEmail(String email);
 
-	List<EpUserResponseDto> getAllGuestUsers();
+	List<EpGuestUserResponseDto> getAllGuestUsers();
 
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
@@ -27,5 +29,7 @@ public interface EpGuestUserService {
 
 	@Transactional
 	ResponseEntityDto activateGuestUser(Long id);
+
+	EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto);
 
 }

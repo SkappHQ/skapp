@@ -102,10 +102,7 @@ public class EPSecurityConfig {
 						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect",
 						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
 						"/v1/ep/auth/signin/guest/send-otp", "/v1/ep/auth/signin/guest/resend-otp",
-						"/v1/ep/auth/status", "/v1/ep/auth/signin/guest/verify-otp", "/internal/v1/ep/users/guest",
-						"/internal/v1/ep/users/guest/invite", "/internal/v1/ep/users/guest/status",
-						"/internal/v1/ep/users/guest/re-invite", "/internal/v1/ep/users/guest/de-activate",
-						"/internal/v1/ep/users/guest/activate")
+						"/v1/ep/auth/status")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()

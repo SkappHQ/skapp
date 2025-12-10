@@ -7,9 +7,9 @@ import java.util.List;
 
 @Getter
 @Setter
-public class EpGuestUserInviteRequestDto {
+public class EpGuestUserUpdateRequestDto {
 
-	private String email;
+	private Long id;
 
 	private List<ProjectRequestDto> projects;
 

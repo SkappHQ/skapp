@@ -5,8 +5,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EpGuestUserReInviteRequestDto {
+public class ProjectRequestDto {
 
-	private Long id;
+	private Long projectId;
+
+	private String projectName;
+
+	private String projectKey;
 
 }

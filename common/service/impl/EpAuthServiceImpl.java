@@ -65,7 +65,7 @@ import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
-import com.skapp.enterprise.people.service.EpGuestUserService;
+import com.skapp.enterprise.pm.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;

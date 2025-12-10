@@ -172,7 +172,9 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),
 	EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS("ep.common.error.invalid-guest-user-emails"),
 	EP_COMMON_ERROR_GUEST_USER_NOT_FOUND("ep.common.error.guest-user-not-found"),
-	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error");
+	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error"),
+	EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED("ep.common.error.guest-user-project-assignment-failed"),
+	EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED("ep.common.error.guest-user-project-update-failed");
 
 	private final String messageKey;
 

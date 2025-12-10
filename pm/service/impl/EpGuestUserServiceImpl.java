@@ -1,9 +1,10 @@
-package com.skapp.enterprise.people.service.impl;
+package com.skapp.enterprise.pm.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
@@ -19,21 +20,29 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
+import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
+import com.skapp.enterprise.common.payload.response.EmployeeRolesDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.util.EmailNameExtractor;
 import com.skapp.enterprise.people.constant.EpPeopleMessageConstant;
 import com.skapp.enterprise.people.repository.EpEmployeeDao;
-import com.skapp.enterprise.people.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
+import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
+import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
+import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
+import com.skapp.enterprise.pm.service.EpGuestUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -58,9 +67,15 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	private final EpUserEmailService epUserEmailService;
 
+	private final UserService userService;
+
+	private final EpGuestUserInternalService epGuestUserInternalService;
+
+	private final EpGuestUserCacheService epGuestUserCacheService;
+
 	@Override
 	@Transactional
-	public EpUserResponseDto saveAndInviteGuestUsers(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
+	public EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
 		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
@@ -77,8 +92,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			employee.setFirstName(EmailNameExtractor.extractName(email));
 			employee.setAccountStatus(AccountStatus.PENDING);
 			employee.setUser(savedUser);
-			employee.setCreatedBy(epGuestUserInviteRequestDto.getCreatedBy());
-			employee.setLastModifiedBy(epGuestUserInviteRequestDto.getCreatedBy());
 			employeeDao.save(employee);
 
 			EmployeeRole employeeRole = new EmployeeRole();
@@ -89,14 +102,22 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 			epPeopleService.invalidateAllUserCaches();
 
-			String invitationUrl = buildInvitationUrl(user);
-			Long createdBy = getCreatedBy(epGuestUserInviteRequestDto);
-			String adminName = getAdminName(createdBy);
-			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName,
-					epGuestUserInviteRequestDto.getProjectNames().toString());
+			boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
+					epGuestUserInviteRequestDto.getProjects());
 
-			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName,
-					epGuestUserInviteRequestDto.getProjectNames().toString());
+			if (!isAssignSuccess) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
+			}
+
+			String invitationUrl = buildInvitationUrl(user);
+			String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+
+			String projectNames = epGuestUserInviteRequestDto.getProjects()
+				.stream()
+				.map(ProjectRequestDto::getProjectName)
+				.collect(Collectors.joining(", "));
+
+			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName, projectNames);
 
 			return epUserService.mapEmployeeToUserDto(employee);
 		}
@@ -113,14 +134,39 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	public List<EpUserResponseDto> getAllGuestUsers() {
+	public List<EpGuestUserResponseDto> getAllGuestUsers() {
 		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers();
-		return guestEmployees.stream().map(epUserService::mapEmployeeToUserDto).toList();
+
+		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
+			.getAllGuestUsersWithProjects();
+
+		return guestEmployees.stream().map(employee -> {
+			EpGuestUserResponseDto userDto = mapEmployeeToGuestUserDto(employee);
+			List<ProjectRequestDto> userProjects = guestUsersProjectsMap.getOrDefault(employee.getUser().getUserId(),
+					Collections.emptyList());
+			userDto.setProjects(userProjects);
+			return userDto;
+		}).toList();
 	}
 
 	@Override
 	public EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
-		return null;
+		User user = userDao.findById(epGuestUserReInviteRequestDto.getId())
+			.filter(this::isValidGuestEmployee)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+
+		List<ProjectRequestDto> userProjects = epGuestUserCacheService.getUserAssignedProjects(user.getUserId());
+
+		String invitationUrl = buildInvitationUrl(user);
+		String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+
+		String projectNames = userProjects.stream()
+			.map(ProjectRequestDto::getProjectName)
+			.collect(Collectors.joining(", "));
+
+		epUserEmailService.sendGuestUserInvitationEmail(user, invitationUrl, adminName, projectNames);
+
+		return epUserService.mapEmployeeToUserDto(user.getEmployee());
 	}
 
 	@Transactional
@@ -150,6 +196,44 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);
 	}
 
+	@Override
+	public EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto) {
+		User user = userDao.findById(epGuestUserUpdateRequestDto.getId())
+			.filter(this::isValidGuestEmployee)
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+		boolean isUpdateSuccess = epGuestUserInternalService.updateGuestUserProjects(user.getUserId(),
+				epGuestUserUpdateRequestDto.getProjects());
+
+		if (!isUpdateSuccess) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED);
+		}
+
+		epPeopleService.invalidateAllUserCaches();
+
+		return epUserService.mapEmployeeToUserDto(user.getEmployee());
+	}
+
+	private EpGuestUserResponseDto mapEmployeeToGuestUserDto(Employee employee) {
+		EpGuestUserResponseDto dto = new EpGuestUserResponseDto();
+		dto.setUserId(employee.getEmployeeId().toString());
+		dto.setFirstName(employee.getFirstName());
+		dto.setLastName(employee.getLastName());
+		dto.setAccountStatus(employee.getAccountStatus());
+
+		EmployeeRolesDto employeeRolesDto = new EmployeeRolesDto();
+		employeeRolesDto.setPmRole(employee.getEmployeeRole().getPmRole());
+
+		dto.setRoles(employeeRolesDto);
+
+		if (employee.getUser() != null) {
+			dto.setEmail(employee.getUser().getEmail());
+			dto.setLoginMethod(employee.getUser().getLoginMethod());
+		}
+
+		dto.setAuthPic(employee.getAuthPic());
+		return dto;
+	}
+
 	private boolean isValidGuestEmployee(User user) {
 		return user.getEmployee() != null && user.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE
 				&& isActiveAccount(user.getEmployee().getAccountStatus());
@@ -162,19 +246,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private String buildInvitationUrl(User user) {
 		return String.format(EpCommonConstants.GUEST_USER_BASE_INVITE_URL, TenantContext.getCurrentTenant(),
 				user.getEmail());
-	}
-
-	private Long getCreatedBy(EpGuestUserInviteRequestDto dto) {
-		return Optional.ofNullable(dto.getCreatedBy()).map(Long::valueOf).orElse(null);
-	}
-
-	private String getAdminName(Long createdBy) {
-		if (createdBy == null) {
-			return EpCommonConstants.ADMIN;
-		}
-		return userDao.findById(createdBy)
-			.map(u -> u.getEmployee().getFirstName() + " " + u.getEmployee().getLastName())
-			.orElse(EpCommonConstants.ADMIN);
 	}
 
 }
