@@ -1,6 +1,5 @@
 package com.skapp.enterprise.invoice.service;
 
-import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.invoice.model.BillableRate;
 import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.request.ProjectMemberFilterDto;

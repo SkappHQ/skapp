@@ -2,7 +2,6 @@ package com.skapp.enterprise.invoice.model;
 
 import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;

@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.OrganizationService;
-import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
