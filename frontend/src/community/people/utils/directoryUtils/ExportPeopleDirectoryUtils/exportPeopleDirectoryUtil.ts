@@ -124,7 +124,6 @@ export const exportEmployeeDirectoryToCSV = (
     const defaultFilename = `employee_directory_${name}_${now.toISOString().split("T")[0]}_${now.toString().split(" ")[4].replace(/:/g, "-")}_${now.toString().split(" ")[5]}.csv`;
     downloadCSV(csvContent, defaultFilename);
   } catch (error) {
-    console.error("Error exporting CSV:", error);
     throw new Error("Failed to export employee directory");
   }
 };
