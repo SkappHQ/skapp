@@ -175,8 +175,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 	public List<JsonNode> loadProjectsFromMicroservice() {
 		try {
 			String query = """
-					query InternalLoadProjectsToCache {
-					  internalLoadProjectsToCache {
+					query internalLoadGuestUserProjectsToCache {
+					  internalLoadGuestUserProjectsToCache {
 					    members {
 					      role
 					      userId
@@ -207,8 +207,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 				return Collections.emptyList();
 			}
 
-			if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalLoadProjectsToCache")) {
-				JsonNode projectsArray = responseJsonNode.get("data").get("internalLoadProjectsToCache");
+			if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalLoadGuestUserProjectsToCache")) {
+				JsonNode projectsArray = responseJsonNode.get("data").get("internalLoadGuestUserProjectsToCache");
 
 				if (projectsArray != null && projectsArray.isArray()) {
 					List<JsonNode> projects = new ArrayList<>();
