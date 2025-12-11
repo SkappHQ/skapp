@@ -74,7 +74,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EpGuestUserCacheService epGuestUserCacheService;
 
 	@Override
-	@Transactional
 	public EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
 		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
@@ -100,6 +99,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			employeeRole.setIsSuperAdmin(false);
 			employeeRoleDao.save(employeeRole);
 
+            employee.setEmployeeRole(employeeRole);
+            employeeDao.save(employee);
+
 			epPeopleService.invalidateAllUserCaches();
 
 			boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
@@ -117,12 +119,13 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				.map(ProjectRequestDto::getProjectName)
 				.collect(Collectors.joining(", "));
 
-			epUserEmailService.sendGuestUserInvitationEmail(savedUser, invitationUrl, adminName, projectNames);
+			epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
 
 			return epUserService.mapEmployeeToUserDto(employee);
 		}
-
-		return null;
+        else{
+            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+        }
 	}
 
 	@Override
@@ -164,7 +167,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.map(ProjectRequestDto::getProjectName)
 			.collect(Collectors.joining(", "));
 
-		epUserEmailService.sendGuestUserInvitationEmail(user, invitationUrl, adminName, projectNames);
+		epUserEmailService.sendGuestUserInvitationEmail(user.getEmployee(), invitationUrl, adminName, projectNames);
 
 		return epUserService.mapEmployeeToUserDto(user.getEmployee());
 	}

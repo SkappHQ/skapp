@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.service.UserService;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
@@ -33,7 +36,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalService {
 
-	@Value("${pm.service.url}")
+    private final UserService userService;
+    @Value("${pm.service.url}")
 	private String pmServiceUrl;
 
 	@Value("${pm.internal.api.key}")
@@ -50,11 +54,12 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 
 		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
+        User currentUser = userService.getCurrentUser();
 
-		return callAssignGuestToProjectsMutation(userId, projectIds);
+		return callAssignGuestToProjectsMutation(userId, projectIds, currentUser.getUserId());
 	}
 
-	private boolean callAssignGuestToProjectsMutation(Long userId, List<Long> projectIds) {
+	private boolean callAssignGuestToProjectsMutation(Long userId, List<Long> projectIds, Long adminUserId) {
 		String mutation = """
 				mutation InternalAssignGuestToProjects($input: AssignGuestToItemsInput!) {
 				  internalAssignGuestToProjects(input: $input)
@@ -64,6 +69,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		Map<String, Object> input = new HashMap<>();
 		input.put("userId", userId);
 		input.put("projectIds", projectIds);
+        input.put("createdBy", adminUserId);
+        input.put("updatedBy", adminUserId);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("input", input);
@@ -106,11 +113,12 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 
 		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
+        User currentUser = userService.getCurrentUser();
 
-		return callUpdateGuestUserProjectsMutation(userId, projectIds);
+		return callUpdateGuestUserProjectsMutation(userId, projectIds, currentUser.getUserId());
 	}
 
-	private boolean callUpdateGuestUserProjectsMutation(Long userId, List<Long> projectIds) {
+	private boolean callUpdateGuestUserProjectsMutation(Long userId, List<Long> projectIds, Long adminUserId) {
 		String mutation = """
 				mutation InternalUpdateGuestUserProjects($input: UpdateGuestProjectsInput!) {
 				  internalUpdateGuestUserProjects(input: $input)
@@ -120,6 +128,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		Map<String, Object> input = new HashMap<>();
 		input.put("userId", userId);
 		input.put("projectIds", projectIds);
+        input.put("updatedBy", adminUserId);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("input", input);
@@ -153,12 +162,13 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 	}
 
-	private HttpHeaders createHeaders() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.set(EpAuthConstants.API_KEY_HEADER, internalApiKey);
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		return headers;
-	}
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(EpAuthConstants.TENANT_HEADER, TenantContext.getCurrentTenant());
+        headers.set(EpAuthConstants.API_KEY_HEADER, internalApiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
 
 	@Override
 	public List<JsonNode> loadProjectsFromMicroservice() {

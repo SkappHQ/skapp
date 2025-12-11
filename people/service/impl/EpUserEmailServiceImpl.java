@@ -2,6 +2,7 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -31,10 +32,10 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	}
 
 	@Override
-	public void sendGuestUserInvitationEmail(User user, String invitationLink, String adminName, String projectNames) {
+	public void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName, String projectNames) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
-		emailDynamicFields.setEmployeeOrManagerName(user.getEmployee().getFirstName());
-		emailDynamicFields.setWorkEmail(user.getEmail());
+		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
+		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setAdminName(adminName);
 		emailDynamicFields.setTenantId(TenantContext.getCurrentTenant());
 		emailDynamicFields.setProjectNames(projectNames);
