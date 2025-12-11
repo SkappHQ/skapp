@@ -36,6 +36,7 @@ import {
 import { IconName } from "~community/common/types/IconTypes";
 import { AvatarPropTypes } from "~community/common/types/MoleculeTypes";
 import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
+import { useExportPeopleDirectory } from "~community/people/api/ExportPeopelDirectoryApi";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import {
   useGetUserPersonalDetails,
@@ -56,6 +57,8 @@ import {
   refactorTeamListData
 } from "~community/people/utils/PeopleDirectoryUtils";
 import { generatePeopleTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
+import { hasFiltersApplied } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/PeopelDirectoryhasFiltersAppliedUtil";
+import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/exportPeopleDirectoryUtil";
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
@@ -109,6 +112,7 @@ const PeopleTable: FC<Props> = ({
     setViewEmployeeId,
     setSelectedEmployees,
     employeeDataParams,
+    employeeDataFilter,
     setProjectTeamNames,
     setSelectedEmployeeId,
     resetEmployeeData,
@@ -118,6 +122,35 @@ const PeopleTable: FC<Props> = ({
     setNextStep,
     resetPeopleSlice
   } = usePeopleStore((state) => state);
+
+  const ensureArray = <T,>(value: T | T[] | undefined | null): T[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  };
+
+  const buildExportParams = () => ({
+    sortKey: employeeDataParams?.sortKey || "NAME",
+    sortOrder: employeeDataParams?.sortOrder || "ASC",
+    searchKeyword: employeeDataParams?.searchKeyword?.trim(),
+    isExport: true,
+    accountStatus: ensureArray(employeeDataParams?.accountStatus),
+    employmentAllocations: ensureArray(
+      employeeDataFilter?.employmentAllocations
+    ),
+    permissions: ensureArray(employeeDataFilter?.permission),
+    team: ensureArray(employeeDataFilter?.team).map((item) =>
+      typeof item === "object" ? item.id : item
+    ),
+    role: ensureArray(employeeDataFilter?.role).map((item) =>
+      typeof item === "object" ? item.id : item
+    ),
+    employmentTypes: ensureArray(employeeDataFilter?.employmentTypes),
+    gender: ensureArray(employeeDataFilter?.gender),
+    nationality: ensureArray(employeeDataFilter?.nationality)
+  });
+
+  const { data: exportData, isLoading: isExportLoading } =
+    useExportPeopleDirectory(buildExportParams());
 
   const { data: teamData, isLoading } = useGetAllTeams();
   const { data: jobFamilyData, isLoading: jobFamilyLoading } =
@@ -503,6 +536,62 @@ const PeopleTable: FC<Props> = ({
     return selectedPeople?.length === employeeData?.length;
   }, [selectedPeople, employeeData]);
 
+  const handleExportDirectory = async () => {
+    try {
+      if (!exportData || exportData.length === 0) {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.WARN,
+          title: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataTitle"
+          ]),
+          description: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataDescription"
+          ])
+        });
+        return;
+      }
+
+      // Export to CSV
+      exportEmployeeDirectoryToCSV(
+        exportData,
+        hasFiltersApplied(employeeDataFilter)
+      );
+
+      // Show success message
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectorySuccessTitle"
+        ]),
+        description: translateText(
+          [
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectorySuccessDescription"
+          ],
+          { count: exportData.length }
+        )
+      });
+    } catch (error) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorTitle"
+        ]),
+        description: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorDescription"
+        ])
+      });
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -629,6 +718,14 @@ const PeopleTable: FC<Props> = ({
             }
           }}
           tableFoot={{
+            exportBtn: {
+              label: translateText(["exportPeopeleDirectory"]),
+              isVisible: true,
+              onClick: () => {
+                handleExportDirectory();
+              }
+            },
+
             pagination: {
               isEnabled: false
             }
