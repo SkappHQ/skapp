@@ -13,7 +13,7 @@ const ROUTES = {
     VERIFY_RESET_PASSWORD: "/verify/reset-password",
     VERIFY_FORGOT_OTP: "/verify/reset-password",
     VERIFY_GUEST: "/verify/guest",
-    VERIFY_GUEST_ACCOUNT: "/verify/guest-account",
+    VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update"
   },

@@ -225,8 +225,8 @@ const nextConfig = {
         destination: "/enterprise/redirect"
       },
       {
-        source: "/verify/guest-account",
-        destination: "/enterprise/verify/guest-account"
+        source: "/verify/guest-otp",
+        destination: "/enterprise/verify/guest-otp"
       },
       {
         source: "/verify/guest",
