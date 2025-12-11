@@ -99,8 +99,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			employeeRole.setIsSuperAdmin(false);
 			employeeRoleDao.save(employeeRole);
 
-            employee.setEmployeeRole(employeeRole);
-            employeeDao.save(employee);
+			employee.setEmployeeRole(employeeRole);
+			employeeDao.save(employee);
 
 			epPeopleService.invalidateAllUserCaches();
 
@@ -123,9 +123,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 			return epUserService.mapEmployeeToUserDto(employee);
 		}
-        else{
-            throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
-        }
+		else {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+		}
 	}
 
 	@Override

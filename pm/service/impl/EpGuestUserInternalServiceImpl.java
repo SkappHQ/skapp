@@ -36,8 +36,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalService {
 
-    private final UserService userService;
-    @Value("${pm.service.url}")
+	private final UserService userService;
+
+	@Value("${pm.service.url}")
 	private String pmServiceUrl;
 
 	@Value("${pm.internal.api.key}")
@@ -54,7 +55,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 
 		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
-        User currentUser = userService.getCurrentUser();
+		User currentUser = userService.getCurrentUser();
 
 		return callAssignGuestToProjectsMutation(userId, projectIds, currentUser.getUserId());
 	}
@@ -69,8 +70,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		Map<String, Object> input = new HashMap<>();
 		input.put("userId", userId);
 		input.put("projectIds", projectIds);
-        input.put("createdBy", adminUserId);
-        input.put("updatedBy", adminUserId);
+		input.put("createdBy", adminUserId);
+		input.put("updatedBy", adminUserId);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("input", input);
@@ -113,7 +114,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 
 		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
-        User currentUser = userService.getCurrentUser();
+		User currentUser = userService.getCurrentUser();
 
 		return callUpdateGuestUserProjectsMutation(userId, projectIds, currentUser.getUserId());
 	}
@@ -128,7 +129,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		Map<String, Object> input = new HashMap<>();
 		input.put("userId", userId);
 		input.put("projectIds", projectIds);
-        input.put("updatedBy", adminUserId);
+		input.put("updatedBy", adminUserId);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("input", input);
@@ -162,13 +163,13 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		}
 	}
 
-    private HttpHeaders createHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(EpAuthConstants.TENANT_HEADER, TenantContext.getCurrentTenant());
-        headers.set(EpAuthConstants.API_KEY_HEADER, internalApiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
-    }
+	private HttpHeaders createHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(EpAuthConstants.TENANT_HEADER, TenantContext.getCurrentTenant());
+		headers.set(EpAuthConstants.API_KEY_HEADER, internalApiKey);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		return headers;
+	}
 
 	@Override
 	public List<JsonNode> loadProjectsFromMicroservice() {

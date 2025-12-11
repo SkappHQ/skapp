@@ -32,7 +32,8 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	}
 
 	@Override
-	public void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName, String projectNames) {
+	public void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName,
+			String projectNames) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
 		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
