@@ -162,9 +162,61 @@ const PeopleTable: FC<Props> = ({
       employeeDataFilter?.nationality
     ]
   );
+  const exportMutation = useExportPeopleDirectory({
+    onSuccess: (data) => {
+      if (data.length === 0) {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.WARN,
+          title: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataTitle"
+          ]),
+          description: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataDescription"
+          ])
+        });
+        return;
+      }
 
-  const { data: exportData, isLoading: isExportLoading } =
-    useExportPeopleDirectory(exportParams, {enabled: false, retry: false});
+      exportEmployeeDirectoryToCSV(data, hasFiltersApplied(employeeDataFilter));
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectorySuccessTitle"
+        ]),
+        description: translateText(
+          [
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectorySuccessDescription"
+          ],
+          { count: data.length }
+        )
+      });
+    },
+    onError: (error) => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorTitle"
+        ]),
+        description: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorDescription"
+        ])
+      });
+    }
+  });
+
+  const handleExportDirectory = () => {
+    if (exportMutation.isPending) return;
+    exportMutation.mutate(exportParams);
+  };
 
   const { data: teamData, isLoading } = useGetAllTeams();
   const { data: jobFamilyData, isLoading: jobFamilyLoading } =
@@ -550,65 +602,6 @@ const PeopleTable: FC<Props> = ({
     return selectedPeople?.length === employeeData?.length;
   }, [selectedPeople, employeeData]);
 
-  const handleExportDirectory = async () => {
-    try {
-
-      if(isExportLoading) return;
-
-      if (!exportData || exportData.length === 0) {
-        setToastMessage({
-          open: true,
-          toastType: ToastType.WARN,
-          title: translateText([
-            "exportPeopleDirectoryToastMessages",
-            "exportPeopleDirectoryNoDataTitle"
-          ]),
-          description: translateText([
-            "exportPeopleDirectoryToastMessages",
-            "exportPeopleDirectoryNoDataDescription"
-          ])
-        });
-        return;
-      }
-
-      // Export to CSV
-      exportEmployeeDirectoryToCSV(
-        exportData,
-        hasFiltersApplied(employeeDataFilter)
-      );
-
-      // Show success message
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText([
-          "exportPeopleDirectoryToastMessages",
-          "exportPeopleDirectorySuccessTitle"
-        ]),
-        description: translateText(
-          [
-            "exportPeopleDirectoryToastMessages",
-            "exportPeopleDirectorySuccessDescription"
-          ],
-          { count: exportData.length }
-        )
-      });
-    } catch (error) {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText([
-          "exportPeopleDirectoryToastMessages",
-          "exportPeopleDirectoryErrorTitle"
-        ]),
-        description: translateText([
-          "exportPeopleDirectoryToastMessages",
-          "exportPeopleDirectoryErrorDescription"
-        ])
-      });
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -740,8 +733,7 @@ const PeopleTable: FC<Props> = ({
               isVisible: true,
               onClick: () => {
                 handleExportDirectory();
-              },
-              isLoading: isExportLoading
+              }
             },
 
             pagination: {

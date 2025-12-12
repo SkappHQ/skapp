@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
@@ -49,28 +49,28 @@ const buildQueryString = (params: ExportPeopleDirectoryType): string => {
 
   return searchParams.toString() ? `?${searchParams.toString()}` : "";
 };
+interface UseExportPeopleDirectoryOptions {
+  onSuccess?: (data: any[]) => void;
+  onError?: (error: Error) => void;
+}
 
 export const useExportPeopleDirectory = (
-  params: ExportPeopleDirectoryType,
   options?: UseExportPeopleDirectoryOptions
 ) => {
-  return useQuery({
-    queryKey: [peopleQueryKeys.EXPORT_PEOPLE_DIRECTORY, params],
-    queryFn: async () => {
-      try {
-        const response = await authFetch.get(
-          peoplesEndpoints.EXPORT_PEOPLE_DIRECTORY + buildQueryString(params)
-        );
-        if (response.data.status === "successful" && response.data.results) {
-          return response.data.results; // Return only the array
-        }
-      } catch (error) {
-        throw new Error(
-          `API error: ${error instanceof Error ? error.message : String(error)}`
-        );
+  return useMutation({
+    mutationFn: async (params: ExportPeopleDirectoryType) => {
+      const response = await authFetch.get(
+        peoplesEndpoints.EXPORT_PEOPLE_DIRECTORY + buildQueryString(params)
+      );
+
+      if (response.data.status === "successful" && response.data.results) {
+        return response.data.results;
       }
+
+      throw new Error("Export failed");
     },
-    enabled: options?.enabled ?? false, // Disable automatic query execution
-    retry: options?.retry ?? false
+    onSuccess: options?.onSuccess,
+    onError: options?.onError,
+    retry: false
   });
 };
