@@ -186,10 +186,6 @@ const getDrawerRoutes = ({
         }
       }
 
-      if (route?.name === "Projects") {
-        return null;
-      }
-
       if (route?.name === "Settings") {
         const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
 
