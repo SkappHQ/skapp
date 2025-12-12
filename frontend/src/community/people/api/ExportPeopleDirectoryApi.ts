@@ -1,10 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import { EmploymentStatusTypes } from "../types/EmployeeTypes";
 import { peoplesEndpoints } from "./utils/ApiEndpoints";
-import { peopleQueryKeys } from "./utils/QueryKeys";
 
 interface ExportPeopleDirectoryType {
   sortKey?: string;
