@@ -82,27 +82,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		String email = epGuestUserInviteRequestDto.getEmail();
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isEmpty()) {
-			User user = new User();
-			user.setEmail(email);
-			user.setLoginMethod(LoginMethod.CREDENTIALS);
-			User savedUser = userDao.save(user);
-
-			Employee employee = new Employee();
-			employee.setFirstName(EmailNameExtractor.extractName(email));
-			employee.setAccountStatus(AccountStatus.PENDING);
-			employee.setUser(savedUser);
-			employeeDao.save(employee);
-
-			EmployeeRole employeeRole = new EmployeeRole();
-			employeeRole.setEmployee(employee);
-			employeeRole.setPmRole(Role.PM_GUEST_EMPLOYEE);
-			employeeRole.setIsSuperAdmin(false);
-			employeeRoleDao.save(employeeRole);
-
-			employee.setEmployeeRole(employeeRole);
-			employeeDao.save(employee);
-
-			epPeopleService.invalidateAllUserCaches();
+			Employee employee = createAndSaveEmployee(email);
 
 			boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
 					epGuestUserInviteRequestDto.getProjects());
@@ -111,7 +91,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
 			}
 
-			String invitationUrl = buildInvitationUrl(user);
+			String invitationUrl = buildInvitationUrl(employee.getUser());
 			String adminName = userService.getCurrentUser().getEmployee().getFirstName();
 
 			String projectNames = epGuestUserInviteRequestDto.getProjects()
@@ -126,6 +106,33 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		else {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
+	}
+
+	private Employee createAndSaveEmployee(String email) {
+		User user = new User();
+		Employee employee = new Employee();
+
+		user.setEmail(email);
+		user.setLoginMethod(LoginMethod.CREDENTIALS);
+		User savedUser = userDao.save(user);
+
+		employee.setFirstName(EmailNameExtractor.extractName(email));
+		employee.setAccountStatus(AccountStatus.PENDING);
+		employee.setUser(savedUser);
+		savedUser.setEmployee(employee);
+
+		EmployeeRole employeeRole = new EmployeeRole();
+		employeeRole.setEmployee(employee);
+		employee.setEmployeeRole(employeeRole);
+		employeeRole.setPmRole(Role.PM_GUEST_EMPLOYEE);
+		employeeRole.setIsSuperAdmin(false);
+		employeeRoleDao.save(employeeRole);
+
+		employeeDao.save(employee);
+
+		epPeopleService.invalidateAllUserCaches();
+
+		return employee;
 	}
 
 	@Override

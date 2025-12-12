@@ -207,7 +207,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 				return Collections.emptyList();
 			}
 
-			if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalLoadGuestUserProjectsToCache")) {
+			if (responseJsonNode.has("data")
+					&& responseJsonNode.get("data").has("internalLoadGuestUserProjectsToCache")) {
 				JsonNode projectsArray = responseJsonNode.get("data").get("internalLoadGuestUserProjectsToCache");
 
 				if (projectsArray != null && projectsArray.isArray()) {
