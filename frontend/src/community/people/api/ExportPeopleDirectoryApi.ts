@@ -21,6 +21,11 @@ interface ExportPeopleDirectoryType {
   nationality?: string[];
 }
 
+interface UseExportPeopleDirectoryOptions {
+  enabled?: boolean;
+  retry?: boolean | number;
+}
+
 // Simplified query string builder
 const buildQueryString = (params: ExportPeopleDirectoryType): string => {
   const searchParams = new URLSearchParams();
@@ -45,20 +50,27 @@ const buildQueryString = (params: ExportPeopleDirectoryType): string => {
   return searchParams.toString() ? `?${searchParams.toString()}` : "";
 };
 
-export const useExportPeopleDirectory = (params: ExportPeopleDirectoryType) => {
+export const useExportPeopleDirectory = (
+  params: ExportPeopleDirectoryType,
+  options?: UseExportPeopleDirectoryOptions
+) => {
   return useQuery({
     queryKey: [peopleQueryKeys.EXPORT_PEOPLE_DIRECTORY, params],
     queryFn: async () => {
-      const response = await authFetch.get(
-        peoplesEndpoints.EXPORT_PEOPLE_DIRECTORY + buildQueryString(params)
-      );
-      if (response.data.status === "successful" && response.data.results) {
-        return response.data.results; // Return only the array
-      } else {
+      try {
+        const response = await authFetch.get(
+          peoplesEndpoints.EXPORT_PEOPLE_DIRECTORY + buildQueryString(params)
+        );
+        if (response.data.status === "successful" && response.data.results) {
+          return response.data.results; // Return only the array
+        }
+      } catch (error) {
         throw new Error(
-          `API error: ${response.data.status || "Unknown error"}`
+          `API error: ${error instanceof Error ? error.message : String(error)}`
         );
       }
-    }
+    },
+    enabled: options?.enabled ?? false, // Disable automatic query execution
+    retry: options?.retry ?? false
   });
 };

@@ -252,6 +252,8 @@ export const exportEmployeeDirectoryToCSV = (
     const defaultFilename = `employee_directory_${name}_${now.toISOString().split("T")[0]}_${hours}-${minutes}_${timeZone}.csv`;
     downloadCSV(csvContent, defaultFilename);
   } catch (error) {
-    throw new Error("Failed to export employee directory");
+    throw new Error(
+      `Failed to export employee directory: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 };

@@ -164,7 +164,7 @@ const PeopleTable: FC<Props> = ({
   );
 
   const { data: exportData, isLoading: isExportLoading } =
-    useExportPeopleDirectory(exportParams);
+    useExportPeopleDirectory(exportParams, {enabled: false, retry: false});
 
   const { data: teamData, isLoading } = useGetAllTeams();
   const { data: jobFamilyData, isLoading: jobFamilyLoading } =
@@ -552,6 +552,9 @@ const PeopleTable: FC<Props> = ({
 
   const handleExportDirectory = async () => {
     try {
+
+      if(isExportLoading) return;
+
       if (!exportData || exportData.length === 0) {
         setToastMessage({
           open: true,
