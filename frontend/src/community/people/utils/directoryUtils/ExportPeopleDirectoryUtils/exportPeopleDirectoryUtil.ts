@@ -219,22 +219,22 @@ export const convertEmployeeDataToCSV = (employees: EmployeeData[]): string => {
   return csvContent;
 };
 
-export const downloadCSV = (
-  csvContent: string,
-  filename: string = "employee_directory.csv"
-): void => {
+export const downloadCSV = (csvContent: string, filename: string): void => {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
 
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   }
 };
 
@@ -246,7 +246,10 @@ export const exportEmployeeDirectoryToCSV = (
     const name = hasFilters ? "Filtered" : "AllActive";
     const csvContent = convertEmployeeDataToCSV(employees);
     const now = new Date();
-    const defaultFilename = `employee_directory_${name}_${now.toISOString().split("T")[0]}_${now.toString().split(" ")[4].replace(/:/g, "-")}_${now.toString().split(" ")[5]}.csv`;
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const timeZone = now.toTimeString().split(" ")[1];
+    const defaultFilename = `employee_directory_${name}_${now.toISOString().split("T")[0]}_${hours}-${minutes}_${timeZone}.csv`;
     downloadCSV(csvContent, defaultFilename);
   } catch (error) {
     throw new Error("Failed to export employee directory");

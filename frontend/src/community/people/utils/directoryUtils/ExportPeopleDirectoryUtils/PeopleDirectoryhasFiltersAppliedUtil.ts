@@ -9,6 +9,9 @@ export const hasFiltersApplied = (
     if (Array.isArray(filterValue)) {
       return filterValue.length > 0;
     }
-    return Boolean(filterValue); 
+    if (typeof filterValue === "number") {
+      return filterValue > 0;
+    }
+    return Boolean(filterValue);
   });
 };
