@@ -127,30 +127,44 @@ const PeopleTable: FC<Props> = ({
     if (!value) return [];
     return Array.isArray(value) ? value : [value];
   };
-
-  const buildExportParams = () => ({
-    sortKey: employeeDataParams?.sortKey || "NAME",
-    sortOrder: employeeDataParams?.sortOrder || "ASC",
-    searchKeyword: employeeDataParams?.searchKeyword?.trim(),
-    isExport: true,
-    accountStatus: convertToArray(employeeDataParams?.accountStatus),
-    employmentAllocations: convertToArray(
-      employeeDataFilter?.employmentAllocations
-    ),
-    permissions: convertToArray(employeeDataFilter?.permission),
-    team: convertToArray(employeeDataFilter?.team).map((item) =>
-      typeof item === "object" ? item.id : item
-    ),
-    role: convertToArray(employeeDataFilter?.role).map((item) =>
-      typeof item === "object" ? item.id : item
-    ),
-    employmentTypes: convertToArray(employeeDataFilter?.employmentTypes),
-    gender: convertToArray(employeeDataFilter?.gender),
-    nationality: convertToArray(employeeDataFilter?.nationality)
-  });
+  const exportParams = useMemo(
+    () => ({
+      sortKey: employeeDataParams?.sortKey || "NAME",
+      sortOrder: employeeDataParams?.sortOrder || "ASC",
+      searchKeyword: employeeDataParams?.searchKeyword?.trim(),
+      isExport: true,
+      accountStatus: convertToArray(employeeDataParams?.accountStatus),
+      employmentAllocations: convertToArray(
+        employeeDataFilter?.employmentAllocations
+      ),
+      permissions: convertToArray(employeeDataFilter?.permission),
+      team: convertToArray(employeeDataFilter?.team).map((item) =>
+        typeof item === "object" ? item.id : item
+      ),
+      role: convertToArray(employeeDataFilter?.role).map((item) =>
+        typeof item === "object" ? item.id : item
+      ),
+      employmentTypes: convertToArray(employeeDataFilter?.employmentTypes),
+      gender: convertToArray(employeeDataFilter?.gender),
+      nationality: convertToArray(employeeDataFilter?.nationality)
+    }),
+    [
+      employeeDataParams?.sortKey,
+      employeeDataParams?.sortOrder,
+      employeeDataParams?.searchKeyword,
+      employeeDataParams?.accountStatus,
+      employeeDataFilter?.employmentAllocations,
+      employeeDataFilter?.permission,
+      employeeDataFilter?.team,
+      employeeDataFilter?.role,
+      employeeDataFilter?.employmentTypes,
+      employeeDataFilter?.gender,
+      employeeDataFilter?.nationality
+    ]
+  );
 
   const { data: exportData, isLoading: isExportLoading } =
-    useExportPeopleDirectory(buildExportParams());
+    useExportPeopleDirectory(exportParams);
 
   const { data: teamData, isLoading } = useGetAllTeams();
   const { data: jobFamilyData, isLoading: jobFamilyLoading } =

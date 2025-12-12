@@ -1,88 +1,213 @@
-export const convertEmployeeDataToCSV = (employees: any[]): string => {
+interface EmployeePersonalInfo {
+  birthDate?: string;
+  bloodGroup?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+}
+
+interface TeamResponse {
+  teamId: number;
+  teamName: string;
+}
+
+interface Manager {
+  firstName: string;
+  lastName: string;
+  employeeId?: string;
+}
+
+interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phone: string;
+}
+
+interface EmployeeData {
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  personalEmail?: string;
+  phone?: string;
+  designation?: string;
+  jobTitle?: string;
+  employmentType?: string;
+  jobFamily?: string;
+  joinDate?: string;
+  timeZone?: string;
+  workHourCapacity?: number;
+  identificationNo?: string;
+  gender?: string;
+  address?: string;
+  country?: string;
+  isActive: boolean;
+  employeePersonalInfoDto?: EmployeePersonalInfo;
+  teamResponseDto?: TeamResponse[];
+  managers?: Manager[];
+  employeeEmergencyDto?: EmergencyContact[];
+}
+
+const CSV_FIELD_MAPPING = [
+  {
+    header: "Employee ID",
+    accessor: (emp: EmployeeData) => emp.employeeId || ""
+  },
+  {
+    header: "First Name",
+    accessor: (emp: EmployeeData) => emp.firstName || ""
+  },
+  {
+    header: "Last Name",
+    accessor: (emp: EmployeeData) => emp.lastName || ""
+  },
+  {
+    header: "Work Email",
+    accessor: (emp: EmployeeData) => emp.email || ""
+  },
+  {
+    header: "Personal Email",
+    accessor: (emp: EmployeeData) => emp.personalEmail || ""
+  },
+  {
+    header: "Phone",
+    accessor: (emp: EmployeeData) => emp.phone || ""
+  },
+  {
+    header: "Designation",
+    accessor: (emp: EmployeeData) => emp.designation || ""
+  },
+  {
+    header: "Job Title",
+    accessor: (emp: EmployeeData) => emp.jobTitle || ""
+  },
+  {
+    header: "Employment Type",
+    accessor: (emp: EmployeeData) => emp.employmentType || ""
+  },
+  {
+    header: "Job Family",
+    accessor: (emp: EmployeeData) => emp.jobFamily || ""
+  },
+  {
+    header: "Join Date",
+    accessor: (emp: EmployeeData) => emp.joinDate || ""
+  },
+  {
+    header: "Time Zone",
+    accessor: (emp: EmployeeData) => emp.timeZone || ""
+  },
+  {
+    header: "Work Hour Capacity",
+    accessor: (emp: EmployeeData) => emp.workHourCapacity?.toString() || ""
+  },
+  {
+    header: "Identification No",
+    accessor: (emp: EmployeeData) => emp.identificationNo || ""
+  },
+  {
+    header: "Gender",
+    accessor: (emp: EmployeeData) => emp.gender || ""
+  },
+  {
+    header: "Birth Date",
+    accessor: (emp: EmployeeData) =>
+      emp.employeePersonalInfoDto?.birthDate || ""
+  },
+  {
+    header: "Blood Group",
+    accessor: (emp: EmployeeData) =>
+      emp.employeePersonalInfoDto?.bloodGroup || ""
+  },
+  {
+    header: "Nationality",
+    accessor: (emp: EmployeeData) =>
+      emp.employeePersonalInfoDto?.nationality || ""
+  },
+  {
+    header: "Marital Status",
+    accessor: (emp: EmployeeData) =>
+      emp.employeePersonalInfoDto?.maritalStatus || ""
+  },
+  {
+    header: "Address",
+    accessor: (emp: EmployeeData) => emp.address || ""
+  },
+  {
+    header: "City",
+    accessor: (emp: EmployeeData) => emp.employeePersonalInfoDto?.city || ""
+  },
+  {
+    header: "State",
+    accessor: (emp: EmployeeData) => emp.employeePersonalInfoDto?.state || ""
+  },
+  {
+    header: "Country",
+    accessor: (emp: EmployeeData) => emp.country || ""
+  },
+  {
+    header: "Postal Code",
+    accessor: (emp: EmployeeData) =>
+      emp.employeePersonalInfoDto?.postalCode || ""
+  },
+  {
+    header: "Teams",
+    accessor: (emp: EmployeeData) =>
+      emp.teamResponseDto
+        ?.map((team: TeamResponse) => team.teamName)
+        .join("; ") || ""
+  },
+  {
+    header: "Managers",
+    accessor: (emp: EmployeeData) =>
+      emp.managers
+        ?.map((manager: Manager) => `${manager.firstName} ${manager.lastName}`)
+        .join("; ") || ""
+  },
+  {
+    header: "Emergency Contacts",
+    accessor: (emp: EmployeeData) =>
+      emp.employeeEmergencyDto
+        ?.map(
+          (contact: EmergencyContact) =>
+            `${contact.name} (${contact.relationship}) - ${contact.phone}`
+        )
+        .join("; ") || ""
+  },
+  {
+    header: "Is Active",
+    accessor: (emp: EmployeeData) => (emp.isActive ? "Yes" : "No")
+  }
+] as const;
+
+const escapeCsvField = (
+  field: string | number | boolean | null | undefined
+): string => {
+  if (field === null || field === undefined) {
+    return '""';
+  }
+
+  const stringValue = String(field).trim();
+
+  const escapedValue = stringValue.replace(/"/g, '""');
+
+  return `"${escapedValue}"`;
+};
+
+export const convertEmployeeDataToCSV = (employees: EmployeeData[]): string => {
   if (!employees || employees.length === 0) {
     return "";
   }
 
-  // Define CSV headers
-  const headers = [
-    "Employee ID",
-    "First Name",
-    "Last Name",
-    "Work Email",
-    "Personal Email",
-    "Phone",
-    "Designation",
-    "Job Title",
-    "Employment Type",
-    "Job Family",
-    "Join Date",
-    "Time Zone",
-    "Work Hour Capacity",
-    "Identification No",
-    "Gender",
-    "Birth Date",
-    "Blood Group",
-    "Nationality",
-    "Marital Status",
-    "Address",
-    "City",
-    "State",
-    "Country",
-    "Postal Code",
-    "Teams",
-    "Managers",
-    "Emergency Contacts",
-    "Is Active"
-  ];
+  const headers = CSV_FIELD_MAPPING.map((field) => field.header);
 
-  // Convert data to CSV rows
   const csvRows = employees.map((employee) => {
-    const personalInfo = employee.employeePersonalInfoDto || {};
-    const teams =
-      employee.teamResponseDto?.map((team: any) => team.teamName).join("; ") ||
-      "";
-    const managers =
-      employee.managers
-        ?.map((manager: any) => `${manager.firstName} ${manager.lastName}`)
-        .join("; ") || "";
-    const emergencyContacts =
-      employee.employeeEmergencyDto
-        ?.map(
-          (contact: any) =>
-            `${contact.name} (${contact.relationship}) - ${contact.phone}`
-        )
-        .join("; ") || "";
-
-    return [
-      employee.employeeId || "",
-      employee.firstName || "",
-      employee.lastName || "",
-      employee.email || "",
-      employee.personalEmail || "",
-      employee.phone || "",
-      employee.designation || "",
-      employee.jobTitle || "",
-      employee.employmentType || "",
-      employee.jobFamily || "",
-      employee.joinDate || "",
-      employee.timeZone || "",
-      employee.workHourCapacity || "",
-      employee.identificationNo || "",
-      employee.gender || "",
-      personalInfo.birthDate || "",
-      personalInfo.bloodGroup || "",
-      personalInfo.nationality || "",
-      personalInfo.maritalStatus || "",
-      employee.address || "",
-      personalInfo.city || "",
-      personalInfo.state || "",
-      employee.country || "",
-      personalInfo.postalCode || "",
-      teams,
-      managers,
-      emergencyContacts,
-      employee.isActive ? "Yes" : "No"
-    ].map((field) => `"${String(field).replace(/"/g, '""')}"`); // Escape quotes and wrap in quotes
+    return CSV_FIELD_MAPPING.map((field) => {
+      const value = field.accessor(employee);
+      return escapeCsvField(value);
+    });
   });
 
   // Combine headers and rows
@@ -114,7 +239,7 @@ export const downloadCSV = (
 };
 
 export const exportEmployeeDirectoryToCSV = (
-  employees: any[],
+  employees: EmployeeData[],
   hasFilters?: boolean
 ): void => {
   try {
