@@ -1,8 +1,10 @@
 package com.skapp.enterprise.invoice.service;
 
+import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
+import com.skapp.enterprise.invoice.payload.request.CustomerDocumentRenameRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerBillingDetailsDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 
@@ -18,8 +20,10 @@ public interface CustomerValidationService {
 	void validateCustomerContactDetails(CustomerContactDetailsDto customerContactDetailsDto,
 			CustomerContact customerContact);
 
-	void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto);
+	void validateCustomerDocumentCreateRequestDto(CustomerDocumentCreateRequestDto requestDto, Customer customer);
 
 	void validateCustomerDocumentFilterDto(CustomerDocumentFilterDto filterDto);
+
+	void validateCustomerDocumentRenameRequestDto(Long customerId, Long documentId, String documentName);
 
 }

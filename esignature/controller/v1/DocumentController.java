@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -132,6 +133,25 @@ public class DocumentController {
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getImageListFromPdfDocument(@PathVariable Long id) {
 		ResponseEntityDto response = documentService.generateImageListFromPdf(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Meta data retrieval of PDF to image list",
+			description = "This endpoint returns the meta data of PDF document conversion into a list of images.")
+	@GetMapping(value = "/pdf-image/metadata/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getMetadataFromPdfDocument(@PathVariable Long id) {
+		ResponseEntityDto response = documentService.getImageListMetadataFromPdf(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieval of PDF to image Page by page",
+			description = "This endpoint converts a PDF document page into an image.")
+	@GetMapping(value = "/pdf-image", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getImageListFromPdfDocumentPage(
+			@Valid DocumentPdfConvertFilterRequestDto documentPdfConvertFilterRequestDto) {
+		ResponseEntityDto response = documentService.generateImageListFromPdfPage(documentPdfConvertFilterRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

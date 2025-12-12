@@ -6,7 +6,9 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
+import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlValidatedRequestDto;
 import com.skapp.enterprise.common.payload.response.AmazonS3SignedUrlResponseDto;
+import com.skapp.enterprise.common.service.AmazonS3FileValidationService;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.type.AmazonS3ActionType;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
@@ -45,6 +47,8 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	private final AmazonS3FileValidationService amazonS3FileValidationService;
 
 	@Override
 	public InputStream downloadFile(String bucketName, String objectKey) {
@@ -171,6 +175,20 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED,
 					new String[] { e.getMessage() });
 		}
+	}
+
+	@Override
+	public ResponseEntityDto getSignedUrlWithFileValidations(
+			AmazonS3SignedUrlValidatedRequestDto amazonS3SignedUrlValidatedRequestDto) {
+
+		amazonS3FileValidationService.validateS3FileUpload(amazonS3SignedUrlValidatedRequestDto);
+
+		AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto = new AmazonS3SignedUrlRequestDto();
+		amazonS3SignedUrlRequestDto.setFolderPath(amazonS3SignedUrlValidatedRequestDto.getFolderPath());
+		amazonS3SignedUrlRequestDto.setFileType(amazonS3SignedUrlValidatedRequestDto.getFileType());
+		amazonS3SignedUrlRequestDto.setAction(amazonS3SignedUrlValidatedRequestDto.getAction());
+
+		return getSignedUrl(amazonS3SignedUrlRequestDto);
 	}
 
 	@Override
