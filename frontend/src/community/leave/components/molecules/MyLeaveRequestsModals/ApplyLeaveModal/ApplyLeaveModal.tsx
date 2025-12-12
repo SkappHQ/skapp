@@ -50,8 +50,7 @@ import {
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
 import {
-  useIsGoogleCalendarConnected,
-  useIsMicrosoftCalendarConnected
+  useIsGoogleCalendarConnected // useIsMicrosoftCalendarConnected
 } from "~enterprise/common/api/CalendarApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
@@ -144,7 +143,7 @@ const ApplyLeaveModal = () => {
 
   const { data: isGoogleConnected } = useIsGoogleCalendarConnected();
 
-  const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
+  // const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
 
   const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
 
@@ -156,7 +155,7 @@ const ApplyLeaveModal = () => {
       setToastMessage,
       translateText
     });
-    if (isEnterprise && (isGoogleConnected || isMicrosoftConnected)) {
+    if (isEnterprise && isGoogleConnected) {
       setLeaveRequestId(data.leaveRequestId);
       setMyLeaveRequestModalType(MyRequestModalEnums.MARK_OUT_OF_OFFICE);
     } else {

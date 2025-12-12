@@ -36,7 +36,7 @@ import {
 import { IconName } from "~community/common/types/IconTypes";
 import { AvatarPropTypes } from "~community/common/types/MoleculeTypes";
 import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
-import { useExportPeopleDirectory } from "~community/people/api/ExportPeopelDirectoryApi";
+import { useExportPeopleDirectory } from "~community/people/api/ExportPeopleDirectoryApi";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import {
   useGetUserPersonalDetails,
@@ -57,7 +57,7 @@ import {
   refactorTeamListData
 } from "~community/people/utils/PeopleDirectoryUtils";
 import { generatePeopleTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
-import { hasFiltersApplied } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/PeopelDirectoryhasFiltersAppliedUtil";
+import { hasFiltersApplied } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/PeopleDirectoryhasFiltersAppliedUtil";
 import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/exportPeopleDirectoryUtil";
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
@@ -123,7 +123,7 @@ const PeopleTable: FC<Props> = ({
     resetPeopleSlice
   } = usePeopleStore((state) => state);
 
-  const ensureArray = <T,>(value: T | T[] | undefined | null): T[] => {
+  const convertToArray = <T,>(value: T | T[] | undefined | null): T[] => {
     if (!value) return [];
     return Array.isArray(value) ? value : [value];
   };
@@ -133,20 +133,20 @@ const PeopleTable: FC<Props> = ({
     sortOrder: employeeDataParams?.sortOrder || "ASC",
     searchKeyword: employeeDataParams?.searchKeyword?.trim(),
     isExport: true,
-    accountStatus: ensureArray(employeeDataParams?.accountStatus),
-    employmentAllocations: ensureArray(
+    accountStatus: convertToArray(employeeDataParams?.accountStatus),
+    employmentAllocations: convertToArray(
       employeeDataFilter?.employmentAllocations
     ),
-    permissions: ensureArray(employeeDataFilter?.permission),
-    team: ensureArray(employeeDataFilter?.team).map((item) =>
+    permissions: convertToArray(employeeDataFilter?.permission),
+    team: convertToArray(employeeDataFilter?.team).map((item) =>
       typeof item === "object" ? item.id : item
     ),
-    role: ensureArray(employeeDataFilter?.role).map((item) =>
+    role: convertToArray(employeeDataFilter?.role).map((item) =>
       typeof item === "object" ? item.id : item
     ),
-    employmentTypes: ensureArray(employeeDataFilter?.employmentTypes),
-    gender: ensureArray(employeeDataFilter?.gender),
-    nationality: ensureArray(employeeDataFilter?.nationality)
+    employmentTypes: convertToArray(employeeDataFilter?.employmentTypes),
+    gender: convertToArray(employeeDataFilter?.gender),
+    nationality: convertToArray(employeeDataFilter?.nationality)
   });
 
   const { data: exportData, isLoading: isExportLoading } =
@@ -719,11 +719,12 @@ const PeopleTable: FC<Props> = ({
           }}
           tableFoot={{
             exportBtn: {
-              label: translateText(["exportPeopeleDirectory"]),
+              label: translateText(["exportPeopleDirectory"]),
               isVisible: true,
               onClick: () => {
                 handleExportDirectory();
-              }
+              },
+              isLoading: isExportLoading
             },
 
             pagination: {
