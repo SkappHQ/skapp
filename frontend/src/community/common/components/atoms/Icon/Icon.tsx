@@ -95,6 +95,7 @@ import PendingStatusIcon from "~community/common/assets/Icons/PendingStatusIcon"
 import PeopleIcon from "~community/common/assets/Icons/PeopleIcon";
 import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import PeopleRemoveIcon from "~community/common/assets/Icons/PeopleRemoveIcon";
+import PercentageIcon from "~community/common/assets/Icons/PercentageIcon";
 import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
@@ -147,7 +148,6 @@ import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
 import MasterCardIcon from "~enterprise/settings/assets/Icons/MasterCardIcon";
 import VisaCardIcon from "~enterprise/settings/assets/Icons/VisaCardIcon";
-
 
 interface Props extends IconProps {
   name: IconName;
@@ -305,6 +305,7 @@ export const IconMapping: Partial<
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
   [IconName.CAMERA_ICON]: CameraIcon,
   [IconName.OUTLOOK_ICON]: OutlookIcon,
+  [IconName.PERCENTAGE_ICON]: PercentageIcon
   // Add more icons here as needed
 };
 

@@ -21,6 +21,7 @@ import { useGetOrganization } from "~community/common/api/OrganizationCreateApi"
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import {
@@ -181,7 +182,7 @@ const Drawer = (): JSX.Element => {
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
   };
-  
+
   if (orgLoading) return <FullScreenLoader />;
 
   return (
@@ -211,6 +212,15 @@ const Drawer = (): JSX.Element => {
               height={logoUrl ? 0 : 77}
               style={classes.logoImage}
               data-testid={appDrawerTestId.organizationLogo}
+              onClick={() => router.push(ROUTES.DASHBOARD.BASE)}
+              onKeyDown={(e) => {
+                if (shouldActivateLink(e.key)) {
+                  e.preventDefault();
+                  router.push(ROUTES.DASHBOARD.BASE);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             />
           )}
         </Box>
