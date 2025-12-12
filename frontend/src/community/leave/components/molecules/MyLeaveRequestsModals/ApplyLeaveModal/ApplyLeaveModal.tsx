@@ -143,7 +143,7 @@ const ApplyLeaveModal = () => {
 
   const { data: isGoogleConnected } = useIsGoogleCalendarConnected();
 
-  // const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
+  const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
 
   const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
 
