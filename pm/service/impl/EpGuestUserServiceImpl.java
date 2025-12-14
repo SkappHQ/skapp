@@ -31,8 +31,8 @@ import com.skapp.enterprise.people.service.EpPeopleService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
-import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
+import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -144,8 +144,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	public List<EpGuestUserResponseDto> getAllGuestUsers() {
-		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers();
+	public List<EpGuestUserResponseDto> getAllGuestUsers(String email, AccountStatus status, List<Long> projectIds) {
+		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers(email, status);
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
 			.getAllGuestUsersWithProjects();
@@ -156,6 +156,11 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 					Collections.emptyList());
 			userDto.setProjects(userProjects);
 			return userDto;
+		}).filter(userDto -> {
+			if (projectIds == null || projectIds.isEmpty()) {
+				return true;
+			}
+			return userDto.getProjects().stream().anyMatch(project -> projectIds.contains(project.getProjectId()));
 		}).toList();
 	}
 

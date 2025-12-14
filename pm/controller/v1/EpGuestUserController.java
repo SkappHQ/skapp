@@ -1,6 +1,7 @@
 package com.skapp.enterprise.pm.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
@@ -47,8 +48,10 @@ public class EpGuestUserController {
 
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
-	public ResponseEntity<List<EpGuestUserResponseDto>> getAllGuestUsers() {
-		List<EpGuestUserResponseDto> response = epGuestUserService.getAllGuestUsers();
+	public ResponseEntity<List<EpGuestUserResponseDto>> getAllGuestUsers(@RequestParam(required = false) String email,
+			@RequestParam(required = false) AccountStatus status,
+			@RequestParam(required = false) List<Long> projectIds) {
+		List<EpGuestUserResponseDto> response = epGuestUserService.getAllGuestUsers(email, status, projectIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

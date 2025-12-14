@@ -2,6 +2,7 @@ package com.skapp.enterprise.pm.service;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
@@ -17,7 +18,7 @@ public interface EpGuestUserService {
 
 	User validateGuestUserEmail(String email);
 
-	List<EpGuestUserResponseDto> getAllGuestUsers();
+	List<EpGuestUserResponseDto> getAllGuestUsers(String email, AccountStatus status, List<Long> projectIds);
 
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
