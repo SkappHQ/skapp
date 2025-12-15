@@ -44,7 +44,7 @@ const LeaveEntitlementTable = ({
     leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
     setLeaveEntitlementTableSelectedYear:
       state.setLeaveEntitlementTableSelectedYear,
-    page: state.page,
+    page: state.page - 1,
     setPage: state.setPage,
     setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
   }));
@@ -183,7 +183,7 @@ const LeaveEntitlementTable = ({
       tableFoot={{
         pagination: {
           isEnabled: tableData ? tableData.totalPages > 1 : false,
-          currentPage: page-1,
+          currentPage: page,
           onChange: (_event: ChangeEvent<unknown>, value: number) => {
             setPage(value);
           },
