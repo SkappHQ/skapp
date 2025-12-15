@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
@@ -56,6 +56,41 @@ const modulePermissions: Record<string, RoleTypes[]> = {
     AdminTypes.PEOPLE_ADMIN,
     ManagerTypes.PEOPLE_MANAGER
   ]
+};
+
+// Add this before your Dashboard component
+const LeaveYearSelector: FC<{
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
+}> = ({ selectedYear, setSelectedYear }) => {
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveAllocation"
+  );
+
+  return (
+    <div className="flex mb-2">
+      <RoundedSelect
+        id="leave-allocations-year-dropdown"
+        value={selectedYear}
+        options={getCurrentAndNextYear()}
+        onChange={(event) => setSelectedYear(event?.target.value)}
+        renderValue={(selectedValue: string) => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+            >
+              {selectedValue}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["selectYear"])
+        }}
+      />
+    </div>
+  );
 };
 
 const Dashboard: NextPage = () => {
@@ -196,26 +231,10 @@ const Dashboard: NextPage = () => {
         isDividerVisible={!(data?.user && visibleTabs.length === 0)}
         customRightContent={
           showYearSelector ? (
-            <div className="flex mb-2">
-              <RoundedSelect
-                id="leave-allocations-year-dropdown"
-                value={selectedYear}
-                options={getCurrentAndNextYear()}
-                onChange={(event) => setSelectedYear(event?.target.value)}
-                renderValue={(selectedValue: string) => {
-                  return (
-                    <Typography
-                      aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
-                    >
-                      {selectedValue}
-                    </Typography>
-                  );
-                }}
-                accessibility={{
-                  label: translateAria(["selectYear"])
-                }}
-              />
-            </div>
+            <LeaveYearSelector
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+            />
           ) : (
             <></>
           )
