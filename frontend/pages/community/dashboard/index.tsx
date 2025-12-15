@@ -1,9 +1,12 @@
+import { Typography } from "@mui/material";
+import { DateTime } from "luxon";
 import { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TabsContainer from "~community/common/components/molecules/Tabs/Tabs";
 import VersionUpgradeModal from "~community/common/components/molecules/VersionUpgradeModal/VersionUpgradeModal";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -22,9 +25,12 @@ import {
   ManagerTypes
 } from "~community/common/types/AuthTypes";
 import { ModuleTypes } from "~community/common/types/CommonTypes";
+import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
+import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import LeaveAllocationSummary from "~community/leave/components/organisms/LeaveDashboard/LeaveAllocationSummary";
 import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard/LeaveDashboard";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
+import { useLeaveStore } from "~community/leave/store/store";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
 import APICTADashboard from "~enterprise/APICTA/dashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
@@ -35,6 +41,58 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 import { tempShouldUseCustomDashboard } from "~enterprise/common/utils/commonUtil";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
+
+const modulePermissions: Record<string, RoleTypes[]> = {
+  TIME: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.ATTENDANCE_ADMIN,
+    ManagerTypes.ATTENDANCE_MANAGER
+  ],
+  LEAVE: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.LEAVE_ADMIN,
+    ManagerTypes.LEAVE_MANAGER
+  ],
+  PEOPLE: [
+    AdminTypes.SUPER_ADMIN,
+    AdminTypes.PEOPLE_ADMIN,
+    ManagerTypes.PEOPLE_MANAGER
+  ]
+};
+
+const LeaveYearSelector: FC<{
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
+}> = ({ selectedYear, setSelectedYear }) => {
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveAllocation"
+  );
+
+  return (
+    <div className="flex mb-2">
+      <RoundedSelect
+        id="leave-allocations-year-dropdown"
+        value={selectedYear}
+        options={getCurrentAndNextYear()}
+        onChange={(event) => setSelectedYear(event?.target.value)}
+        renderValue={(selectedValue: string) => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+            >
+              {selectedValue}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["selectYear"])
+        }}
+      />
+    </div>
+  );
+};
 
 const Dashboard: NextPage = () => {
   const { query } = useRouter();
@@ -90,6 +148,11 @@ const Dashboard: NextPage = () => {
   }, [query]);
 
   const translateText = useTranslator("dashboard");
+  const translateAria = useTranslator(
+    "leaveAria",
+    "myRequests",
+    "myLeaveAllocation"
+  );
   const { data } = useSession();
 
   // Check if current tenant should use custom dashboard
@@ -98,23 +161,6 @@ const Dashboard: NextPage = () => {
   );
 
   // Permissions map for modules
-  const modulePermissions: Record<string, RoleTypes[]> = {
-    TIME: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.ATTENDANCE_ADMIN,
-      ManagerTypes.ATTENDANCE_MANAGER
-    ],
-    LEAVE: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.LEAVE_ADMIN,
-      ManagerTypes.LEAVE_MANAGER
-    ],
-    PEOPLE: [
-      AdminTypes.SUPER_ADMIN,
-      AdminTypes.PEOPLE_ADMIN,
-      ManagerTypes.PEOPLE_MANAGER
-    ]
-  };
 
   // Define tabs
   const tabs = [
@@ -157,6 +203,17 @@ const Dashboard: NextPage = () => {
 
   const userRoles: RoleTypes[] = (data?.user?.roles || []) as RoleTypes[];
   const visibleTabs = getVisibleTabs(userRoles);
+  const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
+
+  const currentDate = DateTime.now();
+  const nextYear = currentDate.plus({ years: 1 }).year;
+  const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
+    nextYear.toString()
+  );
+
+  const isLeaveOnlyView = data?.user && visibleTabs.length === 0;
+  const showYearSelector =
+    isLeaveOnlyView && isEntitlementAvailableNextYear?.length > 0;
 
   useGoogleAnalyticsEvent({
     onMountEventType:
@@ -193,12 +250,24 @@ const Dashboard: NextPage = () => {
     <ContentLayout
       pageHead={translateText(["pageHead"])}
       title={
-        data?.user && visibleTabs.length === 0 ? "" : translateText(["title"])
+        data?.user && visibleTabs.length === 0
+          ? translateText(["myLeaveAllocations"])
+          : translateText(["title"])
       }
       isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+      customRightContent={
+        showYearSelector ? (
+          <LeaveYearSelector
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+          />
+        ) : (
+          <></>
+        )
+      }
     >
       <>
-        {data?.user && visibleTabs.length === 0 ? (
+        {isLeaveOnlyView ? (
           <div>
             <LeaveAllocationSummary />
           </div>
