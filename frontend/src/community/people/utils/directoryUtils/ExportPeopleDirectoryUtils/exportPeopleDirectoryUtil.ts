@@ -25,6 +25,16 @@ interface EmergencyContact {
   phone: string;
 }
 
+interface jobTitle {
+  jobTitleId: number;
+  name: string;
+}
+
+interface JobFamily {
+  title: string;
+  name: string;
+}
+
 interface EmployeeData {
   employeeId: string;
   firstName: string;
@@ -33,9 +43,9 @@ interface EmployeeData {
   personalEmail?: string;
   phone?: string;
   designation?: string;
-  jobTitle?: string;
+  jobTitle?: jobTitle;
   employmentType?: string;
-  jobFamily?: string;
+  jobFamily?: JobFamily;
   joinDate?: string;
   timeZone?: string;
   workHourCapacity?: number;
@@ -81,7 +91,7 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Job Title",
-    accessor: (emp: EmployeeData) => emp.jobTitle || ""
+    accessor: (emp: EmployeeData) => emp?.jobTitle?.name || ""
   },
   {
     header: "Employment Type",
@@ -89,7 +99,7 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Job Family",
-    accessor: (emp: EmployeeData) => emp.jobFamily || ""
+    accessor: (emp: EmployeeData) => emp?.jobFamily?.name || ""
   },
   {
     header: "Join Date",
