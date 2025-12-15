@@ -58,7 +58,6 @@ const modulePermissions: Record<string, RoleTypes[]> = {
   ]
 };
 
-// Add this before your Dashboard component
 const LeaveYearSelector: FC<{
   selectedYear: string;
   setSelectedYear: (year: string) => void;
