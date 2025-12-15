@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum EPCommonMessageConstant implements MessageConstant {
 
 	EP_COMMON_SUCCESS_DISCONNECT_GOOGLE_CALENDAR("ep.common.success.disconnect.google.calendar"),
+	EP_COMMON_SUCCESS_DISCONNECT_MICROSOFT_CALENDAR("ep.common.success.disconnect.microsoft.calendar"),
 
 	EP_COMMON_ERROR_INVALID_LOGIN_METHOD("ep.common.error.invalid-login-method"),
 	EP_COMMON_ERROR_TENANT_NOT_PRESENT("ep.common.error.tenant-not-present"),
@@ -79,12 +80,17 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_MICROSOFT_STATE_MISMATCH("ep.common.error.microsoft-state-mismatch"),
 	EP_COMMON_ERROR_USER_EMAIL_MISMATCH_WITH_CURRENT_USER("ep.common.error.user-email-mismatch-with-current-user"),
 	EP_COMMON_UNABLE_TO_CONNECT_GOOGLE_CALENDAR("ep.common.error.unable-to-connect-google-calendar"),
+	EP_COMMON_UNABLE_TO_CONNECT_MICROSOFT_CALENDAR("ep.common.error.unable-to-connect-microsoft-calendar"),
 	EP_COMMON_UNABLE_TO_DELETE_GOOGLE_CALENDAR("ep.common.error.unable-to-delete-google-calendar"),
+	EP_COMMON_UNABLE_TO_DELETE_MICROSOFT_CALENDAR("ep.common.error.unable-to-delete-microsoft-calendar"),
 	EP_COMMON_UNABLE_TO_GENERATE_ACCESS_TOKEN_TO_CALENDAR(
 			"ep.common.error.unable-to-generate-access-token-to-calendar"),
 	EP_COMMON_UNABLE_TO_GET_GOOGLE_AUTH_URL("ep.common.error.unable-to-get-google-auth-url"),
+	EP_COMMON_UNABLE_TO_GET_MICROSOFT_AUTH_URL("ep.common.error.unable-to-get-microsoft-auth-url"),
 	EP_COMMON_INVALID_GOOGLE_AUTH_CODE("ep.common.error.invalid-google-auth-code"),
 	EP_COMMON_UNABLE_TO_DISCONNECT_FROM_GOOGLE_CALENDAR("ep.common.error.unable-to-disconnect-from-calendar"),
+	EP_COMMON_UNABLE_TO_DISCONNECT_FROM_MICROSOFT_CALENDAR(
+			"ep.common.error.unable-to-disconnect-from-microsoft-calendar"),
 	EP_COMMON_UNABLE_TO_REVOKE_PERMISSION_FROM_CALENDAR("ep.common.error.unable-to-revoke-permission"),
 	EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL("ep.common.error.unable-to-fetch-organization-url"),
 	EP_COMMON_INVALID_ORGANIZATION_URL("ep.common.error.invalid-organization-url"),
@@ -165,7 +171,10 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_INVALID_API_KEY("ep.common.error.invalid-api-key"),
 	EP_COMMON_ERROR_MIGRATION_SERVICE_UNAVAILABLE("ep.common.error.migration-service-unavailable"),
 
-	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error");
+	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error"),
+
+	EP_COMMON_ERROR_INVALID_FILE_TYPE("ep.common.error.api.invalid-file-type"),
+	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded");
 
 	private final String messageKey;
 

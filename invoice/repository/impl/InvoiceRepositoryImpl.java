@@ -150,6 +150,9 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 
 		List<Predicate> predicates = buildPredicates(cb, countRoot, invoiceFilterRequestDto);
 
+		List<Predicate> searchPredicates = buildSearchPredicates(cb, countRoot, invoiceFilterRequestDto);
+		predicates.addAll(searchPredicates);
+
 		if (!predicates.isEmpty()) {
 			countQuery.where(predicates.toArray(new Predicate[0]));
 		}

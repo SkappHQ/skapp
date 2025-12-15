@@ -42,7 +42,6 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_VOID_REASON_TOO_LONG("validation.void.reason.too.long"),
 	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
 	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
-	ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS("validation.decline.reason.invalid.characters"),
 	ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY("validation.my-signature-method.empty"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
@@ -66,6 +65,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FAILED_TO_LOAD_IMAGE("ep.esign.error.failed.load.image"),
 	ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT("ep.esign.error.failed.process.pdf-document"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_LIST("ep.esign.error.failed.convert.pdf-document.image-list"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE("ep.esign.error.failed.convert.pdf-document.image"),
+	ESIGN_ERROR_FAILED_TO_CONVERT_PDF_DOCUMENT_TO_IMAGE_INVALID_PAGE(
+			"ep.esign.error.failed.convert.pdf-document.image.invalid.page"),
 	ESIGN_ERROR_FAILED_DOWNLOAD_FILE("ep.esign.error.failed.download.file"),
 	ESIGN_ERROR_FAILED_TO_UPLOAD_FILE("ep.esign.error.failed.upload.file"),
 	ESIGN_ERROR_FAILED_TO_CONVERT_FILE_TO_BYTE("ep.esign.error.failed.convert.file.to.byte"),

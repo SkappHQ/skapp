@@ -1,5 +1,6 @@
 package com.skapp.enterprise.invoice.model;
 
+import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +18,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "in_tax")
-public class InvoiceTax {
+public class InvoiceTax extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +29,9 @@ public class InvoiceTax {
 
 	@Column(name = "tax_percentage")
 	private Double taxPercentage;
+
+	@Column(name = "tax_amount")
+	private Double taxAmount;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "invoice_id", nullable = false)

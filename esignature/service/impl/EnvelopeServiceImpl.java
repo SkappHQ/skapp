@@ -13,6 +13,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -139,6 +140,8 @@ import static com.skapp.enterprise.esignature.util.EnvelopeUuidGenerator.generat
 @Slf4j
 @RequiredArgsConstructor
 public class EnvelopeServiceImpl implements EnvelopeService {
+
+	private final UserDao userDao;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -333,6 +336,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		EnvelopeDetailedResponseDto responseDto = eSignMapper.envelopeToEnvelopeDetailedResponseDto(savedEnvelope);
 
+		LocalDateTime sentAtTime = responseDto.getSentAt();
+
 		// Register a post-commit callback to handle scheduling after transaction commit
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
@@ -341,7 +346,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
 					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
 							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
-									LocalTime.MAX));
+									sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX));
 				}
 			}
 		});
@@ -612,6 +617,58 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		pageDto.setTotalPages(envelopePage.getTotalPages());
 
 		log.info("getAllUserEnvelopes: execution ended");
+
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	public ResponseEntityDto getAllUserEnvelopesByUserId(EnvelopeInboxFilterDto envelopeInboxFilterDto, Long userId) {
+		log.info("getAllUserEnvelopesByUserId: execution started");
+
+		User currentUser = userDao.findById(userId).orElse(null);
+		if (currentUser == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Page<Envelope> envelopePage = envelopeDao.getAllUserEnvelopes(currentUser.getUserId(), envelopeInboxFilterDto);
+
+		List<EnvelopeInboxData> envelopeInboxDataList = new ArrayList<>();
+		envelopePage.getContent().forEach(envelope -> {
+			EnvelopeInboxData envelopeInboxData = eSignMapper.envelopeToEnvelopeInboxData(envelope);
+
+			EnvelopeStatus envelopeStatus = envelope.getStatus();
+
+			List<Recipient> orderedRecipients = envelope.getRecipients()
+				.stream()
+				.filter(recipient -> recipient.getAddressBook() != null
+						&& recipient.getAddressBook().getUserId().equals(currentUser.getUserId())
+						&& (envelopeStatus == EnvelopeStatus.VOIDED
+								|| (SignType.PARALLEL.equals(envelope.getSignType())
+										&& envelopeStatus == EnvelopeStatus.DECLINED)
+								|| (recipient.getStatus() != null && recipient.getStatus() != RecipientStatus.EMPTY)))
+				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
+				.toList();
+
+			Recipient resultRecipient = orderedRecipients.stream()
+				.filter(r -> r.getStatus() == RecipientStatus.NEED_TO_SIGN)
+				.findFirst()
+				.orElseGet(() -> orderedRecipients.isEmpty() ? null : orderedRecipients.getFirst());
+
+			if (resultRecipient != null) {
+				envelopeInboxData.setStatus(resultRecipient.getInboxStatus());
+				envelopeInboxData.setReceivedDate(orderedRecipients.getLast().getReceivedAt());
+			}
+
+			envelopeInboxDataList.add(envelopeInboxData);
+		});
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(envelopeInboxDataList);
+		pageDto.setCurrentPage(envelopePage.getNumber());
+		pageDto.setTotalItems(envelopePage.getTotalElements());
+		pageDto.setTotalPages(envelopePage.getTotalPages());
+
+		log.info("getAllUserEnvelopesByUserId: execution ended");
 
 		return new ResponseEntityDto(false, pageDto);
 	}
@@ -1336,10 +1393,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (declineEnvelopeRequestDto.getDeclineReason()
 			.length() > EsignConstants.ALLOWED_MAX_CHARACTER_ENVELOPE_DECLINE) {
 			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG);
-		}
-		else if (!declineEnvelopeRequestDto.getDeclineReason()
-			.matches(EsignConstants.ALLOWED_CHARACTERS_REGEX_ENVELOPE_DECLINE_AND_VOID)) {
-			throw new ValidationException(EsignMessageConstant.ESIGN_VALIDATION_DECLINE_REASON_INVALID_CHARACTERS);
 		}
 		recipient.setDeclineReason(declineEnvelopeRequestDto.getDeclineReason());
 

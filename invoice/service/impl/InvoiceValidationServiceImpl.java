@@ -2,6 +2,7 @@ package com.skapp.enterprise.invoice.service.impl;
 
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import com.skapp.enterprise.invoice.constant.InvoiceMessageConstant;
 import com.skapp.enterprise.invoice.payload.request.InvoiceFilterRequestDto;
 import com.skapp.enterprise.invoice.payload.request.ReminderEmailRequestDto;
@@ -11,6 +12,7 @@ import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceItemDto
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceRequestDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.CreateInvoiceTaxDto;
 import com.skapp.enterprise.invoice.payload.request.invoice.InvoiceStatusUpdateRequestDto;
+import com.skapp.enterprise.invoice.repository.InvoiceDao;
 import com.skapp.enterprise.invoice.service.InvoiceValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 
+	private final InvoiceDao invoiceDao;
+
 	private static final String[] ALLOWED_SORT_FIELDS = { "id", "invoiceId", "customerId", "projectId", "invoiceDate",
 			"dueDate", "status", "subTotalAmount", "payableTotalAmount", "createdDate" };
 
@@ -37,8 +41,18 @@ public class InvoiceValidationServiceImpl implements InvoiceValidationService {
 	}
 
 	private void validateRequiredFields(CreateInvoiceRequestDto request) {
-		if (request.getInvoiceId() == null) {
+		if (request.getInvoiceId() == null || request.getInvoiceId().isEmpty()) {
+			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_REQUIRED);
+		}
+		if (!request.getInvoiceId().matches(InvoiceCommonConstant.INVOICE_ID_REGEX)) {
 			throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_INVALID);
+		}
+
+		if (request.getCustomerId() != null) {
+			invoiceDao.findByCustomer_IdAndInvoiceId(request.getCustomerId(), request.getInvoiceId())
+				.ifPresent(invoice -> {
+					throw new ValidationException(InvoiceMessageConstant.INVOICE_ERROR_INVOICE_ID_ALREADY_EXISTS);
+				});
 		}
 
 		if (request.getCustomerId() == null) {

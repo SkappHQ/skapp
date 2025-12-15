@@ -17,4 +17,7 @@ public class OrganizationCalendar {
 	@Column(name = "is_google_calendar_enabled")
 	private Boolean isGoogleCalendarEnabled = false;
 
+	@Column(name = "is_microsoft_calendar_enabled")
+	private Boolean isMicrosoftCalendarEnabled = false;
+
 }

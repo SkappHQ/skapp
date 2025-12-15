@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
+import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlValidatedRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,15 @@ public class AmazonS3Controller {
 	public ResponseEntity<ResponseEntityDto> getPreSignedS3UrlFromEsignToken(
 			@Valid @RequestBody AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
 		ResponseEntityDto response = amazonS3Service.getSignedUrl(amazonS3SignedUrlRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/invoice/files/signed-url", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getPreSignedS3UrlForInvoice(
+			@Valid @RequestBody AmazonS3SignedUrlValidatedRequestDto amazonS3SignedUrlValidatedRequestDto) {
+		ResponseEntityDto response = amazonS3Service
+			.getSignedUrlWithFileValidations(amazonS3SignedUrlValidatedRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

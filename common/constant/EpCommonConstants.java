@@ -59,9 +59,11 @@ public class EpCommonConstants {
 
 	public final String ENTERPRISE_MICROSOFT_AUTH_SCOPES = "openid profile email offline_access User.Read";
 
-	public final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
+	public static final String ENTERPRISE_MICROSOFT_LOGIN_URL = "https://login.microsoftonline.com/";
 
-	public final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
+	public static final String ENTERPRISE_MICROSOFT_GRAPH_API = "https://graph.microsoft.com/v1.0/me/photo/$value";
+
+	public static final String ENTERPRISE_MICROSOFT_CALENDAR_SCOPES = "https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access openid";
 
 	public static final int MAXIMUM_COMPANY_DOMAIN_NAME_LENGTH = 20;
 
@@ -126,5 +128,9 @@ public class EpCommonConstants {
 	public static final String MOBILE_APP_LEAVE_URL = "com.skapp.app://LeaveRequests";
 
 	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
+
+	public static final int OTP_GENERATION_DELAY_TIME_SECONDS = 30;
+
+	public static final int ENTERPRISE_MICROSOFT_CALENDAR_STATE_PARTS_COUNT = 3;
 
 }

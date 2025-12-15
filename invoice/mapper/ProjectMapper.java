@@ -1,8 +1,11 @@
 package com.skapp.enterprise.invoice.mapper;
 
 import com.skapp.enterprise.invoice.model.BillableRate;
+import com.skapp.enterprise.invoice.model.Project;
 import com.skapp.enterprise.invoice.payload.response.ProjectMembersResponseDto;
+import com.skapp.enterprise.invoice.payload.response.project.InternalProjectCreationResponseDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -24,5 +27,9 @@ public interface ProjectMapper {
 			return dto;
 		}).toList();
 	}
+
+	@Mapping(target = "projectId", source = "project.id.projectId")
+	@Mapping(target = "customer", source = "project.id.customer")
+	InternalProjectCreationResponseDto projectToInternalProjectCreationResponseDto(Project project);
 
 }

@@ -38,6 +38,8 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 	public static final String TRIGGER_PREFIX = "trigger-";
 
+	public static final String DASH = "-";
+
 	private final Scheduler scheduler;
 
 	private final TenantContext tenantContext;
@@ -51,7 +53,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 			String entityTypeName = entityType.name();
 
 			JobDetail jobDetail = JobBuilder.newJob(QuartzJobHandler.class)
-				.withIdentity(entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
+				.withIdentity(entityTypeName + EXPIRE + entityId + DASH + tenantId, EXPIRATION_GROUP)
 				.storeDurably(true)
 				.usingJobData(ENTITY_ID, entityId)
 				.usingJobData(JOB_TENANT_ID, tenantId)
@@ -59,7 +61,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 				.build();
 
 			Trigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId, EXPIRATION_GROUP)
+				.withIdentity(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId + DASH + tenantId, EXPIRATION_GROUP)
 				.forJob(jobDetail)
 				.startAt(Date.from(expireAt.toInstant(ZoneOffset.UTC)))
 				.withSchedule(SimpleScheduleBuilder.simpleSchedule()
@@ -83,10 +85,13 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 			String entityTypeName = entityType.name();
 
-			TriggerKey triggerKey = TriggerKey.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId,
+			TriggerKey oldTriggerKey = TriggerKey.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId,
 					EXPIRATION_GROUP);
 
-			boolean result = scheduler.unscheduleJob(triggerKey);
+			TriggerKey triggerKey = TriggerKey
+				.triggerKey(TRIGGER_PREFIX + entityTypeName + EXPIRE + entityId + DASH + tenantId, EXPIRATION_GROUP);
+
+			boolean result = scheduler.unscheduleJob(triggerKey) || scheduler.unscheduleJob(oldTriggerKey);
 
 			if (result) {
 				log.info("Successfully unscheduled expiration trigger for {} with ID: {}", entityTypeName, entityId);

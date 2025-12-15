@@ -17,6 +17,8 @@ public class InvoiceCommonConstant {
 
 	public static final String INVOICE_STANDARD_ID_REGEX = "([A-Z]+)-(\\d{4})-(\\d+)";
 
+	public static final String INVOICE_ID_REGEX = "^[A-Z0-9\\-/_.]+$";
+
 	public static final String INVOICE_NUMBER_SUFFIX = "-001";
 
 	public static final String DATA = "data";
@@ -54,5 +56,7 @@ public class InvoiceCommonConstant {
 	public static final int WORKING_DAYS_PER_MONTH = 20;
 
 	public static final Double HUNDRED = 100.0;
+
+	public static final String SUCCESSFUL = "successful";
 
 }

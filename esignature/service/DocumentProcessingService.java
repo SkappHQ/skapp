@@ -20,4 +20,6 @@ public interface DocumentProcessingService {
 
 	List<byte[]> convertPDFdocumentToImageList(byte[] documentBytes);
 
+	byte[] convertPDFdocumentToImage(byte[] documentBytes, int pageNumber);
+
 }
