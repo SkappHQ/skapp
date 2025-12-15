@@ -94,7 +94,7 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.INNER);
 		Join<Employee, User> userJoin = employeeRoot.join(Employee_.user, JoinType.INNER);
 
-        Predicate finalPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
+		Predicate finalPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
 
 		if (email != null && !email.isEmpty()) {
 			Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)),
