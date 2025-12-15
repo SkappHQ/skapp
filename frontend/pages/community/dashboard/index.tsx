@@ -32,11 +32,13 @@ import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 import { useLeaveStore } from "~community/leave/store/store";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
+import APICTADashboard from "~enterprise/APICTA/dashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
+import { tempShouldUseCustomDashboard } from "~enterprise/common/utils/commonUtil";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
@@ -153,6 +155,11 @@ const Dashboard: NextPage = () => {
   );
   const { data } = useSession();
 
+  // Check if current tenant should use custom dashboard
+  const tempUseCustomDashboard = tempShouldUseCustomDashboard(
+    data?.user?.tenantId
+  );
+
   // Permissions map for modules
 
   // Define tabs
@@ -218,16 +225,36 @@ const Dashboard: NextPage = () => {
 
   if (showLoader && query.status === SUCCESS) {
     return <LogoColorLoader />;
-  } else {
+  }
+
+  // Render custom dashboard for flagged tenants
+  if (tempUseCustomDashboard) {
     return (
       <ContentLayout
         pageHead={translateText(["pageHead"])}
-        title={
-          data?.user && visibleTabs.length === 0
+        title={translateText(["title"])}
+        isDividerVisible={true}
+      >
+        <>
+          <div style={{ marginTop: "1rem" }}>
+            <APICTADashboard />
+          </div>
+          <LeaveManagerModalController />
+        </>
+      </ContentLayout>
+    );
+  }
+
+  // Default dashboard
+  return (
+    <ContentLayout
+      pageHead={translateText(["pageHead"])}
+      title={
+        data?.user && visibleTabs.length === 0
             ? translateText(["myLeaveAllocations"])
             : translateText(["title"])
-        }
-        isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+      }
+      isDividerVisible={!(data?.user && visibleTabs.length === 0)}
         customRightContent={
           showYearSelector ? (
             <LeaveYearSelector
@@ -238,22 +265,21 @@ const Dashboard: NextPage = () => {
             <></>
           )
         }
-      >
-        <>
-          {isLeaveOnlyView ? (
-            <div>
-              <LeaveAllocationSummary />
-            </div>
-          ) : (
-            <TabsContainer tabs={visibleTabs} />
-          )}
+    >
+      <>
+        {isLeaveOnlyView ? (
+          <div>
+            <LeaveAllocationSummary />
+          </div>
+        ) : (
+          <TabsContainer tabs={visibleTabs} />
+        )}
 
-          <VersionUpgradeModal />
-          <LeaveManagerModalController />
-        </>
-      </ContentLayout>
-    );
-  }
+        <VersionUpgradeModal />
+        <LeaveManagerModalController />
+      </>
+    </ContentLayout>
+  );
 };
 
 export default Dashboard;
