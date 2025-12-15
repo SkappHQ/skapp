@@ -201,7 +201,7 @@ const escapeCsvField = (
 
   const stringValue = String(field).trim();
 
-  const escapedValue = stringValue.replace(/"/g, '""');
+  const escapedValue = stringValue.replaceAll('"', '""');
 
   return `"${escapedValue}"`;
 };
@@ -241,7 +241,7 @@ export const downloadCSV = (csvContent: string, filename: string): void => {
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
     } finally {
       URL.revokeObjectURL(url);
     }
