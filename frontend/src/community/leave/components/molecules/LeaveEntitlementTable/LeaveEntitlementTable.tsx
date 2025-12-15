@@ -44,7 +44,7 @@ const LeaveEntitlementTable = ({
     leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
     setLeaveEntitlementTableSelectedYear:
       state.setLeaveEntitlementTableSelectedYear,
-    page: state.page - 1,
+    page: (state.page - 1),
     setPage: state.setPage,
     setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
   }));
