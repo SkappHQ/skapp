@@ -205,8 +205,8 @@ const Dashboard: NextPage = () => {
   const visibleTabs = getVisibleTabs(userRoles);
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
-  const now = DateTime.now();
-  const nextYear = now.plus({ years: 1 }).year;
+  const currentDate = DateTime.now();
+  const nextYear = currentDate.plus({ years: 1 }).year;
   const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
     nextYear.toString()
   );
@@ -251,20 +251,20 @@ const Dashboard: NextPage = () => {
       pageHead={translateText(["pageHead"])}
       title={
         data?.user && visibleTabs.length === 0
-            ? translateText(["myLeaveAllocations"])
-            : translateText(["title"])
+          ? translateText(["myLeaveAllocations"])
+          : translateText(["title"])
       }
       isDividerVisible={!(data?.user && visibleTabs.length === 0)}
-        customRightContent={
-          showYearSelector ? (
-            <LeaveYearSelector
-              selectedYear={selectedYear}
-              setSelectedYear={setSelectedYear}
-            />
-          ) : (
-            <></>
-          )
-        }
+      customRightContent={
+        showYearSelector ? (
+          <LeaveYearSelector
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+          />
+        ) : (
+          <></>
+        )
+      }
     >
       <>
         {isLeaveOnlyView ? (
