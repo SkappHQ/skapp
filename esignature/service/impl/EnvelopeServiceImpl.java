@@ -597,14 +597,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
 				.toList();
 
-			Recipient resultRecipient = orderedRecipients.stream()
-				.filter(r -> r.getStatus() == RecipientStatus.NEED_TO_SIGN)
-				.findFirst()
-				.orElseGet(() -> orderedRecipients.isEmpty() ? null : orderedRecipients.getFirst());
+			Recipient currentUserRecipient = orderedRecipients.stream()
+				.filter(r -> r.getAddressBook().getInternalUser() != null
+						&& Objects.equals(r.getAddressBook().getInternalUser().getUserId(), currentUser.getUserId()))
+				.toList()
+				.getFirst();
 
-			if (resultRecipient != null) {
-				envelopeInboxData.setStatus(resultRecipient.getInboxStatus());
-				envelopeInboxData.setReceivedDate(orderedRecipients.getLast().getReceivedAt());
+			if (currentUserRecipient != null) {
+				envelopeInboxData.setStatus(currentUserRecipient.getInboxStatus());
+				envelopeInboxData.setReceivedDate(currentUserRecipient.getReceivedAt());
 			}
 
 			envelopeInboxDataList.add(envelopeInboxData);
@@ -649,14 +650,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.sorted(Comparator.comparingInt(Recipient::getSigningOrder).reversed())
 				.toList();
 
-			Recipient resultRecipient = orderedRecipients.stream()
-				.filter(r -> r.getStatus() == RecipientStatus.NEED_TO_SIGN)
-				.findFirst()
-				.orElseGet(() -> orderedRecipients.isEmpty() ? null : orderedRecipients.getFirst());
+			Recipient currentUserRecipient = orderedRecipients.stream()
+				.filter(r -> r.getAddressBook().getInternalUser() != null
+						&& Objects.equals(r.getAddressBook().getInternalUser().getUserId(), currentUser.getUserId()))
+				.toList()
+				.getFirst();
 
-			if (resultRecipient != null) {
-				envelopeInboxData.setStatus(resultRecipient.getInboxStatus());
-				envelopeInboxData.setReceivedDate(orderedRecipients.getLast().getReceivedAt());
+			if (currentUserRecipient != null) {
+				envelopeInboxData.setStatus(currentUserRecipient.getInboxStatus());
+				envelopeInboxData.setReceivedDate(currentUserRecipient.getReceivedAt());
 			}
 
 			envelopeInboxDataList.add(envelopeInboxData);
