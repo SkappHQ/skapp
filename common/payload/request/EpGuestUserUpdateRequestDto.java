@@ -11,6 +11,8 @@ public class EpGuestUserUpdateRequestDto {
 
 	private Long id;
 
+	private String email;
+
 	private List<ProjectRequestDto> projects;
 
 }

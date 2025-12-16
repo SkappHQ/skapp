@@ -216,11 +216,46 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		User user = userDao.findById(epGuestUserUpdateRequestDto.getId())
 			.filter(this::isValidGuestEmployee)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
-		boolean isUpdateSuccess = epGuestUserInternalService.updateGuestUserProjects(user.getUserId(),
-				epGuestUserUpdateRequestDto.getProjects());
 
-		if (!isUpdateSuccess) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED);
+		boolean emailUpdated = false;
+
+		if (epGuestUserUpdateRequestDto.getEmail() != null && !epGuestUserUpdateRequestDto.getEmail().isEmpty()) {
+			if (user.getEmployee().getAccountStatus() == AccountStatus.PENDING) {
+				Validation.validateEmail(epGuestUserUpdateRequestDto.getEmail());
+
+				if (userDao.findByEmail(epGuestUserUpdateRequestDto.getEmail()).isPresent()) {
+					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+				}
+
+				user.setEmail(epGuestUserUpdateRequestDto.getEmail());
+				user.getEmployee().setFirstName(EmailNameExtractor.extractName(epGuestUserUpdateRequestDto.getEmail()));
+				userDao.save(user);
+				emailUpdated = true;
+			}
+		}
+
+		if (epGuestUserUpdateRequestDto.getProjects() != null && !epGuestUserUpdateRequestDto.getProjects().isEmpty()) {
+			boolean isUpdateSuccess = epGuestUserInternalService.updateGuestUserProjects(user.getUserId(),
+					epGuestUserUpdateRequestDto.getProjects());
+
+			if (!isUpdateSuccess) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED);
+			}
+		}
+
+		if (emailUpdated) {
+			String invitationUrl = buildInvitationUrl(user);
+			String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+
+			List<ProjectRequestDto> userProjects = epGuestUserUpdateRequestDto.getProjects() != null
+					&& !epGuestUserUpdateRequestDto.getProjects().isEmpty() ? epGuestUserUpdateRequestDto.getProjects()
+							: epGuestUserCacheService.getUserAssignedProjects(user.getUserId());
+
+			String projectNames = userProjects.stream()
+				.map(ProjectRequestDto::getProjectName)
+				.collect(Collectors.joining(", "));
+
+			epUserEmailService.sendGuestUserInvitationEmail(user.getEmployee(), invitationUrl, adminName, projectNames);
 		}
 
 		epPeopleService.invalidateAllUserCaches();
