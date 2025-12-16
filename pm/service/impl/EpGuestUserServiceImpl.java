@@ -144,8 +144,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	public List<EpGuestUserResponseDto> getAllGuestUsers(String email, AccountStatus status, List<Long> projectIds) {
-		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers(email, status);
+	public List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses,
+			List<Long> projectIds) {
+		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers(email, statuses);
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
 			.getAllGuestUsersWithProjects();

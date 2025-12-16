@@ -49,9 +49,9 @@ public class EpGuestUserController {
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
 	public ResponseEntity<List<EpGuestUserResponseDto>> getAllGuestUsers(@RequestParam(required = false) String email,
-			@RequestParam(required = false) AccountStatus status,
+			@RequestParam(required = false) List<AccountStatus> statuses,
 			@RequestParam(required = false) List<Long> projectIds) {
-		List<EpGuestUserResponseDto> response = epGuestUserService.getAllGuestUsers(email, status, projectIds);
+		List<EpGuestUserResponseDto> response = epGuestUserService.getAllGuestUsers(email, statuses, projectIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

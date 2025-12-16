@@ -87,7 +87,7 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> getAllGuestUsers(String email, AccountStatus status) {
+	public List<Employee> getAllGuestUsers(String email, List<AccountStatus> statuses) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> query = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> employeeRoot = query.from(Employee.class);
@@ -102,8 +102,8 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 			finalPredicate = criteriaBuilder.and(finalPredicate, emailPredicate);
 		}
 
-		if (status != null) {
-			Predicate statusPredicate = criteriaBuilder.equal(employeeRoot.get(Employee_.accountStatus), status);
+		if (statuses != null && !statuses.isEmpty()) {
+			Predicate statusPredicate = employeeRoot.get(Employee_.accountStatus).in(statuses);
 			finalPredicate = criteriaBuilder.and(finalPredicate, statusPredicate);
 		}
 

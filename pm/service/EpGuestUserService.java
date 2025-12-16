@@ -18,7 +18,7 @@ public interface EpGuestUserService {
 
 	User validateGuestUserEmail(String email);
 
-	List<EpGuestUserResponseDto> getAllGuestUsers(String email, AccountStatus status, List<Long> projectIds);
+	List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses, List<Long> projectIds);
 
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 

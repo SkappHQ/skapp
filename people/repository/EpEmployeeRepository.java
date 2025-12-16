@@ -9,6 +9,6 @@ public interface EpEmployeeRepository {
 
 	List<Employee> getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds);
 
-	List<Employee> getAllGuestUsers(String email, AccountStatus status);
+	List<Employee> getAllGuestUsers(String email, List<AccountStatus> statuses);
 
 }
