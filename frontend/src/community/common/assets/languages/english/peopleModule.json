@@ -341,7 +341,7 @@
       "email": "Email",
       "team": "Teams",
       "supervisor": "Supervisors",
-      "pending":""
+      "pending": ""
     },
     "bulkUploadBtnTxt": "Add all your people in one go",
     "uploadCsvModalTitle": "Add people",
@@ -1077,9 +1077,9 @@
       "title": "No documents to be displayed",
       "description": "Your Inbox is empty. Once you receive documents, they will be displayed here."
     },
-    "noResultsTable":{
+    "noResultsTable": {
       "title": "No results found",
-      "description":"No documents match your search. Try changing your keywords or filters."
+      "description": "No documents match your search. Try changing your keywords or filters."
     },
     "searchPlaceholder": "Search documents",
     "documentStatus": {
