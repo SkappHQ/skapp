@@ -7,6 +7,7 @@ import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
@@ -86,7 +87,8 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 	public Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects() {
 		List<Employee> guestEmployees = employeeDao.findAll()
 			.stream()
-			.filter(emp -> emp.getEmployeeRole() != null && emp.getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE)
+			.filter(emp -> emp.getEmployeeRole() != null && emp.getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE
+					&& emp.getAccountStatus() != AccountStatus.DELETED)
 			.toList();
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = new HashMap<>();
