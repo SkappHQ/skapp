@@ -1,5 +1,4 @@
 import { Stack, Typography } from "@mui/material";
-import { DateTime } from "luxon";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -122,11 +121,14 @@ const ApplyLeaveModal = () => {
   }));
 
   const firstDateOfYear = useMemo(
-    () => getFirstDateOfYear(DateTime.now().year).toJSDate(),
-    []
+    () => getFirstDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
   );
 
-  const lastDateOfYear = useMemo(() => getMaxDateOfYear().toJSDate(), []);
+  const lastDateOfYear = useMemo(
+    () => getMaxDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
+  );
 
   const { data: timeConfig } = useDefaultCapacity();
 
