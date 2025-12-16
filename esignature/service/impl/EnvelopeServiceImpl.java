@@ -600,8 +600,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Recipient currentUserRecipient = orderedRecipients.stream()
 				.filter(r -> r.getAddressBook().getInternalUser() != null
 						&& Objects.equals(r.getAddressBook().getInternalUser().getUserId(), currentUser.getUserId()))
-				.toList()
-				.getFirst();
+
+				.findFirst()
+				.orElse(null);
 
 			if (currentUserRecipient != null) {
 				envelopeInboxData.setStatus(currentUserRecipient.getInboxStatus());
@@ -653,8 +654,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Recipient currentUserRecipient = orderedRecipients.stream()
 				.filter(r -> r.getAddressBook().getInternalUser() != null
 						&& Objects.equals(r.getAddressBook().getInternalUser().getUserId(), currentUser.getUserId()))
-				.toList()
-				.getFirst();
+				.findFirst()
+				.orElse(null);
 
 			if (currentUserRecipient != null) {
 				envelopeInboxData.setStatus(currentUserRecipient.getInboxStatus());
