@@ -36,7 +36,6 @@ const LeaveAllocation: FC = () => {
   const translateAria = useTranslator("leaveAria");
   const theme: Theme = useTheme();
   const classes = styles(theme);
-  const { isEmployee } = useSessionData();
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
@@ -106,6 +105,7 @@ const LeaveAllocation: FC = () => {
         }
       )}
     >
+      <Divider sx={{ mb: "1rem" }} />
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />

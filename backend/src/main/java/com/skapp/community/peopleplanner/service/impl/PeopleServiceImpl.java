@@ -2354,12 +2354,23 @@ public class PeopleServiceImpl implements PeopleService {
 		results.add(bulkResponseDto);
 	}
 
-	private void updateUserStatus(Long userId, AccountStatus status, boolean isDelete) {
+	@Override
+	public void updateUserStatus(Long userId, AccountStatus status, boolean isDelete) {
 		log.info("updateUserStatus: execution started");
 
 		User user = userDao.findById(userId)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 		Employee employee = user.getEmployee();
+
+		if (status.equals(AccountStatus.ACTIVE) && Boolean.FALSE.equals(user.getIsActive())) {
+			employee.setAccountStatus(status);
+			user.setIsActive(true);
+
+			updateSubscriptionQuantity(1L, true, false);
+			userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
+			invalidateUserCache();
+			invalidateUserAuthPicCache();
+		}
 
 		if (!Boolean.TRUE.equals(user.getIsActive())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);

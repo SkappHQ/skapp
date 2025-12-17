@@ -850,8 +850,15 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		int endMonth = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.MONTH).intValue();
 		int endDate = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.DATE).intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
-		int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1;
+		// int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth,
+		// startDate);
+		// int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear :
+		// leaveCycleEndYear - 1;
+
+		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		int cycleStartYear = currentDate.getYear();
+		int leaveCycleEndYear = cycleStartYear + 1;
+
 		if (leaveEntitlementsFilterDto != null && (leaveEntitlementsFilterDto.getStartDate() != null
 				&& leaveEntitlementsFilterDto.getEndDate() != null)) {
 			Predicate dateBetween = criteriaBuilder.or(

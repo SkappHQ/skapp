@@ -225,8 +225,16 @@ const nextConfig = {
         destination: "/enterprise/redirect"
       },
       {
-        source: "/verify/reset-password",
-        destination: "/enterprise/verify/reset-password"
+        source: "/verify/guest-otp",
+        destination: "/enterprise/verify/guest-otp"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
       },
       {
         source: "/forget-password",
@@ -267,6 +275,10 @@ const nextConfig = {
       {
         source: "/sign/sign",
         destination: "/enterprise/sign/sign"
+      },
+      {
+        source: "/sign/review",
+        destination: "/enterprise/sign/review"
       },
       {
         source: "/sign/info",
@@ -329,8 +341,12 @@ const nextConfig = {
         destination: "/community/user-account"
       },
       {
-        source: "/projects",
-        destination: "/enterprise/projects"
+        source: "/projects/list",
+        destination: "/enterprise/projects/list"
+      },
+      {
+        source: "/projects/guests",
+        destination: "/enterprise/projects/guests"
       },
       {
         source: "/invoice",
@@ -347,6 +363,10 @@ const nextConfig = {
       {
         source: "/invoice/create/:id",
         destination: "/enterprise/invoice/create/:id"
+      },
+      {
+        source: "/invoice/creates/:id",
+        destination: "/enterprise/invoice/creates/:id"
       },
       {
         source: "/invoice/customers/customer-details/:id",
