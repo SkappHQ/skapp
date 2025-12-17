@@ -81,7 +81,7 @@ const AvailabilityCalendarCard = ({
       return <HolidayChip text={holidays[0]?.name} />;
     }
 
-    if (onLeaveEmployees?.length > 0 && onLeaveEmployees?.length <= 3) {
+    if (onLeaveEmployees?.length > 0) {
       return (
         <Box
           sx={{

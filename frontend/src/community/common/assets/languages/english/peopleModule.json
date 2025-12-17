@@ -269,6 +269,7 @@
     },
     "addPeople": "Add People",
     "addBulkPeople": "Bulk Upload",
+    "exportPeopleDirectory": "Export",
     "DateDesc": "New to Old",
     "DateAsc": "Old to New",
     "AlphabeticalDesc": "Z to A",
@@ -341,7 +342,7 @@
       "email": "Email",
       "team": "Teams",
       "supervisor": "Supervisors",
-      "pending":""
+      "pending": ""
     },
     "bulkUploadBtnTxt": "Add all your people in one go",
     "uploadCsvModalTitle": "Add people",
@@ -441,7 +442,15 @@
     "unsavedModalDiscardButton": "Discard",
     "cancelChangesModalDescription": "Are you sure you want to cancel? All unsaved changes will be discarded.",
     "cancelChangesModalConfirmButton": "Confirm",
-    "cancelChangesModalCancelButton": "Cancel"
+    "cancelChangesModalCancelButton": "Cancel",
+    "exportPeopleDirectoryToastMessages": {
+      "exportPeopleDirectorySuccessTitle": "Export Successful",
+      "exportPeopleDirectorySuccessDescription": "Successfully exported {{count}} employees to CSV.",
+      "exportPeopleDirectoryErrorTitle": "Export Failed",
+      "exportPeopleDirectoryErrorDescription": "Failed to export employee directory. Please try again.",
+      "exportPeopleDirectoryNoDataTitle": "No Data Available",
+      "exportPeopleDirectoryNoDataDescription": "There are no employees available to export."
+    }
   },
 
   "addResource": {
