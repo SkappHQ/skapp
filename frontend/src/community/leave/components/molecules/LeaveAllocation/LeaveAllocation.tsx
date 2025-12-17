@@ -106,18 +106,6 @@ const LeaveAllocation: FC = () => {
         }
       )}
     >
-      {isEmployee && (
-        <Typography
-          variant="h1"
-          sx={{
-            marginBottom: "1.5rem",
-            marginTop: "1.5rem"
-          }}
-        >
-          {translateText(["title"])}
-        </Typography>
-      )}
-      <Divider sx={{ mb: "1rem" }} />
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />

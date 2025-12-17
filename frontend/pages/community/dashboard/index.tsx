@@ -48,6 +48,8 @@ const Dashboard: NextPage = () => {
 
   const { setToastMessage } = useToast();
 
+  const translateEmployeeText = useTranslator("leaveModule", "myRequests");
+
   const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
@@ -166,9 +168,11 @@ const Dashboard: NextPage = () => {
       <ContentLayout
         pageHead={translateText(["pageHead"])}
         title={
-          data?.user && visibleTabs.length === 0 ? "" : translateText(["title"])
+          data?.user && visibleTabs.length === 0
+            ? translateEmployeeText(["title"])
+            : translateText(["title"])
         }
-        isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+        isDividerVisible={true}
       >
         <>
           {data?.user && visibleTabs.length === 0 ? (
