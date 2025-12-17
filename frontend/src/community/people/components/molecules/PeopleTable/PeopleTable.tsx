@@ -36,6 +36,7 @@ import {
 import { IconName } from "~community/common/types/IconTypes";
 import { AvatarPropTypes } from "~community/common/types/MoleculeTypes";
 import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
+import { useExportPeopleDirectory } from "~community/people/api/ExportPeopleDirectoryApi";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import {
   useGetUserPersonalDetails,
@@ -56,6 +57,8 @@ import {
   refactorTeamListData
 } from "~community/people/utils/PeopleDirectoryUtils";
 import { generatePeopleTableRowAriaLabel } from "~community/people/utils/accessibilityUtils";
+import { hasFiltersApplied } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/PeopleDirectoryhasFiltersAppliedUtil";
+import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryUtils/ExportPeopleDirectoryUtils/exportPeopleDirectoryUtil";
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
@@ -109,6 +112,7 @@ const PeopleTable: FC<Props> = ({
     setViewEmployeeId,
     setSelectedEmployees,
     employeeDataParams,
+    employeeDataFilter,
     setProjectTeamNames,
     setSelectedEmployeeId,
     resetEmployeeData,
@@ -118,6 +122,101 @@ const PeopleTable: FC<Props> = ({
     setNextStep,
     resetPeopleSlice
   } = usePeopleStore((state) => state);
+
+  const convertToArray = <T,>(value: T | T[] | undefined | null): T[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  };
+  const exportParams = useMemo(
+    () => ({
+      sortKey: employeeDataParams?.sortKey || "NAME",
+      sortOrder: employeeDataParams?.sortOrder || "ASC",
+      searchKeyword: employeeDataParams?.searchKeyword?.trim(),
+      isExport: true,
+      accountStatus: convertToArray(employeeDataParams?.accountStatus),
+      employmentAllocations: convertToArray(
+        employeeDataFilter?.employmentAllocations
+      ),
+      permissions: convertToArray(employeeDataFilter?.permission),
+      team: convertToArray(employeeDataFilter?.team).map((item) =>
+        typeof item === "object" ? item.id : item
+      ),
+      role: convertToArray(employeeDataFilter?.role).map((item) =>
+        typeof item === "object" ? item.id : item
+      ),
+      employmentTypes: convertToArray(employeeDataFilter?.employmentTypes),
+      gender: convertToArray(employeeDataFilter?.gender),
+      nationality: convertToArray(employeeDataFilter?.nationality)
+    }),
+    [
+      employeeDataParams?.sortKey,
+      employeeDataParams?.sortOrder,
+      employeeDataParams?.searchKeyword,
+      employeeDataParams?.accountStatus,
+      employeeDataFilter?.employmentAllocations,
+      employeeDataFilter?.permission,
+      employeeDataFilter?.team,
+      employeeDataFilter?.role,
+      employeeDataFilter?.employmentTypes,
+      employeeDataFilter?.gender,
+      employeeDataFilter?.nationality
+    ]
+  );
+  const exportMutation = useExportPeopleDirectory({
+    onSuccess: (data) => {
+      if (data.length === 0) {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.WARN,
+          title: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataTitle"
+          ]),
+          description: translateText([
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectoryNoDataDescription"
+          ])
+        });
+        return;
+      }
+
+      exportEmployeeDirectoryToCSV(data, hasFiltersApplied(employeeDataFilter));
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectorySuccessTitle"
+        ]),
+        description: translateText(
+          [
+            "exportPeopleDirectoryToastMessages",
+            "exportPeopleDirectorySuccessDescription"
+          ],
+          { count: data.length }
+        )
+      });
+    },
+    onError: (error) => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorTitle"
+        ]),
+        description: translateText([
+          "exportPeopleDirectoryToastMessages",
+          "exportPeopleDirectoryErrorDescription"
+        ])
+      });
+    }
+  });
+
+  const handleExportDirectory = () => {
+    if (exportMutation.isPending) return;
+    exportMutation.mutate(exportParams);
+  };
 
   const { data: teamData, isLoading } = useGetAllTeams();
   const { data: jobFamilyData, isLoading: jobFamilyLoading } =
@@ -629,6 +728,14 @@ const PeopleTable: FC<Props> = ({
             }
           }}
           tableFoot={{
+            exportBtn: {
+              label: translateText(["exportPeopleDirectory"]),
+              isVisible: true,
+              onClick: () => {
+                handleExportDirectory();
+              }
+            },
+
             pagination: {
               isEnabled: false
             }
