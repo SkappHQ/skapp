@@ -1,5 +1,7 @@
 package com.skapp.enterprise.people.repository.impl;
 
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -77,6 +79,33 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 
 		Predicate rolePredicate = criteriaBuilder.or(rolePredicates.toArray(new Predicate[0]));
 		Predicate finalPredicate = criteriaBuilder.and(statusPredicate, notInEmployeeIdsPredicate, rolePredicate);
+
+		query.where(finalPredicate);
+		query.select(employeeRoot).distinct(true);
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public List<Employee> getAllGuestUsers(String email, List<AccountStatus> statuses) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> query = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> employeeRoot = query.from(Employee.class);
+		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.INNER);
+		Join<Employee, User> userJoin = employeeRoot.join(Employee_.user, JoinType.INNER);
+
+		Predicate finalPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
+
+		if (email != null && !email.isEmpty()) {
+			Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)),
+					"%" + email.toLowerCase() + "%");
+			finalPredicate = criteriaBuilder.and(finalPredicate, emailPredicate);
+		}
+
+		if (statuses != null && !statuses.isEmpty()) {
+			Predicate statusPredicate = employeeRoot.get(Employee_.accountStatus).in(statuses);
+			finalPredicate = criteriaBuilder.and(finalPredicate, statusPredicate);
+		}
 
 		query.where(finalPredicate);
 		query.select(employeeRoot).distinct(true);

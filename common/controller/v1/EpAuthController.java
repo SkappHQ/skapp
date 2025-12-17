@@ -4,6 +4,8 @@ import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
@@ -11,6 +13,7 @@ import com.skapp.enterprise.common.payload.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.request.OtpVerificationRequestDto;
 import com.skapp.enterprise.common.service.EpAuthService;
+import com.skapp.enterprise.people.service.EpUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class EpAuthController {
 
 	private final EpAuthService epAuthService;
+
+	private final EpUserService epUserService;
 
 	@PostMapping("/signup/super-admin")
 	public ResponseEntity<ResponseEntityDto> superAdminSignUp(
@@ -119,6 +124,33 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/signin/guest/send-otp")
+	public ResponseEntity<ResponseEntityDto> sendGuestUserSignInOtp(
+			@RequestBody EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		ResponseEntityDto response = epAuthService.sendGuestUserSignInOtp(epGuestUserSignInRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/signin/guest/resend-otp")
+	public ResponseEntity<ResponseEntityDto> resendGuestUserSignInOtp(
+			@RequestBody EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		ResponseEntityDto response = epAuthService.resendGuestUserSignInOtp(epGuestUserSignInRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/signin/guest/verify-otp")
+	public ResponseEntity<ResponseEntityDto> verifyGuestUserSignInOtp(
+			@RequestBody EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto) {
+		ResponseEntityDto response = epAuthService.validateGuestUserSignInOtp(epGuestUserOtpVerifyRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/status")
+	public ResponseEntity<ResponseEntityDto> getUserStatus(@RequestParam String email) {
+		ResponseEntityDto response = epUserService.getUserStatus(email);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -13,6 +13,8 @@ public interface EpPeopleService {
 
 	boolean checkEmployeesLimit();
 
+	void invalidateAllUserCaches();
+
 	ResponseEntityDto getEmployeeRoleLimit();
 
 	ResponseEntityDto getEmployeesCount();

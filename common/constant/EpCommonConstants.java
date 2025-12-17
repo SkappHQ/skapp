@@ -107,6 +107,8 @@ public class EpCommonConstants {
 
 	public static final String SENDER = "sender";
 
+	public static final String ADMIN = "admin";
+
 	public static final String SUPER_ADMIN_NAME = "superAdminName";
 
 	public static final String VIA = " via ";
@@ -125,12 +127,12 @@ public class EpCommonConstants {
 
 	public static final String NON_PRD_CONFIG_PATH = "enterprise/validations/email-validation-non-prd.yml";
 
-	public static final String MOBILE_APP_LEAVE_URL = "com.skapp.app://LeaveRequests";
-
 	public static final String S3_PROFILE_PIC_THUMBNAIL_PATH = "profilePictures/thumbnail/";
 
 	public static final int OTP_GENERATION_DELAY_TIME_SECONDS = 30;
 
 	public static final int ENTERPRISE_MICROSOFT_CALENDAR_STATE_PARTS_COUNT = 3;
+
+	public static final String GUEST_USER_BASE_INVITE_URL = "https://%s.skapp.com/verify/guest?email=%s";
 
 }

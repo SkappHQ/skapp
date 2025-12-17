@@ -4,6 +4,8 @@ import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
@@ -29,6 +31,8 @@ public interface EpAuthService {
 
 	ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto);
 
+	ResponseEntityDto validateGuestUserSignInOtp(EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto);
+
 	ResponseEntityDto verifyPasswordResetOTP(EpPasswordResetOtpVerifyDto epPasswordResetOtpVerifyDto);
 
 	ResponseEntityDto resetPassword(EpPasswordResetNewPasswordDto epPasswordResetNewPasswordDto);
@@ -38,5 +42,9 @@ public interface EpAuthService {
 	ResponseEntityDto verifyTenantAvailability(String subDomainName);
 
 	ResponseEntityDto validateCodeChallenge(CodeChallengeRequestDto codeChallengeRequestDto);
+
+	ResponseEntityDto sendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto);
+
+	ResponseEntityDto resendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto);
 
 }

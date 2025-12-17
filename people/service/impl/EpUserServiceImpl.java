@@ -3,6 +3,8 @@ package com.skapp.enterprise.people.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -12,6 +14,7 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
+import com.skapp.enterprise.common.payload.response.EmployeeRolesDto;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -43,6 +46,8 @@ public class EpUserServiceImpl implements EpUserService {
 	private final ObjectMapper objectMapper;
 
 	private final AmazonS3Service amazonS3Service;
+
+	private final UserDao userDao;
 
 	@Override
 	public Tier getCurrentUserTier() {
@@ -83,11 +88,11 @@ public class EpUserServiceImpl implements EpUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<EpUserResponseDto> getUsersByIdsOrSearch(List<Long> userIds, String search) {
+	public List<EpUserResponseDto> getAllUsersOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
 				AccountStatus.TERMINATED);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
 
 		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
 
@@ -113,10 +118,10 @@ public class EpUserServiceImpl implements EpUserService {
 	}
 
 	@Override
-	public List<EpUserAuthPicResponseDto> getUserAuthPicsByIdsOrSearch(List<Long> userIds, String search) {
+	public List<EpUserAuthPicResponseDto> getAllUserAuthPicsOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, search, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
 
 		if (employees.isEmpty()) {
 			return List.of();
@@ -142,12 +147,18 @@ public class EpUserServiceImpl implements EpUserService {
 		return mappedUserAuthPics;
 	}
 
-	private EpUserResponseDto mapEmployeeToUserDto(Employee employee) {
+	@Override
+	public EpUserResponseDto mapEmployeeToUserDto(Employee employee) {
 		EpUserResponseDto dto = new EpUserResponseDto();
 		dto.setUserId(employee.getEmployeeId().toString());
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
 		dto.setAccountStatus(employee.getAccountStatus());
+
+		EmployeeRolesDto employeeRolesDto = new EmployeeRolesDto();
+		employeeRolesDto.setPmRole(employee.getEmployeeRole().getPmRole());
+
+		dto.setRoles(employeeRolesDto);
 
 		if (employee.getUser() != null) {
 			dto.setEmail(employee.getUser().getEmail());
@@ -156,6 +167,15 @@ public class EpUserServiceImpl implements EpUserService {
 
 		dto.setAuthPic(employee.getAuthPic());
 		return dto;
+	}
+
+	@Override
+	public ResponseEntityDto getUserStatus(String email) {
+		AccountStatus guestUserStatus = userDao.findByEmail(email)
+			.map(user -> user.getEmployee().getAccountStatus())
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+
+		return new ResponseEntityDto(false, guestUserStatus);
 	}
 
 	private EpUserAuthPicResponseDto mapEmployeeToUserAuthPicDto(Employee employee) {

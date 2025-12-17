@@ -48,6 +48,8 @@ import com.skapp.enterprise.common.model.master.SuperAdmin;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
+import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
@@ -63,6 +65,8 @@ import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
+import com.skapp.enterprise.pm.service.EpGuestUserService;
+import com.skapp.enterprise.people.service.EpUserEmailService;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,11 +145,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final ValidationService validationService;
 
+	private final EpGuestUserService epGuestUserService;
+
+	private final EpUserEmailService epUserEmailService;
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
 	@Value("${jwt.refresh-token.short-duration.expiration-time}")
 	private Long jwtShortDurationRefreshTokenExpirationMs;
+
+	@Value("${jwt.refresh-token.extended-duration.expiration-time}")
+	private Long jwtExtendedDurationRefreshTokenExpirationMs;
 
 	@Value("${jwt.access-token.expiration-time}")
 	private Long jwtAccessTokenExpirationMs;
@@ -165,7 +176,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			EpCommonEmailService emailService, RestTemplate restTemplate, GoogleTokenValidator googleTokenValidator,
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
-			TenantDao tenantDao, ValidationService validationService) {
+			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
+			EpUserEmailService epUserEmailService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -189,6 +201,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.recaptchaConfig = recaptchaConfig;
 		this.tenantDao = tenantDao;
 		this.validationService = validationService;
+		this.epGuestUserService = epGuestUserService;
+		this.epUserEmailService = epUserEmailService;
 	}
 
 	@Override
@@ -620,6 +634,125 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	@Override
+	public ResponseEntityDto sendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		log.info("sendGuestUserSignInOtp: execution started for email={}, tenantId={}",
+				epGuestUserSignInRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		User user = epGuestUserService.validateGuestUserEmail(epGuestUserSignInRequestDto.getEmail());
+
+		String otpCode = generateOTP();
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+
+		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
+		passwordResetOtp.setUserId(user.getUserId());
+		passwordResetOtp.setVerificationCode(otpCode);
+		passwordResetOtp.setOtpExpiryTime(expiryTime);
+		passwordResetOtp.setVerified(false);
+
+		passwordResetOtpDao.save(passwordResetOtp);
+		log.info("sendGuestUserSignInOtp: OTP generated and saved for userId={}", user.getUserId());
+		epUserEmailService.sendGuestUserOtpEmail(user, otpCode);
+		log.info("sendGuestUserSignInOtp: OTP email sent to {}", user.getEmail());
+
+		return new ResponseEntityDto(false, "Guest user sign in OTP sent successfully");
+	}
+
+	@Override
+	public ResponseEntityDto resendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto) {
+		log.info("resendGuestUserSignInOtp: execution started for email={}, tenantId={}",
+				epGuestUserSignInRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		User user = epGuestUserService.validateGuestUserEmail(epGuestUserSignInRequestDto.getEmail());
+
+		String otpCode = generateOTP();
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+
+		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
+		if (passwordResetOtp == null) {
+			log.warn("resendGuestUserSignInOtp: OTP not found for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
+		}
+
+		if (passwordResetOtp.getVerificationCode() == null) {
+			log.warn("resendGuestUserSignInOtp: OTP already verified for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_ALREADY_VERIFIED);
+		}
+
+		passwordResetOtp.setUserId(user.getUserId());
+		passwordResetOtp.setVerificationCode(otpCode);
+		passwordResetOtp.setOtpExpiryTime(expiryTime);
+		passwordResetOtp.setVerified(false);
+
+		passwordResetOtpDao.save(passwordResetOtp);
+		log.info("resendGuestUserSignInOtp: OTP regenerated and saved for userId={}", user.getUserId());
+		epUserEmailService.sendGuestUserOtpEmail(user, otpCode);
+		log.info("resendGuestUserSignInOtp: OTP email resent to {}", user.getEmail());
+
+		return new ResponseEntityDto(false, "Password reset OTP resent successfully");
+	}
+
+	@Override
+	public ResponseEntityDto validateGuestUserSignInOtp(EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto) {
+		log.info("validateGuestUserSignInOtp: execution started for email={}, tenantId={}",
+				epGuestUserOtpVerifyRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		User user = epGuestUserService.validateGuestUserEmail(epGuestUserOtpVerifyRequestDto.getEmail());
+
+		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
+
+		if (passwordResetOtp == null) {
+			log.warn("validateGuestUserSignInOtp: OTP not found for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
+		}
+
+		if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
+				epGuestUserOtpVerifyRequestDto.getOtp())) {
+			log.warn("validateGuestUserSignInOtp: Invalid or expired OTP provided for userId={}", user.getUserId());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
+		}
+
+		passwordResetOtp.setVerificationCode(null);
+		passwordResetOtp.setOtpExpiryTime(null);
+		passwordResetOtp.setVerified(true);
+		passwordResetOtpDao.save(passwordResetOtp);
+
+		Optional<Employee> employee = employeeDao.findById(user.getUserId());
+		if (employee.isEmpty()) {
+			log.warn("validateGuestUserSignInOtp: Employee not found for userId={}", user.getUserId());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Employee userEmployee = employee.get();
+		boolean isUpdated = false;
+
+		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
+			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
+			isUpdated = true;
+			log.info("validateGuestUserSignInOtp: Account status updated to ACTIVE for employeeId={}",
+					userEmployee.getEmployeeId());
+		}
+
+		if (isUpdated) {
+			employeeDao.save(userEmployee);
+			log.info("validateGuestUserSignInOtp: Employee entity updated for employeeId={}",
+					userEmployee.getEmployeeId());
+		}
+
+		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
+			.employeeToEmployeeSignInResponseDto(userEmployee);
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		SignInResponseDto signInResponseDto = new SignInResponseDto();
+		signInResponseDto.setAccessToken(accessToken);
+		signInResponseDto.setRefreshToken(refreshToken);
+		signInResponseDto.setEmployee(employeeSignInResponseDto);
+		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
+
+		log.info("validateGuestUserSignInOtp: OTP verified and updated for userId={}", user.getUserId());
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
 	public ResponseEntityDto verifyPasswordResetOTP(EpPasswordResetOtpVerifyDto epPasswordResetOtpVerifyDto) {
 		log.info("verifyPasswordResetOTP: execution started for email={}, tenantId={}",
 				epPasswordResetOtpVerifyDto.getEmail(), epPasswordResetOtpVerifyDto.getTenantId());
@@ -716,14 +849,24 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN);
 		shortDurationRoles.add(AuthConstants.AUTH_ROLE + Role.LEAVE_ADMIN);
 
+		Set<String> extendedDurationRoles = new HashSet<>();
+		extendedDurationRoles.add(AuthConstants.AUTH_ROLE + Role.PM_GUEST_EMPLOYEE);
+
 		boolean hasShortDurationRole = userDetails.getAuthorities()
 			.stream()
 			.anyMatch(authority -> shortDurationRoles.contains(authority.getAuthority()));
+
+		boolean hasExtendedDurationRole = userDetails.getAuthorities()
+			.stream()
+			.anyMatch(authority -> extendedDurationRoles.contains(authority.getAuthority()));
 
 		long jwtRefreshTokenExpirationMs;
 
 		if (hasShortDurationRole) {
 			jwtRefreshTokenExpirationMs = jwtShortDurationRefreshTokenExpirationMs;
+		}
+		else if (hasExtendedDurationRole) {
+			jwtRefreshTokenExpirationMs = jwtExtendedDurationRefreshTokenExpirationMs;
 		}
 		else {
 			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;

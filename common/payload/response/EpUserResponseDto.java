@@ -23,4 +23,6 @@ public class EpUserResponseDto {
 
 	private AccountStatus accountStatus;
 
+	private EmployeeRolesDto roles;
+
 }

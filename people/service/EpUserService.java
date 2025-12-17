@@ -1,5 +1,6 @@
 package com.skapp.enterprise.people.service;
 
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
@@ -14,10 +15,14 @@ public interface EpUserService {
 
 	TenantStatus getCurrentUserTenantStatus();
 
-	List<EpUserResponseDto> getUsersByIdsOrSearch(List<Long> employeeIds, String search);
+	List<EpUserResponseDto> getAllUsersOrByIds(List<Long> employeeIds);
 
-	List<EpUserAuthPicResponseDto> getUserAuthPicsByIdsOrSearch(List<Long> employeeIds, String search);
+	List<EpUserAuthPicResponseDto> getAllUserAuthPicsOrByIds(List<Long> employeeIds);
 
 	List<Employee> getUsersByIds(List<Long> employeeIds);
+
+	EpUserResponseDto mapEmployeeToUserDto(Employee employee);
+
+	ResponseEntityDto getUserStatus(String email);
 
 }

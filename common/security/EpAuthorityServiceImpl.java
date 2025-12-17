@@ -34,13 +34,15 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 
 		Optional.ofNullable(employeeRole.getEsignRole())
 			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.ESIGN_ADMIN, Role.ESIGN_SENDER,
-					Role.ESIGN_EMPLOYEE));
+					Role.ESIGN_EMPLOYEE, null));
 
 		Optional.ofNullable(employeeRole.getPmRole())
-			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.PM_ADMIN, null, Role.PM_EMPLOYEE));
+			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.PM_ADMIN, null, Role.PM_EMPLOYEE,
+					Role.PM_GUEST_EMPLOYEE));
 
 		Optional.ofNullable(employeeRole.getInvoiceRole())
-			.ifPresent(role -> addRoleHierarchy(authorities, role, Role.INVOICE_ADMIN, Role.INVOICE_MANAGER, null));
+			.ifPresent(
+					role -> addRoleHierarchy(authorities, role, Role.INVOICE_ADMIN, Role.INVOICE_MANAGER, null, null));
 
 		ModuleConfig moduleConfig = moduleDao.findAll().getFirst();
 		return authorities.stream().filter(authority -> {

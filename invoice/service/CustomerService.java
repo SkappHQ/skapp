@@ -6,7 +6,6 @@ import com.skapp.enterprise.invoice.payload.request.CustomerFilterDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerStatusUpdateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CheckEmailRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
-import jakarta.validation.Valid;
 
 public interface CustomerService {
 

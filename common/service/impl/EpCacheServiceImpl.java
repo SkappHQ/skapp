@@ -11,6 +11,9 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -57,6 +60,18 @@ public class EpCacheServiceImpl extends CacheServiceImpl {
 		catch (RedisConnectionFailureException e) {
 			log.error("invalidate: Redis connection failed: {}", e.getMessage());
 		}
+	}
+
+	@Override
+	public List<String> getValuesByPattern(String pattern) {
+		Set<String> keys = redisTemplate.keys(generateTenantKey(pattern));
+
+		if (keys.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> values = redisTemplate.opsForValue().multiGet(keys);
+		return values != null ? values : Collections.emptyList();
 	}
 
 	private String generateTenantKey(String cacheKey) {
