@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.config;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.esignature.util.AuditRequestContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,6 +64,11 @@ public class TenantFilter extends OncePerRequestFilter {
 
 		try {
 			TenantContext.setCurrentTenant(tenantId.toLowerCase());
+
+			// Capture user-agent for audit context
+			String userAgent = request.getHeader("User-Agent");
+			AuditRequestContext.set(userAgent);
+
 			filterChain.doFilter(request, response);
 		}
 		catch (ServletException e) {
@@ -74,6 +80,7 @@ public class TenantFilter extends OncePerRequestFilter {
 		}
 		finally {
 			TenantContext.clearCurrentTenant();
+			AuditRequestContext.clear();
 		}
 	}
 

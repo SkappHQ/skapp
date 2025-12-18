@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -17,6 +19,7 @@ import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
+import com.skapp.enterprise.esignature.payload.request.MetadataRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AuditValidationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
@@ -27,6 +30,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.util.AuditRequestContext;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -113,9 +117,30 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		auditTrail.setAction(auditTrailDto.getAction());
 
+		// Build metadata with user_agent included
 		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode metadataNode = objectMapper.valueToTree(auditTrailDto.getMetadata());
-		auditTrail.setMetadata(metadataNode);
+		ArrayNode metadataArray = objectMapper.createArrayNode();
+
+		// Add user_agent to metadata if available
+		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
+		if (auditContext != null && auditContext.getUserAgent() != null) {
+			ObjectNode userAgentNode = objectMapper.createObjectNode();
+			userAgentNode.put("name", "user_agent");
+			userAgentNode.put("value", auditContext.getUserAgent());
+			metadataArray.add(userAgentNode);
+		}
+
+		// Add client-provided metadata
+		if (auditTrailDto.getMetadata() != null && !auditTrailDto.getMetadata().isEmpty()) {
+			for (MetadataRequestDto meta : auditTrailDto.getMetadata()) {
+				ObjectNode node = objectMapper.createObjectNode();
+				node.put("name", meta.getName());
+				node.put("value", meta.getValue());
+				metadataArray.add(node);
+			}
+		}
+
+		auditTrail.setMetadata(metadataArray);
 
 		auditTrail.setTimestamp(timestamp);
 
@@ -287,6 +312,32 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
 		auditTrail.setMetadata(metadata);
+
+		// Add user_agent to metadata if available
+		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
+		if (auditContext != null && auditContext.getUserAgent() != null) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			ArrayNode metadataArray;
+
+			// Convert existing metadata to ArrayNode
+			if (metadata instanceof ArrayNode) {
+				metadataArray = (ArrayNode) metadata;
+			}
+			else {
+				metadataArray = objectMapper.createArrayNode();
+				if (metadata != null) {
+					metadataArray.add(metadata);
+				}
+			}
+
+			// Add user_agent
+			ObjectNode userAgentNode = objectMapper.createObjectNode();
+			userAgentNode.put("name", "user_agent");
+			userAgentNode.put("value", auditContext.getUserAgent());
+			metadataArray.add(userAgentNode);
+
+			auditTrail.setMetadata(metadataArray);
+		}
 
 		auditTrail.setIsAuthorized(true);
 
