@@ -108,8 +108,6 @@ const Dashboard: NextPage = () => {
 
   const { setToastMessage } = useToast();
 
-  const translateEmployeeText = useTranslator("leaveModule", "myRequests");
-
   const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
@@ -256,7 +254,7 @@ const Dashboard: NextPage = () => {
           ? translateText(["myLeaveAllocations"])
           : translateText(["title"])
       }
-      isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+      isDividerVisible={true}
       customRightContent={
         showYearSelector ? (
           <LeaveYearSelector
