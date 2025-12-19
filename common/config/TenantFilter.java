@@ -66,7 +66,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
 			// Capture user-agent for request context
 			String userAgent = request.getHeader("User-Agent");
-			RequestContext.set(userAgent);
+			RequestContext.setUserAgent(userAgent);
 
 			filterChain.doFilter(request, response);
 		}

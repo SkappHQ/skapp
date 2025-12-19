@@ -15,8 +15,15 @@ public class RequestContext {
 		return context.get();
 	}
 
-	public static void set(String userAgent) {
-		Context requestContext = new Context();
+	public static void set(Context auditContext) {
+		context.set(auditContext);
+	}
+
+	public static void setUserAgent(String userAgent) {
+		Context requestContext = context.get();
+		if (requestContext == null) {
+			requestContext = new Context();
+		}
 		requestContext.setUserAgent(userAgent);
 		context.set(requestContext);
 	}
