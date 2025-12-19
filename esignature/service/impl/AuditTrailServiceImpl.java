@@ -122,11 +122,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		ArrayNode metadataArray = objectMapper.createArrayNode();
 
 		// Add user_agent to metadata if available
-		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
-		if (auditContext != null && auditContext.getUserAgent() != null) {
-			ObjectNode userAgentNode = objectMapper.createObjectNode();
-			userAgentNode.put("name", "user_agent");
-			userAgentNode.put("value", auditContext.getUserAgent());
+		ObjectNode userAgentNode = createUserAgentMetadataNode(objectMapper);
+		if (userAgentNode != null) {
 			metadataArray.add(userAgentNode);
 		}
 
@@ -311,33 +308,30 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
-		auditTrail.setMetadata(metadata);
+
+		// Build complete metadata with user_agent
+		ObjectMapper objectMapper = new ObjectMapper();
+		ArrayNode metadataArray;
+
+		// Convert existing metadata to ArrayNode
+		if (metadata instanceof ArrayNode) {
+			metadataArray = (ArrayNode) metadata;
+		}
+		else {
+			metadataArray = objectMapper.createArrayNode();
+			if (metadata != null) {
+				metadataArray.add(metadata);
+			}
+		}
 
 		// Add user_agent to metadata if available
-		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
-		if (auditContext != null && auditContext.getUserAgent() != null) {
-			ObjectMapper objectMapper = new ObjectMapper();
-			ArrayNode metadataArray;
-
-			// Convert existing metadata to ArrayNode
-			if (metadata instanceof ArrayNode) {
-				metadataArray = (ArrayNode) metadata;
-			}
-			else {
-				metadataArray = objectMapper.createArrayNode();
-				if (metadata != null) {
-					metadataArray.add(metadata);
-				}
-			}
-
-			// Add user_agent
-			ObjectNode userAgentNode = objectMapper.createObjectNode();
-			userAgentNode.put("name", "user_agent");
-			userAgentNode.put("value", auditContext.getUserAgent());
+		ObjectNode userAgentNode = createUserAgentMetadataNode(objectMapper);
+		if (userAgentNode != null) {
 			metadataArray.add(userAgentNode);
-
-			auditTrail.setMetadata(metadataArray);
 		}
+
+		// Set complete metadata once
+		auditTrail.setMetadata(metadataArray);
 
 		auditTrail.setIsAuthorized(true);
 
@@ -358,6 +352,22 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				+ auditTrail.getMetadata() + "_" + hashSecretKey + "_";
 
 		return HashUtil.hash(rawData);
+	}
+
+	/**
+	 * Creates an ObjectNode containing user_agent metadata from the current audit context.
+	 * @param objectMapper the ObjectMapper to use for creating the node
+	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
+	 */
+	private ObjectNode createUserAgentMetadataNode(ObjectMapper objectMapper) {
+		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
+		if (auditContext != null && auditContext.getUserAgent() != null) {
+			ObjectNode userAgentNode = objectMapper.createObjectNode();
+			userAgentNode.put("name", "user_agent");
+			userAgentNode.put("value", auditContext.getUserAgent());
+			return userAgentNode;
+		}
+		return null;
 	}
 
 }
