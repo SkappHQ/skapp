@@ -1751,6 +1751,11 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("updateSubscriptionQuantity: PRO feature {}, {}", quantity, isIncrement);
 	}
 
+	@Override
+	public void modifySubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
+		updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
+	}
+
 	/**
 	 * Validate the current user count with the user limit. This method is only available
 	 * for Pro tenants.
