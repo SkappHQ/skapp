@@ -376,6 +376,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.PENDING));
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
+		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
+
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.count(root));
 
@@ -1213,10 +1215,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeeRole> employeeRoleJoin = root.join(Employee_.employeeRole);
 
-		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, root, userJoin,
-				employeeRoleJoin);
+		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, root, userJoin);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
 		List<Order> orderList = new ArrayList<>();
@@ -1246,10 +1246,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<Employee> countRoot = countQuery.from(Employee.class);
 		Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
-		Join<Employee, EmployeeRole> countEmployeeRoleJoin = countRoot.join(Employee_.employeeRole);
 
-		List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countRoot, countUserJoin,
-				countEmployeeRoleJoin);
+		List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countRoot, countUserJoin);
 		countQuery.where(countPredicates.toArray(new Predicate[0]));
 		countQuery.select(criteriaBuilder.countDistinct(countRoot));
 
@@ -1263,11 +1261,12 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	private List<Predicate> buildPredicates(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
-			Root<Employee> root, Join<Employee, User> userJoin, Join<Employee, EmployeeRole> employeeRoleJoin) {
+			Root<Employee> root, Join<Employee, User> userJoin) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
-		predicates.add(criteriaBuilder.notEqual(employeeRoleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+
+		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
@@ -1332,6 +1331,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 						keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.EMAIL)), keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), keyword));
+	}
+
+	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
+			Join<Employee, User> userJoin, List<Predicate> predicates) {
+		// implemented in enterprise version
 	}
 
 	@Override
