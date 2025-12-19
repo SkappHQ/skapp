@@ -96,6 +96,10 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 
 		Predicate finalPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
 
+		Predicate notDeletedPredicate = criteriaBuilder.notEqual(employeeRoot.get(Employee_.accountStatus),
+				AccountStatus.DELETED);
+		finalPredicate = criteriaBuilder.and(finalPredicate, notDeletedPredicate);
+
 		if (email != null && !email.isEmpty()) {
 			Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)),
 					"%" + email.toLowerCase() + "%");
