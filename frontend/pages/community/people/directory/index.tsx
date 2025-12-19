@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useEffect } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -14,7 +14,7 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Directory: NextPage = () => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const isAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 

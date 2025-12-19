@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -26,7 +26,7 @@ export const useHandlePeopleEdit = () => {
 
   let employeeId;
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const { id } = router.query;
 

@@ -26,11 +26,15 @@ export const drawerHiddenProtectedRoutes = [
 ];
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
+  console.log(asPath)
+  
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
     (prefix) => {
       return asPath.startsWith(prefix);
     }
   );
+
+  console.log("isADrawerHiddenProtectedRoute", isADrawerHiddenProtectedRoute)
 
   if (!isADrawerHiddenProtectedRoute) {
     const formattedProtectedPaths = config.matcher.map((path) =>

@@ -1,4 +1,4 @@
-import { getSession } from "next-auth/react";
+import { getSession } from "~community/common/context/AuthContext";
 
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";

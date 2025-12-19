@@ -1,4 +1,4 @@
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
@@ -13,7 +13,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 
 export default function Index() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const tenantId = window.location.host.split(".")[0];
 

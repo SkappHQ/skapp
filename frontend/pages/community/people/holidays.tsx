@@ -1,5 +1,5 @@
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useEffect, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -22,7 +22,7 @@ const Holidays: NextPage = () => {
   const [isConcatenationDone, setIsConcatenationDone] =
     useState<boolean>(false);
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const isAdmin = session?.user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 

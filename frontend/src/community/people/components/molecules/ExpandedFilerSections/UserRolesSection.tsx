@@ -1,5 +1,5 @@
 import { Stack } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -25,7 +25,7 @@ const UserRolesSection = ({
     (state) => state
   );
 
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = useAuth();
 
   const peopleRoles = [
     { label: translateText(["admin"]), value: Role.PEOPLE_ADMIN },

@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { RefObject } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
@@ -25,7 +25,7 @@ interface Props {
 const PeopleIndividualSection = ({ employeeId, formRef }: Props) => {
   const { currentStep, employee } = usePeopleStore((state) => state);
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const isLeaveManager = data?.user.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN

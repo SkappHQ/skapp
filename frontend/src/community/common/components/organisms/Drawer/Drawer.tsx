@@ -12,7 +12,6 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
@@ -23,6 +22,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
+import { useAuth } from "~community/common/context/AuthContext";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import {
   ButtonSizes,
@@ -65,7 +65,7 @@ const Drawer = (): JSX.Element => {
 
   const router = useRouter();
 
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = useAuth();
 
   const queryMatches = useMediaQuery();
   const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);

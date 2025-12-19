@@ -1,6 +1,6 @@
-import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 
+import { useAuth } from "~community/common/context/AuthContext";
 import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
@@ -11,7 +11,7 @@ import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
 
 const useSessionData = () => {
-  const { data: sessionData, status: sessionStatus } = useSession();
+  const { data: sessionData, status: sessionStatus } = useAuth();
 
   const isFreeTier = useMemo(
     () => sessionData?.user?.tier === TierEnum.FREE,

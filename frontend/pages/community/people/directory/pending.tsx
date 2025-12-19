@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -16,7 +16,7 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const { data } = useSession();
+  const { data } = useAuth();
   const router = useRouter();
 
   const isAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);

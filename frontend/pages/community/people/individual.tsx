@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
@@ -30,7 +30,7 @@ const Individual: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("peopleModule");
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const { tab, viewEmployeeId } = router.query;
 

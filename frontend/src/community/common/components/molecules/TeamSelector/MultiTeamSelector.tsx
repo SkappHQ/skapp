@@ -1,6 +1,6 @@
 import { Box, Chip } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
@@ -43,7 +43,7 @@ const MultiTeamSelector = ({
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
-  const { data } = useSession();
+  const { data } = useAuth();
   const [teamsData, setTeamsData] = useState<
     TeamType[] | undefined | ManagerTeamType[]
   >([]);

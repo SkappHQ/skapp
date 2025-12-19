@@ -1,5 +1,5 @@
 import { Box, useTheme } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { JSX, useMemo } from "react";
 
@@ -30,7 +30,7 @@ const UserRolesTable = (): JSX.Element => {
   const { data: allUserRoles, isPending: isUserRolesPending } =
     useGetAllUserRoles();
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const formattedUserRoles = useMemo(() => {
     if (allUserRoles !== undefined && allUserRoles?.length > 0) {

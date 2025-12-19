@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -35,7 +35,7 @@ interface EmployeeDataProps {
 const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
   const translateText = useTranslator("peopleModule", "peoples");
   const router = useRouter();
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN

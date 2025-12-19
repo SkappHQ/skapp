@@ -1,12 +1,12 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import Button from "~community/common/components/atoms/Button/Button";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
+import { useAuth } from "~community/common/context/AuthContext";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import {
   ButtonSizes,
@@ -42,7 +42,7 @@ const TeamSelector = ({
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
-  const { data } = useSession();
+  const { data } = useAuth();
   const [teamsData, setTeamsData] = useState<
     TeamType[] | undefined | ManagerTeamType[]
   >([]);

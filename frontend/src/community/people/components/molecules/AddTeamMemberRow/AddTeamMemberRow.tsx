@@ -6,7 +6,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import * as React from "react";
 import { FC, useEffect, useState } from "react";
 
@@ -45,7 +45,7 @@ const AddTeamMemberRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const isAdmin = session?.user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 

@@ -1,5 +1,13 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import { getSession, signOut } from "next-auth/react";
+
+import { signOut } from "~community/common/context/AuthContext";
+import {
+  clearAuthData,
+  getAccessToken,
+  isTokenExpired,
+  setAccessToken,
+  setUserData
+} from "~community/common/utils/tokenUtils";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
@@ -20,23 +28,78 @@ export const authFetchV2 = axios.create({
   baseURL: getApiUrl() + ApiVersions.V2
 });
 
-const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const session = await getSession();
+/**
+ * Refresh token function
+ */
+const refreshAccessToken = async (): Promise<string | null> => {
+  try {
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include"
+    });
 
+    if (!response.ok) {
+      throw new Error("Token refresh failed");
+    }
+
+    const data = await response.json();
+
+    if (data.accessToken) {
+      setAccessToken(data.accessToken);
+      if (data.user) {
+        setUserData(data.user);
+      }
+      return data.accessToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    clearAuthData();
+    return null;
+  }
+};
+
+const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
+  // Skip auth for certain endpoints
   if (
-    session?.user.accessToken &&
-    !config.url?.includes("/refresh-token") &&
-    !config.url?.includes("/app-setup-status")
+    config.url?.includes("/refresh-token") ||
+    config.url?.includes("/app-setup-status") ||
+    config.url?.includes("/sign-in") ||
+    config.url?.includes("/sign-up")
   ) {
-    config.headers.Authorization = `Bearer ${session?.user.accessToken}`;
-  } else if (session && !session?.user.accessToken) {
-    signOut();
+    const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
+    if (isEnterpriseMode && tenantID) {
+      config.headers["X-Tenant-ID"] = tenantID;
+    }
+    return config;
+  }
+
+  // Get access token from localStorage
+  let accessToken = getAccessToken();
+
+  // Check if token is expired
+  if (accessToken && isTokenExpired(accessToken)) {
+    // Try to refresh the token
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      accessToken = newToken;
+    } else {
+      // Refresh failed, sign out
+      signOut();
+      throw new Error("Session expired");
+    }
+  }
+
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
   if (isEnterpriseMode && tenantID) {
     config.headers["X-Tenant-ID"] = tenantID;
   }
+
   return config;
 };
 

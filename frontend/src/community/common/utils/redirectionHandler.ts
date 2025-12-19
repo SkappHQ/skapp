@@ -1,4 +1,4 @@
-import { GetSessionParams, getSession } from "next-auth/react";
+import { GetSessionParams, getSession } from "~community/common/context/AuthContext";
 
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";

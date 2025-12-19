@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 
@@ -153,7 +153,7 @@ const Dashboard: NextPage = () => {
     "myRequests",
     "myLeaveAllocation"
   );
-  const { data } = useSession();
+  const { data } = useAuth();
 
   // Check if current tenant should use custom dashboard
   const tempUseCustomDashboard = tempShouldUseCustomDashboard(

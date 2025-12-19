@@ -53,6 +53,8 @@ const BaseLayout = ({ children }: Props) => {
     return isClient ? IsAProtectedUrlWithDrawer(asPath) : false;
   }, [asPath, isClient]);
 
+  console.log("isProtectedRouteWithDrawer", isProtectedRouteWithDrawer)
+
   useEffect(() => {
     if (isProtectedRouteWithDrawer && token) {
       setDeviceToken(token);

@@ -1,5 +1,5 @@
-import { NextRequestWithAuth, withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { parse } from "cookie";
+import { NextRequest, NextResponse } from "next/server";
 
 import ROUTES, {
   employeeRestrictedRoutes,
@@ -15,6 +15,8 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+
+const SESSION_COOKIE_NAME = "skapp-session";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -164,176 +166,94 @@ const allowedRoutes: Record<
   ...commonRoutes
 };
 
-export default withAuth(
-  async function middleware(request: NextRequestWithAuth) {
-    const currentPath = request.nextUrl.pathname;
+/**
+ * Extract session from request cookies
+ * Note: In Edge runtime, we can't decrypt. We just check if session cookie exists.
+ * Actual validation happens in API routes (Node.js runtime)
+ */
+function getSessionFromRequest(request: NextRequest): any | null {
+  try {
+    const cookieHeader = request.headers.get("cookie") || "";
+    const cookies = parse(cookieHeader);
+    const encryptedSession = cookies[SESSION_COOKIE_NAME];
 
-    if (
-      currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-      currentPath.startsWith(ROUTES.SIGN.SIGN) ||
-      currentPath.startsWith(ROUTES.SIGN.INFO)
-    ) {
-      return NextResponse.next();
-    }
-    const { token } = request.nextauth;
-
-    const roles: (
-      | AdminTypes
-      | ManagerTypes
-      | EmployeeTypes
-      | SuperAdminType
-      | SenderTypes
-    )[] = token?.roles || [];
-
-    const isPasswordChangedForTheFirstTime =
-      token?.isPasswordChangedForTheFirstTime;
-
-    if (
-      !isPasswordChangedForTheFirstTime &&
-      currentPath !== ROUTES.AUTH.RESET_PASSWORD
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
-      );
-    } else if (
-      isPasswordChangedForTheFirstTime &&
-      currentPath === ROUTES.AUTH.RESET_PASSWORD
-    ) {
-      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+    if (!encryptedSession) {
+      return null;
     }
 
-    if (
-      roles.includes(ManagerTypes.LEAVE_MANAGER) &&
-      !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-      currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-
-    if (
-      currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
-      !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
-      !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
-      !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
-    ) {
-      if (roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) {
-        return NextResponse.redirect(
-          new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
-        );
-      }
-    }
-
-    const isAllowed = roles.some((role) =>
-      allowedRoutes[role]?.some((url) =>
-        request.nextUrl.pathname.startsWith(url)
-      )
-    );
-
-    if (isAllowed) {
-      if (
-        request.nextUrl.pathname.includes(ROUTES.SIGN.BASE) &&
-        !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-      ) {
-        return NextResponse.redirect(
-          new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-        );
-      }
-
-      if (
-        request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-        token?.tier !== "PRO"
-      ) {
-        return NextResponse.redirect(
-          new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-        );
-      }
-
-      // Check manager restricted routes
-      const managerRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        managerRestrictedRoutes,
-        AdminTypes.PEOPLE_ADMIN,
-        roles
-      );
-      if (managerRedirect) return managerRedirect;
-
-      // Check invoice employee restricted routes
-      const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        invoiceEmployeeRestrictedRoutes,
-        ManagerTypes.INVOICE_MANAGER,
-        roles
-      );
-      if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
-
-      // Check employee restricted routes
-      const employeeRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        employeeRestrictedRoutes,
-        ManagerTypes.PEOPLE_MANAGER,
-        roles
-      );
-      if (employeeRedirect) return employeeRedirect;
-
-      return NextResponse.next();
-    }
-
-    // Redirect to /unauthorized if no access
-    if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token
-    }
+    // In middleware (Edge runtime), we can't decrypt
+    // Just return a truthy value to indicate session exists
+    // Actual session validation happens in API routes
+    return { exists: true };
+  } catch (error) {
+    console.error("Error checking session from request:", error);
+    return null;
   }
-);
+}
 
-// Define the matcher patterns for this middleware
+export default async function middleware(request: NextRequest) {
+  const currentPath = request.nextUrl.pathname;
+
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    ROUTES.AUTH.SIGNIN,
+    ROUTES.AUTH.SIGNUP,
+    ROUTES.AUTH.ENTERPRISE_SIGNIN,
+    ROUTES.AUTH.DOMAIN_VERIFICATION,
+    ROUTES.AUTH.FORGOT_PASSWORD,
+    ROUTES.AUTH.FORGET_PASSWORD,
+    ROUTES.AUTH.VERIFY_RESET_PASSWORD,
+    ROUTES.AUTH.VERIFY_FORGOT_OTP,
+    ROUTES.AUTH.VERIFY_GUEST,
+    ROUTES.AUTH.VERIFY_GUEST_OTP,
+    ROUTES.AUTH.ERROR,
+    ROUTES.MAINTENANCE,
+    ROUTES.SIGN.DOCUMENT_ACCESS,
+    ROUTES.AUTH.SYSTEM_UPDATE,
+    "/redirect",
+    "/api/auth" // Allow all auth API routes
+  ];
+
+  // Check if current path is a public route
+  const isPublicRoute = publicRoutes.some((route) =>
+    currentPath.startsWith(route)
+  );
+
+  // Allow public routes and sign document routes without auth check
+  if (
+    isPublicRoute ||
+    currentPath.startsWith(ROUTES.SIGN.SIGN) ||
+    currentPath.startsWith(ROUTES.SIGN.INFO)
+  ) {
+    return NextResponse.next();
+  }
+
+  // Get session from cookies
+  const session = getSessionFromRequest(request);
+
+  // Check if user is authenticated
+  if (!session) {
+    // Redirect to signin if not authenticated
+    const url = new URL(ROUTES.AUTH.SIGNIN, request.url);
+    url.searchParams.set("callbackUrl", currentPath);
+    return NextResponse.redirect(url);
+  }
+
+  // Session exists, allow access
+  // Role-based authorization and other checks are done client-side
+  // This middleware only checks if user is authenticated (has session cookie)
+  return NextResponse.next();
+}
+
 export const config = {
   matcher: [
-    // All community routes
-    "/community/:path*",
-    // Super admin routes
-    "/setup-organization/:path*",
-    "/module-selection",
-    "/payment",
-    // Common routes
-    "/dashboard/:path*",
-    "/configurations/:path*",
-    "/settings/:path*",
-    "/notifications",
-    "/account",
-    "/reset-password",
-    "/unauthorized",
-    "/verify/email",
-    "/verify/success",
-    // Module routes
-    "/leave/:path*",
-    "/people/:path*",
-    "/timesheet/:path*",
-    "/remove-people",
-    "/integrations",
-    "/subscription",
-    "/user-account",
-    // Sign routes
-    "/sign",
-    "/sign/contacts/:path*",
-    "/sign/create/:path*",
-    "/sign/folders/:path*",
-    "/sign/inbox/:path*",
-    "/sign/sent/:path*",
-    "/sign/complete/:path*",
-    // Project routes
-    "/projects/:path*",
-    // Invoice routes
-    "/invoice",
-    "/invoice/:path*",
-    "/invoice/create/:path*"
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files
+     */
+    "/((?!_next/static|_next/image|favicon|logo|image|public|.*\\..*|firebase-messaging-sw\\.js).*)"
   ]
 };

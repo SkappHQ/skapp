@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { signOut, useSession } from "next-auth/react";
 import { ReactNode, useEffect, useState } from "react";
 
 import {
@@ -8,12 +7,13 @@ import {
   COMMON_ERROR_TOKEN_EXPIRED,
   COMMON_ERROR_USER_VERSION_MISMATCH
 } from "~community/common/constants/errorMessageKeys";
+import { signOut, useAuth } from "~community/common/context/AuthContext";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import ROUTES from "../constants/routes";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
-  const { update, data: session } = useSession();
+  const { update, data: session } = useAuth();
 
   const [queryClient] = useState(() => {
     return new QueryClient({

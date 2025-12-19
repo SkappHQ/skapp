@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -20,7 +20,7 @@ const AllTimesheetsPage: NextPage = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
   const router = useRouter();
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 

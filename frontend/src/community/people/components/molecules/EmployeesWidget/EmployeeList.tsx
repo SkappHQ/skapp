@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { FC, useEffect, useRef } from "react";
 
@@ -35,7 +35,7 @@ const EmployeeList: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
-  const { data } = useSession();
+  const { data } = useAuth();
   const router = useRouter();
   const translateText = useTranslator("peopleModule", "peoples");
 

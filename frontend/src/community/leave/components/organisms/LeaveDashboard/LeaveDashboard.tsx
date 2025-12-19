@@ -2,7 +2,7 @@ import { TrendingUp } from "@mui/icons-material";
 import { Box, Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateTime } from "luxon";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
@@ -34,7 +34,7 @@ const LeaveDashboard = (): JSX.Element => {
   const [teamId, setTeamId] = useState<string | number>("");
   const [teamName, setTeamName] = useState<string>(translateText(["all"]));
   const [isFetchingEnabled, setIsFetchingEnabled] = useState<boolean>(false);
-  const { data } = useSession();
+  const { data } = useAuth();
   const theme: Theme = useTheme();
   const classes = styles(theme);
   const router = useRouter();

@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { JSX, useState } from "react";
 
 import {
@@ -17,7 +17,7 @@ import { useDefaultCapacity } from "~community/configurations/api/timeConfigurat
 const EmployeeTimesheet = (): JSX.Element => {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const { data: workSummaryData } = useGetEmployeeWorkSummary(
     startTime,

@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn } from "next-auth/react";
+import { signIn } from "~community/common/context/AuthContext";
 import { NextRouter, useRouter } from "next/router";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 

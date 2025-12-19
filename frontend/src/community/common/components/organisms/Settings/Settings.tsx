@@ -8,11 +8,11 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { FC, ReactNode } from "react";
 
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
 import { appModes } from "~community/common/constants/configs";
+import { useAuth } from "~community/common/context/AuthContext";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -34,14 +34,16 @@ interface SettingsSectionProps {
   customSettingsComponent?: ReactNode;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) => {
+const SettingsSection: FC<SettingsSectionProps> = ({
+  customSettingsComponent
+}) => {
   const translatedText = useTranslator("settings");
 
   const theme: Theme = useTheme();
 
   const isLargeScreen: boolean = useMediaQuery(theme.breakpoints.down("lg"));
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const { setModalType, setModalOpen } = useCommonStore((state) => state);
 
@@ -130,11 +132,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
             </>
           )}
 
-          {customSettingsComponent && (
-            <>
-              {customSettingsComponent}        
-            </>
-          )}
+          {customSettingsComponent && <>{customSettingsComponent}</>}
 
           <Box sx={{ py: "1.5rem" }}>
             <Typography variant="h2" sx={{ pb: "0.75rem" }}>

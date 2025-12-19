@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { SxProps, type Theme, useTheme } from "@mui/material/styles";
 import { DateTime } from "luxon";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { Dispatch, FC, SetStateAction, useEffect, useRef } from "react";
 
@@ -48,7 +48,7 @@ const ClockInTable: FC<Props> = ({
   setIsFetchEnable
 }) => {
   const theme: Theme = useTheme();
-  const { data } = useSession();
+  const { data } = useAuth();
   const router = useRouter();
   const translateTexts = useTranslator("attendanceModule");
 

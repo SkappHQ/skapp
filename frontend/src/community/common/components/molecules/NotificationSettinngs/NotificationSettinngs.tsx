@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { JSX } from "react";
 
 import {
@@ -21,7 +21,7 @@ const NotificationSettings = (): JSX.Element => {
 
   const { data: settings } = useGetNotificationSettings();
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const updateMutation = useUpdateNotificationSettings(() => {
     setToastMessage({

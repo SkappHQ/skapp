@@ -1,6 +1,6 @@
 import { Box, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { JSX, useEffect, useState } from "react";
 
 import {
@@ -47,7 +47,7 @@ const AttendanceDashboard = (): JSX.Element => {
   );
   const [isFetchingEnabled, setIsFetchingEnabled] = useState<boolean>(false);
 
-  const { data } = useSession();
+  const { data } = useAuth();
   const theme: Theme = useTheme();
 
   useEffect(() => {

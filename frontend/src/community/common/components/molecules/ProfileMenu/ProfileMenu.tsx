@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
@@ -25,7 +25,7 @@ interface Props {
 const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const router = useRouter();
   const translateText = useTranslator("appBar");
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
   const { data: employee } = useGetUserPersonalDetails();
   const isPeopleManagerOrSuperAdmin = session?.user.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN

@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { RefObject, useEffect, useState } from "react";
 
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
@@ -30,7 +30,7 @@ const DirectorySteppers = ({
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
   const translateText = useTranslator("peopleModule");
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const { isPeopleAdmin } = useSessionData();
 

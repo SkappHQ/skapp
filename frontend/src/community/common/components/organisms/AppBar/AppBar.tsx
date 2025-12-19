@@ -1,6 +1,6 @@
 import { Badge, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useEffect, useRef, useState } from "react";
 
 import ClockWidget from "~community/attendance/components/molecules/ClockWidget/ClockWidget";
@@ -31,7 +31,7 @@ const AppBar = () => {
 
   const { handleDrawer } = useDrawer();
 
-  const { data: session, status } = useSession();
+  const { data: session, status } = useAuth();
 
   const userInfoRef = useRef<HTMLDivElement | null>(null);
   const { notifyData, setNotifyData } = useCommonStore((state) => state);

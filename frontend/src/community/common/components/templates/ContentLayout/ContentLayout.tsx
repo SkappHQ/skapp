@@ -7,7 +7,6 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
-import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { JSX, memo, useEffect, useMemo } from "react";
@@ -20,6 +19,7 @@ import VersionUpgradeBanner from "~community/common/components/molecules/Version
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
+import { signOut, useAuth } from "~community/common/context/AuthContext";
 import {
   ButtonSizes,
   ButtonStyle
@@ -133,7 +133,7 @@ const ContentLayout = ({
 
   const router = useRouter();
 
-  const { data } = useSession();
+  const { data } = useAuth();
   const { asPath } = useRouter();
 
   const { showInfoBanner, isDailyNotifyDisplayed } = useVersionUpgradeStore(

@@ -1,6 +1,6 @@
 import { Box, Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
@@ -62,7 +62,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const AVAILABLE_FIELD_COUNT = 2;
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const { asPath } = useRouter();
 

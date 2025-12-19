@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider } from "~community/common/context/AuthContext";
 
 import MockTheme from "~community/common/mocks/MockTheme";
 

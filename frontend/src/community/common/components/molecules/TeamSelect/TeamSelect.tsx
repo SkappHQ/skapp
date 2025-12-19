@@ -1,5 +1,5 @@
 import { SelectChangeEvent } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,7 +22,7 @@ const TeamSelect = ({
 }) => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
 
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: allManagerTeamsData } = useGetAllManagerTeams();

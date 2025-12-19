@@ -2,7 +2,6 @@ import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
@@ -13,6 +12,7 @@ import RequestPasswordChangeModal from "~community/common/components/molecules/R
 import SignInForm from "~community/common/components/organisms/Forms/SignInForm/SignInForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
 import ROUTES from "~community/common/constants/routes";
+import { signIn, useAuth } from "~community/common/context/AuthContext";
 import { AppVersionNotificationType } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -36,7 +36,7 @@ interface SignInValues {
 const SignIn: NextPage = () => {
   const router = useRouter();
 
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
 
   const { setToastMessage } = useToast();
 

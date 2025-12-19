@@ -1,5 +1,5 @@
 import { SxProps, Theme } from "@mui/material";
-import { NextRequestWithAuth } from "next-auth/middleware";
+import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
@@ -462,7 +462,7 @@ export const downloadAttachmentToUserDevice = (attachment: FileUploadType) => {
 };
 
 export const checkRestrictedRoutesAndRedirect = (
-  request: NextRequestWithAuth,
+  request: NextRequest,
   restrictedRoutes: string[],
   requiredRole: string,
   roles: string[]

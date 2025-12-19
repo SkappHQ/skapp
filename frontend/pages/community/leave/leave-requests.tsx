@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -24,7 +24,7 @@ const LeaveRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveRequests");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchErrors] = useState<string | undefined>(undefined);

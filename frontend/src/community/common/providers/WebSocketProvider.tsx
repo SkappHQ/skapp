@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import React, {
   createContext,
   useContext,
@@ -6,6 +5,8 @@ import React, {
   useRef,
   useState
 } from "react";
+
+import { useAuth } from "~community/common/context/AuthContext";
 
 import { useTranslator } from "../hooks/useTranslator";
 import { useCommonStore } from "../stores/commonStore";
@@ -30,7 +31,7 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const { data: session } = useSession();
+  const { data: session } = useAuth();
   const [messages, setMessages] = useState<string[]>([]);
   const [error, setError] = useState<ErrorType | null>(null);
   const socketRef = useRef<WebSocket | null>(null);

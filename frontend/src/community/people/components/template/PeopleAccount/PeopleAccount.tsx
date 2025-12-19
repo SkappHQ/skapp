@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { useAuth } from "~community/common/context/AuthContext";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import AccountSectionWrapper from "../../organisms/AccountSectionWrapper/AccountSectionWrapper";
 
 const PeopleAccount = () => {
-  const { data } = useSession();
+  const { data } = useAuth();
 
   const translateText = useTranslator("peopleModule");
 
