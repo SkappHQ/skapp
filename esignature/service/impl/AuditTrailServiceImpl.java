@@ -60,6 +60,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final DocumentLinkService documentLinkService;
 
+	private final ObjectMapper objectMapper;
+
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
 
@@ -118,11 +120,10 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAction(auditTrailDto.getAction());
 
 		// Build metadata with user_agent included
-		ObjectMapper objectMapper = new ObjectMapper();
 		ArrayNode metadataArray = objectMapper.createArrayNode();
 
 		// Add user_agent to metadata if available
-		ObjectNode userAgentNode = createUserAgentMetadataNode(objectMapper);
+		ObjectNode userAgentNode = createUserAgentMetadataNode();
 		if (userAgentNode != null) {
 			metadataArray.add(userAgentNode);
 		}
@@ -230,8 +231,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setAuditId(auditTrail.getId());
 			responseDto.setAction(auditTrail.getAction());
 
-			ObjectMapper objectMapper = new ObjectMapper();
-
 			List<MetadataResponseDto> metadataList = objectMapper.convertValue(auditTrail.getMetadata(),
 					new TypeReference<List<MetadataResponseDto>>() {
 					});
@@ -310,7 +309,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setIpAddress(ipAddress);
 
 		// Build complete metadata with user_agent
-		ObjectMapper objectMapper = new ObjectMapper();
 		ArrayNode metadataArray = objectMapper.createArrayNode();
 
 		// Copy existing metadata into a new ArrayNode to avoid mutating the input parameter
@@ -322,7 +320,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		}
 
 		// Add user_agent to metadata if available
-		ObjectNode userAgentNode = createUserAgentMetadataNode(objectMapper);
+		ObjectNode userAgentNode = createUserAgentMetadataNode();
 		if (userAgentNode != null) {
 			metadataArray.add(userAgentNode);
 		}
@@ -353,10 +351,9 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	/**
 	 * Creates an ObjectNode containing user_agent metadata from the current request context.
-	 * @param objectMapper the ObjectMapper to use for creating the node
 	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
 	 */
-	private ObjectNode createUserAgentMetadataNode(ObjectMapper objectMapper) {
+	private ObjectNode createUserAgentMetadataNode() {
 		RequestContext.Context context = RequestContext.get();
 		if (context != null && context.getUserAgent() != null) {
 			ObjectNode userAgentNode = objectMapper.createObjectNode();
