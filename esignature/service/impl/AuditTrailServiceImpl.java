@@ -30,7 +30,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.util.AuditRequestContext;
+import com.skapp.enterprise.common.config.RequestContext;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -311,17 +311,14 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		// Build complete metadata with user_agent
 		ObjectMapper objectMapper = new ObjectMapper();
-		ArrayNode metadataArray;
+		ArrayNode metadataArray = objectMapper.createArrayNode();
 
-		// Convert existing metadata to ArrayNode
+		// Copy existing metadata into a new ArrayNode to avoid mutating the input parameter
 		if (metadata instanceof ArrayNode) {
-			metadataArray = (ArrayNode) metadata;
+			metadataArray.addAll((ArrayNode) metadata);
 		}
-		else {
-			metadataArray = objectMapper.createArrayNode();
-			if (metadata != null) {
-				metadataArray.add(metadata);
-			}
+		else if (metadata != null) {
+			metadataArray.add(metadata);
 		}
 
 		// Add user_agent to metadata if available
@@ -355,16 +352,16 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	/**
-	 * Creates an ObjectNode containing user_agent metadata from the current audit context.
+	 * Creates an ObjectNode containing user_agent metadata from the current request context.
 	 * @param objectMapper the ObjectMapper to use for creating the node
 	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
 	 */
 	private ObjectNode createUserAgentMetadataNode(ObjectMapper objectMapper) {
-		AuditRequestContext.AuditContext auditContext = AuditRequestContext.get();
-		if (auditContext != null && auditContext.getUserAgent() != null) {
+		RequestContext.Context context = RequestContext.get();
+		if (context != null && context.getUserAgent() != null) {
 			ObjectNode userAgentNode = objectMapper.createObjectNode();
 			userAgentNode.put("name", "user_agent");
-			userAgentNode.put("value", auditContext.getUserAgent());
+			userAgentNode.put("value", context.getUserAgent());
 			return userAgentNode;
 		}
 		return null;
