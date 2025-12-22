@@ -31,9 +31,9 @@ public class EpEmployeeRepositoryImpl extends EmployeeRepositoryImpl implements 
 
 	private final EntityManager entityManager;
 
-	public EpEmployeeRepositoryImpl(EntityManager entityManager, EntityManager entityManager1) {
+	public EpEmployeeRepositoryImpl(EntityManager entityManager) {
 		super(entityManager);
-		this.entityManager = entityManager1;
+		this.entityManager = entityManager;
 	}
 
 	@Override
