@@ -897,36 +897,36 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
 			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual())
-			.filter(entitlement -> {
-				if (fromDate == null && toDate == null) {
-					return true;
-				}
-				LocalDate entitlementValidFrom = entitlement.getValidFrom();
-				LocalDate entitlementValidTo = entitlement.getValidTo();
-
-				if (fromDate != null && toDate != null) {
-					return !entitlementValidTo.isBefore(fromDate) && !entitlementValidFrom.isAfter(toDate);
-				}
-				else if (fromDate != null) {
-					return !entitlementValidTo.isBefore(fromDate);
-				}
-				else {
-					return !entitlementValidFrom.isAfter(toDate);
-				}
-			})
-			.map(entitlement -> {
-				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
-				entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
-				entitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated().toString());
-				entitlementDto.setName(entitlement.getLeaveType().getName());
-				entitlementDto.setValidFrom(entitlement.getValidFrom());
-				entitlementDto.setValidTo(entitlement.getValidTo());
-				return entitlementDto;
-			})
+			.filter(entitlement -> isEntitlementWithinDateRange(entitlement, fromDate, toDate))
+			.map(this::mapToCustomEntitlementDto)
 			.toList();
 
 		dto.setEntitlements(entitlementDtos);
 		return dto;
+	}
+
+	private boolean isEntitlementWithinDateRange(LeaveEntitlement entitlement, LocalDate fromDate, LocalDate toDate) {
+		if (fromDate == null && toDate == null) {
+			return true;
+		}
+
+		LocalDate entitlementValidFrom = entitlement.getValidFrom();
+		LocalDate entitlementValidTo = entitlement.getValidTo();
+
+		boolean startsBeforeFilterEnds = (toDate == null) || !entitlementValidFrom.isAfter(toDate);
+		boolean endsAfterFilterStarts = (fromDate == null) || !entitlementValidTo.isBefore(fromDate);
+
+		return startsBeforeFilterEnds && endsAfterFilterStarts;
+	}
+
+	private CustomEntitlementDto mapToCustomEntitlementDto(LeaveEntitlement entitlement) {
+		CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
+		entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
+		entitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated().toString());
+		entitlementDto.setName(entitlement.getLeaveType().getName());
+		entitlementDto.setValidFrom(entitlement.getValidFrom());
+		entitlementDto.setValidTo(entitlement.getValidTo());
+		return entitlementDto;
 	}
 
 	@Override
