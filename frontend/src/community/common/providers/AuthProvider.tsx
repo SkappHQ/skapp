@@ -7,6 +7,13 @@ import React, {
   useState
 } from "react";
 
+import {
+  AuthMethods,
+  EnterpriseSignInParams,
+  enterpriseSignIn,
+  getAccessToken
+} from "~enterprise/auth/utils/authUtils";
+
 // Types
 interface User {
   id: string;
@@ -17,12 +24,10 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateUser: (userData: Partial<User>) => void;
+  signIn: (params: EnterpriseSignInParams) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -34,7 +39,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Auth Provider Component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
@@ -48,50 +53,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      // Get token from localStorage or cookies
-      const token = localStorage.getItem("authToken");
+      const token = getAccessToken();
 
       if (!token) {
         setIsLoading(false);
         return;
       }
 
-      // Validate token with API
-      const response = await fetch("/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        // Token is invalid, clear it
-        localStorage.removeItem("authToken");
-        setUser(null);
-      }
+      setIsAuthenticated(true);
     } catch (error) {
       console.error("Auth check failed:", error);
-      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Login function
-  const signIn = async (email: string, password: string) => {
+  // Sign In function
+  const signIn = async (params: EnterpriseSignInParams) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
+      const response = await enterpriseSignIn({
+        email: params.email,
+        password: params.password,
+        method: AuthMethods.CREDENTIAL
       });
-
       if (!response.ok) {
         throw new Error("Login failed");
       }
@@ -99,10 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await response.json();
 
       // Store token
-      localStorage.setItem("authToken", data.token);
-
-      // Set user data
-      setUser(data.user);
+      localStorage.setItem("accessToken", data.token);
 
       // Redirect to dashboard or intended page
       const redirectUrl =
@@ -116,8 +99,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Logout function
-  const logout = async () => {
+  // Sign Out function
+  const signOut = async () => {
     try {
       setIsLoading(true);
 
@@ -135,9 +118,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear local storage
       localStorage.removeItem("authToken");
 
-      // Clear user state
-      setUser(null);
-
       // Redirect to login
       router.push("/community/signin");
     } catch (error) {
@@ -147,20 +127,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Update user data
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...userData });
-    }
-  };
-
   const value: AuthContextType = {
-    user,
     isLoading,
-    isAuthenticated: !!user,
-    login,
-    logout,
-    updateUser
+    isAuthenticated: isAuthenticated,
+    signIn,
+    signOut
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

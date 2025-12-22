@@ -12,6 +12,7 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import AuthProvider from "~community/common/providers/AuthProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -113,8 +114,26 @@ function MyApp({
 
   return (
     <SessionProvider session={session}>
-      {shouldUseWebSocketProvider ? (
-        <WebSocketProvider>
+      <AuthProvider>
+        {shouldUseWebSocketProvider ? (
+          <WebSocketProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
+                  <ToastProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                  </ToastProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                </I18nextProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </WebSocketProvider>
+        ) : (
           <TanStackProvider>
             <ThemeProvider theme={newTheme}>
               <I18nextProvider i18n={i18n}>
@@ -130,24 +149,8 @@ function MyApp({
               </I18nextProvider>
             </ThemeProvider>
           </TanStackProvider>
-        </WebSocketProvider>
-      ) : (
-        <TanStackProvider>
-          <ThemeProvider theme={newTheme}>
-            <I18nextProvider i18n={i18n}>
-              <ToastProvider>
-                <ErrorBoundary FallbackComponent={Error}>
-                  <RouteChangeLoader />
-                  <BaseLayout>
-                    <Component {...pageProps} />
-                  </BaseLayout>
-                </ErrorBoundary>
-              </ToastProvider>
-              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-            </I18nextProvider>
-          </ThemeProvider>
-        </TanStackProvider>
-      )}
+        )}
+      </AuthProvider>
     </SessionProvider>
   );
 }
