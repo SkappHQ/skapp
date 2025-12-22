@@ -223,7 +223,7 @@ public class AuthServiceImpl implements AuthService {
 		cookie.setSecure(true);
 		cookie.setPath("/");
 		cookie.setMaxAge((int) (cookieMaxAge / 1000));
-		cookie.setAttribute("SameSite", "Strict");
+		cookie.setAttribute("SameSite", "Lax");
 		response.addCookie(cookie);
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
