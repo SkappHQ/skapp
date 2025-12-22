@@ -10,6 +10,7 @@ import React, {
 import {
   AuthMethods,
   EnterpriseSignInParams,
+  SignInStatus,
   enterpriseSignIn,
   getAccessToken
 } from "~enterprise/auth/utils/authUtils";
@@ -78,19 +79,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password: params.password,
         method: AuthMethods.CREDENTIAL
       });
-      if (!response.ok) {
+
+      if (response !== SignInStatus.SUCCESS) {
         throw new Error("Login failed");
+      } else {
+        router.push((router.query.redirect as string) || "/dashboard");
       }
-
-      const data = await response.json();
-
-      // Store token
-      localStorage.setItem("accessToken", data.token);
-
-      // Redirect to dashboard or intended page
-      const redirectUrl =
-        (router.query.redirect as string) || "/community/dashboard";
-      router.push(redirectUrl);
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -104,22 +98,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      // Call logout API endpoint
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      }
-
       // Clear local storage
       localStorage.removeItem("authToken");
 
       // Redirect to login
-      router.push("/community/signin");
+      router.push("/signin");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
