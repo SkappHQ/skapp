@@ -51,6 +51,8 @@ import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -182,6 +184,57 @@ public class AuthServiceImpl implements AuthService {
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
+	@Override
+	@Transactional
+	public ResponseEntityDto signInWithCookie(SignInRequestDto signInRequestDto, HttpServletResponse response) {
+		log.info("signInWithCookie: execution started for email={}", signInRequestDto.getEmail());
+
+		authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
+
+		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
+		if (optionalUser.isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+		User user = optionalUser.get();
+
+		validateTenantStatus(user);
+
+		if (Boolean.FALSE.equals(user.getIsActive())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
+		}
+
+		Optional<Employee> employee = employeeDao.findById(user.getUserId());
+		if (employee.isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
+			.employeeToEmployeeSignInResponseDto(employee.get());
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
+		String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+		long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+
+		Cookie cookie = new Cookie("refreshToken", refreshToken);
+		cookie.setHttpOnly(true);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge((int) (cookieMaxAge / 1000));
+		cookie.setAttribute("SameSite", "Strict");
+		response.addCookie(cookie);
+
+		SignInResponseDto signInResponseDto = new SignInResponseDto();
+		signInResponseDto.setAccessToken(accessToken);
+		signInResponseDto.setEmployee(employeeSignInResponseDto);
+		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
+
+		log.info("signInWithCookie: execution ended for userEmail={}", user.getEmail());
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
 	protected void validateTenantStatus(User user) {
 		// This is only for Pro version
 	}
@@ -293,7 +346,7 @@ public class AuthServiceImpl implements AuthService {
 		AccessTokenResponseDto accessTokenResponseDto = new AccessTokenResponseDto();
 		accessTokenResponseDto.setAccessToken(accessToken);
 
-		log.info("refreshAccessToken: execution ended for email", user.getEmail());
+		log.info("refreshAccessToken: execution ended for email={}", user.getEmail());
 		return new ResponseEntityDto(false, accessTokenResponseDto);
 	}
 
