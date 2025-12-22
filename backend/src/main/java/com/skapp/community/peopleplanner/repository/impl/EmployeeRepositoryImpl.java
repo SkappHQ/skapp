@@ -376,6 +376,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.PENDING));
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
+		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
+
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.count(root));
 
@@ -1264,6 +1266,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
+		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
+
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
 			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
@@ -1327,6 +1331,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 						keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.EMAIL)), keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), keyword));
+	}
+
+	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
+			Join<Employee, User> userJoin, List<Predicate> predicates) {
+		// implemented in enterprise version
 	}
 
 	@Override
