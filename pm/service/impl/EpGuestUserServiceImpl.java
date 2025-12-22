@@ -100,6 +100,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				.collect(Collectors.joining(", "));
 
 			epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
+			peopleService.modifySubscriptionQuantity(1, true, false);
 
 			return epUserService.mapEmployeeToUserDto(employee);
 		}
@@ -149,7 +150,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers(email, statuses);
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
-			.getAllGuestUsersWithProjects();
+			.getAllGuestUsersWithProjects(guestEmployees);
 
 		return guestEmployees.stream().map(employee -> {
 			EpGuestUserResponseDto userDto = mapEmployeeToGuestUserDto(employee);

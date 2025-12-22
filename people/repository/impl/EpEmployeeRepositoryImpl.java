@@ -7,6 +7,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.peopleplanner.repository.impl.EmployeeRepositoryImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.model.ModuleConfig;
 import com.skapp.enterprise.people.repository.EpEmployeeRepository;
@@ -17,7 +18,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -25,10 +26,15 @@ import java.util.Arrays;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
-public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
+@Primary
+public class EpEmployeeRepositoryImpl extends EmployeeRepositoryImpl implements EpEmployeeRepository {
 
 	private final EntityManager entityManager;
+
+	public EpEmployeeRepositoryImpl(EntityManager entityManager) {
+		super(entityManager);
+		this.entityManager = entityManager;
+	}
 
 	@Override
 	public List<Employee> getManagerRoleEmployeesExcludingEmployeeIds(List<Long> employeeIds) {
@@ -96,6 +102,10 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 
 		Predicate finalPredicate = criteriaBuilder.equal(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE);
 
+		Predicate notDeletedPredicate = criteriaBuilder.notEqual(employeeRoot.get(Employee_.accountStatus),
+				AccountStatus.DELETED);
+		finalPredicate = criteriaBuilder.and(finalPredicate, notDeletedPredicate);
+
 		if (email != null && !email.isEmpty()) {
 			Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)),
 					"%" + email.toLowerCase() + "%");
@@ -111,6 +121,13 @@ public class EpEmployeeRepositoryImpl implements EpEmployeeRepository {
 		query.select(employeeRoot).distinct(true);
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
+			Join<Employee, User> userJoin, List<Predicate> predicates) {
+		Join<Employee, EmployeeRole> employeeRoleJoin = root.join(Employee_.employeeRole);
+		predicates.add(criteriaBuilder.notEqual(employeeRoleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 	}
 
 }

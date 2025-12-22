@@ -1,5 +1,6 @@
 package com.skapp.enterprise.pm.service;
 
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
 
 import java.util.List;
@@ -9,6 +10,6 @@ public interface EpGuestUserCacheService {
 
 	List<ProjectRequestDto> getUserAssignedProjects(Long userId);
 
-	Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects();
+	Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects(List<Employee> guestEmployees);
 
 }

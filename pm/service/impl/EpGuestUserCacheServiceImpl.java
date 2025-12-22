@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.service.CacheService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
@@ -30,8 +27,6 @@ import java.util.Map;
 public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 
 	private final CacheService cacheService;
-
-	private final EmployeeDao employeeDao;
 
 	private final ObjectMapper objectMapper;
 
@@ -84,12 +79,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 	}
 
 	@Override
-	public Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects() {
-		List<Employee> guestEmployees = employeeDao.findAll()
-			.stream()
-			.filter(emp -> emp.getEmployeeRole() != null && emp.getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE
-					&& emp.getAccountStatus() != AccountStatus.DELETED)
-			.toList();
+	public Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects(List<Employee> guestEmployees) {
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = new HashMap<>();
 
