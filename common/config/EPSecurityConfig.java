@@ -28,6 +28,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -141,7 +142,10 @@ public class EPSecurityConfig {
 				"Origin", "Stripe-Signature", "X-Api-Key"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
+		source.registerCorsConfiguration("/v1/auth/sign-in/cookie", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/refresh-token/cookie", credentialedConfig);
 		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
+
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
@@ -149,9 +153,10 @@ public class EPSecurityConfig {
 	private CorsConfiguration getCorsConfigurationCookies(String[] origins) {
 		CorsConfiguration credentialedConfig = new CorsConfiguration();
 		credentialedConfig.setAllowedOriginPatterns(Arrays.asList(origins));
-		credentialedConfig.setAllowedMethods(Arrays.asList("GET", "OPTIONS"));
+		credentialedConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		credentialedConfig.setAllowedHeaders(
 				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
+		credentialedConfig.setExposedHeaders(List.of("Set-Cookie"));
 		credentialedConfig.setAllowCredentials(true);
 		return credentialedConfig;
 	}
