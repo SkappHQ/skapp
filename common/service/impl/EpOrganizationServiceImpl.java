@@ -267,8 +267,6 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		EpCalendarConfigResponseDto epCalendarConfigResponseDto = epCommonMapper
 			.organizationCalendarToEpCalendarConfigResponseDto(organizationCalendars.getFirst());
 
-		epCalendarConfigResponseDto.setIsMicrosoftCalendarEnabled(false);
-
 		return new ResponseEntityDto(false, epCalendarConfigResponseDto);
 	}
 
