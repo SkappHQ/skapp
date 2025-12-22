@@ -870,7 +870,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		List<EntitlementBasicDetailsDto> responseDtos = employees.getContent()
 			.stream()
-			.map(this::mapToEntitlementBasicDetailsDto)
+			.map(employee -> mapToEntitlementBasicDetailsDto(employee, validFrom, validTo))
 			.toList();
 
 		if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
@@ -884,7 +884,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee) {
+	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee, LocalDate fromDate,
+			LocalDate toDate) {
 		EntitlementBasicDetailsDto dto = new EntitlementBasicDetailsDto();
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
@@ -896,6 +897,23 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
 			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual())
+			.filter(entitlement -> {
+				if (fromDate == null && toDate == null) {
+					return true;
+				}
+				LocalDate entitlementValidFrom = entitlement.getValidFrom();
+				LocalDate entitlementValidTo = entitlement.getValidTo();
+
+				if (fromDate != null && toDate != null) {
+					return !entitlementValidTo.isBefore(fromDate) && !entitlementValidFrom.isAfter(toDate);
+				}
+				else if (fromDate != null) {
+					return !entitlementValidTo.isBefore(fromDate);
+				}
+				else {
+					return !entitlementValidFrom.isAfter(toDate);
+				}
+			})
 			.map(entitlement -> {
 				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
 				entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
