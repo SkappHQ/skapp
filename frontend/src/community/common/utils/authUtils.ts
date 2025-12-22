@@ -53,3 +53,6 @@ export const decodeJWTToken = (token: string) => {
   const decodedToken = JSON.parse(atob(base64));
   return decodedToken;
 };
+
+export const communitySignIn = async (email: string, password: string) => {
+}

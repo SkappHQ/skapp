@@ -26,7 +26,7 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   if (
     session?.user.accessToken &&
     !config.url?.includes("/refresh-token") &&
-    !config.url?.includes("/app-setup-status")
+    !config.url?.includes("/app-setup-status") 
   ) {
     config.headers.Authorization = `Bearer ${session?.user.accessToken}`;
   } else if (session && !session?.user.accessToken) {
