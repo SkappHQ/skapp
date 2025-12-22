@@ -893,30 +893,15 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		dto.setAuthPic(employee.getAuthPic());
 		dto.setEmail(employee.getUser().getEmail());
 
-		List<LeaveEntitlement> entitlements = leaveEntitlementDao.findByEmployee_EmployeeId(employee.getEmployeeId());
+		List<LeaveEntitlement> entitlements = leaveEntitlementDao
+			.findActiveNonManualEntitlementsByEmployeeIdAndDateRange(employee.getEmployeeId(), fromDate, toDate);
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
-			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual())
-			.filter(entitlement -> isEntitlementWithinDateRange(entitlement, fromDate, toDate))
 			.map(this::mapToCustomEntitlementDto)
 			.toList();
 
 		dto.setEntitlements(entitlementDtos);
 		return dto;
-	}
-
-	private boolean isEntitlementWithinDateRange(LeaveEntitlement entitlement, LocalDate fromDate, LocalDate toDate) {
-		if (fromDate == null && toDate == null) {
-			return true;
-		}
-
-		LocalDate entitlementValidFrom = entitlement.getValidFrom();
-		LocalDate entitlementValidTo = entitlement.getValidTo();
-
-		boolean startsBeforeFilterEnds = (toDate == null) || !entitlementValidFrom.isAfter(toDate);
-		boolean endsAfterFilterStarts = (fromDate == null) || !entitlementValidTo.isBefore(fromDate);
-
-		return startsBeforeFilterEnds && endsAfterFilterStarts;
 	}
 
 	private CustomEntitlementDto mapToCustomEntitlementDto(LeaveEntitlement entitlement) {

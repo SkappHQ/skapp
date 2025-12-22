@@ -1136,4 +1136,31 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		return entityManager.createQuery(cq).getSingleResult();
 	}
 
+	@Override
+	public List<LeaveEntitlement> findActiveNonManualEntitlementsByEmployeeIdAndDateRange(Long employeeId,
+			LocalDate fromDate, LocalDate toDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveEntitlement> cq = cb.createQuery(LeaveEntitlement.class);
+		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.employee).get(Employee_.employeeId), employeeId));
+
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.isManual), false));
+
+		if (fromDate != null) {
+			predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveEntitlement_.validTo), fromDate));
+		}
+		if (toDate != null) {
+			predicates.add(cb.lessThanOrEqualTo(root.get(LeaveEntitlement_.validFrom), toDate));
+		}
+
+		cq.select(root);
+		cq.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(cq).getResultList();
+	}
+
 }

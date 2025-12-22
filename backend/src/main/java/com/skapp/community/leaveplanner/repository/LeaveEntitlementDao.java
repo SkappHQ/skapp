@@ -23,4 +23,7 @@ public interface LeaveEntitlementDao extends JpaRepository<LeaveEntitlement, Lon
 
 	List<LeaveEntitlement> findByEmployee_EmployeeId(Long employeeId);
 
+	List<LeaveEntitlement> findActiveNonManualEntitlementsByEmployeeIdAndDateRange(Long employeeId, LocalDate fromDate,
+			LocalDate toDate);
+
 }
