@@ -11,24 +11,22 @@ import {
   AuthMethods,
   EnterpriseSignInParams,
   SignInStatus,
+  User,
   enterpriseSignIn,
+  extractUserFromToken,
   getAccessToken
 } from "~enterprise/auth/utils/authUtils";
 
-// Types
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role?: string;
-  avatar?: string;
-}
+import ROUTES from "../constants/routes";
 
+// Types
 interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (params: EnterpriseSignInParams) => Promise<void>;
-  signOut: () => Promise<void>;
+  user: User | null;
+  signIn: (params: EnterpriseSignInParams) => Promise<SignInStatus>;
+  signOut: (redirect?: boolean) => Promise<void>;
+  refreshAccessToken: () => Promise<SignInStatus>;
 }
 
 interface AuthProviderProps {
@@ -42,6 +40,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   // Check if user is authenticated on mount
@@ -57,20 +56,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = getAccessToken();
 
       if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
         setIsLoading(false);
         return;
       }
 
-      setIsAuthenticated(true);
+      const userData = extractUserFromToken(token);
+
+      if (userData) {
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        // Token expired or invalid
+        localStorage.removeItem("accessToken");
+        setIsAuthenticated(false);
+        setUser(null);
+      }
     } catch (error) {
       console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Refresh Access Token function
+  const refreshAccessToken = async (): Promise<SignInStatus> => {
+    // TODO: Implement refresh token logic
+    return SignInStatus.SUCCESS;
+  };
+
   // Sign In function
-  const signIn = async (params: EnterpriseSignInParams) => {
+  const signIn = async (
+    params: EnterpriseSignInParams
+  ): Promise<SignInStatus> => {
     try {
       setIsLoading(true);
 
@@ -83,8 +104,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response !== SignInStatus.SUCCESS) {
         throw new Error("Login failed");
       } else {
-        router.push((router.query.redirect as string) || "/dashboard");
+        if (params.redirect) {
+          router.push(
+            (router.query.redirect as string) || ROUTES.DASHBOARD.BASE
+          );
+        }
       }
+
+      return response;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -94,15 +121,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Sign Out function
-  const signOut = async () => {
+  const signOut = async (redirect?: boolean) => {
     try {
       setIsLoading(true);
 
-      // Clear local storage
-      localStorage.removeItem("authToken");
+      localStorage.removeItem("accessToken");
 
-      // Redirect to login
-      router.push("/signin");
+      setUser(null);
+      setIsAuthenticated(false);
+
+      if (!redirect) {
+        return;
+      } else {
+        router.push(ROUTES.AUTH.SIGNIN);
+      }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -113,8 +145,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     isLoading,
     isAuthenticated: isAuthenticated,
+    user,
     signIn,
-    signOut
+    signOut,
+    refreshAccessToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -129,45 +163,6 @@ export const useAuth = (): AuthContextType => {
   }
 
   return context;
-};
-
-// HOC for protected routes
-export const withAuth = <P extends object>(
-  Component: React.ComponentType<P>
-): React.FC<P> => {
-  const AuthenticatedComponent: React.FC<P> = (props) => {
-    const { isAuthenticated, isLoading } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-      if (!isLoading && !isAuthenticated) {
-        router.push(`/community/signin?redirect=${router.asPath}`);
-      }
-    }, [isAuthenticated, isLoading, router]);
-
-    if (isLoading) {
-      return (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh"
-          }}
-        >
-          Loading...
-        </div>
-      );
-    }
-
-    if (!isAuthenticated) {
-      return null;
-    }
-
-    return <Component {...props} />;
-  };
-
-  return AuthenticatedComponent;
 };
 
 export default AuthProvider;

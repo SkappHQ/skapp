@@ -1,6 +1,6 @@
-import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 
+import { useAuth } from "~community/common/auth/AuthProvider";
 import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
@@ -11,102 +11,86 @@ import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
 
 const useSessionData = () => {
-  const { data: sessionData, status: sessionStatus } = useSession();
+  const { user, isLoading } = useAuth();
 
-  const isFreeTier = useMemo(
-    () => sessionData?.user?.tier === TierEnum.FREE,
-    [sessionData?.user?.tier]
-  );
+  const isFreeTier = useMemo(() => user?.tier === TierEnum.FREE, [user?.tier]);
 
-  const isProTier = useMemo(
-    () => sessionData?.user?.tier === TierEnum.PRO,
-    [sessionData?.user?.tier]
-  );
+  const isProTier = useMemo(() => user?.tier === TierEnum.PRO, [user?.tier]);
 
   const isLeaveModuleEnabled = useMemo(
-    () => sessionData?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE),
+    [user?.roles]
   );
 
   const isAttendanceModuleEnabled = useMemo(
-    () => sessionData?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
+    [user?.roles]
   );
 
   const isEsignatureModuleEnabled = useMemo(
-    () => sessionData?.user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE),
+    [user?.roles]
   );
 
   const isInvoiceModuleEnabled = useMemo(
-    () => sessionData?.user?.roles?.includes(AuthManagerType.INVOICE_MANAGER),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AuthManagerType.INVOICE_MANAGER),
+    [user?.roles]
   );
 
-  const employeeDetails = useMemo(
-    () => sessionData?.user?.employee,
-    [sessionData?.user?.employee]
-  );
+  const employeeDetails = useMemo(() => user?.employee, [user?.employee]);
 
   const isSuperAdmin = useMemo(
-    () => sessionData?.user?.roles?.includes(AdminTypes.SUPER_ADMIN),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AdminTypes.SUPER_ADMIN),
+    [user?.roles]
   );
 
   const isPeopleAdmin = useMemo(
-    () => sessionData?.user?.roles?.includes(AdminTypes.PEOPLE_ADMIN),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AdminTypes.PEOPLE_ADMIN),
+    [user?.roles]
   );
 
   const isEmployee = useMemo(() => {
-    return !sessionData?.user?.roles?.some((role) => {
+    return !user?.roles?.some((role) => {
       return [
         ...Object.values(AdminTypes),
         ...Object.values(ManagerTypes)
       ].includes(role as AdminTypes | ManagerTypes);
     });
-  }, [sessionData?.user?.roles]);
+  }, [user?.roles]);
 
   const isPeopleManager = useMemo(
-    () => sessionData?.user?.roles?.includes(AuthManagerType.PEOPLE_MANAGER),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AuthManagerType.PEOPLE_MANAGER),
+    [user?.roles]
   );
 
-  const userId = useMemo(
-    () => sessionData?.user?.userId,
-    [sessionData?.user?.userId]
-  );
+  const userId = useMemo(() => user?.userId, [user?.userId]);
 
   const isLeaveEmployee = useMemo(
-    () => sessionData?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE),
+    [user?.roles]
   );
 
   const isLeaveManager = useMemo(
-    () => sessionData?.user?.roles?.includes(AuthManagerType.LEAVE_MANAGER),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AuthManagerType.LEAVE_MANAGER),
+    [user?.roles]
   );
 
   const isAttendanceEmployee = useMemo(
-    () => sessionData?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE),
+    [user?.roles]
   );
 
   const isAttendanceManager = useMemo(
-    () =>
-      sessionData?.user?.roles?.includes(AuthManagerType.ATTENDANCE_MANAGER),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(AuthManagerType.ATTENDANCE_MANAGER),
+    [user?.roles]
   );
 
   const isESignSender = useMemo(
-    () => sessionData?.user?.roles?.includes(SenderTypes.ESIGN_SENDER),
-    [sessionData?.user?.roles]
+    () => user?.roles?.includes(SenderTypes.ESIGN_SENDER),
+    [user?.roles]
   );
 
-  const tenantID = useMemo(
-    () => sessionData?.user?.tenantId,
-    [sessionData?.user?.tenantId]
-  );
+  const tenantID = useMemo(() => user?.tenantId, [user?.tenantId]);
 
   return {
     isFreeTier,
@@ -119,7 +103,11 @@ const useSessionData = () => {
     isSuperAdmin,
     isPeopleAdmin,
     isEmployee,
-    sessionStatus,
+    sessionStatus: isLoading
+      ? "loading"
+      : user
+        ? "authenticated"
+        : "unauthenticated",
     isPeopleManager,
     userId,
     isLeaveEmployee,

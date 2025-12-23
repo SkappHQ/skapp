@@ -2,13 +2,13 @@ import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { useGetApplicationVersionDetails } from "~community/common/api/VersionUpgradeApi";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { useAuth } from "~community/common/auth/AuthProvider";
 import RequestPasswordChangeModal from "~community/common/components/molecules/RequestPasswordChangeModal/RequestPasswordChangeModal";
 import SignInForm from "~community/common/components/organisms/Forms/SignInForm/SignInForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
@@ -24,6 +24,7 @@ import { decodeBase64 } from "~community/common/utils/commonUtil";
 import { getCurrentWeekNumber } from "~community/common/utils/dateTimeUtils";
 import { useRedirectHandler } from "~community/common/utils/hooks/useRedirectHandler";
 import { signInValidation } from "~community/common/utils/validation";
+import { AuthMethods, SignInStatus } from "~enterprise/auth/utils/authUtils";
 import i18n from "~i18n";
 
 import { version } from "../../package.json";
@@ -36,7 +37,7 @@ interface SignInValues {
 const SignIn: NextPage = () => {
   const router = useRouter();
 
-  const { data: session } = useSession();
+  const { signIn, user } = useAuth();
 
   const { setToastMessage } = useToast();
 
@@ -83,7 +84,7 @@ const SignIn: NextPage = () => {
 
     const orgSetupStatus = data?.data?.results[0]?.isOrganizationSetupCompleted;
 
-    const isPasswordChanged = session?.user?.isPasswordChangedForTheFirstTime;
+    const isPasswordChanged = user?.isPasswordChangedForTheFirstTime;
     if (isPasswordChanged === false) {
       router.push(ROUTES.AUTH.RESET_PASSWORD);
     } else {
@@ -93,7 +94,7 @@ const SignIn: NextPage = () => {
         router.push(ROUTES.DASHBOARD.BASE);
       }
     }
-  }, [router, session]);
+  }, [router, user]);
 
   const handleSubmit = async (
     values: SignInValues,
@@ -104,18 +105,18 @@ const SignIn: NextPage = () => {
 
       if (
         base64Pattern().test(password) &&
-        !session?.user?.isPasswordChangedForTheFirstTime
+        !user?.isPasswordChangedForTheFirstTime
       ) {
         password = decodeBase64(password);
       }
 
-      const result = await signIn("credentials", {
-        redirect: false,
+      const result = await signIn({
         email: values.email,
-        password
+        password,
+        method: AuthMethods.CREDENTIAL
       });
 
-      if (result?.error) {
+      if (result !== SignInStatus.SUCCESS) {
         setToastMessage({
           open: true,
           toastType: "error",

@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { signOut, useSession } from "next-auth/react";
 import { ReactNode, useEffect, useState } from "react";
 
 import {
@@ -10,10 +9,10 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import ROUTES from "../constants/routes";
+import { useAuth } from "../auth/AuthProvider";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
-  const { update, data: session } = useSession();
+  const { refreshAccessToken, signOut, user } = useAuth();
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -31,14 +30,11 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
 
   const handleTokenRefresh = async () => {
     try {
-      await update();
+      await refreshAccessToken();
       queryClient.invalidateQueries();
     } catch (error) {
       console.error("Token refresh failed:", error);
-      await signOut({
-        redirect: true,
-        callbackUrl: ROUTES.AUTH.SYSTEM_UPDATE
-      });
+      await signOut();
     }
   };
 
@@ -74,7 +70,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [session, update]);
+  }, [user, refreshAccessToken, signOut]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

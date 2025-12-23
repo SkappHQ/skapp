@@ -1,9 +1,9 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { FC, useEffect, useRef } from "react";
 
+import { useAuth } from "~community/common/auth/AuthProvider";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import NoDataScreen from "~community/common/components/molecules/NoDataScreen/NoDataScreen";
@@ -35,7 +35,7 @@ const EmployeeList: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
-  const { data } = useSession();
+  const { user } = useAuth();
   const router = useRouter();
   const translateText = useTranslator("peopleModule", "peoples");
 
@@ -80,7 +80,7 @@ const EmployeeList: FC<Props> = ({
 
   const handleRowClick = async (id: number) => {
     if (
-      data?.user.roles?.includes(
+      user?.roles?.includes(
         ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
       )
     ) {

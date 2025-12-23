@@ -1,18 +1,17 @@
 import { Theme, ThemeProvider } from "@mui/material/styles";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { onValue, ref } from "firebase/database";
-import { SessionProvider } from "next-auth/react";
 import App, { AppContext } from "next/app";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { I18nextProvider, useSSR } from "react-i18next";
 
+import { AuthProvider } from "~community/common/auth/AuthProvider";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
-import AuthProvider from "~community/common/providers/AuthProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -34,7 +33,7 @@ import Error from "./_error";
 
 function MyApp({
   Component,
-  pageProps: { session, ...pageProps },
+  pageProps,
   initialI18nStore,
   initialLanguage
 }: MyAppPropsType) {
@@ -113,27 +112,9 @@ function MyApp({
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
   return (
-    <SessionProvider session={session}>
-      <AuthProvider>
-        {shouldUseWebSocketProvider ? (
-          <WebSocketProvider>
-            <TanStackProvider>
-              <ThemeProvider theme={newTheme}>
-                <I18nextProvider i18n={i18n}>
-                  <ToastProvider>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <RouteChangeLoader />
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
-                  </ToastProvider>
-                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                </I18nextProvider>
-              </ThemeProvider>
-            </TanStackProvider>
-          </WebSocketProvider>
-        ) : (
+    <AuthProvider>
+      {shouldUseWebSocketProvider ? (
+        <WebSocketProvider>
           <TanStackProvider>
             <ThemeProvider theme={newTheme}>
               <I18nextProvider i18n={i18n}>
@@ -149,9 +130,25 @@ function MyApp({
               </I18nextProvider>
             </ThemeProvider>
           </TanStackProvider>
-        )}
-      </AuthProvider>
-    </SessionProvider>
+        </WebSocketProvider>
+      ) : (
+        <TanStackProvider>
+          <ThemeProvider theme={newTheme}>
+            <I18nextProvider i18n={i18n}>
+              <ToastProvider>
+                <ErrorBoundary FallbackComponent={Error}>
+                  <RouteChangeLoader />
+                  <BaseLayout>
+                    <Component {...pageProps} />
+                  </BaseLayout>
+                </ErrorBoundary>
+              </ToastProvider>
+              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+            </I18nextProvider>
+          </ThemeProvider>
+        </TanStackProvider>
+      )}
+    </AuthProvider>
   );
 }
 

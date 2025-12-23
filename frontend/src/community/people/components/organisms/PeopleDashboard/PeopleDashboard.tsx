@@ -1,9 +1,9 @@
 import { North, South, TrendingUp } from "@mui/icons-material";
 import { Box, Chip, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useSession } from "next-auth/react";
 import { JSX, useEffect, useState } from "react";
 
+import { useAuth } from "~community/common/auth/AuthProvider";
 import AnalyticCard from "~community/common/components/molecules/AnalyticCard/AnalyticCard";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -31,7 +31,7 @@ const PeopleDashboard = (): JSX.Element => {
   const [dataCategory, setDataCategory] = useState(
     employmentBreakdownGraphTypes.TYPE.value
   );
-  const { data } = useSession();
+  const { user } = useAuth();
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
@@ -54,8 +54,8 @@ const PeopleDashboard = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (data) setIsFetchingEnabled(true);
-  }, [data, teamId]);
+    if (user) setIsFetchingEnabled(true);
+  }, [user, teamId]);
 
   return (
     <Box>

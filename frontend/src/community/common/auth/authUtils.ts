@@ -1,5 +1,5 @@
+import { config } from "~community/common/auth/routeMatchers";
 import ROUTES from "~community/common/constants/routes";
-import { config } from "~middleware";
 
 export const drawerHiddenProtectedRoutes = [
   ROUTES.ORGANIZATION.SETUP,
@@ -54,5 +54,4 @@ export const decodeJWTToken = (token: string) => {
   return decodedToken;
 };
 
-export const communitySignIn = async (email: string, password: string) => {
-}
+export const communitySignIn = async (email: string, password: string) => {};

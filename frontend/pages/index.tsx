@@ -1,4 +1,4 @@
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "useAuth";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 

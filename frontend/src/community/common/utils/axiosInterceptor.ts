@@ -1,5 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import { getSession, signOut } from "next-auth/react";
+
+import { clearTokens, getAccessToken } from "~enterprise/auth/utils/authUtils";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
@@ -21,16 +22,16 @@ export const authFetchV2 = axios.create({
 });
 
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const session = await getSession();
+  const accessToken = getAccessToken();
 
   if (
-    session?.user.accessToken &&
+    accessToken &&
     !config.url?.includes("/refresh-token") &&
-    !config.url?.includes("/app-setup-status") 
+    !config.url?.includes("/app-setup-status")
   ) {
-    config.headers.Authorization = `Bearer ${session?.user.accessToken}`;
-  } else if (session && !session?.user.accessToken) {
-    signOut();
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  } else if (!accessToken) {
+    clearTokens();
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
