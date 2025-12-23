@@ -792,6 +792,28 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess) {
 		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
+		byte[] pdfBytes = generateCertificatePdfBytes(envelopeId, isDocAccess);
+
+		// Fetch envelope to get the name for the filename
+		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
+			log.error("Envelope with ID {} not found", envelopeId);
+			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		});
+
+		// Set appropriate headers for PDF response
+		headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+		headers.setContentLength(pdfBytes.length);
+		headers.add("Content-Disposition",
+				"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + envelope.getName() + ".pdf\"");
+
+		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
+		return pdfBytes;
+	}
+
+	@Override
+	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess) {
+		log.info("generateCertificatePdfBytes: execution started for envelopeId {}", envelopeId);
+
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found", envelopeId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
@@ -832,8 +854,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
 		responseDto.setAuditTrails(responseDtoList);
 
-		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
-
 		try {
 			String html = generateSignatureCertificateHtml(responseDto);
 
@@ -845,12 +865,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			byte[] pdfBytes = baos.toByteArray();
 
-			// Set appropriate headers for PDF response
-			headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
-			headers.setContentLength(pdfBytes.length);
-			headers.add("Content-Disposition",
-					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + responseDto.getName() + ".pdf\"");
-
+			log.info("generateCertificatePdfBytes: execution ended for envelopeId {}", envelopeId);
 			return pdfBytes;
 		}
 		catch (IOException e) {

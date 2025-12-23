@@ -46,6 +46,8 @@ public interface EnvelopeService {
 
 	byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess);
 
+	byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess);
+
 	void expireEnvelope(Long envelopeId);
 
 	ResponseEntityDto getEnvelopeTierLimitations();
