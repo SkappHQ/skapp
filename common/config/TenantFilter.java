@@ -63,11 +63,6 @@ public class TenantFilter extends OncePerRequestFilter {
 
 		try {
 			TenantContext.setCurrentTenant(tenantId.toLowerCase());
-
-			// Capture user-agent for request context
-			String userAgent = request.getHeader("User-Agent");
-			RequestContext.setUserAgent(userAgent);
-
 			filterChain.doFilter(request, response);
 		}
 		catch (ServletException e) {
@@ -79,7 +74,6 @@ public class TenantFilter extends OncePerRequestFilter {
 		}
 		finally {
 			TenantContext.clearCurrentTenant();
-			RequestContext.clear();
 		}
 	}
 

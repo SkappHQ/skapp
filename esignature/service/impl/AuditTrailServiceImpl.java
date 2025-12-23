@@ -311,7 +311,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		// Build complete metadata with user_agent
 		ArrayNode metadataArray = objectMapper.createArrayNode();
 
-		// Copy existing metadata into a new ArrayNode to avoid mutating the input parameter
+		// Copy existing metadata into a new ArrayNode to avoid mutating the input
+		// parameter
 		if (metadata instanceof ArrayNode) {
 			metadataArray.addAll((ArrayNode) metadata);
 		}
@@ -350,15 +351,17 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	}
 
 	/**
-	 * Creates an ObjectNode containing user_agent metadata from the current request context.
+	 * Creates an ObjectNode containing user_agent metadata from the current request
+	 * context.
 	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
 	 */
 	private ObjectNode createUserAgentMetadataNode() {
 		RequestContext.Context context = RequestContext.get();
-		if (context != null && context.getUserAgent() != null) {
+		String userAgent = context != null ? context.getUserAgent() : null;
+		if (userAgent != null) {
 			ObjectNode userAgentNode = objectMapper.createObjectNode();
 			userAgentNode.put("name", "user_agent");
-			userAgentNode.put("value", context.getUserAgent());
+			userAgentNode.put("value", userAgent);
 			return userAgentNode;
 		}
 		return null;
