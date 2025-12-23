@@ -592,4 +592,43 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
+	@Override
+	public byte[] appendCertificateToPdf(byte[] originalPdfBytes, byte[] certificatePdfBytes) {
+		log.info("appendCertificateToPdf: execution started");
+
+		if (originalPdfBytes == null || originalPdfBytes.length == 0) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
+		}
+
+		if (certificatePdfBytes == null || certificatePdfBytes.length == 0) {
+			throw new IllegalArgumentException("Certificate PDF bytes cannot be null or empty");
+		}
+
+		try (RandomAccessReadBuffer originalBuffer = new RandomAccessReadBuffer(originalPdfBytes);
+				RandomAccessReadBuffer certBuffer = new RandomAccessReadBuffer(certificatePdfBytes);
+				PDDocument originalDoc = Loader.loadPDF(originalBuffer);
+				PDDocument certDoc = Loader.loadPDF(certBuffer);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+			log.info("Appending {} certificate pages to document with {} pages", certDoc.getNumberOfPages(),
+					originalDoc.getNumberOfPages());
+
+			// Import all certificate pages to original document
+			for (PDPage page : certDoc.getPages()) {
+				originalDoc.addPage(page);
+			}
+
+			originalDoc.save(outputStream);
+			byte[] mergedPdfBytes = outputStream.toByteArray();
+
+			log.info("appendCertificateToPdf: execution ended successfully");
+			return mergedPdfBytes;
+		}
+		catch (IOException e) {
+			log.error("Error appending certificate to PDF: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
 }

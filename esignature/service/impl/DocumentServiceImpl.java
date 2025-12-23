@@ -48,6 +48,7 @@ import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -158,6 +159,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final AuditTrailService auditTrailService;
 
 	private final ScheduleService scheduleService;
+
+	private final SignatureCertificateService signatureCertificateService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -385,6 +388,12 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
+		// Append signature certificate to completed document (use in-memory bytes to
+		// avoid S3 race
+		// condition) - Must be called AFTER audit trails are saved so they appear in
+		// certificate
+		appendCertificateToCompletedDocument(envelope, documentVersion, latestDocumentBytes);
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		recipientService.sendDocumentCompletedEmailNotifications(envelope);
@@ -550,6 +559,12 @@ public class DocumentServiceImpl implements DocumentService {
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
+
+			// Append signature certificate to completed document (use in-memory bytes to
+			// avoid S3 race
+			// condition) - Must be called AFTER audit trails are saved so they appear in
+			// certificate
+			appendCertificateToCompletedDocument(envelope, finalVersion, fullDocumentBytes);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -1626,6 +1641,36 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
 		}
 		return documentVersion.getFilePath();
+	}
+
+	private void appendCertificateToCompletedDocument(Envelope envelope, DocumentVersion documentVersion,
+			byte[] documentBytes) {
+		try {
+			log.info("Appending signature certificate to completed document for envelope {}", envelope.getId());
+
+			// 1. Use in-memory document bytes (already contains all signatures)
+			byte[] finalDocBytes = documentBytes;
+
+			// 2. Generate certificate PDF bytes
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false);
+
+			// 3. Merge PDFs (certificate appended to end)
+			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(finalDocBytes, certificateBytes);
+
+			// 4. Upload merged PDF to new S3 location
+			String mergedFileUrl = uploadProcessedDocumentVersion(mergedDocBytes);
+
+			// 5. Update document version with new file path
+			documentVersion.setFilePath(mergedFileUrl);
+			documentVersionDao.save(documentVersion);
+
+			log.info("Successfully appended certificate to document for envelope {}", envelope.getId());
+		}
+		catch (Exception e) {
+			log.error("Failed to append certificate to completed document for envelope {}: {}", envelope.getId(),
+					e.getMessage(), e);
+			// Continue with completion flow - don't throw exception
+		}
 	}
 
 }

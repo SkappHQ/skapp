@@ -22,4 +22,6 @@ public interface DocumentProcessingService {
 
 	byte[] convertPDFdocumentToImage(byte[] documentBytes, int pageNumber);
 
+	byte[] appendCertificateToPdf(byte[] originalPdfBytes, byte[] certificatePdfBytes);
+
 }
