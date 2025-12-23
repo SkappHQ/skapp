@@ -16,6 +16,17 @@ import {
 } from "../types/AuthTypes";
 import { allowedRoutes } from "./routeConfigs";
 
+// Helper function to normalize path by removing community/enterprise prefix
+const normalizePath = (currentPath: string): string => {
+  let normalizedPath = currentPath;
+  if (normalizedPath.startsWith("/community")) {
+    normalizedPath = normalizedPath.replace("/community", "");
+  } else if (normalizedPath.startsWith("/enterprise")) {
+    normalizedPath = normalizedPath.replace("/enterprise", "");
+  }
+  return normalizedPath;
+};
+
 // Helper function to check restricted routes
 export const checkRestrictedRoutes = (
   currentPath: string,
@@ -23,18 +34,22 @@ export const checkRestrictedRoutes = (
   requiredRole: string,
   roles: string[]
 ): boolean => {
+  const normalizedPath = normalizePath(currentPath);
+
   return (
-    restrictedRoutes.some((url) => currentPath.startsWith(url)) &&
+    restrictedRoutes.some((url) => normalizedPath.startsWith(url)) &&
     !roles.includes(requiredRole)
   );
 };
 
 // Check if route is publicly accessible (no auth required)
 export const isPublicRoute = (currentPath: string): boolean => {
+  const normalizedPath = normalizePath(currentPath);
+
   return (
-    currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-    currentPath.startsWith(ROUTES.SIGN.SIGN) ||
-    currentPath.startsWith(ROUTES.SIGN.INFO)
+    normalizedPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
+    normalizedPath.startsWith(ROUTES.SIGN.SIGN) ||
+    normalizedPath.startsWith(ROUTES.SIGN.INFO)
   );
 };
 
@@ -44,8 +59,10 @@ export const validateRouteAccess = (
   currentPath: string,
   router: NextRouter
 ): boolean => {
+  const normalizedPath = normalizePath(currentPath);
+
   // Allow public routes
-  if (isPublicRoute(currentPath)) {
+  if (isPublicRoute(normalizedPath)) {
     return true;
   }
 
@@ -63,13 +80,13 @@ export const validateRouteAccess = (
   // Password change check
   if (
     !isPasswordChangedForTheFirstTime &&
-    currentPath !== ROUTES.AUTH.RESET_PASSWORD
+    normalizedPath !== ROUTES.AUTH.RESET_PASSWORD
   ) {
     router.push(ROUTES.AUTH.RESET_PASSWORD);
     return false;
   } else if (
     isPasswordChangedForTheFirstTime &&
-    currentPath === ROUTES.AUTH.RESET_PASSWORD
+    normalizedPath === ROUTES.AUTH.RESET_PASSWORD
   ) {
     router.push(ROUTES.DASHBOARD.BASE);
     return false;
@@ -79,7 +96,7 @@ export const validateRouteAccess = (
   if (
     roles.includes(ManagerTypes.LEAVE_MANAGER) &&
     !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-    currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
+    normalizedPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
   ) {
     router.push(ROUTES.AUTH.UNAUTHORIZED);
     return false;
@@ -87,7 +104,7 @@ export const validateRouteAccess = (
 
   // Dashboard redirect for attendance employees
   if (
-    currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
+    normalizedPath.startsWith(ROUTES.DASHBOARD.BASE) &&
     !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
     !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
     !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
@@ -100,13 +117,13 @@ export const validateRouteAccess = (
 
   // Check if user has access to the current route
   const isAllowed = roles.some((role) =>
-    allowedRoutes[role]?.some((url) => currentPath.startsWith(url))
+    allowedRoutes[role]?.some((url) => normalizedPath.startsWith(url))
   );
 
   if (isAllowed) {
     // Check sign route access
     if (
-      currentPath.includes(ROUTES.SIGN.BASE) &&
+      normalizedPath.includes(ROUTES.SIGN.BASE) &&
       !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
     ) {
       router.push(ROUTES.AUTH.UNAUTHORIZED);
@@ -115,7 +132,7 @@ export const validateRouteAccess = (
 
     // Check integrations tier
     if (
-      currentPath.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
+      normalizedPath.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
       user?.tier !== "PRO"
     ) {
       router.push(ROUTES.AUTH.UNAUTHORIZED);
@@ -125,7 +142,7 @@ export const validateRouteAccess = (
     // Check manager restricted routes
     if (
       checkRestrictedRoutes(
-        currentPath,
+        normalizedPath,
         managerRestrictedRoutes,
         AdminTypes.PEOPLE_ADMIN,
         roles
@@ -138,7 +155,7 @@ export const validateRouteAccess = (
     // Check invoice employee restricted routes
     if (
       checkRestrictedRoutes(
-        currentPath,
+        normalizedPath,
         invoiceEmployeeRestrictedRoutes,
         ManagerTypes.INVOICE_MANAGER,
         roles
@@ -151,7 +168,7 @@ export const validateRouteAccess = (
     // Check employee restricted routes
     if (
       checkRestrictedRoutes(
-        currentPath,
+        normalizedPath,
         employeeRestrictedRoutes,
         ManagerTypes.PEOPLE_MANAGER,
         roles
@@ -165,7 +182,8 @@ export const validateRouteAccess = (
   }
 
   // No access to this route
-  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
+  if (normalizedPath !== ROUTES.AUTH.UNAUTHORIZED) {
+    console.log("No access to route:", normalizedPath);
     router.push(ROUTES.AUTH.UNAUTHORIZED);
     return false;
   }

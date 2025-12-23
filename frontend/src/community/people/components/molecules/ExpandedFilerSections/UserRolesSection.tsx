@@ -1,5 +1,4 @@
 import { Stack } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,6 +7,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { Role } from "~community/people/types/EmployeeTypes";
 
 import EmployeeFilterSection from "../EmployeeFilterSection/EmployeeFilterSection";
+import { useAuth } from "~community/common/auth/AuthProvider";
 
 const UserRolesSection = ({
   selected,
@@ -25,7 +25,7 @@ const UserRolesSection = ({
     (state) => state
   );
 
-  const { data: sessionData } = useSession();
+  const { user } = useAuth();
 
   const peopleRoles = [
     { label: translateText(["admin"]), value: Role.PEOPLE_ADMIN },
@@ -57,7 +57,7 @@ const UserRolesSection = ({
     { label: translateText(["employee"]), value: Role.ESIGN_EMPLOYEE }
   ];
   const filterData = [
-    ...(sessionData?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+    ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [
           {
             title: translateText(["attendanceModule"]),
@@ -67,7 +67,7 @@ const UserRolesSection = ({
           }
         ]
       : []),
-    ...(sessionData?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [
           {
             title: translateText(["leaveModule"]),
@@ -83,7 +83,7 @@ const UserRolesSection = ({
       filterKey: "permission",
       roles: peopleRoles
     },
-    ...(sessionData?.user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
+    ...(user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
       ? [
           {
             title: translateText(["esignModule"]),

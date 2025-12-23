@@ -22,7 +22,7 @@ export const authFetchV2 = axios.create({
 });
 
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const accessToken = getAccessToken();
+  const accessToken = await getAccessToken();
 
   if (
     accessToken &&
