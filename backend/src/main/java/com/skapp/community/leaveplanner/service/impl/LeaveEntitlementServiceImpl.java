@@ -31,6 +31,7 @@ import com.skapp.community.leaveplanner.payload.CustomEntitlementDto;
 import com.skapp.community.leaveplanner.payload.CustomEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementPatchRequestDto;
+import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsExportDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.EntitlementDetailsDto;
 import com.skapp.community.leaveplanner.payload.EntitlementDto;
@@ -845,7 +846,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 			CustomLeaveEntitlementsFilterDto customLeaveEntitlementsFilterDto) {
 		log.info("getLeaveEntitlementByDate: execution started");
 
-		if (!isCustomLeaveEntitlementInCorrectYearRange(customLeaveEntitlementsFilterDto.getYear())) {
+		if (isCustomLeaveEntitlementNotInCorrectYearRange(customLeaveEntitlementsFilterDto.getYear())) {
 			return new ResponseEntityDto(false, new PageDto());
 		}
 
@@ -868,9 +869,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Page<Employee> employees = leaveEntitlementDao.findEmployeesWithEntitlements(validFrom, validTo,
 				customLeaveEntitlementsFilterDto.getKeyword(), pageable);
 
-		List<EntitlementBasicDetailsDto> responseDtos = employees.getContent()
-			.stream()
-			.map(this::mapToEntitlementBasicDetailsDto)
+		List<EntitlementBasicDetailsDto> responseDtos = employees.stream()
+			.map(employee -> mapToEntitlementBasicDetailsDto(employee, validFrom, validTo))
 			.toList();
 
 		if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
@@ -884,7 +884,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee) {
+	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee, LocalDate validFrom,
+			LocalDate validTo) {
 		EntitlementBasicDetailsDto dto = new EntitlementBasicDetailsDto();
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
@@ -895,7 +896,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		List<LeaveEntitlement> entitlements = leaveEntitlementDao.findByEmployee_EmployeeId(employee.getEmployeeId());
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
-			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual())
+			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual()
+					&& isDateInRange(entitlement.getValidFrom(), entitlement.getValidTo(), validFrom, validTo))
 			.map(entitlement -> {
 				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
 				entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
@@ -909,6 +911,14 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		dto.setEntitlements(entitlementDtos);
 		return dto;
+	}
+
+	private boolean isDateInRange(LocalDate entitlementValidFrom, LocalDate entitlementValidTo, LocalDate validFrom,
+			LocalDate validTo) {
+		return (entitlementValidFrom.isEqual(validFrom) || entitlementValidFrom.isAfter(validFrom))
+				&& (entitlementValidFrom.isBefore(validTo) || entitlementValidFrom.isEqual(validTo))
+				&& (entitlementValidTo.isEqual(validFrom) || entitlementValidTo.isAfter(validFrom))
+				&& (entitlementValidTo.isBefore(validTo) || entitlementValidTo.isEqual(validTo));
 	}
 
 	@Override
@@ -955,9 +965,39 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 				leaveMapper.leaveEntitlementsToSummarizedLeaveEntitlementBalanceDto(leaveEntitlements));
 	}
 
-	private boolean isCustomLeaveEntitlementInCorrectYearRange(int year) {
-		return leaveCycleService.isInCurrentCycle(year) || leaveCycleService.isInPreviousCycle(year)
-				|| leaveCycleService.isInNextCycle(year);
+	@Override
+	public ResponseEntityDto exportLeaveEntitlementByDate(
+			CustomLeaveEntitlementsExportDto customLeaveEntitlementsExportDto) {
+		log.info("getLeaveEntitlementByDate: execution started");
+
+		if (isCustomLeaveEntitlementNotInCorrectYearRange(customLeaveEntitlementsExportDto.getYear())) {
+			return new ResponseEntityDto(false, new PageDto());
+		}
+
+		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
+		LocalDate validFrom = DateTimeUtils.getUtcLocalDate(customLeaveEntitlementsExportDto.getYear(),
+				leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
+		LocalDate validTo = DateTimeUtils.calculateEndDateAfterYears(validFrom, 1);
+
+		List<Employee> employees = leaveEntitlementDao.findEmployeeIdsCreatedWithValidDates(validFrom, validTo);
+
+		List<EntitlementBasicDetailsDto> responseDtos = employees.stream()
+			.map(employee -> mapToEntitlementBasicDetailsDto(employee, validFrom, validTo))
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setTotalItems((long) responseDtos.size());
+		pageDto.setTotalPages(1);
+		pageDto.setCurrentPage(0);
+		pageDto.setItems(responseDtos);
+
+		log.info("getLeaveEntitlementByDate: execution ended");
+		return new ResponseEntityDto(true, pageDto);
+	}
+
+	private boolean isCustomLeaveEntitlementNotInCorrectYearRange(int year) {
+		return !leaveCycleService.isInCurrentCycle(year) && !leaveCycleService.isInPreviousCycle(year)
+				&& !leaveCycleService.isInNextCycle(year);
 	}
 
 	private void createNewLeaveEntitlementFromBulk(int year, EntitlementDetailsDto entitlementDetailsDto,

@@ -6,10 +6,12 @@ import com.skapp.community.leaveplanner.payload.CarryForwardLeaveTypesFilterDto;
 import com.skapp.community.leaveplanner.payload.CustomEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementPatchRequestDto;
+import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsExportDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.LeaveEntitlementPatchRequestDto;
 import com.skapp.community.leaveplanner.payload.LeaveEntitlementsDto;
 import com.skapp.community.leaveplanner.payload.LeaveEntitlementsFilterDto;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -47,5 +49,8 @@ public interface LeaveEntitlementService {
 	ResponseEntityDto getCurrentUserLeaveEntitlements(LeaveEntitlementsFilterDto leaveEntitlementsFilterDto);
 
 	ResponseEntityDto getCurrentUserLeaveEntitlementBalance(Long id);
+
+	ResponseEntityDto exportLeaveEntitlementByDate(
+			@Valid CustomLeaveEntitlementsExportDto customLeaveEntitlementsExportDto);
 
 }
