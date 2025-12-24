@@ -41,7 +41,7 @@ public class UserAgentCaptureFilter extends OncePerRequestFilter {
 		// Only capture User-Agent for whitelisted paths
 		if (shouldCaptureUserAgent(requestPath)) {
 			String userAgent = request.getHeader("User-Agent");
-			RequestContext.setUserAgent(userAgent);
+			AuditRequestContext.setUserAgent(userAgent);
 			log.debug("User-Agent captured for e-signature request: {} - Path: {}", userAgent, requestPath);
 		}
 
@@ -50,7 +50,7 @@ public class UserAgentCaptureFilter extends OncePerRequestFilter {
 		}
 		finally {
 			// Clean up ThreadLocal to prevent memory leaks
-			RequestContext.clear();
+			AuditRequestContext.clear();
 		}
 	}
 
