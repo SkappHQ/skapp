@@ -1,6 +1,6 @@
 package com.skapp.enterprise.common.aspect;
 
-import com.skapp.enterprise.common.config.AuditRequestContext;
+import com.skapp.enterprise.common.config.AuditContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -34,7 +34,7 @@ public class UserAgentCaptureAspect {
 
 		if (request != null) {
 			String userAgent = request.getHeader("User-Agent");
-			AuditRequestContext.setUserAgent(userAgent);
+			AuditContext.setUserAgent(userAgent);
 			log.debug("User-Agent captured for audit: {} - Method: {}", userAgent,
 					joinPoint.getSignature().toShortString());
 		}
@@ -47,7 +47,7 @@ public class UserAgentCaptureAspect {
 		}
 		finally {
 			// Clean up ThreadLocal to prevent memory leaks
-			AuditRequestContext.clear();
+			AuditContext.clear();
 		}
 	}
 

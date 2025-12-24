@@ -30,7 +30,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.common.config.AuditRequestContext;
+import com.skapp.enterprise.common.config.AuditContext;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -353,7 +353,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
 	 */
 	private ObjectNode createUserAgentMetadataNode() {
-		AuditRequestContext.Context context = AuditRequestContext.get();
+		AuditContext.Context context = AuditContext.get();
 		String userAgent = context != null ? context.getUserAgent() : null;
 		if (userAgent != null) {
 			ObjectNode userAgentNode = objectMapper.createObjectNode();

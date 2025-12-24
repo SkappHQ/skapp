@@ -7,7 +7,7 @@ import lombok.Data;
  * makes it available throughout the request lifecycle. This is a generic request context
  * that can be used across all modules.
  */
-public class AuditRequestContext {
+public class AuditContext {
 
 	private static final ThreadLocal<Context> context = new ThreadLocal<>();
 
