@@ -388,10 +388,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
-		// Append signature certificate to completed document (use in-memory bytes to
-		// avoid S3 race
-		// condition) - Must be called AFTER audit trails are saved so they appear in
-		// certificate
+		/*
+		 * Append signature certificate to completed document (use in-memory bytes to
+		 * avoid S3 race condition) - Must be called AFTER audit trails are saved so
+		 * they appear in certificate
+		 */
 		appendCertificateToCompletedDocument(envelope, documentVersion, latestDocumentBytes);
 
 		recipientRepository.saveAll(envelope.getRecipients());
@@ -560,10 +561,11 @@ public class DocumentServiceImpl implements DocumentService {
 
 			auditTrailDao.saveAll(auditTrails);
 
-			// Append signature certificate to completed document (use in-memory bytes to
-			// avoid S3 race
-			// condition) - Must be called AFTER audit trails are saved so they appear in
-			// certificate
+			/*
+			 * Append signature certificate to completed document (use in-memory bytes to
+			 * avoid S3 race condition). Must be called AFTER audit trails are saved so
+			 * they appear in the certificate.
+			 */
 			appendCertificateToCompletedDocument(envelope, finalVersion, fullDocumentBytes);
 
 			// Update all recipients
@@ -1649,13 +1651,12 @@ public class DocumentServiceImpl implements DocumentService {
 			log.info("Appending signature certificate to completed document for envelope {}", envelope.getId());
 
 			// 1. Use in-memory document bytes (already contains all signatures)
-			byte[] finalDocBytes = documentBytes;
 
 			// 2. Generate certificate PDF bytes
 			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false);
 
 			// 3. Merge PDFs (certificate appended to end)
-			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(finalDocBytes, certificateBytes);
+			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
 
 			// 4. Upload merged PDF to new S3 location
 			String mergedFileUrl = uploadProcessedDocumentVersion(mergedDocBytes);
@@ -1667,9 +1668,10 @@ public class DocumentServiceImpl implements DocumentService {
 			log.info("Successfully appended certificate to document for envelope {}", envelope.getId());
 		}
 		catch (Exception e) {
-			log.error("Failed to append certificate to completed document for envelope {}: {}", envelope.getId(),
-					e.getMessage(), e);
-			// Continue with completion flow - don't throw exception
+			log.error(
+					"Failed to append certificate to completed document. envelopeId={}, envelopeStatus={}, documentVersionId={}, documentVersionFilePath={}",
+					envelope.getId(), envelope.getStatus(), documentVersion.getId(), documentVersion.getFilePath(), e);
+			// Continue with completion flow - don't throw exception; document will remain without appended certificate
 		}
 	}
 

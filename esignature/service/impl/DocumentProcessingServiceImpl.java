@@ -602,7 +602,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 
 		if (certificatePdfBytes == null || certificatePdfBytes.length == 0) {
-			throw new IllegalArgumentException("Certificate PDF bytes cannot be null or empty");
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
 		}
 
 		try (RandomAccessReadBuffer originalBuffer = new RandomAccessReadBuffer(originalPdfBytes);
@@ -616,7 +617,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// Import all certificate pages to original document
 			for (PDPage page : certDoc.getPages()) {
-				originalDoc.addPage(page);
+				originalDoc.importPage(page);
 			}
 
 			originalDoc.save(outputStream);
