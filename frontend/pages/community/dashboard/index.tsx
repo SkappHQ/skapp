@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TabsContainer from "~community/common/components/molecules/Tabs/Tabs";
 import VersionUpgradeModal from "~community/common/components/molecules/VersionUpgradeModal/VersionUpgradeModal";

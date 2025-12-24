@@ -14,7 +14,7 @@ import {
   clockInOutGraphTypes,
   lateArrivalsGraphTypes
 } from "~community/attendance/utils/echartOptions/constants";
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";

@@ -1,5 +1,14 @@
-import { config } from "~community/common/auth/routeMatchers";
 import ROUTES from "~community/common/constants/routes";
+import {
+  EnterpriseSignInParams,
+  User,
+  enterpriseSignIn,
+  extractUserFromToken,
+  getAccessToken
+} from "~enterprise/auth/utils/authUtils";
+
+import { AuthMethods, SignInStatus } from "../enums/auth";
+import { config } from "../constants/routeConfigs";
 
 export const drawerHiddenProtectedRoutes = [
   ROUTES.ORGANIZATION.SETUP,
@@ -55,3 +64,42 @@ export const decodeJWTToken = (token: string) => {
 };
 
 export const communitySignIn = async (email: string, password: string) => {};
+
+export const handleSignIn = async (
+  params: EnterpriseSignInParams
+): Promise<SignInStatus> => {
+  const response = await enterpriseSignIn({
+    email: params.email,
+    password: params.password,
+    method: AuthMethods.CREDENTIAL
+  });
+
+  if (response !== SignInStatus.SUCCESS) {
+    throw new Error("Login failed");
+  }
+
+  return response;
+};
+
+export const checkUserAuthentication = async (): Promise<User | null> => {
+  const token = await getAccessToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const userData = extractUserFromToken(token);
+
+  if (!userData) {
+    // Token expired or invalid
+    localStorage.removeItem("accessToken");
+    return null;
+  }
+
+  return userData;
+};
+
+export const handleRefreshToken = async (): Promise<SignInStatus> => {
+  // TODO: Implement refresh token logic
+  return SignInStatus.SUCCESS;
+};

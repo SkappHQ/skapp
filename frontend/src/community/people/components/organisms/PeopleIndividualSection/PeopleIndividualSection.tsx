@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { RefObject } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
@@ -16,6 +15,7 @@ import PrimaryContactDetailsSection from "../EmergencyDetailsSection/SubSections
 import SecondaryContactDetailsSection from "../EmergencyDetailsSection/SubSections/SecondaryContactDetailsSection";
 import EmploymentDetailsSection from "../EmploymentFormSection/SubSections/EmploymentDetailsSection";
 import GeneralDetailsSection from "../PersonDetailsSection/SubSections/GeneralDetailsSections";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   employeeId: number;
@@ -25,17 +25,17 @@ interface Props {
 const PeopleIndividualSection = ({ employeeId, formRef }: Props) => {
   const { currentStep, employee } = usePeopleStore((state) => state);
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
-  const isLeaveManager = data?.user.roles?.includes(
+  const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
   );
 
-  const isAttendanceManager = data?.user.roles?.includes(
+  const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isEmployee = data?.user.roles?.every((role) =>
+  const isEmployee = user?.roles?.every((role) =>
     Object.values(EmployeeTypes).includes(role as EmployeeTypes)
   );
 

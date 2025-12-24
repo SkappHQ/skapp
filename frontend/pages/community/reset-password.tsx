@@ -2,14 +2,14 @@ import { Box } from "@mui/material";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
 
+import { AuthMethods } from "~community/auth/enums/auth";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useResetPassword } from "~community/common/api/ResetPasswordApi";
-import { useAuth } from "~community/common/auth/AuthProvider";
 import ResetPasswordForm from "~community/common/components/organisms/Forms/ResetPassword/ResetPasswordForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { passwordValidationSchema } from "~community/common/utils/validation";
-import { AuthMethods } from "~enterprise/auth/utils/authUtils";
 
 interface FormValues {
   password: string;

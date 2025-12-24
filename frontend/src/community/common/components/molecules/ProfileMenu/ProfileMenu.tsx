@@ -3,7 +3,7 @@ import { Box, Stack } from "@mui/system";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";

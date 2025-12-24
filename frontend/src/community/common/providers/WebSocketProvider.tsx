@@ -6,7 +6,7 @@ import React, {
   useState
 } from "react";
 
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "../../auth/providers/AuthProvider";
 import { useTranslator } from "../hooks/useTranslator";
 import { useCommonStore } from "../stores/commonStore";
 import { createWebSocketUrl } from "../utils/commonUtil";

@@ -6,15 +6,15 @@ import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   managerRestrictedRoutes
-} from "../constants/routes";
+} from "../../common/constants/routes";
 import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
   SenderTypes,
   SuperAdminType
-} from "../types/AuthTypes";
-import { allowedRoutes } from "./routeConfigs";
+} from "../../common/types/AuthTypes";
+import { allowedRoutes } from "../constants/routeConfigs";
 
 // Helper function to normalize path by removing community/enterprise prefix
 const normalizePath = (currentPath: string): string => {
@@ -183,7 +183,6 @@ export const validateRouteAccess = (
 
   // No access to this route
   if (normalizedPath !== ROUTES.AUTH.UNAUTHORIZED) {
-    console.log("No access to route:", normalizedPath);
     router.push(ROUTES.AUTH.UNAUTHORIZED);
     return false;
   }

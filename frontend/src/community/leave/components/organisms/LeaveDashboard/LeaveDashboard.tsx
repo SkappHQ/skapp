@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AnalyticCard from "~community/common/components/molecules/AnalyticCard/AnalyticCard";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import ROUTES from "~community/common/constants/routes";

@@ -3,7 +3,7 @@ import { Box, Chip, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { JSX, useEffect, useState } from "react";
 
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AnalyticCard from "~community/common/components/molecules/AnalyticCard/AnalyticCard";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import { useTranslator } from "~community/common/hooks/useTranslator";

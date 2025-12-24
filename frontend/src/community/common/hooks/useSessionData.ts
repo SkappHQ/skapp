@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import {
   AdminTypes,
   ManagerTypes as AuthManagerType,

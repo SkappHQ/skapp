@@ -9,7 +9,7 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import { useAuth } from "../auth/AuthProvider";
+import { useAuth } from "../../auth/providers/AuthProvider";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { refreshAccessToken, signOut, user } = useAuth();

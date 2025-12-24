@@ -9,30 +9,18 @@ import React, {
   useState
 } from "react";
 
-import {
-  EnterpriseSignInParams,
-  SignInStatus,
-  User
-} from "~enterprise/auth/utils/authUtils";
+import { EnterpriseSignInParams, User } from "~enterprise/auth/utils/authUtils";
 
-import FullScreenLoader from "../components/molecules/FullScreenLoader/FullScreenLoader";
-import ROUTES from "../constants/routes";
+import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
+import ROUTES from "../../common/constants/routes";
+import { SignInStatus } from "../enums/auth";
 import {
   checkUserAuthentication,
   handleRefreshToken,
   handleSignIn
-} from "./authService";
-import { validateRouteAccess } from "./routeGuards";
-
-// Types
-interface AuthContextType {
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  user: User | null;
-  signIn: (params: EnterpriseSignInParams) => Promise<SignInStatus>;
-  signOut: (redirect?: boolean) => Promise<void>;
-  refreshAccessToken: () => Promise<SignInStatus>;
-}
+} from "../utils/authUtils";
+import { validateRouteAccess } from "../utils/routeGuards";
+import { AuthContextType } from "../types/auth";
 
 interface AuthProviderProps {
   children: ReactNode;

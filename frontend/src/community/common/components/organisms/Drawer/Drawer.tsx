@@ -15,9 +15,9 @@ import {
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
-import { useAuth } from "~community/common/auth/AuthProvider";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";

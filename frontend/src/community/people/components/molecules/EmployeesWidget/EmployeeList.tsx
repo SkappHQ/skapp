@@ -3,7 +3,7 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { useRouter } from "next/router";
 import { FC, useEffect, useRef } from "react";
 
-import { useAuth } from "~community/common/auth/AuthProvider";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import NoDataScreen from "~community/common/components/molecules/NoDataScreen/NoDataScreen";

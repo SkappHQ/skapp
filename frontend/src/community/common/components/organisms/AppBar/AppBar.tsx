@@ -3,9 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
 import ClockWidget from "~community/attendance/components/molecules/ClockWidget/ClockWidget";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUnreadNotificationsCount } from "~community/common/api/notificationsApi";
 import { notificationsQueryKeys } from "~community/common/api/utils/QueryKeys";
-import { useAuth } from "~community/common/auth/AuthProvider";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBarMenu";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";

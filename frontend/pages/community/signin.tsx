@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
+import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetApplicationVersionDetails } from "~community/common/api/VersionUpgradeApi";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
-import { useAuth } from "~community/common/auth/AuthProvider";
 import RequestPasswordChangeModal from "~community/common/components/molecules/RequestPasswordChangeModal/RequestPasswordChangeModal";
 import SignInForm from "~community/common/components/organisms/Forms/SignInForm/SignInForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
@@ -24,7 +25,6 @@ import { decodeBase64 } from "~community/common/utils/commonUtil";
 import { getCurrentWeekNumber } from "~community/common/utils/dateTimeUtils";
 import { useRedirectHandler } from "~community/common/utils/hooks/useRedirectHandler";
 import { signInValidation } from "~community/common/utils/validation";
-import { AuthMethods, SignInStatus } from "~enterprise/auth/utils/authUtils";
 import i18n from "~i18n";
 
 import { version } from "../../package.json";

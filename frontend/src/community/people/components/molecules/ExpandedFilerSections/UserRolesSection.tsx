@@ -1,13 +1,13 @@
 import { Stack } from "@mui/material";
 import { RefObject } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import { Role } from "~community/people/types/EmployeeTypes";
 
 import EmployeeFilterSection from "../EmployeeFilterSection/EmployeeFilterSection";
-import { useAuth } from "~community/common/auth/AuthProvider";
 
 const UserRolesSection = ({
   selected,

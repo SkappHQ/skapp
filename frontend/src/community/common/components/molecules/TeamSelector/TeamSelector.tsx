@@ -2,8 +2,8 @@ import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import { useAuth } from "~community/common/auth/AuthProvider";
 import Button from "~community/common/components/atoms/Button/Button";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";

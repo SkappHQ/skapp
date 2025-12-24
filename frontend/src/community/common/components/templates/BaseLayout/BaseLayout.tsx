@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
-import { IsAProtectedUrlWithDrawer } from "~community/common/auth/authUtils";
+import { IsAProtectedUrlWithDrawer } from "~community/auth/utils/authUtils";
 import SkipToContentPopup from "~community/common/components/atoms/SkipToContentPopup/SkipToContentPopup";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
