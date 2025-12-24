@@ -166,6 +166,45 @@ public class EsignUtil {
 			.replace("'", "&#39;");
 	}
 
+	/**
+	 * Sanitizes a filename to be safely used in Content-Disposition headers. Removes or
+	 * replaces characters that could cause header injection or parsing issues.
+	 * @param filename the original filename
+	 * @return sanitized filename safe for use in HTTP headers
+	 */
+	public static String sanitizeFilename(String filename) {
+		if (filename == null || filename.isEmpty()) {
+			return "document";
+		}
+
+		// Remove control characters, newlines, and carriage returns (prevent header
+		// injection)
+		String sanitized = filename.replaceAll("[\\p{Cntrl}\\r\\n]", "");
+
+		// Replace characters that could break the Content-Disposition header
+		sanitized = sanitized.replace("\"", "'") // Replace double quotes with single
+													// quotes
+			.replace("\\", "_") // Replace backslashes
+			.replace("/", "_") // Replace forward slashes
+			.replace(";", "_") // Replace semicolons (header delimiter)
+			.replace(":", "_"); // Replace colons
+
+		// Trim whitespace
+		sanitized = sanitized.trim();
+
+		// Limit length to prevent excessively long filenames (max 200 characters)
+		if (sanitized.length() > 200) {
+			sanitized = sanitized.substring(0, 200);
+		}
+
+		// If sanitization resulted in empty string, return default
+		if (sanitized.isEmpty()) {
+			return "document";
+		}
+
+		return sanitized;
+	}
+
 	public static String getFormattedActionText(AuditTrailResponseDto audit) {
 		String actionBy = audit.getActionDoneByName() != null ? audit.getActionDoneByName() : "";
 

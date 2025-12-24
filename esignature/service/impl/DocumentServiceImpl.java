@@ -1653,7 +1653,7 @@ public class DocumentServiceImpl implements DocumentService {
 			// 1. Use in-memory document bytes (already contains all signatures)
 
 			// 2. Generate certificate PDF bytes
-			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false);
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false, envelope);
 
 			// 3. Merge PDFs (certificate appended to end)
 			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);

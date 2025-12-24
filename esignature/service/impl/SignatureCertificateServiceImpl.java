@@ -67,13 +67,8 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 	private final AddressBookDao addressBookDao;
 
 	@Override
-	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess) {
+	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess, Envelope envelope) {
 		log.info("generateCertificatePdfBytes: execution started for envelopeId {}", envelopeId);
-
-		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
-			log.error("Envelope with ID {} not found", envelopeId);
-			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		});
 
 		validateUser(envelopeId, isDocAccess);
 

@@ -795,19 +795,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess) {
 		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
-		byte[] pdfBytes = signatureCertificateService.generateCertificatePdfBytes(envelopeId, isDocAccess);
-
 		// Fetch envelope to get the name for the filename
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found", envelopeId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
+		byte[] pdfBytes = signatureCertificateService.generateCertificatePdfBytes(envelopeId, isDocAccess, envelope);
+
 		// Set appropriate headers for PDF response
 		headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
 		headers.setContentLength(pdfBytes.length);
+		String sanitizedFilename = EsignUtil.sanitizeFilename(envelope.getName());
 		headers.add("Content-Disposition",
-				"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + envelope.getName() + ".pdf\"");
+				"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + sanitizedFilename + ".pdf\"");
 
 		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
 		return pdfBytes;
