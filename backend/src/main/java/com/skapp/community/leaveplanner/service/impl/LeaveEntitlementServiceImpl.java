@@ -868,9 +868,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Page<Employee> employees = leaveEntitlementDao.findEmployeesWithEntitlements(validFrom, validTo,
 				customLeaveEntitlementsFilterDto.getKeyword(), pageable);
 
-		List<Long> employeeIds = employees.stream()
-			.map(Employee::getEmployeeId)
-			.toList();
+		List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
 
 		Map<Long, List<LeaveEntitlement>> entitlementsByEmployee = new HashMap<>();
 		if (!employeeIds.isEmpty()) {

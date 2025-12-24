@@ -47,4 +47,5 @@ public interface LeaveEntitlementService {
 	ResponseEntityDto getCurrentUserLeaveEntitlements(LeaveEntitlementsFilterDto leaveEntitlementsFilterDto);
 
 	ResponseEntityDto getCurrentUserLeaveEntitlementBalance(Long id);
+
 }
