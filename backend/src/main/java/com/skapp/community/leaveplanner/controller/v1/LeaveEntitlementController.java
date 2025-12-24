@@ -7,7 +7,6 @@ import com.skapp.community.leaveplanner.payload.CarryForwardLeaveTypesFilterDto;
 import com.skapp.community.leaveplanner.payload.CustomEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementPatchRequestDto;
-import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsExportDto;
 import com.skapp.community.leaveplanner.payload.CustomLeaveEntitlementsFilterDto;
 import com.skapp.community.leaveplanner.payload.LeaveEntitlementPatchRequestDto;
 import com.skapp.community.leaveplanner.payload.LeaveEntitlementsDto;
@@ -135,15 +134,6 @@ public class LeaveEntitlementController {
 			@Valid CustomLeaveEntitlementsFilterDto customLeaveEntitlementsFilterDto) {
 		ResponseEntityDto response = leaveEntitlementService
 			.getLeaveEntitlementByDate(customLeaveEntitlementsFilterDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_MANAGER')")
-	@GetMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> exportLeaveEntitlementsByDate(
-			@Valid CustomLeaveEntitlementsExportDto customLeaveEntitlementsExportDto) {
-		ResponseEntityDto response = leaveEntitlementService
-			.exportLeaveEntitlementByDate(customLeaveEntitlementsExportDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

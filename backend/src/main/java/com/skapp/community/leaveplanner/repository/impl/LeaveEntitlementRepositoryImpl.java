@@ -997,30 +997,6 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public List<Employee> findEmployeeIdsCreatedWithValidDates(LocalDate validFrom, LocalDate validDate) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Employee> cq = cb.createQuery(Employee.class);
-		Root<LeaveEntitlement> root = cq.from(LeaveEntitlement.class);
-
-		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
-		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
-
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.between(root.get(LeaveEntitlement_.validFrom), validFrom, validDate));
-		predicates.add(cb.between(root.get(LeaveEntitlement_.validTo), validFrom, validDate));
-		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
-		predicates.add(cb.equal(userJoin.get(User_.isActive), true));
-
-		cq.select(employeeJoin);
-		cq.where(predicates.toArray(new Predicate[0]));
-		cq.orderBy(cb.asc(root.get(Auditable_.createdDate)));
-		cq.distinct(true);
-
-		TypedQuery<Employee> query = entityManager.createQuery(cq);
-		return query.getResultList();
-	}
-
-	@Override
 	public List<Long> findEmployeeIdsWithLeaveEntitlement(List<Long> leaveTypeIds, LocalDate startDate,
 			LocalDate endDate, Long jobFamilyId, Long teamId, int limit, long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();

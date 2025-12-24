@@ -61,8 +61,6 @@ public interface LeaveEntitlementRepository {
 	List<EmployeeLeaveEntitlementReportExportDto> getEmployeeLeaveEntitlementsDetailedReport(List<Long> leaveTypeIds,
 			LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId);
 
-	List<Employee> findEmployeeIdsCreatedWithValidDates(LocalDate validFrom, LocalDate validDate);
-
 	List<Long> findEmployeeIdsWithLeaveEntitlement(List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate,
 			Long jobFamilyId, Long teamId, int limit, long offset);
 
