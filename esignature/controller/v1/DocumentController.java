@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
@@ -66,6 +67,7 @@ public class DocumentController {
 	@Operation(summary = "Sign Document",
 			description = "This endpoint generates a digital signature corresponding to a specific document version, "
 					+ "ensuring integrity and authenticity")
+	@CaptureUserAgent
 	@PostMapping(value = "/sign", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signDocument(@Valid @RequestBody DocumentSignDto documentSignDto,
@@ -88,6 +90,7 @@ public class DocumentController {
 	@Operation(summary = "Digitally Sign Document Internally",
 			description = "Signs a document internally using either sequential or parallel signing based on the envelope's sign type. "
 					+ "Ensures the integrity and authenticity of the signed document version.")
+	@CaptureUserAgent
 	@PostMapping(value = "/internal/sign", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signDocumentInternal(@Valid @RequestBody DocumentSignDto documentSignDto,
@@ -110,6 +113,7 @@ public class DocumentController {
 	@Operation(summary = "Sign a field of a recipient ",
 			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "
 					+ "ensuring integrity and authenticity")
+	@CaptureUserAgent
 	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto,

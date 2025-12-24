@@ -41,8 +41,6 @@ public class EPSecurityConfig {
 
 	private final TenantFilter tenantFilter;
 
-	private final UserAgentCaptureFilter userAgentCaptureFilter;
-
 	private final DocumentLinkAuthFilter documentLinkAuthFilter;
 
 	private final UserDetailsService userDetailsService;
@@ -121,7 +119,6 @@ public class EPSecurityConfig {
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
-		http.addFilterAfter(userAgentCaptureFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(documentLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
