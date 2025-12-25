@@ -34,8 +34,6 @@ import java.security.cert.X509Certificate;
 @ConditionalOnProperty(name = "skapp.pdf-signing.provider", havingValue = "azure")
 public class AzureKeyVaultCertificateProvider implements CertificateProvider {
 
-	private final SignatureProvider signatureProvider;
-
 	@Override
 	public X509Certificate[] loadCertificateChain() throws CertificateProviderException {
 		// TODO: Implement certificate chain loading from Azure Key Vault

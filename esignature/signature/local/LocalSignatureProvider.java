@@ -45,9 +45,6 @@ public class LocalSignatureProvider implements SignatureProvider {
 	@Value("${skapp.pdf-signing.local.key-alias}")
 	private String keyAlias;
 
-	@Value("${skapp.pdf-signing.signature.algorithm:RSA}")
-	private String keyAlgorithm; // RSA or ECDSA
-
 	@Value("${skapp.pdf-signing.signature.hash-algorithm:SHA256}")
 	private String hashAlgorithm; // SHA256, SHA384, SHA512
 

@@ -40,7 +40,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -329,50 +328,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 	@Override
 	public SignatureValidationResult verifyPdfSignature(byte[] pdfBytes) throws PdfSigningException {
-		log.info("Verifying PDF signature");
-
-		SignatureValidationResult result = SignatureValidationResult.builder().build();
-
-		try (PDDocument document = Loader.loadPDF(pdfBytes)) {
-
-			// Check if document has signatures
-			if (document.getSignatureDictionaries().isEmpty()) {
-				result.setValid(false);
-				result.addValidationMessage("Document has no signatures");
-				return result;
-			}
-
-			// Get first signature (we only add one organizational signature)
-			PDSignature signature = document.getSignatureDictionaries().get(0);
-
-			// Extract signature metadata
-			result.setSignerName(signature.getName());
-			result.setSignatureAlgorithm(signature.getSubFilter());
-
-			if (signature.getSignDate() != null) {
-				result.setSignedAt(
-						LocalDateTime.ofInstant(signature.getSignDate().toInstant(), java.time.ZoneId.systemDefault()));
-			}
-
-			// TODO: Implement full signature validation
-			// - Verify signature cryptographically
-			// - Validate certificate chain
-			// - Check document integrity
-			// This requires more complex BouncyCastle integration
-
-			result.setValid(true);
-			result.setSignatureIntact(true);
-			result.setDocumentModified(false);
-			result.setCertificateValid(true);
-
-			log.info("PDF signature verification completed");
-			return result;
-
-		}
-		catch (Exception e) {
-			log.error("Failed to verify PDF signature", e);
-			throw new PdfSigningException("Failed to verify PDF signature", e);
-		}
+		throw new UnsupportedOperationException("Signature verification is not yet implemented");
 	}
 
 	@Override

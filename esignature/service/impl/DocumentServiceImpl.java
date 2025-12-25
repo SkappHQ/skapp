@@ -34,7 +34,6 @@ import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
@@ -46,7 +45,6 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
-import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
@@ -136,8 +134,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AuditTrailDao auditTrailDao;
 
-	private final DocumentLinkRepository documentLinkRepository;
-
 	private final UserKeyService userKeyService;
 
 	private final AmazonS3Service amazonS3Service;
@@ -151,8 +147,6 @@ public class DocumentServiceImpl implements DocumentService {
 	private final EsignMapper eSignMapper;
 
 	private final AESKeyLoader aesKeyLoader;
-
-	private final EsignEmailService esignEmailService;
 
 	private final DocumentLinkService documentLinkService;
 
