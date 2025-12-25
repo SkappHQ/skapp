@@ -2,7 +2,6 @@ package com.skapp.enterprise.esignature.service;
 
 import com.skapp.enterprise.esignature.exception.PdfSigningException;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.SignatureValidationResult;
 
 /**
  * Service interface for PDF digital signing operations.
@@ -38,18 +37,6 @@ public interface PdfSigningService {
 	 * @throws PdfSigningException if any step of the signing process fails
 	 */
 	DocumentVersion signCompletedDocument(Long documentVersionId, byte[] pdfBytes) throws PdfSigningException;
-
-	/**
-	 * Verify the cryptographic integrity of a signed PDF.
-	 *
-	 * This method validates: - Signature integrity (not tampered) - Document integrity
-	 * (not modified after signing) - Certificate validity (not expired, not revoked) -
-	 * Certificate chain trust
-	 * @param pdfBytes The signed PDF document bytes
-	 * @return Validation result with detailed status information
-	 * @throws PdfSigningException if verification cannot be performed
-	 */
-	SignatureValidationResult verifyPdfSignature(byte[] pdfBytes) throws PdfSigningException;
 
 	/**
 	 * Check if PDF signing feature is enabled.

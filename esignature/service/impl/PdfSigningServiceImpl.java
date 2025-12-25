@@ -6,7 +6,6 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.exception.PdfSigningException;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.SignatureValidationResult;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
@@ -320,11 +319,6 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 		docVersion.setSignatureAlgorithm(signatureProvider.getSignatureAlgorithm());
 
 		// Note: timestampToken field can be added later for TSA integration
-	}
-
-	@Override
-	public SignatureValidationResult verifyPdfSignature(byte[] pdfBytes) throws PdfSigningException {
-		throw new UnsupportedOperationException("Signature verification is not yet implemented");
 	}
 
 	@Override
