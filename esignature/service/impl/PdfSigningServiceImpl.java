@@ -16,7 +16,6 @@ import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
@@ -60,6 +59,7 @@ import java.util.Calendar;
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "skapp.pdf-signing.enabled", havingValue = "true")
 public class PdfSigningServiceImpl implements PdfSigningService {
+	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
 	private final SignatureProvider signatureProvider;
 
@@ -83,10 +83,6 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String s3BucketName;
-
-	private static final COSName SIGNATURE_FILTER = COSName.ADOBE_PPKLITE;
-
-	private static final COSName SIGNATURE_SUBFILTER = COSName.getPDFName("adbe.pkcs7.detached");
 
 	@Override
 	@Transactional
@@ -147,8 +143,8 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 			// Create signature dictionary
 			PDSignature signature = new PDSignature();
-			signature.setFilter(SIGNATURE_FILTER);
-			signature.setSubFilter(SIGNATURE_SUBFILTER);
+			signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 
 			// Set signature metadata
 			signature.setName("Skapp Inc"); // Organization name
@@ -291,7 +287,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 		// Build file path:
 		// bucketName/eSign/envelop/process/documents/{tenantId}/{randomUrl}
-		String fileUrl = s3BucketName + "/eSign/envelop/process/documents/" + tenantId + "/" + randomUrl;
+		String fileUrl = s3BucketName + UPLOAD_DOCUMENT_URL_PATH + tenantId + "/" + randomUrl;
 
 		log.debug("Uploading signed PDF to S3: {}", fileUrl);
 
