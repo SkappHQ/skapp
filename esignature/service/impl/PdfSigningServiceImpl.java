@@ -20,6 +20,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
@@ -38,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
@@ -80,15 +82,12 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	@Value("${skapp.pdf-signing.signature.contact-info:support@skapp.com}")
 	private String signatureContactInfo;
 
-	@Value("${skapp.pdf-signing.storage.signed-path-prefix:eSign/envelop/completed}")
-	private String signedPathPrefix;
-
 	@Value("${aws.s3.bucket-name}")
 	private String s3BucketName;
 
 	private static final COSName SIGNATURE_FILTER = COSName.ADOBE_PPKLITE;
 
-	private static final COSName SIGNATURE_SUBFILTER = COSName.getPDFName("ETSI.CAdES.detached"); // PAdES
+	private static final COSName SIGNATURE_SUBFILTER = COSName.getPDFName("adbe.pkcs7.detached");
 
 	@Override
 	@Transactional
@@ -187,26 +186,33 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 		@Override
 		public byte[] sign(InputStream content) throws IOException {
 			try {
-				log.debug("Calculating PDF content hash for signing");
+				log.debug("Signing PDF content");
 
-				// 1. Calculate SHA-256 hash of PDF content
-				byte[] contentHash = calculateSHA256Hash(content);
-				log.debug("Content hash calculated (length: {} bytes)", contentHash.length);
+				// 1. Read content bytes
+				byte[] contentBytes = content.readAllBytes();
 
-				// 2. Sign hash using SignatureProvider (local keystore or HSM)
-				byte[] signedHash = signatureProvider.signHash(contentHash);
-				log.debug("Hash signed successfully (signature length: {} bytes)", signedHash.length);
-
-				// 3. Get certificate chain
+				// 2. Get certificate chain
 				X509Certificate[] certChain = signatureProvider.getCertificateChain();
-				log.debug("Certificate chain retrieved ({} certificates)", certChain.length);
 
-				// 4. Build CMS/PKCS#7 signature structure
-				CMSSignedData cmsSignedData = buildCMSSignature(contentHash, signedHash, certChain);
-				byte[] encodedSignature = cmsSignedData.getEncoded();
+				// 3. Create CMS data
+				CMSTypedData cmsData = new CMSProcessableByteArray(contentBytes);
 
-				log.debug("CMS signature built (encoded length: {} bytes)", encodedSignature.length);
-				return encodedSignature;
+				// 4. Create ContentSigner
+				ContentSigner contentSigner = new DelegatingContentSigner(signatureProvider);
+
+				// 5. Build CMS signature
+				CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
+
+				JcaCertStore certStore = new JcaCertStore(Arrays.asList(certChain));
+				generator.addCertificates(certStore);
+
+				generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(
+						new JcaDigestCalculatorProviderBuilder().build())
+						.build(contentSigner, certChain[0]));
+
+				CMSSignedData signedData = generator.generate(cmsData, false); // detached
+
+				return signedData.getEncoded();
 
 			}
 			catch (Exception e) {
@@ -218,101 +224,50 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	}
 
 	/**
-	 * Calculate SHA-256 hash of input stream.
+	 * ContentSigner that delegates to SignatureProvider.
 	 */
-	private byte[] calculateSHA256Hash(InputStream content) throws Exception {
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		byte[] buffer = new byte[8192];
-		int read;
-		while ((read = content.read(buffer)) != -1) {
-			digest.update(buffer, 0, read);
-		}
-		return digest.digest();
-	}
+	private static class DelegatingContentSigner implements ContentSigner {
 
-	/**
-	 * Build CMS (Cryptographic Message Syntax) signature structure.
-	 *
-	 * This creates a PKCS#7/CMS signed data structure containing: - The signature value -
-	 * The certificate chain - Signing time and other attributes
-	 *
-	 * Format: PAdES baseline (ETSI.CAdES.detached)
-	 */
-	private CMSSignedData buildCMSSignature(byte[] contentHash, byte[] signedHash, X509Certificate[] certChain)
-			throws Exception {
+		private final SignatureProvider provider;
 
-		log.debug("Building CMS signature structure");
+		private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-		// Prepare certificate chain for CMS
-		JcaCertStore certStore = new JcaCertStore(Arrays.asList(certChain));
+		private final AlgorithmIdentifier algorithmIdentifier;
 
-		// Create CMS generator
-		CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
-
-		// Build content signer (wraps the already-signed hash)
-		// Note: We're using the signature algorithm from the provider
-		String signatureAlgorithm = signatureProvider.getSignatureAlgorithm();
-		ContentSigner contentSigner = new PrecomputedSignatureContentSigner(signatureAlgorithm, signedHash);
-
-		// Add signer info with certificate
-		generator
-			.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
-				.build(contentSigner, certChain[0]));
-
-		// Add certificate chain
-		generator.addCertificates(certStore);
-
-		// Generate CMS signed data
-		CMSTypedData cmsData = new CMSProcessableByteArray(contentHash);
-		CMSSignedData signedData = generator.generate(cmsData, false); // false = detached
-																		// signature
-
-		log.debug("CMS signature structure built successfully");
-		return signedData;
-	}
-
-	/**
-	 * ContentSigner implementation that wraps a precomputed signature.
-	 *
-	 * This is necessary because we've already signed the hash using the SignatureProvider
-	 * (which may be an HSM). We just need to wrap it in the CMS structure.
-	 */
-	private static class PrecomputedSignatureContentSigner implements ContentSigner {
-
-		private final String algorithm;
-
-		private final byte[] signature;
-
-		private final ByteArrayOutputStream outputStream;
-
-		public PrecomputedSignatureContentSigner(String algorithm, byte[] signature) {
-			this.algorithm = algorithm;
-			this.signature = signature;
-			this.outputStream = new ByteArrayOutputStream();
-		}
-
-		@Override
-		public org.bouncycastle.asn1.x509.AlgorithmIdentifier getAlgorithmIdentifier() {
-			// Return algorithm identifier for the signature algorithm
-			// We use DefaultSignatureAlgorithmIdentifierFinder instead of building a full
-			// signer
-			// with a null key, which would cause "Key must not be null" exception
+		public DelegatingContentSigner(SignatureProvider provider) {
+			this.provider = provider;
+			String algo = provider.getSignatureAlgorithm();
 			try {
-				return new DefaultSignatureAlgorithmIdentifierFinder().find(algorithm);
+				this.algorithmIdentifier = new DefaultSignatureAlgorithmIdentifierFinder().find(algo);
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Failed to get algorithm identifier", e);
+				throw new RuntimeException("Failed to find algorithm identifier for " + algo, e);
 			}
 		}
 
 		@Override
-		public ByteArrayOutputStream getOutputStream() {
+		public AlgorithmIdentifier getAlgorithmIdentifier() {
+			return algorithmIdentifier;
+		}
+
+		@Override
+		public OutputStream getOutputStream() {
 			return outputStream;
 		}
 
 		@Override
 		public byte[] getSignature() {
-			return signature;
+			try {
+				byte[] dataToSign = outputStream.toByteArray();
+				// We pass the raw data (SignedAttributes) to the provider.
+				// The provider (if using standard Java Signature) will hash it.
+				// If the provider expects a pre-calculated hash (like some HSMs),
+				// it should be adapted to hash the input first.
+				return provider.signHash(dataToSign);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Failed to sign data", e);
+			}
 		}
 
 	}

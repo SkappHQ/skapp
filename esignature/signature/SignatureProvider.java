@@ -18,16 +18,22 @@ import java.security.cert.X509Certificate;
 public interface SignatureProvider {
 
 	/**
-	 * Sign a hash using the configured private key.
+	 * Sign the data using the configured private key.
 	 *
-	 * The private key used for signing is managed by the implementation and should never
-	 * be directly accessible to the application layer. In HSM-backed implementations, the
-	 * private key never leaves the hardware security module.
-	 * @param hash The hash to sign (typically SHA-256 hash of PDF byte ranges)
-	 * @return Signed hash bytes (raw signature, not wrapped in CMS/PKCS#7)
+	 * <p><strong>Important:</strong> The input is the raw data (e.g., CMS SignedAttributes),
+	 * not a pre-calculated hash. Implementations are responsible for hashing this data
+	 * if their underlying signing mechanism requires a digest (e.g., Cloud HSMs).</p>
+	 *
+	 * <ul>
+	 *     <li><strong>Local Provider:</strong> Should use an algorithm like "SHA256withRSA" which handles hashing internally.</li>
+	 *     <li><strong>Cloud HSM:</strong> Should calculate the SHA-256 hash of the input bytes, then send that digest to the HSM.</li>
+	 * </ul>
+	 *
+	 * @param contentToSign The raw content bytes to be signed
+	 * @return Signed bytes (raw signature)
 	 * @throws SignatureProviderException if signing operation fails
 	 */
-	byte[] signHash(byte[] hash) throws SignatureProviderException;
+	byte[] signHash(byte[] contentToSign) throws SignatureProviderException;
 
 	/**
 	 * Retrieve the certificate chain for signature validation.

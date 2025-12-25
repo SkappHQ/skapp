@@ -114,18 +114,17 @@ public class LocalSignatureProvider implements SignatureProvider {
 	}
 
 	@Override
-	public byte[] signHash(byte[] hash) throws SignatureProviderException {
+	public byte[] signHash(byte[] contentToSign) throws SignatureProviderException {
 		try {
-			log.debug("Signing hash with local private key (algorithm: {})", signatureAlgorithm);
+			log.debug("Signing data with local private key (algorithm: {})", signatureAlgorithm);
 
 			// Create signature instance
 			Signature signature = Signature.getInstance(signatureAlgorithm);
 			signature.initSign(privateKey);
 
-			// Sign the hash
-			// Note: For PDF signing, we're signing the hash of the byte ranges, not the
-			// raw data
-			signature.update(hash);
+			// Sign the data (CMS SignedAttributes)
+			// Note: The Signature instance (e.g., SHA256withRSA) handles the hashing internally.
+			signature.update(contentToSign);
 			byte[] signedHash = signature.sign();
 
 			log.debug("Hash signed successfully (signature length: {} bytes)", signedHash.length);
