@@ -47,6 +47,7 @@ import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -158,6 +159,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final AuditTrailService auditTrailService;
 
 	private final ScheduleService scheduleService;
+
+	private final Optional<PdfSigningService> pdfSigningService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -362,6 +365,22 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionDao.save(documentVersion);
+
+		// Sign the completed PDF with organization certificate (if enabled)
+		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
+			try {
+				log.info("Signing completed PDF for document version: {}", documentVersion.getId());
+				documentVersion = pdfSigningService.get()
+					.signCompletedDocument(documentVersion.getId(), latestDocumentBytes);
+				log.info("PDF signed successfully for document version: {}", documentVersion.getId());
+			}
+			catch (Exception e) {
+				// Log error but don't fail the envelope completion
+				// The envelope can still be completed without the PDF signature
+				log.error("Failed to sign PDF for document version: " + documentVersion.getId()
+						+ ". Envelope will complete without PDF signature.", e);
+			}
+		}
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
 		documentRepository.save(document);
