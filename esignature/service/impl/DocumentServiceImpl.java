@@ -361,20 +361,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(documentVersion);
 
 		// Sign the completed PDF with organization certificate (if enabled)
-		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
-			try {
-				log.info("Signing completed PDF for document version: {}", documentVersion.getId());
-				documentVersion = pdfSigningService.get()
-					.signCompletedDocument(documentVersion.getId(), latestDocumentBytes);
-				log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			}
-			catch (Exception e) {
-				// Log error but don't fail the envelope completion
-				// The envelope can still be completed without the PDF signature
-				log.error("Failed to sign PDF for document version: " + documentVersion.getId()
-						+ ". Envelope will complete without PDF signature.", e);
-			}
-		}
+		documentVersion = signCompletedPdf(documentVersion, latestDocumentBytes);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
 		documentRepository.save(document);
@@ -597,6 +584,25 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
+	private DocumentVersion signCompletedPdf(DocumentVersion documentVersion, byte[] documentBytes) {
+		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
+			try {
+				log.info("Signing completed PDF for document version: {}", documentVersion.getId());
+				DocumentVersion signedVersion = pdfSigningService.get()
+					.signCompletedDocument(documentVersion.getId(), documentBytes);
+				log.info("PDF signed successfully for document version: {}", signedVersion.getId());
+				return signedVersion;
+			}
+			catch (Exception e) {
+				// Log error but don't fail the envelope completion
+				// The envelope can still be completed without the PDF signature
+				log.error("Failed to sign PDF for document version: " + documentVersion.getId()
+						+ ". Envelope will complete without PDF signature.", e);
+			}
+		}
+		return documentVersion;
+	}
+	
 	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
 		int attempt = 0;
 		DocumentVersion documentVersion = currentVersion;
