@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.signature.azure;
 
-import com.skapp.enterprise.esignature.model.CertificateValidationResult;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import lombok.RequiredArgsConstructor;
@@ -38,20 +37,6 @@ public class AzureKeyVaultCertificateProvider implements CertificateProvider {
 		// Delegate to SignatureProvider which has the Azure client
 		throw new UnsupportedOperationException("Azure Key Vault certificate loading is not yet implemented. "
 				+ "See AzureKeyVaultCertificateProvider for implementation TODOs.");
-	}
-
-	@Override
-	public CertificateValidationResult validateCertificate() {
-		// TODO: Implement comprehensive certificate validation
-		// - Check expiration
-		// - Check revocation status (CRL/OCSP)
-		// - Validate certificate chain
-		log.warn("Azure Key Vault certificate validation not implemented");
-
-		CertificateValidationResult result = CertificateValidationResult.builder().build();
-		result.setValid(false);
-		result.addValidationMessage("Certificate validation not yet implemented for Azure Key Vault provider");
-		return result;
 	}
 
 	@Override

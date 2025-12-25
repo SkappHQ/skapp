@@ -1,7 +1,5 @@
 package com.skapp.enterprise.esignature.signature;
 
-import com.skapp.enterprise.esignature.model.CertificateValidationResult;
-
 import java.security.cert.X509Certificate;
 
 /**
@@ -26,16 +24,6 @@ public interface CertificateProvider {
 	 * @throws CertificateProviderException if certificate chain cannot be loaded
 	 */
 	X509Certificate[] loadCertificateChain() throws CertificateProviderException;
-
-	/**
-	 * Validate the certificate status.
-	 *
-	 * This performs comprehensive validation including: - Expiration check - Revocation
-	 * status (CRL/OCSP) for production implementations - Trust chain validation - Key
-	 * usage validation
-	 * @return Validation result with detailed status information
-	 */
-	CertificateValidationResult validateCertificate();
 
 	/**
 	 * Get the number of days until certificate expiration.
