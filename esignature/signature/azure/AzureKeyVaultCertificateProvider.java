@@ -1,10 +1,8 @@
 package com.skapp.enterprise.esignature.signature.azure;
 
-import com.skapp.enterprise.esignature.model.CertificateMetadata;
 import com.skapp.enterprise.esignature.model.CertificateValidationResult;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.CertificateProviderException;
-import com.skapp.enterprise.esignature.signature.SignatureProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -61,15 +59,6 @@ public class AzureKeyVaultCertificateProvider implements CertificateProvider {
 		// TODO: Calculate days until expiration from Azure certificate
 		log.warn("Azure Key Vault certificate expiration check not implemented");
 		return -1;
-	}
-
-	@Override
-	public CertificateMetadata getCertificateMetadata() throws CertificateProviderException {
-		// TODO: Extract certificate metadata from Azure Key Vault
-		// Use certificate properties and policy information
-		throw new UnsupportedOperationException(
-				"Azure Key Vault certificate metadata extraction is not yet implemented. "
-						+ "See AzureKeyVaultCertificateProvider for implementation TODOs.");
 	}
 
 }

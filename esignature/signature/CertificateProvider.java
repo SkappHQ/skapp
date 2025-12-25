@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.signature;
 
-import com.skapp.enterprise.esignature.model.CertificateMetadata;
 import com.skapp.enterprise.esignature.model.CertificateValidationResult;
 
 import java.security.cert.X509Certificate;
@@ -43,12 +42,5 @@ public interface CertificateProvider {
 	 * @return Days remaining (positive), 0 if expires today, negative if expired
 	 */
 	int getDaysUntilExpiration();
-
-	/**
-	 * Extract and return certificate metadata for logging and monitoring.
-	 * @return Certificate metadata object
-	 * @throws CertificateProviderException if metadata cannot be extracted
-	 */
-	CertificateMetadata getCertificateMetadata() throws CertificateProviderException;
 
 }

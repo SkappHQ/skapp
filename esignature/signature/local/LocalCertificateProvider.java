@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.signature.local;
 
-import com.skapp.enterprise.esignature.model.CertificateMetadata;
 import com.skapp.enterprise.esignature.model.CertificateValidationResult;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.CertificateProviderException;
@@ -10,15 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.security.auth.x500.X500Principal;
-import java.security.MessageDigest;
-import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -133,61 +125,6 @@ public class LocalCertificateProvider implements CertificateProvider {
 		}
 	}
 
-	@Override
-	public CertificateMetadata getCertificateMetadata() throws CertificateProviderException {
-		try {
-			X509Certificate[] chain = loadCertificateChain();
-			if (chain == null || chain.length == 0) {
-				throw new CertificateProviderException("Certificate chain is empty");
-			}
-
-			X509Certificate cert = chain[0];
-
-			// Extract subject and issuer
-			X500Principal subject = cert.getSubjectX500Principal();
-			X500Principal issuer = cert.getIssuerX500Principal();
-
-			// Extract serial number
-			String serialNumber = cert.getSerialNumber().toString(16).toUpperCase();
-
-			// Extract validity dates
-			LocalDateTime validFrom = LocalDateTime.ofInstant(cert.getNotBefore().toInstant(), ZoneId.systemDefault());
-			LocalDateTime validTo = LocalDateTime.ofInstant(cert.getNotAfter().toInstant(), ZoneId.systemDefault());
-
-			// Extract key information
-			PublicKey publicKey = cert.getPublicKey();
-			String keyAlgorithm = publicKey.getAlgorithm();
-			Integer keySize = extractKeySize(publicKey);
-
-			// Signature algorithm
-			String signatureAlgorithm = cert.getSigAlgName();
-
-			// Check if self-signed
-			boolean selfSigned = isSelfSigned(cert);
-
-			// Calculate fingerprint (SHA-256 of certificate)
-			String fingerprint = calculateFingerprint(cert);
-
-			return CertificateMetadata.builder()
-				.subject(subject.getName())
-				.issuer(issuer.getName())
-				.serialNumber(serialNumber)
-				.validFrom(validFrom)
-				.validTo(validTo)
-				.publicKeyAlgorithm(keyAlgorithm)
-				.keySize(keySize)
-				.signatureAlgorithm(signatureAlgorithm)
-				.selfSigned(selfSigned)
-				.fingerprint(fingerprint)
-				.build();
-
-		}
-		catch (Exception e) {
-			log.error("Failed to extract certificate metadata", e);
-			throw new CertificateProviderException("Failed to extract certificate metadata", e);
-		}
-	}
-
 	/**
 	 * Calculate days until certificate expiration.
 	 */
@@ -202,37 +139,6 @@ public class LocalCertificateProvider implements CertificateProvider {
 	 */
 	private boolean isSelfSigned(X509Certificate cert) {
 		return cert.getSubjectX500Principal().equals(cert.getIssuerX500Principal());
-	}
-
-	/**
-	 * Extract key size from public key.
-	 */
-	private Integer extractKeySize(PublicKey publicKey) {
-		if (publicKey instanceof RSAPublicKey) {
-			return ((RSAPublicKey) publicKey).getModulus().bitLength();
-		}
-		else if (publicKey instanceof ECPublicKey) {
-			return ((ECPublicKey) publicKey).getParams().getOrder().bitLength();
-		}
-		return null;
-	}
-
-	/**
-	 * Calculate SHA-256 fingerprint of certificate.
-	 */
-	private String calculateFingerprint(X509Certificate cert) throws Exception {
-		MessageDigest md = MessageDigest.getInstance("SHA-256");
-		byte[] digest = md.digest(cert.getEncoded());
-
-		// Convert to hex string
-		StringBuilder sb = new StringBuilder();
-		for (byte b : digest) {
-			sb.append(String.format("%02X", b));
-			if (sb.length() % 3 == 2 && sb.length() < digest.length * 3 - 1) {
-				sb.append(":");
-			}
-		}
-		return sb.toString();
 	}
 
 }
