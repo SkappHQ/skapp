@@ -87,6 +87,10 @@ const nextConfig = {
           : "/community/reset-password"
       },
       {
+        source: "/verify/reset-password",
+        destination: "/enterprise/verify/reset-password"
+      },
+      {
         source: "/leave/leave-analytics",
         destination: "/community/leave/leave-analytics"
       },
@@ -378,7 +382,8 @@ const nextConfig = {
       },
       {
         source: "/invoice/customers/customer-details/projects/:id",
-        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
+        destination:
+          "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
         source: "/app-link",

@@ -22,7 +22,7 @@ const LeaveEntitlementModalController: FC = () => {
   const {
     isLeaveEntitlementModalOpen,
     leaveEntitlementModalType,
-    selectedYear,
+    leaveEntitlementTableSelectedYear,
     setLeaveEntitlementModalType
   } = useLeaveStore((state) => state);
 
@@ -36,7 +36,7 @@ const LeaveEntitlementModalController: FC = () => {
         return translateText(["addEntitlementsModalTitle"]);
       case LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION:
         return translateText(["overrideConfirmationModalTitle"], {
-          uploadingYear: selectedYear
+          uploadingYear: leaveEntitlementTableSelectedYear
         });
       case LeaveEntitlementModelTypes.BULK_UPLOAD_SUMMARY:
         return commonTranslateText(["title"]);
