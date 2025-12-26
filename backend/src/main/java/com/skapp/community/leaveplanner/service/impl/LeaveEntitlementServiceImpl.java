@@ -925,10 +925,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 	private boolean isDateInRange(LocalDate entitlementValidFrom, LocalDate entitlementValidTo, LocalDate validFrom,
 			LocalDate validTo) {
-		return (entitlementValidFrom.isEqual(validFrom) || entitlementValidFrom.isAfter(validFrom))
-				&& (entitlementValidFrom.isBefore(validTo) || entitlementValidFrom.isEqual(validTo))
-				&& (entitlementValidTo.isEqual(validFrom) || entitlementValidTo.isAfter(validFrom))
-				&& (entitlementValidTo.isBefore(validTo) || entitlementValidTo.isEqual(validTo));
+		return ((entitlementValidFrom.isBefore(validTo) || entitlementValidFrom.isEqual(validTo))
+				&& (entitlementValidTo.isAfter(validFrom) || entitlementValidTo.isEqual(validFrom)));
 	}
 
 	@Override
