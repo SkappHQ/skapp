@@ -90,13 +90,9 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.repository.EmployeeEducationDao;
-import com.skapp.community.peopleplanner.repository.EmployeeFamilyDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
-import com.skapp.community.peopleplanner.repository.EmployeeProgressionDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
-import com.skapp.community.peopleplanner.repository.EmployeeVisaDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
@@ -132,7 +128,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -196,14 +191,6 @@ public class PeopleServiceImpl implements PeopleService {
 	protected final UserVersionService userVersionService;
 
 	private final EmployeeValidationService employeeValidationService;
-
-	private final EmployeeFamilyDao employeeFamilyDao;
-
-	private final EmployeeEducationDao employeeEducationDao;
-
-	private final EmployeeProgressionDao employeeProgressionDao;
-
-	private final EmployeeVisaDao employeeVisaDao;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -368,33 +355,49 @@ public class PeopleServiceImpl implements PeopleService {
 		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeePersonalInfo(requestDto, employee),
 				employee::setPersonalInfo);
 
-		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmergencyContacts(requestDto, employee),
-				employee::setEmployeeEmergencies);
+		// Career Progressions
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processCareerProgressions(requestDto, employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeeProbationPeriod(requestDto, employee),
-				employee::setEmployeePeriods);
+		// Visas
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processEmployeeVisas(requestDto, employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto, () -> processCareerProgressions(requestDto, employee),
-				employee::setEmployeeProgressions);
+		// Families
+		if (requestDto != null && requestDto.getPersonal() != null) {
+			processEmployeeFamilies(requestDto.getPersonal(), employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeeVisas(requestDto, employee),
-				employee::setEmployeeVisas);
+		// Educations
+		if (requestDto != null && requestDto.getPersonal() != null) {
+			processEmployeeEducations(requestDto, employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto.getPersonal(),
-				() -> processEmployeeFamilies(requestDto.getPersonal(), employee), employee::setEmployeeFamilies);
+		// Teams
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processEmployeeTeams(requestDto.getEmployment(), employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto, () -> processEmployeeEducations(requestDto, employee),
-				employee::setEmployeeEducations);
+		// Managers
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processEmployeeManagers(requestDto.getEmployment(), employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto.getEmployment(),
-				() -> processEmployeeTeams(requestDto.getEmployment(), employee), employee::setEmployeeTeams);
+		// Emergency Contacts
+		processEmergencyContacts(requestDto, employee);
 
-		CommonModuleUtils.setIfRequestValid(requestDto.getEmployment(),
-				() -> processEmployeeManagers(requestDto.getEmployment(), employee), employee::setEmployeeManagers);
+		// Probation Period
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processEmployeeProbationPeriod(requestDto, employee);
+		}
 
-		CommonModuleUtils.setIfRequestValid(requestDto.getSystemPermissions(),
-				() -> rolesService.assignRolesToEmployee(requestDto.getSystemPermissions(), employee),
-				employee::setEmployeeRole);
+		if (requestDto != null) {
+			CommonModuleUtils.setIfRequestValid(requestDto.getSystemPermissions(),
+					() -> rolesService.assignRolesToEmployee(requestDto.getSystemPermissions(), employee),
+					employee::setEmployeeRole);
+		}
 
 		if (employee.getAccountStatus() == null) {
 			employee.setAccountStatus(AccountStatus.PENDING);
@@ -540,64 +543,41 @@ public class PeopleServiceImpl implements PeopleService {
 		return personalInfo;
 	}
 
-	private List<EmployeeFamily> processEmployeeFamilies(EmployeePersonalDetailsDto personal, Employee employee) {
+	private void processEmployeeFamilies(EmployeePersonalDetailsDto personal, Employee employee) {
 		if (personal == null || employee == null || personal.getFamily() == null) {
-			return new ArrayList<>();
+			return;
+		}
+
+		if (employee.getEmployeeFamilies() == null) {
+			employee.setEmployeeFamilies(new ArrayList<>());
 		}
 
 		if (personal.getFamily().isEmpty()) {
-			if (employee.getEmployeeFamilies() != null && !employee.getEmployeeFamilies().isEmpty()) {
-				List<Long> familyIds = employee.getEmployeeFamilies()
-					.stream()
-					.map(EmployeeFamily::getFamilyId)
-					.filter(Objects::nonNull)
-					.toList();
-
-				if (!familyIds.isEmpty()) {
-					employeeFamilyDao.deleteAllByFamilyIdIn(familyIds);
-					employee.getEmployeeFamilies().clear();
-				}
-			}
-			return new ArrayList<>();
+			employee.getEmployeeFamilies().clear();
+			return;
 		}
 
-		Set<Long> requestFamilyIds = personal.getFamily()
-			.stream()
-			.map(EmployeePersonalFamilyDetailsDto::getFamilyId)
-			.filter(Objects::nonNull)
-			.collect(Collectors.toSet());
-
-		if (employee.getEmployeeId() != null && employee.getEmployeeFamilies() != null
-				&& !employee.getEmployeeFamilies().isEmpty()) {
-			List<Long> familiesToRemove = employee.getEmployeeFamilies()
+		if (employee.getEmployeeId() != null && !employee.getEmployeeFamilies().isEmpty()) {
+			Set<Long> requestFamilyIds = personal.getFamily()
 				.stream()
-				.map(EmployeeFamily::getFamilyId)
-				.filter(id -> id != null && !requestFamilyIds.contains(id))
-				.toList();
+				.map(EmployeePersonalFamilyDetailsDto::getFamilyId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 
-			if (!familiesToRemove.isEmpty()) {
-				employeeFamilyDao.deleteAllByFamilyIdIn(familiesToRemove);
-				employee.getEmployeeFamilies()
-					.removeIf(
-							family -> family.getFamilyId() != null && familiesToRemove.contains(family.getFamilyId()));
-			}
+			employee.getEmployeeFamilies()
+				.removeIf(family -> family.getFamilyId() != null && !requestFamilyIds.contains(family.getFamilyId()));
 		}
 
-		List<EmployeeFamily> existingFamilies = employee.getEmployeeFamilies() != null
-				? new ArrayList<>(employee.getEmployeeFamilies()) : new ArrayList<>();
-
-		Map<Long, EmployeeFamily> existingFamilyMap = existingFamilies.stream()
+		Map<Long, EmployeeFamily> existingFamilyMap = employee.getEmployeeFamilies()
+			.stream()
 			.filter(family -> family.getFamilyId() != null)
 			.collect(Collectors.toMap(EmployeeFamily::getFamilyId, family -> family));
 
-		List<EmployeeFamily> result = new ArrayList<>();
-
-		for (EmployeePersonalFamilyDetailsDto dto : personal.getFamily()) {
+		List<EmployeeFamily> result = personal.getFamily().stream().map(dto -> {
 			EmployeeFamily family = existingFamilyMap.containsKey(dto.getFamilyId())
-					? existingFamilyMap.remove(dto.getFamilyId()) : new EmployeeFamily();
+					? existingFamilyMap.get(dto.getFamilyId()) : new EmployeeFamily();
 
 			family.setEmployee(employee);
-
 			CommonModuleUtils.setIfNotNull(dto.getFirstName(), family::setFirstName);
 			CommonModuleUtils.setIfNotNull(dto.getLastName(), family::setLastName);
 			CommonModuleUtils.setIfNotNull(dto.getGender(), family::setGender);
@@ -605,161 +585,128 @@ public class PeopleServiceImpl implements PeopleService {
 			CommonModuleUtils.setIfNotNull(dto.getDateOfBirth(), family::setBirthDate);
 			CommonModuleUtils.setIfNotNull(dto.getParentName(), family::setParentName);
 
-			result.add(family);
-		}
+			return family;
+		}).toList();
 
-		return result;
+		employee.getEmployeeFamilies().clear();
+		employee.getEmployeeFamilies().addAll(result);
 	}
 
-	private List<EmployeeEducation> processEmployeeEducations(CreateEmployeeRequestDto requestDto, Employee employee) {
+	private void processEmployeeEducations(CreateEmployeeRequestDto requestDto, Employee employee) {
 		List<EmployeePersonalEducationalDetailsDto> educationalDtos = CommonModuleUtils
 			.safeGet(() -> requestDto.getPersonal().getEducational());
 
 		if (educationalDtos == null || employee == null) {
-			return employee != null && employee.getEmployeeEducations() != null
-					? new ArrayList<>(employee.getEmployeeEducations()) : new ArrayList<>();
+			return;
+		}
+
+		if (employee.getEmployeeEducations() == null) {
+			employee.setEmployeeEducations(new ArrayList<>());
 		}
 
 		if (educationalDtos.isEmpty()) {
-			if (employee.getEmployeeEducations() != null && !employee.getEmployeeEducations().isEmpty()) {
-				List<Long> educationIds = employee.getEmployeeEducations()
-					.stream()
-					.map(EmployeeEducation::getEducationId)
-					.filter(Objects::nonNull)
-					.toList();
-
-				if (!educationIds.isEmpty()) {
-					employeeEducationDao.deleteAllByEducationIdIn(educationIds);
-					employee.getEmployeeEducations().clear();
-				}
-			}
-			return new ArrayList<>();
+			employee.getEmployeeEducations().clear();
+			return;
 		}
 
-		if (employee.getEmployeeId() != null && employee.getEmployeeEducations() != null
-				&& !employee.getEmployeeEducations().isEmpty()) {
+		if (employee.getEmployeeId() != null && !employee.getEmployeeEducations().isEmpty()) {
 			Set<Long> requestEducationIds = educationalDtos.stream()
 				.map(EmployeePersonalEducationalDetailsDto::getEducationId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
-			List<Long> educationsToRemove = employee.getEmployeeEducations()
-				.stream()
-				.map(EmployeeEducation::getEducationId)
-				.filter(id -> id != null && !requestEducationIds.contains(id))
-				.toList();
-
-			if (!educationsToRemove.isEmpty()) {
-				employeeEducationDao.deleteAllByEducationIdIn(educationsToRemove);
-				employee.getEmployeeEducations()
-					.removeIf(education -> education.getEducationId() != null
-							&& educationsToRemove.contains(education.getEducationId()));
-			}
+			employee.getEmployeeEducations()
+				.removeIf(education -> education.getEducationId() != null
+						&& !requestEducationIds.contains(education.getEducationId()));
 		}
 
-		List<EmployeeEducation> existingEducations = employee.getEmployeeEducations() != null
-				? new ArrayList<>(employee.getEmployeeEducations()) : new ArrayList<>();
-
-		Map<Long, EmployeeEducation> existingEducationMap = existingEducations.stream()
+		Map<Long, EmployeeEducation> existingEducationMap = employee.getEmployeeEducations()
+			.stream()
 			.filter(education -> education.getEducationId() != null)
 			.collect(Collectors.toMap(EmployeeEducation::getEducationId, education -> education));
 
-		List<EmployeeEducation> result = new ArrayList<>();
-
-		for (EmployeePersonalEducationalDetailsDto dto : educationalDtos) {
+		List<EmployeeEducation> result = educationalDtos.stream().map(dto -> {
 			EmployeeEducation education = existingEducationMap.containsKey(dto.getEducationId())
-					? existingEducationMap.remove(dto.getEducationId()) : new EmployeeEducation();
-			education.setEmployee(employee);
+					? existingEducationMap.get(dto.getEducationId()) : new EmployeeEducation();
 
+			education.setEmployee(employee);
 			CommonModuleUtils.setIfExists(dto::getInstitutionName, education::setInstitution);
 			CommonModuleUtils.setIfExists(dto::getDegree, education::setDegree);
 			CommonModuleUtils.setIfExists(dto::getMajor, education::setSpecialization);
 			CommonModuleUtils.setIfExists(dto::getStartDate, education::setStartDate);
 			CommonModuleUtils.setIfExists(dto::getEndDate, education::setEndDate);
 
-			result.add(education);
-		}
+			return education;
+		}).toList();
 
-		return result;
+		employee.getEmployeeEducations().clear();
+		employee.getEmployeeEducations().addAll(result);
 	}
 
-	private Set<EmployeeTeam> processEmployeeTeams(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
+	private void processEmployeeTeams(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmploymentDetails() == null || employee == null) {
-			return employee != null && employee.getEmployeeTeams() != null ? employee.getEmployeeTeams()
-					: new HashSet<>();
+			return;
+		}
+
+		if (employee.getEmployeeTeams() == null) {
+			employee.setEmployeeTeams(new HashSet<>());
 		}
 
 		Long[] teamIds = requestDto.getEmploymentDetails().getTeamIds();
+
 		if (teamIds != null && teamIds.length == 0) {
-			if (employee.getEmployeeTeams() != null && !employee.getEmployeeTeams().isEmpty()) {
-				List<Long> employeeTeamIds = employee.getEmployeeTeams()
-					.stream()
-					.map(EmployeeTeam::getId)
-					.filter(Objects::nonNull)
-					.toList();
-
-				if (!employeeTeamIds.isEmpty()) {
-					employeeTeamDao.deleteAllByIdIn(employeeTeamIds);
-				}
-
-				employee.getEmployeeTeams().clear();
-			}
-			return new HashSet<>();
+			employee.getEmployeeTeams().clear();
+			return;
 		}
 
 		if (teamIds == null) {
-			return employee.getEmployeeTeams() != null ? employee.getEmployeeTeams() : new HashSet<>();
+			return;
 		}
 
-		if (employee.getEmployeeId() != null && employee.getEmployeeTeams() != null
-				&& !employee.getEmployeeTeams().isEmpty()) {
+		if (employee.getEmployeeId() != null && !employee.getEmployeeTeams().isEmpty()) {
 			Set<Long> requestTeamIds = Arrays.stream(teamIds).collect(Collectors.toSet());
 
-			List<Long> teamsToRemove = employee.getEmployeeTeams()
-				.stream()
-				.filter(et -> et.getTeam() != null && !requestTeamIds.contains(et.getTeam().getTeamId()))
-				.map(EmployeeTeam::getId)
-				.filter(Objects::nonNull)
-				.toList();
-
-			if (!teamsToRemove.isEmpty()) {
-				employeeTeamDao.deleteAllByIdIn(teamsToRemove);
-				employee.getEmployeeTeams()
-					.removeIf(team -> team.getId() != null && teamsToRemove.contains(team.getId()));
-			}
+			employee.getEmployeeTeams()
+				.removeIf(et -> et.getTeam() != null && !requestTeamIds.contains(et.getTeam().getTeamId()));
 		}
 
-		Set<EmployeeTeam> existingTeams = employee.getEmployeeTeams() != null ? employee.getEmployeeTeams()
-				: new HashSet<>();
-
-		Set<Long> existingTeamIds = existingTeams.stream()
+		Set<Long> existingTeamIds = employee.getEmployeeTeams()
+			.stream()
 			.map(employeeTeam -> employeeTeam.getTeam() != null ? employeeTeam.getTeam().getTeamId() : null)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
-		return Arrays.stream(teamIds).map(teamId -> {
+		Set<EmployeeTeam> result = Arrays.stream(teamIds).map(teamId -> {
 			Team team = teamDao.findByTeamId(teamId);
-			EmployeeTeam employeeTeam = existingTeamIds.contains(teamId) ? existingTeams.stream()
+
+			EmployeeTeam employeeTeam = existingTeamIds.contains(teamId) ? employee.getEmployeeTeams()
+				.stream()
 				.filter(et -> et.getTeam() != null && et.getTeam().getTeamId().equals(teamId))
 				.findFirst()
 				.orElse(new EmployeeTeam()) : new EmployeeTeam();
 
-			CommonModuleUtils.setIfExists(() -> team, employeeTeam::setTeam);
-			CommonModuleUtils.setIfExists(() -> false, employeeTeam::setIsSupervisor);
-			CommonModuleUtils.setIfExists(() -> employee, employeeTeam::setEmployee);
+			employeeTeam.setTeam(team);
+			employeeTeam.setIsSupervisor(false);
+			employeeTeam.setEmployee(employee);
 
 			return employeeTeam;
 		}).collect(Collectors.toSet());
+
+		employee.getEmployeeTeams().clear();
+		employee.getEmployeeTeams().addAll(result);
 	}
 
-	private Set<EmployeeManager> processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
+	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmploymentDetails() == null || employee == null) {
-			return new HashSet<>();
+			return;
+		}
+
+		if (employee.getEmployeeManagers() == null) {
+			employee.setEmployeeManagers(new HashSet<>());
 		}
 
 		Set<EmployeeManager> result = new HashSet<>();
-		Set<EmployeeManager> existingManagers = employee.getEmployeeManagers() != null
-				? new HashSet<>(employee.getEmployeeManagers()) : new HashSet<>();
+		Set<EmployeeManager> existingManagers = new HashSet<>(employee.getEmployeeManagers());
 
 		EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor = requestDto.getEmploymentDetails()
 			.getPrimarySupervisor();
@@ -772,34 +719,34 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Set<Long> requestedSupervisorIds = new HashSet<>();
 
-		if (primarySupervisor != null) {
-			if (primarySupervisor.getEmployeeId() != null && primarySupervisor.getEmployeeId() > 0) {
-				Long primaryId = primarySupervisor.getEmployeeId();
-				requestedSupervisorIds.add(primaryId);
+		if (primarySupervisor != null && primarySupervisor.getEmployeeId() != null
+				&& primarySupervisor.getEmployeeId() > 0) {
+			Long primaryId = primarySupervisor.getEmployeeId();
+			requestedSupervisorIds.add(primaryId);
 
-				EmployeeManager existingManager = existingManagerMap.get(primaryId);
-
-				if (existingManager != null) {
-					existingManager.setManagerType(ManagerType.PRIMARY);
-					existingManager.setIsPrimaryManager(true);
-					result.add(existingManager);
-				}
-				else {
-					Employee manager = employeeDao.findEmployeeByEmployeeId(primaryId);
-					if (manager != null) {
-						result.add(createEmployeeManager(employee, manager, ManagerType.PRIMARY, true));
-					}
+			EmployeeManager existingManager = existingManagerMap.get(primaryId);
+			if (existingManager != null) {
+				existingManager.setManagerType(ManagerType.PRIMARY);
+				existingManager.setIsPrimaryManager(true);
+				result.add(existingManager);
+			}
+			else {
+				Employee manager = employeeDao.findEmployeeByEmployeeId(primaryId);
+				if (manager != null) {
+					result.add(createEmployeeManager(employee, manager, ManagerType.PRIMARY, true));
 				}
 			}
 		}
 		else {
-			existingManagers.stream()
-				.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
-				.findFirst()
-				.ifPresent(em -> {
-					requestedSupervisorIds.add(em.getManager().getEmployeeId());
-					result.add(em);
-				});
+			if (primarySupervisor != null && primarySupervisor.getEmployeeId() != null) {
+				existingManagers.stream()
+					.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
+					.findFirst()
+					.ifPresent(em -> {
+						requestedSupervisorIds.add(em.getManager().getEmployeeId());
+						result.add(em);
+					});
+			}
 		}
 
 		if (otherSupervisors != null) {
@@ -834,8 +781,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employee.getEmployeeManagers().clear();
 		employee.getEmployeeManagers().addAll(result);
-
-		return employee.getEmployeeManagers();
 	}
 
 	private EmployeeManager createEmployeeManager(Employee employee, Employee manager, ManagerType type,
@@ -848,186 +793,159 @@ public class PeopleServiceImpl implements PeopleService {
 		return employeeManager;
 	}
 
-	private List<EmployeeEmergency> processEmergencyContacts(CreateEmployeeRequestDto requestDto, Employee employee) {
+	private void processEmergencyContacts(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmergency() == null || employee == null) {
-			return new ArrayList<>();
+			return;
 		}
 
-		List<EmployeeEmergency> existingContacts = employee.getEmployeeEmergencies() != null
-				? employee.getEmployeeEmergencies() : new ArrayList<>();
+		if (employee.getEmployeeEmergencies() == null) {
+			employee.setEmployeeEmergencies(new ArrayList<>());
+		}
 
 		List<EmployeeEmergency> result = new ArrayList<>();
 
 		if (requestDto.getEmergency().getPrimaryEmergencyContact() != null) {
-			result.add(processSingleEmergencyContact(requestDto.getEmergency().getPrimaryEmergencyContact(), true,
-					employee, existingContacts));
+			EmployeeEmergency primary = employee.getEmployeeEmergencies()
+				.stream()
+				.filter(contact -> contact.getIsPrimary() == true)
+				.findFirst()
+				.orElse(new EmployeeEmergency());
+
+			primary.setEmployee(employee);
+			primary.setIsPrimary(true);
+
+			EmployeeEmergencyContactDetailsDto dto = requestDto.getEmergency().getPrimaryEmergencyContact();
+			CommonModuleUtils.setIfExists(dto::getName, primary::setName);
+			CommonModuleUtils.setIfExists(dto::getRelationship, primary::setEmergencyRelationship);
+			CommonModuleUtils.setIfExists(dto::getContactNo, primary::setContactNo);
+
+			result.add(primary);
 		}
 
 		if (requestDto.getEmergency().getSecondaryEmergencyContact() != null) {
-			result.add(processSingleEmergencyContact(requestDto.getEmergency().getSecondaryEmergencyContact(), false,
-					employee, existingContacts));
+			EmployeeEmergency secondary = employee.getEmployeeEmergencies()
+				.stream()
+				.filter(contact -> contact.getIsPrimary() == false)
+				.findFirst()
+				.orElse(new EmployeeEmergency());
+
+			secondary.setEmployee(employee);
+			secondary.setIsPrimary(false);
+
+			EmployeeEmergencyContactDetailsDto dto = requestDto.getEmergency().getSecondaryEmergencyContact();
+			CommonModuleUtils.setIfExists(dto::getName, secondary::setName);
+			CommonModuleUtils.setIfExists(dto::getRelationship, secondary::setEmergencyRelationship);
+			CommonModuleUtils.setIfExists(dto::getContactNo, secondary::setContactNo);
+
+			result.add(secondary);
 		}
 
-		existingContacts.stream().filter(existing -> !result.contains(existing)).forEach(result::add);
-
-		return result;
+		employee.getEmployeeEmergencies().clear();
+		employee.getEmployeeEmergencies().addAll(result);
 	}
 
-	private EmployeeEmergency processSingleEmergencyContact(EmployeeEmergencyContactDetailsDto emergencyDto,
-			boolean isPrimary, Employee employee, List<EmployeeEmergency> existingContacts) {
-		EmployeeEmergency existingContact = existingContacts.stream()
-			.filter(contact -> contact.getIsPrimary() == isPrimary)
-			.findFirst()
-			.orElse(new EmployeeEmergency());
-
-		existingContact.setEmployee(employee);
-		existingContact.setIsPrimary(isPrimary);
-		CommonModuleUtils.setIfExists(emergencyDto::getName, existingContact::setName);
-		CommonModuleUtils.setIfExists(emergencyDto::getRelationship, existingContact::setEmergencyRelationship);
-		CommonModuleUtils.setIfExists(emergencyDto::getContactNo, existingContact::setContactNo);
-
-		return existingContact;
-	}
-
-	private List<EmployeeVisa> processEmployeeVisas(CreateEmployeeRequestDto requestDto, Employee employee) {
+	private void processEmployeeVisas(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmployment() == null
 				|| requestDto.getEmployment().getVisaDetails() == null || employee == null) {
-			return employee != null && employee.getEmployeeVisas() != null ? employee.getEmployeeVisas()
-					: new ArrayList<>();
+			return;
+		}
+
+		if (employee.getEmployeeVisas() == null) {
+			employee.setEmployeeVisas(new ArrayList<>());
 		}
 
 		if (requestDto.getEmployment().getVisaDetails().isEmpty()) {
-			if (employee.getEmployeeVisas() != null && !employee.getEmployeeVisas().isEmpty()) {
-				List<Long> visaIds = new ArrayList<>();
-				for (EmployeeVisa visa : employee.getEmployeeVisas()) {
-					if (visa.getVisaId() != null) {
-						visaIds.add(visa.getVisaId());
-					}
-				}
-
-				if (!visaIds.isEmpty()) {
-					employeeVisaDao.deleteAllByVisaIdIn(visaIds);
-				}
-
-				employee.getEmployeeVisas().clear();
-			}
-			return new ArrayList<>();
+			employee.getEmployeeVisas().clear();
+			return;
 		}
 
-		if (employee.getEmployeeId() != null && employee.getEmployeeVisas() != null
-				&& !employee.getEmployeeVisas().isEmpty()) {
-			Set<Long> requestVisaIds = new HashSet<>();
-			for (EmployeeEmploymentVisaDetailsDto visaDetail : requestDto.getEmployment().getVisaDetails()) {
-				if (visaDetail.getVisaId() != null) {
-					requestVisaIds.add(visaDetail.getVisaId());
-				}
-			}
+		if (employee.getEmployeeId() != null && !employee.getEmployeeVisas().isEmpty()) {
+			Set<Long> requestVisaIds = requestDto.getEmployment()
+				.getVisaDetails()
+				.stream()
+				.map(EmployeeEmploymentVisaDetailsDto::getVisaId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 
-			List<Long> visasToRemove = new ArrayList<>();
-			for (EmployeeVisa visa : employee.getEmployeeVisas()) {
-				if (visa.getVisaId() != null && !requestVisaIds.contains(visa.getVisaId())) {
-					visasToRemove.add(visa.getVisaId());
-				}
-			}
-
-			if (!visasToRemove.isEmpty()) {
-				employeeVisaDao.deleteAllByVisaIdIn(visasToRemove);
-				employee.getEmployeeVisas()
-					.removeIf(visa -> visa.getVisaId() != null && visasToRemove.contains(visa.getVisaId()));
-			}
+			employee.getEmployeeVisas()
+				.removeIf(visa -> visa.getVisaId() != null && !requestVisaIds.contains(visa.getVisaId()));
 		}
 
-		List<EmployeeVisa> existingVisas = employee.getEmployeeVisas() != null ? employee.getEmployeeVisas()
-				: new ArrayList<>();
+		Map<Long, EmployeeVisa> existingVisaMap = employee.getEmployeeVisas()
+			.stream()
+			.filter(visa -> visa.getVisaId() != null)
+			.collect(Collectors.toMap(EmployeeVisa::getVisaId, visa -> visa));
 
-		Map<Long, EmployeeVisa> existingVisaMap = new HashMap<>();
-		for (EmployeeVisa visa : existingVisas) {
-			if (visa.getVisaId() != null) {
-				existingVisaMap.put(visa.getVisaId(), visa);
-			}
-		}
+		List<EmployeeVisa> result = requestDto.getEmployment().getVisaDetails().stream().map(dto -> {
+			EmployeeVisa visa = existingVisaMap.containsKey(dto.getVisaId()) ? existingVisaMap.get(dto.getVisaId())
+					: new EmployeeVisa();
 
-		List<EmployeeVisa> updatedVisas = new ArrayList<>();
-		for (EmployeeEmploymentVisaDetailsDto dto : requestDto.getEmployment().getVisaDetails()) {
-			EmployeeVisa visa;
-			if (existingVisaMap.containsKey(dto.getVisaId())) {
-				visa = existingVisaMap.remove(dto.getVisaId());
-			}
-			else {
-				visa = new EmployeeVisa();
-			}
 			visa.setEmployee(employee);
-
 			CommonModuleUtils.setIfExists(dto::getVisaType, visa::setVisaType);
 			CommonModuleUtils.setIfExists(dto::getIssuingCountry, visa::setIssuingCountry);
 			CommonModuleUtils.setIfExists(dto::getIssuedDate, visa::setIssuedDate);
 			CommonModuleUtils.setIfExists(dto::getExpiryDate, visa::setExpirationDate);
 
-			updatedVisas.add(visa);
-		}
+			return visa;
+		}).toList();
 
-		return updatedVisas;
+		employee.getEmployeeVisas().clear();
+		employee.getEmployeeVisas().addAll(result);
 	}
 
-	private Set<EmployeePeriod> processEmployeeProbationPeriod(CreateEmployeeRequestDto requestDto, Employee employee) {
+	private void processEmployeeProbationPeriod(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmployment() == null
 				|| requestDto.getEmployment().getEmploymentDetails() == null || employee == null) {
-			return employee != null && employee.getEmployeePeriods() != null ? employee.getEmployeePeriods()
-				.stream()
-				.filter(EmployeePeriod::getIsActive)
-				.collect(Collectors.toSet()) : new HashSet<>();
+			return;
 		}
 
 		EmployeeEmploymentBasicDetailsDto employmentDetails = requestDto.getEmployment().getEmploymentDetails();
 
-		Set<EmployeePeriod> existingPeriods = employee.getEmployeePeriods() != null ? employee.getEmployeePeriods()
-				: new HashSet<>();
+		if (employee.getEmployeePeriods() == null) {
+			employee.setEmployeePeriods(new HashSet<>());
+		}
 
-		EmployeePeriod period = existingPeriods.stream()
-			.filter(p -> p.getIsActive() != null && p.getIsActive())
+		if (employmentDetails.getProbationStartDate() == null && employmentDetails.getProbationEndDate() == null) {
+			employee.getEmployeePeriods().clear();
+			return;
+		}
+
+		EmployeePeriod period = employee.getEmployeePeriods()
+			.stream()
+			.filter(p -> Boolean.TRUE.equals(p.getIsActive()))
 			.findFirst()
 			.orElse(new EmployeePeriod());
 
+		period.setEmployee(employee);
 		CommonModuleUtils.setIfExists(employmentDetails::getProbationStartDate, period::setStartDate);
 		CommonModuleUtils.setIfExists(employmentDetails::getProbationEndDate, period::setEndDate);
-		CommonModuleUtils.setIfExists(() -> true, period::setIsActive);
-		CommonModuleUtils.setIfExists(() -> employee, period::setEmployee);
+		period.setIsActive(true);
 
-		Set<EmployeePeriod> result = new HashSet<>();
-		result.add(period);
-
-		return result;
+		employee.getEmployeePeriods().clear();
+		employee.getEmployeePeriods().add(period);
 	}
 
-	private List<EmployeeProgression> processCareerProgressions(CreateEmployeeRequestDto requestDto,
-			Employee employee) {
+	private void processCareerProgressions(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmployment() == null
 				|| requestDto.getEmployment().getCareerProgression() == null || employee == null) {
-			return employee != null && employee.getEmployeeProgressions() != null ? employee.getEmployeeProgressions()
-					: new ArrayList<>();
+			return;
+		}
+
+		if (employee.getEmployeeProgressions() == null) {
+			employee.setEmployeeProgressions(new ArrayList<>());
 		}
 
 		if (requestDto.getEmployment().getCareerProgression().isEmpty()) {
-			if (employee.getEmployeeProgressions() != null && !employee.getEmployeeProgressions().isEmpty()) {
-				List<Long> progressionIds = employee.getEmployeeProgressions()
-					.stream()
-					.map(EmployeeProgression::getProgressionId)
-					.filter(Objects::nonNull)
-					.toList();
-
-				if (!progressionIds.isEmpty()) {
-					employeeProgressionDao.deleteAllByProgressionIdIn(progressionIds);
-				}
-
+			if (!employee.getEmployeeProgressions().isEmpty()) {
 				employee.getEmployeeProgressions().clear();
 				employee.setEmploymentType(null);
 				employee.setJobFamily(null);
 				employee.setJobTitle(null);
 			}
-			return new ArrayList<>();
+			return;
 		}
 
-		if (employee.getEmployeeId() != null) {
+		if (employee.getEmployeeId() != null && !employee.getEmployeeProgressions().isEmpty()) {
 			Set<Long> requestProgressionIds = requestDto.getEmployment()
 				.getCareerProgression()
 				.stream()
@@ -1035,34 +953,21 @@ public class PeopleServiceImpl implements PeopleService {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
-			if (employee.getEmployeeProgressions() != null && !employee.getEmployeeProgressions().isEmpty()) {
-				List<Long> progressionsToRemove = employee.getEmployeeProgressions()
-					.stream()
-					.map(EmployeeProgression::getProgressionId)
-					.filter(id -> id != null && !requestProgressionIds.contains(id))
-					.toList();
-
-				if (!progressionsToRemove.isEmpty()) {
-					employeeProgressionDao.deleteAllByProgressionIdIn(progressionsToRemove);
-					employee.getEmployeeProgressions()
-						.removeIf(progression -> progression.getProgressionId() != null
-								&& progressionsToRemove.contains(progression.getProgressionId()));
-				}
-			}
+			employee.getEmployeeProgressions()
+				.removeIf(progression -> progression.getProgressionId() != null
+						&& !requestProgressionIds.contains(progression.getProgressionId()));
 		}
 
-		List<EmployeeProgression> existingProgressions = employee.getEmployeeProgressions() != null
-				? employee.getEmployeeProgressions() : new ArrayList<>();
-
-		Map<Long, EmployeeProgression> existingProgressionMap = existingProgressions.stream()
+		Map<Long, EmployeeProgression> existingProgressionMap = employee.getEmployeeProgressions()
+			.stream()
 			.filter(progression -> progression.getProgressionId() != null)
 			.collect(Collectors.toMap(EmployeeProgression::getProgressionId, progression -> progression));
 
 		List<EmployeeProgression> result = requestDto.getEmployment().getCareerProgression().stream().map(dto -> {
 			EmployeeProgression progression = existingProgressionMap.containsKey(dto.getProgressionId())
-					? existingProgressionMap.remove(dto.getProgressionId()) : new EmployeeProgression();
-			progression.setEmployee(employee);
+					? existingProgressionMap.get(dto.getProgressionId()) : new EmployeeProgression();
 
+			progression.setEmployee(employee);
 			CommonModuleUtils.setIfExists(dto::getEmploymentType, progression::setEmploymentType);
 			CommonModuleUtils.setIfExists(dto::getJobFamilyId, progression::setJobFamilyId);
 			CommonModuleUtils.setIfExists(dto::getJobTitleId, progression::setJobTitleId);
@@ -1071,7 +976,10 @@ public class PeopleServiceImpl implements PeopleService {
 			CommonModuleUtils.setIfExists(dto::getIsCurrentEmployment, progression::setIsCurrent);
 
 			return progression;
-		}).collect(Collectors.toList());
+		}).toList();
+
+		employee.getEmployeeProgressions().clear();
+		employee.getEmployeeProgressions().addAll(result);
 
 		employee.setEmploymentType(null);
 		employee.setJobFamily(null);
@@ -1090,8 +998,6 @@ public class PeopleServiceImpl implements PeopleService {
 				}
 			}
 		}
-
-		return result;
 	}
 
 	private ResponseEntityDto processCreateEmployeeResponse(User user) {
@@ -1749,6 +1655,11 @@ public class PeopleServiceImpl implements PeopleService {
 	 */
 	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
 		log.info("updateSubscriptionQuantity: PRO feature {}, {}", quantity, isIncrement);
+	}
+
+	@Override
+	public void modifySubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
+		updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 	}
 
 	/**
