@@ -63,6 +63,7 @@ export const useExportPeopleDirectory = (
       );
 
       if (response.data.status === "successful" && response.data.results) {
+        console.log("DATA for People Directory", response.data.results)
         return response.data.results;
       }
 
