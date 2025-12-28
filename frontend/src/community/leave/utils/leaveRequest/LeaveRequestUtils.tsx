@@ -1,3 +1,4 @@
+import { Start } from "@mui/icons-material";
 import { JSX } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -5,7 +6,8 @@ import { IconName } from "~community/common/types/IconTypes";
 import {
   getAsDaysString,
   getFormattedDate,
-  getFormattedMonth
+  getFormattedMonth,
+  getFormattedYear
 } from "~community/common/utils/dateTimeUtils";
 import { LeaveState } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
@@ -29,18 +31,18 @@ export const leaveStatusIconSelector = (status: string): JSX.Element => {
 
 export const getStartEndDate = (start: string, end: string): string => {
   if (start === end) {
-    return `${getFormattedDate(start)} ${getFormattedMonth(start)}`;
+    return `${getFormattedDate(start)} ${getFormattedMonth(start)} ${getFormattedYear(start)}`;
   }
   const startMonth = getFormattedMonth(start);
   const endMonth = getFormattedMonth(end);
   if (startMonth === endMonth) {
     return `${getFormattedDate(start)} to ${getFormattedDate(
       end
-    )} ${getFormattedMonth(end)}`;
+    )} ${getFormattedMonth(end)} ${getFormattedYear(end)}`;
   }
   return `${getFormattedDate(start)} ${getFormattedMonth(
     start
-  )} to ${getFormattedDate(end)} ${getFormattedMonth(end)}`;
+  )} ${getFormattedYear(start)} to ${getFormattedDate(end)} ${getFormattedMonth(end)} ${getFormattedYear(end)}`;
 };
 
 export const handleDurationDay = (
