@@ -7,5 +7,5 @@ export interface AuthContextType {
   user: User | null;
   signIn: (params: EnterpriseSignInParams) => Promise<SignInStatus>;
   signOut: (redirect?: boolean) => Promise<void>;
-  refreshAccessToken: () => Promise<SignInStatus>;
+  refreshAccessToken: () => Promise<string | null>;
 }

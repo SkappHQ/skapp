@@ -9,18 +9,18 @@ import React, {
   useState
 } from "react";
 
-import { EnterpriseSignInParams, User } from "~enterprise/auth/utils/authUtils";
+import { EnterpriseSignInParams, getNewAccessToken, User } from "~enterprise/auth/utils/authUtils";
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
 import { SignInStatus } from "../enums/auth";
+import { AuthContextType } from "../types/auth";
 import {
   checkUserAuthentication,
-  handleRefreshToken,
-  handleSignIn
+  handleSignIn,
+  isProtectedRoute
 } from "../utils/authUtils";
 import { validateRouteAccess } from "../utils/routeGuards";
-import { AuthContextType } from "../types/auth";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -28,18 +28,6 @@ interface AuthProviderProps {
 
 // Create Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Public routes that don't require authentication
-const PUBLIC_PATHS = [
-  "/signin",
-  "/signup",
-  "/forget-password",
-  "/reset-password"
-];
-
-const isPublicRoute = (pathname: string): boolean => {
-  return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
-};
 
 // Auth Provider Component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -52,25 +40,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
-  const signOut = useCallback(
-    async (redirect?: boolean) => {
-      try {
-        setIsLoading(true);
-        localStorage.removeItem("accessToken");
-        setUser(null);
-        setIsAuthenticated(false);
+  const signOut = useCallback(async (redirect?: boolean) => {
+    try {
+      setIsLoading(true);
+      localStorage.removeItem("accessToken");
+      setUser(null);
+      setIsAuthenticated(false);
 
-        if (redirect) {
-          router.push(ROUTES.AUTH.SIGNIN);
-        }
-      } catch (error) {
-        console.error("Logout error:", error);
-      } finally {
-        setIsLoading(false);
+      if (redirect) {
+        router.push(ROUTES.AUTH.SIGNIN + `?callback=${router.asPath}`);
       }
-    },
-    [router]
-  );
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Check authentication status
   const checkAuth = useCallback(async () => {
@@ -103,8 +88,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // Refresh Access Token function
-  const refreshAccessToken = useCallback(async (): Promise<SignInStatus> => {
-    return await handleRefreshToken();
+  const refreshAccessToken = useCallback(async (): Promise<string | null> => {
+    return await getNewAccessToken();
   }, []);
 
   // Sign In function
@@ -149,14 +134,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const currentPath = router.pathname;
 
-    // Allow public routes
-    if (isPublicRoute(currentPath)) {
+    // Allow public routes (routes not in routeMatchers)
+    if (!isProtectedRoute(currentPath)) {
       return;
     }
 
-    // Redirect to sign-in if not authenticated
+    // Redirect to sign-in if not authenticated for protected routes
     if (!isAuthenticated) {
-      router.replace(ROUTES.AUTH.SIGNIN);
+      signOut();
       return;
     }
 

@@ -1,38 +1,38 @@
-import ROUTES from "~community/common/constants/routes";
 import {
   EnterpriseSignInParams,
   User,
   enterpriseSignIn,
   extractUserFromToken,
-  getAccessToken
+  getAccessToken,
+  setAccessToken
 } from "~enterprise/auth/utils/authUtils";
+import epAuthFetch from "~enterprise/common/utils/axiosInterceptor";
 
+import {
+  config,
+  drawerHiddenProtectedRoutes,
+  routeMatchers
+} from "../constants/routeConfigs";
 import { AuthMethods, SignInStatus } from "../enums/auth";
-import { config } from "../constants/routeConfigs";
 
-export const drawerHiddenProtectedRoutes = [
-  ROUTES.ORGANIZATION.SETUP,
-  ROUTES.AUTH.RESET_PASSWORD,
-  ROUTES.AUTH.VERIFY,
-  ROUTES.AUTH.VERIFY_SUCCESS,
-  ROUTES.AUTH.VERIFY_RESET_PASSWORD,
-  ROUTES.AUTH.VERIFY_GUEST,
-  ROUTES.AUTH.VERIFY_GUEST_OTP,
-  ROUTES.SETTINGS.PAYMENT,
-  ROUTES.REMOVE_PEOPLE,
-  ROUTES.CHANGE_SUPERVISORS,
-  ROUTES.SUBSCRIPTION,
-  ROUTES.SIGN.SIGN,
-  ROUTES.SIGN.REVIEW,
-  ROUTES.SIGN.INFO,
-  ROUTES.SIGN.CREATE_DOCUMENT,
-  ROUTES.SIGN.SENT_INFO.BASE,
-  ROUTES.SIGN.INBOX_INFO.BASE,
-  ROUTES.SIGN.DOCUMENT_ACCESS,
-  ROUTES.INVOICE.CREATE.BASE,
-  ROUTES.INVOICE.VIEW.BASE,
-  ROUTES.INVOICE.CUSTOMERS.PROJECTS.BASE
-];
+// Helper function to match a path against a route pattern
+export const matchesRoutePattern = (
+  pathname: string,
+  pattern: string
+): boolean => {
+  // Convert pattern to regex (e.g., "/path/:param" -> "/path/[^/]+")
+  const regexPattern = pattern
+    .replace(/:[^/]+/g, "[^/]+") // Replace :param with [^/]+
+    .replace(/\*/g, ".*"); // Replace * with .*
+  const regex = new RegExp(`^${regexPattern}$`);
+  return regex.test(pathname);
+};
+
+export const isProtectedRoute = (pathname: string): boolean => {
+  return routeMatchers.some((pattern) =>
+    matchesRoutePattern(pathname, pattern)
+  );
+};
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -91,7 +91,6 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   const userData = extractUserFromToken(token);
 
   if (!userData) {
-    // Token expired or invalid
     localStorage.removeItem("accessToken");
     return null;
   }
@@ -100,6 +99,17 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
 };
 
 export const handleRefreshToken = async (): Promise<SignInStatus> => {
-  // TODO: Implement refresh token logic
-  return SignInStatus.SUCCESS;
+  const response = await epAuthFetch.post("/v1/auth/refresh-token/cookie", {
+    withCredentials: true
+  });
+
+  const accessToken = response?.data?.results[0]?.accessToken;
+
+  if (accessToken) {
+    setAccessToken(accessToken);
+
+    return SignInStatus.SUCCESS;
+  } else {
+    return SignInStatus.FAILURE;
+  }
 };
