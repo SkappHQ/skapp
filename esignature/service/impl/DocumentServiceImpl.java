@@ -360,29 +360,44 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
 			byte[] latestDocumentBytes, Recipient recipient, String ipAddress) {
-		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
+		DocumentVersion unsignedVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
-		documentVersionDao.save(documentVersion);
+		documentVersionDao.save(unsignedVersion);
 
 		// Sign the completed PDF with organization certificate (if enabled)
-		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, latestDocumentBytes);
+		Optional<SignedPdfResult> signedResult = signCompletedPdf(unsignedVersion, latestDocumentBytes);
 
-		String signedPath = signedResult.map(result -> {
+		// Track signed path for transaction rollback cleanup
+		final String[] signedPathHolder = new String[1];
+
+		DocumentVersion finalVersion = signedResult.map(result -> {
 			// Upload signed PDF to S3
-			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+			String signedPath = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+			signedPathHolder[0] = signedPath;
 
-			// Update document version with signature metadata
-			documentVersion.setIsPdfSigned(true);
-			documentVersion.setPdfSignedAt(LocalDateTime.now());
-			documentVersion.setFilePath(path);
-			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
-			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
+			// Calculate hash of the signed PDF
+			String signedHash = hashDocument(result.getSignedPdfBytes());
 
-			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return path;
-		}).orElse(null);
+			// Create a new document version for the signed PDF (preserving unsigned
+			// version)
+			DocumentVersion signedVersion = buildNewDocumentVersion(unsignedVersion, signedPath, signedHash,
+					unsignedVersion.getSignatures().getSignature(), unsignedVersion.getAddressBook());
 
-		document.setCurrentVersion(documentVersion.getVersionNumber());
+			// Add PDF signature metadata
+			signedVersion.setIsPdfSigned(true);
+			signedVersion.setPdfSignedAt(getCurrentUtcDateTime());
+			signedVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
+			signedVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
+
+			documentVersionDao.save(signedVersion);
+
+			log.info("PDF signed successfully. Unsigned version: {} -> Signed version: {}",
+					unsignedVersion.getVersionNumber(), signedVersion.getVersionNumber());
+
+			return signedVersion;
+		}).orElse(unsignedVersion);
+
+		document.setCurrentVersion(finalVersion.getVersionNumber());
 		documentRepository.save(document);
 
 		Envelope envelope = document.getEnvelope();
@@ -411,7 +426,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
@@ -422,15 +437,15 @@ public class DocumentServiceImpl implements DocumentService {
 
 			@Override
 			public void afterCompletion(int status) {
-				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && signedPath != null) {
-					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", signedPath);
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && signedPathHolder[0] != null) {
+					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", signedPathHolder[0]);
 					try {
 						AmazonS3DeleteItemRequestDto deleteRequest = new AmazonS3DeleteItemRequestDto();
-						deleteRequest.setFolderPath(signedPath);
+						deleteRequest.setFolderPath(signedPathHolder[0]);
 						amazonS3Service.deleteFileFromS3(deleteRequest);
 					}
 					catch (Exception e) {
-						log.error("Failed to delete orphaned S3 file: " + signedPath, e);
+						log.error("Failed to delete orphaned S3 file: " + signedPathHolder[0], e);
 					}
 				}
 			}
@@ -633,7 +648,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 		return Optional.empty();
 	}
-	
+
 	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
 		int attempt = 0;
 		DocumentVersion documentVersion = currentVersion;

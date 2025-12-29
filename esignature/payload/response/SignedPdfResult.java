@@ -10,7 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignedPdfResult {
-    private byte[] signedPdfBytes;
-    private String certificateSerialNumber;
-    private String signatureAlgorithm;
+
+	private byte[] signedPdfBytes;
+
+	private String certificateSerialNumber;
+
+	private String signatureAlgorithm;
+
 }
