@@ -76,8 +76,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	public boolean testConnection() {
 		// TODO: Test Azure Key Vault connectivity
 		// Try to access the key/certificate to verify authentication
-		log.warn("Azure Key Vault connection test not implemented");
-		return false;
+		throw new UnsupportedOperationException("Azure Key Vault connection test is not yet implemented. "
+				+ "See AzureKeyVaultSignatureProvider for implementation TODOs.");
 	}
 
 	@Override
