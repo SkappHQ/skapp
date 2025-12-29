@@ -50,7 +50,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(false);
 
       if (redirect) {
-        router.push(ROUTES.AUTH.SIGNIN + `?callback=${router.asPath}`);
+        return;
+      } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
+        const existingCallback = router.query.callback as string;
+        const callbackPath = existingCallback || router.asPath;
+        router.push(ROUTES.AUTH.SIGNIN + `?callback=${callbackPath}`);
       }
     } catch (error) {
       console.error("Logout error:", error);
@@ -73,21 +77,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!userData) {
         setIsAuthenticated(false);
         setUser(null);
+        setIsLoading(false);
+        await signOut();
         return;
       }
 
       setUser(userData);
       setIsAuthenticated(true);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Auth check failed:", error);
       setIsAuthenticated(false);
       setUser(null);
-    } finally {
       setIsLoading(false);
+      await signOut();
+    } finally {
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
     }
-  }, []);
+  }, [signOut]);
 
   // Refresh Access Token function
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
@@ -107,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (params.redirect) {
           const redirectPath =
-            (router.query.redirect as string) || ROUTES.DASHBOARD.BASE;
+            (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
           router.push(redirectPath);
         }
 
@@ -129,25 +136,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [checkAuth]);
 
-  // Handle route protection - only run when auth state changes or route changes
   useEffect(() => {
-    // Skip if still loading initial auth check
     if (!initialCheckDone.current || isLoading) return;
 
     const currentPath = router.pathname;
 
-    // Allow public routes (routes not in routeMatchers)
     if (!isProtectedRoute(currentPath)) {
       return;
     }
 
-    // Redirect to sign-in if not authenticated for protected routes
     if (!isAuthenticated) {
       signOut();
       return;
     }
 
-    // Validate route access based on user permissions
     if (user) {
       validateRouteAccess(user, currentPath, router);
     }
@@ -166,7 +168,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   if (!initialCheckDone.current || isLoading) {
     return <FullScreenLoader />;
   }
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

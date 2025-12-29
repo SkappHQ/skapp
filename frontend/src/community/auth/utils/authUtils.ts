@@ -7,6 +7,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
+import { enterpriseSignIn } from "~enterprise/auth/utils/authUtils";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import {
@@ -16,7 +17,6 @@ import {
 } from "../constants/routeConfigs";
 import { AuthMethods, SignInStatus } from "../enums/auth";
 import authAxios from "./authInterceptor";
-import { enterpriseSignIn } from "~enterprise/auth/utils/authUtils";
 
 // Helper function to match a path against a route pattern
 export const matchesRoutePattern = (
@@ -102,9 +102,11 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
   refreshPromise = (async () => {
     try {
-      const response = await authAxios.post("/v1/auth/refresh-token/cookie", {
-        withCredentials: true
-      });
+      const response = await authAxios.post(
+        "/v1/auth/refresh-token/cookie",
+        {},
+        { withCredentials: true }
+      );
 
       const accessToken = response?.data?.results[0]?.accessToken;
 

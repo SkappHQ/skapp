@@ -125,7 +125,13 @@ const SignIn: NextPage = () => {
           isIcon: true
         });
       } else {
-        handleRedirect();
+        // Check for callback parameter
+        const callbackPath = router.query.callback as string;
+        if (callbackPath) {
+          router.push(callbackPath);
+        } else {
+          handleRedirect();
+        }
       }
     } catch (error) {
       setToastMessage({
