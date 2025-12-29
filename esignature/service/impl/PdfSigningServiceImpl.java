@@ -68,6 +68,9 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	@Value("${skapp.pdf-signing.signature.contact-info:support@skapp.com}")
 	private String signatureContactInfo;
 
+	@Value("${skapp.pdf-signing.signature.name:Skapp Inc}")
+	private String signatureName;
+
 	@Override
 	public SignedPdfResult signPdf(byte[] pdfBytes) throws PdfSigningException {
 
@@ -129,7 +132,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 
 			// Set signature metadata
-			signature.setName("Skapp Inc"); // Organization name
+			signature.setName(signatureName);
 			signature.setReason(signatureReason);
 			signature.setLocation(signatureLocation);
 			signature.setContactInfo(signatureContactInfo);
