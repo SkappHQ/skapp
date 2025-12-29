@@ -50,6 +50,16 @@ public class LocalSignatureProvider implements SignatureProvider {
 
 	private KeyStore keyStore;
 
+	/**
+	 * WARNING: The private key is stored in memory for the lifetime of this bean.
+	 * This is acceptable ONLY for local development/testing, where the risk of
+	 * key exposure via memory dumps or debugging tools is explicitly accepted.
+	 *
+	 * Do NOT use this implementation in production. For production, use a
+	 * signature provider backed by a Hardware Security Module (HSM) or a
+	 * remote signing service that never exposes the private key material to
+	 * the application process.
+	 */
 	private PrivateKey privateKey;
 
 	private X509Certificate[] certificateChain;

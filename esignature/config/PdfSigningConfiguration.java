@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "skapp.pdf-signing.enabled", havingValue = "true")
 public class PdfSigningConfiguration {
 
-	@Value("${skapp.pdf-signing.provider}")
+	@Value("${skapp.pdf-signing.provider:local}")
 	private String providerType;
 
 	@PostConstruct

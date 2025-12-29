@@ -39,9 +39,9 @@ public interface SignatureProvider {
 	 * Retrieve the certificate chain for signature validation.
 	 *
 	 * The certificate chain is required for embedding in the PDF signature to allow
-	 * third-party verification. The chain should be ordered from leaf (end-entity
-	 * certificate) to root (trusted CA).
-	 * @return X509Certificate array [leaf, intermediate(s), root]
+	 * third-party verification. The certificate chain is ordered from leaf certificate
+	 * to root CA, including any intermediate certificates.
+	 * @return X509Certificate array ordered from leaf certificate to root CA
 	 * @throws SignatureProviderException if certificate chain cannot be retrieved
 	 */
 	X509Certificate[] getCertificateChain() throws SignatureProviderException;

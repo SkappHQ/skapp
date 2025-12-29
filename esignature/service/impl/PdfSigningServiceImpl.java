@@ -142,12 +142,13 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			document.addSignature(signature, new PAdESSignatureInterface());
 
 			// Save signed PDF to byte array
-			ByteArrayOutputStream signedPdfStream = new ByteArrayOutputStream();
-			document.saveIncremental(signedPdfStream);
-			byte[] signedBytes = signedPdfStream.toByteArray();
+			try (ByteArrayOutputStream signedPdfStream = new ByteArrayOutputStream()) {
+				document.saveIncremental(signedPdfStream);
+				byte[] signedBytes = signedPdfStream.toByteArray();
 
-			log.debug("PDF signed successfully (signed size: {} bytes)", signedBytes.length);
-			return signedBytes;
+				log.debug("PDF signed successfully (signed size: {} bytes)", signedBytes.length);
+				return signedBytes;
+			}
 		}
 	}
 
