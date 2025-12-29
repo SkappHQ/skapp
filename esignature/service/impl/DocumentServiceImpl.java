@@ -373,7 +373,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// Update document version with signature metadata
 			documentVersion.setIsPdfSigned(true);
-			documentVersion.setPdfSignedAt(LocalDateTime.now());
+			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
 			documentVersion.setFilePath(path);
 			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
 			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
