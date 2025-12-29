@@ -20,18 +20,15 @@ public interface SignatureProvider {
 	/**
 	 * Sign the data using the configured private key.
 	 *
-	 * <p>
-	 * <strong>Important:</strong> The input is the raw data (e.g., CMS SignedAttributes),
-	 * not a pre-calculated hash. Implementations are responsible for hashing this data if
-	 * their underlying signing mechanism requires a digest (e.g., Cloud HSMs).
-	 * </p>
+	 * <p><strong>Important:</strong> The input is the raw data (e.g., CMS SignedAttributes),
+	 * not a pre-calculated hash. Implementations are responsible for hashing this data
+	 * if their underlying signing mechanism requires a digest (e.g., Cloud HSMs).</p>
 	 *
 	 * <ul>
-	 * <li><strong>Local Provider:</strong> Should use an algorithm like "SHA256withRSA"
-	 * which handles hashing internally.</li>
-	 * <li><strong>Cloud HSM:</strong> Should calculate the SHA-256 hash of the input
-	 * bytes, then send that digest to the HSM.</li>
+	 *     <li><strong>Local Provider:</strong> Should use an algorithm like "SHA256withRSA" which handles hashing internally.</li>
+	 *     <li><strong>Cloud HSM:</strong> Should calculate the SHA-256 hash of the input bytes, then send that digest to the HSM.</li>
 	 * </ul>
+	 *
 	 * @param contentToSign The raw content bytes to be signed
 	 * @return Signed bytes (raw signature)
 	 * @throws SignatureProviderException if signing operation fails
@@ -42,8 +39,8 @@ public interface SignatureProvider {
 	 * Retrieve the certificate chain for signature validation.
 	 *
 	 * The certificate chain is required for embedding in the PDF signature to allow
-	 * third-party verification. The certificate chain is ordered from leaf certificate to
-	 * root CA, including any intermediate certificates.
+	 * third-party verification. The certificate chain is ordered from leaf certificate
+	 * to root CA, including any intermediate certificates.
 	 * @return X509Certificate array ordered from leaf certificate to root CA
 	 * @throws SignatureProviderException if certificate chain cannot be retrieved
 	 */
