@@ -1,16 +1,10 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.skapp.community.common.exception.ModuleException;
-import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.exception.PdfSigningException;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
+import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +25,12 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -58,15 +49,10 @@ import java.util.Calendar;
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "skapp.pdf-signing.enabled", havingValue = "true")
 public class PdfSigningServiceImpl implements PdfSigningService {
-	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
 	private final SignatureProvider signatureProvider;
 
 	private final CertificateProvider certificateProvider;
-
-	private final AmazonS3Service s3Service;
-
-	private final DocumentVersionDao documentVersionDao;
 
 	@Value("${skapp.pdf-signing.enabled:false}")
 	private boolean signingEnabled;
@@ -80,57 +66,41 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	@Value("${skapp.pdf-signing.signature.contact-info:support@skapp.com}")
 	private String signatureContactInfo;
 
-	@Value("${aws.s3.bucket-name}")
-	private String s3BucketName;
-
 	@Override
-	@Transactional
-	public DocumentVersion signCompletedDocument(Long documentVersionId, byte[] pdfBytes) throws PdfSigningException {
+	public SignedPdfResult signPdf(byte[] pdfBytes) throws PdfSigningException {
 
 		if (!signingEnabled) {
-			log.warn("PDF signing is disabled. Skipping signature for document version: {}", documentVersionId);
-			return documentVersionDao.findById(documentVersionId)
-				.orElseThrow(() -> new PdfSigningException("Document version not found: " + documentVersionId));
+			log.warn("PDF signing is disabled. Skipping signature.");
+			return null;
 		}
 
-		log.info("Starting PDF signing for document version: {}", documentVersionId);
+		log.info("Starting PDF signing");
 
 		try {
-			// 1. Fetch document version
-			DocumentVersion docVersion = documentVersionDao.findById(documentVersionId)
-				.orElseThrow(() -> new PdfSigningException("Document version not found: " + documentVersionId));
-
-			// 2. Validate that signing hasn't already been done
-			if (Boolean.TRUE.equals(docVersion.getIsPdfSigned())) {
-				log.warn("Document version {} is already signed. Skipping.", documentVersionId);
-				return docVersion;
-			}
-
-			// 3. Load PDF from provided bytes
+			// 1. Load PDF from provided bytes
 			byte[] signedPdfBytes = signPdfDocument(pdfBytes);
 
-			// 4. Upload signed PDF to S3
-			String signedPath = uploadSignedPdfToS3(signedPdfBytes);
+			// 2. Get certificate metadata
+			X509Certificate[] certChain = certificateProvider.loadCertificateChain();
+			X509Certificate orgCert = certChain[0]; // Leaf certificate
 
-			// 5. Update document version with signature metadata
-			updateDocumentVersionMetadata(docVersion, signedPath);
+			log.info("PDF signed successfully");
+			log.info("  - Certificate serial: {}", orgCert.getSerialNumber().toString(16).toUpperCase());
+			log.info("  - Signature algorithm: {}", signatureProvider.getSignatureAlgorithm());
 
-			// 6. Save updated document version
-			documentVersionDao.save(docVersion);
-
-			log.info("PDF signed successfully for document version: {}", documentVersionId);
-			log.info("  - Signed PDF uploaded to: {}", signedPath);
-			log.info("  - Certificate serial: {}", docVersion.getCertificateSerialNumber());
-			log.info("  - Signature algorithm: {}", docVersion.getSignatureAlgorithm());
-
-			return docVersion;
+			return SignedPdfResult.builder()
+				.signedPdfBytes(signedPdfBytes)
+				.certificateSerialNumber(orgCert.getSerialNumber().toString(16).toUpperCase())
+				.signatureAlgorithm(signatureProvider.getSignatureAlgorithm())
+				.build();
 
 		}
 		catch (Exception e) {
-			log.error("Failed to sign PDF for document version: " + documentVersionId, e);
+			log.error("Failed to sign PDF", e);
 			throw new PdfSigningException("Failed to sign PDF document", e);
 		}
 	}
+
 
 	/**
 	 * Sign the PDF document with the organization certificate.
@@ -264,61 +234,6 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			}
 		}
 
-	}
-
-	/**
-	 * Upload signed PDF to S3.
-	 *
-	 * Follows the same pattern as uploadProcessedDocumentVersion in DocumentServiceImpl:
-	 * generates a unique random path for the signed document version.
-	 * @param signedPdfBytes the signed PDF bytes to upload
-	 * @return the S3 file path where the PDF was uploaded
-	 */
-	private String uploadSignedPdfToS3(byte[] signedPdfBytes) {
-		String tenantId = TenantContext.getCurrentTenant();
-
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
-
-		// Generate random URL path (same approach as document versions)
-		String randomUrl = EsignUtil.randomUrlPath();
-
-		// Build file path:
-		// bucketName/eSign/envelop/process/documents/{tenantId}/{randomUrl}
-		String fileUrl = s3BucketName + UPLOAD_DOCUMENT_URL_PATH + tenantId + "/" + randomUrl;
-
-		log.debug("Uploading signed PDF to S3: {}", fileUrl);
-
-		try (InputStream inputStream = new ByteArrayInputStream(signedPdfBytes)) {
-			s3Service.uploadFile(s3BucketName, fileUrl, inputStream);
-			log.debug("Signed PDF uploaded successfully");
-		}
-		catch (Exception e) {
-			log.error("Failed to upload signed PDF to S3", e);
-			throw new PdfSigningException("Failed to upload signed PDF to S3", e);
-		}
-
-		return fileUrl;
-	}
-
-	/**
-	 * Update DocumentVersion entity with signature metadata.
-	 */
-	private void updateDocumentVersionMetadata(DocumentVersion docVersion, String signedPath) throws Exception {
-
-		// Get certificate metadata
-		X509Certificate[] certChain = certificateProvider.loadCertificateChain();
-		X509Certificate orgCert = certChain[0]; // Leaf certificate
-
-		// Update document version fields
-		docVersion.setIsPdfSigned(true);
-		docVersion.setPdfSignedAt(LocalDateTime.now());
-		docVersion.setFilePath(signedPath); // Update path to signed version
-		docVersion.setCertificateSerialNumber(orgCert.getSerialNumber().toString(16).toUpperCase());
-		docVersion.setSignatureAlgorithm(signatureProvider.getSignatureAlgorithm());
-
-		// Note: timestampToken field can be added later for TSA integration
 	}
 
 	@Override

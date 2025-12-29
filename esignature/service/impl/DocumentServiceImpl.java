@@ -99,6 +99,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
+import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
+import java.time.LocalDateTime;
+
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
 @Slf4j
@@ -361,7 +365,22 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(documentVersion);
 
 		// Sign the completed PDF with organization certificate (if enabled)
-		documentVersion = signCompletedPdf(documentVersion, latestDocumentBytes);
+		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, latestDocumentBytes);
+
+		String signedPath = signedResult.map(result -> {
+			// Upload signed PDF to S3
+			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+
+			// Update document version with signature metadata
+			documentVersion.setIsPdfSigned(true);
+			documentVersion.setPdfSignedAt(LocalDateTime.now());
+			documentVersion.setFilePath(path);
+			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
+			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
+
+			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
+			return path;
+		}).orElse(null);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
 		documentRepository.save(document);
@@ -399,6 +418,21 @@ public class DocumentServiceImpl implements DocumentService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+
+			@Override
+			public void afterCompletion(int status) {
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && signedPath != null) {
+					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", signedPath);
+					try {
+						AmazonS3DeleteItemRequestDto deleteRequest = new AmazonS3DeleteItemRequestDto();
+						deleteRequest.setFolderPath(signedPath);
+						amazonS3Service.deleteFileFromS3(deleteRequest);
+					}
+					catch (Exception e) {
+						log.error("Failed to delete orphaned S3 file: " + signedPath, e);
+					}
+				}
 			}
 		});
 
@@ -584,14 +618,11 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
-	private DocumentVersion signCompletedPdf(DocumentVersion documentVersion, byte[] documentBytes) {
+	private Optional<SignedPdfResult> signCompletedPdf(DocumentVersion documentVersion, byte[] documentBytes) {
 		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
 			try {
 				log.info("Signing completed PDF for document version: {}", documentVersion.getId());
-				DocumentVersion signedVersion = pdfSigningService.get()
-					.signCompletedDocument(documentVersion.getId(), documentBytes);
-				log.info("PDF signed successfully for document version: {}", signedVersion.getId());
-				return signedVersion;
+				return Optional.ofNullable(pdfSigningService.get().signPdf(documentBytes));
 			}
 			catch (Exception e) {
 				// Log error but don't fail the envelope completion
@@ -600,7 +631,7 @@ public class DocumentServiceImpl implements DocumentService {
 						+ ". Envelope will complete without PDF signature.", e);
 			}
 		}
-		return documentVersion;
+		return Optional.empty();
 	}
 	
 	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
