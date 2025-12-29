@@ -1,12 +1,13 @@
+import { unitConversion } from "~community/common/constants/configs";
 import {
-  EnterpriseSignInParams,
-  User,
-  enterpriseSignIn,
-  extractUserFromToken,
-  getAccessToken,
-  setAccessToken
-} from "~enterprise/auth/utils/authUtils";
-import epAuthFetch from "~enterprise/common/utils/axiosInterceptor";
+  AdminTypes,
+  AuthEmployeeType,
+  EmployeeTypes,
+  ManagerTypes,
+  SenderTypes,
+  SuperAdminType
+} from "~community/common/types/AuthTypes";
+import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import {
   config,
@@ -14,6 +15,8 @@ import {
   routeMatchers
 } from "../constants/routeConfigs";
 import { AuthMethods, SignInStatus } from "../enums/auth";
+import authAxios from "./authInterceptor";
+import { enterpriseSignIn } from "~enterprise/auth/utils/authUtils";
 
 // Helper function to match a path against a route pattern
 export const matchesRoutePattern = (
@@ -63,11 +66,172 @@ export const decodeJWTToken = (token: string) => {
   return decodedToken;
 };
 
-export const communitySignIn = async (email: string, password: string) => {};
+export interface User {
+  userId?: number;
+  email?: string;
+  name?: string;
+  roles?: (
+    | AdminTypes
+    | ManagerTypes
+    | EmployeeTypes
+    | SuperAdminType
+    | SenderTypes
+  )[];
+  accessToken?: string;
+  refreshToken?: string;
+  tokenDuration?: number;
+  isPasswordChangedForTheFirstTime?: boolean;
+  employee?: AuthEmployeeType;
+  tier?: TierEnum;
+  tenantId?: string;
+  tenantStatus?: TenantStatusEnums;
+  isTemporaryUser?: boolean;
+}
 
-export const handleSignIn = async (
-  params: EnterpriseSignInParams
-): Promise<SignInStatus> => {
+// Flag to prevent recursive token refresh
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+export const getNewAccessToken = async (): Promise<string | null> => {
+  // If already refreshing, wait for the existing refresh to complete
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+
+  refreshPromise = (async () => {
+    try {
+      const response = await authAxios.post("/v1/auth/refresh-token/cookie", {
+        withCredentials: true
+      });
+
+      const accessToken = response?.data?.results[0]?.accessToken;
+
+      if (accessToken) {
+        setAccessToken(accessToken);
+        return accessToken;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
+export const setAccessToken = (token: string) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("accessToken", token);
+  }
+};
+
+export const clearCookies = async (): Promise<void> => {
+  if (typeof window !== "undefined") {
+    // Clear httpOnly cookies by setting them to expire
+    document.cookie =
+      "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
+  }
+};
+
+export const getAccessToken = async (): Promise<string | null> => {
+  if (typeof window === "undefined") return null;
+
+  const currentAccessToken = localStorage.getItem("accessToken");
+
+  if (!currentAccessToken) {
+    return null;
+  }
+
+  if (isTokenExpired(currentAccessToken)) {
+    const newToken = await getNewAccessToken();
+    return newToken;
+  }
+
+  return currentAccessToken;
+};
+
+export const clearTokens = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("accessToken");
+  }
+  clearCookies();
+};
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const claims = extractClaimsFromToken(token);
+
+    return (
+      Date.now() >
+      (claims?.exp as number) * unitConversion.MILLISECONDS_PER_SECOND
+    );
+  } catch (error) {
+    console.error("Failed to parse token:", error);
+    return true;
+  }
+};
+
+export const extractClaimsFromToken = (token: string): Record<string, any> => {
+  try {
+    const claims = decodeJWTToken(token);
+    return claims || {};
+  } catch (error) {
+    console.error("Failed to parse token:", error);
+    return {};
+  }
+};
+
+export const extractUserFromToken = (token: string): User | null => {
+  try {
+    if (isTokenExpired(token)) {
+      return null;
+    }
+
+    const claims = extractClaimsFromToken(token);
+
+    return {
+      userId: claims?.userId,
+      email: claims?.email,
+      name: claims?.employee
+        ? `${claims.employee.firstName} ${claims.employee.lastName || ""}`
+        : "",
+      roles: claims?.roles as (
+        | AdminTypes
+        | ManagerTypes
+        | EmployeeTypes
+        | SuperAdminType
+        | SenderTypes
+      )[],
+      accessToken: token,
+      tokenDuration: claims?.tokenDuration,
+      isPasswordChangedForTheFirstTime:
+        claims?.isPasswordChangedForTheFirstTime ?? true,
+      employee: claims?.employee,
+      tier: claims?.tier as TierEnum,
+      tenantId: claims?.tenantId,
+      tenantStatus: claims?.tenantStatus,
+      isTemporaryUser: claims?.isTemporaryUser ?? false
+    };
+  } catch (error) {
+    console.error("Failed to extract user from token:", error);
+    return null;
+  }
+};
+
+export const communitySignIn = async (_email: string, _password: string) => {};
+
+export const handleSignIn = async (params: {
+  email?: string;
+  password?: string;
+  method: AuthMethods;
+}): Promise<SignInStatus> => {
   const response = await enterpriseSignIn({
     email: params.email,
     password: params.password,
@@ -96,20 +260,4 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   }
 
   return userData;
-};
-
-export const handleRefreshToken = async (): Promise<SignInStatus> => {
-  const response = await epAuthFetch.post("/v1/auth/refresh-token/cookie", {
-    withCredentials: true
-  });
-
-  const accessToken = response?.data?.results[0]?.accessToken;
-
-  if (accessToken) {
-    setAccessToken(accessToken);
-
-    return SignInStatus.SUCCESS;
-  } else {
-    return SignInStatus.FAILURE;
-  }
 };

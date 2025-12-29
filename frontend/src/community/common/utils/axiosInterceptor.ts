@@ -1,6 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
-import { clearTokens, getAccessToken } from "~enterprise/auth/utils/authUtils";
+import { clearTokens, getAccessToken } from "~community/auth/utils/authUtils";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";

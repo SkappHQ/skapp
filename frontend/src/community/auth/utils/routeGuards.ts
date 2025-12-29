@@ -1,6 +1,6 @@
 import { NextRouter } from "next/router";
 
-import { User } from "~enterprise/auth/utils/authUtils";
+import { User } from "~community/auth/utils/authUtils";
 
 import ROUTES, {
   employeeRestrictedRoutes,

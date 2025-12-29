@@ -4,8 +4,7 @@ import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { getApiUrl } from "~community/common/utils/getConstants";
 
 const authAxios = axios.create({
-  baseURL: getApiUrl(),
-  withCredentials: true
+  baseURL: getApiUrl()
 });
 
 //  request interceptor

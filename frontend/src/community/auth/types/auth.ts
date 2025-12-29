@@ -1,4 +1,6 @@
-import { User, EnterpriseSignInParams } from "~enterprise/auth/utils/authUtils";
+import { User } from "~community/auth/utils/authUtils";
+import { EnterpriseSignInParams } from "~enterprise/auth/utils/authUtils";
+
 import { SignInStatus } from "../enums/auth";
 
 export interface AuthContextType {

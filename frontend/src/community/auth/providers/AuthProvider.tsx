@@ -9,14 +9,16 @@ import React, {
   useState
 } from "react";
 
-import { EnterpriseSignInParams, getNewAccessToken, User } from "~enterprise/auth/utils/authUtils";
+import { EnterpriseSignInParams } from "~enterprise/auth/utils/authUtils";
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
 import { SignInStatus } from "../enums/auth";
 import { AuthContextType } from "../types/auth";
 import {
+  User,
   checkUserAuthentication,
+  getNewAccessToken,
   handleSignIn,
   isProtectedRoute
 } from "../utils/authUtils";
