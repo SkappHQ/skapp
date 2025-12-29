@@ -215,6 +215,8 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 		private final AlgorithmIdentifier algorithmIdentifier;
 
+		private boolean signatureGenerated = false;
+
 		public DelegatingContentSigner(SignatureProvider provider) {
 			this.provider = provider;
 			String algo = provider.getSignatureAlgorithm();
@@ -233,18 +235,26 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 		@Override
 		public OutputStream getOutputStream() {
+			if (signatureGenerated) {
+				throw new IllegalStateException("Cannot write to stream after signature has been generated");
+			}
 			return outputStream;
 		}
 
 		@Override
 		public byte[] getSignature() {
+			if (signatureGenerated) {
+				throw new IllegalStateException("Signature has already been generated");
+			}
 			try {
 				byte[] dataToSign = outputStream.toByteArray();
 				// We pass the raw data (SignedAttributes) to the provider.
 				// The provider (if using standard Java Signature) will hash it.
 				// If the provider expects a pre-calculated hash (like some HSMs),
 				// it should be adapted to hash the input first.
-				return provider.signHash(dataToSign);
+				byte[] signature = provider.signHash(dataToSign);
+				signatureGenerated = true;
+				return signature;
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Failed to sign data", e);
