@@ -4,7 +4,9 @@ import com.skapp.enterprise.esignature.exception.PdfSigningException;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
+import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
+import com.skapp.enterprise.esignature.signature.SignatureProviderException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,6 +97,17 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 				.build();
 
 		}
+		catch (CertificateProviderException e) {
+			log.error("Failed to load certificate chain", e);
+			throw new PdfSigningException("Failed to load certificate chain", e);
+		}
+		catch (IOException e) {
+			log.error("Failed to process PDF document", e);
+			if (e.getCause() instanceof SignatureProviderException) {
+				throw new PdfSigningException("Failed to generate signature: " + e.getCause().getMessage(), e);
+			}
+			throw new PdfSigningException("Failed to process PDF document", e);
+		}
 		catch (Exception e) {
 			log.error("Failed to sign PDF", e);
 			throw new PdfSigningException("Failed to sign PDF document", e);
@@ -105,7 +118,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	/**
 	 * Sign the PDF document with the organization certificate.
 	 */
-	private byte[] signPdfDocument(byte[] pdfBytes) throws Exception {
+	private byte[] signPdfDocument(byte[] pdfBytes) throws IOException {
 		log.debug("Signing PDF document (size: {} bytes)", pdfBytes.length);
 
 		try (PDDocument document = Loader.loadPDF(pdfBytes)) {
