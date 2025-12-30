@@ -1,4 +1,3 @@
-import { Start } from "@mui/icons-material";
 import { JSX } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
