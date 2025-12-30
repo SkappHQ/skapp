@@ -51,14 +51,13 @@ public class LocalSignatureProvider implements SignatureProvider {
 	private KeyStore keyStore;
 
 	/**
-	 * WARNING: The private key is stored in memory for the lifetime of this bean.
-	 * This is acceptable ONLY for local development/testing, where the risk of
-	 * key exposure via memory dumps or debugging tools is explicitly accepted.
+	 * WARNING: The private key is stored in memory for the lifetime of this bean. This is
+	 * acceptable ONLY for local development/testing, where the risk of key exposure via
+	 * memory dumps or debugging tools is explicitly accepted.
 	 *
-	 * Do NOT use this implementation in production. For production, use a
-	 * signature provider backed by a Hardware Security Module (HSM) or a
-	 * remote signing service that never exposes the private key material to
-	 * the application process.
+	 * Do NOT use this implementation in production. For production, use a signature
+	 * provider backed by a Hardware Security Module (HSM) or a remote signing service
+	 * that never exposes the private key material to the application process.
 	 */
 	private PrivateKey privateKey;
 
@@ -130,7 +129,8 @@ public class LocalSignatureProvider implements SignatureProvider {
 			signature.initSign(privateKey);
 
 			// Sign the data (CMS SignedAttributes)
-			// Note: The Signature instance (e.g., SHA256withRSA) handles the hashing internally.
+			// Note: The Signature instance (e.g., SHA256withRSA) handles the hashing
+			// internally.
 			signature.update(contentToSign);
 			byte[] signedHash = signature.sign();
 

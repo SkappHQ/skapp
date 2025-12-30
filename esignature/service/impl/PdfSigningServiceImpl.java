@@ -117,7 +117,6 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 		}
 	}
 
-
 	/**
 	 * Sign the PDF document with the organization certificate.
 	 */
@@ -187,9 +186,9 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 				JcaCertStore certStore = new JcaCertStore(Arrays.asList(certChain));
 				generator.addCertificates(certStore);
 
-				generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(
-						new JcaDigestCalculatorProviderBuilder().build())
-						.build(contentSigner, certChain[0]));
+				generator.addSignerInfoGenerator(
+						new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
+							.build(contentSigner, certChain[0]));
 
 				CMSSignedData signedData = generator.generate(cmsData, false); // detached
 

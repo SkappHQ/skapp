@@ -23,8 +23,8 @@ public interface PdfSigningService {
 	 * have signed). It creates a cryptographically verifiable PDF signature that can be
 	 * validated by third-party tools like Adobe Acrobat Reader.
 	 *
-	 * The signing process: 1. Loads PDF from provided bytes 2. Calculates hash of PDF byte
-	 * ranges 3. Signs hash using SignatureProvider 4. Embeds signature in PDF with
+	 * The signing process: 1. Loads PDF from provided bytes 2. Calculates hash of PDF
+	 * byte ranges 3. Signs hash using SignatureProvider 4. Embeds signature in PDF with
 	 * certificate chain
 	 * @param pdfBytes The PDF document bytes (already loaded in completion workflow)
 	 * @return SignedPdfResult containing signed PDF bytes and signature metadata

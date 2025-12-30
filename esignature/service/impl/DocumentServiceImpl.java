@@ -101,7 +101,6 @@ import java.util.Optional;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
-import java.time.LocalDateTime;
 
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
@@ -364,24 +363,6 @@ public class DocumentServiceImpl implements DocumentService {
 				latestDocumentBytes);
 		documentVersionDao.save(documentVersion);
 
-		// Sign the completed PDF with organization certificate (if enabled)
-		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, latestDocumentBytes);
-
-		String signedPath = signedResult.map(result -> {
-			// Upload signed PDF to S3
-			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
-
-			// Update document version with signature metadata
-			documentVersion.setIsPdfSigned(true);
-			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
-			documentVersion.setFilePath(path);
-			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
-			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
-
-			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return path;
-		}).orElse(null);
-
 		document.setCurrentVersion(documentVersion.getVersionNumber());
 		documentRepository.save(document);
 
@@ -404,6 +385,30 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
+		// Process final document: append certificate then digitally sign
+		// Certificate appending: Always attempted (fails gracefully if service
+		// unavailable)
+		// Digital signing: Controlled by feature flag
+		// (PdfSigningService.isSigningEnabled())
+		byte[] processedDocumentBytes = latestDocumentBytes;
+
+		// TODO: When certificate appending feature is merged, replace the above line
+		// with:
+		// byte[] processedDocumentBytes = appendCertificateToBytes(envelope,
+		// documentVersion, latestDocumentBytes);
+		// Note: Certificate appending always runs (no feature flag) but fails gracefully
+
+		// Sign the processed PDF (if signing is enabled via feature flag)
+		// This will sign the document WITH the appended certificate when certificate
+		// feature is merged
+		String finalDocumentPath = signAndUploadDocument(documentVersion, processedDocumentBytes);
+
+		// Update document version with final file path
+		if (finalDocumentPath != null) {
+			documentVersion.setFilePath(finalDocumentPath);
+			documentVersionDao.save(documentVersion);
+		}
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		recipientService.sendDocumentCompletedEmailNotifications(envelope);
@@ -422,15 +427,15 @@ public class DocumentServiceImpl implements DocumentService {
 
 			@Override
 			public void afterCompletion(int status) {
-				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && signedPath != null) {
-					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", signedPath);
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && finalDocumentPath != null) {
+					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", finalDocumentPath);
 					try {
 						AmazonS3DeleteItemRequestDto deleteRequest = new AmazonS3DeleteItemRequestDto();
-						deleteRequest.setFolderPath(signedPath);
+						deleteRequest.setFolderPath(finalDocumentPath);
 						amazonS3Service.deleteFileFromS3(deleteRequest);
 					}
 					catch (Exception e) {
-						log.error("Failed to delete orphaned S3 file: " + signedPath, e);
+						log.error("Failed to delete orphaned S3 file: " + finalDocumentPath, e);
 					}
 				}
 			}
@@ -618,6 +623,37 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
+	/**
+	 * Signs the document bytes (if signing is enabled) and uploads to S3. This method is
+	 * designed to work with certificate-appended bytes when that feature is merged.
+	 * @param documentVersion The document version to update with signature metadata
+	 * @param documentBytes The document bytes to sign (can be original or with appended
+	 * certificate)
+	 * @return The S3 path of the uploaded document, or null if upload failed
+	 */
+	private String signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
+		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
+
+		return signedResult.map(result -> {
+			// Upload signed PDF to S3
+			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+
+			// Update document version with signature metadata
+			documentVersion.setIsPdfSigned(true);
+			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
+			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
+			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
+
+			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
+			return path;
+		}).orElseGet(() -> {
+			// Signing disabled or failed - upload unsigned document
+			String path = uploadProcessedDocumentVersion(documentBytes);
+			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
+			return path;
+		});
+	}
+
 	private Optional<SignedPdfResult> signCompletedPdf(DocumentVersion documentVersion, byte[] documentBytes) {
 		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
 			try {
@@ -633,7 +669,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 		return Optional.empty();
 	}
-	
+
 	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
 		int attempt = 0;
 		DocumentVersion documentVersion = currentVersion;
