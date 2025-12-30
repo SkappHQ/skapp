@@ -39,13 +39,15 @@ interface Props {
   isUpdate?: boolean;
   isAddFlow?: boolean;
   isReadOnly?: boolean;
+  isPeopleAdminViewingOwnProfile?: boolean;
 }
 
 const SystemPermissionFormSection = ({
   isProfileView,
   isUpdate,
   isAddFlow,
-  isReadOnly = false
+  isReadOnly = false,
+  isPeopleAdminViewingOwnProfile = false
 }: Props) => {
   const classes = styles();
   const environment = useGetEnvironment();
@@ -243,7 +245,7 @@ const SystemPermissionFormSection = ({
             <SwitchRow
               labelId="super-admin"
               label={translateText(["superAdmin"])}
-              disabled={!isSuperAdmin}
+              disabled={!isSuperAdmin || isPeopleAdminViewingOwnProfile}
               checked={permissions.isSuperAdmin as boolean}
               onChange={(checked: boolean) => handleSuperAdminToggle(checked)}
               wrapperStyles={classes.switchRowWrapper}
@@ -268,7 +270,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    (isReadOnly && !isPeopleAdminViewingOwnProfile)
                   }
                 />
               )}
@@ -290,7 +292,8 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    isReadOnly ||
+                    isPeopleAdminViewingOwnProfile
                   }
                 />
               )}
@@ -318,7 +321,8 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    isReadOnly ||
+                    isPeopleAdminViewingOwnProfile
                   }
                 />
               )}
@@ -340,7 +344,8 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    isReadOnly ||
+                    isPeopleAdminViewingOwnProfile
                   }
                 />
               )}
@@ -360,7 +365,8 @@ const SystemPermissionFormSection = ({
                   isProfileView ||
                   permissions.isSuperAdmin ||
                   isInputsDisabled ||
-                  isReadOnly
+                  isReadOnly ||
+                  isPeopleAdminViewingOwnProfile
                 }
               />
             )}
@@ -390,7 +396,8 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    isReadOnly ||
+                    isPeopleAdminViewingOwnProfile
                   }
                 />
               )}

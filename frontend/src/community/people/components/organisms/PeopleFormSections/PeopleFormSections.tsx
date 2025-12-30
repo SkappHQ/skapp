@@ -1,12 +1,12 @@
 import { Box } from "@mui/material";
 import { RefObject } from "react";
 
-
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
+import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 import PeopleTimeline from "../../molecules/PeopleTimeline/PeopleTimeline";
 import EntitlementsDetailsForm from "../AddNewResourceFlow/EntitlementsDetailsSection/EntitlementsDetailsForm";
@@ -14,7 +14,6 @@ import EmergencyDetailsForm from "../EmergencyDetailsSection/EmergencyDetailsFor
 import EmploymentDetailsForm from "../EmploymentFormSection/EmploymentDetailsForm";
 import PersonalDetailsForm from "../PersonDetailsSection/PersonalDetailsForm";
 import SystemPermissionFormSection from "../SystemPermissionFormSection/SystemPermissionFormSection";
-import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 interface Props {
   employeeId?: number;
@@ -84,9 +83,8 @@ const PeopleFormSections = ({
         return (
           <SystemPermissionFormSection
             isAddFlow={isAddFlow}
-            isReadOnly={
-              isSystemPermissionsReadOnly || isPeopleAdminViewingOwnProfile
-            }
+            isReadOnly={isSystemPermissionsReadOnly}
+            isPeopleAdminViewingOwnProfile={isPeopleAdminViewingOwnProfile}
           />
         );
       case EditPeopleFormTypes.timeline:
@@ -108,7 +106,7 @@ const PeopleFormSections = ({
       case EditPeopleFormTypes.documents:
         return (
           <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
-        ); 
+        );
       default:
         return null;
     }
