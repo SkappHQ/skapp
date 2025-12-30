@@ -123,11 +123,4 @@ public class EpEmployeeRepositoryImpl extends EmployeeRepositoryImpl implements 
 		return entityManager.createQuery(query).getResultList();
 	}
 
-	@Override
-	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
-			Join<Employee, User> userJoin, List<Predicate> predicates) {
-		Join<Employee, EmployeeRole> employeeRoleJoin = root.join(Employee_.employeeRole);
-		predicates.add(criteriaBuilder.notEqual(employeeRoleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
-	}
-
 }
