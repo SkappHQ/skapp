@@ -388,12 +388,14 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
-		/*
-		 * Append signature certificate to completed document (use in-memory bytes to
-		 * avoid S3 race condition) - Must be called AFTER audit trails are saved so
-		 * they appear in certificate
-		 */
-		appendCertificateToCompletedDocument(envelope, documentVersion, latestDocumentBytes);
+		// Append certificate to document bytes (after audit trails saved)
+		// TODO: When PDF signing feature is merged, this can be signed before upload
+		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes);
+
+		// Upload the document with certificate
+		String finalDocumentPath = uploadProcessedDocumentVersion(processedDocumentBytes);
+		documentVersion.setFilePath(finalDocumentPath);
+		documentVersionDao.save(documentVersion);
 
 		recipientRepository.saveAll(envelope.getRecipients());
 
@@ -561,12 +563,14 @@ public class DocumentServiceImpl implements DocumentService {
 
 			auditTrailDao.saveAll(auditTrails);
 
-			/*
-			 * Append signature certificate to completed document (use in-memory bytes to
-			 * avoid S3 race condition). Must be called AFTER audit trails are saved so
-			 * they appear in the certificate.
-			 */
-			appendCertificateToCompletedDocument(envelope, finalVersion, fullDocumentBytes);
+			// Append certificate to document bytes (after audit trails saved)
+			// TODO: When PDF signing feature is merged, this can be signed before upload
+			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes);
+
+			// Upload the document with certificate
+			String finalDocumentPath = uploadProcessedDocumentVersion(processedDocumentBytes);
+			finalVersion.setFilePath(finalDocumentPath);
+			documentVersionDao.save(finalVersion);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -1645,33 +1649,24 @@ public class DocumentServiceImpl implements DocumentService {
 		return documentVersion.getFilePath();
 	}
 
-	private void appendCertificateToCompletedDocument(Envelope envelope, DocumentVersion documentVersion,
-			byte[] documentBytes) {
+	/**
+	 * Appends certificate to document bytes (in-memory processing). Returns merged bytes
+	 * or original bytes if appending fails.
+	 */
+	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes) {
 		try {
-			log.info("Appending signature certificate to completed document for envelope {}", envelope.getId());
+			log.info("Appending certificate to document for envelope {}", envelope.getId());
 
-			// 1. Use in-memory document bytes (already contains all signatures)
-
-			// 2. Generate certificate PDF bytes
-			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false, envelope);
-
-			// 3. Merge PDFs (certificate appended to end)
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false,
+					envelope);
 			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
 
-			// 4. Upload merged PDF to new S3 location
-			String mergedFileUrl = uploadProcessedDocumentVersion(mergedDocBytes);
-
-			// 5. Update document version with new file path
-			documentVersion.setFilePath(mergedFileUrl);
-			documentVersionDao.save(documentVersion);
-
-			log.info("Successfully appended certificate to document for envelope {}", envelope.getId());
+			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
+			return mergedDocBytes;
 		}
 		catch (Exception e) {
-			log.error(
-					"Failed to append certificate to completed document. envelopeId={}, envelopeStatus={}, documentVersionId={}, documentVersionFilePath={}",
-					envelope.getId(), envelope.getStatus(), documentVersion.getId(), documentVersion.getFilePath(), e);
-			// Continue with completion flow - don't throw exception; document will remain without appended certificate
+			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
+			return documentBytes;
 		}
 	}
 
