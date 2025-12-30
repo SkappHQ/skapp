@@ -24,6 +24,7 @@ import com.skapp.community.common.type.CacheKey;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
+import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
@@ -177,11 +178,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
 			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
-			EpUserEmailService epUserEmailService) {
+			EpUserEmailService epUserEmailService, CookieUtil cookieUtil) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
-				bulkContextService, messageUtil, rolesService, organizationConfigDao, objectMapper);
+				bulkContextService, messageUtil, rolesService, organizationConfigDao, objectMapper, cookieUtil);
 		this.epCommonMapper = epCommonMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.superAdminDao = superAdminDao;
