@@ -4,6 +4,8 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeEmergencyDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeePersonalInfoDto;
 import com.skapp.community.peopleplanner.payload.request.JobFamilyDto;
 import com.skapp.community.peopleplanner.payload.request.JobTitleDto;
+import com.skapp.community.peopleplanner.type.EEO;
+import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
 import lombok.Getter;
@@ -18,9 +20,13 @@ public class EmployeeAllDataExportResponseDto {
 
 	private Long employeeId;
 
+	private String employeeNumber;
+
 	private String email;
 
 	private String firstName;
+
+	private String middleName;
 
 	private String lastName;
 
@@ -40,9 +46,17 @@ public class EmployeeAllDataExportResponseDto {
 
 	private String address;
 
+	private String addressLine1;
+
+	private String addressLine2;
+
 	private Integer workHourCapacity;
 
 	private EmploymentType employmentType;
+
+	private EmploymentAllocation employmentAllocation;
+
+	private EEO eeoJobCategory;
 
 	private Gender gender;
 
@@ -56,7 +70,7 @@ public class EmployeeAllDataExportResponseDto {
 
 	private Boolean isActive;
 
-	private List<EmployeeResponseDto> managers;
+	private EmployeeResponseDto primarySupervisor;
 
 	private EmployeePeriodResponseDto employeePeriod;
 
