@@ -167,8 +167,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Show loading state during initial authentication check
   if (!initialCheckDone.current || isLoading) {
     return <FullScreenLoader />;
+  } else {
+    return (
+      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
   }
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use auth context
