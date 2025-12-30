@@ -31,6 +31,7 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
+import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -55,6 +56,8 @@ import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
 import com.skapp.enterprise.common.util.Validation;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,6 +110,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final ValidationService validationService;
+
+	private final CookieUtil cookieUtil;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
@@ -208,28 +213,43 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	@Override
 	public ResponseEntityDto ssoGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto) {
 		log.info("ssoGoogleSignIn: execution started");
+		SignInResponseDto signInResponseDto = performGoogleSignIn(epSignUpGoogleDataDto, null);
+		log.info("ssoGoogleSignIn: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
 
+	@Override
+	public ResponseEntityDto ssoGoogleSignInWithCookie(EpSignInGoogleDataDto epSignUpGoogleDataDto,
+			HttpServletResponse response) {
+		log.info("ssoGoogleSignInWithCookie: execution started");
+		SignInResponseDto signInResponseDto = performGoogleSignIn(epSignUpGoogleDataDto, response);
+		log.info("ssoGoogleSignInWithCookie: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	private SignInResponseDto performGoogleSignIn(EpSignInGoogleDataDto epSignUpGoogleDataDto,
+			HttpServletResponse response) {
 		GoogleTokenResponse googleTokenResponse = validateCodeAndGetRefreshToken(epSignUpGoogleDataDto.getCode());
-		log.info("ssoGoogleSignIn: Google token response received");
+		log.info("performGoogleSignIn: Google token response received");
 
 		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByGoogleAccessToken(googleTokenResponse.getAccessToken());
-		log.info("ssoGoogleSignIn: Google user details fetched for email: {}", authUserDetailsDto.getEmail());
+		log.info("performGoogleSignIn: Google user details fetched for email: {}", authUserDetailsDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(authUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
-			log.warn("ssoGoogleSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
+			log.warn("performGoogleSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
-			log.warn("ssoGoogleSignIn: User account deactivated for userEmail: {}", user.getEmail());
+			log.warn("performGoogleSignIn: User account deactivated for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
-			log.warn("ssoGoogleSignIn: Employee not found for userEmail: {}", user.getEmail());
+			log.warn("performGoogleSignIn: Employee not found for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -237,7 +257,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		boolean isUpdated = false;
 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
-			log.info("ssoGoogleSignIn: Activating employee account for userEmail: {}", user.getEmail());
+			log.info("performGoogleSignIn: Activating employee account for userEmail: {}", user.getEmail());
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
 		}
@@ -245,14 +265,14 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String authPic = authUserDetailsDto.getAuthPicUrl();
 
 		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
-			log.info("ssoGoogleSignIn: Updating authPic for userEmail: {}", user.getEmail());
+			log.info("performGoogleSignIn: Updating authPic for userEmail: {}", user.getEmail());
 			userEmployee.setAuthPic(authPic);
 			isUpdated = true;
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
-			log.info("ssoGoogleSignIn: Employee record updated for userEmail: {}", user.getEmail());
+			log.info("performGoogleSignIn: Employee record updated for userEmail: {}", user.getEmail());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
@@ -262,16 +282,25 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-		log.info("ssoGoogleSignIn: Tokens generated for userEmail: {}", user.getEmail());
+		log.info("performGoogleSignIn: Tokens generated for userEmail: {}", user.getEmail());
+
+		if (response != null) {
+			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(cookie);
+			log.info("performGoogleSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
+		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
-		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoGoogleSignIn: execution ended for userEmail: {}", user.getEmail());
-		return new ResponseEntityDto(false, signInResponseDto);
+		if (response == null) {
+			signInResponseDto.setRefreshToken(refreshToken);
+		}
+
+		return signInResponseDto;
 	}
 
 	private AuthUserDetailsDto getUserDetailsByGoogleAccessToken(String accessToken) {
@@ -504,26 +533,42 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	@Override
 	public ResponseEntityDto ssoMicrosoftSignIn(EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto) {
 		log.info("ssoMicrosoftSignIn: execution started");
+		SignInResponseDto signInResponseDto = performMicrosoftSignIn(epSignUpMicrosoftDataDto, null);
+		log.info("ssoMicrosoftSignIn: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto ssoMicrosoftSignInWithCookie(EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto,
+			HttpServletResponse response) {
+		log.info("ssoMicrosoftSignInWithCookie: execution started");
+		SignInResponseDto signInResponseDto = performMicrosoftSignIn(epSignUpMicrosoftDataDto, response);
+		log.info("ssoMicrosoftSignInWithCookie: execution ended");
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	private SignInResponseDto performMicrosoftSignIn(EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto,
+			HttpServletResponse response) {
 		IAuthenticationResult result = getIdTokenFromMicrosoftAuthCode(epSignUpMicrosoftDataDto.getCode());
 
 		AuthUserDetailsDto authUserDetailsDto = getUserDetailsByMicrosoftIdToken(result);
-		log.info("ssoMicrosoftSignIn: Microsoft user details fetched for email: {}", authUserDetailsDto.getEmail());
+		log.info("performMicrosoftSignIn: Microsoft user details fetched for email: {}", authUserDetailsDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(authUserDetailsDto.getEmail());
 		if (optionalUser.isEmpty()) {
-			log.warn("ssoMicrosoftSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
+			log.warn("performMicrosoftSignIn: User not found for email: {}", authUserDetailsDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		User user = optionalUser.get();
 		if (Boolean.FALSE.equals(user.getIsActive())) {
-			log.warn("ssoMicrosoftSignIn: User account deactivated for userEmail: {}", user.getEmail());
+			log.warn("performMicrosoftSignIn: User account deactivated for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
-			log.warn("ssoMicrosoftSignIn: Employee not found for userEmail: {}", user.getEmail());
+			log.warn("performMicrosoftSignIn: Employee not found for userEmail: {}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -533,7 +578,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
-			log.info("ssoMicrosoftSignIn: Activating employee account for userEmail: {}", user.getEmail());
+			log.info("performMicrosoftSignIn: Activating employee account for userEmail: {}", user.getEmail());
 		}
 
 		String authPic = authUserDetailsDto.getAuthPicUrl();
@@ -541,12 +586,12 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		if (authPic != null && !authPic.equals(userEmployee.getAuthPic())) {
 			userEmployee.setAuthPic(authPic);
 			isUpdated = true;
-			log.info("ssoMicrosoftSignIn: Updating authPic for userEmail: {}", user.getEmail());
+			log.info("performMicrosoftSignIn: Updating authPic for userEmail: {}", user.getEmail());
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
-			log.info("ssoMicrosoftSignIn: Employee record updated for userEmail: {}", user.getEmail());
+			log.info("performMicrosoftSignIn: Employee record updated for userEmail: {}", user.getEmail());
 		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
@@ -556,16 +601,26 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
+		log.info("performMicrosoftSignIn: Tokens generated for userEmail: {}", user.getEmail());
+
+		if (response != null) {
+			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(cookie);
+			log.info("performMicrosoftSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
+		}
+
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
-		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		user.setIsPasswordChangedForTheFirstTime(true);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("ssoMicrosoftSignIn: Tokens generated for userEmail: {}", user.getEmail());
-		log.info("ssoMicrosoftSignIn: execution ended for userEmail: {}", user.getEmail());
-		return new ResponseEntityDto(false, signInResponseDto);
+		if (response == null) {
+			signInResponseDto.setRefreshToken(refreshToken);
+		}
+
+		return signInResponseDto;
 	}
 
 	private IAuthenticationResult getIdTokenFromMicrosoftAuthCode(String code) {
