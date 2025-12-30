@@ -36,7 +36,7 @@ public class AuthController {
 	}
 
 	@Operation(summary = "Sign In with Cookie", description = "Sign in to the application with HTTP-only cookie")
-	@PostMapping(value = "/sign-in/cookie", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/cookie/sign-in", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> signInWithCookie(@Valid @RequestBody SignInRequestDto signInRequestDto,
 			HttpServletResponse response) {
 		ResponseEntityDto authResponse = authService.signInWithCookie(signInRequestDto, response);
@@ -62,7 +62,7 @@ public class AuthController {
 
 	@Operation(summary = "Get Access Token from Cookie",
 			description = "Obtain a new access token using refresh token from cookie")
-	@PostMapping(value = "/refresh-token/cookie", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/cookie/refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> refreshAccessTokenFromCookie(
 			@CookieValue(value = "refreshToken") String refreshToken) {
 		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
