@@ -1,6 +1,5 @@
 package com.skapp.community.common.util;
 
-import com.skapp.enterprise.common.config.TenantContext;
 import jakarta.servlet.http.Cookie;
 import lombok.experimental.UtilityClass;
 
@@ -20,7 +19,7 @@ public class CookieUtil {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge((int) (cookieMaxAge / 1000));
-        cookie.setDomain(TenantContext.getCurrentTenant() + ".skapp.dev");
+        cookie.setDomain("skapp.dev");
         cookie.setAttribute("SameSite", "Lax");
         return cookie;
     }
