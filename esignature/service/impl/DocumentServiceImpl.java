@@ -385,11 +385,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
-		// Process final document: append certificate then digitally sign
-		// Certificate appending: Always attempted (fails gracefully if service
-		// unavailable)
-		// Digital signing: Controlled by feature flag
-		// (PdfSigningService.isSigningEnabled())
 		byte[] processedDocumentBytes = latestDocumentBytes;
 
 		// TODO: When certificate appending feature is merged, replace the above line
@@ -563,10 +558,27 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes);
 
 			// Create final version with all signatures
-			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
+			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes, null,
+					keyPairSender);
 
-			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes,
-					completeFileUrl, keyPairSender);
+			byte[] processedDocumentBytes = fullDocumentBytes;
+
+			// TODO: When certificate appending feature is merged, replace the above line
+			// with:
+			// byte[] processedDocumentBytes = appendCertificateToBytes(envelope,
+			// finalVersion, fullDocumentBytes);
+			// Note: Certificate appending always runs (no feature flag) but fails
+			// gracefully
+
+			// Sign the processed PDF (if signing is enabled via feature flag)
+			// This will sign the document WITH the appended certificate when certificate
+			// feature is merged
+			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
+
+			// Update document version with final file path
+			if (finalDocumentPath != null) {
+				finalVersion.setFilePath(finalDocumentPath);
+			}
 
 			documentVersionDao.save(finalVersion);
 
