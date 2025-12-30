@@ -51,6 +51,11 @@ interface JobFamily {
   name: string;
 }
 
+interface ProbationPeriod {
+  startDate: string;
+  endDate: string;
+}
+
 interface EmployeeData {
   employeeId: string;
   firstName: string;
@@ -76,7 +81,9 @@ interface EmployeeData {
   employeePersonalInfoDto?: EmployeePersonalInfo;
   teamResponseDto?: TeamResponse[];
   managers?: Manager[];
+  probationPeriod: ProbationPeriod; 
   employeeEmergencyDto?: EmergencyContact[];
+  eeoJobCategory?: string;
 }
 
 const parsePhoneCountryCode = (phone?: string): string => {
@@ -257,14 +264,14 @@ const CSV_FIELD_MAPPING = [
     header: "Primary Supervisor (Email)",
     accessor: (emp: EmployeeData) => emp.managers?.[0]?.email || ""
   },
-  // {
-  //   header: "Probation Start Date",
-  //   accessor: (emp: EmployeeData) => emp.probationStartDate || ""
-  // },
-  // {
-  //   header: "Probation End Date",
-  //   accessor: (emp: EmployeeData) => emp.probationEndDate || ""
-  // },
+  {
+    header: "Probation Start Date",
+    accessor: (emp: EmployeeData) => emp.probationPeriod?.startDate || ""
+  },
+  {
+    header: "Probation End Date",
+    accessor: (emp: EmployeeData) => emp.probationPeriod?.endDate || ""
+  },
   {
     header: "Work Time Zone",
     accessor: (emp: EmployeeData) => emp.timeZone || ""
@@ -294,11 +301,11 @@ const CSV_FIELD_MAPPING = [
     header: "Ethnicity",
     accessor: (emp: EmployeeData) =>
       emp.employeePersonalInfoDto?.ethnicity || ""
+  },
+  {
+    header: "EEO Job Category",
+    accessor: (emp: EmployeeData) => emp.eeoJobCategory || ""
   }
-  // {
-  //   header: "EEO Job Category",
-  //   accessor: (emp: EmployeeData) => emp.eeoJobCategory || ""
-  // }
 ] as const;
 
 const escapeCsvField = (
