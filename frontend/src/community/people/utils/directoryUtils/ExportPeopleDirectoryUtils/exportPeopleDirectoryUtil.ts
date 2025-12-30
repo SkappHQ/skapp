@@ -79,6 +79,17 @@ interface EmployeeData {
   employeeEmergencyDto?: EmergencyContact[];
 }
 
+const parsePhoneCountryCode = (phone?: string): string => {
+  if (!phone) return "";
+  return phone.split(/[\s-]/)[0] || "";
+};
+
+const parsePhoneNumber = (phone?: string): string => {
+  if (!phone) return "";
+  const parts = phone.split(/[\s-]/);
+  return parts.slice(1).join(" ") || "";
+};
+
 const CSV_FIELD_MAPPING = [
   {
     header: "First name*",
@@ -126,21 +137,13 @@ const CSV_FIELD_MAPPING = [
   {
     header: "Contact No Country Code",
     accessor: (emp: EmployeeData) => {
-      const phone = emp?.phone;
-      if (!phone) return "";
-
-      const parts = phone.split(/[\s-]/);
-      return parts[0] || "";
+      return parsePhoneCountryCode(emp.phone) || "";
     }
   },
   {
     header: "Contact No",
     accessor: (emp: EmployeeData) => {
-      const phone = emp?.phone;
-      if (!phone) return "";
-
-      const parts = phone.split(/[\s-]/);
-      return parts[1] || "";
+      return parsePhoneNumber(emp.phone) || "";
     }
   },
   {
@@ -184,7 +187,7 @@ const CSV_FIELD_MAPPING = [
       emp.employeePersonalInfoDto?.socialMediaDetails?.instagram || ""
   },
   {
-    header: "X(Twitter)",
+    header: "X (Twitter)",
     accessor: (emp: EmployeeData) =>
       emp.employeePersonalInfoDto?.socialMediaDetails?.x || ""
   },
@@ -220,21 +223,15 @@ const CSV_FIELD_MAPPING = [
   {
     header: "Emergency Contact Country Code",
     accessor: (emp: EmployeeData) => {
-      const phone = emp.employeeEmergencyDto?.[0]?.contactNo;
-      if (!phone) return "";
-
-      const parts = phone.split(/[\s-]/);
-      return parts[0] || "";
+      return (
+        parsePhoneCountryCode(emp.employeeEmergencyDto?.[0]?.contactNo) || ""
+      );
     }
   },
   {
     header: "Emergency Contact Number",
     accessor: (emp: EmployeeData) => {
-      const phone = emp.employeeEmergencyDto?.[0]?.contactNo;
-      if (!phone) return "";
-
-      const parts = phone.split(/[\s-]/);
-      return parts[1] || "";
+      return parsePhoneNumber(emp.employeeEmergencyDto?.[0]?.contactNo) || "";
     }
   },
   {
@@ -257,7 +254,7 @@ const CSV_FIELD_MAPPING = [
         .join("; ") || ""
   },
   {
-    header: "Primary Supervisor(Email)",
+    header: "Primary Supervisor (Email)",
     accessor: (emp: EmployeeData) => emp.managers?.[0]?.email || ""
   },
   // {

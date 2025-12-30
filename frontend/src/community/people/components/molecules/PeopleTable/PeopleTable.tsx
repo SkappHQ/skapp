@@ -731,7 +731,7 @@ const PeopleTable: FC<Props> = ({
             exportBtn: {
               label: translateText(["exportPeopleDirectory"]),
               isLoading: exportMutation.isPending,
-              isVisible: isPeopleAdmin ? true : false,
+              isVisible: isPeopleAdmin,
               onClick: () => {
                 handleExportDirectory();
               }
