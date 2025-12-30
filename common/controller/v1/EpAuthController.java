@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.payload.request.OtpVerificationRequestDto;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.people.service.EpUserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -124,6 +125,14 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> validateCodeChallenge(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto) {
 		ResponseEntityDto response = epAuthService.validateCodeChallenge(codeChallengeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/cookie/code-challenge/verify")
+	public ResponseEntity<ResponseEntityDto> validateCodeChallengeWithCookie(
+			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto, HttpServletResponse httpServletResponse) {
+		ResponseEntityDto response = epAuthService.validateCodeChallengeWithCookie(codeChallengeRequestDto,
+				httpServletResponse);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

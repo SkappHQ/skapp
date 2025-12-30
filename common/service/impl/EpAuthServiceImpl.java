@@ -69,6 +69,8 @@ import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -591,11 +593,29 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Override
 	public ResponseEntityDto validateCodeChallenge(CodeChallengeRequestDto codeChallengeRequestDto) {
 		log.info("validateCodeChallenge: execution started for tenantId={}", TenantContext.getCurrentTenant());
+		CodeChallengeResponseDto codeChallengeResponseDto = performCodeChallengeValidation(codeChallengeRequestDto,
+				null);
+		log.info("validateCodeChallenge: execution ended");
+		return new ResponseEntityDto(false, codeChallengeResponseDto);
+	}
 
+	@Override
+	public ResponseEntityDto validateCodeChallengeWithCookie(CodeChallengeRequestDto codeChallengeRequestDto,
+			HttpServletResponse response) {
+		log.info("validateCodeChallengeWithCookie: execution started for tenantId={}",
+				TenantContext.getCurrentTenant());
+		CodeChallengeResponseDto codeChallengeResponseDto = performCodeChallengeValidation(codeChallengeRequestDto,
+				response);
+		log.info("validateCodeChallengeWithCookie: execution ended");
+		return new ResponseEntityDto(false, codeChallengeResponseDto);
+	}
+
+	private CodeChallengeResponseDto performCodeChallengeValidation(CodeChallengeRequestDto codeChallengeRequestDto,
+			HttpServletResponse response) {
 		String tenantId = TenantContext.getCurrentTenant();
 
 		if (tenantId == null || tenantId.isEmpty()) {
-			log.error("validateCodeChallenge: Tenant not found");
+			log.error("performCodeChallengeValidation: Tenant not found");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND);
 		}
 
@@ -603,18 +623,18 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String cachedUuid = cacheService.get(cacheKey.format(tenantId));
 
 		if (cachedUuid == null) {
-			log.error("validateCodeChallenge: Cached UUID not found for tenantId={}", tenantId);
+			log.error("performCodeChallengeValidation: Cached UUID not found for tenantId={}", tenantId);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_CACHED_UUID_NOT_FOUND);
 		}
 
 		if (!Objects.equals(codeChallengeRequestDto.getCode(), cachedUuid)) {
-			log.warn("validateCodeChallenge: Unauthorized access attempt for tenantId={}", tenantId);
+			log.warn("performCodeChallengeValidation: Unauthorized access attempt for tenantId={}", tenantId);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 		}
 
 		User user = userDao.findAll().getFirst();
 		if (user == null) {
-			log.error("validateCodeChallenge: User not found");
+			log.error("performCodeChallengeValidation: User not found");
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -623,15 +643,25 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 		cacheService.invalidate(cacheKey.format(tenantId));
-		log.info("validateCodeChallenge: Code challenge validated and tokens generated for userId={}",
+		log.info("performCodeChallengeValidation: Code challenge validated and tokens generated for userId={}",
 				user.getUserId());
+
+		if (response != null) {
+			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(cookie);
+			log.info("performCodeChallengeValidation: Added refresh token cookie for userId={}", user.getUserId());
+		}
 
 		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
 		codeChallengeResponseDto.setAccessToken(accessToken);
-		codeChallengeResponseDto.setRefreshToken(refreshToken);
 		codeChallengeResponseDto.setIsPasswordChangedForTheFirstTime(true);
 
-		return new ResponseEntityDto(false, codeChallengeResponseDto);
+		if (response == null) {
+			codeChallengeResponseDto.setRefreshToken(refreshToken);
+		}
+
+		return codeChallengeResponseDto;
 	}
 
 	@Override
