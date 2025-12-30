@@ -37,6 +37,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -218,12 +219,7 @@ public class AuthServiceImpl implements AuthService {
 
 		long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
 
-		Cookie cookie = new Cookie("refreshToken", refreshToken);
-		cookie.setHttpOnly(true);
-		cookie.setSecure(true);
-		cookie.setPath("/");
-		cookie.setMaxAge((int) (cookieMaxAge / 1000));
-		cookie.setAttribute("SameSite", "Lax");
+		Cookie cookie = CookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
 		response.addCookie(cookie);
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
