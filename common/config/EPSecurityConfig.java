@@ -142,8 +142,11 @@ public class EPSecurityConfig {
 				"Origin", "Stripe-Signature", "X-Api-Key"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
-		source.registerCorsConfiguration("/v1/auth/sign-in/cookie", credentialedConfig);
-		source.registerCorsConfiguration("/v1/auth/refresh-token/cookie", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/cookie/sign-in", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/cookie/refresh-token", credentialedConfig);
+		source.registerCorsConfiguration("/v2/ep/auth/cookie/signin/sso/google", credentialedConfig);
+		source.registerCorsConfiguration("/v2/ep/auth/cookie/signin/sso/microsoft", credentialedConfig);
+		source.registerCorsConfiguration("/v1/ep/auth/cookie/code-challenge/verify", credentialedConfig);
 		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
 
 		source.registerCorsConfiguration("/**", configuration);
