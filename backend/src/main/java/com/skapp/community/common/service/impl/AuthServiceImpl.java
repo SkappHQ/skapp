@@ -129,6 +129,8 @@ public class AuthServiceImpl implements AuthService {
 
 	private final ObjectMapper objectMapper;
 
+	protected final CookieUtil cookieUtil;
+
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
 
@@ -219,7 +221,7 @@ public class AuthServiceImpl implements AuthService {
 
 		long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
 
-		Cookie cookie = CookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+		Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
 		response.addCookie(cookie);
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
