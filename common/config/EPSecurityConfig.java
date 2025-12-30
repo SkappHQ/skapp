@@ -155,7 +155,7 @@ public class EPSecurityConfig {
 		credentialedConfig.setAllowedOriginPatterns(Arrays.asList(origins));
 		credentialedConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		credentialedConfig.setAllowedHeaders(
-				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature"));
+				Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer", "Origin", "Stripe-Signature", "Set-Cookie"));
 		credentialedConfig.setExposedHeaders(List.of("Set-Cookie"));
 		credentialedConfig.setAllowCredentials(true);
 		return credentialedConfig;
