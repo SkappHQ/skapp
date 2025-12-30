@@ -437,15 +437,11 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		log.info("ssoMicrosoftSignInRedirect: execution started");
 		String encodedState = epMicrosoftAuthRedirectDto.getState();
 		String authorizationCode = epMicrosoftAuthRedirectDto.getCode();
+		String error = epMicrosoftAuthRedirectDto.getError();
 
 		if (encodedState.isEmpty()) {
 			log.error("ssoMicrosoftSignInRedirect: State is empty");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_STATE_EMPTY);
-		}
-
-		if (authorizationCode.isEmpty()) {
-			log.error("ssoMicrosoftSignInRedirect: Authorization Code is empty");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_AUTHORIZATION_CODE_EMPTY);
+			error = URLEncoder.encode("STATE_EMPTY", StandardCharsets.UTF_8);
 		}
 
 		byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
@@ -454,10 +450,20 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("ssoMicrosoftSignInRedirect: Frontend url is empty");
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_MICROSOFT_FRONTEND_URL_EMPTY);
+			frontendUrl = EpAuthConstants.DEFAULT_FRONTEND_URL;
+		}
+
+		if (authorizationCode.isEmpty()) {
+			log.error("ssoMicrosoftSignInRedirect: Authorization Code is empty");
+			error = URLEncoder.encode("AUTHORIZATION_CODE_EMPTY", StandardCharsets.UTF_8);
 		}
 
 		Validation.validateFrontendUrl(frontendUrl);
+
+		if (error != null) {
+			log.error("ssoMicrosoftSignInRedirect: Error: {}", error);
+			return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("error", error).toUriString();
+		}
 
 		log.info("ssoMicrosoftSignInRedirect: Redirecting to frontend with authorization code");
 		return UriComponentsBuilder.fromUriString(frontendUrl).queryParam("code", authorizationCode).toUriString();
