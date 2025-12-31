@@ -292,8 +292,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly ||
-                    isPeopleAdminViewingOwnProfile
+                    isReadOnly
                   }
                 />
               )}
@@ -321,8 +320,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly ||
-                    isPeopleAdminViewingOwnProfile
+                    isReadOnly
                   }
                 />
               )}
@@ -344,8 +342,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly ||
-                    isPeopleAdminViewingOwnProfile
+                    isReadOnly
                   }
                 />
               )}
@@ -365,8 +362,7 @@ const SystemPermissionFormSection = ({
                   isProfileView ||
                   permissions.isSuperAdmin ||
                   isInputsDisabled ||
-                  isReadOnly ||
-                  isPeopleAdminViewingOwnProfile
+                  isReadOnly
                 }
               />
             )}
@@ -396,8 +392,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly ||
-                    isPeopleAdminViewingOwnProfile
+                    isReadOnly
                   }
                 />
               )}
