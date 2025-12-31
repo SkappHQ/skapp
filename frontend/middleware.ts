@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
 
-import ROUTES, { employeeRestrictedRoutes, invoiceEmployeeRestrictedRoutes, managerRestrictedRoutes } from "~community/common/constants/routes";
+import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
+import ROUTES, {
+  employeeRestrictedRoutes,
+  invoiceEmployeeRestrictedRoutes,
+  managerRestrictedRoutes
+} from "~community/common/constants/routes";
 import {
   AdminTypes,
   EmployeeTypes,
@@ -279,10 +283,12 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect to /unauthorized if no access
-  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
+  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
+  } else {
+    return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
   }
 }
 

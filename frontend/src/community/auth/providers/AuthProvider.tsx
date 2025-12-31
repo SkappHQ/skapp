@@ -21,7 +21,6 @@ import { AuthContextType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
-  getAccessToken,
   getNewAccessToken,
   handleSignIn,
   handleSignUp
@@ -160,25 +159,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAuth();
     }
   }, []);
-
-  useEffect(() => {
-    const handleRouteProtection = async () => {
-      if (!initialCheckDone.current || isLoading) {
-        return;
-      }
-
-      checkAuth();
-
-      const token = await getAccessToken();
-
-      if (!token) {
-        signOut();
-        return;
-      }
-    };
-
-    handleRouteProtection();
-  }, [isLoading, router.pathname]);
 
   const value: AuthContextType = {
     isLoading,
