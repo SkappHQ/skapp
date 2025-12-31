@@ -7,7 +7,13 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { enterpriseSignIn } from "~enterprise/auth/utils/authUtils";
+import {
+  EnterpriseSignInParams,
+  EnterpriseSignUpParams,
+  enterpriseSignIn,
+  enterpriseSignUp
+} from "~enterprise/auth/utils/authUtils";
+import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import {
@@ -15,7 +21,7 @@ import {
   drawerHiddenProtectedRoutes,
   routeMatchers
 } from "../constants/routeConfigs";
-import { AuthMethods, SignInStatus } from "../enums/auth";
+import { SignInStatus } from "../enums/auth";
 import authAxios from "./authInterceptor";
 
 // Helper function to match a path against a route pattern
@@ -103,7 +109,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
   refreshPromise = (async () => {
     try {
       const response = await authAxios.post(
-        "/v1/auth/refresh-token/cookie",
+        authenticationEndpoints.REFRESH_TOKEN,
         {},
         { withCredentials: true }
       );
@@ -157,13 +163,6 @@ export const getAccessToken = async (): Promise<string | null> => {
   }
 
   return currentAccessToken;
-};
-
-export const clearTokens = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("accessToken");
-  }
-  clearCookies();
 };
 
 export const isTokenExpired = (token: string): boolean => {
@@ -229,21 +228,17 @@ export const extractUserFromToken = (token: string): User | null => {
 
 export const communitySignIn = async (_email: string, _password: string) => {};
 
-export const handleSignIn = async (params: {
-  email?: string;
-  password?: string;
-  method: AuthMethods;
-}): Promise<SignInStatus> => {
-  const response = await enterpriseSignIn({
-    email: params.email,
-    password: params.password,
-    method: AuthMethods.CREDENTIAL
-  });
+export const handleSignIn = async (
+  params: EnterpriseSignInParams
+): Promise<SignInStatus> => {
+  const response = await enterpriseSignIn(params);
+  return response;
+};
 
-  if (response !== SignInStatus.SUCCESS) {
-    throw new Error("Login failed");
-  }
-
+export const handleSignUp = async (
+  params: EnterpriseSignUpParams
+): Promise<SignInStatus> => {
+  const response = await enterpriseSignUp(params);
   return response;
 };
 
@@ -255,11 +250,6 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   }
 
   const userData = extractUserFromToken(token);
-
-  if (!userData) {
-    localStorage.removeItem("accessToken");
-    return null;
-  }
-
+  
   return userData;
 };

@@ -1,6 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
-import { clearTokens, getAccessToken } from "~community/auth/utils/authUtils";
+import { getAccessToken } from "~community/auth/utils/authUtils";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
@@ -30,8 +30,6 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
     !config.url?.includes("/app-setup-status")
   ) {
     config.headers.Authorization = `Bearer ${accessToken}`;
-  } else if (!accessToken) {
-    clearTokens();
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";

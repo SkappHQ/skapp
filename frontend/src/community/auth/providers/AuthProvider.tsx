@@ -9,7 +9,10 @@ import React, {
   useState
 } from "react";
 
-import { EnterpriseSignInParams } from "~enterprise/auth/utils/authUtils";
+import {
+  EnterpriseSignInParams,
+  EnterpriseSignUpParams
+} from "~enterprise/auth/utils/authUtils";
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
@@ -18,8 +21,10 @@ import { AuthContextType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
+  getAccessToken,
   getNewAccessToken,
   handleSignIn,
+  handleSignUp,
   isProtectedRoute
 } from "../utils/authUtils";
 import { validateRouteAccess } from "../utils/routeGuards";
@@ -78,7 +83,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
         setIsLoading(false);
-        await signOut();
         return;
       }
 
@@ -86,6 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       setIsLoading(false);
     } catch (error) {
+      console.error("Authentication check error:", error);
       setIsAuthenticated(false);
       setUser(null);
       setIsLoading(false);
@@ -100,6 +105,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
     return await getNewAccessToken();
   }, []);
+
+  const signUp = useCallback(
+    async (params: EnterpriseSignUpParams): Promise<SignInStatus> => {
+      try {
+        setIsLoading(true);
+
+        const response = await handleSignUp(params);
+
+        await checkAuth();
+
+        return response;
+      } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [checkAuth]
+  );
 
   // Sign In function
   const signIn = useCallback(
@@ -134,32 +159,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!initialCheckDone.current) {
       checkAuth();
     }
-  }, [checkAuth]);
+  }, []);
 
   useEffect(() => {
-    if (!initialCheckDone.current || isLoading) return;
+    const handleRouteProtection = async () => {
+      
+      if (!initialCheckDone.current || isLoading) {
+        return;
+      }
 
-    const currentPath = router.pathname;
+      const currentPath = router.pathname;
 
-    if (!isProtectedRoute(currentPath)) {
-      return;
-    }
+      if (!isProtectedRoute(currentPath)) {
+        return;
+      }
 
-    if (!isAuthenticated) {
-      signOut();
-      return;
-    }
+      checkAuth();
 
-    if (user) {
-      validateRouteAccess(user, currentPath, router);
-    }
-  }, [isAuthenticated, isLoading, user, router.pathname]);
+      const token = await getAccessToken();
+
+      if (!token) {
+        signOut();
+        return;
+      }
+
+      if (user) {
+        validateRouteAccess(user, currentPath, router);
+      }
+    };
+
+    handleRouteProtection();
+  }, [isLoading, router.pathname]);
 
   const value: AuthContextType = {
     isLoading,
     isAuthenticated,
     user,
     signIn,
+    signUp,
     signOut,
     refreshAccessToken
   };

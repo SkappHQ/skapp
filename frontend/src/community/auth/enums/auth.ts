@@ -1,7 +1,9 @@
 export enum AuthMethods {
   CREDENTIAL = "CREDENTIAL",
   GOOGLE = "GOOGLE",
-  MICROSOFT = "MICROSOFT"
+  MICROSOFT = "MICROSOFT",
+  GUEST = "GUEST",
+  CODE = "CODE",
 }
 
 export enum SignInStatus {
