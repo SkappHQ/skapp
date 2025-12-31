@@ -24,10 +24,8 @@ import {
   getAccessToken,
   getNewAccessToken,
   handleSignIn,
-  handleSignUp,
-  isProtectedRoute
+  handleSignUp
 } from "../utils/authUtils";
-import { validateRouteAccess } from "../utils/routeGuards";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -50,7 +48,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = useCallback(async (redirect?: boolean) => {
     try {
       setIsLoading(true);
-      localStorage.removeItem("accessToken");
+      // Clear the accessToken cookie
+      document.cookie =
+        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=Strict";
       setUser(null);
       setIsAuthenticated(false);
 
@@ -163,14 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const handleRouteProtection = async () => {
-      
       if (!initialCheckDone.current || isLoading) {
-        return;
-      }
-
-      const currentPath = router.pathname;
-
-      if (!isProtectedRoute(currentPath)) {
         return;
       }
 
@@ -181,10 +174,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!token) {
         signOut();
         return;
-      }
-
-      if (user) {
-        validateRouteAccess(user, currentPath, router);
       }
     };
 

@@ -18,30 +18,10 @@ import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import {
   config,
-  drawerHiddenProtectedRoutes,
-  routeMatchers
+  drawerHiddenProtectedRoutes
 } from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import authAxios from "./authInterceptor";
-
-// Helper function to match a path against a route pattern
-export const matchesRoutePattern = (
-  pathname: string,
-  pattern: string
-): boolean => {
-  // Convert pattern to regex (e.g., "/path/:param" -> "/path/[^/]+")
-  const regexPattern = pattern
-    .replace(/:[^/]+/g, "[^/]+") // Replace :param with [^/]+
-    .replace(/\*/g, ".*"); // Replace * with .*
-  const regex = new RegExp(`^${regexPattern}$`);
-  return regex.test(pathname);
-};
-
-export const isProtectedRoute = (pathname: string): boolean => {
-  return routeMatchers.some((pattern) =>
-    matchesRoutePattern(pathname, pattern)
-  );
-};
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -63,6 +43,12 @@ export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   }
 
   return false;
+};
+
+export const getCookieValue = (name: string): string | null => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
 };
 
 export const decodeJWTToken = (token: string) => {
@@ -136,7 +122,9 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("accessToken", token);
+    const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
+
+    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
   }
 };
 
@@ -151,7 +139,7 @@ export const clearCookies = async (): Promise<void> => {
 export const getAccessToken = async (): Promise<string | null> => {
   if (typeof window === "undefined") return null;
 
-  const currentAccessToken = localStorage.getItem("accessToken");
+  const currentAccessToken = getCookieValue("accessToken");
 
   if (!currentAccessToken) {
     return null;
@@ -250,6 +238,6 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   }
 
   const userData = extractUserFromToken(token);
-  
+
   return userData;
 };
