@@ -16,7 +16,6 @@ import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 
 import EmojiChip from "../../atoms/EmojiChip/EmojiChip";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   clockInData: any[];
@@ -47,7 +46,6 @@ const ClockInTable: FC<Props> = ({
   setIsFetchEnable
 }) => {
   const theme: Theme = useTheme();
-  const { user } = useAuth();
   const translateTexts = useTranslator("attendanceModule");
 
   const {

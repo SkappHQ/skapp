@@ -16,10 +16,7 @@ import {
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
-import {
-  config,
-  drawerHiddenProtectedRoutes
-} from "../constants/routeConfigs";
+import { config, drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import authAxios from "./authInterceptor";
 
@@ -128,11 +125,21 @@ export const setAccessToken = (token: string) => {
   }
 };
 
+export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
+  if (typeof window !== "undefined") {
+    const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
+
+    document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
+  }
+};
+
 export const clearCookies = async (): Promise<void> => {
   if (typeof window !== "undefined") {
     // Clear httpOnly cookies by setting them to expire
     document.cookie =
       "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
+    document.cookie =
+      "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
   }
 };
 

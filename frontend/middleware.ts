@@ -190,21 +190,21 @@ export function middleware(request: NextRequest) {
   )[] = claims?.roles || [];
 
   const isPasswordChangedForTheFirstTime =
-    claims?.isPasswordChangedForTheFirstTime;
+    request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
 
-  // if (
-  //   !isPasswordChangedForTheFirstTime &&
-  //   currentPath !== ROUTES.AUTH.RESET_PASSWORD
-  // ) {
-  //   return NextResponse.redirect(
-  //     new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
-  //   );
-  // } else if (
-  //   isPasswordChangedForTheFirstTime &&
-  //   currentPath === ROUTES.AUTH.RESET_PASSWORD
-  // ) {
-  //   return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
-  // }
+  if (
+    !isPasswordChangedForTheFirstTime &&
+    currentPath !== ROUTES.AUTH.RESET_PASSWORD
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
+    );
+  } else if (
+    isPasswordChangedForTheFirstTime &&
+    currentPath === ROUTES.AUTH.RESET_PASSWORD
+  ) {
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+  }
 
   if (
     roles.includes(ManagerTypes.LEAVE_MANAGER) &&
