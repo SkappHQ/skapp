@@ -44,8 +44,6 @@ public class EmployeeAllDataExportResponseDto {
 
 	private String timeZone;
 
-	private String address;
-
 	private String addressLine1;
 
 	private String addressLine2;
