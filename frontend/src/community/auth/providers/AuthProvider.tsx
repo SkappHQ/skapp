@@ -50,6 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear the accessToken cookie
       document.cookie =
         "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=Strict";
+      document.cookie =
+        "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=Strict";
       setUser(null);
       setIsAuthenticated(false);
 
@@ -158,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!initialCheckDone.current) {
       checkAuth();
     }
-  }, []);
+  }, [checkAuth]);
 
   const value: AuthContextType = {
     isLoading,

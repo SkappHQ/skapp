@@ -11,7 +11,7 @@ import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
 
 const useSessionData = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   const isFreeTier = useMemo(() => user?.tier === TierEnum.FREE, [user?.tier]);
 
@@ -105,7 +105,7 @@ const useSessionData = () => {
     isEmployee,
     sessionStatus: isLoading
       ? "loading"
-      : user
+      : isAuthenticated
         ? "authenticated"
         : "unauthenticated",
     isPeopleManager,
