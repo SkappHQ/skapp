@@ -483,60 +483,19 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Override
 	public ResponseEntityDto getTokenFromUuid(@NotNull String uuid, @NotNull String state) {
 
-		try {
-			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
-			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
-			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
-			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
 
-			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
-					|| decryptedState.trim().isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
-			if (stateParts.length != 3) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			Long recipientId = Long.valueOf(stateParts[0]);
-			String envelopeUUID = stateParts[1];
-			String tenantId = stateParts[2];
-
-			if (envelopeUUID == null || tenantId == null) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			tenantContext.setTenantAndSwitchSchema(tenantId);
-
-			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
-
-			if (documentLinkOpt.isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
-			}
-
-			DocumentLink documentLink = documentLinkOpt.get();
-
-			if (!documentLink.getRecipientId().getId().equals(recipientId)
-					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
-
-			if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
-			}
-
-			DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
-			documentTokenResponseDto.setToken(documentLink.getToken());
-
-			return new ResponseEntityDto(false, documentTokenResponseDto);
+		if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
-		catch (Exception ex) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
+
+		DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
+		documentTokenResponseDto.setToken(documentLink.getToken());
+
+		return new ResponseEntityDto(false, documentTokenResponseDto);
+
 	}
 
 	@Override
@@ -561,44 +520,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public ResponseEntityDto sendOtpFromUuid(String uuid, String state) {
-		String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
-		String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
 
-		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
-		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
-
-		if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
-				|| decryptedState.trim().isEmpty()) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
-
-		String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
-		if (stateParts.length != 3) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
-
-		Long recipientId = Long.valueOf(stateParts[0]);
-		String envelopeUUID = stateParts[1];
-		String tenantId = stateParts[2];
-
-		if (envelopeUUID == null || tenantId == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
-
-		tenantContext.setTenantAndSwitchSchema(tenantId);
-
-		Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
-
-		if (documentLinkOpt.isEmpty()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
-		}
-
-		DocumentLink documentLink = documentLinkOpt.get();
-
-		if (!documentLink.getRecipientId().getId().equals(recipientId)
-				|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
 		return sendVerificationToRecipient(documentLink, null, null);
 	}
@@ -606,31 +529,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Override
 	public ResponseEntityDto sendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
 
-		String tenantId = TenantContext.getCurrentTenant();
-
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
-
+		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
 		Document document = documentDao.findById(documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
-
-		if (document.getEnvelope() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		}
-
-		Envelope envelope = document.getEnvelope();
-
-		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
-		}
-
-		Recipient recipient = document.getEnvelope()
-			.getRecipients()
-			.stream()
-			.filter(rec -> rec.getId().equals(recipientId))
-			.findFirst()
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
 		// MFA Flow: Send OTP and return verification initiated response
 		return sendVerificationToRecipient(null, document, recipient);
@@ -638,86 +539,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public ResponseEntityDto verifyOtpAndCreateTokenFromUuid(String uuid, String state, String code) {
+	public ResponseEntityDto verifyOtpFromUuid(String uuid, String state, String code) {
 
-		try {
-			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
-			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
-			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
-			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		// Verify the OTP
+		return verifyCodeWithDocumentRecipient(documentLink, null, null, code);
 
-			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
-					|| decryptedState.trim().isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
-			if (stateParts.length != 3) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			Long recipientId = Long.valueOf(stateParts[0]);
-			String envelopeUUID = stateParts[1];
-			String tenantId = stateParts[2];
-
-			if (envelopeUUID == null || tenantId == null) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			tenantContext.setTenantAndSwitchSchema(tenantId);
-
-			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
-
-			if (documentLinkOpt.isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
-			}
-
-			DocumentLink documentLink = documentLinkOpt.get();
-
-			if (!documentLink.getRecipientId().getId().equals(recipientId)
-					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			// Verify the OTP
-			return verifyCodeWithDocumentRecipient(documentLink, null, null, code);
-
-		}
-		catch (Exception ex) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
 	}
 
 	@Override
 	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code,
 			boolean isDocAccess) {
 
-		String tenantId = TenantContext.getCurrentTenant();
-
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
-
-		Document document = documentDao.findById(documentId)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
-
-		if (document.getEnvelope() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		}
-
-		Envelope envelope = document.getEnvelope();
-
-		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
-		}
-
-		Recipient recipient = document.getEnvelope()
-			.getRecipients()
-			.stream()
-			.filter(rec -> rec.getId().equals(recipientId))
-			.findFirst()
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+		validateAndGetRecipient(documentId, recipientId);
 
 		// Verify the OTP
 		return verifyCodeWithDocumentRecipient(null, documentId, recipientId, code);
@@ -726,42 +561,23 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public ResponseEntityDto resendOtpFromUuid(String uuid, String state) {
+
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 		return null; // implement the logic as needed
 	}
 
 	@Override
 	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
+		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 		return null; // implement the logic as needed
 	}
 
 	@Override
 	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId) {
 
-		String tenantId = TenantContext.getCurrentTenant();
-
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
-
-		Document document = documentDao.findById(documentId)
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
-
-		if (document.getEnvelope() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
-		}
-
-		Envelope envelope = document.getEnvelope();
-
-		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
-		}
-
-		Recipient recipient = document.getEnvelope()
-			.getRecipients()
-			.stream()
-			.filter(rec -> rec.getId().equals(recipientId))
-			.findFirst()
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
 
@@ -1085,6 +901,78 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);
 
+	}
+
+	private DocumentLink decodeDocumentLinkFromUuid(String uuid, String state) {
+
+		String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+		String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+
+		if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
+				|| decryptedState.trim().isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
+		if (stateParts.length != 3) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		Long recipientId = Long.valueOf(stateParts[0]);
+		String envelopeUUID = stateParts[1];
+		String tenantId = stateParts[2];
+
+		if (envelopeUUID == null || tenantId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+
+		Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
+
+		if (documentLinkOpt.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+		}
+
+		DocumentLink documentLink = documentLinkOpt.get();
+
+		if (!documentLink.getRecipientId().getId().equals(recipientId)
+				|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		return documentLink;
+	}
+
+	private Recipient validateAndGetRecipient(Long documentId, Long recipientId) {
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+		}
+
+		return document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.filter(rec -> rec.getId().equals(recipientId))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 	}
 
 }

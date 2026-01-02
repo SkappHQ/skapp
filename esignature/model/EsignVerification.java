@@ -35,11 +35,8 @@ public class EsignVerification extends Auditable<String> {
 	@Column(name = "otp_expiry_time")
 	private Instant otpExpiryTime;
 
-	@Column(name = "otp_sent_attempt_count")
+	@Column(name = "attempt_count")
 	private int otpSentAttemptCount;
-
-	@Column(name = "otp_verify_attempt_count")
-	private int otpVerifyAttemptCount;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recipient_id")

@@ -93,7 +93,7 @@ public class DocumentLinkController {
 	public ResponseEntity<ResponseEntityDto> verifyOtpFromUuid(@RequestParam String uuid, @RequestParam String state,
 			@RequestParam String code) {
 
-		ResponseEntityDto responseEntityDto = documentLinkService.verifyOtpAndCreateTokenFromUuid(uuid, state, code);
+		ResponseEntityDto responseEntityDto = documentLinkService.verifyOtpFromUuid(uuid, state, code);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
