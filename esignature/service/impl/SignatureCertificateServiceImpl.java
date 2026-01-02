@@ -67,7 +67,8 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 	private final AddressBookDao addressBookDao;
 
 	@Override
-	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess, Envelope envelope) {
+	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess, Envelope envelope)
+			throws IOException {
 		log.info("generateCertificatePdfBytes: execution started for envelopeId {}", envelopeId);
 
 		validateUser(envelopeId, isDocAccess);
@@ -105,24 +106,16 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
 		responseDto.setAuditTrails(responseDtoList);
 
-		try {
-			String html = generateSignatureCertificateHtml(responseDto);
+		String html = generateSignatureCertificateHtml(responseDto);
 
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PdfRendererBuilder builder = new PdfRendererBuilder();
-			builder.withHtmlContent(html, null);
-			builder.toStream(baos);
-			builder.run();
-
-			byte[] pdfBytes = baos.toByteArray();
-
-			log.info("generateCertificatePdfBytes: execution ended for envelopeId {}", envelopeId);
-			return pdfBytes;
-		}
-		catch (IOException e) {
-			log.error("Error generating signature certificate PDF", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
-		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PdfRendererBuilder builder = new PdfRendererBuilder();
+		builder.withHtmlContent(html, null);
+		builder.toStream(baos);
+		builder.run();
+		byte[] pdfBytes = baos.toByteArray();
+		log.info("generateCertificatePdfBytes: execution ended for envelopeId {}", envelopeId);
+		return pdfBytes;
 	}
 
 	private void validateUser(Long envelopeId, boolean isDocAccess) {

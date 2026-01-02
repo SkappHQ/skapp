@@ -593,7 +593,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	@Override
-	public byte[] appendCertificateToPdf(byte[] originalPdfBytes, byte[] certificatePdfBytes) {
+	public byte[] appendCertificateToPdf(byte[] originalPdfBytes, byte[] certificatePdfBytes) throws IOException {
 		log.info("appendCertificateToPdf: execution started");
 
 		if (originalPdfBytes == null || originalPdfBytes.length == 0) {
@@ -625,10 +625,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			log.info("appendCertificateToPdf: execution ended successfully");
 			return mergedPdfBytes;
-		}
-		catch (IOException e) {
-			log.error("Error appending certificate to PDF: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
 

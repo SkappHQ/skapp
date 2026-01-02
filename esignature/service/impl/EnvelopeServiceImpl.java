@@ -1,10 +1,8 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -54,16 +52,13 @@ import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
-import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
-import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
@@ -96,30 +91,22 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyPair;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -185,8 +172,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final RecipientRepository recipientRepository;
 
 	private final AuditTrailDao auditTrailDao;
-
-	private final OrganizationDao organizationDao;
 
 	private final ScheduleService scheduleService;
 
@@ -801,17 +786,23 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
-		byte[] pdfBytes = signatureCertificateService.generateCertificatePdfBytes(envelopeId, isDocAccess, envelope);
+		try {
+			byte[] pdfBytes = signatureCertificateService.generateCertificatePdfBytes(envelopeId, isDocAccess,
+					envelope);
 
-		// Set appropriate headers for PDF response
-		headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
-		headers.setContentLength(pdfBytes.length);
-		String sanitizedFilename = EsignUtil.sanitizeFilename(envelope.getName());
-		headers.add("Content-Disposition",
-				"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + sanitizedFilename + ".pdf\"");
+			// Set appropriate headers for PDF response
+			headers.setContentType(MediaType.APPLICATION_PDF);
+			headers.setContentLength(pdfBytes.length);
+			headers.add("Content-Disposition",
+					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + envelope.getName() + ".pdf\"");
 
-		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
-		return pdfBytes;
+			log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
+			return pdfBytes;
+		}
+		catch (IOException e) {
+			log.error("Error generating signature certificate for envelope ID {}: {}", envelopeId, e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
+		}
 	}
 
 	@Override

@@ -1664,7 +1664,7 @@ public class DocumentServiceImpl implements DocumentService {
 			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
 			return mergedDocBytes;
 		}
-		catch (Exception e) {
+		catch (IOException e) {
 			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
 			return documentBytes;
 		}
