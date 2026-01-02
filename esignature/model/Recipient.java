@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.InboxStatus;
@@ -87,5 +88,12 @@ public class Recipient {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "inbox_status")
 	private InboxStatus inboxStatus;
+
+	@Column(name = "mfa_verification_enabled", nullable = false)
+	private boolean isMfaVerificationEnabled;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "mfa_verification_method")
+	private EsignVerificationType mfaVerificationMethod;
 
 }

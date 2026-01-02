@@ -76,14 +76,7 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
-import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.EmailReminderStatus;
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
-import com.skapp.enterprise.esignature.type.InboxStatus;
-import com.skapp.enterprise.esignature.type.MemberRole;
-import com.skapp.enterprise.esignature.type.RecipientStatus;
-import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.type.*;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
@@ -461,6 +454,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 			}
 
+			if (recipientDto.getVerificationType().equals(EsignVerificationType.SMS)
+					&& addressBook.getPhone() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
+			}
+
 			if (recipientDto.getMemberRole() == MemberRole.CC && !recipientDto.getFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
@@ -473,6 +471,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
 			recipient.setConsent(recipientDto.getMemberRole().equals(MemberRole.CC));
+			recipient.setMfaVerificationEnabled(!recipientDto.getVerificationType().equals(EsignVerificationType.NONE));
+			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
