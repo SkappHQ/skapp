@@ -1428,7 +1428,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public List<EmployeeAllDataExportResponseDto> exportAllEmployeeData(List<Employee> employees,
 			List<EmployeeTeamDto> teamList, List<Long> employeeIds) {
-		List<EmployeeManagerDto> employeeManagerDtos = employeeDao.findManagersByEmployeeIds(employeeIds);
 		List<EmployeeAllDataExportResponseDto> responseDtos = new ArrayList<>();
 
 		for (Employee employee : employees) {
@@ -1447,11 +1446,15 @@ public class PeopleServiceImpl implements PeopleService {
 				.toList();
 			responseDto.setTeamResponseDto(peopleMapper.teamListToTeamResponseDtoList(teams));
 
-			List<Employee> managers = employeeManagerDtos.stream()
-				.filter(e -> Objects.equals(e.getEmployeeId(), employee.getEmployeeId()))
-				.map(EmployeeManagerDto::getManagers)
-				.toList();
-			responseDto.setManagers(peopleMapper.employeeListToEmployeeResponseDtoList(managers));
+			Optional<EmployeeManager> primaryManager = employee.getEmployeeManagers()
+				.stream()
+				.filter(EmployeeManager::getIsPrimaryManager)
+				.findFirst();
+
+			if (primaryManager.isPresent() && primaryManager.get().getManager() != null) {
+				responseDto.setPrimarySupervisor(
+						peopleMapper.employeeToEmployeeResponseDto(primaryManager.get().getManager()));
+			}
 
 			Optional<EmployeePeriod> period = employeePeriodDao
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());
