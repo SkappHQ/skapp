@@ -7,8 +7,13 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   user: User | null;
-  signIn: (params: EnterpriseSignInParams) => Promise<SignInStatus>;
-  signUp: (params: EnterpriseSignUpParams) => Promise<SignInStatus>;
+  signIn: (params: EnterpriseSignInParams) => Promise<AuthResponseType>;
+  signUp: (params: EnterpriseSignUpParams) => Promise<AuthResponseType>;
   signOut: (redirect?: boolean) => Promise<void>;
   refreshAccessToken: () => Promise<string | null>;
+}
+
+export interface AuthResponseType {
+  status: SignInStatus;
+  error?: string;
 }

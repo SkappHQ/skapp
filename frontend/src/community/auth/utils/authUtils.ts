@@ -17,8 +17,8 @@ import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoin
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import { config, drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
-import { SignInStatus } from "../enums/auth";
 import authAxios from "./authInterceptor";
+import { AuthResponseType } from "../types/auth";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -225,14 +225,14 @@ export const communitySignIn = async (_email: string, _password: string) => {};
 
 export const handleSignIn = async (
   params: EnterpriseSignInParams
-): Promise<SignInStatus> => {
+): Promise<AuthResponseType> => {
   const response = await enterpriseSignIn(params);
   return response;
 };
 
 export const handleSignUp = async (
   params: EnterpriseSignUpParams
-): Promise<SignInStatus> => {
+): Promise<AuthResponseType> => {
   const response = await enterpriseSignUp(params);
   return response;
 };

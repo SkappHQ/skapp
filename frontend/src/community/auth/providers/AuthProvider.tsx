@@ -16,8 +16,7 @@ import {
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
-import { SignInStatus } from "../enums/auth";
-import { AuthContextType } from "../types/auth";
+import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
@@ -55,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
 
-      if (redirect) {
+      if (redirect === false) {
         return;
       } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
         const existingCallback = router.query.callback as string;
@@ -108,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const signUp = useCallback(
-    async (params: EnterpriseSignUpParams): Promise<SignInStatus> => {
+    async (params: EnterpriseSignUpParams): Promise<AuthResponseType> => {
       try {
         setIsLoading(true);
 
@@ -129,7 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Sign In function
   const signIn = useCallback(
-    async (params: EnterpriseSignInParams): Promise<SignInStatus> => {
+    async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
         setIsLoading(true);
 
