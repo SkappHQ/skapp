@@ -48,6 +48,7 @@ import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -158,6 +159,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final AuditTrailService auditTrailService;
 
 	private final ScheduleService scheduleService;
+
+	private final SignatureCertificateService signatureCertificateService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -385,6 +388,15 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
+		// Append certificate to document bytes (after audit trails saved)
+		// TODO: When PDF signing feature is merged, this can be signed before upload
+		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes);
+
+		// Upload the document with certificate
+		String finalDocumentPath = uploadProcessedDocumentVersion(processedDocumentBytes);
+		documentVersion.setFilePath(finalDocumentPath);
+		documentVersionDao.save(documentVersion);
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		recipientService.sendDocumentCompletedEmailNotifications(envelope);
@@ -550,6 +562,15 @@ public class DocumentServiceImpl implements DocumentService {
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
+
+			// Append certificate to document bytes (after audit trails saved)
+			// TODO: When PDF signing feature is merged, this can be signed before upload
+			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes);
+
+			// Upload the document with certificate
+			String finalDocumentPath = uploadProcessedDocumentVersion(processedDocumentBytes);
+			finalVersion.setFilePath(finalDocumentPath);
+			documentVersionDao.save(finalVersion);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -1626,6 +1647,27 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
 		}
 		return documentVersion.getFilePath();
+	}
+
+	/**
+	 * Appends certificate to document bytes (in-memory processing). Returns merged bytes
+	 * or original bytes if appending fails.
+	 */
+	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes) {
+		try {
+			log.info("Appending certificate to document for envelope {}", envelope.getId());
+
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false,
+					envelope);
+			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
+
+			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
+			return mergedDocBytes;
+		}
+		catch (IOException e) {
+			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
+			return documentBytes;
+		}
 	}
 
 }
