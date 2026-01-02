@@ -1021,6 +1021,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			esignVerification.setVerificationCode(null);
 			esignVerification.setOtpExpiryTime(null);
 			esignVerification.setVerified(true);
+			esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
 			esignVerificationDao.save(esignVerification);
 
 			return new ResponseEntityDto(false,

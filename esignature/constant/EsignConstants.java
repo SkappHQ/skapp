@@ -68,6 +68,8 @@ public class EsignConstants {
 
 	public static final String CURRENT_OWNER_METADATA_NAME = "currentOwner";
 
+	public static final int ESIGN_DEFAULT_OTP_ATTEMPT_COUNT = 0;
+
 	public static final int ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT = 1;
 
 	public static final int ESIGN_MAX_OTP_SEND_LIMIT = 5;
