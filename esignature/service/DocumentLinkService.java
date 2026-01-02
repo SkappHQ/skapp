@@ -34,6 +34,20 @@ public interface DocumentLinkService {
 
 	ResponseEntityDto getTokenResendStatus(String token);
 
+	ResponseEntityDto sendOtpFromUuid(String uuid, String state);
+
+	ResponseEntityDto sendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId);
+
+	ResponseEntityDto verifyOtpAndCreateTokenFromUuid(String uuid, String state, String code);
+
+	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code, boolean b);
+
+	ResponseEntityDto resendOtpFromUuid(String uuid, String state);
+
+	ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId);
+
+	ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId, boolean b);
+
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}
 

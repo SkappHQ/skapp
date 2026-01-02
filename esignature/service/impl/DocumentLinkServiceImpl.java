@@ -528,6 +528,42 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return new ResponseEntityDto(false, documentTokenResendStatusResponseDto);
 	}
 
+	@Override
+	public ResponseEntityDto sendOtpFromUuid(String uuid, String state) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto sendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto verifyOtpAndCreateTokenFromUuid(String uuid, String state, String code) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code,
+			boolean b) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto resendOtpFromUuid(String uuid, String state) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
+		return null;
+	}
+
+	@Override
+	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId, boolean b) {
+		return null;
+	}
+
 	private String generateAndEnsureUniqueUuidWithRetry() {
 		int maxRetries = 3;
 		int retryCount = 0;
