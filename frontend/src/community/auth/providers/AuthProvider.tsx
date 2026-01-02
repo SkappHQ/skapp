@@ -79,6 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const userData = await checkUserAuthentication();
 
+      console.log("Authenticated user data:", userData);
+
       if (!userData) {
         setIsAuthenticated(false);
         setUser(null);
@@ -160,6 +162,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAuth();
     }
   }, [checkAuth]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [router.pathname]);
 
   const value: AuthContextType = {
     isLoading,
