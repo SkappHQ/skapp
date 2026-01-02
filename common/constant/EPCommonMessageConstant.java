@@ -176,7 +176,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED("ep.common.error.guest-user-project-assignment-failed"),
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED("ep.common.error.guest-user-project-update-failed"),
 	EP_COMMON_ERROR_INVALID_FILE_TYPE("ep.common.error.api.invalid-file-type"),
-	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded");
+	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded"),
+	EP_COMMON_SEND_MESSAGE_ERROR("ep.common.error.send-message-error");
 
 	private final String messageKey;
 

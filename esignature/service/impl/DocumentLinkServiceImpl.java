@@ -96,6 +96,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String SMS_VERIFICATION_CHANNEL = "sms";
 
+	private static final String OTP_SENT_SUCCESS = "OTP sent successfully via ";
+
+	private static final String VERIFICATION_ENABLED = "Verification enabled. ";
+
+	private static final String VERIFICATION_DISABLED = "Verification disabled.";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -759,18 +765,25 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			// MFA Flow: Send OTP and return verification initiated response
 
 			String maskedChannelInfo;
+			String channel;
 
 			if (recipient.getMfaVerificationMethod().equals(EsignVerificationType.SMS)) {
+
+				channel = SMS_VERIFICATION_CHANNEL;
+
 				maskedChannelInfo = recipient.getAddressBook().getPhone() != null
 						? PhoneNumberMaskUtil.mask(recipient.getAddressBook().getPhone()) : "";
 			}
 			else {
 				maskedChannelInfo = "";
+				channel = "";
 			}
+
+			return new ResponseEntityDto(false, VERIFICATION_ENABLED + channel + "=" + maskedChannelInfo);
 
 		}
 
-		return new ResponseEntityDto(false, "test");
+		return new ResponseEntityDto(false, VERIFICATION_DISABLED);
 	}
 
 	private String generateAndEnsureUniqueUuidWithRetry() {
@@ -978,7 +991,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 
 		// Return if the verification otp sent was success or failed.
-		return new ResponseEntityDto(false, "test");
+		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);
 
 	}
 
