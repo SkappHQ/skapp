@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
@@ -38,6 +39,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Create a new envelope",
 			description = "This endpoint creates a new envelope with the provided details.")
+	@CaptureUserAgent
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> createNewEnvelope(
@@ -149,6 +151,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Custody Transfer of Envelope",
 			description = "This endpoint updates the owner of an envelope (custody transfer) to a new owner.")
+	@CaptureUserAgent
 	@PatchMapping(value = "/custody-transfer", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> transferEnvelopeCustody(
@@ -163,6 +166,7 @@ public class EnvelopeController {
 	}
 
 	@Operation(summary = "Void an envelope", description = "This endpoint voids an existing envelope by its ID.")
+	@CaptureUserAgent
 	@PatchMapping(value = "/void/{envelopeId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> voidEnvelope(
@@ -175,6 +179,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Decline an envelope",
 			description = "This endpoint allows a recipient to decline an envelope.")
+	@CaptureUserAgent
 	@PatchMapping(value = "/decline", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelope(
@@ -187,6 +192,7 @@ public class EnvelopeController {
 
 	@Operation(summary = "Decline Envelope Internally",
 			description = "Allows an internal user to decline an envelope on behalf of a recipient. Records the reason for the decline and updates the envelope status accordingly.")
+	@CaptureUserAgent
 	@PatchMapping(value = "/internal/decline", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> declineEnvelopeInternal(

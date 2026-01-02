@@ -47,6 +47,7 @@ import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -158,6 +159,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final ScheduleService scheduleService;
 
 	private final Optional<PdfSigningService> pdfSigningService;
+
+	private final SignatureCertificateService signatureCertificateService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -385,17 +388,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
-		byte[] processedDocumentBytes = latestDocumentBytes;
-
-		// TODO: When certificate appending feature is merged, replace the above line
-		// with:
-		// byte[] processedDocumentBytes = appendCertificateToBytes(envelope,
-		// documentVersion, latestDocumentBytes);
-		// Note: Certificate appending always runs (no feature flag) but fails gracefully
+		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes);
 
 		// Sign the processed PDF (if signing is enabled via feature flag)
-		// This will sign the document WITH the appended certificate when certificate
-		// feature is merged
+		// This will sign the document WITH the appended certificate
 		String finalDocumentPath = signAndUploadDocument(documentVersion, processedDocumentBytes);
 
 		// Update document version with final file path
@@ -561,25 +557,6 @@ public class DocumentServiceImpl implements DocumentService {
 			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes, null,
 					keyPairSender);
 
-			byte[] processedDocumentBytes = fullDocumentBytes;
-
-			// TODO: When certificate appending feature is merged, replace the above line
-			// with:
-			// byte[] processedDocumentBytes = appendCertificateToBytes(envelope,
-			// finalVersion, fullDocumentBytes);
-			// Note: Certificate appending always runs (no feature flag) but fails
-			// gracefully
-
-			// Sign the processed PDF (if signing is enabled via feature flag)
-			// This will sign the document WITH the appended certificate when certificate
-			// feature is merged
-			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
-
-			// Update document version with final file path
-			if (finalDocumentPath != null) {
-				finalVersion.setFilePath(finalDocumentPath);
-			}
-
 			documentVersionDao.save(finalVersion);
 
 			document.setCurrentVersion(finalVersion.getVersionNumber());
@@ -601,6 +578,18 @@ public class DocumentServiceImpl implements DocumentService {
 			auditTrails.add(auditTrail);
 
 			auditTrailDao.saveAll(auditTrails);
+
+			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes);
+
+			// Sign the processed PDF (if signing is enabled via feature flag)
+			// This will sign the document WITH the appended certificate
+			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
+
+			// Update document version with final file path
+			if (finalDocumentPath != null) {
+				finalVersion.setFilePath(finalDocumentPath);
+			}
+			documentVersionDao.save(finalVersion);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -1724,6 +1713,27 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
 		}
 		return documentVersion.getFilePath();
+	}
+
+	/**
+	 * Appends certificate to document bytes (in-memory processing). Returns merged bytes
+	 * or original bytes if appending fails.
+	 */
+	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes) {
+		try {
+			log.info("Appending certificate to document for envelope {}", envelope.getId());
+
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false,
+					envelope);
+			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
+
+			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
+			return mergedDocBytes;
+		}
+		catch (IOException e) {
+			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
+			return documentBytes;
+		}
 	}
 
 }

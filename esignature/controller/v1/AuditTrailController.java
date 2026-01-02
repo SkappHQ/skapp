@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -27,6 +28,7 @@ public class AuditTrailController {
 
 	@Operation(summary = "Create an audit trail record",
 			description = "This endpoint logs an audit trail event for e-signature activities.")
+	@CaptureUserAgent
 	@PostMapping("/create")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> createAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
@@ -38,6 +40,7 @@ public class AuditTrailController {
 
 	@Operation(summary = "Log Internal Audit Trail Event",
 			description = "Creates an internal audit trail record for e-signature-related activities, capturing details such as action type, timestamp, and user IP.")
+	@CaptureUserAgent
 	@PostMapping("/internal/create")
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> createInternalAuditTrail(@Valid @RequestBody AuditTrailDto auditTrailDTO,
