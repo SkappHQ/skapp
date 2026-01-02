@@ -30,7 +30,7 @@ public class EsignVerification extends Auditable<String> {
 	private String verificationCode;
 
 	@Column(name = "is_verified")
-	private boolean isVerified;
+	private boolean verified;
 
 	@Column(name = "otp_expiry_time")
 	private Instant otpExpiryTime;
