@@ -102,6 +102,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String VERIFICATION_DISABLED = "Verification disabled.";
 
+	private static final String TOO_MANY_OTP_REQUESTS = "Too many OTP requests. Please try again in ";
+
+	private static final String RETRY_TIME_IN_SECONDS = "seconds";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -969,11 +973,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			if (existingEsignVerification != null) {
 
-				existingEsignVerification.setVerificationCode(otpCode);
-				existingEsignVerification.setOtpExpiryTime(expiryTime);
-				existingEsignVerification.setVerified(false);
-
-				esignVerificationDao.save(existingEsignVerification);
+				handleOtpBackoffAndSend(existingEsignVerification, otpCode, expiryTime, target, channel);
 
 			}
 			else {
@@ -982,6 +982,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				esignVerification.setRecipient(recipientData);
 				esignVerification.setVerificationCode(otpCode);
 				esignVerification.setOtpExpiryTime(expiryTime);
+				esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
 				esignVerification.setVerified(false);
 
 				esignVerificationDao.save(esignVerification);
@@ -1043,6 +1044,46 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 
 		return esignVerification.get().isVerified();
+	}
+
+	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerification existingEsignVerification, String otpCode,
+			Instant expiryTime, String target, String channel) {
+		int currentAttempts = existingEsignVerification.getOtpSentAttemptCount();
+		LocalDateTime coolDownTime = existingEsignVerification.getLastModifiedDate().plusSeconds(30);
+
+		if (currentAttempts >= EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT) {
+			// Calculate exponential backoff: 30 * 2^(attempt - 5) seconds, max 300
+			// seconds (5 minutes)
+			int backoffMultiplier = (int) Math.pow(EsignConstants.ESIGN_OTP_BACKOFF_MULTIPLIER,
+					currentAttempts - EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT);
+			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * backoffMultiplier,
+					EsignConstants.ESIGN_MAX_OTP_BACKOFF_SECONDS);
+			LocalDateTime backoffTime = existingEsignVerification.getLastModifiedDate().plusSeconds(backoffSeconds);
+
+			if (LocalDateTime.now().isBefore(backoffTime)) {
+				long remainingSeconds = Duration.between(LocalDateTime.now(), backoffTime).getSeconds();
+				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+			}
+		}
+
+		if (LocalDateTime.now().isBefore(coolDownTime)) {
+			long remainingSeconds = Duration.between(LocalDateTime.now(), coolDownTime).getSeconds();
+			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+		}
+		else if (existingEsignVerification.getVerificationCode() != null && currentAttempts < 5
+				&& LocalDateTime.now().isAfter(coolDownTime)) {
+			existingEsignVerification.setVerificationCode(otpCode);
+			existingEsignVerification.setOtpExpiryTime(expiryTime);
+			existingEsignVerification.setVerified(false);
+			existingEsignVerification
+				.setOtpSentAttemptCount(currentAttempts + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+
+			esignVerificationDao.save(existingEsignVerification);
+			esignMessageService.sendOtpMessage(target, otpCode);
+		}
+
+		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);
+
 	}
 
 }
