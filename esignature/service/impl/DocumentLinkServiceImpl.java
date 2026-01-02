@@ -7,19 +7,14 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.DocumentLink;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.DocumentVersionField;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.*;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
@@ -54,6 +49,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +92,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String HTTPS_PROTOCOL = "https://";
 
+	private static final String SMS_VERIFICATION_CHANNEL = "sms";
+
 	private final DocumentLinkRepository documentLinkRepository;
 
 	private final ExternalDocumentJwtService jwtService;
@@ -118,6 +116,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final TenantContext tenantContext;
 
+	private final EsignVerificationDao esignVerificationDao;
+
+	private final MessageUtil messageUtil;
+
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
 
@@ -138,6 +140,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	@Value("${otp.expiry-seconds}")
+	private int otpExpirySeconds;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
@@ -530,38 +535,226 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Override
 	public ResponseEntityDto sendOtpFromUuid(String uuid, String state) {
-		return null;
+		String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+		String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+
+		if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
+				|| decryptedState.trim().isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
+		if (stateParts.length != 3) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		Long recipientId = Long.valueOf(stateParts[0]);
+		String envelopeUUID = stateParts[1];
+		String tenantId = stateParts[2];
+
+		if (envelopeUUID == null || tenantId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+
+		Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
+
+		if (documentLinkOpt.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+		}
+
+		DocumentLink documentLink = documentLinkOpt.get();
+
+		if (!documentLink.getRecipientId().getId().equals(recipientId)
+				|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		return sendVerificationToRecipient(documentLink, null, null);
 	}
 
 	@Override
 	public ResponseEntityDto sendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
-		return null;
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+		}
+
+		Recipient recipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.filter(rec -> rec.getId().equals(recipientId))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		// MFA Flow: Send OTP and return verification initiated response
+		return sendVerificationToRecipient(null, document, recipient);
+
 	}
 
 	@Override
 	public ResponseEntityDto verifyOtpAndCreateTokenFromUuid(String uuid, String state, String code) {
-		return null;
+
+		try {
+			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+
+			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
+					|| decryptedState.trim().isEmpty()) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
+			if (stateParts.length != 3) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			Long recipientId = Long.valueOf(stateParts[0]);
+			String envelopeUUID = stateParts[1];
+			String tenantId = stateParts[2];
+
+			if (envelopeUUID == null || tenantId == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			tenantContext.setTenantAndSwitchSchema(tenantId);
+
+			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
+
+			if (documentLinkOpt.isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+			}
+
+			DocumentLink documentLink = documentLinkOpt.get();
+
+			if (!documentLink.getRecipientId().getId().equals(recipientId)
+					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			// Verify the OTP
+			return verifyCodeWithDocumentRecipient(documentLink, null, null, code);
+
+		}
+		catch (Exception ex) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
 	}
 
 	@Override
 	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code,
-			boolean b) {
-		return null;
+			boolean isDocAccess) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+		}
+
+		Recipient recipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.filter(rec -> rec.getId().equals(recipientId))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		// Verify the OTP
+		return verifyCodeWithDocumentRecipient(null, documentId, recipientId, code);
+
 	}
 
 	@Override
 	public ResponseEntityDto resendOtpFromUuid(String uuid, String state) {
-		return null;
+		return null; // implement the logic as needed
 	}
 
 	@Override
 	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
-		return null;
+		return null; // implement the logic as needed
 	}
 
 	@Override
 	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId, boolean b) {
-		return null;
+
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+		}
+
+		Recipient recipient = document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.filter(rec -> rec.getId().equals(recipientId))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
+
+		if (isVerificationEnabled) {
+			// MFA Flow: Send OTP and return verification initiated response
+
+			String maskedChannelInfo;
+
+			if (recipient.getMfaVerificationMethod().equals(EsignVerificationType.SMS)) {
+				maskedChannelInfo = recipient.getAddressBook().getPhone() != null
+						? PhoneNumberMaskUtil.mask(recipient.getAddressBook().getPhone()) : "";
+			}
+			else {
+				maskedChannelInfo = "";
+			}
+
+		}
+
+		return new ResponseEntityDto(false, "test");
 	}
 
 	private String generateAndEnsureUniqueUuidWithRetry() {
@@ -702,6 +895,111 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
 			String userType) {
+	}
+
+	private boolean validateMfaVerificationEnable(Recipient recipient) {
+		return recipient.isMfaVerificationEnabled();
+	}
+
+	private ResponseEntityDto sendVerificationToRecipient(DocumentLink documentLink, Document document,
+			Recipient recipient) {
+
+		Recipient recipientData;
+		Document documentData;
+
+		if (documentLink != null) {
+			recipientData = documentLink.getRecipientId();
+			documentData = documentLink.getDocumentId();
+		}
+		else {
+			recipientData = recipient;
+			documentData = document;
+		}
+
+		// The channel is sms. It's the form the otp is to be shared with the
+		// recipient.
+		String channel = recipientData.getMfaVerificationMethod().equals(EsignVerificationType.SMS)
+				? SMS_VERIFICATION_CHANNEL : null;
+
+		// The target is phone number based on the selected
+		// channel.
+		String target = recipientData.getMfaVerificationMethod().equals(EsignVerificationType.SMS)
+				? recipientData.getAddressBook().getPhone() : null;
+
+		if (channel != null && target != null) {
+
+			// Check if there's an existing active otp request to the recipient for this
+			// document.
+			Optional<EsignVerification> esignVerificationOptional = esignVerificationDao
+				.findByDocument_IdAndRecipient_Id(documentData.getId(), recipientData.getId());
+
+			EsignVerification existingEsignVerification = esignVerificationOptional.orElse(null);
+
+			String otpCode = OtpUtil.generateOTP();
+			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+
+			if (existingEsignVerification != null) {
+
+				existingEsignVerification.setVerificationCode(otpCode);
+				existingEsignVerification.setOtpExpiryTime(expiryTime);
+				existingEsignVerification.setVerified(false);
+
+				esignVerificationDao.save(existingEsignVerification);
+
+			}
+			else {
+				EsignVerification esignVerification = new EsignVerification();
+				esignVerification.setDocument(documentData);
+				esignVerification.setRecipient(recipientData);
+				esignVerification.setVerificationCode(otpCode);
+				esignVerification.setOtpExpiryTime(expiryTime);
+				esignVerification.setVerified(false);
+
+				esignVerificationDao.save(esignVerification);
+			}
+
+			// esignSmsService.sendOtpSms(target, otpCode);
+		}
+
+		// Return if the verification otp sent was success or failed.
+		return new ResponseEntityDto(false, "test");
+
+	}
+
+	private ResponseEntityDto verifyCodeWithDocumentRecipient(DocumentLink documentLink, Long documentId,
+			Long recipientId, String code) {
+
+		Optional<EsignVerification> esignVerificationOptional;
+
+		if (documentLink != null) {
+			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(
+					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
+		}
+		else {
+			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+		}
+
+		EsignVerification esignVerification = esignVerificationOptional.get();
+
+		try {
+			if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(),
+					code)) {
+
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
+			}
+
+			esignVerification.setVerificationCode(null);
+			esignVerification.setOtpExpiryTime(null);
+			esignVerification.setVerified(true);
+			esignVerificationDao.save(esignVerification);
+
+			return new ResponseEntityDto(false,
+					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
+		}
+		catch (Exception e) {
+
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
+		}
 	}
 
 }
