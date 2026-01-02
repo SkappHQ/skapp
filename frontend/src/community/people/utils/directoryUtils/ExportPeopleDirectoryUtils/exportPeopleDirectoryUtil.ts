@@ -39,6 +39,7 @@ interface EmergencyContact {
   name: string;
   emergencyRelationship: string;
   contactNo: string;
+  isPrimary: boolean;
 }
 
 interface jobTitle {
@@ -81,7 +82,7 @@ interface EmployeeData {
   employeePersonalInfoDto?: EmployeePersonalInfo;
   teamResponseDto?: TeamResponse[];
   managers?: Manager[];
-  probationPeriod: ProbationPeriod; 
+  probationPeriod: ProbationPeriod;
   employeeEmergencyDto?: EmergencyContact[];
   eeoJobCategory?: string;
 }
@@ -218,27 +219,76 @@ const CSV_FIELD_MAPPING = [
     accessor: (emp: EmployeeData) =>
       emp.employeePersonalInfoDto?.extraInfo?.tShirtSize || ""
   },
+  // {
+  //   header: "Emergency Contact Name",
+  //   accessor: (emp: EmployeeData) => emp.employeeEmergencyDto?.[0]?.name || ""
+  // },
+  // {
+  //   header: "Emergency Contact Relationship",
+  //   accessor: (emp: EmployeeData) =>
+  //     emp.employeeEmergencyDto?.[0]?.emergencyRelationship || ""
+  // },
+  // {
+  //   header: "Emergency Contact Country Code",
+  //   accessor: (emp: EmployeeData) => {
+  //     return (
+  //       parsePhoneCountryCode(emp.employeeEmergencyDto?.[0]?.contactNo) || ""
+  //     );
+  //   }
+  // },
+  // {
+  //   header: "Emergency Contact Number",
+  //   accessor: (emp: EmployeeData) => {
+  //     return parsePhoneNumber(emp.employeeEmergencyDto?.[0]?.contactNo) || "";
+  //   }
+  // },
   {
     header: "Emergency Contact Name",
-    accessor: (emp: EmployeeData) => emp.employeeEmergencyDto?.[0]?.name || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
+        return "";
+
+      // Find the primary emergency contact
+      const primaryContact = emp.employeeEmergencyDto.find(
+        (contact) => contact.isPrimary === true
+      );
+      return primaryContact?.name || "";
+    }
   },
   {
     header: "Emergency Contact Relationship",
-    accessor: (emp: EmployeeData) =>
-      emp.employeeEmergencyDto?.[0]?.emergencyRelationship || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
+        return "";
+
+      const primaryContact = emp.employeeEmergencyDto.find(
+        (contact) => contact.isPrimary === true
+      );
+      return primaryContact?.emergencyRelationship || "";
+    }
   },
   {
     header: "Emergency Contact Country Code",
     accessor: (emp: EmployeeData) => {
-      return (
-        parsePhoneCountryCode(emp.employeeEmergencyDto?.[0]?.contactNo) || ""
+      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
+        return "";
+
+      const primaryContact = emp.employeeEmergencyDto.find(
+        (contact) => contact.isPrimary === true
       );
+      return parsePhoneCountryCode(primaryContact?.contactNo) || "";
     }
   },
   {
     header: "Emergency Contact Number",
     accessor: (emp: EmployeeData) => {
-      return parsePhoneNumber(emp.employeeEmergencyDto?.[0]?.contactNo) || "";
+      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
+        return "";
+
+      const primaryContact = emp.employeeEmergencyDto.find(
+        (contact) => contact.isPrimary === true
+      );
+      return parsePhoneNumber(primaryContact?.contactNo) || "";
     }
   },
   {
