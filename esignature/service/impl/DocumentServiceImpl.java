@@ -32,15 +32,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDt
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
-import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.FieldRepository;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.security.AESKeyLoader;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
@@ -130,13 +122,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final DocumentVersionFieldRepository documentVersionFieldRepository;
 
-	private final RecipientRepository recipientRepository;
-
 	private final EnvelopeDao envelopeDao;
 
 	private final AuditTrailDao auditTrailDao;
-
-	private final DocumentLinkRepository documentLinkRepository;
 
 	private final UserKeyService userKeyService;
 
@@ -152,8 +140,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AESKeyLoader aesKeyLoader;
 
-	private final EsignEmailService esignEmailService;
-
 	private final DocumentLinkService documentLinkService;
 
 	private final AuditTrailService auditTrailService;
@@ -161,6 +147,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final ScheduleService scheduleService;
 
 	private final SignatureCertificateService signatureCertificateService;
+
+	private final RecipientDao recipientDao;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -304,7 +292,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipient.setStatus(RecipientStatus.COMPLETED);
 		recipient.setInboxStatus(InboxStatus.WAITING);
-		recipientRepository.save(recipient);
+		recipientDao.save(recipient);
 
 		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes);
 
@@ -343,7 +331,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		document = documentRepository.save(document);
-		recipientRepository.saveAll(updatedRecipients);
+		recipientDao.saveAll(updatedRecipients);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
@@ -397,7 +385,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersion.setFilePath(finalDocumentPath);
 		documentVersionDao.save(documentVersion);
 
-		recipientRepository.saveAll(envelope.getRecipients());
+		recipientDao.saveAll(envelope.getRecipients());
 
 		recipientService.sendDocumentCompletedEmailNotifications(envelope);
 
@@ -499,7 +487,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipient.setStatus(RecipientStatus.COMPLETED);
 		recipient.setInboxStatus(InboxStatus.WAITING);
-		recipientRepository.save(recipient);
+		recipientDao.save(recipient);
 
 		List<Long> fieldIdList = recipient.getFields().stream().map(Field::getId).toList();
 
@@ -575,7 +563,7 @@ public class DocumentServiceImpl implements DocumentService {
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
-			recipientRepository.saveAll(recipients);
+			recipientDao.saveAll(recipients);
 
 			recipientService.sendDocumentCompletedEmailNotifications(envelope);
 
@@ -1416,7 +1404,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private Recipient getRecipientById(@NotNull Long id) {
 
-		return recipientRepository.findById(id)
+		return recipientDao.findById(id)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 	}
 

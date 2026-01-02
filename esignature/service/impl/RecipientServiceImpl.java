@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
+import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
@@ -61,7 +62,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RecipientServiceImpl implements RecipientService {
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -159,7 +160,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Override
 	public List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId) {
-		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
+		Optional<List<Recipient>> recipientListOptional = recipientDao.findByEnvelopeId(envelopeId);
 
 		// If no recipients found for the given Document Id, return an empty response
 		if (recipientListOptional.isEmpty()) {
@@ -329,7 +330,7 @@ public class RecipientServiceImpl implements RecipientService {
 	private void handleReminderScheduling(EpEsignEnvelopeRecipientEmailDynamicFields emailFields,
 			EpEsignEmailEnvelopeDataDto emailDataDto, String userEmail, RecipientUpdateDto recipientUpdateDto) {
 		// Calculate Unix timestamp for scheduling
-		Long initialUnixTimestamp = Instant.now().getEpochSecond();
+		long initialUnixTimestamp = Instant.now().getEpochSecond();
 
 		int emailCount = EpCommonConstants.SENDGRID_EMAIL_SCHEDULE_MAX_HOURS / EpCommonConstants.HOURS_A_DAY;
 		int scheduledEmailCount = 1;
@@ -365,7 +366,7 @@ public class RecipientServiceImpl implements RecipientService {
 	public ResponseEntityDto updateRecipient(Long recipientId, RecipientUpdateDto recipientUpdateDto) {
 		log.info("updateRecipient: execution started");
 
-		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
+		Optional<Recipient> optionalUpdatableRecipient = recipientDao.findById(recipientId);
 
 		if (optionalUpdatableRecipient.isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
@@ -375,7 +376,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 		updatableRecipient = setUpdatedRecipient(updatableRecipient, recipientUpdateDto);
 
-		Recipient updatedRecipient = recipientRepository.save(updatableRecipient);
+		Recipient updatedRecipient = recipientDao.save(updatableRecipient);
 		RecipientDetailResponseDto responseDto = eSignMapper.recipientToRecipientDetailDto(updatedRecipient);
 
 		log.info("updateRecipient: execution ended");
@@ -413,7 +414,7 @@ public class RecipientServiceImpl implements RecipientService {
 	public ResponseEntityDto cancelEmailReminders(Long recipientId, Long envelopeId) {
 		log.info("cancelEmailReminders: execution started");
 
-		Optional<Recipient> recipientOptional = recipientRepository.findByIdAndEnvelopeId(recipientId, envelopeId);
+		Optional<Recipient> recipientOptional = recipientDao.findByIdAndEnvelopeId(recipientId, envelopeId);
 
 		ResponseEntityDto responseEntityDto = new ResponseEntityDto(true,
 				eSignMapper.recipientToRecipientDetailDto(new Recipient()));
@@ -449,7 +450,7 @@ public class RecipientServiceImpl implements RecipientService {
 		EnvelopeDetailedResponseDto envelopeDetailedResponseDto = eSignMapper
 			.envelopeToEnvelopeDetailedResponseDto(new Envelope());
 
-		Optional<List<Recipient>> optionalRecipientList = recipientRepository.findByEnvelopeIdAndEmailStatus(envelopeId,
+		Optional<List<Recipient>> optionalRecipientList = recipientDao.findByEnvelopeIdAndEmailStatus(envelopeId,
 				EmailStatus.SENT);
 
 		// If no recipients found for the given Document Id, return an empty response
@@ -539,7 +540,7 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		recipient.setConsent(isConsent);
-		recipientRepository.save(recipient);
+		recipientDao.save(recipient);
 		return new ResponseEntityDto(false, "Recipient Consent Updated");
 	}
 
@@ -547,7 +548,7 @@ public class RecipientServiceImpl implements RecipientService {
 	public ResponseEntityDto updateInternalRecipientConsent(Long recipientId, boolean isConsent) {
 		User currentUser = userService.getCurrentUser();
 
-		Recipient recipient = recipientRepository.findById(recipientId)
+		Recipient recipient = recipientDao.findById(recipientId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
 		User internalUser = recipient.getAddressBook().getInternalUser();
@@ -560,7 +561,7 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		recipient.setConsent(isConsent);
-		recipientRepository.save(recipient);
+		recipientDao.save(recipient);
 		return new ResponseEntityDto(false, "Recipient Consent Updated");
 	}
 
@@ -568,7 +569,7 @@ public class RecipientServiceImpl implements RecipientService {
 	public ResponseEntityDto sendNudgeEmail(Long recipientId) {
 		log.info("sendReminderEmail: Sending reminder email to recipient with ID {}", recipientId);
 
-		Optional<Recipient> recipientOptional = recipientRepository.findById(recipientId);
+		Optional<Recipient> recipientOptional = recipientDao.findById(recipientId);
 		if (recipientOptional.isEmpty()) {
 			log.error("sendReminderEmail: Recipient with ID {} not found", recipientId);
 			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_ID_NOT_FOUND);
@@ -596,7 +597,7 @@ public class RecipientServiceImpl implements RecipientService {
 	@Override
 	public ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
 
-		Optional<List<Recipient>> recipientListOptional = recipientRepository.findByEnvelopeId(envelopeId);
+		Optional<List<Recipient>> recipientListOptional = recipientDao.findByEnvelopeId(envelopeId);
 
 		if (recipientListOptional.isEmpty() || recipientListOptional.get().isEmpty()) {
 			log.info("No recipients found for envelope ID {}", envelopeId);
@@ -612,7 +613,7 @@ public class RecipientServiceImpl implements RecipientService {
 			}
 		});
 
-		recipientRepository.saveAll(recipients);
+		recipientDao.saveAll(recipients);
 
 		log.info("All recipients for envelope ID {} have been voided.", envelopeId);
 		return new ResponseEntityDto(false, "All recipients voided successfully");

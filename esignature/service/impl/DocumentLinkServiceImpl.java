@@ -29,11 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.repository.DocumentDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
-import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
@@ -108,7 +104,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentDao documentDao;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final EsignMapper eSignMapper;
 
@@ -154,7 +150,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Envelope envelope = documentOptional.get().getEnvelope();
 
-		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
+		Optional<Recipient> optionalUpdatableRecipient = recipientDao.findById(recipientId);
 
 		Recipient recipient = optionalUpdatableRecipient
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));

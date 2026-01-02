@@ -60,13 +60,7 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
@@ -162,7 +156,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final AuditTrailService auditTrailService;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final AuditTrailDao auditTrailDao;
 
@@ -1161,7 +1155,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 
-		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
+		Recipient recipient = recipientDao.findById(recipientId).orElseThrow(() -> {
 			log.error("Recipient with ID {} not found", recipientId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 		});
