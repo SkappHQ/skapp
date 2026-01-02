@@ -725,7 +725,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId, boolean b) {
+	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId) {
 
 		String tenantId = TenantContext.getCurrentTenant();
 

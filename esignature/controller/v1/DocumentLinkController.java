@@ -143,7 +143,7 @@ public class DocumentLinkController {
 			@RequestParam Long recipientId) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentVerificationData(documentId,
-				recipientId, false);
+				recipientId);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
