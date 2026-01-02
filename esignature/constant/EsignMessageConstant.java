@@ -148,7 +148,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF("ep.esign.error.generate.signature.certificate.pdf"),
 
 	ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND("ep.esign.error.address-book.user.contact.number.not-found"),
-	ESIGN_ERROR_MFA_NOT_VALIDATED("ep.esign.error.mfa.not.validated");
+	ESIGN_ERROR_MFA_NOT_VALIDATED("ep.esign.error.mfa.not.validated"),
+	ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND("ep.esign.error.recipient.verification.not-found"),
+	ESIGN_ERROR_VERIFICATION_CODE_INVALID("ep.esign.error.verification.code.invalid");
 
 	private final String messageKey;
 

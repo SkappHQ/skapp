@@ -79,13 +79,13 @@ public class Recipient {
 	private InboxStatus inboxStatus;
 
 	@Column(name = "mfa_verification_enabled", nullable = false)
-	private boolean isMfaVerificationEnabled;
+	private boolean mfaVerificationEnabled;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "mfa_verification_method")
 	private EsignVerificationType mfaVerificationMethod;
 
-	@OneToOne(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "recipient", fetch = FetchType.LAZY)
 	private EsignVerification esignVerification;
 
 }

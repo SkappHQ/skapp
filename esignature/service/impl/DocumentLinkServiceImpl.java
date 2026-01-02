@@ -815,6 +815,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private ResponseEntityDto verifyCodeWithDocumentRecipient(DocumentLink documentLink, Long documentId,
 			Long recipientId, String code) {
 
+		if (code == null || code.trim().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
+		}
+
 		Optional<EsignVerification> esignVerificationOptional;
 
 		if (documentLink != null) {
@@ -823,6 +827,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 		else {
 			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+		}
+
+		if (esignVerificationOptional.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
 		}
 
 		EsignVerification esignVerification = esignVerificationOptional.get();
@@ -860,7 +868,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
 		}
 
-		return esignVerification.get().isVerified();
+		return esignVerification.map(EsignVerification::isVerified).orElse(false);
 	}
 
 	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerification existingEsignVerification, String otpCode,

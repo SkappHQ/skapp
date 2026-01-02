@@ -448,7 +448,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 			}
 
-			if (recipientDto.getVerificationType().equals(EsignVerificationType.SMS)
+			if (recipientDto.getVerificationType() != null
+					&& recipientDto.getVerificationType().equals(EsignVerificationType.SMS)
 					&& addressBook.getPhone() == null) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
 			}

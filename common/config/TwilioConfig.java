@@ -19,7 +19,13 @@ public class TwilioConfig {
 
 	@PostConstruct
 	private void initTwilio() {
-		Twilio.init(accountSid, authToken);
+		try {
+			Twilio.init(accountSid, authToken);
+		}
+		catch (Exception e) {
+			log.error("Failed to initialize Twilio client.", e);
+			throw new IllegalStateException("Failed to initialize Twilio client", e);
+		}
 	}
 
 }
