@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.EsignMessageService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -120,6 +121,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private final EsignVerificationDao esignVerificationDao;
 
 	private final MessageUtil messageUtil;
+
+	private final EsignMessageService esignMessageService;
 
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
@@ -959,7 +962,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				esignVerificationDao.save(esignVerification);
 			}
 
-			// esignSmsService.sendOtpSms(target, otpCode);
+			esignMessageService.sendOtpMessage(target, otpCode);
 		}
 
 		// Return if the verification otp sent was success or failed.
