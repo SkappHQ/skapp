@@ -1086,7 +1086,10 @@
       "title": "No documents to be displayed",
       "description": "Your Inbox is empty. Once you receive documents, they will be displayed here."
     },
-
+    "noResultsTable": {
+      "title": "No results found",
+      "description": "No documents match your search. Try changing your keywords or filters."
+    },
     "searchPlaceholder": "Search documents",
     "documentStatus": {
       "needToSign": "Need to sign",
