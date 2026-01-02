@@ -329,6 +329,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			.findFirst()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
+		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
+
+		if (isVerificationEnabled && getMfaVerificationStatus(null, documentId, recipientId)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
+		}
+
 		validateTokenFlows(isDocAccess, recipient, documentId);
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);
@@ -505,6 +511,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			if (!documentLink.getRecipientId().getId().equals(recipientId)
 					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+			}
+
+			boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
+
+			if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 			}
 
 			DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
@@ -1004,6 +1016,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
 		}
+	}
+
+	private boolean getMfaVerificationStatus(DocumentLink documentLink, Long documentId, Long recipientId) {
+		Optional<EsignVerification> esignVerification;
+
+		if (documentLink != null) {
+			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(
+					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
+		}
+		else {
+			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+		}
+
+		return esignVerification.get().isVerified();
 	}
 
 }
