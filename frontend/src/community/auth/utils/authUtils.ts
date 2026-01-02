@@ -119,7 +119,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
+    const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // Default 1 hour
 
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
   }
@@ -127,7 +127,7 @@ export const setAccessToken = (token: string) => {
 
 export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
+    const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // Default 1 hour
 
     document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
   }
