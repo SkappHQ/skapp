@@ -20,6 +20,7 @@ import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
+  clearCookies,
   getNewAccessToken,
   handleSignIn,
   handleSignUp
@@ -46,11 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = useCallback(async (redirect?: boolean) => {
     try {
       setIsLoading(true);
-      // Clear the accessToken cookie
-      document.cookie =
-        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=Strict";
-      document.cookie =
-        "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=Strict";
+      await clearCookies();
       setUser(null);
       setIsAuthenticated(false);
 

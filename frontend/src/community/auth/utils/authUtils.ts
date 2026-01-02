@@ -135,7 +135,8 @@ export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
 
 export const clearCookies = async (): Promise<void> => {
   if (typeof window !== "undefined") {
-    // Clear httpOnly cookies by setting them to expire
+    document.cookie =
+      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
     document.cookie =
       "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
     document.cookie =
