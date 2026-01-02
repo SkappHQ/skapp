@@ -81,7 +81,7 @@ interface EmployeeData {
   employmentAllocation: string;
   employeePersonalInfoDto?: EmployeePersonalInfo;
   teamResponseDto?: TeamResponse[];
-  managers?: Manager[];
+  primarySupervisor?: Manager;
   probationPeriod: ProbationPeriod;
   employeeEmergencyDto?: EmergencyContact[];
   eeoJobCategory?: string;
@@ -96,6 +96,20 @@ const parsePhoneNumber = (phone?: string): string => {
   if (!phone) return "";
   const parts = phone.split(/[\s-]/);
   return parts.slice(1).join(" ") || "";
+};
+
+// Helper function to get primary emergency contact
+const getPrimaryEmergencyContact = (
+  emp: EmployeeData
+): EmergencyContact | null => {
+  if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0) {
+    return null;
+  }
+
+  return (
+    emp.employeeEmergencyDto.find((contact) => contact.isPrimary === true) ||
+    null
+  );
 };
 
 const CSV_FIELD_MAPPING = [
@@ -219,75 +233,31 @@ const CSV_FIELD_MAPPING = [
     accessor: (emp: EmployeeData) =>
       emp.employeePersonalInfoDto?.extraInfo?.tShirtSize || ""
   },
-  // {
-  //   header: "Emergency Contact Name",
-  //   accessor: (emp: EmployeeData) => emp.employeeEmergencyDto?.[0]?.name || ""
-  // },
-  // {
-  //   header: "Emergency Contact Relationship",
-  //   accessor: (emp: EmployeeData) =>
-  //     emp.employeeEmergencyDto?.[0]?.emergencyRelationship || ""
-  // },
-  // {
-  //   header: "Emergency Contact Country Code",
-  //   accessor: (emp: EmployeeData) => {
-  //     return (
-  //       parsePhoneCountryCode(emp.employeeEmergencyDto?.[0]?.contactNo) || ""
-  //     );
-  //   }
-  // },
-  // {
-  //   header: "Emergency Contact Number",
-  //   accessor: (emp: EmployeeData) => {
-  //     return parsePhoneNumber(emp.employeeEmergencyDto?.[0]?.contactNo) || "";
-  //   }
-  // },
   {
     header: "Emergency Contact Name",
     accessor: (emp: EmployeeData) => {
-      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
-        return "";
-
-      // Find the primary emergency contact
-      const primaryContact = emp.employeeEmergencyDto.find(
-        (contact) => contact.isPrimary === true
-      );
+      const primaryContact = getPrimaryEmergencyContact(emp);
       return primaryContact?.name || "";
     }
   },
   {
     header: "Emergency Contact Relationship",
     accessor: (emp: EmployeeData) => {
-      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
-        return "";
-
-      const primaryContact = emp.employeeEmergencyDto.find(
-        (contact) => contact.isPrimary === true
-      );
+      const primaryContact = getPrimaryEmergencyContact(emp);
       return primaryContact?.emergencyRelationship || "";
     }
   },
   {
     header: "Emergency Contact Country Code",
     accessor: (emp: EmployeeData) => {
-      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
-        return "";
-
-      const primaryContact = emp.employeeEmergencyDto.find(
-        (contact) => contact.isPrimary === true
-      );
+      const primaryContact = getPrimaryEmergencyContact(emp);
       return parsePhoneCountryCode(primaryContact?.contactNo) || "";
     }
   },
   {
     header: "Emergency Contact Number",
     accessor: (emp: EmployeeData) => {
-      if (!emp.employeeEmergencyDto || emp.employeeEmergencyDto.length === 0)
-        return "";
-
-      const primaryContact = emp.employeeEmergencyDto.find(
-        (contact) => contact.isPrimary === true
-      );
+      const primaryContact = getPrimaryEmergencyContact(emp);
       return parsePhoneNumber(primaryContact?.contactNo) || "";
     }
   },
@@ -312,7 +282,7 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Primary Supervisor (Email)",
-    accessor: (emp: EmployeeData) => emp.managers?.[0]?.email || ""
+    accessor: (emp: EmployeeData) => emp.primarySupervisor?.email || ""
   },
   {
     header: "Probation Start Date",
