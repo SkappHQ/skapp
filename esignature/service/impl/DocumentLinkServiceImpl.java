@@ -9,6 +9,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -35,6 +36,7 @@ import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
@@ -85,6 +87,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	public static final String PERMISSION = "permission";
 
 	private static final String URL_PATH = "/sign/document/access?uuid=";
+
+	private static final String URL_PATH_MFA = "/sign/document/access/mfa-verify?uuid=";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
@@ -635,8 +639,29 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
 
-		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + encodedEncryptedUUID + STATE_STRING
+		String urlPath = getMFARecipientDetails(recipientId);
+
+		return protocol + "://" + tenantId + "." + parentDomain + urlPath + encodedEncryptedUUID + STATE_STRING
 				+ encodedState;
+	}
+
+	private String getMFARecipientDetails(Long recipientId) {
+
+		Optional<Recipient> recipientOptional = recipientDao.findById(recipientId);
+		Recipient recipient = recipientOptional
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		EsignVerificationType verificationMethod = recipient.getMfaVerificationMethod();
+
+		if (verificationMethod.equals(EsignVerificationType.SMS)) {
+			String recipientPhone = recipientDao.findPhoneByRecipientId(recipientId);
+			String maskedPhone = recipientPhone != null ? PhoneNumberMaskUtil.mask(recipientPhone) : "";
+			return URL_PATH_MFA + "?phone=" + maskedPhone;
+		}
+		else {
+			return URL_PATH;
+		}
+
 	}
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
