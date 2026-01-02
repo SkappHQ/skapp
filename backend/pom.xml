@@ -236,6 +236,11 @@
             <artifactId>microsoft-graph</artifactId>
             <version>6.53.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.9.2</version>
+        </dependency>
 
         <!-- Test Packages -->
         <dependency>
