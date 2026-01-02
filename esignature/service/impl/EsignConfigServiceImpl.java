@@ -49,6 +49,10 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 			esignConfig.setReminderDaysBeforeExpire(esignConfigDto.getReminderDaysBeforeExpire());
 		}
 
+		if (esignConfigDto.getIsMfaEnabled() != null) {
+			esignConfig.setIsMfaEnabled(esignConfigDto.getIsMfaEnabled());
+		}
+
 		esignConfig = esignConfigRepository.save(esignConfig);
 		EsignConfigResponseDto esignConfigResponseDto = esignMapper.esignConfigToEsignConfigResponseDto(esignConfig);
 
