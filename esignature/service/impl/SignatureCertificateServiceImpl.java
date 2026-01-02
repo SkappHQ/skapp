@@ -20,10 +20,7 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -62,7 +59,7 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 
 	private final DocumentLinkService documentLinkService;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final AddressBookDao addressBookDao;
 
@@ -124,7 +121,7 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 			DocumentLink documentLinkFromToken = documentLinkService.getDocumentLinkFromToken();
 			Long addressBookId = documentLinkFromToken.getRecipientId().getAddressBook().getId();
 
-			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
+			if (recipientDao.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 		}
@@ -146,7 +143,7 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 				}
 
-				boolean isRecipient = !recipientRepository
+				boolean isRecipient = !recipientDao
 					.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
 					.isEmpty();
 
