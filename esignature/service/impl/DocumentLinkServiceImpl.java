@@ -891,36 +891,38 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerification existingEsignVerification, String target,
 			String channel) {
 
+		LocalDateTime lastModifiedTime = existingEsignVerification.getLastModifiedDate();
+		LocalDateTime coolDownTime = lastModifiedTime.plusSeconds(30);
+
+		// prevent any OTP send within 30 seconds
+		if (LocalDateTime.now().isBefore(coolDownTime)) {
+			long remainingSeconds = Duration.between(LocalDateTime.now(), coolDownTime).getSeconds();
+			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+		}
+
 		int currentAttempts = existingEsignVerification.getOtpSentAttemptCount();
-		LocalDateTime coolDownTime = existingEsignVerification.getLastModifiedDate().plusSeconds(30);
 
+		// Check if max attempts exceeded and apply exponential backoff
 		if (currentAttempts >= EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT) {
-
-			// Calculate exponential backoff: 30 * 2^(attempt - 5) seconds, max 300
-			// seconds (5 minutes)
 			int backoffMultiplier = (int) Math.pow(EsignConstants.ESIGN_OTP_BACKOFF_MULTIPLIER,
 					currentAttempts - EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT);
 			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * backoffMultiplier,
 					EsignConstants.ESIGN_MAX_OTP_BACKOFF_SECONDS);
-			LocalDateTime backoffTime = existingEsignVerification.getLastModifiedDate().plusSeconds(backoffSeconds);
+			LocalDateTime backoffTime = lastModifiedTime.plusSeconds(backoffSeconds);
 
 			if (LocalDateTime.now().isBefore(backoffTime)) {
 				long remainingSeconds = Duration.between(LocalDateTime.now(), backoffTime).getSeconds();
 				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 			}
 
-			// Backoff period has expired - reset attempt count and send new OTP
+			// Backoff expired - reset attempt count
 			existingEsignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
 		}
-		else if (LocalDateTime.now().isBefore(coolDownTime)) {
-			long remainingSeconds = Duration.between(LocalDateTime.now(), coolDownTime).getSeconds();
-			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
-		}
 
+		// send OTP
 		String otpCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-		// Cooldown/backoff has passed - send OTP
 		existingEsignVerification.setVerificationCode(otpCode);
 		existingEsignVerification.setOtpExpiryTime(expiryTime);
 		existingEsignVerification.setVerified(false);
