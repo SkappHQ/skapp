@@ -16,9 +16,11 @@ import {
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
-import { config, drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
-import authAxios from "./authInterceptor";
+import { config } from "../../../../middleware";
+import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { AuthResponseType } from "../types/auth";
+import authAxios from "./authInterceptor";
+import { getCookieValue } from "~community/common/utils/commonUtil";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -40,12 +42,6 @@ export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   }
 
   return false;
-};
-
-export const getCookieValue = (name: string): string | null => {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
 };
 
 export const decodeJWTToken = (token: string) => {
@@ -136,7 +132,7 @@ export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
 export const clearCookies = async (): Promise<void> => {
   if (typeof window !== "undefined") {
     document.cookie =
-      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
+      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
     document.cookie =
       "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; HttpOnly; Secure; SameSite=Strict";
     document.cookie =

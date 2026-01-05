@@ -54,9 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (redirect === false) {
         return;
       } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
-        const existingCallback = router.query.callback as string;
-        const callbackPath = existingCallback || router.asPath;
-        router.push(ROUTES.AUTH.SIGNIN + `?callback=${callbackPath}`);
+        router.push(ROUTES.AUTH.SIGNIN);
       }
     } catch (error) {
       console.error("Logout error:", error);
