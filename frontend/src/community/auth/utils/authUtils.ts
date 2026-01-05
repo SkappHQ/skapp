@@ -7,6 +7,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
+import { getCookieValue } from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams,
@@ -20,7 +21,6 @@ import { config } from "../../../../middleware";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { AuthResponseType } from "../types/auth";
 import authAxios from "./authInterceptor";
-import { getCookieValue } from "~community/common/utils/commonUtil";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -115,7 +115,9 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // Default 1 hour
+    const expiryDate = new Date(
+      Date.now() + unitConversion.MILLISECONDS_PER_DAY
+    );
 
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
   }
@@ -123,7 +125,9 @@ export const setAccessToken = (token: string) => {
 
 export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // Default 1 hour
+    const expiryDate = new Date(
+      Date.now() + unitConversion.MILLISECONDS_PER_MONTH
+    );
 
     document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
   }
