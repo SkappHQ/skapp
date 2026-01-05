@@ -80,6 +80,4 @@ public class EsignConstants {
 
 	public static final int ESIGN_OTP_BACKOFF_MULTIPLIER = 2;
 
-	public static final String OTP_MESSAGE = "Your OTP to access the Document is: ";
-
 }

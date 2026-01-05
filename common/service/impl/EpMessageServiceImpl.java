@@ -20,14 +20,22 @@ import com.twilio.type.PhoneNumber;
 @RequiredArgsConstructor
 public class EpMessageServiceImpl implements EpMessageService {
 
-	@Value("${twilio.verify.phone-number}")
-	private String phoneNumber;
+	@Value("${twilio.message-service-sid}")
+	private String messageServiceSid;
+
+	@Value("${twilio.message-content-sid}")
+	private String contentSid;
 
 	@Override
 	public void sendMessage(String target, String messageContent) {
 		try {
-			Message message = Message.creator(new PhoneNumber(target), new PhoneNumber(phoneNumber), messageContent)
-				.create();
+
+			Message message = Message.creator(new PhoneNumber(target), messageServiceSid, (String) null // No
+																										// body
+																										// when
+																										// using
+																										// ContentSid
+			).setContentSid(contentSid).setContentVariables("{\"1\":\"" + messageContent + "\"}").create();
 
 			log.info("Message sent to: {} successfully.", target);
 

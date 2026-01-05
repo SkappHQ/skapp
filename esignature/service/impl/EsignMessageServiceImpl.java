@@ -16,7 +16,7 @@ public class EsignMessageServiceImpl implements EsignMessageService {
 
 	@Override
 	public void sendOtpMessage(String target, String otp) {
-		epMessageService.sendMessage(target, EsignConstants.OTP_MESSAGE + otp);
+		epMessageService.sendMessage(target, otp);
 	}
 
 }
