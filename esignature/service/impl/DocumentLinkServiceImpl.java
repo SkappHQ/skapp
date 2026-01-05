@@ -819,9 +819,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				esignVerification.setVerified(false);
 
 				esignVerificationDao.save(esignVerification);
+
+				esignMessageService.sendOtpMessage(target, otpCode);
 			}
 
-			esignMessageService.sendOtpMessage(target, otpCode);
 		}
 
 		// Return if the verification otp sent was success or failed.
