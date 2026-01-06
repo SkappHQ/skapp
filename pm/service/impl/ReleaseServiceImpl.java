@@ -360,9 +360,8 @@ public class ReleaseServiceImpl implements ReleaseService {
 			String statusClass = status.name().toLowerCase();
 			String statusText = capitalizeFirst(status.name());
 
-				    String approvedIconSrc = ReleaseApprovalStatus.APPROVED.equals(status)
-					    ? loadIconFromResources("approved.png")
-					    : "";
+			String approvedIconSrc = ReleaseApprovalStatus.APPROVED.equals(status)
+					? loadIconFromResources("approved.png") : "";
 
 			String actionText = approver.getActionDate() != null ? approver.getActionDate().format(dateFormatter) : "";
 
