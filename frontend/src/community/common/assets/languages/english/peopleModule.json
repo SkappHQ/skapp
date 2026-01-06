@@ -448,8 +448,8 @@
       "exportPeopleDirectorySuccessDescription": "Successfully exported {{count}} employees to CSV.",
       "exportPeopleDirectoryErrorTitle": "Export Failed",
       "exportPeopleDirectoryErrorDescription": "Failed to export employee directory. Please try again.",
-      "exportPeopleDirectoryNoDataTitle": "No Data Available",
-      "exportPeopleDirectoryNoDataDescription": "There are no employees available to export."
+      "exportPeopleDirectoryNoDataTitle": "No Results to Export",
+      "exportPeopleDirectoryNoDataDescription": "Your current filters return no employees."
     }
   },
 
