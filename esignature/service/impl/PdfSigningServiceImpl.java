@@ -57,20 +57,17 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 	private final CertificateProvider certificateProvider;
 
-	@Value("${skapp.pdf-signing.enabled:false}")
+	@Value("${skapp.pdf-signing.enabled}")
 	private boolean signingEnabled;
 
-	@Value("${skapp.pdf-signing.signature.reason:Document completion signature}")
-	private String signatureReason;
+	// Signature metadata constants (business logic, not configuration)
+	private static final String SIGNATURE_REASON = "Document completion signature";
 
-	@Value("${skapp.pdf-signing.signature.location:Skapp Platform}")
-	private String signatureLocation;
+	private static final String SIGNATURE_LOCATION = "Skapp Platform";
 
-	@Value("${skapp.pdf-signing.signature.contact-info:support@skapp.com}")
-	private String signatureContactInfo;
+	private static final String SIGNATURE_CONTACT_INFO = "support@skapp.com";
 
-	@Value("${skapp.pdf-signing.signature.name:Skapp Inc}")
-	private String signatureName;
+	private static final String SIGNATURE_NAME = "Skapp Inc";
 
 	@Override
 	public SignedPdfResult signPdf(byte[] pdfBytes) {
@@ -132,10 +129,10 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 
 			// Set signature metadata
-			signature.setName(signatureName);
-			signature.setReason(signatureReason);
-			signature.setLocation(signatureLocation);
-			signature.setContactInfo(signatureContactInfo);
+			signature.setName(SIGNATURE_NAME);
+			signature.setReason(SIGNATURE_REASON);
+			signature.setLocation(SIGNATURE_LOCATION);
+			signature.setContactInfo(SIGNATURE_CONTACT_INFO);
 
 			// Set signing time
 			Calendar signingTime = Calendar.getInstance();

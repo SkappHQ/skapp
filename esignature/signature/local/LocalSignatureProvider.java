@@ -45,8 +45,8 @@ public class LocalSignatureProvider implements SignatureProvider {
 	@Value("${skapp.pdf-signing.local.key-alias}")
 	private String keyAlias;
 
-	@Value("${skapp.pdf-signing.signature.hash-algorithm:SHA256}")
-	private String hashAlgorithm; // SHA256, SHA384, SHA512
+	// Hash algorithm is hardcoded as it's a technical constant, not configuration
+	private static final String HASH_ALGORITHM = "SHA256";
 
 	private KeyStore keyStore;
 
@@ -96,10 +96,10 @@ public class LocalSignatureProvider implements SignatureProvider {
 			// Determine signature algorithm based on key type
 			String keyAlg = privateKey.getAlgorithm();
 			if ("RSA".equals(keyAlg)) {
-				signatureAlgorithm = hashAlgorithm + "withRSA";
+				signatureAlgorithm = HASH_ALGORITHM + "withRSA";
 			}
 			else if ("EC".equals(keyAlg)) {
-				signatureAlgorithm = hashAlgorithm + "withECDSA";
+				signatureAlgorithm = HASH_ALGORITHM + "withECDSA";
 			}
 			else {
 				throw new IllegalStateException("Unsupported key algorithm: " + keyAlg);
