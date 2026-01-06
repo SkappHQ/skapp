@@ -561,8 +561,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code,
-			boolean isDocAccess) {
+	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code) {
 
 		validateAndGetRecipient(documentId, recipientId);
 

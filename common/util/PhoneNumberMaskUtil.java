@@ -43,7 +43,7 @@ public class PhoneNumberMaskUtil {
 
 	/**
 	 * Finds the end index of the country code in a phone number Assumes country codes are
-	 * 1-3 digits after the + sign
+	 * 1-4 digits after the + sign
 	 */
 	private static int findCountryCodeEnd(String phoneNumber) {
 		for (int i = 1; i <= Math.min(4, phoneNumber.length()); i++) {

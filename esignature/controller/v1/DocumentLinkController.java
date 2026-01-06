@@ -106,7 +106,7 @@ public class DocumentLinkController {
 			@RequestParam Long recipientId, @RequestParam String code) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.verifyOtpFromDocumentAndRecipientId(documentId,
-				recipientId, code, false);
+				recipientId, code);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}

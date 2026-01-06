@@ -8,7 +8,7 @@ import java.time.Instant;
 @UtilityClass
 public class OtpUtil {
 
-	private final SecureRandom secureRandom = new SecureRandom();
+	private static final SecureRandom secureRandom = new SecureRandom();
 
 	public static String generateOTP() {
 		return String.format("%04d", secureRandom.nextInt(9999));

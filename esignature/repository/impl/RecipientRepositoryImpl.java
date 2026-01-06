@@ -27,6 +27,19 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 
 	private final EntityManager entityManager;
 
+	/**
+	 * Retrieves the phone number associated with a recipient by their ID.
+	 * <p>
+	 * Performs joins between Recipient, AddressBook, User, Employee, and ExternalUser
+	 * entities. Returns the phone number based on the recipient's user type:
+	 * <ul>
+	 * <li>If the user type is EXTERNAL, returns the phone from ExternalUser.</li>
+	 * <li>If the user type is INTERNAL, returns the phone from Employee.</li>
+	 * <li>Otherwise, returns null.</li>
+	 * </ul>
+	 * @param recipientId the ID of the recipient
+	 * @return the phone number as a String, or null if not found
+	 */
 	@Override
 	public String findPhoneByRecipientId(Long recipientId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();

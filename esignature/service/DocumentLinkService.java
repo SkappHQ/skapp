@@ -40,7 +40,7 @@ public interface DocumentLinkService {
 
 	ResponseEntityDto verifyOtpFromUuid(String uuid, String state, String code);
 
-	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code, boolean b);
+	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code);
 
 	ResponseEntityDto resendOtpFromUuid(String uuid, String state);
 
