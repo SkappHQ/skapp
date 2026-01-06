@@ -7,7 +7,6 @@ import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
-import com.skapp.enterprise.esignature.signature.SignatureProviderException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,15 +97,16 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 				.build();
 
 		}
+		catch (ModuleException e) {
+			log.error("Signature provider operation failed", e);
+			throw e;
+		}
 		catch (CertificateProviderException e) {
 			log.error("Failed to load certificate chain", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 		catch (IOException e) {
 			log.error("Failed to process PDF document", e);
-			if (e.getCause() instanceof SignatureProviderException) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT);
-			}
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 		catch (Exception e) {
@@ -243,19 +243,14 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			if (signatureGenerated) {
 				throw new IllegalStateException("Signature has already been generated");
 			}
-			try {
-				byte[] dataToSign = outputStream.toByteArray();
-				// We pass the raw data (SignedAttributes) to the provider.
-				// The provider (if using standard Java Signature) will hash it.
-				// If the provider expects a pre-calculated hash (like some HSMs),
-				// it should be adapted to hash the input first.
-				byte[] signature = provider.signHash(dataToSign);
-				signatureGenerated = true;
-				return signature;
-			}
-			catch (Exception e) {
-				throw new RuntimeException("Failed to sign data", e);
-			}
+			byte[] dataToSign = outputStream.toByteArray();
+			// We pass the raw data (SignedAttributes) to the provider.
+			// The provider (if using standard Java Signature) will hash it.
+			// If the provider expects a pre-calculated hash (like some HSMs),
+			// it should be adapted to hash the input first.
+			byte[] signature = provider.signHash(dataToSign);
+			signatureGenerated = true;
+			return signature;
 		}
 
 	}

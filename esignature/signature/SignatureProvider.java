@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.signature;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.model.SignatureProviderType;
 
 import java.security.cert.X509Certificate;
@@ -34,9 +35,9 @@ public interface SignatureProvider {
 	 * </ul>
 	 * @param contentToSign The raw content bytes to be signed
 	 * @return Signed bytes (raw signature)
-	 * @throws SignatureProviderException if signing operation fails
+	 * @throws ModuleException if signing operation fails
 	 */
-	byte[] signHash(byte[] contentToSign) throws SignatureProviderException;
+	byte[] signHash(byte[] contentToSign) throws ModuleException;
 
 	/**
 	 * Retrieve the certificate chain for signature validation.
@@ -45,9 +46,9 @@ public interface SignatureProvider {
 	 * third-party verification. The certificate chain is ordered from leaf certificate to
 	 * root CA, including any intermediate certificates.
 	 * @return X509Certificate array ordered from leaf certificate to root CA
-	 * @throws SignatureProviderException if certificate chain cannot be retrieved
+	 * @throws ModuleException if certificate chain cannot be retrieved
 	 */
-	X509Certificate[] getCertificateChain() throws SignatureProviderException;
+	X509Certificate[] getCertificateChain() throws ModuleException;
 
 	/**
 	 * Get the signature algorithm identifier.

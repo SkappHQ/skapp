@@ -1,8 +1,8 @@
 package com.skapp.enterprise.esignature.signature.azure;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.model.SignatureProviderType;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
-import com.skapp.enterprise.esignature.signature.SignatureProviderException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,7 +48,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	// private CertificateClient certificateClient;
 
 	@Override
-	public byte[] signHash(byte[] hash) throws SignatureProviderException {
+	public byte[] signHash(byte[] hash) throws ModuleException {
 		// TODO: Implement Azure Key Vault signing
 		// SignResult result = cryptographyClient.sign(SignatureAlgorithm.RS256, hash);
 		// return result.getSignature();
@@ -57,7 +57,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	}
 
 	@Override
-	public X509Certificate[] getCertificateChain() throws SignatureProviderException {
+	public X509Certificate[] getCertificateChain() throws ModuleException {
 		// TODO: Implement certificate chain retrieval from Azure Key Vault
 		// KeyVaultCertificateWithPolicy certificate =
 		// certificateClient.getCertificate(certificateName);

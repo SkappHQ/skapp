@@ -1,8 +1,9 @@
 package com.skapp.enterprise.esignature.signature.local;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.SignatureProviderType;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
-import com.skapp.enterprise.esignature.signature.SignatureProviderException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -120,7 +121,7 @@ public class LocalSignatureProvider implements SignatureProvider {
 	}
 
 	@Override
-	public byte[] signHash(byte[] contentToSign) throws SignatureProviderException {
+	public byte[] signHash(byte[] contentToSign) throws ModuleException {
 		try {
 			log.debug("Signing data with local private key (algorithm: {})", signatureAlgorithm);
 
@@ -140,14 +141,14 @@ public class LocalSignatureProvider implements SignatureProvider {
 		}
 		catch (Exception e) {
 			log.error("Failed to sign hash with local private key", e);
-			throw new SignatureProviderException("Failed to sign hash", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED);
 		}
 	}
 
 	@Override
-	public X509Certificate[] getCertificateChain() throws SignatureProviderException {
+	public X509Certificate[] getCertificateChain() throws ModuleException {
 		if (certificateChain == null) {
-			throw new SignatureProviderException("Certificate chain not initialized. Check keystore configuration.");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 		return certificateChain;
 	}
