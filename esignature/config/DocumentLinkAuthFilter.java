@@ -58,7 +58,7 @@ public class DocumentLinkAuthFilter extends OncePerRequestFilter {
 
 	public static final String ENVELOPE_SIGNATURE_CERTIFICATE_URL = "/v1/ep/esign/envelopes/signature-certificate";
 
-	public static final String AUDIT_TRIAL_CREATE_URL = "/v1/ep/esign/audit-trial/create";
+	public static final String AUDIT_TRIAL_CREATE_URL = "/v1/ep/esign/audit-trail/create";
 
 	public static final String CONFIG_URL = "/v1/ep/esign/config/external";
 

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/ep/esign/audit-trial")
+@RequestMapping("/v1/ep/esign/audit-trail")
 public class AuditTrailController {
 
 	private final AuditTrailService auditTrailService;
