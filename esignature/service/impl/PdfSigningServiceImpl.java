@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.skapp.enterprise.esignature.exception.PdfSigningException;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
@@ -72,7 +73,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 	private String signatureName;
 
 	@Override
-	public SignedPdfResult signPdf(byte[] pdfBytes) throws PdfSigningException {
+	public SignedPdfResult signPdf(byte[] pdfBytes) {
 
 		if (!signingEnabled) {
 			log.warn("PDF signing is disabled. Skipping signature.");
@@ -102,18 +103,18 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 		}
 		catch (CertificateProviderException e) {
 			log.error("Failed to load certificate chain", e);
-			throw new PdfSigningException("Failed to load certificate chain", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 		catch (IOException e) {
 			log.error("Failed to process PDF document", e);
 			if (e.getCause() instanceof SignatureProviderException) {
-				throw new PdfSigningException("Failed to generate signature: " + e.getCause().getMessage(), e);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT);
 			}
-			throw new PdfSigningException("Failed to process PDF document", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 		catch (Exception e) {
 			log.error("Failed to sign PDF", e);
-			throw new PdfSigningException("Failed to sign PDF document", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT);
 		}
 	}
 

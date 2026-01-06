@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.service;
 
-import com.skapp.enterprise.esignature.exception.PdfSigningException;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 
 /**
@@ -28,9 +27,8 @@ public interface PdfSigningService {
 	 * certificate chain
 	 * @param pdfBytes The PDF document bytes (already loaded in completion workflow)
 	 * @return SignedPdfResult containing signed PDF bytes and signature metadata
-	 * @throws PdfSigningException if any step of the signing process fails
 	 */
-	SignedPdfResult signPdf(byte[] pdfBytes) throws PdfSigningException;
+	SignedPdfResult signPdf(byte[] pdfBytes);
 
 	/**
 	 * Check if PDF signing feature is enabled.
