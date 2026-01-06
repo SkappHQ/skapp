@@ -12,8 +12,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Aspect that captures User-Agent header for methods annotated with @CaptureUserAgent.
- * The User-Agent is stored in AuditRequestContext and automatically cleared after
- * the method execution completes.
+ * The User-Agent is stored in AuditRequestContext and automatically cleared after the
+ * method execution completes.
  */
 @Slf4j
 @Aspect
@@ -23,7 +23,6 @@ public class UserAgentCaptureAspect {
 	/**
 	 * Intercepts methods annotated with @CaptureUserAgent to capture and store the
 	 * User-Agent header from the HTTP request.
-	 *
 	 * @param joinPoint the method execution join point
 	 * @return the result of the method execution
 	 * @throws Throwable if the underlying method throws an exception
@@ -53,7 +52,6 @@ public class UserAgentCaptureAspect {
 
 	/**
 	 * Retrieves the current HTTP request from Spring's RequestContextHolder.
-	 *
 	 * @return the current HttpServletRequest, or null if not available
 	 */
 	private HttpServletRequest getCurrentHttpRequest() {
