@@ -14,6 +14,8 @@ public class ApproverDto {
 
 	private String role;
 
+	private String profilePicture;
+
 	private ReleaseApprovalStatus status;
 
 	private LocalDateTime actionDate;
