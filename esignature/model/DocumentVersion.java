@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -64,7 +65,7 @@ public class DocumentVersion extends Auditable<String> {
 	 * Timestamp when PDF was signed with organization certificate
 	 */
 	@Column(name = "pdf_signed_at")
-	private java.time.LocalDateTime pdfSignedAt;
+	private LocalDateTime pdfSignedAt;
 
 	/**
 	 * Certificate serial number used for PDF signing
