@@ -5,7 +5,6 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
-import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -97,20 +96,12 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 				.build();
 
 		}
-		catch (ModuleException e) {
-			log.error("Signature provider operation failed", e);
-			throw e;
-		}
-		catch (CertificateProviderException e) {
-			log.error("Failed to load certificate chain", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
-		}
 		catch (IOException e) {
 			log.error("Failed to process PDF document", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 		catch (Exception e) {
-			log.error("Failed to sign PDF", e);
+			log.error("Unexpected error during PDF signing", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT);
 		}
 	}
@@ -194,8 +185,8 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 			}
 			catch (Exception e) {
-				log.error("Failed to sign PDF content", e);
-				throw new IOException("Failed to sign PDF content", e);
+				log.error("Failed to create CMS signature", e);
+				throw new IOException("Failed to create CMS signature", e);
 			}
 		}
 

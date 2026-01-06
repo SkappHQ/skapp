@@ -1,7 +1,6 @@
 package com.skapp.enterprise.esignature.signature.azure;
 
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
-import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +31,7 @@ import java.security.cert.X509Certificate;
 public class AzureKeyVaultCertificateProvider implements CertificateProvider {
 
 	@Override
-	public X509Certificate[] loadCertificateChain() throws CertificateProviderException {
+	public X509Certificate[] loadCertificateChain() {
 		// TODO: Implement certificate chain loading from Azure Key Vault
 		// Delegate to SignatureProvider which has the Azure client
 		throw new UnsupportedOperationException("Azure Key Vault certificate loading is not yet implemented. "

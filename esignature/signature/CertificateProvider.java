@@ -21,9 +21,9 @@ public interface CertificateProvider {
 	 * development, this might be a single self-signed certificate. For production, this
 	 * should include intermediate and root CA certificates.
 	 * @return X509Certificate array [leaf, intermediate(s), root]
-	 * @throws CertificateProviderException if certificate chain cannot be loaded
+	 * @throws ModuleException if certificate chain cannot be loaded
 	 */
-	X509Certificate[] loadCertificateChain() throws CertificateProviderException;
+	X509Certificate[] loadCertificateChain();
 
 	/**
 	 * Get the number of days until certificate expiration.

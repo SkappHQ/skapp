@@ -1,7 +1,8 @@
 package com.skapp.enterprise.esignature.signature.local;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.signature.CertificateProvider;
-import com.skapp.enterprise.esignature.signature.CertificateProviderException;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +31,13 @@ public class LocalCertificateProvider implements CertificateProvider {
 	private final SignatureProvider signatureProvider;
 
 	@Override
-	public X509Certificate[] loadCertificateChain() throws CertificateProviderException {
+	public X509Certificate[] loadCertificateChain() {
 		try {
 			return signatureProvider.getCertificateChain();
 		}
 		catch (Exception e) {
 			log.error("Failed to load certificate chain from local keystore", e);
-			throw new CertificateProviderException("Failed to load certificate chain", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 	}
 
