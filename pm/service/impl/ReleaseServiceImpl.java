@@ -360,10 +360,9 @@ public class ReleaseServiceImpl implements ReleaseService {
 			String statusClass = status.name().toLowerCase();
 			String statusText = capitalizeFirst(status.name());
 
-			String approvedIcon = ReleaseApprovalStatus.APPROVED.equals(status)
-					? "<img src=\"" + loadIconFromResources("approved.png")
-							+ "\" style=\"width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;\" />"
-					: "";
+				    String approvedIconSrc = ReleaseApprovalStatus.APPROVED.equals(status)
+					    ? loadIconFromResources("approved.png")
+					    : "";
 
 			String actionText = approver.getActionDate() != null ? approver.getActionDate().format(dateFormatter) : "";
 
@@ -400,7 +399,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 				.replace("{{approverAvatar}}", avatarHtml)
 				.replace("{{statusClass}}", statusClass)
 				.replace("{{statusText}}", statusText)
-				.replace("{{approvedIcon}}", approvedIcon);
+				.replace("{{approvedIconSrc}}", approvedIconSrc);
 
 			if (!ReleaseApprovalStatus.PENDING.equals(status) && approver.getRemarks() != null
 					&& !approver.getRemarks().trim().isEmpty()) {
