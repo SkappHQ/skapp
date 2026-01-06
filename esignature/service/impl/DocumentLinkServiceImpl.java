@@ -852,26 +852,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		EsignVerification esignVerification = esignVerificationOptional.get();
 
-		try {
-			if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(),
-					code)) {
+		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
 
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
-			}
-
-			esignVerification.setVerificationCode(null);
-			esignVerification.setOtpExpiryTime(null);
-			esignVerification.setVerified(true);
-			esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
-			esignVerificationDao.save(esignVerification);
-
-			return new ResponseEntityDto(false,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 		}
-		catch (Exception e) {
 
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_VERIFICATION);
-		}
+		esignVerification.setVerificationCode(null);
+		esignVerification.setOtpExpiryTime(null);
+		esignVerification.setVerified(true);
+		esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
+		esignVerificationDao.save(esignVerification);
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
+
 	}
 
 	private boolean getMfaVerificationStatus(DocumentLink documentLink, Long documentId, Long recipientId) {
