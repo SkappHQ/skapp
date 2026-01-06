@@ -1,5 +1,7 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.EpMessageService;
 import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,14 @@ public class EpMessageServiceImpl implements EpMessageService {
 			.setContentVariables("{\"1\":\"" + messageContent + "\"}")
 			.create();
 
-		log.info("Message delivery triggered to: {} successfully.", PhoneNumberMaskUtil.mask(target));
+		if (message.getErrorCode() == null) {
+			log.info("Message delivery to: {} triggered successfully.", PhoneNumberMaskUtil.mask(target));
+		}
+		else {
+			log.info("Message delivery to: {} unsuccessful. errorCode: {}, errorMessage: {}",
+					PhoneNumberMaskUtil.mask(target), message.getErrorCode(), message.getErrorMessage());
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
+		}
 
 	}
 
