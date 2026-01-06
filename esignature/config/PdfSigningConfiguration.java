@@ -31,7 +31,7 @@ public class PdfSigningConfiguration {
 		log.info("=".repeat(60));
 		log.info("PDF Digital Signing Feature: ENABLED");
 		log.info("  Provider Type: {}", providerType);
-		log.info("  Configuration: application-pdf-signing.yml");
+		log.info("  Configuration: application-ep-*.yml (skapp.pdf-signing)");
 		log.info("=".repeat(60));
 	}
 

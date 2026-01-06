@@ -554,8 +554,10 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes);
 
 			// Create final version with all signatures
-			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes, null,
-					keyPairSender);
+			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
+
+			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes,
+					completeFileUrl, keyPairSender);
 
 			documentVersionDao.save(finalVersion);
 
