@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
@@ -22,6 +23,7 @@ import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -154,9 +157,9 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 		@Override
 		public byte[] sign(InputStream content) throws IOException {
-			try {
-				log.debug("Signing PDF content");
+			log.debug("Signing PDF content");
 
+			try {
 				// 1. Read content bytes
 				byte[] contentBytes = content.readAllBytes();
 
@@ -182,11 +185,18 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 				CMSSignedData signedData = generator.generate(cmsData, false); // detached
 
 				return signedData.getEncoded();
-
 			}
-			catch (Exception e) {
-				log.error("Failed to create CMS signature", e);
-				throw new IOException("Failed to create CMS signature", e);
+			catch (CertificateEncodingException e) {
+				log.error("Failed to encode certificate for CMS signature", e);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CERTIFICATE_ENCODING_FAILED);
+			}
+			catch (CMSException e) {
+				log.error("Failed to generate CMS signature structure", e);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CMS_SIGNATURE_FAILED);
+			}
+			catch (OperatorCreationException e) {
+				log.error("Failed to create cryptographic operator for signing", e);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OPERATOR_CREATION_FAILED);
 			}
 		}
 
