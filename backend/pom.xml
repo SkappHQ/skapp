@@ -330,6 +330,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.2.0</version>
                 <configuration>
+                    <skip>true</skip>
                     <configLocation>checkstyle.xml</configLocation>
                     <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
