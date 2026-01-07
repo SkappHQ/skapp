@@ -1,3 +1,5 @@
+import { formatDateToISOString } from "~community/common/utils/dateTimeUtils";
+
 interface EmployeeExtraInfo {
   allergies: string;
   dietaryRestrictions: string;
@@ -135,8 +137,12 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Birthdate",
-    accessor: (emp: EmployeeData) =>
-      emp.employeePersonalInfoDto?.birthDate || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.employeePersonalInfoDto?.birthDate) return "";
+      return formatDateToISOString(
+        new Date(emp.employeePersonalInfoDto.birthDate)
+      );
+    }
   },
   {
     header: "Nationality",
@@ -271,7 +277,10 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Joined Date",
-    accessor: (emp: EmployeeData) => emp.joinDate || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.joinDate) return "";
+      return formatDateToISOString(new Date(emp.joinDate));
+    }
   },
   {
     header: "Teams",
@@ -286,11 +295,17 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Probation Start Date",
-    accessor: (emp: EmployeeData) => emp.probationPeriod?.startDate || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.probationPeriod?.startDate) return "";
+      return formatDateToISOString(new Date(emp.probationPeriod.startDate));
+    }
   },
   {
     header: "Probation End Date",
-    accessor: (emp: EmployeeData) => emp.probationPeriod?.endDate || ""
+    accessor: (emp: EmployeeData) => {
+      if (!emp.probationPeriod?.endDate) return "";
+      return formatDateToISOString(new Date(emp.probationPeriod.endDate));
+    }
   },
   {
     header: "Work Time Zone",
