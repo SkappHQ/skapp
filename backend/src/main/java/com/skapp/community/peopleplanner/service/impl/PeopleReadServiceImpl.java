@@ -388,7 +388,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		String employment_employmentDetails_otherSupervisorsField = employmentField + "_" + employmentDetailsField + "_"
 				+ otherSupervisorsField;
 
-		// super-admin people_admin ,people_manager view
+		// super-admin, people_admin, people_manager view
 		if (!doesNotHaveRole(userRoles, Role.SUPER_ADMIN) || !doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN)
 				|| !doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
 			return;
