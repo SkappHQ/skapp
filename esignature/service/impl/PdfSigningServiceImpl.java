@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
-import com.skapp.enterprise.esignature.signature.CertificateProvider;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -56,8 +55,6 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 
 	private final SignatureProvider signatureProvider;
 
-	private final CertificateProvider certificateProvider;
-
 	@Value("${skapp.pdf-signing.enabled}")
 	private boolean signingEnabled;
 
@@ -85,7 +82,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			byte[] signedPdfBytes = signPdfDocument(pdfBytes);
 
 			// 2. Get certificate metadata
-			X509Certificate[] certChain = certificateProvider.loadCertificateChain();
+			X509Certificate[] certChain = signatureProvider.getCertificateChain();
 			X509Certificate orgCert = certChain[0]; // Leaf certificate
 
 			log.info("PDF signed successfully");

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * Configuration class for PDF Digital Signing feature.
  *
  * This configuration logs initialization details when the PDF signing feature is enabled.
- * The actual beans (SignatureProvider, CertificateProvider, PdfSigningService) are
+ * The actual beans (SignatureProvider, PdfSigningService) are
  * auto-configured via @Component/@Service annotations and @ConditionalOnProperty.
  *
  * The configuration is driven by application properties and environment variables,
@@ -38,13 +38,10 @@ public class PdfSigningConfiguration {
 	// Note: All beans are auto-configured via component scanning:
 	// - SignatureProvider implementations (LocalSignatureProvider,
 	// AzureKeyVaultSignatureProvider)
-	// - CertificateProvider implementations (LocalCertificateProvider,
-	// AzureKeyVaultCertificateProvider)
 	// - PdfSigningServiceImpl (@Service with @RequiredArgsConstructor)
 	//
 	// Bean selection is controlled by @ConditionalOnProperty:
-	// - When provider=local: LocalSignatureProvider & LocalCertificateProvider
-	// - When provider=azure: AzureKeyVaultSignatureProvider &
-	// AzureKeyVaultCertificateProvider (future)
+	// - When provider=local: LocalSignatureProvider
+	// - When provider=azure: AzureKeyVaultSignatureProvider
 
 }
