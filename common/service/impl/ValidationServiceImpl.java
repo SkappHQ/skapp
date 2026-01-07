@@ -23,8 +23,6 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ValidationServiceImpl implements ValidationService {
 
-	private final MessageUtil messageUtil;
-
 	private EmailValidationProperties getProperties() {
 		String configPath = profileActivator.isEpPrdProfile() ? EpCommonConstants.PRD_CONFIG_PATH
 				: EpCommonConstants.NON_PRD_CONFIG_PATH;
@@ -35,56 +33,44 @@ public class ValidationServiceImpl implements ValidationService {
 
 	@Override
 	public ResponseEntityDto validateBusinessEmail(String email) {
-		ValidationResult validationResult = validateEmail(email);
-
 		EmailValidationResultDto emailValidationResultDto = new EmailValidationResultDto();
 		emailValidationResultDto.setEmail(email);
-		emailValidationResultDto.setIsValid(validationResult.getIsValid());
 
-		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
-			emailValidationResultDto.setReason(messageUtil.getMessage(validationResult.getMessageKey()));
-		}
+		validateEmail(email);
+		emailValidationResultDto.setIsValid(true);
 
 		return new ResponseEntityDto(false, emailValidationResultDto);
 	}
 
 	@Override
 	public void checkBusinessEmailValidity(String email) {
-		ValidationResult validationResult = validateEmail(email);
-
-		if (Boolean.FALSE.equals(validationResult.getIsValid())) {
-			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_TEMP_OR_DISPOSABLE_EMAIL);
-		}
+		validateEmail(email);
 	}
 
 	@Override
-	public ValidationResult validateEmail(String email) {
+	public void validateEmail(String email) {
 		if (email == null || email.trim().isEmpty()) {
-			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_EMPTY_EMAIL.getMessageKey());
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_EMPTY_EMAIL);
 		}
 
 		if (!Pattern.compile(Validation.EMAIL_REGEX).matcher(email).matches()) {
-			return new ValidationResult(false,
-					EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_EMAIL_FORMAT.getMessageKey());
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_EMAIL_FORMAT);
 		}
 
 		String domain = extractDomain(email);
 		EmailValidationProperties properties = getProperties();
 
 		if (isPersonalDomain(domain, properties)) {
-			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_EMAIL.getMessageKey());
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_PERSONAL_EMAIL);
 		}
 
 		if (isTempEmailDomain(domain, properties)) {
-			return new ValidationResult(false, EPCommonMessageConstant.EP_COMMON_ERROR_TEMP_EMAIL.getMessageKey());
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_TEMP_EMAIL);
 		}
 
 		if (matchesTempEmailPattern(domain, properties)) {
-			return new ValidationResult(false,
-					EPCommonMessageConstant.EP_COMMON_ERROR_DISPOSABLE_EMAIL.getMessageKey());
+			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_DISPOSABLE_EMAIL);
 		}
-
-		return new ValidationResult(true, null);
 	}
 
 	private String extractDomain(String email) {
