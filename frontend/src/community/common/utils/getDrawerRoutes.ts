@@ -176,6 +176,41 @@ const getDrawerRoutes = ({
         }
       }
 
+      if (route?.name === "Projects") {
+        const isPMAdminOrSuperAdmin = userRoles?.some((role) =>
+          [AdminTypes.SUPER_ADMIN, AdminTypes.PM_ADMIN].includes(
+            role as AdminTypes
+          )
+        );
+
+        if (isPMAdminOrSuperAdmin) {
+          const subRoutes = route?.subTree?.filter((subRoute) =>
+            subRoute.requiredAuthLevel?.some((requiredRole) =>
+              userRoles?.includes(requiredRole as Role)
+            )
+          );
+
+          return {
+            id: route?.id,
+            name: route?.name,
+            url: route?.url,
+            icon: route?.icon,
+            hasSubTree: true,
+            subTree: subRoutes,
+            badge: route?.badge
+          };
+        }
+
+        return {
+          id: route?.id,
+          name: route?.name,
+          url: ROUTES.PROJECTS.BASE,
+          icon: route?.icon,
+          hasSubTree: false,
+          badge: route?.badge
+        };
+      }
+
       if (route?.name === "Invoices") {
         const isInvoiceManager = userRoles?.includes(
           ManagerTypes.INVOICE_MANAGER
