@@ -254,7 +254,7 @@ const Dashboard: NextPage = () => {
           ? translateText(["myLeaveAllocations"])
           : translateText(["title"])
       }
-      isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+      isDividerVisible={true}
       customRightContent={
         showYearSelector ? (
           <LeaveYearSelector
