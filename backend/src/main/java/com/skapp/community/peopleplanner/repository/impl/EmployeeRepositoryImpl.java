@@ -11,6 +11,7 @@ import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -243,6 +244,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
+		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
+
 		if (employeeExportFilterDto.getRole() != null && !employeeExportFilterDto.getRole().isEmpty()) {
 			predicates.add(
 					root.get(Employee_.JOB_FAMILY).get(JobFamily_.JOB_FAMILY_ID).in(employeeExportFilterDto.getRole()));
@@ -296,13 +299,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
 					leaveRolePredicate);
 			predicates.add(rolePredicate);
+			predicates.add(criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
 		}
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
+		List<Order> orderList = new ArrayList<>();
 		if (employeeExportFilterDto.getSearchKeyword() != null
 				&& !employeeExportFilterDto.getSearchKeyword().isEmpty()) {
-			List<Order> orderList = new ArrayList<>();
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
 						getSearchString(employeeExportFilterDto.getSearchKeyword())), 1)
@@ -312,11 +316,31 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 						getSearchString(employeeExportFilterDto.getSearchKeyword())), 3)
 				.otherwise(4));
 			orderList.add(sortingOrder);
-			criteriaQuery.orderBy(orderList);
 		}
-		else {
-			criteriaQuery.distinct(true);
+
+		if (employeeExportFilterDto.getSortKey() != null && employeeExportFilterDto.getSortOrder() != null) {
+			if (employeeExportFilterDto.getSortKey() == EmployeeSort.NAME) {
+				if (employeeExportFilterDto.getSortOrder() == Sort.Direction.ASC) {
+					orderList.add(criteriaBuilder.asc(root.get(Employee_.FIRST_NAME)));
+					orderList.add(criteriaBuilder.asc(root.get(Employee_.LAST_NAME)));
+				}
+				else {
+					orderList.add(criteriaBuilder.desc(root.get(Employee_.FIRST_NAME)));
+					orderList.add(criteriaBuilder.desc(root.get(Employee_.LAST_NAME)));
+				}
+			}
+			else {
+				if (employeeExportFilterDto.getSortOrder() == Sort.Direction.ASC) {
+					orderList.add(criteriaBuilder.asc(root.get(employeeExportFilterDto.getSortKey().toString())));
+				}
+				else {
+					orderList.add(criteriaBuilder.desc(root.get(employeeExportFilterDto.getSortKey().toString())));
+				}
+			}
 		}
+
+		criteriaQuery.distinct(true);
+		criteriaQuery.orderBy(orderList);
 
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
 
