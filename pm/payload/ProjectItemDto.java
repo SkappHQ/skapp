@@ -17,6 +17,8 @@ public class ProjectItemDto {
 
 	private String type;
 
+	private String icon;
+
 	private Integer estimation;
 
 	private Boolean isDeleted;
