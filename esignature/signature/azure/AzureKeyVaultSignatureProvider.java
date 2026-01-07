@@ -67,8 +67,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	@Value("${skapp.pdf-signing.azure.certificate-name}")
 	private String certificateName;
 
-	// Hash algorithm constant
-	private static final String HASH_ALGORITHM = "SHA-256";
+	// Hash algorithm
+	private String hashAlgorithm = "SHA-256";
 
 	// Azure Key Vault clients (initialized in @PostConstruct)
 	private CryptographyClient cryptographyClient;
@@ -107,16 +107,20 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			// 2. Create authentication credential
 			TokenCredential credential = createCredential();
 
-			// 3. Initialize Azure clients
-			initializeClients(credential);
+			// 3. Initialize Management clients
+			initializeCertificateClient(credential);
+			initializeKeyClient(credential);
 
-			// 4. Load and cache certificate chain
-			loadAndCacheCertificateChain();
+			// 4. Load certificate and determine correct Key Version
+			String specificKeyId = loadCertificateAndGetKeyId();
 
-			// 5. Determine signature algorithm
+			// 5. Initialize Cryptography client with specific Key Version
+			initializeCryptographyClient(credential, specificKeyId);
+
+			// 6. Determine signature algorithm
 			determineSignatureAlgorithm();
 
-			// 6. Test connectivity
+			// 7. Test connectivity
 			if (!testConnection()) {
 				throw new IllegalStateException("Azure Key Vault connection test failed");
 			}
@@ -149,16 +153,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	}
 
 	private TokenCredential createCredential() {
-		// Use service principal if explicitly configured, otherwise use
-		// DefaultAzureCredential
-		// DefaultAzureCredential attempts authentication in this order:
-		// 1. Environment variables (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET,
-		// AZURE_TENANT_ID)
-		// 2. Managed Identity (when running in Azure)
-		// 3. Azure CLI (for local development)
-		// 4. IntelliJ Azure plugin
-		// 5. Visual Studio Code Azure plugin
-
+		// Use service principal if explicitly configured; otherwise rely on DefaultAzureCredential (Managed Identity, CLI, etc.)
 		if (StringUtils.hasText(tenantId) && StringUtils.hasText(clientId) && StringUtils.hasText(clientSecret)) {
 			log.info("Using Service Principal authentication");
 			return new ClientSecretCredentialBuilder().tenantId(tenantId)
@@ -172,35 +167,46 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		}
 	}
 
-	private void initializeClients(TokenCredential credential) {
-		// Certificate client for loading certificate chain
+	private void initializeCertificateClient(TokenCredential credential) {
 		certificateClient = new CertificateClientBuilder().vaultUrl(keyVaultUrl).credential(credential).buildClient();
-
-		// Key client for retrieving key metadata
-		keyClient = new KeyClientBuilder().vaultUrl(keyVaultUrl).credential(credential).buildClient();
-
-		// Cryptography client for signing operations
-		// Note: This requires the full key identifier
-		String keyId = keyVaultUrl + "/keys/" + keyName;
-		cryptographyClient = new CryptographyClientBuilder().credential(credential).keyIdentifier(keyId).buildClient();
-
-		log.debug("Azure Key Vault clients initialized");
+		log.debug("Azure Key Vault Certificate client initialized");
 	}
 
-	private void loadAndCacheCertificateChain() throws Exception {
+	private void initializeKeyClient(TokenCredential credential) {
+		keyClient = new KeyClientBuilder().vaultUrl(keyVaultUrl).credential(credential).buildClient();
+		log.debug("Azure Key Vault Key client initialized");
+	}
+
+	private void initializeCryptographyClient(TokenCredential credential, String keyId) {
+		cryptographyClient = new CryptographyClientBuilder().credential(credential).keyIdentifier(keyId).buildClient();
+		log.debug("Azure Key Vault cryptography client initialized with Key ID: {}", keyId);
+	}
+
+	private String loadCertificateAndGetKeyId() throws Exception {
 		log.debug("Loading certificate chain from Azure Key Vault");
 
-		// Retrieve certificate from Key Vault
 		KeyVaultCertificateWithPolicy certificate = certificateClient.getCertificate(certificateName);
 
 		if (certificate == null) {
 			throw new IllegalStateException("Certificate not found in Key Vault: " + certificateName);
 		}
 
-		// Parse certificate chain
 		certificateChain = parseCertificateChain(certificate);
 
 		log.debug("Certificate chain loaded: {} certificates", certificateChain.length);
+
+		// Extract Key ID to ensure we sign with the exact key version matching the cert
+		String keyId = certificate.getKeyId();
+		if (StringUtils.hasText(keyId)) {
+			log.info("Using Key ID from certificate: {}", keyId);
+			return keyId;
+		}
+		else {
+			// Fallback (unlikely for valid AKV certs)
+			String fallbackId = keyVaultUrl + "/keys/" + keyName;
+			log.warn("Certificate does not contain Key ID, falling back to latest key: {}", fallbackId);
+			return fallbackId;
+		}
 	}
 
 	private X509Certificate[] parseCertificateChain(KeyVaultCertificateWithPolicy certificate) throws Exception {
@@ -213,60 +219,89 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 		// Parse X.509 certificate(s)
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-		List<X509Certificate> certList = new ArrayList<>();
 
-		// Try to parse as a single certificate first
+		// Try to parse the full chain (works for P7B or sequence of certs)
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(certBytes)) {
-			X509Certificate cert = (X509Certificate) certFactory.generateCertificate(bis);
-			certList.add(cert);
+			java.util.Collection<? extends java.security.cert.Certificate> certificates = certFactory
+				.generateCertificates(bis);
+
+			if (certificates.isEmpty()) {
+				throw new IllegalStateException("No certificates parsed from Key Vault");
+			}
+
+			List<X509Certificate> x509Certificates = new ArrayList<>();
+			for (java.security.cert.Certificate cert : certificates) {
+				if (cert instanceof X509Certificate) {
+					x509Certificates.add((X509Certificate) cert);
+				}
+			}
+
+			if (x509Certificates.size() == 1) {
+				log.warn("Only one certificate found in chain. PDF validation may fail if intermediate CAs are missing.");
+			}
+
+			log.debug("Parsed {} certificate(s) from Azure Key Vault", x509Certificates.size());
+
+			return x509Certificates.toArray(new X509Certificate[0]);
 		}
-
-		// For full chain, we need to check if the certificate policy includes chain
-		// Azure Key Vault typically returns the leaf certificate in 'cer'
-		// For the full chain, we may need to reconstruct it from the certificate's
-		// issuer
-		// or rely on the chain being embedded in the certificate
-
-		log.debug("Parsed {} certificate(s) from Azure Key Vault", certList.size());
-
-		return certList.toArray(new X509Certificate[0]);
 	}
 
 	private void determineSignatureAlgorithm() throws Exception {
-		// Retrieve key metadata to determine key type
-		KeyVaultKey key = keyClient.getKey(keyName);
+		// Retrieve key metadata using the cryptography client (ensures we get the exact
+		// version)
+		KeyVaultKey key = cryptographyClient.getKey();
 		JsonWebKey jsonWebKey = key.getKey();
 
-		String keyType = jsonWebKey.getKeyType().toString();
-		log.debug("Key type: {}", keyType);
+		String keyType = String.valueOf(jsonWebKey.getKeyType());
+		String curveName = String.valueOf(jsonWebKey.getCurveName());
+
+		log.info("Key properties - Type: {}, Curve: {}", keyType, curveName);
 
 		// Map key type to signature algorithm
 		if ("RSA".equalsIgnoreCase(keyType) || "RSA-HSM".equalsIgnoreCase(keyType)) {
+			// For RSA, we default to SHA-256/RS256, but could support stronger variants if
+			// needed
+			hashAlgorithm = "SHA-256";
 			signatureAlgorithm = "SHA256withRSA";
 			azureSignatureAlgorithm = SignatureAlgorithm.RS256;
 		}
 		else if ("EC".equalsIgnoreCase(keyType) || "EC-HSM".equalsIgnoreCase(keyType)) {
-			signatureAlgorithm = "SHA256withECDSA";
-			azureSignatureAlgorithm = SignatureAlgorithm.ES256;
+			if ("P-384".equalsIgnoreCase(curveName)) {
+				hashAlgorithm = "SHA-384";
+				signatureAlgorithm = "SHA384withECDSA";
+				azureSignatureAlgorithm = SignatureAlgorithm.ES384;
+			}
+			else if ("P-521".equalsIgnoreCase(curveName)) {
+				hashAlgorithm = "SHA-512";
+				signatureAlgorithm = "SHA512withECDSA";
+				azureSignatureAlgorithm = SignatureAlgorithm.ES512;
+			}
+			else {
+				// Default to P-256
+				hashAlgorithm = "SHA-256";
+				signatureAlgorithm = "SHA256withECDSA";
+				azureSignatureAlgorithm = SignatureAlgorithm.ES256;
+			}
 		}
 		else {
 			throw new IllegalStateException("Unsupported key type: " + keyType);
 		}
 
-		log.debug("Determined signature algorithm: {} (Azure: {})", signatureAlgorithm, azureSignatureAlgorithm);
+		log.info("Determined algorithms - Hash: {}, Java Sig: {}, Azure Sig: {}", hashAlgorithm, signatureAlgorithm,
+				azureSignatureAlgorithm);
 	}
 
 	@Override
-	public byte[] signHash(byte[] contentToSign) throws ModuleException {
+	public byte[] signContent(byte[] contentToSign) throws ModuleException {
 		try {
 			log.debug("Signing data with Azure Key Vault (algorithm: {})", azureSignatureAlgorithm);
 
 			// CRITICAL: Azure Key Vault expects a pre-computed digest
 			// We must hash the content first, then sign the hash
-			MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
+			MessageDigest digest = MessageDigest.getInstance(hashAlgorithm);
 			byte[] hash = digest.digest(contentToSign);
 
-			log.debug("Computed SHA-256 hash (length: {} bytes)", hash.length);
+			log.debug("Computed {} hash (length: {} bytes)", hashAlgorithm, hash.length);
 
 			// Sign the hash using Azure Key Vault
 			SignResult signResult = cryptographyClient.sign(azureSignatureAlgorithm, hash);

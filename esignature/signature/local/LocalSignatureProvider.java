@@ -121,7 +121,7 @@ public class LocalSignatureProvider implements SignatureProvider {
 	}
 
 	@Override
-	public byte[] signHash(byte[] contentToSign) throws ModuleException {
+	public byte[] signContent(byte[] contentToSign) throws ModuleException {
 		try {
 			log.debug("Signing data with local private key (algorithm: {})", signatureAlgorithm);
 

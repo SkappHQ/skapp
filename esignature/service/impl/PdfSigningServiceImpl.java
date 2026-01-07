@@ -249,7 +249,7 @@ public class PdfSigningServiceImpl implements PdfSigningService {
 			// The provider (if using standard Java Signature) will hash it.
 			// If the provider expects a pre-calculated hash (like some HSMs),
 			// it should be adapted to hash the input first.
-			byte[] signature = provider.signHash(dataToSign);
+			byte[] signature = provider.signContent(dataToSign);
 			signatureGenerated = true;
 			return signature;
 		}

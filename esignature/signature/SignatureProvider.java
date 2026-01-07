@@ -37,7 +37,7 @@ public interface SignatureProvider {
 	 * @return Signed bytes (raw signature)
 	 * @throws ModuleException if signing operation fails
 	 */
-	byte[] signHash(byte[] contentToSign) throws ModuleException;
+	byte[] signContent(byte[] contentToSign) throws ModuleException;
 
 	/**
 	 * Retrieve the certificate chain for signature validation.
