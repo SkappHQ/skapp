@@ -67,8 +67,27 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	@Value("${skapp.pdf-signing.azure.certificate-name}")
 	private String certificateName;
 
-	// Hash algorithm
-	private String hashAlgorithm = "SHA-256";
+	// JCA Algorithm Constants
+	private static final String ALGO_SHA_256 = "SHA-256";
+	private static final String ALGO_SHA_384 = "SHA-384";
+	private static final String ALGO_SHA_512 = "SHA-512";
+	private static final String SIG_ALGO_RSA_SHA256 = "SHA256withRSA";
+	private static final String SIG_ALGO_ECDSA_SHA256 = "SHA256withECDSA";
+	private static final String SIG_ALGO_ECDSA_SHA384 = "SHA384withECDSA";
+	private static final String SIG_ALGO_ECDSA_SHA512 = "SHA512withECDSA";
+
+	// Elliptic Curve Constants
+	private static final String CURVE_P_384 = "P-384";
+	private static final String CURVE_P_521 = "P-521";
+
+	// Key Type Constants
+	private static final String KEY_TYPE_RSA = "RSA";
+	private static final String KEY_TYPE_RSA_HSM = "RSA-HSM";
+	private static final String KEY_TYPE_EC = "EC";
+	private static final String KEY_TYPE_EC_HSM = "EC-HSM";
+
+	// Hash algorithm (determined at runtime)
+	private String hashAlgorithm = ALGO_SHA_256;
 
 	// Azure Key Vault clients (initialized in @PostConstruct)
 	private CryptographyClient cryptographyClient;
@@ -202,10 +221,9 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			return keyId;
 		}
 		else {
-			// Fallback (unlikely for valid AKV certs)
-			String fallbackId = keyVaultUrl + "/keys/" + keyName;
-			log.warn("Certificate does not contain Key ID, falling back to latest key: {}", fallbackId);
-			return fallbackId;
+			// A valid Azure Key Vault Certificate always has a backing key identifier.
+			// If this is missing, the certificate state is invalid/corrupted.
+			throw new IllegalStateException("Certificate in Azure Key Vault is missing the required Key Identifier (kid)");
 		}
 	}
 
@@ -258,28 +276,28 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		log.info("Key properties - Type: {}, Curve: {}", keyType, curveName);
 
 		// Map key type to signature algorithm
-		if ("RSA".equalsIgnoreCase(keyType) || "RSA-HSM".equalsIgnoreCase(keyType)) {
+		if (KEY_TYPE_RSA.equalsIgnoreCase(keyType) || KEY_TYPE_RSA_HSM.equalsIgnoreCase(keyType)) {
 			// For RSA, we default to SHA-256/RS256, but could support stronger variants if
 			// needed
-			hashAlgorithm = "SHA-256";
-			signatureAlgorithm = "SHA256withRSA";
+			hashAlgorithm = ALGO_SHA_256;
+			signatureAlgorithm = SIG_ALGO_RSA_SHA256;
 			azureSignatureAlgorithm = SignatureAlgorithm.RS256;
 		}
-		else if ("EC".equalsIgnoreCase(keyType) || "EC-HSM".equalsIgnoreCase(keyType)) {
-			if ("P-384".equalsIgnoreCase(curveName)) {
-				hashAlgorithm = "SHA-384";
-				signatureAlgorithm = "SHA384withECDSA";
+		else if (KEY_TYPE_EC.equalsIgnoreCase(keyType) || KEY_TYPE_EC_HSM.equalsIgnoreCase(keyType)) {
+			if (CURVE_P_384.equalsIgnoreCase(curveName)) {
+				hashAlgorithm = ALGO_SHA_384;
+				signatureAlgorithm = SIG_ALGO_ECDSA_SHA384;
 				azureSignatureAlgorithm = SignatureAlgorithm.ES384;
 			}
-			else if ("P-521".equalsIgnoreCase(curveName)) {
-				hashAlgorithm = "SHA-512";
-				signatureAlgorithm = "SHA512withECDSA";
+			else if (CURVE_P_521.equalsIgnoreCase(curveName)) {
+				hashAlgorithm = ALGO_SHA_512;
+				signatureAlgorithm = SIG_ALGO_ECDSA_SHA512;
 				azureSignatureAlgorithm = SignatureAlgorithm.ES512;
 			}
 			else {
 				// Default to P-256
-				hashAlgorithm = "SHA-256";
-				signatureAlgorithm = "SHA256withECDSA";
+				hashAlgorithm = ALGO_SHA_256;
+				signatureAlgorithm = SIG_ALGO_ECDSA_SHA256;
 				azureSignatureAlgorithm = SignatureAlgorithm.ES256;
 			}
 		}
@@ -296,7 +314,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		try {
 			log.debug("Signing data with Azure Key Vault (algorithm: {})", azureSignatureAlgorithm);
 
-			// CRITICAL: Azure Key Vault expects a pre-computed digest
+			// Azure Key Vault expects a pre-computed digest
 			// We must hash the content first, then sign the hash
 			MessageDigest digest = MessageDigest.getInstance(hashAlgorithm);
 			byte[] hash = digest.digest(contentToSign);
