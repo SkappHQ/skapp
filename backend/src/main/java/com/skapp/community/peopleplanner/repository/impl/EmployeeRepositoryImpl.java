@@ -376,7 +376,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.PENDING));
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
-		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
+		buildEnterprisePredicates(criteriaBuilder, root, predicates);
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.count(root));
@@ -1266,7 +1266,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
-		buildEnterprisePredicates(criteriaBuilder, root, userJoin, predicates);
+		buildEnterprisePredicates(criteriaBuilder, root, predicates);
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
@@ -1334,8 +1334,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
-			Join<Employee, User> userJoin, List<Predicate> predicates) {
-		// implemented in enterprise version
+			List<Predicate> predicates) {
+		Join<Employee, EmployeeRole> employeeRoleJoin = root.join(Employee_.employeeRole);
+		predicates.add(criteriaBuilder.notEqual(employeeRoleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 	}
 
 	@Override
