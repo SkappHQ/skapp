@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum RoleLevel {
 
-	ADMIN("Admin"), MANAGER("Manager"), SENDER("Sender"), EMPLOYEE("Employee");
+	ADMIN("Admin"), MANAGER("Manager"), SENDER("Sender"), EMPLOYEE("Employee"), GUEST("Guest");
 
 	private final String displayName;
 

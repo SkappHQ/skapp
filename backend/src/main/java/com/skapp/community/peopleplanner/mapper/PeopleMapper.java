@@ -108,7 +108,12 @@ public interface PeopleMapper {
 	@Mapping(target = "isActive", source = "user.isActive")
 	@Mapping(target = "teamResponseDto", ignore = true)
 	@Mapping(target = "jobFamily", ignore = true)
-	@Mapping(target = "managers", ignore = true)
+	@Mapping(target = "jobTitle", ignore = true)
+	@Mapping(target = "primarySupervisor", ignore = true)
+	@Mapping(target = "employeePeriod", ignore = true)
+	@Mapping(target = "employeePersonalInfoDto", ignore = true)
+	@Mapping(target = "employeeEmergencyDto", ignore = true)
+	@Mapping(target = "employeeNumber", source = "identificationNo")
 	EmployeeAllDataExportResponseDto employeeToEmployeeAllDataExportResponseDto(Employee employee);
 
 	@Mapping(target = "email", source = "user.email")
@@ -136,6 +141,7 @@ public interface PeopleMapper {
 	EmployeeJobFamilyDto jobFamilyToEmployeeJobFamilyDto(JobFamily jobFamily);
 
 	@Mapping(target = "isSuperAdmin", source = "isSuperAdmin")
+	@Mapping(target = "okrRole", source = "okrRole")
 	EmployeeRoleResponseDto employeeRoleToEmployeeRoleResponseDto(EmployeeRole employeeRole);
 
 	@Mapping(target = "user.email", source = "employeeBulkDto.workEmail")

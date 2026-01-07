@@ -376,6 +376,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.PENDING));
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
+		buildEnterprisePredicates(criteriaBuilder, root, predicates);
+
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.count(root));
 
@@ -802,6 +804,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					criteriaBuilder.notEqual(terminationYear, currentYear)));
 		}
 		else {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 			predicates.add(criteriaBuilder.and(criteriaBuilder.isNotNull(root.get(Employee_.TERMINATION_DATE)),
 					criteriaBuilder.equal(terminationYear, currentYear)));
 		}
@@ -906,6 +909,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), false));
+		predicates.add(criteriaBuilder.equal(root.get(Employee_.accountStatus), AccountStatus.TERMINATED));
 
 		Expression<LocalDate> terminationDate = root.get(Employee_.terminationDate);
 		predicates.add(criteriaBuilder.isNotNull(terminationDate));
@@ -1262,6 +1266,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
+		buildEnterprisePredicates(criteriaBuilder, root, predicates);
+
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
 			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
@@ -1325,6 +1331,12 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 						keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.EMAIL)), keyword),
 				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), keyword));
+	}
+
+	protected void buildEnterprisePredicates(CriteriaBuilder criteriaBuilder, Root<Employee> root,
+			List<Predicate> predicates) {
+		Join<Employee, EmployeeRole> employeeRoleJoin = root.join(Employee_.employeeRole);
+		predicates.add(criteriaBuilder.notEqual(employeeRoleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 	}
 
 	@Override

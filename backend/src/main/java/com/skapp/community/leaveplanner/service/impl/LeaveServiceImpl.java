@@ -560,7 +560,7 @@ public class LeaveServiceImpl implements LeaveService {
 				List<Employee> teamEmployees = employeeTeamDao.getEmployeesByTeamIds(
 						resourceAvailabilityCalendarFilter.getTeams(), currentUser.getUserId(), isLeaveAdmin);
 				long totalEmployeeCount = teamEmployees.size();
-				long availableCount = totalEmployeeCount - leaveRequests.size();
+				long availableCount = Math.max(0, totalEmployeeCount - leaveRequests.size());
 				responseDto.setAvailableCount((int) availableCount);
 
 				calendarResponses.add(responseDto);

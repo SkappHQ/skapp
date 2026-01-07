@@ -66,7 +66,9 @@ const ContentWithDrawer = ({ children }: Props) => {
         autoHideDuration={toastMessage.autoHideDuration}
         handleToastClick={toastMessage.handleToastClick}
         isIcon={toastMessage.isIcon}
-        onClose={() => setToastMessage(initialState)}
+        onClose={() => {
+            setToastMessage((state) => ({ ...state, open: false }));
+          }}
       />
       <TimeWidgetPopupController />
       <MyRequestModalController />

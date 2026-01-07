@@ -97,6 +97,40 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
   }, [searchTerm, setSearchKeyword]);
 
   useEffect(() => {
+    if (
+      searchTerm.length > 0 &&
+      !isRemovePeople &&
+      !isPendingInvitationListOpen
+    ) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE,
+        EmploymentStatusTypes.TERMINATED
+      ]);
+    } else if (
+      searchTerm.length === 0 &&
+      !isRemovePeople &&
+      !isPendingInvitationListOpen
+    ) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE
+      ]);
+    } else if (isPendingInvitationListOpen) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.PENDING
+      ]);
+    } else {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE
+      ]);
+    }
+  }, [
+    searchTerm,
+    isRemovePeople,
+    isPendingInvitationListOpen,
+    setEmployeeDataParams
+  ]);
+
+  useEffect(() => {
     setSearchTerm("");
     if (isPendingInvitationListOpen) {
       setEmployeeDataParams(DataFilterEnums.PERMISSION, []);

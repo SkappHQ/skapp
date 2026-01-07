@@ -216,6 +216,7 @@ const AddNewResourceModal = () => {
           labelStyles={{
             fontWeight: 500
           }}
+          componentStyle={{ width: "100%" }}
         />
         <InputField
           inputName="lastName"
@@ -229,6 +230,7 @@ const AddNewResourceModal = () => {
           labelStyles={{
             fontWeight: 500
           }}
+          componentStyle={{ width: "100%" }}
         />
       </Stack>
       <InputField

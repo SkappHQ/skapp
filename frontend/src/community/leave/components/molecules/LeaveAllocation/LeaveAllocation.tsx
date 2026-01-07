@@ -17,6 +17,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
@@ -104,16 +105,6 @@ const LeaveAllocation: FC = () => {
         }
       )}
     >
-      <Typography
-        variant="h1"
-        sx={{
-          marginBottom: "1.5rem",
-          marginTop: "1.5rem"
-        }}
-      >
-        {translateText(["title"])}
-      </Typography>
-      <Divider sx={{ mb: "1rem" }} />
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />

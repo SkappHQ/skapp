@@ -39,13 +39,15 @@ interface Props {
   isUpdate?: boolean;
   isAddFlow?: boolean;
   isReadOnly?: boolean;
+  isPeopleAdminViewingOwnProfile?: boolean;
 }
 
 const SystemPermissionFormSection = ({
   isProfileView,
   isUpdate,
   isAddFlow,
-  isReadOnly = false
+  isReadOnly = false,
+  isPeopleAdminViewingOwnProfile = false
 }: Props) => {
   const classes = styles();
   const environment = useGetEnvironment();
@@ -97,7 +99,9 @@ const SystemPermissionFormSection = ({
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
-    isSuperAdmin
+    isSuperAdmin,
+    isInvoiceModuleEnabled,
+    tenantID
   } = useSessionData();
 
   const { handleNext } = useStepper();
@@ -114,7 +118,8 @@ const SystemPermissionFormSection = ({
         peopleRole: employee?.systemPermissions?.peopleRole,
         leaveRole: employee?.systemPermissions?.leaveRole,
         attendanceRole: employee?.systemPermissions?.attendanceRole,
-        esignRole: employee?.systemPermissions?.esignRole
+        esignRole: employee?.systemPermissions?.esignRole,
+        invoiceRole: employee?.systemPermissions?.invoiceRole
       };
 
       const errorsToShow = [];
@@ -152,7 +157,10 @@ const SystemPermissionFormSection = ({
       }
     }
     if (
-      employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE &&
+      (employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE ||
+        employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE ||
+        employee?.systemPermissions?.attendanceRole ===
+          Role.ATTENDANCE_EMPLOYEE) &&
       (initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN ||
         initialEmployee?.systemPermissions?.peopleRole ===
           Role.PEOPLE_MANAGER) &&
@@ -237,7 +245,7 @@ const SystemPermissionFormSection = ({
             <SwitchRow
               labelId="super-admin"
               label={translateText(["superAdmin"])}
-              disabled={!isSuperAdmin}
+              disabled={!isSuperAdmin || isPeopleAdminViewingOwnProfile}
               checked={permissions.isSuperAdmin as boolean}
               onChange={(checked: boolean) => handleSuperAdminToggle(checked)}
               wrapperStyles={classes.switchRowWrapper}
@@ -262,7 +270,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    (isReadOnly && !isPeopleAdminViewingOwnProfile)
                   }
                 />
               )}
@@ -317,16 +325,38 @@ const SystemPermissionFormSection = ({
                 />
               )}
 
-            {isEsignatureModuleEnabled && (
+            {isEsignatureModuleEnabled &&
+              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.ADMIN) &&
+              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.SENDER) && (
+                <DropdownList
+                  inputName={"esignRole"}
+                  label={translateText(["eSignature"])}
+                  itemList={grantablePermission?.esign || []}
+                  value={permissions.esignRole}
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown("esignRole", event.target.value as Role)
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
+
+            {!isRoleMissing(RoleModuleEnum.PM, RoleNameEnum.ADMIN) && (
               <DropdownList
-                inputName={"esignRole"}
-                label={translateText(["eSignature"])}
-                itemList={grantablePermission?.esign || []}
-                value={permissions.esignRole}
+                inputName={"pmRole"}
+                label={translateText(["projectManagement"])}
+                itemList={grantablePermission?.pm || []}
+                value={permissions.pmRole}
                 componentStyle={classes.dropdownListComponentStyles}
                 checkSelected
                 onChange={(event) =>
-                  handleRoleDropdown("esignRole", event.target.value as Role)
+                  handleRoleDropdown("pmRole", event.target.value as Role)
                 }
                 isDisabled={
                   isProfileView ||
@@ -336,6 +366,36 @@ const SystemPermissionFormSection = ({
                 }
               />
             )}
+
+            {isInvoiceModuleEnabled &&
+              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.ADMIN) &&
+              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.MANAGER) && (
+                <DropdownList
+                  inputName={"invoiceRole"}
+                  label={translateText(["invoice"])}
+                  itemList={grantablePermission?.invoice || []}
+                  placeholder={translateText(["selectRole"])}
+                  value={
+                    permissions.invoiceRole === Role.INVOICE_NONE
+                      ? ""
+                      : permissions.invoiceRole
+                  }
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown(
+                      "invoiceRole",
+                      event.target.value as Role
+                    )
+                  }
+                  isDisabled={
+                    isProfileView ||
+                    permissions.isSuperAdmin ||
+                    isInputsDisabled ||
+                    isReadOnly
+                  }
+                />
+              )}
           </Stack>
 
           {isUpdate &&

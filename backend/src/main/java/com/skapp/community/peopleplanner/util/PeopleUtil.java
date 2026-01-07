@@ -54,12 +54,20 @@ public class PeopleUtil {
 	}
 
 	public static List<EmployeeManager> filterManagersByRoles(List<EmployeeManager> managers, List<Role> roles) {
-		return managers.stream()
-			.filter(manager -> roles.contains(manager.getManager().getEmployeeRole().getPeopleRole())
-					|| roles.contains(manager.getManager().getEmployeeRole().getAttendanceRole())
-					|| roles.contains(manager.getManager().getEmployeeRole().getLeaveRole())
-					|| roles.contains(manager.getManager().getEmployeeRole().getEsignRole()))
-			.toList();
+		if (roles == null || roles.isEmpty()) {
+			return List.of();
+		}
+		return managers.stream().filter(manager -> {
+			if (manager == null || manager.getManager() == null || manager.getManager().getEmployeeRole() == null) {
+				return false;
+			}
+			var employeeRole = manager.getManager().getEmployeeRole();
+			return (employeeRole.getPeopleRole() != null && roles.contains(employeeRole.getPeopleRole()))
+					|| (employeeRole.getAttendanceRole() != null && roles.contains(employeeRole.getAttendanceRole()))
+					|| (employeeRole.getLeaveRole() != null && roles.contains(employeeRole.getLeaveRole()))
+					|| (employeeRole.getEsignRole() != null && roles.contains(employeeRole.getEsignRole()))
+					|| (employeeRole.getOkrRole() != null && roles.contains(employeeRole.getOkrRole()));
+		}).toList();
 	}
 
 	public static List<EmployeeManager> filterManagersByLeaveRoles(List<EmployeeManager> managers) {

@@ -6,6 +6,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import IndividualEmployeeLeaveReportSection from "~community/leave/components/molecules/IndividualEmployeeLeaveReportSection/IndividualEmployeeLeaveReportSection";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
+import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 import PeopleTimeline from "../../molecules/PeopleTimeline/PeopleTimeline";
 import EntitlementsDetailsForm from "../AddNewResourceFlow/EntitlementsDetailsSection/EntitlementsDetailsForm";
@@ -82,9 +83,8 @@ const PeopleFormSections = ({
         return (
           <SystemPermissionFormSection
             isAddFlow={isAddFlow}
-            isReadOnly={
-              isSystemPermissionsReadOnly || isPeopleAdminViewingOwnProfile
-            }
+            isReadOnly={isSystemPermissionsReadOnly}
+            isPeopleAdminViewingOwnProfile={isPeopleAdminViewingOwnProfile}
           />
         );
       case EditPeopleFormTypes.timeline:
@@ -102,6 +102,10 @@ const PeopleFormSections = ({
           <IndividualEmployeeTimeReportSection
             selectedUser={Number(employeeId)}
           />
+        );
+      case EditPeopleFormTypes.documents:
+        return (
+          <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
         );
       default:
         return null;

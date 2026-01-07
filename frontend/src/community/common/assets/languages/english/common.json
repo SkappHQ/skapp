@@ -99,7 +99,8 @@
     "attendanceTab": "Attendance",
     "leaveTab": "Leave",
     "peopleTab": "People",
-    "leaves": "Leave Requests"
+    "leaves": "Leave Requests",
+    "myLeaveAllocations": "My Leave Allocations"
   },
   "settings": {
     "integrationPageHead": "Integrations | Skapp",
@@ -200,11 +201,26 @@
     "googleCalendarAccMismatchTitle": "No account found",
     "googleCalendarAccMismatchDes": "Please use the account linked to your work email.",
     "confirmDisconnectTitle": "Are you Sure?",
-    "confirmDisconnectMessage": "You are about to disconnect your Google Calendar from your account. This action will stop syncing your leave records with your calendar. Are you sure you want to proceed?",
+    "confirmGoogleDisconnectMessage": "You are about to disconnect your Google Calendar from your account. This action will stop syncing your leave records with your calendar. Are you sure you want to proceed?",
+    "confirmMicrosoftDisconnectMessage": "You are about to disconnect your Outlook Calendar from your account. This action will stop syncing your leave records with your calendar. Are you sure you want to proceed?",
     "confirmBtn": "Confirm",
     "cancelBtn": "Cancel",
     "connectBtn": "Connect",
-    "disconnectBtn": "Disconnect"
+    "disconnectBtn": "Disconnect",
+    "languagePreference": "Language Preference",
+    "languagePreferenceDescription": "Update your language preference to customize how content is displayed.",
+    "languagePreferencePlaceholder": "Choose your preferred language",
+    "outlookCalendarText": "Outlook Calendar",
+    "outlookCalendarDes": "Connect your Outlook Calendar to seamlessly sync your leave and stay updated across your schedules.",
+    "outlookCalendarAddSuccessTitle": "Outlook Calendar Connected",
+    "outlookCalendarAddSuccessDes": "Your Outlook Calendar connected successfully.",
+    "outlookCalendarRemoveSuccessTitle": "Outlook Calendar Disconnected",
+    "outlookCalendarRemoveSuccessDes": "Your Outlook Calendar disconnected successfully.",
+    "outlookCalendarErrorTitle": "Oops! Something Went Wrong",
+    "outlookCalendarAddErrorDes": "Failed to add Outlook Calendar. Please try again.",
+    "outlookCalendarRemoveErrorDes": "Failed to remove Outlook Calendar. Please try again.",
+    "outlookCalendarAccMismatchTitle": "No account found",
+    "outlookCalendarAccMismatchDes": "Please use the account linked to your work email."
   },
   "unauthorized": {
     "pageHead": "Access Denied | Skapp",

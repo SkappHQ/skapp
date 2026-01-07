@@ -189,6 +189,10 @@ const nextConfig = {
         destination: "/community/configurations/user-roles"
       },
       {
+        source: "/configurations/invoice",
+        destination: "/enterprise/configurations/invoice"
+      },
+      {
         source: "/configurations/user-roles/attendance",
         destination: "/community/configurations/user-roles/attendance"
       },
@@ -221,8 +225,16 @@ const nextConfig = {
         destination: "/enterprise/redirect"
       },
       {
-        source: "/verify/reset-password",
-        destination: "/enterprise/verify/reset-password"
+        source: "/verify/guest-otp",
+        destination: "/enterprise/verify/guest-otp"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
       },
       {
         source: "/forget-password",
@@ -263,6 +275,10 @@ const nextConfig = {
       {
         source: "/sign/sign",
         destination: "/enterprise/sign/sign"
+      },
+      {
+        source: "/sign/review",
+        destination: "/enterprise/sign/review"
       },
       {
         source: "/sign/info",
@@ -325,8 +341,48 @@ const nextConfig = {
         destination: "/community/user-account"
       },
       {
-        source: "/projects",
-        destination: "/enterprise/projects"
+        source: "/projects/list",
+        destination: "/enterprise/projects/list"
+      },
+      {
+        source: "/projects/guests",
+        destination: "/enterprise/projects/guests"
+      },
+      {
+        source: "/invoice",
+        destination: "/enterprise/invoice"
+      },
+      {
+        source: "/invoice/allInvoices",
+        destination: "/enterprise/invoice/allInvoices"
+      },
+      {
+        source: "/invoice/customers",
+        destination: "/enterprise/invoice/customers"
+      },
+      {
+        source: "/invoice/create/:id",
+        destination: "/enterprise/invoice/create/:id"
+      },
+      {
+        source: "/invoice/creates/:id",
+        destination: "/enterprise/invoice/creates/:id"
+      },
+      {
+        source: "/invoice/customers/customer-details/:id",
+        destination: "/enterprise/invoice/customers/customer-details/:id"
+      },
+      {
+        source: "/invoice/view/:id",
+        destination: "/enterprise/invoice/view/:id"
+      },
+      {
+        source: "/invoice/customers/customer-details/projects/:id",
+        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
+      },
+      {
+        source: "/app-link",
+        destination: "/enterprise/app-link"
       }
     ];
   },

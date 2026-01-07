@@ -18,18 +18,27 @@ interface Props {
   tier: string;
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
+  tenantID?: string;
+  organizationCalendarGoogleStatus?: boolean;
+  organizationCalendarMicrosoftStatus?: boolean;
 }
 
 const getDrawerRoutes = ({
   userRoles,
   tier,
   isEnterprise,
-  globalLoginMethod
+  globalLoginMethod,
+  tenantID,
+  organizationCalendarGoogleStatus,
+  organizationCalendarMicrosoftStatus
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
         userRoles,
-        globalLoginMethod
+        globalLoginMethod,
+        tenantID,
+        organizationCalendarGoogleStatus,
+        organizationCalendarMicrosoftStatus
       })
     : routes;
 
@@ -70,7 +79,8 @@ const getDrawerRoutes = ({
               name: route?.name,
               url: ROUTES.DASHBOARD.BASE,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
@@ -94,7 +104,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.PEOPLE.DIRECTORY,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -120,7 +131,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.TIMESHEET.MY_TIMESHEET,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -155,11 +167,57 @@ const getDrawerRoutes = ({
               name: "My Leave Requests",
               url: ROUTES.LEAVE.MY_REQUESTS,
               icon: route?.icon,
-              hasSubTree: false
+              hasSubTree: false,
+              badge: route?.badge
             };
           }
 
           return;
+        }
+      }
+
+      if (route?.name === "Projects") {
+        const isPMAdminOrSuperAdmin = userRoles?.some((role) =>
+          [AdminTypes.SUPER_ADMIN, AdminTypes.PM_ADMIN].includes(
+            role as AdminTypes
+          )
+        );
+
+        if (isPMAdminOrSuperAdmin) {
+          const subRoutes = route?.subTree?.filter((subRoute) =>
+            subRoute.requiredAuthLevel?.some((requiredRole) =>
+              userRoles?.includes(requiredRole as Role)
+            )
+          );
+
+          return {
+            id: route?.id,
+            name: route?.name,
+            url: route?.url,
+            icon: route?.icon,
+            hasSubTree: true,
+            subTree: subRoutes,
+            badge: route?.badge
+          };
+        }
+
+        return {
+          id: route?.id,
+          name: route?.name,
+          url: ROUTES.PROJECTS.BASE,
+          icon: route?.icon,
+          hasSubTree: false,
+          badge: route?.badge
+        };
+      }
+
+      if (route?.name === "Invoices") {
+        const isInvoiceManager = userRoles?.includes(
+          ManagerTypes.INVOICE_MANAGER
+        );
+
+        if (!isInvoiceManager) {
+          return null;
         }
       }
 
@@ -183,7 +241,8 @@ const getDrawerRoutes = ({
             url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
 
@@ -193,7 +252,8 @@ const getDrawerRoutes = ({
             name: route?.name,
             url: ROUTES.SETTINGS.ACCOUNT,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -255,7 +315,8 @@ const getDrawerRoutes = ({
             url: ROUTES.CONFIGURATIONS.BASE,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       }
@@ -278,7 +339,8 @@ const getDrawerRoutes = ({
             name: "Inbox",
             url: ROUTES.SIGN.INBOX,
             icon: route?.icon,
-            hasSubTree: false
+            hasSubTree: false,
+            badge: route?.badge
           };
         }
       }
@@ -297,7 +359,8 @@ const getDrawerRoutes = ({
             url: route?.url,
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
+            subTree: subRoutes,
+            badge: route?.badge
           };
         }
       } else if (isAuthorized) {
@@ -306,7 +369,8 @@ const getDrawerRoutes = ({
           name: route?.name,
           url: route?.url,
           icon: route?.icon,
-          hasSubTree: route?.hasSubTree
+          hasSubTree: route?.hasSubTree,
+          badge: route?.badge
         };
       }
     })

@@ -12,6 +12,8 @@ const ROUTES = {
     VERIFY_SUCCESS: "/verify/success",
     VERIFY_RESET_PASSWORD: "/verify/reset-password",
     VERIFY_FORGOT_OTP: "/verify/reset-password",
+    VERIFY_GUEST: "/verify/guest",
+    VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update"
   },
@@ -74,7 +76,8 @@ const ROUTES = {
     USER_ROLES: "/configurations/user-roles",
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
-      `/configurations/user-roles/${module}`
+      `/configurations/user-roles/${module}`,
+    INVOICE: "/configurations/invoice"
   },
   DASHBOARD: {
     BASE: "/dashboard",
@@ -95,6 +98,7 @@ const ROUTES = {
     CONTACTS: "/sign/contacts",
     CREATE_DOCUMENT: "/sign/create",
     SIGN: "/sign/sign",
+    REVIEW: "/sign/review",
     INFO: "/sign/info",
     DOCUMENT_ACCESS: "/sign/document/access",
     COMPLETE: "/sign/complete",
@@ -110,7 +114,31 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects"
+  PROJECTS: {
+    BASE: "/projects/list",
+    GUESTS: "/projects/guests"
+  },
+  INVOICE: {
+    BASE: "/invoice",
+    ALL_INVOICES: "/invoice/allInvoices",
+    CUSTOMERS: {
+      BASE: "/invoice/customers",
+      CUSTOMER_DETAILS: (id: number) =>
+        `/invoice/customers/customer-details/${id}`,
+      PROJECTS: {
+        BASE: "/invoice/customers/customer-details/projects",
+        ID: (id: number) => `/invoice/customers/customer-details/projects/${id}`
+      }
+    },
+    CREATE: {
+      BASE: "/invoice/create",
+      ID: (id: any) => `/invoice/create/${id}`
+    },
+    VIEW: {
+      BASE: "/invoice/view",
+      ID: (id: any) => `/invoice/view/${id}`
+    }
+  }
 };
 
 export default ROUTES;
@@ -118,8 +146,17 @@ export default ROUTES;
 const RESCRITED_DYNAMIC_ROUTES = {
   PEOPLE: {
     EDIT: "/people/directory/edit/"
+  },
+  INVOICE: {
+    CREATE: "/invoice/create/",
+    VIEW: "/invoice/view/"
   }
 };
+
+export const invoiceEmployeeRestrictedRoutes = [
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE,
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
+];
 
 export const employeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
