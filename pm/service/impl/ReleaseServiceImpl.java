@@ -11,11 +11,13 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.payload.response.EpUserAuthPicResponseDto;
 import com.skapp.enterprise.people.service.EpUserService;
+import com.skapp.enterprise.pm.enums.ReleaseApprovalStatusEnum;
+import com.skapp.enterprise.pm.enums.ReleaseIconEnum;
 import com.skapp.enterprise.pm.payload.ApproverDto;
 import com.skapp.enterprise.pm.payload.GenerateReleasePdfRequestDto;
 import com.skapp.enterprise.pm.payload.ProjectItemDto;
 import com.skapp.enterprise.pm.service.ReleaseService;
-import com.skapp.enterprise.pm.type.ReleaseApprovalStatus;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -204,20 +207,17 @@ public class ReleaseServiceImpl implements ReleaseService {
 			List<ApproverDto> approvers = new ArrayList<>();
 			List<Long> approverUserIds = new ArrayList<>();
 
-			// First pass: collect user IDs
 			for (JsonNode approverNode : releaseNode.get("approvers")) {
 				if (approverNode.has("userId") && !approverNode.get("userId").isNull()) {
 					approverUserIds.add(approverNode.get("userId").asLong());
 				}
 			}
 
-			// Get auth pics using the service
 			List<EpUserAuthPicResponseDto> userAuthPics = epUserService.getAllUserAuthPicsOrByIds(approverUserIds);
 			Map<Long, String> userIdToAuthPic = userAuthPics.stream()
 				.collect(java.util.stream.Collectors.toMap(pic -> Long.valueOf(pic.getUserId()),
 						EpUserAuthPicResponseDto::getAuthPic));
 
-			// Second pass: create approver DTOs
 			for (JsonNode approverNode : releaseNode.get("approvers")) {
 				ApproverDto approverDto = new ApproverDto();
 
@@ -236,7 +236,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 
 				if (approverNode.has("status") && !approverNode.get("status").isNull()) {
 					String statusStr = approverNode.get("status").asText();
-					approverDto.setStatus(ReleaseApprovalStatus.valueOf(statusStr.toUpperCase()));
+					approverDto.setStatus(ReleaseApprovalStatusEnum.valueOf(statusStr.toUpperCase()));
 				}
 
 				if (approverNode.has("remarks") && !approverNode.get("remarks").isNull()) {
@@ -282,7 +282,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 					request.getEnvironment() != null ? request.getEnvironment() : "");
 			template = template.replace("{{description}}",
 					request.getDescription() != null ? request.getDescription() : "");
-			template = template.replace("{{logo}}", getIconForType("SKAPP_ICON"));
+			template = template.replace("{{logo}}", getIcon(ReleaseIconEnum.SKAPP_ICON.name()));
 
 			template = processWorkItems(template, request, projectKey);
 
@@ -328,7 +328,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 		for (var item : request.getProjectItems()) {
 			if (item.getIsDeleted() != null && !item.getIsDeleted()) {
 				String workCode = projectKey + "-" + item.getItemNumber();
-				String iconBase64 = getIconForType(item.getIcon());
+				String iconBase64 = getIcon(item.getIcon());
 
 				itemsHtmlBuilder.append(itemTemplate.replace("{{workIcon}}", iconBase64)
 					.replace("{{workCode}}", workCode)
@@ -355,13 +355,13 @@ public class ReleaseServiceImpl implements ReleaseService {
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
 		for (var approver : request.getApprovers()) {
-			ReleaseApprovalStatus status = approver.getStatus() != null ? approver.getStatus()
-					: ReleaseApprovalStatus.PENDING;
+			ReleaseApprovalStatusEnum status = approver.getStatus() != null ? approver.getStatus()
+					: ReleaseApprovalStatusEnum.PENDING;
 			String statusClass = status.name().toLowerCase();
 			String statusText = capitalizeFirst(status.name());
 
-			String approvedIconSrc = ReleaseApprovalStatus.APPROVED.equals(status)
-					? loadIconFromResources("approved.png") : "";
+			String approvedIconSrc = ReleaseApprovalStatusEnum.APPROVED.equals(status)
+					? loadIconFromResources(ReleaseIconEnum.APPROVED_ICON.getFileName()) : "";
 
 			String actionText = approver.getActionDate() != null ? approver.getActionDate().format(dateFormatter) : "";
 
@@ -400,7 +400,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 				.replace("{{statusText}}", statusText)
 				.replace("{{approvedIconSrc}}", approvedIconSrc);
 
-			if (!ReleaseApprovalStatus.PENDING.equals(status) && approver.getRemarks() != null
+			if (!ReleaseApprovalStatusEnum.PENDING.equals(status) && approver.getRemarks() != null
 					&& !approver.getRemarks().trim().isEmpty()) {
 				approverHtml = approverHtml.replace("{{#hasRemarks}}", "")
 					.replace("{{/hasRemarks}}", "")
@@ -432,22 +432,8 @@ public class ReleaseServiceImpl implements ReleaseService {
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 	}
 
-	private String getIconForType(String icon) {
-		if (icon == null) {
-			return loadIconFromResources("task.png");
-		}
-
-		String iconFileName = switch (icon.toUpperCase()) {
-			case "BUG_ICON" -> "bug.png";
-			case "TASK_ICON" -> "task.png";
-			case "EDU_ICON" -> "story.png";
-			case "STAR_ICON" -> "epic.png";
-			case "SUBTASK_ICON" -> "subtask.png";
-			case "SKAPP_ICON" -> "skapp.png";
-			default -> "task.png";
-		};
-
-		return loadIconFromResources(iconFileName);
+	private String getIcon(String icon) {
+		return loadIconFromResources(ReleaseIconEnum.getFileNameByType(icon));
 	}
 
 	private String loadIconFromResources(String iconFileName) {
@@ -455,12 +441,12 @@ public class ReleaseServiceImpl implements ReleaseService {
 			ClassPathResource resource = new ClassPathResource(
 					"enterprise/templates/pdf/en/release/icons/" + iconFileName);
 			byte[] iconBytes = Files.readAllBytes(Paths.get(resource.getURI()));
-			String base64Icon = java.util.Base64.getEncoder().encodeToString(iconBytes);
+			String base64Icon = Base64.getEncoder().encodeToString(iconBytes);
 			return "data:image/png;base64," + base64Icon;
 		}
 		catch (IOException e) {
 			log.warn("Failed to load icon: {}, using default", iconFileName, e);
-			return getIconForType("TASK_ICON");
+			return getIcon(ReleaseIconEnum.TASK_ICON.name());
 		}
 	}
 

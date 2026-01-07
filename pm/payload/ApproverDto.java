@@ -1,10 +1,11 @@
 package com.skapp.enterprise.pm.payload;
 
-import com.skapp.enterprise.pm.type.ReleaseApprovalStatus;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+
+import com.skapp.enterprise.pm.enums.ReleaseApprovalStatusEnum;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class ApproverDto {
 
 	private String profilePicture;
 
-	private ReleaseApprovalStatus status;
+	private ReleaseApprovalStatusEnum status;
 
 	private LocalDateTime actionDate;
 
