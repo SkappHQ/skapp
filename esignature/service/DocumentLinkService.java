@@ -7,6 +7,10 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpValidateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpValidateRequestDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 
@@ -34,17 +38,20 @@ public interface DocumentLinkService {
 
 	ResponseEntityDto getTokenResendStatus(String token);
 
-	ResponseEntityDto sendOtpFromUuid(String uuid, String state);
+	ResponseEntityDto sendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto);
 
-	ResponseEntityDto sendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId);
+	ResponseEntityDto sendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto);
 
-	ResponseEntityDto verifyOtpFromUuid(String uuid, String state, String code);
+	ResponseEntityDto verifyOtpFromUuid(UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto);
 
-	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, String code);
+	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto);
 
-	ResponseEntityDto resendOtpFromUuid(String uuid, String state, boolean isResend);
+	ResponseEntityDto resendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto, boolean isResend);
 
-	ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, boolean isResend);
+	ResponseEntityDto resendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto, boolean isResend);
 
 	ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId);
 
