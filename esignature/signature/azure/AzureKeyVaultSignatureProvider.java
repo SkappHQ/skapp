@@ -185,14 +185,14 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		// Use service principal if explicitly configured; otherwise rely on
 		// DefaultAzureCredential (Managed Identity, CLI, etc.)
 		if (StringUtils.hasText(tenantId) && StringUtils.hasText(clientId) && StringUtils.hasText(clientSecret)) {
-			log.info("Using Service Principal authentication");
+			log.debug("Using Service Principal authentication");
 			return new ClientSecretCredentialBuilder().tenantId(tenantId)
 				.clientId(clientId)
 				.clientSecret(clientSecret)
 				.build();
 		}
 		else {
-			log.info("Using DefaultAzureCredential authentication (supports Managed Identity)");
+			log.debug("Using DefaultAzureCredential authentication (supports Managed Identity)");
 			return new DefaultAzureCredentialBuilder().build();
 		}
 	}
