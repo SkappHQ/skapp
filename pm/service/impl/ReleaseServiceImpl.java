@@ -275,13 +275,14 @@ public class ReleaseServiceImpl implements ReleaseService {
 			String releaseDate = request.getReleaseDate() != null ? request.getReleaseDate().format(dateFormatter) : "";
 
 			template = template.replace("{{projectTitle}}",
-					request.getProjectName() != null ? request.getProjectName() : "Project");
-			template = template.replace("{{versionName}}", request.getName() != null ? request.getName() : "");
-			template = template.replace("{{releaseDate}}", releaseDate);
+					escapeHtml(request.getProjectName() != null ? request.getProjectName() : "Project"));
+			template = template.replace("{{versionName}}",
+					escapeHtml(request.getName() != null ? request.getName() : ""));
+			template = template.replace("{{releaseDate}}", escapeHtml(releaseDate));
 			template = template.replace("{{environment}}",
-					request.getEnvironment() != null ? request.getEnvironment() : "");
+					escapeHtml(request.getEnvironment() != null ? request.getEnvironment() : ""));
 			template = template.replace("{{description}}",
-					request.getDescription() != null ? request.getDescription() : "");
+					escapeHtml(request.getDescription() != null ? request.getDescription() : ""));
 			template = template.replace("{{logo}}", getIcon(ReleaseIconEnum.SKAPP_ICON.name()));
 
 			template = processWorkItems(template, request, projectKey);
@@ -331,8 +332,8 @@ public class ReleaseServiceImpl implements ReleaseService {
 				String iconBase64 = getIcon(item.getIcon());
 
 				itemsHtmlBuilder.append(itemTemplate.replace("{{workIcon}}", iconBase64)
-					.replace("{{workCode}}", workCode)
-					.replace("{{workDescription}}", item.getTitle() != null ? item.getTitle() : ""));
+					.replace("{{workCode}}", escapeHtml(workCode))
+					.replace("{{workDescription}}", escapeHtml(item.getTitle() != null ? item.getTitle() : "")));
 			}
 		}
 		return itemsHtmlBuilder;
@@ -392,19 +393,19 @@ public class ReleaseServiceImpl implements ReleaseService {
 			}
 
 			String approverHtml = approverTemplate
-				.replace("{{approverName}}", approver.getName() != null ? approver.getName() : "")
-				.replace("{{approverRole}}", approver.getRole() != null ? approver.getRole() : "")
-				.replace("{{approverActionDate}}", actionText)
+				.replace("{{approverName}}", escapeHtml(approver.getName() != null ? approver.getName() : ""))
+				.replace("{{approverRole}}", escapeHtml(approver.getRole() != null ? approver.getRole() : ""))
+				.replace("{{approverActionDate}}", escapeHtml(actionText))
 				.replace("{{approverAvatar}}", avatarHtml)
-				.replace("{{statusClass}}", statusClass)
-				.replace("{{statusText}}", statusText)
+				.replace("{{statusClass}}", escapeHtml(statusClass))
+				.replace("{{statusText}}", escapeHtml(statusText))
 				.replace("{{approvedIconSrc}}", approvedIconSrc);
 
 			if (!ReleaseApprovalStatusEnum.PENDING.equals(status) && approver.getRemarks() != null
 					&& !approver.getRemarks().trim().isEmpty()) {
 				approverHtml = approverHtml.replace("{{#hasRemarks}}", "")
 					.replace("{{/hasRemarks}}", "")
-					.replace("{{remarks}}", approver.getRemarks());
+					.replace("{{remarks}}", escapeHtml(approver.getRemarks()));
 			}
 			else {
 				approverHtml = removeConditionalBlock(approverHtml, "{{#hasRemarks}}", "{{/hasRemarks}}");
@@ -430,6 +431,17 @@ public class ReleaseServiceImpl implements ReleaseService {
 		if (str == null || str.isEmpty())
 			return str;
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+	}
+
+	private String escapeHtml(String text) {
+		if (text == null || text.isEmpty()) {
+			return text;
+		}
+		return text.replace("&", "&amp;")
+			.replace("<", "&lt;")
+			.replace(">", "&gt;")
+			.replace("\"", "&quot;")
+			.replace("'", "&#x27;");
 	}
 
 	private String getIcon(String icon) {
