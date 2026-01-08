@@ -71,7 +71,7 @@ public class DocumentLinkController {
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> sendOtpFromUuid(
-			@RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
+			@Valid @RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.sendOtpFromUuid(uuidConvertToOtpRequestDto);
 
@@ -83,7 +83,7 @@ public class DocumentLinkController {
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/internal/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> sendOtpFromDocumentAndRecipientId(
-			@RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
+			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService
 			.sendOtpFromDocumentAndRecipientId(recipientConvertToOtpRequestDto);
@@ -96,7 +96,7 @@ public class DocumentLinkController {
 					+ "The token is only returned if the otp is successfully verified and the document link is available.")
 	@PostMapping(value = "/verify-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> verifyOtpFromUuid(
-			@RequestBody UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto) {
+			@Valid @RequestBody UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.verifyOtpFromUuid(uuidConvertToOtpValidateRequestDto);
 
@@ -108,7 +108,7 @@ public class DocumentLinkController {
 	@PostMapping(value = "/internal/access/verify-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> verifyOtpFromDocumentAndRecipientId(
-			@RequestBody RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto) {
+			@Valid @RequestBody RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService
 			.verifyOtpFromDocumentAndRecipientId(recipientConvertToOtpValidateRequestDto);
@@ -121,7 +121,7 @@ public class DocumentLinkController {
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> resendOtpFromUuid(
-			@RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
+			@Valid @RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.resendOtpFromUuid(uuidConvertToOtpRequestDto, true);
 
@@ -133,7 +133,7 @@ public class DocumentLinkController {
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/internal/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> resendOtpForInternalUser(
-			@RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
+			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService
 			.resendOtpFromDocumentAndRecipientId(recipientConvertToOtpRequestDto, true);

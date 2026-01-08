@@ -14,13 +14,21 @@ public class TwilioConfig {
 	@Value("${twilio.account-sid}")
 	private String accountSid;
 
-	@Value("${twilio.auth-token-or-api-key}")
-	private String authTokenOrApiKey;
+	@Value("${twilio.auth-token-or-api-key-sid}")
+	private String authTokenOrApiKeySid;
+
+	@Value("${twilio.api-key-secret}")
+	private String apiKeySecret;
 
 	@PostConstruct
 	private void initTwilio() {
 
-		Twilio.init(accountSid, authTokenOrApiKey);
+		if (apiKeySecret != null && !apiKeySecret.trim().isEmpty()) {
+			Twilio.init(authTokenOrApiKeySid, apiKeySecret, accountSid);
+		}
+		else {
+			Twilio.init(accountSid, authTokenOrApiKeySid);
+		}
 
 	}
 
