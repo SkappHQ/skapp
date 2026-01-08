@@ -282,7 +282,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 			template = template.replace("{{environment}}",
 					escapeHtml(request.getEnvironment() != null ? request.getEnvironment() : ""));
 			template = template.replace("{{description}}",
-					escapeHtml(request.getDescription() != null ? request.getDescription() : ""));
+					stripHtmlTags(request.getDescription() != null ? request.getDescription() : ""));
 			template = template.replace("{{logo}}", getIcon(ReleaseIconEnum.SKAPP_ICON.name()));
 
 			template = processWorkItems(template, request, projectKey);
@@ -333,7 +333,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 
 				itemsHtmlBuilder.append(itemTemplate.replace("{{workIcon}}", iconBase64)
 					.replace("{{workCode}}", escapeHtml(workCode))
-					.replace("{{workDescription}}", escapeHtml(item.getTitle() != null ? item.getTitle() : "")));
+					.replace("{{workDescription}}", stripHtmlTags(item.getTitle() != null ? item.getTitle() : "")));
 			}
 		}
 		return itemsHtmlBuilder;
@@ -405,7 +405,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 					&& !approver.getRemarks().trim().isEmpty()) {
 				approverHtml = approverHtml.replace("{{#hasRemarks}}", "")
 					.replace("{{/hasRemarks}}", "")
-					.replace("{{remarks}}", escapeHtml(approver.getRemarks()));
+					.replace("{{remarks}}", stripHtmlTags(approver.getRemarks()));
 			}
 			else {
 				approverHtml = removeConditionalBlock(approverHtml, "{{#hasRemarks}}", "{{/hasRemarks}}");
@@ -442,6 +442,21 @@ public class ReleaseServiceImpl implements ReleaseService {
 			.replace(">", "&gt;")
 			.replace("\"", "&quot;")
 			.replace("'", "&#x27;");
+	}
+
+	private String stripHtmlTags(String html) {
+		if (html == null || html.isEmpty()) {
+			return html;
+		}
+		String text = html.replaceAll("<[^>]*>", "");
+		text = text.replace("&nbsp;", " ")
+			.replace("&quot;", "\"")
+			.replace("&#x27;", "'")
+			.replace("&#39;", "'")
+			.replace("&lt;", "<")
+			.replace("&gt;", ">")
+			.replace("&amp;", "&");
+		return escapeHtml(text.trim());
 	}
 
 	private String getIcon(String icon) {
