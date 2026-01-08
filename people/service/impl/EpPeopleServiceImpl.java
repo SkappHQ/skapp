@@ -44,6 +44,7 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.service.impl.EmployeeExportMapperService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
@@ -169,11 +170,13 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
 			SpecialTenantConfig specialTenantConfig, ValidationService validationService,
-			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao) {
+			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao,
+			EmployeeExportMapperService employeeExportMapperService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService);
+				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService,
+				employeeExportMapperService);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;
