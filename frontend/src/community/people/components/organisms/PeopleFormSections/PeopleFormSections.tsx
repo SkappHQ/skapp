@@ -105,10 +105,11 @@ const PeopleFormSections = ({
             selectedUser={Number(employeeId)}
           />
         );
-      case EditPeopleFormTypes.documents:
-        return (
-          <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
-        ); 
+        //feature flag 
+      // case EditPeopleFormTypes.documents:
+      //   return (
+      //     <IndividualEmployeeDocumentView selectedUser={Number(employeeId)} />
+      //   ); 
       default:
         return null;
     }
