@@ -42,6 +42,7 @@ const superAdminRoutes = {
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.AUTH.VERIFY,
     ROUTES.AUTH.VERIFY_SUCCESS,
     ROUTES.SETTINGS.MODULES,
@@ -68,9 +69,11 @@ const adminRoutes = {
   [AdminTypes.ESIGN_ADMIN]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
@@ -102,9 +105,11 @@ const managerRoutes = {
   [SenderTypes.ESIGN_SENDER]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE
@@ -142,6 +147,7 @@ const senderRoutes = {
   [SenderTypes.ESIGN_SENDER]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
@@ -325,9 +331,11 @@ export const config = {
     "/sign",
     "/sign/contacts/:path*",
     "/sign/create/:path*",
+    "/sign/create-template/:path*",
     "/sign/folders/:path*",
     "/sign/inbox/:path*",
     "/sign/sent/:path*",
+    "/sign/template/:path*",
     "/sign/complete/:path*",
     // Project routes
     "/projects/:path*",

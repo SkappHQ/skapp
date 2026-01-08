@@ -94,6 +94,7 @@ const ROUTES = {
     BASE: "/sign",
     INBOX: "/sign/inbox",
     SENT: "/sign/sent",
+    TEMPLATE: "/sign/template",
     FOLDERS: "/sign/folders",
     CONTACTS: "/sign/contacts",
     CREATE_DOCUMENT: "/sign/create",
@@ -109,7 +110,12 @@ const ROUTES = {
     INBOX_INFO: {
       BASE: "/sign/inbox/envelope",
       ID: (id: number) => `/sign/inbox/envelope/${id}`
-    }
+    },
+    TEMPLATE_INFO: {
+      BASE: "/sign/template/info",
+      ID: (id: string) => `/sign/template/info/${id}`
+    },
+    CREATE_TEMPLATE: "/sign/create-template"
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
