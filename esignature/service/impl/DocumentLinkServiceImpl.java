@@ -891,7 +891,42 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		EsignVerificationSession esignVerification = esignVerificationOptional.get();
 
+		EsignVerificationEventType eventType;
+
+		boolean isResetAttemptCountToDefault = false;
+
 		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
+
+			if (esignVerification.getAttemptCount() >= EsignConstants.ESIGN_MAX_LIMIT) {
+
+				Instant cooldownTime = esignVerification.getLastAttemptedTime()
+					.plusSeconds(EsignConstants.ESIGN_ATTEMPT_RETRY_SECONDS);
+
+				if (Instant.now().isBefore(cooldownTime)) {
+					eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+
+					populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
+							esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+							esignVerification.getResendCount());
+
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED);
+				}
+				else {
+					isResetAttemptCountToDefault = true;
+				}
+
+			}
+
+			esignVerification.setAttemptCount(isResetAttemptCountToDefault ? EsignConstants.ESIGN_DEFAULT_COUNT
+					: esignVerification.getAttemptCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+			esignVerification.setLastAttemptedTime(Instant.now());
+			esignVerificationSessionDao.save(esignVerification);
+
+			eventType = EsignVerificationEventType.OTP_VERIFY_FAILED;
+
+			populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
+					esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+					esignVerification.getResendCount());
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 		}
@@ -899,8 +934,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		esignVerification.setVerificationCode(null);
 		esignVerification.setOtpExpiryTime(null);
 		esignVerification.setVerified(true);
-		// esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
+		esignVerification.setLastAttemptedTime(Instant.now());
+		esignVerification.setAttemptCount(EsignConstants.ESIGN_DEFAULT_COUNT);
+		esignVerification.setResendCount(EsignConstants.ESIGN_DEFAULT_COUNT);
+		esignVerification.setConcurrentAccessCount(EsignConstants.ESIGN_DEFAULT_COUNT);
 		esignVerificationSessionDao.save(esignVerification);
+
+		eventType = EsignVerificationEventType.OTP_VERIFY_SUCCESS;
+
+		populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
+				esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+				esignVerification.getResendCount());
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));

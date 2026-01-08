@@ -78,8 +78,8 @@ public class EsignConstants {
 
 	public static final int ESIGN_MAX_OTP_BACKOFF_SECONDS = 300;
 
-	public static final int ESIGN_OTP_BACKOFF_MULTIPLIER = 2;
-
 	public static final int ESIGN_OTP_DEFAULT_LOCK_TIME = 3600;
+
+	public static final int ESIGN_ATTEMPT_RETRY_SECONDS = 120;
 
 }
