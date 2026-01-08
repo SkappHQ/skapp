@@ -102,7 +102,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String TOO_MANY_OTP_REQUESTS = "Too many OTP requests. Please try again in ";
 
-	private static final String RETRY_TIME_IN_SECONDS = "seconds";
+	private static final String RETRY_TIME_IN_SECONDS = " seconds";
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -817,7 +817,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			String otpCode = OtpUtil.generateOTP();
 			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-			if (verificationSession != null && verificationSession.getVerificationCode() != null && !isResend) {
+			if (verificationSession != null && verificationSession.getVerificationCode() != null) {
 
 				return handleOtpBackoffAndSend(verificationSession, target, channel, isResend);
 
@@ -935,7 +935,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
 
 		// prevent any OTP send within 30 seconds
-		if (Instant.now().isBefore(coolDownTime)) {
+		if (currentResendCount == 0 && Instant.now().isBefore(coolDownTime)) {
 
 			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
 			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
@@ -946,7 +946,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 
 		}
-		else if (concurrentSessionCount >= EsignConstants.ESIGN_MAX_LIMIT && Instant.now().isBefore(accessBlockTime)) {
+
+		// Check if concurrent access limit exceeded
+		if (concurrentSessionCount >= EsignConstants.ESIGN_MAX_LIMIT && Instant.now().isBefore(accessBlockTime)) {
 			// prevent OTP send if concurrent access limit exceeded
 			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
 			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
@@ -959,11 +961,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		}
 
+		boolean isResetResendCounttoDefault = false;
+
 		// Check if max attempts exceeded and apply exponential backoff
-		if (currentResendCount >= EsignConstants.ESIGN_MAX_LIMIT) {
-			int backoffMultiplier = (int) Math.pow(EsignConstants.ESIGN_OTP_BACKOFF_MULTIPLIER,
-					currentResendCount - EsignConstants.ESIGN_MAX_LIMIT);
-			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * backoffMultiplier,
+		if (currentResendCount < EsignConstants.ESIGN_MAX_LIMIT) {
+
+			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * currentResendCount,
 					EsignConstants.ESIGN_MAX_OTP_BACKOFF_SECONDS);
 			Instant backoffTime = lastOtpCreatedTime.plusSeconds(backoffSeconds);
 
@@ -978,8 +981,21 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 			}
 
-			// Backoff expired - reset attempt count
-			verificationSession.setResendCount(EsignConstants.ESIGN_DEFAULT_COUNT);
+		}
+		else {
+
+			if (Instant.now().isBefore(accessBlockTime)) {
+				eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+						verificationSession.getDocument().getId(), eventType, Instant.now(), concurrentSessionCount,
+						currentAttemptCount, currentResendCount);
+
+				long remainingSeconds = Duration.between(Instant.now(), accessBlockTime).getSeconds();
+
+				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+			}
+
+			isResetResendCounttoDefault = true;
 		}
 
 		// send OTP
@@ -993,8 +1009,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (isResend) {
 			eventType = EsignVerificationEventType.OTP_RESENT;
-			verificationSession.setResendCount(
-					verificationSession.getResendCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+			verificationSession.setResendCount(isResetResendCounttoDefault ? EsignConstants.ESIGN_DEFAULT_COUNT
+					: verificationSession.getResendCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
 		}
 		else {
 			eventType = EsignVerificationEventType.OTP_GENERATED;
