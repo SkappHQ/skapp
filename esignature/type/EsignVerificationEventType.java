@@ -2,6 +2,6 @@ package com.skapp.enterprise.esignature.type;
 
 public enum EsignVerificationEventType {
 
-	OTP_SENT, OTP_VERIFIED, OTP_RESENT
+	OTP_GENERATED, OTP_RESENT, OTP_VERIFY_SUCCESS, OTP_VERIFY_FAILED, OTP_SESSION_LOCKED
 
 }

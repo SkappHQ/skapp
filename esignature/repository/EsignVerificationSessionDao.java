@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EsignVerificationDao extends JpaRepository<EsignVerificationSession, Long> {
+public interface EsignVerificationSessionDao extends JpaRepository<EsignVerificationSession, Long> {
 
 	Optional<EsignVerificationSession> findByDocument_IdAndRecipient_Id(Long documentId, Long recipientId);
 

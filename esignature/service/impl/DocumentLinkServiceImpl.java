@@ -27,20 +27,12 @@ import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.repository.DocumentDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
-import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.EsignVerificationDao;
-import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.EsignMessageService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
-import com.skapp.enterprise.esignature.type.DocumentPermissionType;
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
-import com.skapp.enterprise.esignature.type.EsignVerificationType;
-import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.type.*;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -134,7 +126,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final TenantContext tenantContext;
 
-	private final EsignVerificationDao esignVerificationDao;
+	private final EsignVerificationSessionDao esignVerificationSessionDao;
+
+	private final EsignVerificationSessionLogDao esignVerificationSessionLogDao;
 
 	private final MessageUtil messageUtil;
 
@@ -529,7 +523,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
-		return sendVerificationToRecipient(documentLink, null, null);
+		return sendVerificationToRecipient(documentLink, null, null, false);
 	}
 
 	@Override
@@ -540,7 +534,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
 		// MFA Flow: Send OTP and return verification initiated response
-		return sendVerificationToRecipient(null, document, recipient);
+		return sendVerificationToRecipient(null, document, recipient, false);
 
 	}
 
@@ -565,22 +559,22 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	@Override
-	public ResponseEntityDto resendOtpFromUuid(String uuid, String state) {
+	public ResponseEntityDto resendOtpFromUuid(String uuid, String state, boolean isResend) {
 
 		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
-		return sendVerificationToRecipient(documentLink, null, null);
+		return sendVerificationToRecipient(documentLink, null, null, isResend);
 
 	}
 
 	@Override
-	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId) {
+	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(Long documentId, Long recipientId, boolean isResend) {
 
 		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
 		Document document = documentDao.findById(documentId)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
-		return sendVerificationToRecipient(null, document, recipient);
+		return sendVerificationToRecipient(null, document, recipient, isResend);
 	}
 
 	@Override
@@ -738,6 +732,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Recipient recipient = recipientOptional
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
+		if (recipient.isMfaVerificationEnabled()) {
+			populateAndSaveVerificationSessionData(recipient);
+		}
+
 		EsignVerificationType verificationMethod = recipient.getMfaVerificationMethod();
 
 		if (verificationMethod.equals(EsignVerificationType.SMS)) {
@@ -751,6 +749,29 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	}
 
+	private void populateAndSaveVerificationSessionData(Recipient recipient) {
+
+		Document document = recipient.getEnvelope()
+			.getDocuments()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		EsignVerificationSession existingVerificationSession = esignVerificationSessionDao
+			.findByDocument_IdAndRecipient_Id(document.getId(), recipient.getId())
+			.orElse(null);
+
+		if (existingVerificationSession == null) {
+			EsignVerificationSession esignVerificationSession = new EsignVerificationSession();
+			esignVerificationSession.setRecipient(recipient);
+			esignVerificationSession.setDocument(document);
+			esignVerificationSession.setVerified(false);
+
+			esignVerificationSessionDao.save(esignVerificationSession);
+		}
+
+	}
+
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
 			String userType) {
 	}
@@ -760,7 +781,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private ResponseEntityDto sendVerificationToRecipient(DocumentLink documentLink, Document document,
-			Recipient recipient) {
+			Recipient recipient, boolean isResend) {
 
 		Recipient recipientData;
 		Document documentData;
@@ -786,32 +807,35 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (channel != null && target != null) {
 
-			// Check if there's an existing active otp request to the recipient for this
+			// Check if there's an existing active otp session to the recipient for this
 			// document.
-			Optional<EsignVerificationSession> esignVerificationOptional = esignVerificationDao
+			Optional<EsignVerificationSession> verificationSessionOptional = esignVerificationSessionDao
 				.findByDocument_IdAndRecipient_Id(documentData.getId(), recipientData.getId());
 
-			EsignVerificationSession existingEsignVerification = esignVerificationOptional.orElse(null);
+			EsignVerificationSession verificationSession = verificationSessionOptional.orElse(null);
 
 			String otpCode = OtpUtil.generateOTP();
 			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-			if (existingEsignVerification != null) {
+			if (verificationSession != null) {
 
-				handleOtpBackoffAndSend(existingEsignVerification, target, channel);
+				handleOtpBackoffAndSend(verificationSession, target, channel);
 
 			}
 			else {
 
-				EsignVerificationSession esignVerification = new EsignVerificationSession();
-				esignVerification.setDocument(documentData);
-				esignVerification.setRecipient(recipientData);
-				esignVerification.setVerificationCode(otpCode);
-				esignVerification.setOtpExpiryTime(expiryTime);
-				esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
-				esignVerification.setVerified(false);
+				verificationSession.setRecipient(recipientData);
+				verificationSession.setDocument(documentData);
+				verificationSession.setVerificationCode(otpCode);
+				verificationSession.setVerified(false);
+				verificationSession.setOtpExpiryTime(expiryTime);
+				verificationSession.setOtpCreatedTime(Instant.now());
 
-				esignVerificationDao.save(esignVerification);
+				esignVerificationSessionDao.save(verificationSession);
+
+				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
+						EsignVerificationEventType.OTP_GENERATED, Instant.now(), EsignConstants.ESIGN_DEFAULT_OTP_COUNT,
+						EsignConstants.ESIGN_DEFAULT_OTP_COUNT);
 
 				esignMessageService.sendOtpMessage(target, otpCode);
 			}
@@ -820,6 +844,21 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		// Return if the verification otp sent was success or failed.
 		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);
+
+	}
+
+	private void populateAndSaveVerificationSessionHistoryData(Long recipientId, Long documentId,
+			EsignVerificationEventType eventType, Instant timestamp, int attemptNumber, int resendNumber) {
+
+		EsignVerificationSessionLog esignVerificationSessionLog = new EsignVerificationSessionLog();
+		esignVerificationSessionLog.setRecipientId(recipientId);
+		esignVerificationSessionLog.setDocumentId(documentId);
+		esignVerificationSessionLog.setEventType(eventType);
+		esignVerificationSessionLog.setTimestamp(timestamp);
+		esignVerificationSessionLog.setAttemptNumber(attemptNumber);
+		esignVerificationSessionLog.setResendNumber(resendNumber);
+
+		esignVerificationSessionLogDao.save(esignVerificationSessionLog);
 
 	}
 
@@ -833,11 +872,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Optional<EsignVerificationSession> esignVerificationOptional;
 
 		if (documentLink != null) {
-			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(
+			esignVerificationOptional = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(
 					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
 		}
 		else {
-			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+			esignVerificationOptional = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(documentId,
+					recipientId);
 		}
 
 		if (esignVerificationOptional.isEmpty()) {
@@ -854,8 +894,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		esignVerification.setVerificationCode(null);
 		esignVerification.setOtpExpiryTime(null);
 		esignVerification.setVerified(true);
-		esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
-		esignVerificationDao.save(esignVerification);
+		// esignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
+		esignVerificationSessionDao.save(esignVerification);
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
@@ -866,58 +906,80 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		Optional<EsignVerificationSession> esignVerification;
 
 		if (documentLink != null) {
-			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(
+			esignVerification = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(
 					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
 		}
 		else {
-			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+			esignVerification = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
 		}
 
 		return esignVerification.map(EsignVerificationSession::isVerified).orElse(false);
 	}
 
-	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession existingEsignVerification, String target,
+	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession verificationSession, String target,
 			String channel) {
 
-		LocalDateTime lastModifiedTime = existingEsignVerification.getLastModifiedDate();
-		LocalDateTime coolDownTime = lastModifiedTime.plusSeconds(30);
+		EsignVerificationEventType eventType;
+
+		Instant lastOtpCreatedTime = verificationSession.getOtpCreatedTime();
+		Instant coolDownTime = lastOtpCreatedTime.plusSeconds(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS);
+
+		int currentResendCount = verificationSession.getResendCount();
+		int currentAttemptCount = verificationSession.getAttemptCount();
 
 		// prevent any OTP send within 30 seconds
-		if (LocalDateTime.now().isBefore(coolDownTime)) {
+		if (Instant.now().isBefore(coolDownTime)) {
+
+			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+					verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
+					currentResendCount);
+
 			long remainingSeconds = Duration.between(LocalDateTime.now(), coolDownTime).getSeconds();
 			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 		}
 
-		int currentAttempts = existingEsignVerification.getOtpSentAttemptCount();
-
 		// Check if max attempts exceeded and apply exponential backoff
-		if (currentAttempts >= EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT) {
+		if (currentResendCount >= EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT) {
 			int backoffMultiplier = (int) Math.pow(EsignConstants.ESIGN_OTP_BACKOFF_MULTIPLIER,
-					currentAttempts - EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT);
+					currentResendCount - EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT);
 			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * backoffMultiplier,
 					EsignConstants.ESIGN_MAX_OTP_BACKOFF_SECONDS);
-			LocalDateTime backoffTime = lastModifiedTime.plusSeconds(backoffSeconds);
+			Instant backoffTime = lastOtpCreatedTime.plusSeconds(backoffSeconds);
 
-			if (LocalDateTime.now().isBefore(backoffTime)) {
+			if (Instant.now().isBefore(backoffTime)) {
+
+				eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+						verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
+						currentResendCount);
+
 				long remainingSeconds = Duration.between(LocalDateTime.now(), backoffTime).getSeconds();
 				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 			}
 
 			// Backoff expired - reset attempt count
-			existingEsignVerification.setOtpSentAttemptCount(EsignConstants.ESIGN_DEFAULT_OTP_ATTEMPT_COUNT);
+			verificationSession.setResendCount(EsignConstants.ESIGN_DEFAULT_OTP_COUNT);
 		}
 
 		// send OTP
 		String otpCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-		existingEsignVerification.setVerificationCode(otpCode);
-		existingEsignVerification.setOtpExpiryTime(expiryTime);
-		existingEsignVerification.setVerified(false);
-		existingEsignVerification.setOtpSentAttemptCount(existingEsignVerification.getOtpSentAttemptCount()
-				+ EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+		verificationSession.setVerificationCode(otpCode);
+		verificationSession.setVerified(false);
+		verificationSession.setOtpExpiryTime(expiryTime);
+		verificationSession.setOtpCreatedTime(Instant.now());
+		verificationSession.setResendCount(
+				verificationSession.getResendCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
 
-		esignVerificationDao.save(existingEsignVerification);
+		esignVerificationSessionDao.save(verificationSession);
+
+		eventType = EsignVerificationEventType.OTP_RESENT;
+		populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+				verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
+				verificationSession.getResendCount());
+
 		esignMessageService.sendOtpMessage(target, otpCode);
 
 		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);

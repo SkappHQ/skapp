@@ -117,7 +117,7 @@ public class DocumentLinkController {
 	@PostMapping(value = "/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> resendOtpFromUuid(@RequestParam String uuid, @RequestParam String state) {
 
-		ResponseEntityDto responseEntityDto = documentLinkService.resendOtpFromUuid(uuid, state);
+		ResponseEntityDto responseEntityDto = documentLinkService.resendOtpFromUuid(uuid, state, true);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
@@ -130,7 +130,7 @@ public class DocumentLinkController {
 			@RequestParam Long recipientId) {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.resendOtpFromDocumentAndRecipientId(documentId,
-				recipientId);
+				recipientId, true);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}

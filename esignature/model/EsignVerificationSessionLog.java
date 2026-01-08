@@ -29,8 +29,8 @@ public class EsignVerificationSessionLog extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	private EsignVerificationEventType eventType;
 
-	@Column(name = "event_timestamp")
-	private Instant eventTimestamp;
+	@Column(name = "timestamp")
+	private Instant timestamp;
 
 	@Column(name = "attempt_number")
 	private int attemptNumber;
