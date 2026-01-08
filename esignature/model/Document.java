@@ -54,6 +54,6 @@ public class Document {
 	private int numOfPages;
 
 	@OneToOne(mappedBy = "document", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private EsignVerification esignVerification;
+	private EsignVerificationSession esignVerificationSession;
 
 }

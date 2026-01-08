@@ -15,14 +15,8 @@ import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.DocumentLink;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.DocumentVersionField;
-import com.skapp.enterprise.esignature.model.EsignVerification;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.*;
+import com.skapp.enterprise.esignature.model.EsignVerificationSession;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
@@ -794,10 +788,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			// Check if there's an existing active otp request to the recipient for this
 			// document.
-			Optional<EsignVerification> esignVerificationOptional = esignVerificationDao
+			Optional<EsignVerificationSession> esignVerificationOptional = esignVerificationDao
 				.findByDocument_IdAndRecipient_Id(documentData.getId(), recipientData.getId());
 
-			EsignVerification existingEsignVerification = esignVerificationOptional.orElse(null);
+			EsignVerificationSession existingEsignVerification = esignVerificationOptional.orElse(null);
 
 			String otpCode = OtpUtil.generateOTP();
 			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
@@ -809,7 +803,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			}
 			else {
 
-				EsignVerification esignVerification = new EsignVerification();
+				EsignVerificationSession esignVerification = new EsignVerificationSession();
 				esignVerification.setDocument(documentData);
 				esignVerification.setRecipient(recipientData);
 				esignVerification.setVerificationCode(otpCode);
@@ -836,7 +830,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
 		}
 
-		Optional<EsignVerification> esignVerificationOptional;
+		Optional<EsignVerificationSession> esignVerificationOptional;
 
 		if (documentLink != null) {
 			esignVerificationOptional = esignVerificationDao.findByDocument_IdAndRecipient_Id(
@@ -850,7 +844,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
 		}
 
-		EsignVerification esignVerification = esignVerificationOptional.get();
+		EsignVerificationSession esignVerification = esignVerificationOptional.get();
 
 		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
 
@@ -869,7 +863,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private boolean getMfaVerificationStatus(DocumentLink documentLink, Long documentId, Long recipientId) {
-		Optional<EsignVerification> esignVerification;
+		Optional<EsignVerificationSession> esignVerification;
 
 		if (documentLink != null) {
 			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(
@@ -879,10 +873,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			esignVerification = esignVerificationDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
 		}
 
-		return esignVerification.map(EsignVerification::isVerified).orElse(false);
+		return esignVerification.map(EsignVerificationSession::isVerified).orElse(false);
 	}
 
-	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerification existingEsignVerification, String target,
+	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession existingEsignVerification, String target,
 			String channel) {
 
 		LocalDateTime lastModifiedTime = existingEsignVerification.getLastModifiedDate();

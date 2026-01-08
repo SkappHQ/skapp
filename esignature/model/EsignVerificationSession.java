@@ -18,8 +18,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "es_recipient_verification")
-public class EsignVerification extends Auditable<String> {
+@Table(name = "es_recipient_verification_session")
+public class EsignVerificationSession extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +35,17 @@ public class EsignVerification extends Auditable<String> {
 	@Column(name = "otp_expiry_time")
 	private Instant otpExpiryTime;
 
+	@Column(name = "otp_created_time")
+	private Instant otpCreatedTime;
+
 	@Column(name = "attempt_count")
-	private int otpSentAttemptCount;
+	private int attemptCount;
+
+	@Column(name = "resend_count")
+	private int resendCount;
+
+	@Column(name = "last_attempt_at")
+	private Instant lastAttemptedTime;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recipient_id")

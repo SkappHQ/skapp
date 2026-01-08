@@ -99,6 +99,6 @@ public class Recipient {
 	private EsignVerificationType mfaVerificationMethod;
 
 	@OneToOne(mappedBy = "recipient", fetch = FetchType.LAZY)
-	private EsignVerification esignVerification;
+	private EsignVerificationSession esignVerificationSession;
 
 }
