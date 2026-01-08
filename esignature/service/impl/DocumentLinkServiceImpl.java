@@ -843,9 +843,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			Optional<EsignVerificationSession> verificationSessionOptional = esignVerificationSessionDao
 				.findByDocument_IdAndRecipient_Id(documentData.getId(), recipientData.getId());
 
-			String otpCode = OtpUtil.generateOTP();
-			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
-
 			if (verificationSessionOptional.isPresent()
 					&& verificationSessionOptional.get().getVerificationCode() != null) {
 
@@ -856,6 +853,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			}
 
 			else {
+				String otpCode = OtpUtil.generateOTP();
+				Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 				EsignVerificationSession verificationSession = new EsignVerificationSession();
 
@@ -1084,13 +1083,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		}
 		else {
 			eventType = EsignVerificationEventType.OTP_GENERATED;
-			int newCount = verificationSession.getConcurrentAccessCount();
-			if (timeNow.isAfter(accessBlockTime)) {
-				newCount = EsignConstants.DEFAULT_COUNT;
-			}
-			else if (timeNow.isBefore(accessBlockTime)) {
-				newCount = newCount + EsignConstants.DEFAULT_INCREMENT_COUNT;
-			}
+
+			int newCount = timeNow.isAfter(accessBlockTime) ? EsignConstants.DEFAULT_COUNT
+					: verificationSession.getConcurrentAccessCount() + EsignConstants.DEFAULT_INCREMENT_COUNT;
+
 			verificationSession.setConcurrentAccessCount(newCount);
 		}
 
@@ -1103,12 +1099,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		verificationSession.setOtpExpiryTime(expiryTime);
 		verificationSession.setOtpCreatedTime(Instant.now());
 
-		esignVerificationSessionDao.save(verificationSession);
+		EsignVerificationSession savedVerificationSession = esignVerificationSessionDao.save(verificationSession);
 
-		populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-				verificationSession.getDocument().getId(), eventType, Instant.now(),
-				verificationSession.getConcurrentAccessCount(), currentAttemptCount,
-				verificationSession.getResendCount());
+		populateAndSaveVerificationSessionHistoryData(savedVerificationSession.getRecipient().getId(),
+				savedVerificationSession.getDocument().getId(), eventType, Instant.now(),
+				savedVerificationSession.getConcurrentAccessCount(), savedVerificationSession.getAttemptCount(),
+				savedVerificationSession.getResendCount());
 
 		esignMessageService.sendOtpMessage(target, otpCode);
 
