@@ -99,7 +99,7 @@ const DirectorySteppers = ({
     session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-      // feature flagged
+      // Feature flagged
     // ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
   ];
 
