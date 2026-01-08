@@ -910,6 +910,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private ResponseEntityDto verifyCodeWithDocumentRecipient(DocumentLink documentLink, Long documentId,
 			Long recipientId, String code) {
 
+		if (documentLink == null && (documentId == null || recipientId == null)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION);
+		}
+
 		if (code == null || code.trim().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
 		}

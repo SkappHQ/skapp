@@ -159,7 +159,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED("ep.esign.error.verification.max.attempts.reached"),
 	ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS("ep.esign.error.verification.too.many.otp.requests"),
 	ESIGN_ERROR_VERIFICATION_CODE_FORMAT_INVALID("ep.esign.error.verification.code.invalid-format"),
-	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.verification.document.access.blocked");
+	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.verification.document.access.blocked"),
+	ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION("ep.esign.error.invalid.inputs.for.otp.verification");
 
 	private final String messageKey;
 
