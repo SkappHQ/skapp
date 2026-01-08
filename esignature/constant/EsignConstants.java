@@ -76,8 +76,6 @@ public class EsignConstants {
 
 	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
 
-	public static final int MAX_OTP_BACKOFF_SECONDS = 300;
-
 	public static final int OTP_DEFAULT_LOCK_TIME = 3600;
 
 	public static final int ATTEMPT_RETRY_SECONDS = 120;
