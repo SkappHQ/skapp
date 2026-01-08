@@ -704,17 +704,21 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
+		EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor = requestDto.getEmploymentDetails()
+			.getPrimarySupervisor();
+		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors = requestDto.getEmploymentDetails()
+			.getOtherSupervisors();
+
+		if (primarySupervisor == null && (otherSupervisors == null || otherSupervisors.isEmpty())) {
+			return;
+		}
+
 		if (employee.getEmployeeManagers() == null) {
 			employee.setEmployeeManagers(new HashSet<>());
 		}
 
 		Set<EmployeeManager> result = new HashSet<>();
 		Set<EmployeeManager> existingManagers = new HashSet<>(employee.getEmployeeManagers());
-
-		EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor = requestDto.getEmploymentDetails()
-			.getPrimarySupervisor();
-		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors = requestDto.getEmploymentDetails()
-			.getOtherSupervisors();
 
 		Map<Long, EmployeeManager> existingManagerMap = existingManagers.stream()
 			.collect(Collectors.toMap(em -> em.getManager().getEmployeeId(), em -> em,
@@ -909,7 +913,6 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		if (employmentDetails.getProbationStartDate() == null && employmentDetails.getProbationEndDate() == null) {
-			employee.getEmployeePeriods().clear();
 			return;
 		}
 
