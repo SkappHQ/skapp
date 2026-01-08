@@ -69,21 +69,31 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 	// JCA Algorithm Constants
 	private static final String ALGO_SHA_256 = "SHA-256";
+
 	private static final String ALGO_SHA_384 = "SHA-384";
+
 	private static final String ALGO_SHA_512 = "SHA-512";
+
 	private static final String SIG_ALGO_RSA_SHA256 = "SHA256withRSA";
+
 	private static final String SIG_ALGO_ECDSA_SHA256 = "SHA256withECDSA";
+
 	private static final String SIG_ALGO_ECDSA_SHA384 = "SHA384withECDSA";
+
 	private static final String SIG_ALGO_ECDSA_SHA512 = "SHA512withECDSA";
 
 	// Elliptic Curve Constants
 	private static final String CURVE_P_384 = "P-384";
+
 	private static final String CURVE_P_521 = "P-521";
 
 	// Key Type Constants
 	private static final String KEY_TYPE_RSA = "RSA";
+
 	private static final String KEY_TYPE_RSA_HSM = "RSA-HSM";
+
 	private static final String KEY_TYPE_EC = "EC";
+
 	private static final String KEY_TYPE_EC_HSM = "EC-HSM";
 
 	// Hash algorithm (determined at runtime)
@@ -172,7 +182,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	}
 
 	private TokenCredential createCredential() {
-		// Use service principal if explicitly configured; otherwise rely on DefaultAzureCredential (Managed Identity, CLI, etc.)
+		// Use service principal if explicitly configured; otherwise rely on
+		// DefaultAzureCredential (Managed Identity, CLI, etc.)
 		if (StringUtils.hasText(tenantId) && StringUtils.hasText(clientId) && StringUtils.hasText(clientSecret)) {
 			log.info("Using Service Principal authentication");
 			return new ClientSecretCredentialBuilder().tenantId(tenantId)
@@ -223,7 +234,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		else {
 			// A valid Azure Key Vault Certificate always has a backing key identifier.
 			// If this is missing, the certificate state is invalid/corrupted.
-			throw new IllegalStateException("Certificate in Azure Key Vault is missing the required Key Identifier (kid)");
+			throw new IllegalStateException(
+					"Certificate in Azure Key Vault is missing the required Key Identifier (kid)");
 		}
 	}
 
@@ -255,7 +267,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			}
 
 			if (x509Certificates.size() == 1) {
-				log.warn("Only one certificate found in chain. PDF validation may fail if intermediate CAs are missing.");
+				log.warn(
+						"Only one certificate found in chain. PDF validation may fail if intermediate CAs are missing.");
 			}
 
 			log.debug("Parsed {} certificate(s) from Azure Key Vault", x509Certificates.size());
@@ -270,15 +283,15 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		KeyVaultKey key = cryptographyClient.getKey();
 		JsonWebKey jsonWebKey = key.getKey();
 
-		String keyType = String.valueOf(jsonWebKey.getKeyType());
-		String curveName = String.valueOf(jsonWebKey.getCurveName());
+		String keyType = jsonWebKey.getKeyType() != null ? jsonWebKey.getKeyType().toString() : null;
+		String curveName = jsonWebKey.getCurveName() != null ? jsonWebKey.getCurveName().toString() : null;
 
 		log.info("Key properties - Type: {}, Curve: {}", keyType, curveName);
 
 		// Map key type to signature algorithm
 		if (KEY_TYPE_RSA.equalsIgnoreCase(keyType) || KEY_TYPE_RSA_HSM.equalsIgnoreCase(keyType)) {
-			// For RSA, we default to SHA-256/RS256, but could support stronger variants if
-			// needed
+			// For RSA, we default to SHA-256/RS256, but could support stronger variants
+			// if needed
 			hashAlgorithm = ALGO_SHA_256;
 			signatureAlgorithm = SIG_ALGO_RSA_SHA256;
 			azureSignatureAlgorithm = SignatureAlgorithm.RS256;
@@ -325,12 +338,12 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			SignResult signResult = cryptographyClient.sign(azureSignatureAlgorithm, hash);
 			byte[] signature = signResult.getSignature();
 
-			log.debug("Hash signed successfully (signature length: {} bytes)", signature.length);
+			log.debug("Content signed successfully (signature length: {} bytes)", signature.length);
 			return signature;
 
 		}
 		catch (Exception e) {
-			log.error("Failed to sign hash with Azure Key Vault", e);
+			log.error("Failed to sign content with Azure Key Vault", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED);
 		}
 	}

@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
  * Configuration class for PDF Digital Signing feature.
  *
  * This configuration logs initialization details when the PDF signing feature is enabled.
- * The actual beans (SignatureProvider, PdfSigningService) are
- * auto-configured via @Component/@Service annotations and @ConditionalOnProperty.
+ * The actual beans (SignatureProvider, PdfSigningService) are auto-configured
+ * via @Component/@Service annotations and @ConditionalOnProperty.
  *
  * The configuration is driven by application properties and environment variables,
  * allowing seamless switching between local development and production environments.

@@ -133,14 +133,14 @@ public class LocalSignatureProvider implements SignatureProvider {
 			// Note: The Signature instance (e.g., SHA256withRSA) handles the hashing
 			// internally.
 			signature.update(contentToSign);
-			byte[] signedHash = signature.sign();
+			byte[] signatureBytes = signature.sign();
 
-			log.debug("Hash signed successfully (signature length: {} bytes)", signedHash.length);
-			return signedHash;
+			log.debug("Content signed successfully (signature length: {} bytes)", signatureBytes.length);
+			return signatureBytes;
 
 		}
 		catch (Exception e) {
-			log.error("Failed to sign hash with local private key", e);
+			log.error("Failed to sign content with local private key", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED);
 		}
 	}
