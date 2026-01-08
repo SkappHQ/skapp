@@ -125,7 +125,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String VERIFICATION_DISABLED = "Verification disabled.";
 
-	private static final String OTP_PATTER_REGEX = "\\d{4}";
+	private static final String OTP_PATTERN_REGEX = "\\d{4}";
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -930,7 +930,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		if (code == null || code.trim().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
 		}
-		if (!code.matches(OTP_PATTER_REGEX)) {
+		if (!code.matches(OTP_PATTERN_REGEX)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_FORMAT_INVALID);
 		}
 
