@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +52,7 @@ public class Document {
 	@Column(name = "num_of_pages")
 	private int numOfPages;
 
-	@OneToOne(mappedBy = "document", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private EsignVerificationSession esignVerificationSession;
+	@OneToMany(mappedBy = "document", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<EsignVerificationSession> verificationSessions;
 
 }

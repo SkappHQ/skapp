@@ -18,7 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -98,7 +97,7 @@ public class Recipient {
 	@Column(name = "mfa_verification_method")
 	private EsignVerificationType mfaVerificationMethod;
 
-	@OneToOne(mappedBy = "recipient", fetch = FetchType.LAZY)
-	private EsignVerificationSession esignVerificationSession;
+	@OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<EsignVerificationSession> verificationSessions;
 
 }
