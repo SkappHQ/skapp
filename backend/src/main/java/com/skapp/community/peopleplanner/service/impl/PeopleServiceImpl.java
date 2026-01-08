@@ -77,6 +77,7 @@ import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchRespons
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
+import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
@@ -191,6 +192,8 @@ public class PeopleServiceImpl implements PeopleService {
 	protected final UserVersionService userVersionService;
 
 	private final EmployeeValidationService employeeValidationService;
+
+	private final EmployeeExportMapperService employeeExportMapperService;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
@@ -1058,7 +1061,8 @@ public class PeopleServiceImpl implements PeopleService {
 		List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
 		List<EmployeeTeamDto> teamList = employeeDao.findTeamsByEmployees(employeeIds);
 
-		List<EmployeeAllDataExportResponseDto> responseDtos = exportAllEmployeeData(employees, teamList, employeeIds);
+		List<EmployeeDataExportDto> responseDtos = employeeExportMapperService.mapToExportDtos(employees, teamList,
+				employeeIds);
 		log.info("exportEmployees: Successfully finished returning {} employees on exportEmployeeData",
 				responseDtos.size());
 
