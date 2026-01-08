@@ -266,6 +266,10 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 				}
 			}
 
+			if (x509Certificates.isEmpty()) {
+				throw new IllegalStateException("No X.509 certificates found in Key Vault certificate data");
+			}
+
 			if (x509Certificates.size() == 1) {
 				log.warn(
 						"Only one certificate found in chain. PDF validation may fail if intermediate CAs are missing.");
