@@ -178,7 +178,12 @@ public class EmployeeExportMapperService {
 		EmployeeExtraInfoExportDto dto = new EmployeeExtraInfoExportDto();
 		dto.setAllergies(getJsonField(extraInfo, "allergies"));
 		dto.setDietaryRestrictions(getJsonField(extraInfo, "dietaryRestrictions"));
-		dto.setTShirtSize(getJsonField(extraInfo, "tshirtSize"));
+
+		String tShirtSize = getJsonField(extraInfo, "tShirtSize");
+		if (tShirtSize == null) {
+			tShirtSize = getJsonField(extraInfo, "tshirtSize");
+		}
+		dto.setTShirtSize(tShirtSize);
 
 		return dto;
 	}
