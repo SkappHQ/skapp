@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.payload.response.export;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
