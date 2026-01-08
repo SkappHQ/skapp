@@ -17,7 +17,7 @@ public class PhoneNumberMaskUtil {
 	 * <li>Preserves the country code and last 3 digits</li>
 	 * <li>Masks all digits between country code and last 3 digits with asterisks</li>
 	 * </ul>
-	 * @param phoneNumber the phone number to mask (e.g., "94 716470208", "+1 212 555
+	 * @param phoneNumber the phone number to mask (e.g., "94 777777777", "+1 212 555
 	 * 0199")
 	 * @return the masked phone number in format "{countryCode} *****{lastThreeDigits}"
 	 * (e.g., "+94 ********208", "+1 **********199"), or null if input is null/empty
@@ -64,7 +64,7 @@ public class PhoneNumberMaskUtil {
 	 * <li>If all characters are digits, returns the minimum of 3 or the phone number
 	 * length</li>
 	 * </ul>
-	 * @param phoneNumber the phone number starting with '+' (e.g., "+94716470208",
+	 * @param phoneNumber the phone number starting with '+' (e.g., "+94777777777",
 	 * "+1234567890")
 	 * @return the end index of the country code (e.g., 3 for "+94", 2 for "+1")
 	 */
