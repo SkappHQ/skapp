@@ -61,6 +61,7 @@ interface ProbationPeriod {
 
 interface EmployeeData {
   employeeId: string;
+  employeeNumber: string;
   firstName: string;
   middleName: string;
   lastName: string;
@@ -269,7 +270,7 @@ const CSV_FIELD_MAPPING = [
   },
   {
     header: "Emp No",
-    accessor: (emp: EmployeeData) => emp.employeeId || ""
+    accessor: (emp: EmployeeData) => emp.employeeNumber || ""
   },
   {
     header: "Employment Allocation",
