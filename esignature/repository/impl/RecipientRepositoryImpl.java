@@ -4,7 +4,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
-import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.ExternalUser;
@@ -21,9 +20,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
 @RequiredArgsConstructor
 public class RecipientRepositoryImpl implements RecipientRepository {
 

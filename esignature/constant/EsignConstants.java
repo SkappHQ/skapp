@@ -85,4 +85,17 @@ public class EsignConstants {
 
 	public static final int ATTEMPT_RETRY_SECONDS = 120;
 
+	public static final int OTP_EXPIRY_TIME_SECONDS = 300;
+
+	public static final int[] PROGRESSIVE_LOCKOUT_TIMES = { 3600, // Level 0: 1 hour
+			7200, // Level 1: 2 hours
+			14400, // Level 2: 4 hours
+			28800, // Level 3: 8 hours
+			86400 // Level 4+: 24 hours
+	};
+
+	public static final int LOCKOUT_LEVEL_RESET_DAYS = 1; // Reset level after 24 hours
+
+	public static final int MAX_OTP_GENERATION_PER_DAY = 10; // Hard limit per 24 hours
+
 }

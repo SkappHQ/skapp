@@ -10,8 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RecipientDao
-		extends JpaRepository<Recipient, Long>, JpaSpecificationExecutor<Recipient>, RecipientRepository {
+public interface RecipientDao extends JpaRepository<Recipient, Long>, RecipientRepository {
 
 	Optional<List<Recipient>> findByEnvelopeId(Long envelopId);
 

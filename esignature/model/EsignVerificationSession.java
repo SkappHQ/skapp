@@ -50,6 +50,18 @@ public class EsignVerificationSession extends Auditable<String> {
 	@Column(name = "last_attempt_at")
 	private Instant lastAttemptedTime;
 
+	@Column(name = "daily_otp_count")
+	private int dailyOtpCount = 0;
+
+	@Column(name = "daily_count_reset_time")
+	private Instant dailyCountResetTime;
+
+	@Column(name = "lockout_level")
+	private int lockoutLevel = 0;
+
+	@Column(name = "lockout_level_reset_time")
+	private Instant lockoutLevelResetTime;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recipient_id")
 	private Recipient recipient;

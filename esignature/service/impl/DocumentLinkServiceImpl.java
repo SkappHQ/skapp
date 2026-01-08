@@ -72,6 +72,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -175,9 +176,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
-
-	@Value("${otp.expiry-seconds}")
-	private int otpExpirySeconds;
 
 	@Override
 	public DocumentLinkResponseDto generateDocumentAccessUrl(DocumentAccessUrlDto documentAccessUrlDto) {
@@ -857,23 +855,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			// Check if there's an existing active otp session to the recipient for this
 			// document.
-			Optional<EsignVerificationSession> verificationSessionOptional = esignVerificationSessionDao
-				.findByDocument_IdAndRecipient_Id(documentData.getId(), recipientData.getId());
+			EsignVerificationSession verificationSession = esignVerificationSessionDao
+				.findByDocumentIdAndRecipientIdForUpdate(documentData.getId(), recipientData.getId());
 
-			if (verificationSessionOptional.isPresent()
-					&& verificationSessionOptional.get().getVerificationCode() != null) {
-
-				EsignVerificationSession verificationSession = verificationSessionOptional.get();
-
+			if (verificationSession != null && verificationSession.getVerificationCode() != null) {
 				return handleOtpBackoffAndSend(verificationSession, target, channel, isResend);
-
 			}
-
 			else {
 				String otpCode = OtpUtil.generateOTP();
-				Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
-
-				EsignVerificationSession verificationSession = new EsignVerificationSession();
+				Instant expiryTime = Instant.now().plusSeconds(EsignConstants.OTP_EXPIRY_TIME_SECONDS);
 
 				verificationSession.setRecipient(recipientData);
 				verificationSession.setDocument(documentData);
@@ -881,9 +871,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				verificationSession.setVerified(false);
 				verificationSession.setOtpExpiryTime(expiryTime);
 				verificationSession.setOtpCreatedTime(Instant.now());
-				verificationSession
-					.setConcurrentAccessCount(EsignConstants.DEFAULT_COUNT + EsignConstants.DEFAULT_INCREMENT_COUNT);
-
+				verificationSession.setConcurrentAccessCount(EsignConstants.DEFAULT_INCREMENT_COUNT);
+				verificationSession.setDailyOtpCount(EsignConstants.DEFAULT_INCREMENT_COUNT);
+				verificationSession.setDailyCountResetTime(
+						Instant.now().plus(EsignConstants.DEFAULT_INCREMENT_COUNT, ChronoUnit.DAYS));
 				esignVerificationSessionDao.save(verificationSession);
 
 				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
@@ -1034,97 +1025,130 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Instant lastOtpCreatedTime = verificationSession.getOtpCreatedTime();
 		Instant coolDownTime = lastOtpCreatedTime.plusSeconds(EsignConstants.MIN_OTP_BACKOFF_SECONDS);
-		Instant accessBlockTime = lastOtpCreatedTime.plusSeconds(EsignConstants.OTP_DEFAULT_LOCK_TIME);
+		Instant timeNow = Instant.now();
 
 		int currentResendCount = verificationSession.getResendCount();
 		int currentAttemptCount = verificationSession.getAttemptCount();
 		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
-		Instant timeNow = Instant.now();
 
-		// prevent any OTP send within 30 seconds
-		if (currentResendCount == 0 && timeNow.isBefore(coolDownTime)) {
+		// Reset daily counter
+		if (verificationSession.getDailyCountResetTime() != null
+				&& timeNow.isAfter(verificationSession.getDailyCountResetTime())) {
+			verificationSession.setDailyOtpCount(0);
+			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
+		}
+
+		// Check daily absolute limit
+		if (verificationSession.getDailyOtpCount() >= EsignConstants.MAX_OTP_GENERATION_PER_DAY) {
+			Instant resetTime = verificationSession.getDailyCountResetTime();
+			if (resetTime == null) {
+				resetTime = timeNow.plus(1, ChronoUnit.DAYS);
+				verificationSession.setDailyCountResetTime(resetTime);
+			}
 
 			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
 			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
 					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 					currentAttemptCount, currentResendCount);
 
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
-
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DAILY_OTP_LIMIT_REACHED);
 		}
 
-		// Check if concurrent access limit exceeded
-		if (concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT && timeNow.isBefore(accessBlockTime)) {
-			// prevent OTP send if concurrent access limit exceeded
-			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+		// Reset lockout level
+		if (verificationSession.getLockoutLevelResetTime() != null
+				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
+			verificationSession.setLockoutLevel(0);
+			verificationSession.setLockoutLevelResetTime(null);
+		}
+
+		// Apply 30-second cooldown
+		if (timeNow.isBefore(coolDownTime)) {
+			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
 			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
 					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 					currentAttemptCount, currentResendCount);
 
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
-
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OTP_REQUEST_COOLDOWN_ACTIVE);
 		}
 
-		boolean isResetResendCountToDefault = false;
+		// Progressive lockout checks BOTH resend AND concurrent count
+		if (currentResendCount >= EsignConstants.MAX_RETRY_LIMIT
+				|| concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT) {
+			int lockoutLevel = Math.min(verificationSession.getLockoutLevel(),
+					EsignConstants.PROGRESSIVE_LOCKOUT_TIMES.length - 1);
+			int lockoutSeconds = EsignConstants.PROGRESSIVE_LOCKOUT_TIMES[lockoutLevel];
 
-		// Apply backoff strategy for resend requests
-		if (currentResendCount < EsignConstants.MAX_RETRY_LIMIT) {
+			Instant lockoutUntil = lastOtpCreatedTime.plusSeconds(lockoutSeconds);
 
-			Instant backoffTime = lastOtpCreatedTime.plusSeconds(EsignConstants.MIN_OTP_BACKOFF_SECONDS);
+			if (timeNow.isBefore(lockoutUntil)) {
 
-			if (timeNow.isBefore(backoffTime)) {
-
-				eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
-				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-						verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
-						currentAttemptCount, currentResendCount);
-
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
-			}
-
-		}
-		else {
-
-			if (timeNow.isBefore(accessBlockTime)) {
 				eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
 				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
 						verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 						currentAttemptCount, currentResendCount);
 
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
-
 			}
 
-			isResetResendCountToDefault = true;
+			// Save after level increase
+			verificationSession.setLockoutLevel(lockoutLevel + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			verificationSession.setResendCount(EsignConstants.DEFAULT_COUNT);
+			verificationSession.setConcurrentAccessCount(EsignConstants.DEFAULT_COUNT);
+			verificationSession
+				.setLockoutLevelResetTime(timeNow.plus(EsignConstants.LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
+			esignVerificationSessionDao.save(verificationSession);
 		}
 
+		// Check concurrent access
+		Instant accessBlockTime = lastOtpCreatedTime.plusSeconds(EsignConstants.OTP_DEFAULT_LOCK_TIME);
+		if (concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT && timeNow.isBefore(accessBlockTime)) {
+			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
+					currentAttemptCount, currentResendCount);
+
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+		}
+
+		// Explicitly invalidate previous OTP
+		verificationSession.setVerificationCode(null);
+		verificationSession.setOtpExpiryTime(null);
+
+		// Update counters
 		if (isResend) {
 			eventType = EsignVerificationEventType.OTP_RESENT;
-			verificationSession.setResendCount(isResetResendCountToDefault ? EsignConstants.DEFAULT_COUNT
-					: verificationSession.getResendCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			verificationSession
+				.setResendCount(verificationSession.getResendCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
 		}
 		else {
 			eventType = EsignVerificationEventType.OTP_GENERATED;
 
-			int newCount = timeNow.isAfter(accessBlockTime) ? EsignConstants.DEFAULT_COUNT
+			int newCount = timeNow.isAfter(accessBlockTime) ? EsignConstants.DEFAULT_INCREMENT_COUNT
 					: verificationSession.getConcurrentAccessCount() + EsignConstants.DEFAULT_INCREMENT_COUNT;
 
 			verificationSession.setConcurrentAccessCount(newCount);
 		}
 
-		// send OTP
+		// Increment daily counter and set reset time
+		verificationSession
+			.setDailyOtpCount(verificationSession.getDailyOtpCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+		if (verificationSession.getDailyCountResetTime() == null) {
+			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
+		}
+
+		// Generate new OTP
 		String otpCode = OtpUtil.generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+		Instant expiryTime = timeNow.plusSeconds(EsignConstants.OTP_EXPIRY_TIME_SECONDS);
 
 		verificationSession.setVerificationCode(otpCode);
 		verificationSession.setVerified(false);
 		verificationSession.setOtpExpiryTime(expiryTime);
-		verificationSession.setOtpCreatedTime(Instant.now());
+		verificationSession.setOtpCreatedTime(timeNow);
 
 		EsignVerificationSession savedVerificationSession = esignVerificationSessionDao.save(verificationSession);
 
 		populateAndSaveVerificationSessionHistoryData(savedVerificationSession.getRecipient().getId(),
-				savedVerificationSession.getDocument().getId(), eventType, Instant.now(),
+				savedVerificationSession.getDocument().getId(), eventType, timeNow,
 				savedVerificationSession.getConcurrentAccessCount(), savedVerificationSession.getAttemptCount(),
 				savedVerificationSession.getResendCount());
 
