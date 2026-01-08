@@ -103,9 +103,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String PERMISSION = "permission";
 
-	private static final String URL_PATH = "/sign/document/access?uuid=";
+	private static final String BASE_URL_PATH = "/sign/document/access";
 
-	private static final String URL_PATH_MFA = "/sign/document/access/mfa-verify?uuid=";
+	private static final String UUID_URL_PATH = "?uuid=";
+
+	private static final String PHONE_URL_PATH = "&phone=";
+
+	private static final String URL_PATH_MFA = "/mfa-verify";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
@@ -751,10 +755,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
 
-		String urlPath = getMFARecipientDetails(recipientId);
+		String baseUrlPath = BASE_URL_PATH;
 
-		return protocol + "://" + tenantId + "." + parentDomain + urlPath + encodedEncryptedUUID + STATE_STRING
-				+ encodedState;
+		String mfaRecipientDetails = getMFARecipientDetails(recipientId);
+
+		if (mfaRecipientDetails != null) {
+			// MFA enabled:
+			// /sign/document/access/mfa-verify?uuid={uuid}&state={state}&phone={phone}
+			return protocol + "://" + tenantId + "." + parentDomain + baseUrlPath + URL_PATH_MFA + UUID_URL_PATH
+					+ encodedEncryptedUUID + STATE_STRING + encodedState + PHONE_URL_PATH + mfaRecipientDetails;
+		}
+
+		// MFA disabled: /sign/document/access?uuid={uuid}&state={state}
+		return protocol + "://" + tenantId + "." + parentDomain + baseUrlPath + UUID_URL_PATH + encodedEncryptedUUID
+				+ STATE_STRING + encodedState;
 	}
 
 	private String getMFARecipientDetails(Long recipientId) {
@@ -777,11 +791,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			}
 
-			String maskedPhone = recipientPhone != null ? PhoneNumberMaskUtil.mask(recipientPhone) : "";
-			return URL_PATH_MFA + "&phone=" + maskedPhone;
+			return PhoneNumberMaskUtil.mask(recipientPhone);
 		}
 		else {
-			return URL_PATH;
+			return null;
 		}
 
 	}
