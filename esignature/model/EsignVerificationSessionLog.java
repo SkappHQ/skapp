@@ -32,6 +32,9 @@ public class EsignVerificationSessionLog extends Auditable<String> {
 	@Column(name = "timestamp")
 	private Instant timestamp;
 
+	@Column(name = "concurrent_access_count")
+	private int concurrentAccessCount;
+
 	@Column(name = "attempt_number")
 	private int attemptNumber;
 

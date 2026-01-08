@@ -38,6 +38,9 @@ public class EsignVerificationSession extends Auditable<String> {
 	@Column(name = "otp_created_time")
 	private Instant otpCreatedTime;
 
+	@Column(name = "concurrent_access_count")
+	private int concurrentAccessCount;
+
 	@Column(name = "attempt_count")
 	private int attemptCount;
 

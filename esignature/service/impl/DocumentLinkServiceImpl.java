@@ -817,9 +817,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			String otpCode = OtpUtil.generateOTP();
 			Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
-			if (verificationSession != null) {
+			if (verificationSession != null && verificationSession.getVerificationCode() != null && !isResend) {
 
-				handleOtpBackoffAndSend(verificationSession, target, channel);
+				return handleOtpBackoffAndSend(verificationSession, target, channel, isResend);
 
 			}
 			else {
@@ -830,12 +830,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				verificationSession.setVerified(false);
 				verificationSession.setOtpExpiryTime(expiryTime);
 				verificationSession.setOtpCreatedTime(Instant.now());
+				verificationSession.setConcurrentAccessCount(
+						EsignConstants.ESIGN_DEFAULT_COUNT + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
 
 				esignVerificationSessionDao.save(verificationSession);
 
 				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
-						EsignVerificationEventType.OTP_GENERATED, Instant.now(), EsignConstants.ESIGN_DEFAULT_OTP_COUNT,
-						EsignConstants.ESIGN_DEFAULT_OTP_COUNT);
+						EsignVerificationEventType.OTP_GENERATED, Instant.now(),
+						verificationSession.getConcurrentAccessCount(), EsignConstants.ESIGN_DEFAULT_COUNT,
+						EsignConstants.ESIGN_DEFAULT_COUNT);
 
 				esignMessageService.sendOtpMessage(target, otpCode);
 			}
@@ -848,13 +851,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private void populateAndSaveVerificationSessionHistoryData(Long recipientId, Long documentId,
-			EsignVerificationEventType eventType, Instant timestamp, int attemptNumber, int resendNumber) {
+			EsignVerificationEventType eventType, Instant timestamp, int concurrentSessionCount, int attemptNumber,
+			int resendNumber) {
 
 		EsignVerificationSessionLog esignVerificationSessionLog = new EsignVerificationSessionLog();
 		esignVerificationSessionLog.setRecipientId(recipientId);
 		esignVerificationSessionLog.setDocumentId(documentId);
 		esignVerificationSessionLog.setEventType(eventType);
 		esignVerificationSessionLog.setTimestamp(timestamp);
+		esignVerificationSessionLog.setConcurrentAccessCount(concurrentSessionCount);
 		esignVerificationSessionLog.setAttemptNumber(attemptNumber);
 		esignVerificationSessionLog.setResendNumber(resendNumber);
 
@@ -917,49 +922,64 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	}
 
 	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession verificationSession, String target,
-			String channel) {
+			String channel, boolean isResend) {
 
 		EsignVerificationEventType eventType;
 
 		Instant lastOtpCreatedTime = verificationSession.getOtpCreatedTime();
 		Instant coolDownTime = lastOtpCreatedTime.plusSeconds(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS);
+		Instant accessBlockTime = lastOtpCreatedTime.plusSeconds(EsignConstants.ESIGN_OTP_DEFAULT_LOCK_TIME);
 
 		int currentResendCount = verificationSession.getResendCount();
 		int currentAttemptCount = verificationSession.getAttemptCount();
+		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
 
 		// prevent any OTP send within 30 seconds
 		if (Instant.now().isBefore(coolDownTime)) {
 
+			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
+			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+					verificationSession.getDocument().getId(), eventType, Instant.now(), concurrentSessionCount,
+					currentAttemptCount, currentResendCount);
+
+			long remainingSeconds = Duration.between(Instant.now(), coolDownTime).getSeconds();
+			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+
+		}
+		else if (concurrentSessionCount >= EsignConstants.ESIGN_MAX_LIMIT && Instant.now().isBefore(accessBlockTime)) {
+			// prevent OTP send if concurrent access limit exceeded
 			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
 			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-					verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
-					currentResendCount);
+					verificationSession.getDocument().getId(), eventType, Instant.now(), concurrentSessionCount,
+					currentAttemptCount, currentResendCount);
 
-			long remainingSeconds = Duration.between(LocalDateTime.now(), coolDownTime).getSeconds();
+			long remainingSeconds = Duration.between(Instant.now(), accessBlockTime).getSeconds();
+
 			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+
 		}
 
 		// Check if max attempts exceeded and apply exponential backoff
-		if (currentResendCount >= EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT) {
+		if (currentResendCount >= EsignConstants.ESIGN_MAX_LIMIT) {
 			int backoffMultiplier = (int) Math.pow(EsignConstants.ESIGN_OTP_BACKOFF_MULTIPLIER,
-					currentResendCount - EsignConstants.ESIGN_MAX_OTP_SEND_LIMIT);
+					currentResendCount - EsignConstants.ESIGN_MAX_LIMIT);
 			int backoffSeconds = Math.min(EsignConstants.ESIGN_MIN_OTP_BACKOFF_SECONDS * backoffMultiplier,
 					EsignConstants.ESIGN_MAX_OTP_BACKOFF_SECONDS);
 			Instant backoffTime = lastOtpCreatedTime.plusSeconds(backoffSeconds);
 
 			if (Instant.now().isBefore(backoffTime)) {
 
-				eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
 				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-						verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
-						currentResendCount);
+						verificationSession.getDocument().getId(), eventType, Instant.now(), concurrentSessionCount,
+						currentAttemptCount, currentResendCount);
 
-				long remainingSeconds = Duration.between(LocalDateTime.now(), backoffTime).getSeconds();
+				long remainingSeconds = Duration.between(Instant.now(), backoffTime).getSeconds();
 				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
 			}
 
 			// Backoff expired - reset attempt count
-			verificationSession.setResendCount(EsignConstants.ESIGN_DEFAULT_OTP_COUNT);
+			verificationSession.setResendCount(EsignConstants.ESIGN_DEFAULT_COUNT);
 		}
 
 		// send OTP
@@ -970,14 +990,29 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		verificationSession.setVerified(false);
 		verificationSession.setOtpExpiryTime(expiryTime);
 		verificationSession.setOtpCreatedTime(Instant.now());
-		verificationSession.setResendCount(
-				verificationSession.getResendCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+
+		if (isResend) {
+			eventType = EsignVerificationEventType.OTP_RESENT;
+			verificationSession.setResendCount(
+					verificationSession.getResendCount() + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT);
+		}
+		else {
+			eventType = EsignVerificationEventType.OTP_GENERATED;
+			int newCount = verificationSession.getConcurrentAccessCount();
+			if (Instant.now().isAfter(accessBlockTime)) {
+				newCount = EsignConstants.ESIGN_DEFAULT_COUNT;
+			}
+			else if (Instant.now().isBefore(accessBlockTime)) {
+				newCount = newCount + EsignConstants.ESIGN_DEFAULT_OTP_SENT_INCREMENT_COUNT;
+			}
+			verificationSession.setConcurrentAccessCount(newCount);
+		}
 
 		esignVerificationSessionDao.save(verificationSession);
 
-		eventType = EsignVerificationEventType.OTP_RESENT;
 		populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-				verificationSession.getDocument().getId(), eventType, Instant.now(), currentAttemptCount,
+				verificationSession.getDocument().getId(), eventType, Instant.now(),
+				verificationSession.getConcurrentAccessCount(), currentAttemptCount,
 				verificationSession.getResendCount());
 
 		esignMessageService.sendOtpMessage(target, otpCode);
