@@ -76,6 +76,11 @@ public class EsignConstants {
 
 	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
 
+	/**
+	 * Default OTP lock time in seconds (1 hour) Limit the impact of repeated failed OTP
+	 * attempts by temporarily blocking further tries, reducing the risk of brute-force
+	 * attacks.
+	 */
 	public static final int OTP_DEFAULT_LOCK_TIME = 3600;
 
 	public static final int ATTEMPT_RETRY_SECONDS = 120;
