@@ -1002,7 +1002,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			esignVerification = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
 		}
 
-		return esignVerification.map(EsignVerificationSession::isVerified).orElse(false);
+		if (esignVerification.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
+		}
+
+		return esignVerification.get().isVerified();
 	}
 
 	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession verificationSession, String target,
