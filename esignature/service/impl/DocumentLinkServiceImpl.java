@@ -920,84 +920,114 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
 		}
 
-		Optional<EsignVerificationSession> esignVerificationOptional;
-
 		recipientId = recipientId != null ? recipientId : documentLink.getRecipientId().getId();
 		documentId = documentId != null ? documentId : documentLink.getDocumentId().getId();
 
-		if (documentLink != null) {
-			esignVerificationOptional = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(
-					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
-		}
-		else {
-			esignVerificationOptional = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(documentId,
-					recipientId);
-		}
+		EsignVerificationSession esignVerification = esignVerificationSessionDao
+			.findByDocumentIdAndRecipientIdForUpdate(documentId, recipientId);
 
-		if (esignVerificationOptional.isEmpty()) {
+		if (esignVerification == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
 		}
 
-		EsignVerificationSession esignVerification = esignVerificationOptional.get();
+		Instant timeNow = Instant.now();
+
+		// Reset verification lockout level if reset period passed
+		if (esignVerification.getVerificationLockoutResetTime() != null
+				&& timeNow.isAfter(esignVerification.getVerificationLockoutResetTime())) {
+			esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+			esignVerification.setVerificationLockoutResetTime(null);
+		}
+
+		// Apply 3-second rate limit between attempts
+		Instant lastAttemptTime = esignVerification.getLastAttemptedTime();
+		if (lastAttemptTime != null) {
+			Instant nextAllowedAttempt = lastAttemptTime.plusSeconds(EsignConstants.MIN_VERIFICATION_BACKOFF_SECONDS);
+			if (timeNow.isBefore(nextAllowedAttempt)) {
+
+				EsignVerificationEventType eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+						esignVerification.getResendCount());
+
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS);
+			}
+		}
+
+		// Progressive lockout check
+		if (esignVerification.getAttemptCount() >= EsignConstants.MAX_RETRY_LIMIT) {
+			int lockoutLevel = Math.min(esignVerification.getVerificationLockoutLevel(),
+					EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES.length
+							- EsignConstants.DEFAULT_INCREMENT_COUNT);
+			int lockoutSeconds = EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES[lockoutLevel];
+
+			Instant lockoutUntil = esignVerification.getLastAttemptedTime().plusSeconds(lockoutSeconds);
+
+			if (timeNow.isBefore(lockoutUntil)) {
+
+				EsignVerificationEventType eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+						esignVerification.getResendCount());
+
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+			}
+
+			// Lockout expired - increase level and reset counters
+			esignVerification.setVerificationLockoutLevel(lockoutLevel + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			esignVerification.setAttemptCount(EsignConstants.DEFAULT_COUNT);
+			esignVerification.setVerificationLockoutResetTime(
+					timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
+			esignVerificationSessionDao.save(esignVerification);
+		}
 
 		EsignVerificationEventType eventType;
 
-		boolean isResetAttemptCountToDefault = false;
-
+		// Validate OTP
 		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
+			// Invalid OTP - increment attempt count
+			esignVerification
+				.setAttemptCount(esignVerification.getAttemptCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			esignVerification.setLastAttemptedTime(timeNow);
 
-			if (esignVerification.getAttemptCount() >= EsignConstants.MAX_RETRY_LIMIT) {
-
-				Instant cooldownTime = esignVerification.getLastAttemptedTime()
-					.plusSeconds(EsignConstants.ATTEMPT_RETRY_SECONDS);
-
-				if (Instant.now().isBefore(cooldownTime)) {
-					eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
-
-					populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
-							esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
-							esignVerification.getResendCount());
-
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED);
-				}
-				else {
-					isResetAttemptCountToDefault = true;
-				}
-
+			// Initialize lockout tracking
+			if (esignVerification.getVerificationLockoutResetTime() == null) {
+				esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+				esignVerification.setVerificationLockoutResetTime(
+						timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
 			}
 
-			esignVerification.setAttemptCount(isResetAttemptCountToDefault ? EsignConstants.DEFAULT_COUNT
-					: esignVerification.getAttemptCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
-			esignVerification.setLastAttemptedTime(Instant.now());
 			esignVerificationSessionDao.save(esignVerification);
 
 			eventType = EsignVerificationEventType.OTP_VERIFY_FAILED;
 
-			populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
+			populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
 					esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 					esignVerification.getResendCount());
 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 		}
 
+		// Valid OTP - reset all counters
 		esignVerification.setVerificationCode(null);
 		esignVerification.setOtpExpiryTime(null);
 		esignVerification.setVerified(true);
-		esignVerification.setLastAttemptedTime(Instant.now());
+		esignVerification.setLastAttemptedTime(timeNow);
 		esignVerification.setAttemptCount(EsignConstants.DEFAULT_COUNT);
 		esignVerification.setResendCount(EsignConstants.DEFAULT_COUNT);
 		esignVerification.setConcurrentAccessCount(EsignConstants.DEFAULT_COUNT);
+		esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+		esignVerification.setVerificationLockoutResetTime(null);
 		esignVerificationSessionDao.save(esignVerification);
 
 		eventType = EsignVerificationEventType.OTP_VERIFY_SUCCESS;
 
-		populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, Instant.now(),
+		populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
 				esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 				esignVerification.getResendCount());
 
 		return new ResponseEntityDto(false,
 				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
-
 	}
 
 	private boolean getMfaVerificationStatus(DocumentLink documentLink, Long documentId, Long recipientId) {
@@ -1034,7 +1064,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Reset daily counter
 		if (verificationSession.getDailyCountResetTime() != null
 				&& timeNow.isAfter(verificationSession.getDailyCountResetTime())) {
-			verificationSession.setDailyOtpCount(0);
+			verificationSession.setDailyOtpCount(EsignConstants.DEFAULT_COUNT);
 			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
 		}
 
@@ -1057,7 +1087,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Reset lockout level
 		if (verificationSession.getLockoutLevelResetTime() != null
 				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
-			verificationSession.setLockoutLevel(0);
+			verificationSession.setLockoutLevel(EsignConstants.DEFAULT_COUNT);
 			verificationSession.setLockoutLevelResetTime(null);
 		}
 
