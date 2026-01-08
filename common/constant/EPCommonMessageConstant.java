@@ -177,6 +177,9 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED("ep.common.error.guest-user-project-update-failed"),
 	EP_COMMON_ERROR_INVALID_FILE_TYPE("ep.common.error.api.invalid-file-type"),
 	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded"),
+	EP_COMMON_ERROR_MICROSOFT_AUTHORIZATION_CODE_EMPTY("ep.common.error.microsoft-authorization-code-empty"),
+	EP_COMMON_ERROR_MICROSOFT_FRONTEND_URL_EMPTY("ep.common.error.microsoft-frontend-url-empty"),
+	EP_COMMON_ERROR_MICROSOFT_STATE_EMPTY("ep.common.error.microsoft-state-empty"),
 	EP_COMMON_SEND_MESSAGE_ERROR("ep.common.error.send-message-error");
 
 	private final String messageKey;
