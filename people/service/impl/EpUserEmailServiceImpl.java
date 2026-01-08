@@ -35,7 +35,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	public void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName,
 			String projectNames) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
-		emailDynamicFields.setReceipientName(employee.getFirstName());
+		emailDynamicFields.setRecipientName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setAdminName(adminName);
 		emailDynamicFields.setTenantId(TenantContext.getCurrentTenant());

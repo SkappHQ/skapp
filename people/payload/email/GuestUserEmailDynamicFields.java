@@ -12,6 +12,6 @@ public class GuestUserEmailDynamicFields extends PeopleEmailDynamicFields {
 
 	private String adminName;
 
-	private String receipientName;
+	private String recipientName;
 
 }
