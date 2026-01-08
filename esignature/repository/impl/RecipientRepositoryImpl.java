@@ -4,6 +4,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.ExternalUser;
@@ -13,6 +14,7 @@ import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -60,7 +62,12 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 
 		query.select(caseExpression).where(cb.equal(recipient.get(Recipient_.ID), recipientId));
 
-		return entityManager.createQuery(query).getSingleResult();
+		try {
+			return entityManager.createQuery(query).getSingleResult();
+		}
+		catch (NoResultException e) {
+			return null;
+		}
 	}
 
 }

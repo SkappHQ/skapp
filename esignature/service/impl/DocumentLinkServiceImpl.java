@@ -771,6 +771,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (verificationMethod.equals(EsignVerificationType.SMS)) {
 			String recipientPhone = recipientDao.findPhoneByRecipientId(recipientId);
+
+			if (recipientPhone == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
+
+			}
+
 			String maskedPhone = recipientPhone != null ? PhoneNumberMaskUtil.mask(recipientPhone) : "";
 			return URL_PATH_MFA + "&phone=" + maskedPhone;
 		}
