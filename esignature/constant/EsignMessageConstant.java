@@ -156,7 +156,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_MFA_NOT_VALIDATED("ep.esign.error.mfa.not.validated"),
 	ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND("ep.esign.error.recipient.verification.not-found"),
 	ESIGN_ERROR_VERIFICATION_CODE_INVALID("ep.esign.error.verification.code.invalid"),
-	ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED("ep.esign.error.verification.max.attempts.reached");
+	ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED("ep.esign.error.verification.max.attempts.reached"),
+	ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS("ep.esign.error.verification.too.many.otp.requests"),;
 
 	private final String messageKey;
 

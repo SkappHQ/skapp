@@ -100,8 +100,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private static final String VERIFICATION_DISABLED = "Verification disabled.";
 
-	private static final String TOO_MANY_OTP_REQUESTS = "Too many OTP requests. Please try again in ";
-
 	private static final String RETRY_TIME_IN_SECONDS = " seconds";
 
 	private final DocumentLinkRepository documentLinkRepository;
@@ -987,7 +985,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 					currentAttemptCount, currentResendCount);
 
 			long remainingSeconds = Duration.between(Instant.now(), coolDownTime).getSeconds();
-			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
 
 		}
 
@@ -1001,7 +999,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 			long remainingSeconds = Duration.between(Instant.now(), accessBlockTime).getSeconds();
 
-			return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
 
 		}
 
@@ -1022,7 +1020,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						currentAttemptCount, currentResendCount);
 
 				long remainingSeconds = Duration.between(Instant.now(), backoffTime).getSeconds();
-				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
 			}
 
 		}
@@ -1036,7 +1034,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 				long remainingSeconds = Duration.between(Instant.now(), accessBlockTime).getSeconds();
 
-				return new ResponseEntityDto(false, TOO_MANY_OTP_REQUESTS + remainingSeconds + RETRY_TIME_IN_SECONDS);
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_OTP_REQUESTS);
+
 			}
 
 			isResetResendCounttoDefault = true;
