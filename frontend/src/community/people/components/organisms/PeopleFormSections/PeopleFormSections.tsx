@@ -83,9 +83,8 @@ const PeopleFormSections = ({
         return (
           <SystemPermissionFormSection
             isAddFlow={isAddFlow}
-            isReadOnly={
-              isSystemPermissionsReadOnly || isPeopleAdminViewingOwnProfile
-            }
+            isReadOnly={isSystemPermissionsReadOnly}
+            isPeopleAdminViewingOwnProfile={isPeopleAdminViewingOwnProfile}
           />
         );
       case EditPeopleFormTypes.timeline:
