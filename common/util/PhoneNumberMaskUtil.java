@@ -24,27 +24,16 @@ public class PhoneNumberMaskUtil {
 	 */
 	public static String mask(String phoneNumber) {
 
-		String trimmed = phoneNumber.trim();
-		// Remove all spaces for consistent processing
-		String cleaned = trimmed.replaceAll("\\s+", "");
+		String formattedPhoneNumber = FormatPhoneNumberUtil.formatPhoneNumberToE164(phoneNumber);
 
-		if (cleaned.isEmpty()) {
-			return null;
+		int countryCodeEnd = findCountryCodeEnd(formattedPhoneNumber);
+		if (countryCodeEnd == -1 || formattedPhoneNumber.length() <= countryCodeEnd + 3) {
+			return formattedPhoneNumber;
 		}
 
-		// Add + prefix if missing
-		if (!cleaned.startsWith("+")) {
-			cleaned = "+" + cleaned;
-		}
-
-		int countryCodeEnd = findCountryCodeEnd(cleaned);
-		if (countryCodeEnd == -1 || cleaned.length() <= countryCodeEnd + 3) {
-			return cleaned;
-		}
-
-		String countryCode = cleaned.substring(0, countryCodeEnd);
-		String lastThreeDigits = cleaned.substring(cleaned.length() - 3);
-		int maskLength = cleaned.length() - countryCodeEnd - 3;
+		String countryCode = formattedPhoneNumber.substring(0, countryCodeEnd);
+		String lastThreeDigits = formattedPhoneNumber.substring(formattedPhoneNumber.length() - 3);
+		int maskLength = formattedPhoneNumber.length() - countryCodeEnd - 3;
 
 		return countryCode + " " + "*".repeat(maskLength) + lastThreeDigits;
 	}

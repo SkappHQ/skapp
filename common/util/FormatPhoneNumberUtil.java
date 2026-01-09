@@ -19,9 +19,6 @@ public class FormatPhoneNumberUtil {
 	 * @return the E.164 formatted phone number (e.g., "+94xxxxxxxx", "+1xxxxxxxxxx")
 	 */
 	public static String formatPhoneNumberToE164(String phoneNumber) {
-		if (phoneNumber == null || phoneNumber.isEmpty()) {
-			return phoneNumber;
-		}
 
 		// Remove all spaces and non-digit characters except +
 		String cleanedPhoneNumber = phoneNumber.replaceAll("[^+\\d]", "");
