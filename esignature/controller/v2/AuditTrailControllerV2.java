@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.controller.v1;
+package com.skapp.enterprise.esignature.controller.v2;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.annotation.CaptureUserAgent;
@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/ep/esign/audit-trial")
-public class AuditTrailController {
+@RequestMapping("/v1/ep/esign/audit-trail")
+public class AuditTrailControllerV2 {
 
 	private final AuditTrailService auditTrailService;
 

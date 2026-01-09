@@ -59,7 +59,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/esign/envelopes/signature-certificate", "/v1/ep/esign/recipients/consent",
 			"/v2/ep/auth/sso/microsoft/auth-url", "/v2/ep/auth/sso/microsoft/redirect",
 			"/v2/ep/auth/signup/super-admin/sso/microsoft", "/v2/ep/auth/signin/sso/microsoft",
-			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trail/create",
+			"/v1/ep/esign/document-link/resend", "/v1/ep/esign/audit-trial/create",
 			"/v1/ep/esign/document-link/token-exchange", "/v1/ep/esign/config/external",
 			"/v1/ep/s3/esign/files/signed-url", "/v1/ep/esign/document-link/token/resend-status",
 			"/v1/ep/cf/cookies/signature", "/v1/ep/cf/cookies/document", "/v1/ep/redis/load-all-users",
@@ -67,7 +67,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
 			"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect", "/internal/v1/ep/invoice/customer",
 			"/internal/v1/ep/invoice/project", "/v1/ep/auth/signin/guest/send-otp",
-			"/v1/ep/auth/signin/guest/resend-otp", "/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status");
+			"/v1/ep/auth/signin/guest/resend-otp", "/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status",
+			"/v1/ep/esign/audit-trail/create");
 
 	private final JwtService jwtService;
 
