@@ -181,7 +181,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_MICROSOFT_FRONTEND_URL_EMPTY("ep.common.error.microsoft-frontend-url-empty"),
 	EP_COMMON_ERROR_MICROSOFT_STATE_EMPTY("ep.common.error.microsoft-state-empty"),
 	EP_COMMON_SEND_MESSAGE_ERROR("ep.common.error.send-message-error"),
-	EP_COMMON_SEND_MESSAGE_ERROR_TARGET_NOT_AVAILABLE("ep.common.error.send-message-error-target-not-available"),
+	EP_COMMON_SEND_MESSAGE_ERROR_PHONE_NUMBER_NOT_AVAILABLE(
+			"ep.common.error.send-message-error-phone.number-not-available"),
 	EP_COMMON_SEND_MESSAGE_ERROR_CONTENT_NOT_AVAILABLE("ep.common.error.send-message-error-content-not-available");
 
 	private final String messageKey;

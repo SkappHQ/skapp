@@ -10,6 +10,7 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.type.TwilioMessageSource;
 import com.skapp.enterprise.common.util.OtpUtil;
 import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
@@ -882,7 +883,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						verificationSession.getConcurrentAccessCount(), EsignConstants.DEFAULT_COUNT,
 						EsignConstants.DEFAULT_COUNT);
 
-				esignMessageService.sendOtpMessage(target, otpCode);
+				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA, recipient.getId());
 			}
 
 		}
@@ -1182,7 +1183,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				savedVerificationSession.getConcurrentAccessCount(), savedVerificationSession.getAttemptCount(),
 				savedVerificationSession.getResendCount());
 
-		esignMessageService.sendOtpMessage(target, otpCode);
+		esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA,
+				verificationSession.getRecipient().getId());
 
 		return new ResponseEntityDto(false, OTP_SENT_SUCCESS + channel);
 	}
