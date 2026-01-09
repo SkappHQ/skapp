@@ -236,7 +236,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			}
 		}
 
-		if (epGuestUserUpdateRequestDto.getProjects() != null && !epGuestUserUpdateRequestDto.getProjects().isEmpty()) {
+		if (epGuestUserUpdateRequestDto.getProjects() != null) {
 			boolean isUpdateSuccess = epGuestUserInternalService.updateGuestUserProjects(user.getUserId(),
 					epGuestUserUpdateRequestDto.getProjects());
 

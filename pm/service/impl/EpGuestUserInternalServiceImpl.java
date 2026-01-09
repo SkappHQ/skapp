@@ -109,7 +109,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 	@Transactional
 	public boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects) {
 
-		if (projects == null || projects.isEmpty()) {
+		if (projects == null) {
 			return true;
 		}
 
