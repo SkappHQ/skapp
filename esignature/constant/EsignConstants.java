@@ -91,8 +91,6 @@ public class EsignConstants {
 
 	public static final int LOCKOUT_LEVEL_RESET_DAYS = 1; // Reset level after 24 hours
 
-	public static final int MAX_OTP_GENERATION_PER_DAY = 10; // Hard limit per 24 hours
-
 	/**
 	 * 30 - Level 0: 5 minutes 900 - Level 1: 15 minutes 1800 - Level 2: 30 minutes 3600 -
 	 * Level 3: 1 hour 86400 - Level 4+: 24 hours

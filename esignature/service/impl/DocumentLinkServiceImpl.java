@@ -861,8 +861,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				verificationSession.setOtpExpiryTime(expiryTime);
 				verificationSession.setOtpCreatedTime(Instant.now());
 				verificationSession.setConcurrentAccessCount(1);
-				verificationSession.setDailyOtpCount(1);
-				verificationSession.setDailyCountResetTime(Instant.now().plus(1, ChronoUnit.DAYS));
 				esignVerificationSessionDao.save(verificationSession);
 
 				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
@@ -1046,29 +1044,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		int currentAttemptCount = verificationSession.getAttemptCount();
 		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
 
-		// Reset daily counter
-		if (verificationSession.getDailyCountResetTime() != null
-				&& timeNow.isAfter(verificationSession.getDailyCountResetTime())) {
-			verificationSession.setDailyOtpCount(0);
-			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
-		}
-
-		// Check daily absolute limit
-		if (verificationSession.getDailyOtpCount() >= EsignConstants.MAX_OTP_GENERATION_PER_DAY) {
-			Instant resetTime = verificationSession.getDailyCountResetTime();
-			if (resetTime == null) {
-				resetTime = timeNow.plus(1, ChronoUnit.DAYS);
-				verificationSession.setDailyCountResetTime(resetTime);
-			}
-
-			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
-			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
-					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
-					currentAttemptCount, currentResendCount);
-
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DAILY_OTP_LIMIT_REACHED);
-		}
-
 		// Reset lockout level
 		if (verificationSession.getLockoutLevelResetTime() != null
 				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
@@ -1114,7 +1089,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			esignVerificationSessionDao.save(verificationSession);
 		}
 
-		// Check concurrent access
+		// Check access count
 		Instant accessBlockTime = lastOtpCreatedTime.plusSeconds(EsignConstants.OTP_DEFAULT_LOCK_TIME);
 		if (concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT && timeNow.isBefore(accessBlockTime)) {
 			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
@@ -1140,12 +1115,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			int newCount = timeNow.isAfter(accessBlockTime) ? 1 : verificationSession.getConcurrentAccessCount() + 1;
 
 			verificationSession.setConcurrentAccessCount(newCount);
-		}
-
-		// Increment daily counter and set reset time
-		verificationSession.setDailyOtpCount(verificationSession.getDailyOtpCount() + 1);
-		if (verificationSession.getDailyCountResetTime() == null) {
-			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
 		}
 
 		// Generate new OTP
