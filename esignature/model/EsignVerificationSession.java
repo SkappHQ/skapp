@@ -51,19 +51,19 @@ public class EsignVerificationSession extends Auditable<String> {
 	private Instant lastAttemptedTime;
 
 	@Column(name = "daily_otp_count")
-	private int dailyOtpCount = 0;
+	private int dailyOtpCount;
 
 	@Column(name = "daily_count_reset_time")
 	private Instant dailyCountResetTime;
 
 	@Column(name = "lockout_level")
-	private int lockoutLevel = 0;
+	private int lockoutLevel;
 
 	@Column(name = "lockout_level_reset_time")
 	private Instant lockoutLevelResetTime;
 
 	@Column(name = "verification_lockout_level")
-	private int verificationLockoutLevel = 0;
+	private int verificationLockoutLevel;
 
 	@Column(name = "verification_lockout_reset_time")
 	private Instant verificationLockoutResetTime;
