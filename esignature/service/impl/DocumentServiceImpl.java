@@ -339,7 +339,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
 		}
 
 		document = documentRepository.save(document);
@@ -361,7 +361,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
-			byte[] latestDocumentBytes, Recipient recipient, String ipAddress) {
+			byte[] latestDocumentBytes, Recipient recipient, String ipAddress, boolean isDocAccess) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionDao.save(documentVersion);
@@ -388,7 +388,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
-		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes);
+		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes,
+				isDocAccess);
 
 		// Sign the processed PDF (if signing is enabled via feature flag)
 		// This will sign the document WITH the appended certificate
@@ -407,7 +408,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
@@ -581,7 +582,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 			auditTrailDao.saveAll(auditTrails);
 
-			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes);
+			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes,
+					isDocAccess);
 
 			// Sign the processed PDF (if signing is enabled via feature flag)
 			// This will sign the document WITH the appended certificate
@@ -1721,12 +1723,13 @@ public class DocumentServiceImpl implements DocumentService {
 	 * Appends certificate to document bytes (in-memory processing). Returns merged bytes
 	 * or original bytes if appending fails.
 	 */
-	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes) {
+	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes,
+			boolean isDocAccess) {
 		try {
 			log.info("Appending certificate to document for envelope {}", envelope.getId());
 
-			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(), false,
-					envelope);
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(),
+					isDocAccess, envelope);
 			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
 
 			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
