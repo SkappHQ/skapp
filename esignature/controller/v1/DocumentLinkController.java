@@ -82,6 +82,7 @@ public class DocumentLinkController {
 			description = "Sends an OTP to the recipient associated with the provided documentId and recipientId for document access. "
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/internal/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> sendOtpFromDocumentAndRecipientId(
 			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
 
@@ -132,6 +133,7 @@ public class DocumentLinkController {
 			description = "Resends an OTP to the recipient associated with the provided Document Id and Recipient Id for document access. "
 					+ "The OTP is sent only if MFA is enabled for the recipient.")
 	@PostMapping(value = "/internal/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> resendOtpForInternalUser(
 			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
 

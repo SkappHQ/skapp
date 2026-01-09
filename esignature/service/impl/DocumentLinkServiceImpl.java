@@ -553,6 +553,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpRequestDto.getDocumentId(),
 				recipientConvertToOtpRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpRequestDto.getDocumentId());
+
 		Document document = documentDao.findById(recipientConvertToOtpRequestDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
@@ -576,8 +579,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(
 			RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto) {
 
-		validateAndGetRecipient(recipientConvertToOtpValidateRequestDto.getDocumentId(),
+		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpValidateRequestDto.getDocumentId(),
 				recipientConvertToOtpValidateRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpValidateRequestDto.getDocumentId());
 
 		// Verify the OTP
 		return verifyCodeWithDocumentRecipient(null, recipientConvertToOtpValidateRequestDto.getDocumentId(),
@@ -603,6 +608,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpRequestDto.getDocumentId(),
 				recipientConvertToOtpRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpRequestDto.getDocumentId());
+
 		Document document = documentDao.findById(recipientConvertToOtpRequestDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
@@ -613,6 +621,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId) {
 
 		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
+
+		validateTokenFlows(false, recipient, documentId);
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
 
