@@ -24,10 +24,6 @@ public class PhoneNumberMaskUtil {
 	 */
 	public static String mask(String phoneNumber) {
 
-		if (phoneNumber == null || phoneNumber.isEmpty()) {
-			return null;
-		}
-
 		String trimmed = phoneNumber.trim();
 		// Remove all spaces for consistent processing
 		String cleaned = trimmed.replaceAll("\\s+", "");
