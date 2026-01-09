@@ -34,7 +34,6 @@ public class EsignVerificationSessionRepositoryImpl implements EsignVerification
 		query.select(verificationSession).where(cb.and(documentPredicate, recipientPredicate));
 
 		TypedQuery<EsignVerificationSession> typedQuery = entityManager.createQuery(query);
-		typedQuery.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 
 		return typedQuery.getResultStream().findFirst().orElse(null);
 	}
