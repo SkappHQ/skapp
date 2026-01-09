@@ -793,7 +793,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		if (verificationMethod.equals(EsignVerificationType.SMS)) {
 			String recipientPhone = recipientDao.findPhoneByRecipientId(recipientId);
 
-			if (recipientPhone == null) {
+			if (recipientPhone == null || recipientPhone.isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
 
 			}

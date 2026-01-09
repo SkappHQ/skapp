@@ -59,12 +59,7 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 
 		query.select(caseExpression).where(cb.equal(recipient.get(Recipient_.ID), recipientId));
 
-		try {
-			return entityManager.createQuery(query).getSingleResult();
-		}
-		catch (NoResultException e) {
-			return null;
-		}
+		return entityManager.createQuery(query).getSingleResult();
 	}
 
 }
