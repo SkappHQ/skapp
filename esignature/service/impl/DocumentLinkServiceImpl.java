@@ -872,16 +872,14 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				verificationSession.setVerified(false);
 				verificationSession.setOtpExpiryTime(expiryTime);
 				verificationSession.setOtpCreatedTime(Instant.now());
-				verificationSession.setConcurrentAccessCount(EsignConstants.DEFAULT_INCREMENT_COUNT);
-				verificationSession.setDailyOtpCount(EsignConstants.DEFAULT_INCREMENT_COUNT);
-				verificationSession.setDailyCountResetTime(
-						Instant.now().plus(EsignConstants.DEFAULT_INCREMENT_COUNT, ChronoUnit.DAYS));
+				verificationSession.setConcurrentAccessCount(1);
+				verificationSession.setDailyOtpCount(1);
+				verificationSession.setDailyCountResetTime(Instant.now().plus(1, ChronoUnit.DAYS));
 				esignVerificationSessionDao.save(verificationSession);
 
 				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
 						EsignVerificationEventType.OTP_GENERATED, Instant.now(),
-						verificationSession.getConcurrentAccessCount(), EsignConstants.DEFAULT_COUNT,
-						EsignConstants.DEFAULT_COUNT);
+						verificationSession.getConcurrentAccessCount(), 0, 0);
 
 				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA, recipient.getId());
 			}
@@ -936,7 +934,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Reset verification lockout level if reset period passed
 		if (esignVerification.getVerificationLockoutResetTime() != null
 				&& timeNow.isAfter(esignVerification.getVerificationLockoutResetTime())) {
-			esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+			esignVerification.setVerificationLockoutLevel(0);
 			esignVerification.setVerificationLockoutResetTime(null);
 		}
 
@@ -958,8 +956,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Progressive lockout check
 		if (esignVerification.getAttemptCount() >= EsignConstants.MAX_RETRY_LIMIT) {
 			int lockoutLevel = Math.min(esignVerification.getVerificationLockoutLevel(),
-					EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES.length
-							- EsignConstants.DEFAULT_INCREMENT_COUNT);
+					EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES.length - 1);
 			int lockoutSeconds = EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES[lockoutLevel];
 
 			Instant lockoutUntil = esignVerification.getLastAttemptedTime().plusSeconds(lockoutSeconds);
@@ -975,8 +972,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			}
 
 			// Lockout expired - increase level and reset counters
-			esignVerification.setVerificationLockoutLevel(lockoutLevel + EsignConstants.DEFAULT_INCREMENT_COUNT);
-			esignVerification.setAttemptCount(EsignConstants.DEFAULT_COUNT);
+			esignVerification.setVerificationLockoutLevel(lockoutLevel + 1);
+			esignVerification.setAttemptCount(0);
 			esignVerification.setVerificationLockoutResetTime(
 					timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
 			esignVerificationSessionDao.save(esignVerification);
@@ -987,13 +984,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Validate OTP
 		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
 			// Invalid OTP - increment attempt count
-			esignVerification
-				.setAttemptCount(esignVerification.getAttemptCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			esignVerification.setAttemptCount(esignVerification.getAttemptCount() + 1);
 			esignVerification.setLastAttemptedTime(timeNow);
 
 			// Initialize lockout tracking
 			if (esignVerification.getVerificationLockoutResetTime() == null) {
-				esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+				esignVerification.setVerificationLockoutLevel(0);
 				esignVerification.setVerificationLockoutResetTime(
 						timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
 			}
@@ -1014,10 +1010,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		esignVerification.setOtpExpiryTime(null);
 		esignVerification.setVerified(true);
 		esignVerification.setLastAttemptedTime(timeNow);
-		esignVerification.setAttemptCount(EsignConstants.DEFAULT_COUNT);
-		esignVerification.setResendCount(EsignConstants.DEFAULT_COUNT);
-		esignVerification.setConcurrentAccessCount(EsignConstants.DEFAULT_COUNT);
-		esignVerification.setVerificationLockoutLevel(EsignConstants.DEFAULT_COUNT);
+		esignVerification.setAttemptCount(0);
+		esignVerification.setResendCount(0);
+		esignVerification.setConcurrentAccessCount(0);
+		esignVerification.setVerificationLockoutLevel(0);
 		esignVerification.setVerificationLockoutResetTime(null);
 		esignVerificationSessionDao.save(esignVerification);
 
@@ -1065,7 +1061,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Reset daily counter
 		if (verificationSession.getDailyCountResetTime() != null
 				&& timeNow.isAfter(verificationSession.getDailyCountResetTime())) {
-			verificationSession.setDailyOtpCount(EsignConstants.DEFAULT_COUNT);
+			verificationSession.setDailyOtpCount(0);
 			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
 		}
 
@@ -1088,7 +1084,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Reset lockout level
 		if (verificationSession.getLockoutLevelResetTime() != null
 				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
-			verificationSession.setLockoutLevel(EsignConstants.DEFAULT_COUNT);
+			verificationSession.setLockoutLevel(0);
 			verificationSession.setLockoutLevelResetTime(null);
 		}
 
@@ -1122,9 +1118,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			}
 
 			// Save after level increase
-			verificationSession.setLockoutLevel(lockoutLevel + EsignConstants.DEFAULT_INCREMENT_COUNT);
-			verificationSession.setResendCount(EsignConstants.DEFAULT_COUNT);
-			verificationSession.setConcurrentAccessCount(EsignConstants.DEFAULT_COUNT);
+			verificationSession.setLockoutLevel(lockoutLevel + 1);
+			verificationSession.setResendCount(0);
+			verificationSession.setConcurrentAccessCount(0);
 			verificationSession
 				.setLockoutLevelResetTime(timeNow.plus(EsignConstants.LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
 			esignVerificationSessionDao.save(verificationSession);
@@ -1148,21 +1144,18 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		// Update counters
 		if (isResend) {
 			eventType = EsignVerificationEventType.OTP_RESENT;
-			verificationSession
-				.setResendCount(verificationSession.getResendCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+			verificationSession.setResendCount(verificationSession.getResendCount() + 1);
 		}
 		else {
 			eventType = EsignVerificationEventType.OTP_GENERATED;
 
-			int newCount = timeNow.isAfter(accessBlockTime) ? EsignConstants.DEFAULT_INCREMENT_COUNT
-					: verificationSession.getConcurrentAccessCount() + EsignConstants.DEFAULT_INCREMENT_COUNT;
+			int newCount = timeNow.isAfter(accessBlockTime) ? 1 : verificationSession.getConcurrentAccessCount() + 1;
 
 			verificationSession.setConcurrentAccessCount(newCount);
 		}
 
 		// Increment daily counter and set reset time
-		verificationSession
-			.setDailyOtpCount(verificationSession.getDailyOtpCount() + EsignConstants.DEFAULT_INCREMENT_COUNT);
+		verificationSession.setDailyOtpCount(verificationSession.getDailyOtpCount() + 1);
 		if (verificationSession.getDailyCountResetTime() == null) {
 			verificationSession.setDailyCountResetTime(timeNow.plus(1, ChronoUnit.DAYS));
 		}

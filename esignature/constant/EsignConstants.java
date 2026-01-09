@@ -68,10 +68,6 @@ public class EsignConstants {
 
 	public static final String CURRENT_OWNER_METADATA_NAME = "currentOwner";
 
-	public static final int DEFAULT_COUNT = 0;
-
-	public static final int DEFAULT_INCREMENT_COUNT = 1;
-
 	public static final int MAX_RETRY_LIMIT = 5;
 
 	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
