@@ -11,6 +11,9 @@ import jakarta.annotation.PostConstruct;
 @Configuration
 public class TwilioConfig {
 
+	@Value("${environment.name}")
+	private String environmentName;
+
 	@Value("${twilio.account-sid}")
 	private String accountSid;
 
@@ -23,11 +26,11 @@ public class TwilioConfig {
 	@PostConstruct
 	private void initTwilio() {
 
-		if (apiKeySecret != null && !apiKeySecret.trim().isEmpty()) {
-			Twilio.init(authTokenOrApiKeySid, apiKeySecret, accountSid);
+		if (environmentName.equals("local")) {
+			Twilio.init(accountSid, authTokenOrApiKeySid);
 		}
 		else {
-			Twilio.init(accountSid, authTokenOrApiKeySid);
+			Twilio.init(authTokenOrApiKeySid, apiKeySecret, accountSid);
 		}
 
 	}
