@@ -18,6 +18,8 @@ public class RecipientTemplateDto {
 
 	private String color;
 
+	private Long addressBookId;
+
 	private List<FieldTemplateDto> fields;
 
 }

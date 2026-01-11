@@ -150,7 +150,23 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED("ep.esign.error.signature-provider.operation.failed"),
 	ESIGN_ERROR_CERTIFICATE_ENCODING_FAILED("ep.esign.error.certificate.encoding.failed"),
 	ESIGN_ERROR_CMS_SIGNATURE_FAILED("ep.esign.error.cms.signature.failed"),
-	ESIGN_ERROR_OPERATOR_CREATION_FAILED("ep.esign.error.operator.creation.failed");
+	ESIGN_ERROR_OPERATOR_CREATION_FAILED("ep.esign.error.operator.creation.failed"),
+
+	// ESIGN ENVELOPE TEMPLATE ERRORS
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_DUPLICATED("ep.esign.error.envelope-template.name.duplicated"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
+			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
+			"ep.esign.error.template-document.already.assigned.to-template-envelope"),
+	ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
+			"ep.esign.error.template-recipient.role.max.length.exceeded"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),;
 
 	private final String messageKey;
 

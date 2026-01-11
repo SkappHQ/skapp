@@ -16,9 +16,9 @@ public class EnvelopeTemplateDto {
 
 	private String message;
 
-	private List<Long> documentIds;
-
 	private SignType signType;
+
+	private List<Long> documentIds;
 
 	private List<RecipientTemplateDto> recipients;
 

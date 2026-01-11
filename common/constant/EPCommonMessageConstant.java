@@ -179,7 +179,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded"),
 	EP_COMMON_ERROR_MICROSOFT_AUTHORIZATION_CODE_EMPTY("ep.common.error.microsoft-authorization-code-empty"),
 	EP_COMMON_ERROR_MICROSOFT_FRONTEND_URL_EMPTY("ep.common.error.microsoft-frontend-url-empty"),
-	EP_COMMON_ERROR_MICROSOFT_STATE_EMPTY("ep.common.error.microsoft-state-empty");
+	EP_COMMON_ERROR_MICROSOFT_STATE_EMPTY("ep.common.error.microsoft-state-empty"),
+	EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT("ep.common.error.tenant-status-not-pro-account");
 
 	private final String messageKey;
 
