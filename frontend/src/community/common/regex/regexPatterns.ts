@@ -177,6 +177,10 @@ export function hasSpecialCharactersAndNumbers(): RegExp {
   return /[0-9`~!@#$%^&*()-+{}[\]\\|=,.//?;<>':"_-]/;
 }
 
+export function hasSpecialCharactersAndNumbersExceptDotCommaSlashParanthesis(): RegExp {
+  return /[0-9`~!@#$%^&*-+{}[\]\\|=?;<>':"_-]/;
+}
+
 export function hasSpecialCharactersAndNumbersExceptComma(): RegExp {
   return /[0-9`~!@#$%^&*()-+{}[\]\\|=.//?;<>':"_-]/;
 }

@@ -4,7 +4,7 @@ import { ChangeEvent, SetStateAction } from "react";
 
 import { SelectOption } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import {
-  hasSpecialCharactersAndNumbers,
+  hasSpecialCharactersAndNumbersExceptDotCommaSlashParanthesis,
   matchesTwoOrMoreConsecutiveWhitespaceCharacters
 } from "~community/common/regex/regexPatterns";
 import { ToastProps } from "~community/common/types/ToastTypes";
@@ -28,7 +28,7 @@ export const handleJobFamilyNameInputChange = async (
   setFieldError("name", "");
 
   const cleanedValue = event.target.value
-    .replace(hasSpecialCharactersAndNumbers(), "")
+    .replace(hasSpecialCharactersAndNumbersExceptDotCommaSlashParanthesis(), "")
     .replace(matchesTwoOrMoreConsecutiveWhitespaceCharacters(), " ");
 
   await setFieldValue("name", cleanedValue);
