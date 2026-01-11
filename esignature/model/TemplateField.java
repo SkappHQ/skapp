@@ -1,9 +1,17 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.Auditable;
-import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
