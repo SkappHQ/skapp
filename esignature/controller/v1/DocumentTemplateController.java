@@ -1,0 +1,52 @@
+package com.skapp.enterprise.esignature.controller.v1;
+
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
+import com.skapp.enterprise.esignature.service.DocumentTemplateService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/v1/ep/esign/template/documents")
+public class DocumentTemplateController {
+
+	private final DocumentTemplateService documentTemplateService;
+
+	@Operation(summary = "Upload Document Template",
+			description = "This endpoint allows to add template document basic details to document table")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@PostMapping()
+	public ResponseEntity<ResponseEntityDto> saveDocument(@Valid @RequestBody DocumentDto documentDto) {
+
+		ResponseEntityDto responseEntityDto = documentTemplateService.saveDocumentTemplate(documentDto);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Edit Document",
+			description = "This endpoint allows editing the file path and name of a template document")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> editDocument(@PathVariable Long id,
+			@Valid @RequestBody EditDocumentDto editDocumentDto) {
+		ResponseEntityDto response = documentTemplateService.editDocumentTemplate(id, editDocumentDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete Document", description = "This endpoint allows deleting a template document by its ID")
+	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> deleteDocument(@PathVariable Long id) {
+		ResponseEntityDto response = documentTemplateService.deleteDocumentTemplate(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+}

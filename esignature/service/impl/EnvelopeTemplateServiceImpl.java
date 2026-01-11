@@ -95,7 +95,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 		TemplateEnvelope savedTemplateEnvelope = templateEnvelopeDao.save(templateEnvelope);
 
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
-			.envelopeToEnvelopeDetailedResponseDto(savedTemplateEnvelope);
+			.TemplateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
 
 		return new ResponseEntityDto(false, responseDto);
 	}

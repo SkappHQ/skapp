@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/ep/esign/envelope-templates")
+@RequestMapping("/v1/ep/esign/template/envelopes")
 public class EnvelopeTemplateController {
 
 	private final EnvelopeTemplateService envelopeTemplateService;

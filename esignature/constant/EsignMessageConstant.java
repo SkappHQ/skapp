@@ -168,7 +168,10 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.template-recipient.role.max.length.exceeded"),
 	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
 	ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
-			"ep.esign.error.template-recipient.field.document-id.required"),;
+			"ep.esign.error.template-recipient.field.document-id.required"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
+			"ep.esign.error.document-template.already.associated.with-envelope-template");
 
 	private final String messageKey;
 
