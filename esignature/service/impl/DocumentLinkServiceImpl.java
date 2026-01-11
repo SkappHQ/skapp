@@ -847,7 +847,11 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			EsignVerificationSession verificationSession = esignVerificationSessionDao
 				.findByDocumentIdAndRecipientIdForUpdate(documentData.getId(), recipientData.getId());
 
-			if (verificationSession != null && verificationSession.getVerificationCode() != null) {
+			if (verificationSession == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_NOT_FOUND);
+			}
+
+			if (verificationSession.getVerificationCode() != null) {
 				return handleOtpBackoffAndSend(verificationSession, target, channel, isResend);
 			}
 			else {
@@ -954,7 +958,19 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 						esignVerification.getResendCount());
 
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+				// Throw different exceptions based on lockout level
+				switch (lockoutLevel) {
+					case 0 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0);
+					case 1 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1);
+					case 2 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2);
+					case 3 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3);
+					default -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL);
+				}
 			}
 
 			// Lockout expired - increase level and reset counters
@@ -1077,7 +1093,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 						currentAttemptCount, currentResendCount);
 
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+				// Throw different exceptions based on lockout level
+				switch (lockoutLevel) {
+					case 0 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0);
+					case 1 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1);
+					case 2 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2);
+					case 3 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3);
+					default -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL);
+				}
+
 			}
 
 			// Save after level increase
