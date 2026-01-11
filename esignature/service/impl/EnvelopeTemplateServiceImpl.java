@@ -11,10 +11,13 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
+import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
 import com.skapp.enterprise.esignature.model.*;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSettingDto;
 import com.skapp.enterprise.esignature.payload.request.template.FieldTemplateDto;
 import com.skapp.enterprise.esignature.payload.request.template.RecipientTemplateDto;
+import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
@@ -51,24 +54,45 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	private final AddressBookDao addressBookDao;
 
+	private final EsignTemplateMapper esignTemplateMapper;
+
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(EnvelopeTemplateDto envelopeTemplateDto) {
 
 		User currentUser = userService.getCurrentUser();
+
+		Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
+
+		AddressBook addressBook = addressBookOptional.filter(AddressBook::getIsActive)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
 		processTierLimitation();
 
 		TemplateEnvelope templateEnvelope = initializeTemplateEnvelope(envelopeTemplateDto);
 
 		List<TemplateDocument> templateDocuments = assignTemplateDocumentsToTemplateEnvelope(
-				envelopeTemplateDto.getDocumentIds(), templateEnvelope);
+				envelopeTemplateDto.getTemplateDocumentIds(), templateEnvelope);
 
 		templateEnvelope.setTemplateDocuments(templateDocuments);
 
 		List<TemplateRecipient> templateRecipients = assignTemplateRecipientsToTemplateEnvelope(
-				envelopeTemplateDto.getRecipients(), templateEnvelope, envelopeTemplateDto.getDocumentIds());
+				envelopeTemplateDto.getTemplateRecipients(), templateEnvelope,
+				envelopeTemplateDto.getTemplateDocumentIds());
 
-		return null;
+		templateEnvelope.setTemplateRecipients(templateRecipients);
+
+		TemplateEnvelopeSetting templateEnvelopeSetting = buildTemplateEnvelopeSetting(
+				envelopeTemplateDto.getTemplateEnvelopeSettingDto(), templateEnvelope);
+
+		templateEnvelope.setTemplateEnvelopeSetting(templateEnvelopeSetting);
+		templateEnvelope.setOwner(addressBook);
+
+		TemplateEnvelope savedTemplateEnvelope = templateEnvelopeDao.save(templateEnvelope);
+
+		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
+			.envelopeToEnvelopeDetailedResponseDto(savedTemplateEnvelope);
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private void processTierLimitation() {
@@ -149,7 +173,8 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 				}
 			}
 
-			if (templateRecipientDto.getMemberRole() == MemberRole.CC && !templateRecipientDto.getFields().isEmpty()) {
+			if (templateRecipientDto.getMemberRole() == MemberRole.CC
+					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
 
@@ -159,10 +184,12 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			templateRecipient.setMemberRole(templateRecipientDto.getMemberRole());
 			templateRecipient.setSigningOrder(templateRecipientDto.getSigningOrder());
 			templateRecipient.setColor(templateRecipientDto.getColor());
+			// templateRecipient.setMfaVerificationEnabled();
+			// templateRecipient.setMfaVerificationMethod();
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
 
-			List<TemplateField> templateFields = buildTemplateFieldsForRecipient(templateRecipientDto.getFields(),
-					templateRecipient);
+			List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
+					templateRecipientDto.getTemplateFields(), templateRecipient);
 			templateRecipient.setTemplateFields(templateFields);
 
 			return templateRecipient;
@@ -170,9 +197,38 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	}
 
-	private List<TemplateField> buildTemplateFieldsForRecipient(List<FieldTemplateDto> fields,
+	private List<TemplateField> buildTemplateFieldsForRecipient(List<FieldTemplateDto> templateFields,
 			TemplateRecipient templateRecipient) {
-		return null;
+
+		return templateFields.stream().map(templateFieldDto -> {
+
+			TemplateDocument templateFieldDocument = templateDocumentDao.findById(templateFieldDto.getDocumentId())
+				.orElseThrow(
+						() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND));
+
+			TemplateField templateField = new TemplateField();
+			templateField.setType(templateFieldDto.getType());
+			templateField.setPageNumber(templateFieldDto.getPageNumber());
+			templateField.setXPosition(templateFieldDto.getXposition());
+			templateField.setYPosition(templateFieldDto.getYposition());
+			templateField.setWidth(templateFieldDto.getWidth());
+			templateField.setHeight(templateFieldDto.getHeight());
+			templateField.setTemplateDocument(templateFieldDocument);
+			templateField.setTemplateRecipient(templateRecipient);
+
+			return templateField;
+		}).toList();
+
+	}
+
+	private TemplateEnvelopeSetting buildTemplateEnvelopeSetting(EnvelopeTemplateSettingDto templateEnvelopeSettingDto,
+			TemplateEnvelope templateEnvelope) {
+
+		TemplateEnvelopeSetting templateEnvelopeSetting = new TemplateEnvelopeSetting();
+		templateEnvelopeSetting.setReminderDays(templateEnvelopeSettingDto.getReminderDays());
+		templateEnvelopeSetting.setTemplateEnvelope(templateEnvelope);
+		return templateEnvelopeSetting;
+
 	}
 
 	private void validateEnvelopeTemplateName(String envelopeTemplateName) {
@@ -210,8 +266,16 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 	private void validateEnvelopeTemplateRecipients(List<RecipientTemplateDto> recipientTemplates,
 			List<Long> documentIds) {
 
+		boolean noRecipientFieldDocuments = recipientTemplates.stream()
+			.flatMap(recipient -> recipient.getTemplateFields().stream())
+			.anyMatch(field -> field.getDocumentId() == null);
+
+		if (noRecipientFieldDocuments) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+		}
+
 		boolean hasInvalidDocumentId = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getFields().stream())
+			.flatMap(recipient -> recipient.getTemplateFields().stream())
 			.anyMatch(field -> !documentIds.contains(field.getDocumentId()));
 
 		if (hasInvalidDocumentId) {

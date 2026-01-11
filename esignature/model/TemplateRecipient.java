@@ -44,6 +44,13 @@ public class TemplateRecipient extends Auditable<String> {
 	@Column(name = "color")
 	private String color;
 
+	@Column(name = "mfa_verification_enabled", nullable = false)
+	private boolean mfaVerificationEnabled;
+
+	// @Enumerated(EnumType.STRING)
+	// @Column(name = "mfa_verification_method")
+	// private EsignVerificationType mfaVerificationMethod;
+
 	@ManyToOne
 	@JoinColumn(name = "template_envelope_id")
 	private TemplateEnvelope templateEnvelope;

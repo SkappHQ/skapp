@@ -20,6 +20,6 @@ public class RecipientTemplateDto {
 
 	private Long addressBookId;
 
-	private List<FieldTemplateDto> fields;
+	private List<FieldTemplateDto> templateFields;
 
 }

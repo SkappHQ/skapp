@@ -18,10 +18,10 @@ public class EnvelopeTemplateDto {
 
 	private SignType signType;
 
-	private List<Long> documentIds;
+	private List<Long> templateDocumentIds;
 
-	private List<RecipientTemplateDto> recipients;
+	private List<RecipientTemplateDto> templateRecipients;
 
-	private EnvelopeTemplateSettingDto envelopeSettingDto;
+	private EnvelopeTemplateSettingDto templateEnvelopeSettingDto;
 
 }
