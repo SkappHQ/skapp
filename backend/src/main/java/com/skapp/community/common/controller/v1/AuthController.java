@@ -35,11 +35,18 @@ public class AuthController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Sign In with Cookie", description = "Sign in to the application with HTTP-only cookie")
-	@PostMapping(value = "/cookie/sign-in", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Sign In with Session", description = "Sign in to the application with HTTP-only cookie")
+	@PostMapping(value = "/session/sign-in", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> signInWithCookie(@Valid @RequestBody SignInRequestDto signInRequestDto,
 			HttpServletResponse response) {
 		ResponseEntityDto authResponse = authService.signInWithCookie(signInRequestDto, response);
+		return new ResponseEntity<>(authResponse, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Sign Out with Session", description = "Sign out and clear HTTP-only cookies")
+	@PostMapping(value = "/session/sign-out", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> signOutWithCookie(HttpServletResponse response) {
+		ResponseEntityDto authResponse = authService.signOutWithCookie(response);
 		return new ResponseEntity<>(authResponse, HttpStatus.OK);
 	}
 
@@ -60,9 +67,9 @@ public class AuthController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get Access Token from Cookie",
+	@Operation(summary = "Get Access Token from Session",
 			description = "Obtain a new access token using refresh token from cookie")
-	@PostMapping(value = "/cookie/refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/session/refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> refreshAccessTokenFromCookie(
 			@CookieValue(value = "refreshToken") String refreshToken) {
 		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();

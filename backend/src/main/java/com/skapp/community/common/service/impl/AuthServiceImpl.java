@@ -157,6 +157,18 @@ public class AuthServiceImpl implements AuthService {
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
+	@Override
+	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
+		log.info("signOutWithCookie: execution started");
+
+		Cookie cookie = cookieUtil.clearRefreshTokenCookie();
+		response.addCookie(cookie);
+		log.info("signOutWithCookie: Cleared refresh token cookie");
+
+		log.info("signOutWithCookie: execution ended");
+		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
+	}
+
 	private SignInResponseDto performSignIn(SignInRequestDto signInRequestDto, HttpServletResponse response) {
 		log.info("performSignIn: Authenticating user with email={}", signInRequestDto.getEmail());
 		authenticationManager.authenticate(

@@ -30,4 +30,19 @@ public class CookieUtil {
 		return cookie;
 	}
 
+	/**
+	 * Clears the refresh token cookie by setting its max age to 0.
+	 * @return A configured Cookie object with max age set to 0 to delete the cookie
+	 */
+	public Cookie clearRefreshTokenCookie() {
+		Cookie cookie = new Cookie("refreshToken", null);
+		cookie.setHttpOnly(true);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		cookie.setDomain(baseDomain);
+		cookie.setAttribute("SameSite", "Lax");
+		return cookie;
+	}
+
 }

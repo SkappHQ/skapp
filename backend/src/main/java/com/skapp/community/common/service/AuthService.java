@@ -16,6 +16,8 @@ public interface AuthService {
 
 	ResponseEntityDto signInWithCookie(SignInRequestDto signInRequestDto, HttpServletResponse response);
 
+	ResponseEntityDto signOutWithCookie(HttpServletResponse response);
+
 	ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto);
 
 	ResponseEntityDto refreshAccessToken(RefreshTokenRequestDto refreshTokenRequestDto);
