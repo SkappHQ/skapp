@@ -225,6 +225,10 @@ const nextConfig = {
         destination: "/enterprise/redirect"
       },
       {
+        source: "/verify/reset-password",
+        destination: "/enterprise/verify/reset-password"
+      },
+      {
         source: "/verify/guest-otp",
         destination: "/enterprise/verify/guest-otp"
       },
