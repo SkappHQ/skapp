@@ -179,26 +179,25 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3("ep.esign.error.verification.attempt.lockout.level-3"),
 	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level"),
 
-    // ESIGN ENVELOPE TEMPLATE ERRORS
-    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
-    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
-    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
-    ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
-    ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
-            "ep.esign.error.envelope-template.document.max.limit.exceeded"),
-    ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
-    ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
-            "ep.esign.error.template-document.already.assigned.to-template-envelope"),
-    ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
-    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
-    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
-            "ep.esign.error.template-recipient.role.max.length.exceeded"),
-    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
-    ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
-            "ep.esign.error.template-recipient.field.document-id.required"),
-    ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
-    ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
-            "ep.esign.error.document-template.already.associated.with-envelope-template");
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
+			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
+			"ep.esign.error.template-document.already.assigned.to-template-envelope"),
+	ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
+			"ep.esign.error.template-recipient.role.max.length.exceeded"),
+	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
+	ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
+			"ep.esign.error.template-recipient.field.document-id.required"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
+			"ep.esign.error.document-template.already.associated.with-envelope-template");
 
 	private final String messageKey;
 
