@@ -57,6 +57,8 @@ public interface PeopleService {
 
 	ResponseEntityDto hasSupervisoryRoles(Long employeeId);
 
+	void modifySubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk);
+
 	void updateUserStatus(Long userId, AccountStatus status, boolean isDelete);
 
 }

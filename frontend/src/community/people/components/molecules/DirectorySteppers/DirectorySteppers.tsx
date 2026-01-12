@@ -99,7 +99,8 @@ const DirectorySteppers = ({
     session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-    ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
+      // Feature flagged
+    // ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
