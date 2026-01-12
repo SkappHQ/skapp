@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.payload.response.template;
 
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,6 @@ public class RecipientTemplateDetailResponseDto {
 
 	private boolean mfaVerificationEnabled;
 
-	// private EsignVerificationType mfaVerificationMethod;
+	private EsignVerificationType mfaVerificationMethod;
 
 }
