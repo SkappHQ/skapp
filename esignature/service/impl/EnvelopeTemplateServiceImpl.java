@@ -207,7 +207,8 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 		return templateFields.stream().map(templateFieldDto -> {
 
-			TemplateDocument templateFieldDocument = templateDocumentDao.findById(templateFieldDto.getDocumentId())
+			TemplateDocument templateFieldDocument = templateDocumentDao
+				.findById(templateFieldDto.getTemplateDocumentId())
 				.orElseThrow(
 						() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND));
 
@@ -273,7 +274,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 		boolean noRecipientFieldDocuments = recipientTemplates.stream()
 			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> field.getDocumentId() == null);
+			.anyMatch(field -> field.getTemplateDocumentId() == null);
 
 		if (noRecipientFieldDocuments) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
@@ -281,7 +282,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 		boolean hasInvalidDocumentId = recipientTemplates.stream()
 			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> !documentIds.contains(field.getDocumentId()));
+			.anyMatch(field -> !documentIds.contains(field.getTemplateDocumentId()));
 
 		if (hasInvalidDocumentId) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);

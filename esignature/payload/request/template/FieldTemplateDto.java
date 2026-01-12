@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class FieldTemplateDto {
 
-	private Long documentId;
+	private Long templateDocumentId;
 
 	private FieldType type;
 
