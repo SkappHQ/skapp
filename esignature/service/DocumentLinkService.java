@@ -7,6 +7,10 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpValidateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpValidateRequestDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 
@@ -33,6 +37,23 @@ public interface DocumentLinkService {
 	ResponseEntityDto getTokenFromUuid(String uuid, String state);
 
 	ResponseEntityDto getTokenResendStatus(String token);
+
+	ResponseEntityDto sendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto);
+
+	ResponseEntityDto sendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto);
+
+	ResponseEntityDto verifyOtpFromUuid(UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto);
+
+	ResponseEntityDto verifyOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto);
+
+	ResponseEntityDto resendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto, boolean isResend);
+
+	ResponseEntityDto resendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto, boolean isResend);
+
+	ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId);
 
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}

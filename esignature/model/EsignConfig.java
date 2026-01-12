@@ -30,4 +30,7 @@ public class EsignConfig {
 	@Column(name = "reminder_days")
 	private int reminderDaysBeforeExpire;
 
+	@Column(name = "is_mfa_enabled")
+	private Boolean isMfaEnabled;
+
 }

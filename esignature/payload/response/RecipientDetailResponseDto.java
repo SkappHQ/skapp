@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
@@ -38,5 +39,9 @@ public class RecipientDetailResponseDto {
 	private EmailReminderStatus reminderStatus;
 
 	private EmailStatus emailStatus;
+
+	private boolean isMfaVerificationEnabled;
+
+	private EsignVerificationType mfaVerificationMethod;
 
 }

@@ -7,8 +7,12 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.type.TwilioMessageSource;
+import com.skapp.enterprise.common.util.OtpUtil;
+import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -17,10 +21,16 @@ import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EsignVerificationSession;
+import com.skapp.enterprise.esignature.model.EsignVerificationSessionLog;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpValidateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpValidateRequestDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
@@ -31,14 +41,19 @@ import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
+import com.skapp.enterprise.esignature.repository.EsignVerificationSessionDao;
+import com.skapp.enterprise.esignature.repository.EsignVerificationSessionLogDao;
+import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.EsignMessageService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.EsignVerificationEventType;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
@@ -56,7 +71,9 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,13 +105,21 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	public static final String PERMISSION = "permission";
 
-	private static final String URL_PATH = "/sign/document/access?uuid=";
+	private static final String BASE_URL_PATH = "/sign/document/access";
+
+	private static final String UUID_URL_PATH = "?uuid=";
+
+	private static final String PHONE_URL_PATH = "&phone=";
+
+	private static final String URL_PATH_MFA = "/mfa-verify";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
 	public static final String STATE_STRING = "&state=";
 
 	public static final String HTTPS_PROTOCOL = "https://";
+
+	private static final String SMS_VERIFICATION_CHANNEL = "sms";
 
 	private final DocumentLinkRepository documentLinkRepository;
 
@@ -108,7 +133,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 	private final DocumentDao documentDao;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final EsignMapper eSignMapper;
 
@@ -117,6 +142,14 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private final DocumentVersionDao documentVersionDao;
 
 	private final TenantContext tenantContext;
+
+	private final EsignVerificationSessionDao esignVerificationSessionDao;
+
+	private final EsignVerificationSessionLogDao esignVerificationSessionLogDao;
+
+	private final MessageUtil messageUtil;
+
+	private final EsignMessageService esignMessageService;
 
 	@Value("${jwt.access-token.esign.expiration-time}")
 	private Long jwtDocumentAccessTokenExpirationMs;
@@ -154,7 +187,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Envelope envelope = documentOptional.get().getEnvelope();
 
-		Optional<Recipient> optionalUpdatableRecipient = recipientRepository.findById(recipientId);
+		Optional<Recipient> optionalUpdatableRecipient = recipientDao.findById(recipientId);
 
 		Recipient recipient = optionalUpdatableRecipient
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
@@ -320,6 +353,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			.findFirst()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 
+		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
+
+		if (isVerificationEnabled && getMfaVerificationStatus(null, documentId, recipientId)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
+		}
+
 		validateTokenFlows(isDocAccess, recipient, documentId);
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);
@@ -458,54 +497,19 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Override
 	public ResponseEntityDto getTokenFromUuid(@NotNull String uuid, @NotNull String state) {
 
-		try {
-			String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
-			String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuid, state);
 
-			String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
-			String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
 
-			if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
-					|| decryptedState.trim().isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
-			if (stateParts.length != 3) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			Long recipientId = Long.valueOf(stateParts[0]);
-			String envelopeUUID = stateParts[1];
-			String tenantId = stateParts[2];
-
-			if (envelopeUUID == null || tenantId == null) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			tenantContext.setTenantAndSwitchSchema(tenantId);
-
-			Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
-
-			if (documentLinkOpt.isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
-			}
-
-			DocumentLink documentLink = documentLinkOpt.get();
-
-			if (!documentLink.getRecipientId().getId().equals(recipientId)
-					|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-			}
-
-			DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
-			documentTokenResponseDto.setToken(documentLink.getToken());
-
-			return new ResponseEntityDto(false, documentTokenResponseDto);
+		if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
-		catch (Exception ex) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
-		}
+
+		DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
+		documentTokenResponseDto.setToken(documentLink.getToken());
+
+		return new ResponseEntityDto(false, documentTokenResponseDto);
+
 	}
 
 	@Override
@@ -526,6 +530,103 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		log.info("getTokenResendStatus: process end");
 
 		return new ResponseEntityDto(false, documentTokenResendStatusResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto sendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
+
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuidConvertToOtpRequestDto.getUuid(),
+				uuidConvertToOtpRequestDto.getState());
+
+		return sendVerificationToRecipient(documentLink, null, null, false);
+	}
+
+	@Override
+	public ResponseEntityDto sendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
+
+		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpRequestDto.getDocumentId(),
+				recipientConvertToOtpRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpRequestDto.getDocumentId());
+
+		Document document = documentDao.findById(recipientConvertToOtpRequestDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		// MFA Flow: Send OTP and return verification initiated response
+		return sendVerificationToRecipient(null, document, recipient, false);
+
+	}
+
+	@Override
+	public ResponseEntityDto verifyOtpFromUuid(UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto) {
+
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuidConvertToOtpValidateRequestDto.getUuid(),
+				uuidConvertToOtpValidateRequestDto.getState());
+
+		// Verify the OTP
+		return verifyCodeWithDocumentRecipient(documentLink, null, null, uuidConvertToOtpValidateRequestDto.getCode());
+
+	}
+
+	@Override
+	public ResponseEntityDto verifyOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto) {
+
+		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpValidateRequestDto.getDocumentId(),
+				recipientConvertToOtpValidateRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpValidateRequestDto.getDocumentId());
+
+		// Verify the OTP
+		return verifyCodeWithDocumentRecipient(null, recipientConvertToOtpValidateRequestDto.getDocumentId(),
+				recipientConvertToOtpValidateRequestDto.getRecipientId(),
+				recipientConvertToOtpValidateRequestDto.getCode());
+
+	}
+
+	@Override
+	public ResponseEntityDto resendOtpFromUuid(UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto,
+			boolean isResend) {
+
+		DocumentLink documentLink = decodeDocumentLinkFromUuid(uuidConvertToOtpRequestDto.getUuid(),
+				uuidConvertToOtpRequestDto.getState());
+
+		return sendVerificationToRecipient(documentLink, null, null, isResend);
+
+	}
+
+	@Override
+	public ResponseEntityDto resendOtpFromDocumentAndRecipientId(
+			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto, boolean isResend) {
+
+		Recipient recipient = validateAndGetRecipient(recipientConvertToOtpRequestDto.getDocumentId(),
+				recipientConvertToOtpRequestDto.getRecipientId());
+
+		validateTokenFlows(false, recipient, recipientConvertToOtpRequestDto.getDocumentId());
+
+		Document document = documentDao.findById(recipientConvertToOtpRequestDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		return sendVerificationToRecipient(null, document, recipient, isResend);
+	}
+
+	@Override
+	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId) {
+
+		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
+
+		validateTokenFlows(false, recipient, documentId);
+
+		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
+
+		if (isVerificationEnabled) {
+
+			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_ENABLED_VIA_SMS);
+
+		}
+
+		return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_DISABLED);
 	}
 
 	private String generateAndEnsureUniqueUuidWithRetry() {
@@ -639,12 +740,504 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
 
-		return protocol + "://" + tenantId + "." + parentDomain + URL_PATH + encodedEncryptedUUID + STATE_STRING
-				+ encodedState;
+		String baseUrlPath = BASE_URL_PATH;
+
+		String mfaRecipientDetails = getMFARecipientDetails(recipientId);
+
+		if (mfaRecipientDetails != null) {
+			// MFA enabled:
+			// /sign/document/access/mfa-verify?uuid={uuid}&state={state}&phone={phone}
+			return protocol + "://" + tenantId + "." + parentDomain + baseUrlPath + URL_PATH_MFA + UUID_URL_PATH
+					+ encodedEncryptedUUID + STATE_STRING + encodedState + PHONE_URL_PATH + mfaRecipientDetails;
+		}
+
+		// MFA disabled: /sign/document/access?uuid={uuid}&state={state}
+		return protocol + "://" + tenantId + "." + parentDomain + baseUrlPath + UUID_URL_PATH + encodedEncryptedUUID
+				+ STATE_STRING + encodedState;
+	}
+
+	private String getMFARecipientDetails(Long recipientId) {
+
+		Optional<Recipient> recipientOptional = recipientDao.findById(recipientId);
+		Recipient recipient = recipientOptional
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		if (recipient.isMfaVerificationEnabled()) {
+			populateAndSaveVerificationSessionData(recipient);
+		}
+
+		EsignVerificationType verificationMethod = recipient.getMfaVerificationMethod();
+
+		if (verificationMethod.equals(EsignVerificationType.SMS)) {
+			String recipientPhone = recipientDao.findPhoneByRecipientId(recipientId);
+
+			if (recipientPhone == null || recipientPhone.isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
+
+			}
+
+			return PhoneNumberMaskUtil.mask(recipientPhone);
+		}
+		else {
+			return null;
+		}
+
+	}
+
+	private void populateAndSaveVerificationSessionData(Recipient recipient) {
+
+		Document document = recipient.getEnvelope()
+			.getDocuments()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		EsignVerificationSession existingVerificationSession = esignVerificationSessionDao
+			.findByDocument_IdAndRecipient_Id(document.getId(), recipient.getId())
+			.orElse(null);
+
+		if (existingVerificationSession == null) {
+			EsignVerificationSession esignVerificationSession = new EsignVerificationSession();
+			esignVerificationSession.setRecipient(recipient);
+			esignVerificationSession.setDocument(document);
+			esignVerificationSession.setVerified(false);
+
+			esignVerificationSessionDao.save(esignVerificationSession);
+		}
+
 	}
 
 	private record DocumentAccessData(Long userId, String tenantId, Long envelopeId, Long documentId, Long recipientId,
 			String userType) {
+	}
+
+	private boolean validateMfaVerificationEnable(Recipient recipient) {
+		return recipient.isMfaVerificationEnabled();
+	}
+
+	private ResponseEntityDto sendVerificationToRecipient(DocumentLink documentLink, Document document,
+			Recipient recipient, boolean isResend) {
+
+		Recipient recipientData;
+		Document documentData;
+
+		if (documentLink != null) {
+			recipientData = documentLink.getRecipientId();
+			documentData = documentLink.getDocumentId();
+		}
+		else {
+			recipientData = recipient;
+			documentData = document;
+		}
+
+		// The channel is sms. It's the form the otp is to be shared with the
+		// recipient.
+		String channel = recipientData.getMfaVerificationMethod().equals(EsignVerificationType.SMS)
+				? SMS_VERIFICATION_CHANNEL : null;
+
+		// The target is phone number based on the selected
+		// channel.
+		String target = recipientData.getMfaVerificationMethod().equals(EsignVerificationType.SMS)
+				? recipientData.getAddressBook().getPhone() : null;
+
+		if (channel != null && target != null) {
+
+			// Check if there's an existing active otp session to the recipient for this
+			// document.
+			EsignVerificationSession verificationSession = esignVerificationSessionDao
+				.findByDocumentIdAndRecipientIdForUpdate(documentData.getId(), recipientData.getId());
+
+			if (verificationSession == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_NOT_FOUND);
+			}
+
+			if (verificationSession.getVerificationCode() != null) {
+				return handleOtpBackoffAndSend(verificationSession, target, channel, isResend);
+			}
+			else {
+				String otpCode = OtpUtil.generateOTP();
+				Instant expiryTime = Instant.now().plusSeconds(EsignConstants.OTP_EXPIRY_TIME_SECONDS);
+
+				verificationSession.setRecipient(recipientData);
+				verificationSession.setDocument(documentData);
+				verificationSession.setVerificationCode(otpCode);
+				verificationSession.setVerified(false);
+				verificationSession.setOtpExpiryTime(expiryTime);
+				verificationSession.setOtpCreatedTime(Instant.now());
+				verificationSession.setConcurrentAccessCount(1);
+				esignVerificationSessionDao.save(verificationSession);
+
+				populateAndSaveVerificationSessionHistoryData(recipientData.getId(), documentData.getId(),
+						EsignVerificationEventType.OTP_GENERATED, Instant.now(),
+						verificationSession.getConcurrentAccessCount(), 0, 0);
+
+				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA, recipient.getId());
+			}
+
+		}
+
+		// Return if the verification otp sent was success or failed.
+		return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS);
+
+	}
+
+	private void populateAndSaveVerificationSessionHistoryData(Long recipientId, Long documentId,
+			EsignVerificationEventType eventType, Instant timestamp, int concurrentSessionCount, int attemptNumber,
+			int resendNumber) {
+
+		EsignVerificationSessionLog esignVerificationSessionLog = new EsignVerificationSessionLog();
+		esignVerificationSessionLog.setRecipientId(recipientId);
+		esignVerificationSessionLog.setDocumentId(documentId);
+		esignVerificationSessionLog.setEventType(eventType);
+		esignVerificationSessionLog.setTimestamp(timestamp);
+		esignVerificationSessionLog.setConcurrentAccessCount(concurrentSessionCount);
+		esignVerificationSessionLog.setAttemptNumber(attemptNumber);
+		esignVerificationSessionLog.setResendNumber(resendNumber);
+
+		esignVerificationSessionLogDao.save(esignVerificationSessionLog);
+
+	}
+
+	private ResponseEntityDto verifyCodeWithDocumentRecipient(DocumentLink documentLink, Long documentId,
+			Long recipientId, String code) {
+
+		if (documentLink == null && (documentId == null || recipientId == null)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION);
+		}
+
+		if (code == null || code.trim().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_CODE_INVALID);
+		}
+
+		recipientId = recipientId != null ? recipientId : documentLink.getRecipientId().getId();
+		documentId = documentId != null ? documentId : documentLink.getDocumentId().getId();
+
+		EsignVerificationSession esignVerification = esignVerificationSessionDao
+			.findByDocumentIdAndRecipientIdForUpdate(documentId, recipientId);
+
+		if (esignVerification == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
+		}
+
+		Instant timeNow = Instant.now();
+
+		// Reset verification lockout level if reset period passed
+		if (esignVerification.getVerificationLockoutResetTime() != null
+				&& timeNow.isAfter(esignVerification.getVerificationLockoutResetTime())) {
+			esignVerification.setVerificationLockoutLevel(0);
+			esignVerification.setVerificationLockoutResetTime(null);
+		}
+
+		// Apply 3-second rate limit between attempts
+		Instant lastAttemptTime = esignVerification.getLastAttemptedTime();
+		if (lastAttemptTime != null) {
+			Instant nextAllowedAttempt = lastAttemptTime.plusSeconds(EsignConstants.MIN_VERIFICATION_BACKOFF_SECONDS);
+			if (timeNow.isBefore(nextAllowedAttempt)) {
+
+				EsignVerificationEventType eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+						esignVerification.getResendCount());
+
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS);
+			}
+		}
+
+		// Progressive lockout check
+		if (esignVerification.getAttemptCount() >= EsignConstants.MAX_RETRY_LIMIT) {
+			int lockoutLevel = Math.min(esignVerification.getVerificationLockoutLevel(),
+					EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES.length - 1);
+			int lockoutSeconds = EsignConstants.VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES[lockoutLevel];
+
+			Instant lockoutUntil = esignVerification.getLastAttemptedTime().plusSeconds(lockoutSeconds);
+
+			if (timeNow.isBefore(lockoutUntil)) {
+
+				EsignVerificationEventType eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+						esignVerification.getResendCount());
+
+				// Throw different exceptions based on lockout level
+				switch (lockoutLevel) {
+					case 0 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0);
+					case 1 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1);
+					case 2 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2);
+					case 3 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3);
+					default -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL);
+				}
+			}
+
+			// Lockout expired - increase level and reset counters
+			esignVerification.setVerificationLockoutLevel(lockoutLevel + 1);
+			esignVerification.setAttemptCount(0);
+			esignVerification.setVerificationLockoutResetTime(
+					timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
+			esignVerificationSessionDao.save(esignVerification);
+		}
+
+		EsignVerificationEventType eventType;
+
+		// Validate OTP
+		if (OtpUtil.validateOTP(esignVerification.getVerificationCode(), esignVerification.getOtpExpiryTime(), code)) {
+			// Invalid OTP - increment attempt count
+			esignVerification.setAttemptCount(esignVerification.getAttemptCount() + 1);
+			esignVerification.setLastAttemptedTime(timeNow);
+
+			// Initialize lockout tracking
+			if (esignVerification.getVerificationLockoutResetTime() == null) {
+				esignVerification.setVerificationLockoutLevel(0);
+				esignVerification.setVerificationLockoutResetTime(
+						timeNow.plus(EsignConstants.VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
+			}
+
+			esignVerificationSessionDao.save(esignVerification);
+
+			eventType = EsignVerificationEventType.OTP_VERIFY_FAILED;
+
+			populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+					esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+					esignVerification.getResendCount());
+
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
+		}
+
+		// Valid OTP - reset all counters
+		esignVerification.setVerificationCode(null);
+		esignVerification.setOtpExpiryTime(null);
+		esignVerification.setVerified(true);
+		esignVerification.setLastAttemptedTime(timeNow);
+		esignVerification.setAttemptCount(0);
+		esignVerification.setResendCount(0);
+		esignVerification.setConcurrentAccessCount(0);
+		esignVerification.setVerificationLockoutLevel(0);
+		esignVerification.setVerificationLockoutResetTime(null);
+		esignVerificationSessionDao.save(esignVerification);
+
+		eventType = EsignVerificationEventType.OTP_VERIFY_SUCCESS;
+
+		populateAndSaveVerificationSessionHistoryData(recipientId, documentId, eventType, timeNow,
+				esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
+				esignVerification.getResendCount());
+
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_OTP_VERIFIED));
+	}
+
+	private boolean getMfaVerificationStatus(DocumentLink documentLink, Long documentId, Long recipientId) {
+		Optional<EsignVerificationSession> esignVerification;
+
+		if (documentLink != null) {
+			esignVerification = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(
+					documentLink.getDocumentId().getId(), documentLink.getRecipientId().getId());
+		}
+		else {
+			esignVerification = esignVerificationSessionDao.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+		}
+
+		if (esignVerification.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND);
+		}
+
+		return esignVerification.get().isVerified();
+	}
+
+	private ResponseEntityDto handleOtpBackoffAndSend(EsignVerificationSession verificationSession, String target,
+			String channel, boolean isResend) {
+
+		EsignVerificationEventType eventType;
+
+		Instant lastOtpCreatedTime = verificationSession.getOtpCreatedTime();
+		Instant coolDownTime = lastOtpCreatedTime.plusSeconds(EsignConstants.MIN_OTP_BACKOFF_SECONDS);
+		Instant timeNow = Instant.now();
+
+		int currentResendCount = verificationSession.getResendCount();
+		int currentAttemptCount = verificationSession.getAttemptCount();
+		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
+
+		// Reset lockout level
+		if (verificationSession.getLockoutLevelResetTime() != null
+				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
+			verificationSession.setLockoutLevel(0);
+			verificationSession.setLockoutLevelResetTime(null);
+		}
+
+		// Apply 30-second cooldown
+		if (timeNow.isBefore(coolDownTime)) {
+			eventType = EsignVerificationEventType.OTP_GENERATION_LOCKED;
+			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
+					currentAttemptCount, currentResendCount);
+
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OTP_REQUEST_COOLDOWN_ACTIVE);
+		}
+
+		// Progressive lockout checks BOTH resend AND concurrent count
+		if (currentResendCount >= EsignConstants.MAX_RETRY_LIMIT
+				|| concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT) {
+			int lockoutLevel = Math.min(verificationSession.getLockoutLevel(),
+					EsignConstants.PROGRESSIVE_LOCKOUT_TIMES.length - 1);
+			int lockoutSeconds = EsignConstants.PROGRESSIVE_LOCKOUT_TIMES[lockoutLevel];
+
+			Instant lockoutUntil = lastOtpCreatedTime.plusSeconds(lockoutSeconds);
+
+			if (timeNow.isBefore(lockoutUntil)) {
+
+				eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+				populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+						verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
+						currentAttemptCount, currentResendCount);
+
+				// Throw different exceptions based on lockout level
+				switch (lockoutLevel) {
+					case 0 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0);
+					case 1 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1);
+					case 2 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2);
+					case 3 -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3);
+					default -> throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL);
+				}
+
+			}
+
+			// Save after level increase
+			verificationSession.setLockoutLevel(lockoutLevel + 1);
+			verificationSession.setResendCount(0);
+			verificationSession.setConcurrentAccessCount(0);
+			verificationSession
+				.setLockoutLevelResetTime(timeNow.plus(EsignConstants.LOCKOUT_LEVEL_RESET_DAYS, ChronoUnit.DAYS));
+			esignVerificationSessionDao.save(verificationSession);
+		}
+
+		// Check access count
+		Instant accessBlockTime = lastOtpCreatedTime.plusSeconds(EsignConstants.OTP_DEFAULT_LOCK_TIME);
+		if (concurrentSessionCount >= EsignConstants.MAX_RETRY_LIMIT && timeNow.isBefore(accessBlockTime)) {
+			eventType = EsignVerificationEventType.OTP_SESSION_LOCKED;
+			populateAndSaveVerificationSessionHistoryData(verificationSession.getRecipient().getId(),
+					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
+					currentAttemptCount, currentResendCount);
+
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+		}
+
+		// Explicitly invalidate previous OTP
+		verificationSession.setVerificationCode(null);
+		verificationSession.setOtpExpiryTime(null);
+
+		// Update counters
+		if (isResend) {
+			eventType = EsignVerificationEventType.OTP_RESENT;
+			verificationSession.setResendCount(verificationSession.getResendCount() + 1);
+		}
+		else {
+			eventType = EsignVerificationEventType.OTP_GENERATED;
+
+			int newCount = timeNow.isAfter(accessBlockTime) ? 1 : verificationSession.getConcurrentAccessCount() + 1;
+
+			verificationSession.setConcurrentAccessCount(newCount);
+		}
+
+		// Generate new OTP
+		String otpCode = OtpUtil.generateOTP();
+		Instant expiryTime = timeNow.plusSeconds(EsignConstants.OTP_EXPIRY_TIME_SECONDS);
+
+		verificationSession.setVerificationCode(otpCode);
+		verificationSession.setVerified(false);
+		verificationSession.setOtpExpiryTime(expiryTime);
+		verificationSession.setOtpCreatedTime(timeNow);
+
+		EsignVerificationSession savedVerificationSession = esignVerificationSessionDao.save(verificationSession);
+
+		populateAndSaveVerificationSessionHistoryData(savedVerificationSession.getRecipient().getId(),
+				savedVerificationSession.getDocument().getId(), eventType, timeNow,
+				savedVerificationSession.getConcurrentAccessCount(), savedVerificationSession.getAttemptCount(),
+				savedVerificationSession.getResendCount());
+
+		esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA,
+				verificationSession.getRecipient().getId());
+
+		return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS);
+	}
+
+	private DocumentLink decodeDocumentLinkFromUuid(String uuid, String state) {
+
+		String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
+		String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
+
+		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+
+		if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
+				|| decryptedState.trim().isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		String[] stateParts = decryptedState.split(EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN);
+		if (stateParts.length != 3) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		Long recipientId = Long.valueOf(stateParts[0]);
+		String envelopeUUID = stateParts[1];
+		String tenantId = stateParts[2];
+
+		if (envelopeUUID == null || tenantId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+
+		Optional<DocumentLink> documentLinkOpt = documentLinkRepository.findByUuid(decodedUuid);
+
+		if (documentLinkOpt.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_LINK_NOT_FOUND);
+		}
+
+		DocumentLink documentLink = documentLinkOpt.get();
+
+		if (!documentLink.getRecipientId().getId().equals(recipientId)
+				|| !documentLink.getEnvelopeId().getUuid().equals(envelopeUUID)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
+		}
+
+		return documentLink;
+	}
+
+	private Recipient validateAndGetRecipient(Long documentId, Long recipientId) {
+		String tenantId = TenantContext.getCurrentTenant();
+
+		if (tenantId == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
+		}
+
+		Document document = documentDao.findById(documentId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		if (document.getEnvelope() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
+		}
+
+		Envelope envelope = document.getEnvelope();
+
+		if (EnvelopeStatus.inactiveStatuses().contains(envelope.getStatus())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_ACCESS_INACTIVE);
+		}
+
+		return document.getEnvelope()
+			.getRecipients()
+			.stream()
+			.filter(rec -> rec.getId().equals(recipientId))
+			.findFirst()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
 	}
 
 }

@@ -152,26 +152,53 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_CMS_SIGNATURE_FAILED("ep.esign.error.cms.signature.failed"),
 	ESIGN_ERROR_OPERATOR_CREATION_FAILED("ep.esign.error.operator.creation.failed"),
 
-	// ESIGN ENVELOPE TEMPLATE ERRORS
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
-			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
-	ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
-	ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
-			"ep.esign.error.template-document.already.assigned.to-template-envelope"),
-	ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
-	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
-	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
-			"ep.esign.error.template-recipient.role.max.length.exceeded"),
-	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
-	ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
-			"ep.esign.error.template-recipient.field.document-id.required"),
-	ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
-	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
-			"ep.esign.error.document-template.already.associated.with-envelope-template");
+	ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND("ep.esign.error.address-book.user.contact.number.not-found"),
+	ESIGN_ERROR_MFA_NOT_VALIDATED("ep.esign.error.mfa.not.validated"),
+	ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND("ep.esign.error.recipient.verification.not-found"),
+	ESIGN_ERROR_VERIFICATION_CODE_INVALID("ep.esign.error.verification.code.invalid"),
+	ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED("ep.esign.error.verification.max.attempts.reached"),
+	ESIGN_ERROR_OTP_REQUEST_COOLDOWN_ACTIVE("ep.esign.error.otp.request.cooldown.active"),
+	ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION("ep.esign.error.invalid.inputs.for.otp.verification"),
+	ESIGN_ERROR_VERIFICATION_DAILY_OTP_LIMIT_REACHED(
+			"ep.esign.error.verification.document.access.daily.otp.limit.reached"),
+	ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS("ep.esign.error.verification.too.many.attempts"),
+
+	ESIGN_RESPONSE_VERIFICATION_DISABLED("ep.esign.response.multi.factor.authentication.disabled"),
+	ESIGN_RESPONSE_VERIFICATION_ENABLED_VIA_SMS("ep.esign.response.multi.factor.authentication.enabled.via.sms"),
+	ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS("ep.esign.response.verification.otp.sent.via.sms"),
+	ESIGN_ERROR_VERIFICATION_NOT_FOUND("ep.esign.error.verification.not-found"),
+	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0("ep.esign.error.verification.lockout.level-0"),
+	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1("ep.esign.error.verification.lockout.level-1"),
+	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2("ep.esign.error.verification.lockout.level-2"),
+	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3("ep.esign.error.verification.lockout.level-3"),
+	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.lockout.max-level"),
+	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.verification.document.access.blocked"),
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0("ep.esign.error.verification.attempt.lockout.level-0"),
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1("ep.esign.error.verification.attempt.lockout.level-1"),
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2("ep.esign.error.verification.attempt.lockout.level-2"),
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3("ep.esign.error.verification.attempt.lockout.level-3"),
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level"),
+
+    // ESIGN ENVELOPE TEMPLATE ERRORS
+    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
+    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
+    ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
+    ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
+    ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
+            "ep.esign.error.envelope-template.document.max.limit.exceeded"),
+    ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
+    ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
+            "ep.esign.error.template-document.already.assigned.to-template-envelope"),
+    ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
+    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
+    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
+            "ep.esign.error.template-recipient.role.max.length.exceeded"),
+    ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
+    ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
+            "ep.esign.error.template-recipient.field.document-id.required"),
+    ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
+    ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
+            "ep.esign.error.document-template.already.associated.with-envelope-template");
 
 	private final String messageKey;
 
