@@ -13,6 +13,6 @@ public class DocumentTemplateDetailResponseDto {
 
 	private String filePath;
 
-	private int numOfPages;
+	private Integer numOfPages;
 
 }

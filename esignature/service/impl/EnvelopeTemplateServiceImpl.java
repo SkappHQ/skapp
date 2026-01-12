@@ -121,30 +121,21 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 	private void processTierLimitation() {
 
 		String currentTenant = TenantContext.getCurrentTenant();
-		try {
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
-			if (tenant == null) {
-				log.error("getEnvelopeTemplateTierLimitation: Tenant not found: {}", currentTenant);
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 
-			Tier tier = tenant.getTier();
-
-			if (tier == Tier.FREE) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT);
-			}
+		if (tenant == null) {
+			log.error("getEnvelopeTemplateTierLimitation: Tenant not found: {}", currentTenant);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
+					new String[] { currentTenant });
 		}
-		catch (Exception e) {
-			log.error("Error while fetching envelope tier limitations for tenant {}: {}", currentTenant, e.getMessage(),
-					e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS);
-		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		Tier tier = tenant.getTier();
+
+		if (tier == Tier.FREE) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT);
 		}
 
 	}

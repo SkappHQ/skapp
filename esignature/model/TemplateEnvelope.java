@@ -48,7 +48,7 @@ public class TemplateEnvelope extends Auditable<String> {
 	private SignType signType;
 
 	@OneToOne
-	@JoinColumn(name = "owner_id")
+	@JoinColumn(name = "address_book_id")
 	private AddressBook owner;
 
 	@OneToMany(mappedBy = "templateEnvelope", cascade = CascadeType.ALL)
