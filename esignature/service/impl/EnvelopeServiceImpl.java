@@ -10,7 +10,6 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
@@ -66,7 +65,7 @@ import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
@@ -79,6 +78,7 @@ import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
@@ -169,7 +169,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final AuditTrailService auditTrailService;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final AuditTrailDao auditTrailDao;
 
@@ -461,6 +461,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 			}
 
+			if (recipientDto.getVerificationType() != null
+					&& recipientDto.getVerificationType().equals(EsignVerificationType.SMS)
+					&& addressBook.getPhone() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
+			}
+
 			if (recipientDto.getMemberRole() == MemberRole.CC && !recipientDto.getFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
@@ -473,6 +479,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setSigningOrder(recipientDto.getSigningOrder());
 			recipient.setColor(recipientDto.getColor());
 			recipient.setConsent(recipientDto.getMemberRole().equals(MemberRole.CC));
+			recipient.setMfaVerificationEnabled(!recipientDto.getVerificationType().equals(EsignVerificationType.NONE));
+			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
@@ -1161,7 +1169,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		log.info("declineEnvelope: execution started for recipient ID: {}", recipientId);
 
-		Recipient recipient = recipientRepository.findById(recipientId).orElseThrow(() -> {
+		Recipient recipient = recipientDao.findById(recipientId).orElseThrow(() -> {
 			log.error("Recipient with ID {} not found", recipientId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 		});

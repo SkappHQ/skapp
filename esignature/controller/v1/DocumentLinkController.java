@@ -2,6 +2,10 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.ResendAccessUrlDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpValidateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpRequestDto;
+import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpValidateRequestDto;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -58,6 +62,96 @@ public class DocumentLinkController {
 
 		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentData(documentId, recipientId,
 				false);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Send OTP for a given uuid",
+			description = "Sends an OTP to the recipient associated with the provided UUID for document access. "
+					+ "The OTP is sent only if MFA is enabled for the recipient.")
+	@PostMapping(value = "/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> sendOtpFromUuid(
+			@Valid @RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.sendOtpFromUuid(uuidConvertToOtpRequestDto);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Send OTP for a given document and recipient",
+			description = "Sends an OTP to the recipient associated with the provided documentId and recipientId for document access. "
+					+ "The OTP is sent only if MFA is enabled for the recipient.")
+	@PostMapping(value = "/internal/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> sendOtpFromDocumentAndRecipientId(
+			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService
+			.sendOtpFromDocumentAndRecipientId(recipientConvertToOtpRequestDto);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Exchange OTP for Document Access Token",
+			description = "Exchanges OTP for an internal access token used to sign or view a document. "
+					+ "The token is only returned if the otp is successfully verified and the document link is available.")
+	@PostMapping(value = "/verify-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> verifyOtpFromUuid(
+			@Valid @RequestBody UuidConvertToOtpValidateRequestDto uuidConvertToOtpValidateRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.verifyOtpFromUuid(uuidConvertToOtpValidateRequestDto);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Data for Internal Document Access",
+			description = "Retrieves data required for signing or viewing a document internally for a given document and recipient, using internal access privileges.")
+	@PostMapping(value = "/internal/access/verify-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> verifyOtpFromDocumentAndRecipientId(
+			@Valid @RequestBody RecipientConvertToOtpValidateRequestDto recipientConvertToOtpValidateRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService
+			.verifyOtpFromDocumentAndRecipientId(recipientConvertToOtpValidateRequestDto);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Resend OTP for a given uuid",
+			description = "Resends an OTP to the recipient associated with the provided UUID for document access. "
+					+ "The OTP is sent only if MFA is enabled for the recipient.")
+	@PostMapping(value = "/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> resendOtpFromUuid(
+			@Valid @RequestBody UuidConvertToOtpRequestDto uuidConvertToOtpRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.resendOtpFromUuid(uuidConvertToOtpRequestDto, true);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Resend OTP for a given document and recipient",
+			description = "Resends an OTP to the recipient associated with the provided Document Id and Recipient Id for document access. "
+					+ "The OTP is sent only if MFA is enabled for the recipient.")
+	@PostMapping(value = "/internal/resend-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> resendOtpForInternalUser(
+			@Valid @RequestBody RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService
+			.resendOtpFromDocumentAndRecipientId(recipientConvertToOtpRequestDto, true);
+
+		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Verification Data for Internal Document Access",
+			description = "Retrieves verification data required for signing or viewing a document internally for a given document and recipient, using internal access privileges.")
+	@GetMapping(value = "/internal/access/verification-check", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getRecipientDocumentVerificationDataInternal(@RequestParam Long documentId,
+			@RequestParam Long recipientId) {
+
+		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentVerificationData(documentId,
+				recipientId);
 
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
