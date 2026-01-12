@@ -94,10 +94,10 @@ public class DocumentTemplateServiceImpl implements DocumentTemplateService {
 
 			templateDocumentDao.delete(templateDocument);
 
-			return new ResponseEntityDto(false, "Template Document successfully deleted");
+			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED);
 		}
 		else {
-			return new ResponseEntityDto(true, "Template Document deletion unsuccessful");
+			return new ResponseEntityDto(true, EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETION_FAILED);
 		}
 
 	}

@@ -197,7 +197,9 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.template-recipient.field.document-id.required"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
-			"ep.esign.error.document-template.already.associated.with-envelope-template");
+			"ep.esign.error.document-template.already.associated.with-envelope-template"),
+	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
+	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.success.document-template.deletion.failed");
 
 	private final String messageKey;
 
