@@ -23,8 +23,6 @@ public class RecipientTemplateDetailResponseDto {
 
 	private List<FieldTemplateDetailResponseDto> templateFields;
 
-	private Long addressBookId;
-
 	private AddressBookBasicResponseDto addressBook;
 
 	private boolean mfaVerificationEnabled;
