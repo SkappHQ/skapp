@@ -203,7 +203,6 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			templateRecipient.setMemberRole(templateRecipientDto.getMemberRole());
 			templateRecipient.setSigningOrder(templateRecipientDto.getSigningOrder());
 			templateRecipient.setColor(templateRecipientDto.getColor());
-			templateRecipient.setAddressBook(templateRecipientDto.getAddressBookId() != null ? addressBook : null);
 			templateRecipient
 				.setMfaVerificationEnabled(templateRecipientDto.getVerificationType() != EsignVerificationType.NONE);
 			templateRecipient.setMfaVerificationMethod(templateRecipientDto.getVerificationType());
