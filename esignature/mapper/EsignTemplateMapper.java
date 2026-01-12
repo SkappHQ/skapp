@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface EsignTemplateMapper {
 
-	EnvelopeTemplateDetailedResponseDto TemplateEnvelopeToEnvelopeTemplateDetailedResponseDto(
+	EnvelopeTemplateDetailedResponseDto templateEnvelopeToEnvelopeTemplateDetailedResponseDto(
 			TemplateEnvelope templateEnvelope);
 
 	TemplateDocument documentDtoToTemplateDocument(DocumentDto documentDto);
