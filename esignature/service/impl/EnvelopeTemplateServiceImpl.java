@@ -27,6 +27,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
 import com.skapp.enterprise.esignature.service.EnvelopeTemplateService;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -203,8 +204,9 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			templateRecipient.setSigningOrder(templateRecipientDto.getSigningOrder());
 			templateRecipient.setColor(templateRecipientDto.getColor());
 			templateRecipient.setAddressBook(templateRecipientDto.getAddressBookId() != null ? addressBook : null);
-			// templateRecipient.setMfaVerificationEnabled();
-			// templateRecipient.setMfaVerificationMethod();
+			templateRecipient
+				.setMfaVerificationEnabled(templateRecipientDto.getVerificationType() != EsignVerificationType.NONE);
+			templateRecipient.setMfaVerificationMethod(templateRecipientDto.getVerificationType());
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
 
 			List<TemplateField> templateFields = buildTemplateFieldsForRecipient(

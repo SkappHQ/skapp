@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,9 +48,9 @@ public class TemplateRecipient extends Auditable<String> {
 	@Column(name = "mfa_verification_enabled", nullable = false)
 	private boolean mfaVerificationEnabled;
 
-	// @Enumerated(EnumType.STRING)
-	// @Column(name = "mfa_verification_method")
-	// private EsignVerificationType mfaVerificationMethod;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "mfa_verification_method")
+	private EsignVerificationType mfaVerificationMethod;
 
 	@ManyToOne
 	@JoinColumn(name = "template_envelope_id")
