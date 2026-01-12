@@ -128,7 +128,7 @@ public class EpAuthController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/cookie/code-challenge/verify")
+	@PostMapping("/session/code-challenge/verify")
 	public ResponseEntity<ResponseEntityDto> validateCodeChallengeWithCookie(
 			@RequestBody CodeChallengeRequestDto codeChallengeRequestDto, HttpServletResponse httpServletResponse) {
 		ResponseEntityDto response = epAuthService.validateCodeChallengeWithCookie(codeChallengeRequestDto,

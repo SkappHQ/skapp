@@ -68,8 +68,9 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect", "/internal/v1/ep/invoice/customer",
 			"/internal/v1/ep/invoice/project", "/v1/ep/auth/signin/guest/send-otp",
 			"/v1/ep/auth/signin/guest/resend-otp", "/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status",
-			"/v1/auth/cookie/sign-in", "/v1/auth/cookie/refresh-token", "/v2/ep/auth/cookie/signin/sso/google",
-			"/v2/ep/auth/cookie/signin/sso/microsoft", "/v1/ep/auth/cookie/code-challenge/verify");
+			"/v1/auth/session/sign-in", "/v1/auth/session/sign-out", "/v1/auth/session/refresh-token",
+			"/v2/ep/auth/session/signin/sso/google", "/v2/ep/auth/session/signin/sso/microsoft",
+			"/v1/ep/auth/session/code-challenge/verify");
 
 	private final JwtService jwtService;
 

@@ -44,7 +44,7 @@ public class EpAuthControllerV2 {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/cookie/signin/sso/google")
+	@PostMapping("/session/signin/sso/google")
 	public ResponseEntity<ResponseEntityDto> ssoGoogleSignInWithCookie(
 			@Valid @RequestBody EpSignInGoogleDataDto epSignUpGoogleDataDto, HttpServletResponse httpServletResponse) {
 		ResponseEntityDto response = epAuthServiceV2.ssoGoogleSignInWithCookie(epSignUpGoogleDataDto,
@@ -79,7 +79,7 @@ public class EpAuthControllerV2 {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/cookie/signin/sso/microsoft")
+	@PostMapping("/session/signin/sso/microsoft")
 	public ResponseEntity<ResponseEntityDto> ssoMicrosoftSignInWithCookie(
 			@Valid @RequestBody EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto,
 			HttpServletResponse httpServletResponse) {

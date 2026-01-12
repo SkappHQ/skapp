@@ -103,9 +103,10 @@ public class EPSecurityConfig {
 						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect",
 						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
 						"/v1/ep/auth/signin/guest/send-otp", "/v1/ep/auth/signin/guest/resend-otp",
-						"/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status", "/v1/auth/cookie/sign-in",
-						"/v1/auth/cookie/refresh-token", "/v2/ep/auth/cookie/signin/sso/google",
-						"/v2/ep/auth/cookie/signin/sso/microsoft", "/v1/ep/auth/cookie/code-challenge/verify")
+						"/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status", "/v1/auth/session/sign-in",
+						"/v1/auth/session/sign-out", "/v1/auth/session/refresh-token",
+						"/v2/ep/auth/session/signin/sso/google", "/v2/ep/auth/session/signin/sso/microsoft",
+						"/v1/ep/auth/session/code-challenge/verify")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
@@ -143,11 +144,12 @@ public class EPSecurityConfig {
 				"Origin", "Stripe-Signature", "X-Api-Key"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
-		source.registerCorsConfiguration("/v1/auth/cookie/sign-in", credentialedConfig);
-		source.registerCorsConfiguration("/v1/auth/cookie/refresh-token", credentialedConfig);
-		source.registerCorsConfiguration("/v2/ep/auth/cookie/signin/sso/google", credentialedConfig);
-		source.registerCorsConfiguration("/v2/ep/auth/cookie/signin/sso/microsoft", credentialedConfig);
-		source.registerCorsConfiguration("/v1/ep/auth/cookie/code-challenge/verify", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/session/sign-in", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/session/sign-out", credentialedConfig);
+		source.registerCorsConfiguration("/v1/auth/session/refresh-token", credentialedConfig);
+		source.registerCorsConfiguration("/v2/ep/auth/session/signin/sso/google", credentialedConfig);
+		source.registerCorsConfiguration("/v2/ep/auth/session/signin/sso/microsoft", credentialedConfig);
+		source.registerCorsConfiguration("/v1/ep/auth/session/code-challenge/verify", credentialedConfig);
 		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
 
 		source.registerCorsConfiguration("/**", configuration);
