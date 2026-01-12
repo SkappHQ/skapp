@@ -27,9 +27,11 @@ import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -95,6 +97,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	private static final String KEY_TYPE_EC = "EC";
 
 	private static final String KEY_TYPE_EC_HSM = "EC-HSM";
+
+	private static final String CERTIFICATE_TYPE_X509 = "X.509";
 
 	// Hash algorithm (determined at runtime)
 	private String hashAlgorithm = ALGO_SHA_256;
@@ -162,7 +166,6 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 		}
 		catch (Exception e) {
-			log.error("Failed to initialize AzureKeyVaultSignatureProvider", e);
 			throw new IllegalStateException("Failed to initialize AzureKeyVaultSignatureProvider", e);
 		}
 	}
@@ -248,11 +251,11 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		}
 
 		// Parse X.509 certificate(s)
-		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+		CertificateFactory certFactory = CertificateFactory.getInstance(CERTIFICATE_TYPE_X509);
 
 		// Try to parse the full chain (works for P7B or sequence of certs)
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(certBytes)) {
-			java.util.Collection<? extends java.security.cert.Certificate> certificates = certFactory
+			Collection<? extends Certificate> certificates = certFactory
 				.generateCertificates(bis);
 
 			if (certificates.isEmpty()) {
@@ -260,7 +263,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			}
 
 			List<X509Certificate> x509Certificates = new ArrayList<>();
-			for (java.security.cert.Certificate cert : certificates) {
+			for (Certificate cert : certificates) {
 				if (cert instanceof X509Certificate) {
 					x509Certificates.add((X509Certificate) cert);
 				}
@@ -347,7 +350,6 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 		}
 		catch (Exception e) {
-			log.error("Failed to sign content with Azure Key Vault", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED);
 		}
 	}
@@ -355,7 +357,6 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	@Override
 	public X509Certificate[] getCertificateChain() throws ModuleException {
 		if (certificateChain == null || certificateChain.length == 0) {
-			log.error("Certificate chain is not loaded");
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 		return certificateChain;
