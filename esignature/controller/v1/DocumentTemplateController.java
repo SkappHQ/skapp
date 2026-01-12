@@ -28,7 +28,7 @@ public class DocumentTemplateController {
 
 	@Operation(summary = "Upload Document Template",
 			description = "This endpoint allows to add template document basic details to document table")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	@PostMapping()
 	public ResponseEntity<ResponseEntityDto> saveDocument(@Valid @RequestBody DocumentDto documentDto) {
 
@@ -39,7 +39,7 @@ public class DocumentTemplateController {
 
 	@Operation(summary = "Edit Document",
 			description = "This endpoint allows editing the file path and name of a template document")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> editDocument(@PathVariable Long id,
 			@Valid @RequestBody EditDocumentDto editDocumentDto) {
@@ -48,7 +48,7 @@ public class DocumentTemplateController {
 	}
 
 	@Operation(summary = "Delete Document", description = "This endpoint allows deleting a template document by its ID")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> deleteDocument(@PathVariable Long id) {
 		ResponseEntityDto response = documentTemplateService.deleteDocumentTemplate(id);
