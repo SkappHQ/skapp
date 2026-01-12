@@ -25,7 +25,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
 		emailDynamicFields.setEmployeeOrManagerName(user.getEmployee().getFirstName());
 		emailDynamicFields.setWorkEmail(user.getEmail());
-		emailDynamicFields.setTenantUrl(otp);
+		emailDynamicFields.setOtp(otp);
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_EMAIL_VERIFY, emailDynamicFields, emailDynamicFields.getWorkEmail());
@@ -35,7 +35,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	public void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName,
 			String projectNames) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
-		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
+		emailDynamicFields.setRecipientName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setAdminName(adminName);
 		emailDynamicFields.setTenantId(TenantContext.getCurrentTenant());

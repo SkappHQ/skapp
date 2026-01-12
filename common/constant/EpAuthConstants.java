@@ -25,4 +25,6 @@ public class EpAuthConstants {
 
 	public static final String PROJECT_KEY_HEADER = "x-project-key";
 
+	public static final String DEFAULT_FRONTEND_URL = "https://app.skapp.com";
+
 }

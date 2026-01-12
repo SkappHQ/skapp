@@ -1,10 +1,8 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -54,16 +52,13 @@ import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
-import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
-import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
@@ -80,6 +75,7 @@ import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -95,30 +91,22 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyPair;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -185,8 +173,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final AuditTrailDao auditTrailDao;
 
-	private final OrganizationDao organizationDao;
-
 	private final ScheduleService scheduleService;
 
 	private final TenantContext tenantContext;
@@ -196,6 +182,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final EmployeeDao employeeDao;
 
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
+
+	private final SignatureCertificateService signatureCertificateService;
 
 	private static final int LEAP_DAY = 29;
 
@@ -792,69 +780,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	public byte[] getSignatureCertificate(Long envelopeId, HttpHeaders headers, boolean isDocAccess) {
 		log.info("getSignatureCertificate: execution started for envelopeId {}", envelopeId);
 
+		// Fetch envelope to get the name for the filename
 		Envelope envelope = envelopeDao.findById(envelopeId).orElseThrow(() -> {
 			log.error("Envelope with ID {} not found", envelopeId);
 			return new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
 
-		validateUser(envelopeId, isDocAccess);
-
-		List<AuditTrail> auditTrails = auditTrailDao.findByEnvelopeIdOrderByTimestampAsc(envelopeId);
-
-		SignatureCertificateResponseDto responseDto = eSignMapper.envelopeToSignatureCertificateResponseDto(envelope);
-
-		List<AuditTrailResponseDto> responseDtoList = auditTrails.stream().map(auditTrail -> {
-			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
-			auditTrailResponseDto.setAuditId(auditTrail.getId());
-			auditTrailResponseDto.setAction(auditTrail.getAction());
-			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
-					new TypeReference<List<MetadataResponseDto>>() {
-					}));
-			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
-			auditTrailResponseDto.setHash(auditTrail.getHash());
-			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
-				auditTrailResponseDto.setActionDoneByName("");
-				auditTrailResponseDto.setActionDoneByEmail("");
-			}
-			else if (auditTrail.getRecipient() == null) {
-				auditTrailResponseDto.setActionDoneByName(auditTrail.getAddressBookUser().getName());
-				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getAddressBookUser().getEmail());
-			}
-			else {
-				auditTrailResponseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
-				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getRecipient().getAddressBook().getEmail());
-			}
-			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
-			return auditTrailResponseDto;
-		}).toList();
-
-		organizationDao.findTopByOrderByOrganizationIdDesc()
-			.ifPresent(org -> responseDto.setOrganizationTimeZone(org.getOrganizationTimeZone()));
-		responseDto.setAuditTrails(responseDtoList);
-
-		log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
-
 		try {
-			String html = generateSignatureCertificateHtml(responseDto);
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PdfRendererBuilder builder = new PdfRendererBuilder();
-			builder.withHtmlContent(html, null);
-			builder.toStream(baos);
-			builder.run();
-
-			byte[] pdfBytes = baos.toByteArray();
+			byte[] pdfBytes = signatureCertificateService.generateCertificatePdfBytes(envelopeId, isDocAccess,
+					envelope);
 
 			// Set appropriate headers for PDF response
-			headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+			headers.setContentType(MediaType.APPLICATION_PDF);
 			headers.setContentLength(pdfBytes.length);
 			headers.add("Content-Disposition",
-					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + responseDto.getName() + ".pdf\"");
+					"inline; filename=\"" + EsignConstants.DOCUMENT_HISTORY_PREFIX + envelope.getName() + ".pdf\"");
 
+			log.info("getSignatureCertificate: execution ended for envelopeId {}", envelopeId);
 			return pdfBytes;
 		}
 		catch (IOException e) {
-			log.error("Error generating signature certificate PDF", e);
+			log.error("Error generating signature certificate for envelope ID {}: {}", envelopeId, e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
 		}
 	}
@@ -880,159 +826,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		log.info("getCurrentUserNextEnvelopes: execution end");
 
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private void validateUser(Long envelopeId, boolean isDocAccess) {
-		if (isDocAccess) {
-			// Document access via token validation
-			DocumentLink documentLinkFromToken = documentLinkService.getDocumentLinkFromToken();
-			Long addressBookId = documentLinkFromToken.getRecipientId().getAddressBook().getId();
-
-			if (recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, addressBookId).isEmpty()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-			}
-		}
-		else {
-			// Internal user access validation
-			User currentUser = userService.getCurrentUser();
-			if (currentUser == null) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-			}
-
-			Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
-			boolean isAdmin = esignRole.equals(Role.ESIGN_ADMIN);
-
-			// Admins have automatic access, other users need validation
-			if (!isAdmin) {
-				// Check if user is a recipient
-				AddressBook currentAddressBookUser = documentService.getCurrentAddressBookUser(currentUser.getEmail());
-				if (currentAddressBookUser == null) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
-				}
-
-				if (!recipientRepository.findByEnvelopeIdAndAddressBookId(envelopeId, currentAddressBookUser.getId())
-					.isEmpty()) {
-					return;
-				}
-
-				// Check if user is the envelope owner
-				AddressBook ownerAddressBook = envelopeDao.findById(envelopeId)
-					.map(Envelope::getOwner)
-					.orElseThrow(
-							() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND));
-
-				boolean isEnvelopeOwner = Optional.ofNullable(ownerAddressBook)
-					.map(AddressBook::getInternalUser)
-					.map(User::getUserId)
-					.filter(userId -> userId.equals(currentUser.getUserId()))
-					.isPresent();
-
-				if (!isEnvelopeOwner) {
-					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-				}
-			}
-		}
-	}
-
-	private String generateSignatureCertificateHtml(SignatureCertificateResponseDto responseDto) {
-		try {
-			ClassPathResource resource = new ClassPathResource(
-					"enterprise/templates/pdf/en/esignature/signature-certificate-v1.html");
-			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
-
-			// Replace basic document information
-			template = template.replace("{{documentName}}", EsignUtil.escapeHtml(responseDto.getName()));
-			template = template.replace("{{documentUuid}}", EsignUtil.escapeHtml(responseDto.getUuid()));
-
-			// Replace status information
-			String statusClass = EsignUtil.getStatusClass(responseDto.getStatus());
-			String statusLabel = EsignUtil.getStatusLabel(responseDto.getStatus());
-			template = template.replace("{{statusClass}}", statusClass);
-			template = template.replace("{{statusLabel}}", statusLabel);
-
-			// Replace meta information
-			template = template.replace("{{senderName}}", EsignUtil.escapeHtml(responseDto.getOwner().getName()));
-			template = template.replace("{{enclosedDocuments}}",
-					EsignUtil.escapeHtml(responseDto.getDocuments().getFirst().getName()));
-			template = template.replace("{{dateCreated}}",
-					formatDate(responseDto.getSentAt(), responseDto.getOrganizationTimeZone()));
-			template = template.replace("{{timeZone}}",
-					EsignUtil.escapeHtml(getTimeZoneWithOffset(responseDto.getOrganizationTimeZone())));
-
-			// Replace recipients
-			String recipients = responseDto.getRecipients()
-				.stream()
-				.map(recipient -> recipient.getAddressBook().getFirstName() + " "
-						+ recipient.getAddressBook().getLastName())
-				.collect(Collectors.joining(", "));
-			template = template.replace("{{recipients}}", EsignUtil.escapeHtml(recipients));
-
-			// Process audit trails
-			template = processAuditTrails(template, responseDto);
-
-			return template;
-
-		}
-		catch (IOException e) {
-			log.error("Error loading signature certificate template", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF);
-		}
-	}
-
-	private String processAuditTrails(String template, SignatureCertificateResponseDto responseDto) {
-		String startMarker = "{{#auditTrails}}";
-		String endMarker = "{{/auditTrails}}";
-
-		int startIndex = template.indexOf(startMarker);
-		int endIndex = template.indexOf(endMarker);
-
-		if (startIndex == -1 || endIndex == -1) {
-			return template;
-		}
-
-		String auditTemplate = template.substring(startIndex + startMarker.length(), endIndex);
-
-		StringBuilder auditHtmlBuilder = new StringBuilder();
-		if (responseDto.getAuditTrails() != null && !responseDto.getAuditTrails().isEmpty()) {
-			for (AuditTrailResponseDto audit : responseDto.getAuditTrails()) {
-				auditHtmlBuilder.append(
-						auditTemplate
-							.replace("{{timestamp}}",
-									EsignUtil.escapeHtml(formatTimestamp(audit.getTimestamp(),
-											responseDto.getOrganizationTimeZone())))
-							.replace("{{userEmail}}", EsignUtil.escapeHtml(audit.getActionDoneByEmail()))
-							.replace("{{activity}}", EsignUtil.escapeHtml(EsignUtil.getFormattedActionText(audit))));
-			}
-		}
-
-		return template.substring(0, startIndex) + auditHtmlBuilder + template.substring(endIndex + endMarker.length());
-	}
-
-	private String formatDate(LocalDateTime dateTimeUtc, String timeZone) {
-		if (dateTimeUtc == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
-		}
-
-		ZoneId targetZone = ZoneId.of(timeZone);
-		ZonedDateTime zonedDateTime = dateTimeUtc.atZone(ZoneOffset.UTC).withZoneSameInstant(targetZone);
-
-		return DateTimeUtils.formatDateTimeEsignCert(zonedDateTime.toLocalDateTime());
-	}
-
-	private String formatTimestamp(Instant instant, String timeZone) {
-		if (instant == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
-		}
-		ZoneId zoneId = ZoneId.of(timeZone);
-		LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zoneId);
-		return DateTimeUtils.formatDateTimeEsignCert(localDateTime);
-	}
-
-	private String getTimeZoneWithOffset(String timeZoneId) {
-		ZoneId zone = ZoneId.of(timeZoneId);
-		ZoneOffset offset = zone.getRules().getOffset(Instant.now());
-		String offsetId = offset.getId().replace("Z", "+00:00");
-		return "(" + "GMT" + offsetId + ") " + timeZoneId;
 	}
 
 	private EnvelopeInfoResponseDto getEnvelopeInfoResponseDto(Envelope envelope) {

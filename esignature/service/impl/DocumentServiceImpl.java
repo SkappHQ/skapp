@@ -34,7 +34,6 @@ import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
@@ -46,8 +45,9 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
-import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
+import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
@@ -100,6 +100,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
+import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
+
 import static com.skapp.community.common.util.DateTimeUtils.getCurrentUtcDateTime;
 
 @Slf4j
@@ -135,8 +138,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AuditTrailDao auditTrailDao;
 
-	private final DocumentLinkRepository documentLinkRepository;
-
 	private final UserKeyService userKeyService;
 
 	private final AmazonS3Service amazonS3Service;
@@ -151,13 +152,15 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final AESKeyLoader aesKeyLoader;
 
-	private final EsignEmailService esignEmailService;
-
 	private final DocumentLinkService documentLinkService;
 
 	private final AuditTrailService auditTrailService;
 
 	private final ScheduleService scheduleService;
+
+	private final Optional<PdfSigningService> pdfSigningService;
+
+	private final SignatureCertificateService signatureCertificateService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -336,7 +339,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress);
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
 		}
 
 		document = documentRepository.save(document);
@@ -358,7 +361,7 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private ResponseEntityDto completeDocument(Document document, DocumentVersion newVersion,
-			byte[] latestDocumentBytes, Recipient recipient, String ipAddress) {
+			byte[] latestDocumentBytes, Recipient recipient, String ipAddress, boolean isDocAccess) {
 		DocumentVersion documentVersion = verifyDocumentVersionsRelatedToDocument(document, newVersion,
 				latestDocumentBytes);
 		documentVersionDao.save(documentVersion);
@@ -385,6 +388,19 @@ public class DocumentServiceImpl implements DocumentService {
 
 		auditTrailDao.saveAll(auditTrails);
 
+		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes,
+				isDocAccess);
+
+		// Sign the processed PDF (if signing is enabled via feature flag)
+		// This will sign the document WITH the appended certificate
+		String finalDocumentPath = signAndUploadDocument(documentVersion, processedDocumentBytes);
+
+		// Update document version with final file path
+		if (finalDocumentPath != null) {
+			documentVersion.setFilePath(finalDocumentPath);
+			documentVersionDao.save(documentVersion);
+		}
+
 		recipientRepository.saveAll(envelope.getRecipients());
 
 		recipientService.sendDocumentCompletedEmailNotifications(envelope);
@@ -392,13 +408,28 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+			}
+
+			@Override
+			public void afterCompletion(int status) {
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK && finalDocumentPath != null) {
+					log.warn("Transaction rolled back. Deleting orphaned S3 file: {}", finalDocumentPath);
+					try {
+						AmazonS3DeleteItemRequestDto deleteRequest = new AmazonS3DeleteItemRequestDto();
+						deleteRequest.setFolderPath(finalDocumentPath);
+						amazonS3Service.deleteFileFromS3(deleteRequest);
+					}
+					catch (Exception e) {
+						log.error("Failed to delete orphaned S3 file: " + finalDocumentPath, e);
+					}
+				}
 			}
 		});
 
@@ -551,6 +582,19 @@ public class DocumentServiceImpl implements DocumentService {
 
 			auditTrailDao.saveAll(auditTrails);
 
+			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes,
+					isDocAccess);
+
+			// Sign the processed PDF (if signing is enabled via feature flag)
+			// This will sign the document WITH the appended certificate
+			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
+
+			// Update document version with final file path
+			if (finalDocumentPath != null) {
+				finalVersion.setFilePath(finalDocumentPath);
+			}
+			documentVersionDao.save(finalVersion);
+
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
@@ -582,6 +626,53 @@ public class DocumentServiceImpl implements DocumentService {
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, newVersion.getFilePath()));
 
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
+	}
+
+	/**
+	 * Signs the document bytes (if signing is enabled) and uploads to S3. This method is
+	 * designed to work with certificate-appended bytes when that feature is merged.
+	 * @param documentVersion The document version to update with signature metadata
+	 * @param documentBytes The document bytes to sign (can be original or with appended
+	 * certificate)
+	 * @return The S3 path of the uploaded document, or null if upload failed
+	 */
+	private String signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
+		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
+
+		return signedResult.map(result -> {
+			// Upload signed PDF to S3
+			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+
+			// Update document version with signature metadata
+			documentVersion.setIsPdfSigned(true);
+			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
+			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
+			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
+
+			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
+			return path;
+		}).orElseGet(() -> {
+			// Signing disabled or failed - upload unsigned document
+			String path = uploadProcessedDocumentVersion(documentBytes);
+			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
+			return path;
+		});
+	}
+
+	private Optional<SignedPdfResult> signCompletedPdf(DocumentVersion documentVersion, byte[] documentBytes) {
+		if (pdfSigningService.isPresent() && pdfSigningService.get().isSigningEnabled()) {
+			try {
+				log.info("Signing completed PDF for document version: {}", documentVersion.getId());
+				return Optional.ofNullable(pdfSigningService.get().signPdf(documentBytes));
+			}
+			catch (Exception e) {
+				// Log error but don't fail the envelope completion
+				// The envelope can still be completed without the PDF signature
+				log.error("Failed to sign PDF for document version: " + documentVersion.getId()
+						+ ". Envelope will complete without PDF signature.", e);
+			}
+		}
+		return Optional.empty();
 	}
 
 	private LatestDocumentData downloadLatestDocumentBytes(Document document, DocumentVersion currentVersion) {
@@ -1626,6 +1717,28 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND);
 		}
 		return documentVersion.getFilePath();
+	}
+
+	/**
+	 * Appends certificate to document bytes (in-memory processing). Returns merged bytes
+	 * or original bytes if appending fails.
+	 */
+	private byte[] appendCertificateToBytes(Envelope envelope, DocumentVersion documentVersion, byte[] documentBytes,
+			boolean isDocAccess) {
+		try {
+			log.info("Appending certificate to document for envelope {}", envelope.getId());
+
+			byte[] certificateBytes = signatureCertificateService.generateCertificatePdfBytes(envelope.getId(),
+					isDocAccess, envelope);
+			byte[] mergedDocBytes = documentProcessingService.appendCertificateToPdf(documentBytes, certificateBytes);
+
+			log.info("Successfully appended certificate to document bytes for envelope {}", envelope.getId());
+			return mergedDocBytes;
+		}
+		catch (IOException e) {
+			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
+			return documentBytes;
+		}
 	}
 
 }

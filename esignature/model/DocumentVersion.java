@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -52,5 +53,37 @@ public class DocumentVersion extends Auditable<String> {
 
 	@OneToMany(mappedBy = "documentVersion", cascade = CascadeType.ALL)
 	private List<DocumentVersionField> fieldVersions;
+
+	/**
+	 * Indicates if this version has been signed with organization certificate (PDF
+	 * digital signature)
+	 */
+	@Column(name = "is_pdf_signed", nullable = false)
+	private Boolean isPdfSigned = false;
+
+	/**
+	 * Timestamp when PDF was signed with organization certificate
+	 */
+	@Column(name = "pdf_signed_at")
+	private LocalDateTime pdfSignedAt;
+
+	/**
+	 * Certificate serial number used for PDF signing
+	 */
+	@Column(name = "certificate_serial_number")
+	private String certificateSerialNumber;
+
+	/**
+	 * Signature algorithm used for PDF signing (e.g., SHA256withRSA)
+	 */
+	@Column(name = "signature_algorithm")
+	private String signatureAlgorithm;
+
+	/**
+	 * TSA timestamp token (optional, for Long-Term Validation)
+	 */
+	@Lob
+	@Column(name = "timestamp_token")
+	private String timestampToken;
 
 }

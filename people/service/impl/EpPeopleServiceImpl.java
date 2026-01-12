@@ -34,20 +34,17 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.repository.EmployeeEducationDao;
-import com.skapp.community.peopleplanner.repository.EmployeeFamilyDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
-import com.skapp.community.peopleplanner.repository.EmployeeProgressionDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
-import com.skapp.community.peopleplanner.repository.EmployeeVisaDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.JobTitleDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.service.impl.EmployeeExportMapperService;
 import com.skapp.community.peopleplanner.service.impl.PeopleServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
@@ -165,21 +162,21 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
 			UserVersionService userVersionService, EmployeeValidationService employeeValidationService,
-			EmployeeFamilyDao employeeFamilyDao, EmployeeEducationDao employeeEducationDao,
-			EmployeeProgressionDao employeeProgressionDao, EmployeeVisaDao employeeVisaDao, EpEmployeeDao epEmployeeDao,
-			EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator, EpEmployeeRoleDao epEmployeeRoleDao,
-			EpEmployeeTimelineService epEmployeeTimelineService, EpPeopleMapper epPeopleMapper,
-			EpEmployeeTeamDao epEmployeeTeamDao, EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
+			EpEmployeeDao epEmployeeDao, EmployeeRoleDao employeeRoleDao, TenantValidator tenantValidator,
+			EpEmployeeRoleDao epEmployeeRoleDao, EpEmployeeTimelineService epEmployeeTimelineService,
+			EpPeopleMapper epPeopleMapper, EpEmployeeTeamDao epEmployeeTeamDao,
+			EpEmployeeManagerDao epEmployeeManagerDao, EpUserService epUserService,
 			SystemVersionService systemVersionService, StripeService stripeService, TenantContext tenantContext,
 			TenantDao tenantDao, EpRolesService epRolesService,
 			EpAsyncEmployeeTimelineServiceImpl epAsyncEmployeeTimelineServiceImpl,
 			SpecialTenantConfig specialTenantConfig, ValidationService validationService,
-			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao) {
+			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao,
+			EmployeeExportMapperService employeeExportMapperService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
 				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
 				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
 				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService,
-				employeeFamilyDao, employeeEducationDao, employeeProgressionDao, employeeVisaDao);
+				employeeExportMapperService);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;

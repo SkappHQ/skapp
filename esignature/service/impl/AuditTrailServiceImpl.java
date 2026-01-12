@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -17,6 +19,7 @@ import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
+import com.skapp.enterprise.esignature.payload.request.MetadataRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AuditValidationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
@@ -27,6 +30,7 @@ import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.common.config.AuditContext;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +59,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private final AddressBookDao addressBookDao;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final ObjectMapper objectMapper;
 
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;
@@ -113,9 +119,26 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		auditTrail.setAction(auditTrailDto.getAction());
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode metadataNode = objectMapper.valueToTree(auditTrailDto.getMetadata());
-		auditTrail.setMetadata(metadataNode);
+		// Build metadata with user_agent included
+		ArrayNode metadataArray = objectMapper.createArrayNode();
+
+		// Add user_agent to metadata if available
+		ObjectNode userAgentNode = createUserAgentMetadataNode();
+		if (userAgentNode != null) {
+			metadataArray.add(userAgentNode);
+		}
+
+		// Add client-provided metadata
+		if (auditTrailDto.getMetadata() != null && !auditTrailDto.getMetadata().isEmpty()) {
+			for (MetadataRequestDto meta : auditTrailDto.getMetadata()) {
+				ObjectNode node = objectMapper.createObjectNode();
+				node.put("name", meta.getName());
+				node.put("value", meta.getValue());
+				metadataArray.add(node);
+			}
+		}
+
+		auditTrail.setMetadata(metadataArray);
 
 		auditTrail.setTimestamp(timestamp);
 
@@ -208,8 +231,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setAuditId(auditTrail.getId());
 			responseDto.setAction(auditTrail.getAction());
 
-			ObjectMapper objectMapper = new ObjectMapper();
-
 			List<MetadataResponseDto> metadataList = objectMapper.convertValue(auditTrail.getMetadata(),
 					new TypeReference<List<MetadataResponseDto>>() {
 					});
@@ -286,7 +307,24 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 		auditTrail.setAddressBookUser(addressBook);
 		auditTrail.setAction(action);
 		auditTrail.setIpAddress(ipAddress);
-		auditTrail.setMetadata(metadata);
+
+		// Build complete metadata with user_agent
+		ArrayNode metadataArray = objectMapper.createArrayNode();
+
+		// Copy existing metadata into a new ArrayNode to avoid mutating the input
+		// parameter
+		if (metadata instanceof ArrayNode) {
+			metadataArray.addAll((ArrayNode) metadata);
+		}
+
+		// Add user_agent to metadata if available
+		ObjectNode userAgentNode = createUserAgentMetadataNode();
+		if (userAgentNode != null) {
+			metadataArray.add(userAgentNode);
+		}
+
+		// Set complete metadata once
+		auditTrail.setMetadata(metadataArray);
 
 		auditTrail.setIsAuthorized(true);
 
@@ -307,6 +345,23 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				+ auditTrail.getMetadata() + "_" + hashSecretKey + "_";
 
 		return HashUtil.hash(rawData);
+	}
+
+	/**
+	 * Creates an ObjectNode containing user_agent metadata from the current request
+	 * context.
+	 * @return ObjectNode with user_agent metadata, or null if no user_agent is available
+	 */
+	private ObjectNode createUserAgentMetadataNode() {
+		AuditContext.Context context = AuditContext.get();
+		String userAgent = context != null ? context.getUserAgent() : null;
+		if (userAgent != null) {
+			ObjectNode userAgentNode = objectMapper.createObjectNode();
+			userAgentNode.put("name", "user_agent");
+			userAgentNode.put("value", userAgent);
+			return userAgentNode;
+		}
+		return null;
 	}
 
 }

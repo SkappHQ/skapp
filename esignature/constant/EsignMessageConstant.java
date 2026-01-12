@@ -145,7 +145,12 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_LIMIT_REACHED("ep.esign.error.envelope.limit.reached"),
 	ESIGN_ERROR_ADDRESS_BOOK_MY_SIGNATURE_LINK_NOT_FOUND("ep.esign.error.address-book.my-signature-link.not-found"),
 	ESIGN_ERROR_DOCUMENT_FILE_PATH_NOT_FOUND("ep.esign.error.document.file-path.not-found"),
-	ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF("ep.esign.error.generate.signature.certificate.pdf");
+	ESIGN_ERROR_GENERATE_SIGNATURE_CERTIFICATE_PDF("ep.esign.error.generate.signature.certificate.pdf"),
+	ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN("ep.esign.error.failed.load.certificate-chain"),
+	ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED("ep.esign.error.signature-provider.operation.failed"),
+	ESIGN_ERROR_CERTIFICATE_ENCODING_FAILED("ep.esign.error.certificate.encoding.failed"),
+	ESIGN_ERROR_CMS_SIGNATURE_FAILED("ep.esign.error.cms.signature.failed"),
+	ESIGN_ERROR_OPERATOR_CREATION_FAILED("ep.esign.error.operator.creation.failed");
 
 	private final String messageKey;
 
