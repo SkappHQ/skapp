@@ -200,6 +200,9 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
+			else if (templateRecipientDto.getTemplateFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY);
+			}
 
 			TemplateRecipient templateRecipient = new TemplateRecipient();
 			templateRecipient.setAddressBook(addressBook);
