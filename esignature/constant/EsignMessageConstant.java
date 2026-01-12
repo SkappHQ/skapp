@@ -199,7 +199,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
 			"ep.esign.error.document-template.already.associated.with-envelope-template"),
 	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
-	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.success.document-template.deletion.failed");
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.error.document-template.deletion.failed");
 
 	private final String messageKey;
 

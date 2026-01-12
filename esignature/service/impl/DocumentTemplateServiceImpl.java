@@ -97,7 +97,7 @@ public class DocumentTemplateServiceImpl implements DocumentTemplateService {
 			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED);
 		}
 		else {
-			return new ResponseEntityDto(true, EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETION_FAILED);
+			return new ResponseEntityDto(true, EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED);
 		}
 
 	}
