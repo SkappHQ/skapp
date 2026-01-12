@@ -258,16 +258,12 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	private void validateEnvelopeTemplateName(String envelopeTemplateName) {
 
-		if (envelopeTemplateName == null || envelopeTemplateName.trim().isEmpty()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED);
-		}
-
 		if (envelopeTemplateName.length() > ENVELOPE_TEMPLATE_NAME_MAX_LENGTH) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED);
 		}
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
-			.findByNameIgnoreCase(envelopeTemplateName.trim());
+			.findByNameIgnoreCase(envelopeTemplateName);
 
 		if (templateEnvelopeOptional.isPresent()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
@@ -277,13 +273,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	private void validateEnvelopeTemplateDocument(List<Long> documentIds) {
 
-		List<Long> ids = documentIds.stream().filter(Objects::nonNull).distinct().toList();
-
-		if (ids.isEmpty()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
-		}
-
-		if (ids.size() > ENVELOPE_TEMPLATE_MAX_DOCUMENT_COUNT) {
+		if (documentIds.size() > ENVELOPE_TEMPLATE_MAX_DOCUMENT_COUNT) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED);
 		}
 	}
@@ -291,28 +281,12 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 	private void validateEnvelopeTemplateRecipients(List<RecipientTemplateDto> recipientTemplates,
 			List<Long> documentIds) {
 
-		boolean noRecipientFieldDocuments = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> field.getTemplateDocumentId() == null);
-
-		if (noRecipientFieldDocuments) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
-		}
-
 		boolean hasInvalidDocumentId = recipientTemplates.stream()
 			.flatMap(recipient -> recipient.getTemplateFields().stream())
 			.anyMatch(field -> !documentIds.contains(field.getTemplateDocumentId()));
 
 		if (hasInvalidDocumentId) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
-		}
-
-		boolean hasNoRecipientRole = recipientTemplates.stream()
-			.anyMatch(
-					recipient -> recipient.getRecipientRole() == null || recipient.getRecipientRole().trim().isEmpty());
-
-		if (hasNoRecipientRole) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_REQUIRED);
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()
