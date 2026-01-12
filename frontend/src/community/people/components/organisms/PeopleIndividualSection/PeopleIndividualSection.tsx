@@ -20,9 +20,10 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 interface Props {
   employeeId: number;
   formRef?: RefObject<HTMLDivElement>;
+  isLoading?: boolean;
 }
 
-const PeopleIndividualSection = ({ employeeId, formRef }: Props) => {
+const PeopleIndividualSection = ({ employeeId, formRef, isLoading }: Props) => {
   const { currentStep, employee } = usePeopleStore((state) => state);
 
   const { user } = useAuth();
@@ -46,7 +47,7 @@ const PeopleIndividualSection = ({ employeeId, formRef }: Props) => {
       case EditPeopleFormTypes.personal:
         return (
           <>
-            <GeneralDetailsSection isReadOnly={true} />
+            <GeneralDetailsSection isReadOnly={true} isLoading={isLoading} />
             {isManager && (
               <>
                 <PrimaryContactDetailsSection isReadOnly={true} />

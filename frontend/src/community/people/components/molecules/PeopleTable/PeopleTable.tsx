@@ -166,7 +166,7 @@ const PeopleTable: FC<Props> = ({
       if (data.length === 0) {
         setToastMessage({
           open: true,
-          toastType: ToastType.WARN,
+          toastType: ToastType.ERROR,
           title: translateText([
             "exportPeopleDirectoryToastMessages",
             "exportPeopleDirectoryNoDataTitle"
@@ -729,7 +729,8 @@ const PeopleTable: FC<Props> = ({
           tableFoot={{
             exportBtn: {
               label: translateText(["exportPeopleDirectory"]),
-              isVisible: true,
+              isLoading: exportMutation.isPending,
+              isVisible: isPeopleAdmin,
               onClick: () => {
                 handleExportDirectory();
               }

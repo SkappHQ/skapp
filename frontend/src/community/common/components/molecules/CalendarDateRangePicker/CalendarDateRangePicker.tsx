@@ -12,13 +12,11 @@ import {
   handleDateValidation,
   isNotAWorkingDate
 } from "~community/common/utils/calendarDateRangePickerUtils";
-import {
-  formatDateTimeWithOrdinalIndicator,
-  getCurrentDateAtMidnight
-} from "~community/common/utils/dateTimeUtils";
+import { formatDateTimeWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
+import { getDefaultCalendarValue } from "~community/leave/utils/myRequests/applyLeaveModalUtils";
 import { Holiday } from "~community/people/types/HolidayTypes";
 
 import styles from "./styles";
@@ -104,11 +102,7 @@ const CalendarDateRangePicker: FC<Props> = ({
           <StaticDatePicker
             sx={classes.staticDatePicker}
             displayStaticWrapperAs="desktop"
-            value={
-              selectedDates.length > 0
-                ? selectedDates[selectedDates.length - 1]
-                : getCurrentDateAtMidnight()
-            }
+            value={getDefaultCalendarValue({ selectedDates, minDate })}
             localeText={{
               previousMonth: translateAria(["back"]),
               nextMonth: translateAria(["next"])
