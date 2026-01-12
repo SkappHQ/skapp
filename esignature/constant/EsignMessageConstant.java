@@ -187,7 +187,7 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
 	ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
 	ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
-			"ep.esign.error.template-document.already.assigned.to-template-envelope"),
+			"ep.esign.error.template-document.already.assigned-to-template-envelope"),
 	ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
 	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
 	ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
