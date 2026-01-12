@@ -194,24 +194,16 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	@Override
 	public ResponseEntityDto getSignedUrlForEnvelopeTemplate(AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
 
-		try {
-			log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
+		log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
 
-			amazonS3FileValidationService.validateS3FileUploadFileType(amazonS3SignedUrlRequestDto.getFileType());
+		amazonS3FileValidationService.validateS3FileUploadFileType(amazonS3SignedUrlRequestDto.getFileType());
 
-			AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
-			responseDto.setSignedUrl(generateSignedUrl(amazonS3SignedUrlRequestDto.getAction(),
-					amazonS3SignedUrlRequestDto.getFolderPath(), amazonS3SignedUrlRequestDto.getFileType(),
-					EpCommonConstants.S3_SIGNED_URL_DURATION));
+		AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
+		responseDto.setSignedUrl(
+				generateSignedUrl(amazonS3SignedUrlRequestDto.getAction(), amazonS3SignedUrlRequestDto.getFolderPath(),
+						amazonS3SignedUrlRequestDto.getFileType(), EpCommonConstants.S3_SIGNED_URL_DURATION));
 
-			return new ResponseEntityDto(false, responseDto);
-		}
-		catch (Exception e) {
-			log.error("Error generating signed URL: {}", e.getMessage(), e);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SIGNED_URL_GENERATION_FAILED,
-					new String[] { e.getMessage() });
-		}
-
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
