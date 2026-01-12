@@ -9,14 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RecipientRepository extends JpaRepository<Recipient, Long> {
+public interface RecipientRepository {
 
-	Optional<List<Recipient>> findByEnvelopeId(Long envelopId);
-
-	Optional<Recipient> findByIdAndEnvelopeId(Long id, Long envelopeId);
-
-	Optional<List<Recipient>> findByEnvelopeIdAndEmailStatus(Long envelopeId, EmailStatus emailStatus);
-
-	List<Recipient> findByEnvelopeIdAndAddressBookId(Long envelopeId, Long addressBookId);
+	String findPhoneByRecipientId(Long recipientId);
 
 }

@@ -26,7 +26,7 @@ import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -52,7 +52,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final EnvelopeDao envelopeDao;
 
-	private final RecipientRepository recipientRepository;
+	private final RecipientDao recipientDao;
 
 	private final UserService userService;
 
@@ -81,7 +81,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		Recipient recipient = null;
 		if (auditTrailDto.getRecipientId() != null) {
-			recipient = recipientRepository.findById(auditTrailDto.getRecipientId()).orElseThrow(() -> {
+			recipient = recipientDao.findById(auditTrailDto.getRecipientId()).orElseThrow(() -> {
 				log.error("Recipient not found for ID: {}", auditTrailDto.getRecipientId());
 				return new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND);
 			});
@@ -232,7 +232,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			responseDto.setAction(auditTrail.getAction());
 
 			List<MetadataResponseDto> metadataList = objectMapper.convertValue(auditTrail.getMetadata(),
-					new TypeReference<List<MetadataResponseDto>>() {
+					new TypeReference<>() {
 					});
 
 			responseDto.setMetadata(metadataList);

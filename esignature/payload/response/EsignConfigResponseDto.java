@@ -13,4 +13,6 @@ public class EsignConfigResponseDto {
 
 	private int reminderDaysBeforeExpire;
 
+	private Boolean isMfaEnabled;
+
 }

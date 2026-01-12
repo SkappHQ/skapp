@@ -28,6 +28,7 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 		esignConfig.setDateFormat(DateFormatType.YYYY_MM_DD);
 		esignConfig.setDefaultEnvelopeExpireDays(120);
 		esignConfig.setReminderDaysBeforeExpire(6);
+		esignConfig.setIsMfaEnabled(false);
 		esignConfigRepository.save(esignConfig);
 	}
 
@@ -47,6 +48,10 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 		if (esignConfigDto.getReminderDaysBeforeExpire() != null) {
 			esignConfig.setReminderDaysBeforeExpire(esignConfigDto.getReminderDaysBeforeExpire());
+		}
+
+		if (esignConfigDto.getIsMfaEnabled() != null) {
+			esignConfig.setIsMfaEnabled(esignConfigDto.getIsMfaEnabled());
 		}
 
 		esignConfig = esignConfigRepository.save(esignConfig);

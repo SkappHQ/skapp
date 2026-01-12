@@ -68,4 +68,35 @@ public class EsignConstants {
 
 	public static final String CURRENT_OWNER_METADATA_NAME = "currentOwner";
 
+	public static final int MAX_RETRY_LIMIT = 5;
+
+	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
+
+	/**
+	 * Default OTP lock time in seconds (1 hour) Limit the impact of repeated failed OTP
+	 * attempts by temporarily blocking further tries, reducing the risk of brute-force
+	 * attacks.
+	 */
+	public static final int OTP_DEFAULT_LOCK_TIME = 3600;
+
+	public static final int MIN_VERIFICATION_BACKOFF_SECONDS = 3;
+
+	public static final int OTP_EXPIRY_TIME_SECONDS = 300;
+
+	/**
+	 * 3600 - Level 0: 1 hour 7200 - Level 1: 2 hours 14400 - Level 2: 4 hours 28800 -
+	 * Level 3: 8 hours 86400 - Level 4+: 24 hours
+	 */
+	public static final int[] PROGRESSIVE_LOCKOUT_TIMES = { 3600, 7200, 14400, 28800, 86400 };
+
+	public static final int LOCKOUT_LEVEL_RESET_DAYS = 1; // Reset level after 24 hours
+
+	/**
+	 * 300 - Level 0: 5 minutes 900 - Level 1: 15 minutes 1800 - Level 2: 30 minutes 3600
+	 * - Level 3: 1 hour 86400 - Level 4+: 24 hours
+	 */
+	public static final int[] VERIFICATION_PROGRESSIVE_LOCKOUT_TIMES = { 300, 900, 1800, 3600, 86400 };
+
+	public static final int VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS = 1;
+
 }

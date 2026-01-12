@@ -65,6 +65,7 @@ import com.skapp.enterprise.common.service.EpCommonEmailService;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
+import com.skapp.enterprise.common.util.OtpUtil;
 import com.skapp.enterprise.common.validator.GoogleTokenValidator;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
@@ -295,7 +296,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			log.info("generateAndSendOTP: Generating new OTP after cooldown period for userId={}", userId);
 		}
 
-		String otp = generateOTP();
+		String otp = OtpUtil.generateOTP();
 		Instant expiryTime = now.plusSeconds(otpExpirySeconds);
 
 		try {
@@ -333,7 +334,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		}
 
 		try {
-			if (validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
+			if (OtpUtil.validateOTP(superAdmin.getVerificationCode(), superAdmin.getOtpExpiryTime(), otp)) {
 				log.warn("verifyOTP: Invalid or expired OTP provided for userId={}", userId);
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 			}
@@ -519,7 +520,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		log.info("sendPasswordResetOtp: execution started for email={}, tenantId={}", epPasswordResetDto.getEmail(),
 				epPasswordResetDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
-		String verificationCode = generateOTP();
+		String verificationCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
@@ -541,7 +542,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		log.info("resendVerifyPasswordResetOTP: execution started for email={}, tenantId={}",
 				epPasswordResetDto.getEmail(), epPasswordResetDto.getTenantId());
 		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
-		String verificationCode = generateOTP();
+		String verificationCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
@@ -670,7 +671,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 				epGuestUserSignInRequestDto.getEmail(), TenantContext.getCurrentTenant());
 		User user = epGuestUserService.validateGuestUserEmail(epGuestUserSignInRequestDto.getEmail());
 
-		String otpCode = generateOTP();
+		String otpCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
@@ -693,7 +694,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 				epGuestUserSignInRequestDto.getEmail(), TenantContext.getCurrentTenant());
 		User user = epGuestUserService.validateGuestUserEmail(epGuestUserSignInRequestDto.getEmail());
 
-		String otpCode = generateOTP();
+		String otpCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
@@ -733,7 +734,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 		}
 
-		if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
+		if (OtpUtil.validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 				epGuestUserOtpVerifyRequestDto.getOtp())) {
 			log.warn("validateGuestUserSignInOtp: Invalid or expired OTP provided for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
@@ -797,7 +798,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 			}
 
-			if (validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
+			if (OtpUtil.validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 					epPasswordResetOtpVerifyDto.getOtp())) {
 				log.warn("verifyPasswordResetOTP: Invalid or expired OTP provided for userId={}", user.getUserId());
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
@@ -922,22 +923,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			.expiration(new Date(System.currentTimeMillis() + expirationTime))
 			.signWith(jwtService.getSigningKey())
 			.compact();
-	}
-
-	private String generateOTP() {
-		return String.format("%04d", secureRandom.nextInt(9999));
-	}
-
-	private boolean validateOTP(String storedOTP, Instant expiryTime, String providedOTP) {
-		if (storedOTP == null || expiryTime == null) {
-			return true;
-		}
-
-		if (Instant.now().isAfter(expiryTime)) {
-			return true;
-		}
-
-		return !storedOTP.equals(providedOTP);
 	}
 
 	@Override

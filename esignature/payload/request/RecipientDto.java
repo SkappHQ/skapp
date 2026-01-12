@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.payload.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.deserializer.RecipientMemberRoleDeserializer;
@@ -35,5 +36,7 @@ public class RecipientDto {
 
 	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
 	private List<FieldDto> fields;
+
+	private EsignVerificationType verificationType = EsignVerificationType.NONE;
 
 }
