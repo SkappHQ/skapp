@@ -308,14 +308,14 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 					recipient -> recipient.getRecipientRole() == null || recipient.getRecipientRole().trim().isEmpty());
 
 		if (hasNoRecipientRole) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_REQUIRED);
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()
 			.anyMatch(recipient -> recipient.getRecipientRole().length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
 
 		if (exceedMaxRecipientRoleLength) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);
 		}
 
 		boolean duplicateRecipientRole = recipientTemplates.stream()
@@ -329,7 +329,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 				.count();
 
 		if (duplicateRecipientRole) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_DUPLICATED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_DUPLICATED);
 		}
 
 	}
