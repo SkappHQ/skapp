@@ -58,8 +58,8 @@ public class TemplateRecipient extends Auditable<String> {
 	@OneToMany(mappedBy = "templateRecipient", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<TemplateField> templateFields;
 
-	@ManyToOne
-	@JoinColumn(name = "address_book_id")
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "address_book_id", nullable = true)
 	private AddressBook addressBook;
 
 }

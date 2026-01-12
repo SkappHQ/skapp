@@ -100,6 +100,19 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	@Override
+	public ResponseEntityDto searchTemplateNameExists(String name) {
+
+		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao.findByNameIgnoreCase(name.trim());
+
+		if (templateEnvelopeOptional.isPresent()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
+		}
+
+		return new ResponseEntityDto(false, true);
+
+	}
+
 	private void processTierLimitation() {
 
 		String currentTenant = TenantContext.getCurrentTenant();
@@ -189,6 +202,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			templateRecipient.setMemberRole(templateRecipientDto.getMemberRole());
 			templateRecipient.setSigningOrder(templateRecipientDto.getSigningOrder());
 			templateRecipient.setColor(templateRecipientDto.getColor());
+			templateRecipient.setAddressBook(templateRecipientDto.getAddressBookId() != null ? addressBook : null);
 			// templateRecipient.setMfaVerificationEnabled();
 			// templateRecipient.setMfaVerificationMethod();
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
@@ -251,7 +265,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			.findByNameIgnoreCase(envelopeTemplateName.trim());
 
 		if (templateEnvelopeOptional.isPresent()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_DUPLICATED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
 		}
 
 	}
@@ -289,7 +303,8 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 		}
 
 		boolean hasNoRecipientRole = recipientTemplates.stream()
-			.anyMatch(recipient -> recipient.getRecipientRole() == null);
+			.anyMatch(
+					recipient -> recipient.getRecipientRole() == null || recipient.getRecipientRole().trim().isEmpty());
 
 		if (hasNoRecipientRole) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMAPLATE_RECIPIENT_ROLE_REQUIRED);

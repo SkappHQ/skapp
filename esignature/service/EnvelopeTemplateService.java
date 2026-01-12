@@ -7,4 +7,6 @@ public interface EnvelopeTemplateService {
 
 	ResponseEntityDto createNewEnvelopeTemplate(EnvelopeTemplateDto envelopeTemplateDto);
 
+	ResponseEntityDto searchTemplateNameExists(String name);
+
 }

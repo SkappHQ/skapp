@@ -155,7 +155,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	// ESIGN ENVELOPE TEMPLATE ERRORS
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_DUPLICATED("ep.esign.error.envelope-template.name.duplicated"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
 			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
