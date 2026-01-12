@@ -13,7 +13,7 @@ public class AmazonS3FileValidationServiceImpl implements AmazonS3FileValidation
 
 	private static final Long CUSTOMER_DOCUMENT_MAX_SIZE_BYTES = (long) (25 * 1024 * 1024);
 
-	private static final String CUSTOMER_DOCUMENT_ALLOWED_FILE_TYPE = "pdf";
+	private static final String ALLOWED_FILE_TYPE = "pdf";
 
 	@Override
 	public void validateS3FileUpload(AmazonS3SignedUrlValidatedRequestDto amazonS3SignedUrlValidatedRequestDto) {
@@ -33,7 +33,7 @@ public class AmazonS3FileValidationServiceImpl implements AmazonS3FileValidation
 		String trimmedFileType = fileType != null
 				? fileType.substring(fileType.lastIndexOf('/') + 1).trim().toLowerCase() : "";
 
-		if (!CUSTOMER_DOCUMENT_ALLOWED_FILE_TYPE.equalsIgnoreCase(trimmedFileType)) {
+		if (!ALLOWED_FILE_TYPE.equalsIgnoreCase(trimmedFileType)) {
 			throw new ValidationException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_FILE_TYPE);
 		}
 	}
