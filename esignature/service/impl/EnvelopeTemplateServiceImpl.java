@@ -230,8 +230,8 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 			TemplateField templateField = new TemplateField();
 			templateField.setType(templateFieldDto.getType());
 			templateField.setPageNumber(templateFieldDto.getPageNumber());
-			templateField.setXPosition(templateFieldDto.getXposition());
-			templateField.setYPosition(templateFieldDto.getYposition());
+			templateField.setXPosition(templateFieldDto.getXPosition());
+			templateField.setYPosition(templateFieldDto.getYPosition());
 			templateField.setWidth(templateFieldDto.getWidth());
 			templateField.setHeight(templateFieldDto.getHeight());
 			templateField.setTemplateDocument(templateFieldDocument);

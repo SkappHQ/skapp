@@ -15,14 +15,14 @@ public class FieldTemplateDetailResponseDto {
 
 	private int pageNumber;
 
-	private float xPosition;
+	private Float xPosition;
 
-	private float yPosition;
+	private Float yPosition;
 
 	private Long documentId;
 
-	private String width;
+	private Float width;
 
-	private String height;
+	private Float height;
 
 }

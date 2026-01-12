@@ -14,9 +14,9 @@ public class FieldTemplateDto {
 
 	private Integer pageNumber;
 
-	private Float xposition;
+	private Float xPosition;
 
-	private Float yposition;
+	private Float yPosition;
 
 	private Float width;
 

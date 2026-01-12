@@ -33,16 +33,16 @@ public class TemplateField extends Auditable<String> {
 	private int pageNumber;
 
 	@Column(name = "x_position")
-	private float xPosition;
+	private Float xPosition;
 
 	@Column(name = "y_position")
-	private float yPosition;
+	private Float yPosition;
 
 	@Column(name = "width")
-	private float width;
+	private Float width;
 
 	@Column(name = "height")
-	private float height;
+	private Float height;
 
 	@ManyToOne
 	@JoinColumn(name = "template_document_id")
