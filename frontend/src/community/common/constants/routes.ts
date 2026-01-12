@@ -12,6 +12,8 @@ const ROUTES = {
     VERIFY_SUCCESS: "/verify/success",
     VERIFY_RESET_PASSWORD: "/verify/reset-password",
     VERIFY_FORGOT_OTP: "/verify/reset-password",
+    VERIFY_GUEST: "/verify/guest",
+    VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update"
   },
@@ -96,6 +98,7 @@ const ROUTES = {
     CONTACTS: "/sign/contacts",
     CREATE_DOCUMENT: "/sign/create",
     SIGN: "/sign/sign",
+    REVIEW: "/sign/review",
     INFO: "/sign/info",
     DOCUMENT_ACCESS: "/sign/document/access",
     COMPLETE: "/sign/complete",
@@ -111,7 +114,10 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects",
+  PROJECTS: {
+    BASE: "/projects/list",
+    GUESTS: "/projects/guests"
+  },
   INVOICE: {
     BASE: "/invoice",
     ALL_INVOICES: "/invoice/allInvoices",

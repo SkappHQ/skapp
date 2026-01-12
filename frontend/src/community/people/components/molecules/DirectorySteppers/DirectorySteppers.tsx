@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { RefObject, useEffect, useState } from "react";
 
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   AdminTypes,
@@ -30,6 +31,8 @@ const DirectorySteppers = ({
   const translateText = useTranslator("peopleModule");
 
   const { data: session } = useSession();
+
+  const { isPeopleAdmin } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
 
@@ -95,7 +98,9 @@ const DirectorySteppers = ({
     !isAccountView &&
     session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
-      : [])
+      : []),
+      // Feature flagged
+    // ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {

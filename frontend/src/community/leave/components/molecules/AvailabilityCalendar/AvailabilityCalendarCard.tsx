@@ -81,7 +81,7 @@ const AvailabilityCalendarCard = ({
       return <HolidayChip text={holidays[0]?.name} />;
     }
 
-    if (onLeaveEmployees?.length > 0 && onLeaveEmployees?.length <= 3) {
+    if (onLeaveEmployees?.length > 0) {
       return (
         <Box
           sx={{
@@ -91,7 +91,15 @@ const AvailabilityCalendarCard = ({
           }}
         >
           <AvatarGroup
-            componentStyles={{ justifyContent: "start" }}
+            componentStyles={{
+              justifyContent: "start",
+              "& .MuiAvatar-root": {
+                zIndex: 1
+              },
+              "& .MuiAvatarGroup-avatar": {
+                zIndex: 10 // +X avatar on top
+              }
+            }}
             avatars={transformLeaveRequests(onLeaveEmployees)}
             max={cards === 7 ? 1 : 3}
             avatarStyles={{ marginRight: "-0.8rem" }}

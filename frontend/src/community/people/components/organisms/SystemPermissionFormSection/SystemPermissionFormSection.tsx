@@ -27,7 +27,6 @@ import { usePeopleStore } from "~community/people/store/store";
 import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
-import { needsToShow } from "~enterprise/common/utils/commonUtil";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -40,13 +39,15 @@ interface Props {
   isUpdate?: boolean;
   isAddFlow?: boolean;
   isReadOnly?: boolean;
+  isPeopleAdminViewingOwnProfile?: boolean;
 }
 
 const SystemPermissionFormSection = ({
   isProfileView,
   isUpdate,
   isAddFlow,
-  isReadOnly = false
+  isReadOnly = false,
+  isPeopleAdminViewingOwnProfile = false
 }: Props) => {
   const classes = styles();
   const environment = useGetEnvironment();
@@ -244,7 +245,7 @@ const SystemPermissionFormSection = ({
             <SwitchRow
               labelId="super-admin"
               label={translateText(["superAdmin"])}
-              disabled={!isSuperAdmin}
+              disabled={!isSuperAdmin || isPeopleAdminViewingOwnProfile}
               checked={permissions.isSuperAdmin as boolean}
               onChange={(checked: boolean) => handleSuperAdminToggle(checked)}
               wrapperStyles={classes.switchRowWrapper}
@@ -269,7 +270,7 @@ const SystemPermissionFormSection = ({
                     isProfileView ||
                     permissions.isSuperAdmin ||
                     isInputsDisabled ||
-                    isReadOnly
+                    (isReadOnly && !isPeopleAdminViewingOwnProfile)
                   }
                 />
               )}
@@ -346,29 +347,27 @@ const SystemPermissionFormSection = ({
                 />
               )}
 
-            {needsToShow(tenantID as string) &&
-              !isRoleMissing(RoleModuleEnum.PM, RoleNameEnum.ADMIN) && (
-                <DropdownList
-                  inputName={"pmRole"}
-                  label={translateText(["projectManagement"])}
-                  itemList={grantablePermission?.pm || []}
-                  value={permissions.pmRole}
-                  componentStyle={classes.dropdownListComponentStyles}
-                  checkSelected
-                  onChange={(event) =>
-                    handleRoleDropdown("pmRole", event.target.value as Role)
-                  }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
-                />
-              )}
+            {!isRoleMissing(RoleModuleEnum.PM, RoleNameEnum.ADMIN) && (
+              <DropdownList
+                inputName={"pmRole"}
+                label={translateText(["projectManagement"])}
+                itemList={grantablePermission?.pm || []}
+                value={permissions.pmRole}
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("pmRole", event.target.value as Role)
+                }
+                isDisabled={
+                  isProfileView ||
+                  permissions.isSuperAdmin ||
+                  isInputsDisabled ||
+                  isReadOnly
+                }
+              />
+            )}
 
             {isInvoiceModuleEnabled &&
-              needsToShow(tenantID as string) &&
               !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.ADMIN) &&
               !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.MANAGER) && (
                 <DropdownList

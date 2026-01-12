@@ -60,7 +60,8 @@ export const peopleQueryKeys = {
     ].filter((val) => val !== undefined);
   },
   SUPERVISED_BY_ME: ["supervised-by-me"],
-  HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"]
+  HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"],
+  EXPORT_PEOPLE_DIRECTORY: ["export-people-directory"]
 };
 
 export const teamQueryKeys = {

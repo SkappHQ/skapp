@@ -10,6 +10,7 @@ import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPat
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 
 import java.util.List;
 
@@ -55,5 +56,9 @@ public interface PeopleService {
 	ResponseEntityDto isPrimarySecondaryOrTeamSupervisor(Long employeeId);
 
 	ResponseEntityDto hasSupervisoryRoles(Long employeeId);
+
+	void modifySubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk);
+
+	void updateUserStatus(Long userId, AccountStatus status, boolean isDelete);
 
 }
