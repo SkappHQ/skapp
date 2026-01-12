@@ -26,8 +26,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -120,65 +122,59 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	/**
 	 * Initialize Azure Key Vault clients and load certificate chain at application
 	 * startup.
+	 * @throws IOException
+	 * @throws CertificateException
 	 */
 	@PostConstruct
-	public void init() {
-		try {
-			// Normalize Key Vault URL by removing trailing slash if present
-			if (StringUtils.hasText(keyVaultUrl) && keyVaultUrl.endsWith("/")) {
-				keyVaultUrl = keyVaultUrl.substring(0, keyVaultUrl.length() - 1);
-			}
-
-			log.info("Initializing AzureKeyVaultSignatureProvider");
-			log.info("  - Key Vault URL: {}", keyVaultUrl);
-			log.info("  - Key Name: {}", keyName);
-			log.info("  - Certificate Name: {}", certificateName);
-
-			// 1. Validate configuration
-			validateConfiguration();
-
-			// 2. Create authentication credential
-			TokenCredential credential = createCredential();
-
-			// 3. Initialize Management clients
-			initializeCertificateClient(credential);
-			initializeKeyClient(credential);
-
-			// 4. Load certificate and determine correct Key Version
-			String specificKeyId = loadCertificateAndGetKeyId();
-
-			// 5. Initialize Cryptography client with specific Key Version
-			initializeCryptographyClient(credential, specificKeyId);
-
-			// 6. Determine signature algorithm
-			determineSignatureAlgorithm();
-
-			// 7. Test connectivity
-			if (!testConnection()) {
-				throw new IllegalStateException("Azure Key Vault connection test failed");
-			}
-
-			log.info("AzureKeyVaultSignatureProvider initialized successfully");
-			log.info("  - Signature algorithm: {}", signatureAlgorithm);
-			log.info("  - Certificate subject: {}", certificateChain[0].getSubjectX500Principal());
-			log.info("  - Certificate valid until: {}", certificateChain[0].getNotAfter());
-			log.info("  - Certificate chain length: {}", certificateChain.length);
-
+	public void init() throws CertificateException, IOException {
+		// Normalize Key Vault URL by removing trailing slash if present
+		if (StringUtils.hasText(keyVaultUrl) && keyVaultUrl.endsWith("/")) {
+			keyVaultUrl = keyVaultUrl.substring(0, keyVaultUrl.length() - 1);
 		}
-		catch (Exception e) {
-			throw new IllegalStateException("Failed to initialize AzureKeyVaultSignatureProvider", e);
-		}
+
+		log.info("Initializing AzureKeyVaultSignatureProvider");
+		log.info("  - Key Vault URL: {}", keyVaultUrl);
+		log.info("  - Key Name: {}", keyName);
+		log.info("  - Certificate Name: {}", certificateName);
+
+		// 1. Validate configuration
+		validateConfiguration();
+
+		// 2. Create authentication credential
+		TokenCredential credential = createCredential();
+
+		// 3. Initialize Management clients
+		initializeCertificateClient(credential);
+		initializeKeyClient(credential);
+
+		// 4. Load certificate and determine correct Key Version
+		String specificKeyId = loadCertificateAndGetKeyId();
+
+		// 5. Initialize Cryptography client with specific Key Version
+		initializeCryptographyClient(credential, specificKeyId);
+
+		// 6. Determine signature algorithm
+		determineSignatureAlgorithm();
+
+		// 7. Validate connectivity
+		validateConnection();
+
+		log.info("AzureKeyVaultSignatureProvider initialized successfully");
+		log.info("  - Signature algorithm: {}", signatureAlgorithm);
+		log.info("  - Certificate subject: {}", certificateChain[0].getSubjectX500Principal());
+		log.info("  - Certificate valid until: {}", certificateChain[0].getNotAfter());
+		log.info("  - Certificate chain length: {}", certificateChain.length);
 	}
 
 	private void validateConfiguration() {
 		if (!StringUtils.hasText(keyVaultUrl)) {
-			throw new IllegalStateException("Azure Key Vault URL is not configured");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_KEY_VAULT_URL_NOT_CONFIGURED);
 		}
 		if (!StringUtils.hasText(keyName)) {
-			throw new IllegalStateException("Azure Key name is not configured");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_KEY_NAME_NOT_CONFIGURED);
 		}
 		if (!StringUtils.hasText(certificateName)) {
-			throw new IllegalStateException("Azure Certificate name is not configured");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CERTIFICATE_NAME_NOT_CONFIGURED);
 		}
 
 		log.debug("Configuration validation passed");
@@ -215,13 +211,14 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		log.debug("Azure Key Vault cryptography client initialized with Key ID: {}", keyId);
 	}
 
-	private String loadCertificateAndGetKeyId() throws Exception {
+	private String loadCertificateAndGetKeyId() throws CertificateException, IOException {
 		log.debug("Loading certificate chain from Azure Key Vault");
 
 		KeyVaultCertificateWithPolicy certificate = certificateClient.getCertificate(certificateName);
 
 		if (certificate == null) {
-			throw new IllegalStateException("Certificate not found in Key Vault: " + certificateName);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CERTIFICATE_NOT_FOUND,
+					new Object[] { certificateName });
 		}
 
 		certificateChain = parseCertificateChain(certificate);
@@ -237,17 +234,17 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		else {
 			// A valid Azure Key Vault Certificate always has a backing key identifier.
 			// If this is missing, the certificate state is invalid/corrupted.
-			throw new IllegalStateException(
-					"Certificate in Azure Key Vault is missing the required Key Identifier (kid)");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CERTIFICATE_MISSING_KEY_ID);
 		}
 	}
 
-	private X509Certificate[] parseCertificateChain(KeyVaultCertificateWithPolicy certificate) throws Exception {
+	private X509Certificate[] parseCertificateChain(KeyVaultCertificateWithPolicy certificate)
+			throws CertificateException, IOException {
 		// Azure Key Vault stores the complete certificate chain in the 'cer' property
 		byte[] certBytes = certificate.getCer();
 
 		if (certBytes == null || certBytes.length == 0) {
-			throw new IllegalStateException("Certificate data is empty");
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CERTIFICATE_DATA_EMPTY);
 		}
 
 		// Parse X.509 certificate(s)
@@ -255,11 +252,10 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 		// Try to parse the full chain (works for P7B or sequence of certs)
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(certBytes)) {
-			Collection<? extends Certificate> certificates = certFactory
-				.generateCertificates(bis);
+			Collection<? extends Certificate> certificates = certFactory.generateCertificates(bis);
 
 			if (certificates.isEmpty()) {
-				throw new IllegalStateException("No certificates parsed from Key Vault");
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_NO_CERTIFICATES_PARSED);
 			}
 
 			List<X509Certificate> x509Certificates = new ArrayList<>();
@@ -270,7 +266,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			}
 
 			if (x509Certificates.isEmpty()) {
-				throw new IllegalStateException("No X.509 certificates found in Key Vault certificate data");
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_NO_X509_CERTIFICATES_FOUND);
 			}
 
 			if (x509Certificates.size() == 1) {
@@ -284,7 +280,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		}
 	}
 
-	private void determineSignatureAlgorithm() throws Exception {
+	private void determineSignatureAlgorithm() {
 		// Retrieve key metadata using the cryptography client (ensures we get the exact
 		// version)
 		KeyVaultKey key = cryptographyClient.getKey();
@@ -322,7 +318,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			}
 		}
 		else {
-			throw new IllegalStateException("Unsupported key type: " + keyType);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_UNSUPPORTED_KEY_TYPE,
+					new Object[] { keyType });
 		}
 
 		log.info("Determined algorithms - Hash: {}, Java Sig: {}, Azure Sig: {}", hashAlgorithm, signatureAlgorithm,
@@ -367,39 +364,30 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		return signatureAlgorithm;
 	}
 
-	@Override
-	public boolean testConnection() {
-		try {
-			log.debug("Testing Azure Key Vault connection");
+	private void validateConnection() {
+		log.debug("Testing Azure Key Vault connection");
 
-			// Test 1: Verify certificate is accessible
-			KeyVaultCertificateWithPolicy cert = certificateClient.getCertificate(certificateName);
-			if (cert == null) {
-				log.error("Certificate not found: {}", certificateName);
-				return false;
-			}
-
-			// Test 2: Verify key is accessible
-			KeyVaultKey key = keyClient.getKey(keyName);
-			if (key == null) {
-				log.error("Key not found: {}", keyName);
-				return false;
-			}
-
-			// Test 3: Verify key is enabled
-			if (!key.getProperties().isEnabled()) {
-				log.error("Key is disabled: {}", keyName);
-				return false;
-			}
-
-			log.debug("Azure Key Vault connection test successful");
-			return true;
-
+		// Test 1: Verify certificate is accessible
+		KeyVaultCertificateWithPolicy cert = certificateClient.getCertificate(certificateName);
+		if (cert == null) {
+			log.error("Certificate not found: {}", certificateName);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CONNECTION_FAILED);
 		}
-		catch (Exception e) {
-			log.error("Azure Key Vault connection test failed", e);
-			return false;
+
+		// Test 2: Verify key is accessible
+		KeyVaultKey key = keyClient.getKey(keyName);
+		if (key == null) {
+			log.error("Key not found: {}", keyName);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CONNECTION_FAILED);
 		}
+
+		// Test 3: Verify key is enabled
+		if (!key.getProperties().isEnabled()) {
+			log.error("Key is disabled: {}", keyName);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CONNECTION_FAILED);
+		}
+
+		log.debug("Azure Key Vault connection test successful");
 	}
 
 	@Override

@@ -159,18 +159,6 @@ public class LocalSignatureProvider implements SignatureProvider {
 	}
 
 	@Override
-	public boolean testConnection() {
-		try {
-			// For local provider, test that we can access the keystore and key
-			return keyStore != null && privateKey != null && certificateChain != null && certificateChain.length > 0;
-		}
-		catch (Exception e) {
-			log.error("LocalSignatureProvider connection test failed", e);
-			return false;
-		}
-	}
-
-	@Override
 	public SignatureProviderType getProviderType() {
 		return SignatureProviderType.LOCAL;
 	}
