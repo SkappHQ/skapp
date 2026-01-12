@@ -4,7 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 
-public interface DocumentTemplateService {
+public interface TemplateDocumentService {
 
 	ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto);
 

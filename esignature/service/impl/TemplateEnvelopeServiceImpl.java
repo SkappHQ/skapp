@@ -18,15 +18,15 @@ import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateEnvelopeSetting;
 import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateDto;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSettingDto;
-import com.skapp.enterprise.esignature.payload.request.template.FieldTemplateDto;
-import com.skapp.enterprise.esignature.payload.request.template.RecipientTemplateDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
-import com.skapp.enterprise.esignature.service.EnvelopeTemplateService;
+import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
+public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private static final int ENVELOPE_TEMPLATE_NAME_MAX_LENGTH = 50;
 
@@ -63,7 +63,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 	private final EsignTemplateMapper esignTemplateMapper;
 
 	@Override
-	public ResponseEntityDto createNewEnvelopeTemplate(EnvelopeTemplateDto envelopeTemplateDto) {
+	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
 		User currentUser = userService.getCurrentUser();
 
@@ -140,7 +140,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	}
 
-	private TemplateEnvelope initializeTemplateEnvelope(EnvelopeTemplateDto envelopeTemplateDto) {
+	private TemplateEnvelope initializeTemplateEnvelope(TemplateEnvelopeDto envelopeTemplateDto) {
 
 		validateEnvelopeTemplateName(envelopeTemplateDto.getName());
 
@@ -178,7 +178,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	}
 
-	private List<TemplateRecipient> assignTemplateRecipientsToTemplateEnvelope(List<RecipientTemplateDto> recipients,
+	private List<TemplateRecipient> assignTemplateRecipientsToTemplateEnvelope(List<TemplateRecipientDto> recipients,
 			TemplateEnvelope templateEnvelope, List<Long> documentIds) {
 
 		validateEnvelopeTemplateRecipients(recipients, documentIds);
@@ -224,7 +224,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	}
 
-	private List<TemplateField> buildTemplateFieldsForRecipient(List<FieldTemplateDto> templateFields,
+	private List<TemplateField> buildTemplateFieldsForRecipient(List<TemplateFieldDto> templateFields,
 			TemplateRecipient templateRecipient) {
 
 		return templateFields.stream().map(templateFieldDto -> {
@@ -249,7 +249,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 
 	}
 
-	private TemplateEnvelopeSetting buildTemplateEnvelopeSetting(EnvelopeTemplateSettingDto templateEnvelopeSettingDto,
+	private TemplateEnvelopeSetting buildTemplateEnvelopeSetting(TemplateEnvelopeSettingDto templateEnvelopeSettingDto,
 			TemplateEnvelope templateEnvelope) {
 
 		TemplateEnvelopeSetting templateEnvelopeSetting = new TemplateEnvelopeSetting();
@@ -281,7 +281,7 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 		}
 	}
 
-	private void validateEnvelopeTemplateRecipients(List<RecipientTemplateDto> recipientTemplates,
+	private void validateEnvelopeTemplateRecipients(List<TemplateRecipientDto> recipientTemplates,
 			List<Long> documentIds) {
 
 		boolean hasInvalidDocumentId = recipientTemplates.stream()
@@ -300,12 +300,12 @@ public class EnvelopeTemplateServiceImpl implements EnvelopeTemplateService {
 		}
 
 		boolean duplicateRecipientRole = recipientTemplates.stream()
-			.map(RecipientTemplateDto::getRecipientRole)
+			.map(TemplateRecipientDto::getRecipientRole)
 			.filter(Objects::nonNull)
 			.map(String::toLowerCase)
 			.distinct()
 			.count() < recipientTemplates.stream()
-				.map(RecipientTemplateDto::getRecipientRole)
+				.map(TemplateRecipientDto::getRecipientRole)
 				.filter(Objects::nonNull)
 				.count();
 

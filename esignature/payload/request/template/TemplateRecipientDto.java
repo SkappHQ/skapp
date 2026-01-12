@@ -12,7 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class RecipientTemplateDto {
+public class TemplateRecipientDto {
 
 	@NotEmpty(message = "{validation.template.recipient.recipientRole.not_empty}")
 	private String recipientRole;
@@ -33,6 +33,6 @@ public class RecipientTemplateDto {
 	private EsignVerificationType verificationType = EsignVerificationType.NONE;
 
 	@NotEmpty(message = "{validation.template.recipient.templateFields.not_empty}")
-	private List<FieldTemplateDto> templateFields;
+	private List<TemplateFieldDto> templateFields;
 
 }

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EnvelopeTemplateSettingDto {
+public class TemplateEnvelopeSettingDto {
 
 	private Integer reminderDays;
 

@@ -1,8 +1,8 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateDto;
-import com.skapp.enterprise.esignature.service.EnvelopeTemplateService;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +20,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/ep/esign/template/envelopes")
-public class EnvelopeTemplateController {
+public class TemplateEnvelopeController {
 
-	private final EnvelopeTemplateService envelopeTemplateService;
+	private final TemplateEnvelopeService templateEnvelopeService;
 
 	@Operation(summary = "Create a new template for an envelope",
 			description = "This endpoint creates a new envelope template with the provided details.")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> createNewEnvelopeTemplate(
-			@Valid @RequestBody EnvelopeTemplateDto envelopeTemplateDto) {
-		ResponseEntityDto response = envelopeTemplateService.createNewEnvelopeTemplate(envelopeTemplateDto);
+			@Valid @RequestBody TemplateEnvelopeDto envelopeTemplateDto) {
+		ResponseEntityDto response = templateEnvelopeService.createNewEnvelopeTemplate(envelopeTemplateDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -39,7 +39,7 @@ public class EnvelopeTemplateController {
 	@GetMapping(value = "/name-exists", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> searchTemplateNameExists(@RequestParam String name) {
-		ResponseEntityDto response = envelopeTemplateService.searchTemplateNameExists(name);
+		ResponseEntityDto response = templateEnvelopeService.searchTemplateNameExists(name);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

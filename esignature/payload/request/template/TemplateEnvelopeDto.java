@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class EnvelopeTemplateDto {
+public class TemplateEnvelopeDto {
 
 	@NotBlank(message = "{validation.template.envelope.name.not_blank}")
 	private String name;
@@ -28,8 +28,8 @@ public class EnvelopeTemplateDto {
 	private List<Long> templateDocumentIds;
 
 	@NotEmpty(message = "{validation.template.envelope.templateRecipients.not_empty}")
-	private List<RecipientTemplateDto> templateRecipients;
+	private List<TemplateRecipientDto> templateRecipients;
 
-	private EnvelopeTemplateSettingDto templateEnvelopeSettingDto;
+	private TemplateEnvelopeSettingDto templateEnvelopeSettingDto;
 
 }

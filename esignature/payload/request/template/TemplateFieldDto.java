@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FieldTemplateDto {
+public class TemplateFieldDto {
 
 	@NotNull(message = "{validation.template.field.templateDocumentId.notnull}")
 	private Long templateDocumentId;

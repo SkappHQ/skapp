@@ -11,7 +11,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
-import com.skapp.enterprise.esignature.service.DocumentTemplateService;
+import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DocumentTemplateServiceImpl implements DocumentTemplateService {
+public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	private final TemplateDocumentDao templateDocumentDao;
 
