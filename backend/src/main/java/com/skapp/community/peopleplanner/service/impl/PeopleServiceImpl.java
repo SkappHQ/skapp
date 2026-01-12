@@ -2291,9 +2291,17 @@ public class PeopleServiceImpl implements PeopleService {
 			userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 			invalidateUserCache();
 			invalidateUserAuthPicCache();
+			userDao.save(user);
+			log.info("updateUserStatus: execution ended - user activated");
+			return;
 		}
 
-		if (!Boolean.TRUE.equals(user.getIsActive())) {
+		if (status.equals(AccountStatus.ACTIVE) && Boolean.TRUE.equals(user.getIsActive())) {
+			log.info("updateUserStatus: user is already active, no action needed");
+			return;
+		}
+
+		if (!status.equals(AccountStatus.ACTIVE) && !Boolean.TRUE.equals(user.getIsActive())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
@@ -2305,17 +2313,20 @@ public class PeopleServiceImpl implements PeopleService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EMPLOYEE_SUPERVISING_EMPLOYEES);
 		}
 
-		List<EmployeeTeam> employeeTeams = employeeTeamDao.findEmployeeTeamsByEmployee(employee);
-
-		if (!employeeTeams.isEmpty()) {
-			employeeTeamDao.deleteAll(employeeTeams);
-			employee.setEmployeeTeams(null);
+		// clears team relationships
+		if (!employee.getEmployeeTeams().isEmpty()) {
+			employee.getEmployeeTeams().clear();
 		}
 
-		List<EmployeeManager> employeeManagers = employeeManagerDao.findByManager(employee);
-		if (!employeeManagers.isEmpty()) {
-			employeeManagerDao.deleteAll(employeeManagers);
-			employee.setEmployeeManagers(null);
+		// clears manager relationships
+		if (!employee.getEmployeeManagers().isEmpty()) {
+			employee.getEmployeeManagers().clear();
+		}
+
+		// deletes other manager relationships
+		List<EmployeeManager> managedEmployees = employeeManagerDao.findByManager(employee);
+		if (!managedEmployees.isEmpty()) {
+			employeeManagerDao.deleteAll(managedEmployees);
 		}
 
 		employee.setJobTitle(null);
