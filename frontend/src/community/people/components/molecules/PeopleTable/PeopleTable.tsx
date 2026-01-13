@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import {
   FC,
@@ -62,6 +61,7 @@ import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryU
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   employeeData: AllEmployeeDataType[];
@@ -83,18 +83,17 @@ const PeopleTable: FC<Props> = ({
   isRemovePeople = false
 }) => {
   const theme: Theme = useTheme();
-  const { data } = useSession();
+  const { user } = useAuth();
   const router = useRouter();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManager = data?.user.roles?.includes(
+  const isPeopleManager = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER
   );
 
-  const isPeopleAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
-
+  const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [sortType, setSortType] = useState<string>("A to Z");

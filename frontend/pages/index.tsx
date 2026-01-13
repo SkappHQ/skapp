@@ -1,4 +1,3 @@
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
@@ -10,10 +9,11 @@ import ROUTES from "~community/common/constants/routes";
 import { APP } from "~community/common/constants/stringConstants";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 export default function Index() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user, signOut } = useAuth();
 
   const tenantId = window.location.host.split(".")[0];
 
@@ -43,10 +43,10 @@ export default function Index() {
 
   const handleEnterpriseNavigation = async () => {
     if (tenantId === APP) {
-      signOut({ redirect: false });
+      signOut(false);
       await router.replace(ROUTES.AUTH.SIGNIN);
     } else {
-      const route = session ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+      const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
       await router.replace(route);
     }
   };
@@ -56,7 +56,7 @@ export default function Index() {
   ) => {
     if (!setupStatus.isSignUpCompleted) {
       await router.replace(ROUTES.AUTH.SIGNUP);
-    } else if (!setupStatus.isOrganizationSetupCompleted && session) {
+    } else if (!setupStatus.isOrganizationSetupCompleted && user) {
       await router.replace(ROUTES.ORGANIZATION.SETUP);
     } else {
       await router.replace(ROUTES.DASHBOARD.BASE);

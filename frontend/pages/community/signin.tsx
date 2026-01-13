@@ -2,11 +2,12 @@ import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
+import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetApplicationVersionDetails } from "~community/common/api/VersionUpgradeApi";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import RequestPasswordChangeModal from "~community/common/components/molecules/RequestPasswordChangeModal/RequestPasswordChangeModal";
@@ -36,7 +37,7 @@ interface SignInValues {
 const SignIn: NextPage = () => {
   const router = useRouter();
 
-  const { data: session } = useSession();
+  const { signIn, user } = useAuth();
 
   const { setToastMessage } = useToast();
 
@@ -83,7 +84,7 @@ const SignIn: NextPage = () => {
 
     const orgSetupStatus = data?.data?.results[0]?.isOrganizationSetupCompleted;
 
-    const isPasswordChanged = session?.user?.isPasswordChangedForTheFirstTime;
+    const isPasswordChanged = user?.isPasswordChangedForTheFirstTime;
     if (isPasswordChanged === false) {
       router.push(ROUTES.AUTH.RESET_PASSWORD);
     } else {
@@ -93,7 +94,7 @@ const SignIn: NextPage = () => {
         router.push(ROUTES.DASHBOARD.BASE);
       }
     }
-  }, [router, session]);
+  }, [router, user]);
 
   const handleSubmit = async (
     values: SignInValues,
@@ -104,18 +105,18 @@ const SignIn: NextPage = () => {
 
       if (
         base64Pattern().test(password) &&
-        !session?.user?.isPasswordChangedForTheFirstTime
+        !user?.isPasswordChangedForTheFirstTime
       ) {
         password = decodeBase64(password);
       }
 
-      const result = await signIn("credentials", {
-        redirect: false,
+      const result = await signIn({
         email: values.email,
-        password
+        password,
+        method: AuthMethods.CREDENTIAL
       });
 
-      if (result?.error) {
+      if (result !== SignInStatus.SUCCESS) {
         setToastMessage({
           open: true,
           toastType: "error",
@@ -124,7 +125,13 @@ const SignIn: NextPage = () => {
           isIcon: true
         });
       } else {
-        handleRedirect();
+        // Check for callback parameter
+        const callbackPath = router.query.callback as string;
+        if (callbackPath) {
+          router.push(callbackPath);
+        } else {
+          handleRedirect();
+        }
       }
     } catch (error) {
       setToastMessage({

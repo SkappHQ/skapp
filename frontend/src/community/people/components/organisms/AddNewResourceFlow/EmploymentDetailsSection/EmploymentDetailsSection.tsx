@@ -3,7 +3,6 @@ import { useTheme } from "@mui/system";
 import { rejects } from "assert";
 import { type FormikErrors, useFormik } from "formik";
 import { DateTime } from "luxon";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import {
   ChangeEvent,
@@ -62,6 +61,7 @@ import { EmployementAllocationList } from "~community/people/utils/data/employee
 import { employeeEmploymentDetailsValidation } from "~community/people/utils/peopleValidations";
 
 import TeamModalController from "../../TeamModalController/TeamModalController";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   isManager?: boolean;
@@ -104,9 +104,9 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     const router = useRouter();
     const { id } = router.query;
 
-    const { data } = useSession();
+    const { user } = useAuth();
 
-    const isAdmin = data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
+    const isAdmin = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
 
     const [isUniqueEmail, setIsUniqueEmail] = useState<boolean>(false);
     const [isUniqueEmployeeNo, setIsUniqueEmployeeNo] =
