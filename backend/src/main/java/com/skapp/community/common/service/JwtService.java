@@ -30,4 +30,6 @@ public interface JwtService {
 
 	void checkVersionMismatch(Long userId, String accessToken);
 
+	long getRefreshTokenMaxAge(UserDetails userDetails);
+
 }
