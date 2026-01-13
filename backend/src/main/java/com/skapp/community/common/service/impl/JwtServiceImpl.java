@@ -77,22 +77,7 @@ public class JwtServiceImpl implements JwtService {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put(AuthConstants.TOKEN_TYPE, TokenType.REFRESH);
 
-		Set<String> shortDurationRoles = getShortDurationRoles();
-
-		boolean hasShortDurationRole = userDetails.getAuthorities()
-			.stream()
-			.anyMatch(authority -> shortDurationRoles.contains(authority.getAuthority()));
-
-		long jwtRefreshTokenExpirationMs;
-
-		if (hasShortDurationRole) {
-			jwtRefreshTokenExpirationMs = jwtShortDurationRefreshTokenExpirationMs;
-		}
-		else {
-			jwtRefreshTokenExpirationMs = jwtLongDurationRefreshTokenExpirationMs;
-		}
-
-		return generateToken(claims, userDetails, jwtRefreshTokenExpirationMs);
+		return generateToken(claims, userDetails, getRefreshTokenMaxAge(userDetails));
 	}
 
 	/**
@@ -126,6 +111,18 @@ public class JwtServiceImpl implements JwtService {
 	public <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
 		final Claims claims = extractAllClaims(token);
 		return claimsResolvers.apply(claims);
+	}
+
+	@Override
+	public long getRefreshTokenMaxAge(UserDetails userDetails) {
+		Set<String> shortDurationRoles = getShortDurationRoles();
+
+		boolean hasShortDurationRole = userDetails.getAuthorities()
+			.stream()
+			.anyMatch(authority -> shortDurationRoles.contains(authority.getAuthority()));
+
+		return hasShortDurationRole ? jwtShortDurationRefreshTokenExpirationMs
+				: jwtLongDurationRefreshTokenExpirationMs;
 	}
 
 	private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, Long expirationTime) {
