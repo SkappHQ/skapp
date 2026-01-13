@@ -143,19 +143,6 @@ public class DocumentLinkController {
 		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Retrieve Verification Data for Internal Document Access",
-			description = "Retrieves verification data required for signing or viewing a document internally for a given document and recipient, using internal access privileges.")
-	@GetMapping(value = "/internal/access/verification-check", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> getRecipientDocumentVerificationDataInternal(@RequestParam Long documentId,
-			@RequestParam Long recipientId) {
-
-		ResponseEntityDto responseEntityDto = documentLinkService.getRecipientDocumentVerificationData(documentId,
-				recipientId);
-
-		return new ResponseEntity<>(responseEntityDto, HttpStatus.OK);
-	}
-
 	@Operation(summary = "Exchange UUID for Document Access Token",
 			description = "Exchanges a decrypted and validated UUID for an internal access token used to sign or view a document. "
 					+ "The token is only returned if the document link is available.")
