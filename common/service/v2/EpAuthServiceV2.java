@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 public interface EpAuthServiceV2 {
@@ -16,6 +17,9 @@ public interface EpAuthServiceV2 {
 	ResponseEntityDto ssoGoogleSignUp(@Valid EpSignUpGoogleDataDto superAdminSignUpRequestDto);
 
 	ResponseEntityDto ssoGoogleSignIn(@Valid EpSignInGoogleDataDto epSignUpGoogleDataDto);
+
+	ResponseEntityDto ssoGoogleSignInWithCookie(@Valid EpSignInGoogleDataDto epSignUpGoogleDataDto,
+			HttpServletResponse response);
 
 	String ssoGoogleSignInRedirect(@Valid EpGoogleAuthRedirectDto epGoogleAuthRedirectDto);
 
@@ -28,5 +32,8 @@ public interface EpAuthServiceV2 {
 	ResponseEntityDto ssoMicrosoftSignUp(@Valid EpSignUpMicrosoftDataDto epSignUpMicrosoftDataDto);
 
 	ResponseEntityDto ssoMicrosoftSignIn(@Valid EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto);
+
+	ResponseEntityDto ssoMicrosoftSignInWithCookie(@Valid EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto,
+			HttpServletResponse response);
 
 }
