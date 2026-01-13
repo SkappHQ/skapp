@@ -135,7 +135,11 @@ export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
 
 export const clearCookies = async (): Promise<void> => {
   try {
-   await authAxios.post(authenticationEndpoints.SIGNOUT);
+    await authAxios.post(
+      authenticationEndpoints.SIGNOUT,
+      {},
+      { withCredentials: true }
+    );
   } catch (error) {
     console.error("Error calling signout API");
   }
