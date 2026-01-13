@@ -43,6 +43,7 @@ interface Props {
   children?: ReactNode;
   id?: string;
   tabIndex?: number;
+  kebabMenuComponent?: ReactNode;
 }
 
 const FullPageContainerLayout = ({
@@ -53,7 +54,8 @@ const FullPageContainerLayout = ({
   customStyles,
   children,
   id,
-  tabIndex
+  tabIndex,
+  kebabMenuComponent
 }: Props): JSX.Element => {
   const router = useRouter();
 
@@ -122,6 +124,9 @@ const FullPageContainerLayout = ({
                 {stepText}
               </Typography>
             </Stack>
+            {kebabMenuComponent && (
+              <Stack sx={{ marginLeft: "auto" }}>{kebabMenuComponent}</Stack>
+            )}
           </Stack>
           <Stack component="main" sx={mergeSx([customStyles?.body])}>
             {children}
