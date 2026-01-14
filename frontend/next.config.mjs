@@ -293,8 +293,8 @@ const nextConfig = {
         destination: "/enterprise/sign/document/access"
       },
       {
-        source: "/sign/document/mfa-verify",
-        destination: "/enterprise/sign/document/mfa-verify"
+        source: "/sign/document/access/mfa-verify",
+        destination: "/enterprise/sign/document/access/mfa-verify"
       },
       {
         source: "/sign/complete",
