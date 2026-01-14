@@ -2,10 +2,10 @@ import { TrendingUp } from "@mui/icons-material";
 import { Box, Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateTime } from "luxon";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AnalyticCard from "~community/common/components/molecules/AnalyticCard/AnalyticCard";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import ROUTES from "~community/common/constants/routes";
@@ -34,7 +34,7 @@ const LeaveDashboard = (): JSX.Element => {
   const [teamId, setTeamId] = useState<string | number>("");
   const [teamName, setTeamName] = useState<string>(translateText(["all"]));
   const [isFetchingEnabled, setIsFetchingEnabled] = useState<boolean>(false);
-  const { data } = useSession();
+  const { user } = useAuth();
   const theme: Theme = useTheme();
   const classes = styles(theme);
   const router = useRouter();
@@ -67,8 +67,8 @@ const LeaveDashboard = (): JSX.Element => {
     pendingLeaves?.[0]?.items?.length - viewedPendingLeaveCount;
 
   useEffect(() => {
-    if (data) setIsFetchingEnabled(true);
-  }, [data, teamId]);
+    if (user) setIsFetchingEnabled(true);
+  }, [user, teamId]);
 
   const resourceDetails = () => {
     if (todaysAvailability[0]?.holidayResponseDtos?.length > 0) {
@@ -147,9 +147,9 @@ const LeaveDashboard = (): JSX.Element => {
             title={translateText(["pendingLeaves"]) ?? ""}
             isExpandable={pendingLeaves?.[0]?.items?.length > 0}
             onExpand={() => {
-              setPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
+              (setPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
                 setViewedPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
-                router.replace(ROUTES.LEAVE.LEAVE_PENDING);
+                router.replace(ROUTES.LEAVE.LEAVE_PENDING));
             }}
             accessibility={{
               tabIndex: 0,

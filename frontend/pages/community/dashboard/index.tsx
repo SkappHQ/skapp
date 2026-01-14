@@ -1,11 +1,11 @@
 import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TabsContainer from "~community/common/components/molecules/Tabs/Tabs";
 import VersionUpgradeModal from "~community/common/components/molecules/VersionUpgradeModal/VersionUpgradeModal";
@@ -153,18 +153,16 @@ const Dashboard: NextPage = () => {
     "myRequests",
     "myLeaveAllocation"
   );
-  const { data } = useSession();
+  const { user } = useAuth();
 
   // Check if current tenant should use custom dashboard
-  const tempUseCustomDashboard = tempShouldUseCustomDashboard(
-    data?.user?.tenantId
-  );
+  const tempUseCustomDashboard = tempShouldUseCustomDashboard(user?.tenantId);
 
   // Permissions map for modules
 
   // Define tabs
   const tabs = [
-    ...(data?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+    ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [
           {
             label: translateText(["attendanceTab"]),
@@ -173,7 +171,7 @@ const Dashboard: NextPage = () => {
           }
         ]
       : []),
-    ...(data?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [
           {
             label: translateText(["leaveTab"]),
@@ -201,7 +199,7 @@ const Dashboard: NextPage = () => {
     });
   };
 
-  const userRoles: RoleTypes[] = (data?.user?.roles || []) as RoleTypes[];
+  const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
   const visibleTabs = getVisibleTabs(userRoles);
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
@@ -211,13 +209,13 @@ const Dashboard: NextPage = () => {
     nextYear.toString()
   );
 
-  const isLeaveOnlyView = data?.user && visibleTabs.length === 0;
+  const isLeaveOnlyView = user && visibleTabs.length === 0;
   const showYearSelector =
     isLeaveOnlyView && isEntitlementAvailableNextYear?.length > 0;
 
   useGoogleAnalyticsEvent({
     onMountEventType:
-      data?.user && visibleTabs.length === 0
+      user && visibleTabs.length === 0
         ? GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_DASHBOARD_VIEWED
         : GoogleAnalyticsTypes.GA4_DASHBOARD_VIEWED,
     triggerOnMount: true
@@ -250,11 +248,11 @@ const Dashboard: NextPage = () => {
     <ContentLayout
       pageHead={translateText(["pageHead"])}
       title={
-        data?.user && visibleTabs.length === 0
+        user && visibleTabs.length === 0
           ? translateText(["myLeaveAllocations"])
           : translateText(["title"])
       }
-      isDividerVisible={!(data?.user && visibleTabs.length === 0)}
+      isDividerVisible={true}
       customRightContent={
         showYearSelector ? (
           <LeaveYearSelector

@@ -1,7 +1,7 @@
 import { Box, Chip } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { JSX, MouseEvent, useEffect, useState } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
@@ -43,7 +43,7 @@ const MultiTeamSelector = ({
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
-  const { data } = useSession();
+  const { user } = useAuth();
   const [teamsData, setTeamsData] = useState<
     TeamType[] | undefined | ManagerTeamType[]
   >([]);
@@ -57,12 +57,12 @@ const MultiTeamSelector = ({
 
   useEffect(() => {
     checkUserRole();
-  }, [data, managerAllTeamsData]);
+  }, [user, managerAllTeamsData]);
 
   const checkUserRole = () => {
     if (
-      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-      (moduleAdminType && data?.user.roles?.includes(moduleAdminType))
+      user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      (moduleAdminType && user?.roles?.includes(moduleAdminType))
     ) {
       setTeamIds([-1]);
       setTeamsData(allTeamsData);
@@ -162,9 +162,9 @@ const MultiTeamSelector = ({
               ? selectedOptionNames.length > 1
                 ? `${selectedOptionNames.length} ${translateTexts(["selected"])}`
                 : selectedOptionNames[0]
-              : data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+              : user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
                   (moduleAdminType &&
-                    data?.user.roles?.includes(moduleAdminType))
+                    user?.roles?.includes(moduleAdminType))
                 ? translateTexts(["allLabel"])
                 : translateTexts(["noTeamTxt"])
           }

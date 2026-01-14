@@ -1,8 +1,9 @@
 import { Box } from "@mui/material";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
 
+import { AuthMethods } from "~community/auth/enums/auth";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useResetPassword } from "~community/common/api/ResetPasswordApi";
 import ResetPasswordForm from "~community/common/components/organisms/Forms/ResetPassword/ResetPasswordForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
@@ -20,7 +21,7 @@ const ResetPassword: NextPage = () => {
 
   const { setToastMessage } = useToast();
 
-  const { data: session } = useSession();
+  const { signIn, user } = useAuth();
 
   const initialValues: FormValues = {
     password: "",
@@ -36,10 +37,10 @@ const ResetPassword: NextPage = () => {
       isIcon: true
     });
 
-    await signIn("credentials", {
-      redirect: false,
-      email: session?.user?.email as string,
-      password: values.password
+    await signIn({
+      email: user?.email,
+      password: values.password,
+      method: AuthMethods.CREDENTIAL
     });
     // This is a temporary fix for the issue, need to implement a better solution later
     window.location.reload();

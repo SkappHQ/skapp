@@ -1,7 +1,7 @@
 import { Box, Stack } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
@@ -35,9 +35,9 @@ interface EmployeeDataProps {
 const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
   const translateText = useTranslator("peopleModule", "peoples");
   const router = useRouter();
-  const { data } = useSession();
+  const { user } = useAuth();
 
-  const isPeopleManagerOrSuperAdmin = data?.user.roles?.includes(
+  const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
   );
   const [searchTerm, setSearchTerm] = useState("");

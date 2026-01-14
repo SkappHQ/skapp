@@ -105,7 +105,6 @@ const LeaveAllocation: FC = () => {
         }
       )}
     >
-      <Divider sx={{ mb: "1rem" }} />
       <Grid container spacing={2}>
         {entitlement?.length === 0 ? (
           <LeaveAllocationEmptyScreen />

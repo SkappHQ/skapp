@@ -9,6 +9,7 @@ import {
   getHolidaysWithinDateRange,
   getLeaveRequestsWithinDateRange
 } from "~community/common/utils/calendarDateRangePickerUtils";
+import { getCurrentDateAtMidnight } from "~community/common/utils/dateTimeUtils";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import {
   HolidayType,
@@ -19,6 +20,29 @@ import {
   Holiday,
   HolidayDurationType
 } from "~community/people/types/HolidayTypes";
+
+export const getDefaultCalendarValue = ({
+  selectedDates,
+  minDate
+}: {
+  selectedDates: DateTime[];
+  minDate: Date;
+}): DateTime => {
+  if (selectedDates.length > 0) {
+    return selectedDates[selectedDates.length - 1];
+  }
+
+  if (minDate) {
+    const minDateTime = DateTime.fromJSDate(minDate);
+    const currentDate = getCurrentDateAtMidnight();
+
+    if (minDateTime > currentDate) {
+      return minDateTime;
+    }
+  }
+
+  return getCurrentDateAtMidnight();
+};
 
 export const getDurationInitialValue = ({
   allowedDurations,

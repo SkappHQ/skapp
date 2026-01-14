@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import Button from "~community/common/components/atoms/Button/Button";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
@@ -42,7 +42,7 @@ const TeamSelector = ({
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
-  const { data } = useSession();
+  const { user } = useAuth();
   const [teamsData, setTeamsData] = useState<
     TeamType[] | undefined | ManagerTeamType[]
   >([]);
@@ -57,12 +57,12 @@ const TeamSelector = ({
 
   useEffect(() => {
     checkUserRole();
-  }, [data, managerAllTeamsData, allTeamsData]);
+  }, [user, managerAllTeamsData, allTeamsData]);
 
   const checkUserRole = () => {
     if (
-      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-      (moduleAdminType && data?.user.roles?.includes(moduleAdminType))
+      user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      (moduleAdminType && user?.roles?.includes(moduleAdminType))
     ) {
       setIsAdmin(true);
       setTeamId(-1);

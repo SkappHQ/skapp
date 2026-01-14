@@ -1,6 +1,6 @@
-import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { appModes } from "~community/common/constants/configs";
@@ -15,10 +15,10 @@ interface SessionPropsOptions {
 export const useRedirectHandler = (options: SessionPropsOptions) => {
   const { isSignInPage = false } = options;
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleRedirect = async () => {
-      const session = await getSession();
 
       try {
         if (process.env.NEXT_PUBLIC_MODE !== "enterprise") {
@@ -35,7 +35,7 @@ export const useRedirectHandler = (options: SessionPropsOptions) => {
                 return;
               } else if (
                 !orgSetupStatus?.results[0]?.isOrganizationSetupCompleted &&
-                session
+                user
               ) {
                 router.replace(ROUTES.ORGANIZATION.SETUP);
                 return;
@@ -45,7 +45,7 @@ export const useRedirectHandler = (options: SessionPropsOptions) => {
         }
       } catch (error) {
         console.error("Error during redirect handling:", error);
-        if (!session && !isSignInPage) {
+        if (!user && !isSignInPage) {
           router.replace(ROUTES.AUTH.SIGNIN);
         }
       }

@@ -12,10 +12,10 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import Button from "~community/common/components/atoms/Button/Button";
@@ -65,7 +65,7 @@ const Drawer = (): JSX.Element => {
 
   const router = useRouter();
 
-  const { data: sessionData } = useSession();
+  const { user } = useAuth();
 
   const queryMatches = useMediaQuery();
   const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
@@ -118,22 +118,17 @@ const Drawer = (): JSX.Element => {
   const drawerRoutes = useMemo(
     () =>
       getDrawerRoutes({
-        userRoles: sessionData?.user?.roles,
-        tier: sessionData?.user?.tier ?? "",
+        userRoles: user?.roles,
+        tier: user?.tier ?? "",
         isEnterprise,
         globalLoginMethod,
-        tenantID: sessionData?.user?.tenantId,
+        tenantID: user?.tenantId,
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false
       }),
-    [
-      sessionData,
-      isEnterprise,
-      globalLoginMethod,
-      organizationCalendarStatusData
-    ]
+    [user, isEnterprise, globalLoginMethod, organizationCalendarStatusData]
   );
 
   const updatedTheme = themeSelector(
@@ -390,9 +385,7 @@ const Drawer = (): JSX.Element => {
 
         {isDrawerExpanded && (
           <Stack sx={classes.footer}>
-            {sessionData?.user.roles?.includes(
-              EmployeeTypes.LEAVE_EMPLOYEE
-            ) && (
+            {user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) && (
               <Button
                 styles={classes.applyLeaveBtn}
                 size={ButtonSizes.MEDIUM}
