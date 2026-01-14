@@ -157,6 +157,15 @@ public class EpAuthController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/session/signin/guest/verify-otp")
+	public ResponseEntity<ResponseEntityDto> verifyGuestUserSignWithCookieInOtp(
+			@RequestBody EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto,
+			HttpServletResponse httpServletResponse) {
+		ResponseEntityDto response = epAuthService.validateGuestUserSignInOtpWithCookie(epGuestUserOtpVerifyRequestDto,
+				httpServletResponse);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@GetMapping("/status")
 	public ResponseEntity<ResponseEntityDto> getUserStatus(@RequestParam String email) {
 		ResponseEntityDto response = epUserService.getUserStatus(email);

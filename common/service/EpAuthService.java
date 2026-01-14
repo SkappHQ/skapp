@@ -34,6 +34,9 @@ public interface EpAuthService {
 
 	ResponseEntityDto validateGuestUserSignInOtp(EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto);
 
+	ResponseEntityDto validateGuestUserSignInOtpWithCookie(
+			EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto, HttpServletResponse response);
+
 	ResponseEntityDto verifyPasswordResetOTP(EpPasswordResetOtpVerifyDto epPasswordResetOtpVerifyDto);
 
 	ResponseEntityDto resetPassword(EpPasswordResetNewPasswordDto epPasswordResetNewPasswordDto);

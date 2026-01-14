@@ -725,18 +725,31 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto validateGuestUserSignInOtp(EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto) {
 		log.info("validateGuestUserSignInOtp: execution started for email={}, tenantId={}",
 				epGuestUserOtpVerifyRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		return performGuestUserOtpValidation(epGuestUserOtpVerifyRequestDto, null);
+	}
+
+	@Override
+	public ResponseEntityDto validateGuestUserSignInOtpWithCookie(
+			EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto, HttpServletResponse response) {
+		log.info("validateGuestUserSignInOtpWithCookie: execution started for email={}, tenantId={}",
+				epGuestUserOtpVerifyRequestDto.getEmail(), TenantContext.getCurrentTenant());
+		return performGuestUserOtpValidation(epGuestUserOtpVerifyRequestDto, response);
+	}
+
+	private ResponseEntityDto performGuestUserOtpValidation(
+			EpGuestUserOtpVerifyRequestDto epGuestUserOtpVerifyRequestDto, HttpServletResponse response) {
 		User user = epGuestUserService.validateGuestUserEmail(epGuestUserOtpVerifyRequestDto.getEmail());
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 
 		if (passwordResetOtp == null) {
-			log.warn("validateGuestUserSignInOtp: OTP not found for userId={}", user.getUserId());
+			log.warn("performGuestUserOtpValidation: OTP not found for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
 		}
 
 		if (OtpUtil.validateOTP(passwordResetOtp.getVerificationCode(), passwordResetOtp.getOtpExpiryTime(),
 				epGuestUserOtpVerifyRequestDto.getOtp())) {
-			log.warn("validateGuestUserSignInOtp: Invalid or expired OTP provided for userId={}", user.getUserId());
+			log.warn("performGuestUserOtpValidation: Invalid or expired OTP provided for userId={}", user.getUserId());
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP);
 		}
 
@@ -747,7 +760,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
-			log.warn("validateGuestUserSignInOtp: Employee not found for userId={}", user.getUserId());
+			log.warn("performGuestUserOtpValidation: Employee not found for userId={}", user.getUserId());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -757,16 +770,21 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		if (userEmployee.getAccountStatus() == AccountStatus.PENDING) {
 			userEmployee.setAccountStatus(AccountStatus.ACTIVE);
 			isUpdated = true;
-			log.info("validateGuestUserSignInOtp: Account status updated to ACTIVE for employeeId={}",
+			log.info("performGuestUserOtpValidation: Account status updated to ACTIVE for employeeId={}",
 					userEmployee.getEmployeeId());
 		}
 
 		if (isUpdated) {
 			employeeDao.save(userEmployee);
-			log.info("validateGuestUserSignInOtp: Employee entity updated for employeeId={}",
+			log.info("performGuestUserOtpValidation: Employee entity updated for employeeId={}",
 					userEmployee.getEmployeeId());
 		}
 
+		log.info("performGuestUserOtpValidation: OTP verified and updated for userId={}", user.getUserId());
+		return buildSignInResponse(user, userEmployee, response);
+	}
+
+	private ResponseEntityDto buildSignInResponse(User user, Employee userEmployee, HttpServletResponse response) {
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(userEmployee);
 
@@ -774,13 +792,23 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
 
+		if (response != null) {
+			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(cookie);
+			log.info("buildSignInResponse: Added refresh token cookie for userId={}", user.getUserId());
+		}
+
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
-		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("validateGuestUserSignInOtp: OTP verified and updated for userId={}", user.getUserId());
+		if (response == null) {
+			signInResponseDto.setRefreshToken(refreshToken);
+		}
+
+		log.info("buildSignInResponse: Sign-in response built for userId={}", user.getUserId());
 		return new ResponseEntityDto(false, signInResponseDto);
 	}
 
