@@ -163,8 +163,6 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.verification.document.access.daily.otp.limit.reached"),
 	ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS("ep.esign.error.verification.too.many.attempts"),
 
-	ESIGN_RESPONSE_VERIFICATION_DISABLED("ep.esign.response.multi.factor.authentication.disabled"),
-	ESIGN_RESPONSE_VERIFICATION_ENABLED_VIA_SMS("ep.esign.response.multi.factor.authentication.enabled.via.sms"),
 	ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS("ep.esign.response.verification.otp.sent.via.sms"),
 	ESIGN_ERROR_VERIFICATION_NOT_FOUND("ep.esign.error.verification.not-found"),
 	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0("ep.esign.error.verification.lockout.level-0"),

@@ -53,8 +53,6 @@ public interface DocumentLinkService {
 	ResponseEntityDto resendOtpFromDocumentAndRecipientId(
 			RecipientConvertToOtpRequestDto recipientConvertToOtpRequestDto, boolean isResend);
 
-	ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId);
-
 	record DocumentLinkData(DocumentLink documentLink, String accessUrl) {
 	}
 

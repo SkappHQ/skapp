@@ -611,24 +611,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		return sendVerificationToRecipient(null, document, recipient, isResend);
 	}
 
-	@Override
-	public ResponseEntityDto getRecipientDocumentVerificationData(Long documentId, Long recipientId) {
-
-		Recipient recipient = validateAndGetRecipient(documentId, recipientId);
-
-		validateTokenFlows(false, recipient, documentId);
-
-		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
-
-		if (isVerificationEnabled) {
-
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_ENABLED_VIA_SMS);
-
-		}
-
-		return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_RESPONSE_VERIFICATION_DISABLED);
-	}
-
 	private String generateAndEnsureUniqueUuidWithRetry() {
 		int maxRetries = 3;
 		int retryCount = 0;

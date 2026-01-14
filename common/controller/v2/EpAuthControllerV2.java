@@ -10,6 +10,7 @@ import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,14 @@ public class EpAuthControllerV2 {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/session/signin/sso/google")
+	public ResponseEntity<ResponseEntityDto> ssoGoogleSignInWithCookie(
+			@Valid @RequestBody EpSignInGoogleDataDto epSignUpGoogleDataDto, HttpServletResponse httpServletResponse) {
+		ResponseEntityDto response = epAuthServiceV2.ssoGoogleSignInWithCookie(epSignUpGoogleDataDto,
+				httpServletResponse);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	// Endpoint to handle redirection from Google after authentication
 	@GetMapping(value = "/sso/google/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
 	public RedirectView ssoGoogleSignInRedirect(@Valid EpGoogleAuthRedirectDto epGoogleAuthRedirectDto) {
@@ -67,6 +76,15 @@ public class EpAuthControllerV2 {
 	public ResponseEntity<ResponseEntityDto> ssoMicrosoftSignIn(
 			@Valid @RequestBody EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto) {
 		ResponseEntityDto response = epAuthServiceV2.ssoMicrosoftSignIn(epSignUpMicrosoftDataDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/session/signin/sso/microsoft")
+	public ResponseEntity<ResponseEntityDto> ssoMicrosoftSignInWithCookie(
+			@Valid @RequestBody EpSignInMicrosoftDataDto epSignUpMicrosoftDataDto,
+			HttpServletResponse httpServletResponse) {
+		ResponseEntityDto response = epAuthServiceV2.ssoMicrosoftSignInWithCookie(epSignUpMicrosoftDataDto,
+				httpServletResponse);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

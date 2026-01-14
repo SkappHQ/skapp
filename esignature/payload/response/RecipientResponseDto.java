@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import lombok.Getter;
@@ -22,5 +23,9 @@ public class RecipientResponseDto {
 	private boolean isConsent;
 
 	private AddressBookBasicResponseDto addressBook;
+
+	private boolean isMfaVerificationEnabled;
+
+	private EsignVerificationType mfaVerificationMethod;
 
 }

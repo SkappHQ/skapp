@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.payload.request.EpPasswordResetNewPasswordDto
 import com.skapp.enterprise.common.payload.request.EpPasswordResetOtpVerifyDto;
 import com.skapp.enterprise.common.payload.request.EpSignInGoogleDataDto;
 import com.skapp.enterprise.common.payload.request.EpSignUpGoogleDataDto;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 public interface EpAuthService {
@@ -42,6 +43,9 @@ public interface EpAuthService {
 	ResponseEntityDto verifyTenantAvailability(String subDomainName);
 
 	ResponseEntityDto validateCodeChallenge(CodeChallengeRequestDto codeChallengeRequestDto);
+
+	ResponseEntityDto validateCodeChallengeWithCookie(CodeChallengeRequestDto codeChallengeRequestDto,
+			HttpServletResponse response);
 
 	ResponseEntityDto sendGuestUserSignInOtp(EpGuestUserSignInRequestDto epGuestUserSignInRequestDto);
 
