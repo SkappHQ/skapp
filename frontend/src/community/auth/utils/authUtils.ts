@@ -70,7 +70,6 @@ export interface User {
   tier?: TierEnum;
   tenantId?: string;
   tenantStatus?: TenantStatusEnums;
-  isTemporaryUser?: boolean;
 }
 
 // Flag to prevent recursive token refresh
@@ -221,8 +220,7 @@ export const extractUserFromToken = (token: string): User | null => {
       employee: claims?.employee,
       tier: claims?.tier as TierEnum,
       tenantId: claims?.tenantId,
-      tenantStatus: claims?.tenantStatus,
-      isTemporaryUser: claims?.isTemporaryUser ?? false
+      tenantStatus: claims?.tenantStatus
     };
   } catch (error) {
     console.error("Failed to extract user from token:", error);
