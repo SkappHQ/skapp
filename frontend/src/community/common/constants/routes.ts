@@ -101,6 +101,7 @@ const ROUTES = {
     REVIEW: "/sign/review",
     INFO: "/sign/info",
     DOCUMENT_ACCESS: "/sign/document/access",
+    MFA_VERIFY: "/sign/document/mfa-verify",
     COMPLETE: "/sign/complete",
     SENT_INFO: {
       BASE: "/sign/sent/envelope",
