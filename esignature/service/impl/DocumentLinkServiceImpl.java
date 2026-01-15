@@ -853,7 +853,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						EsignVerificationEventType.OTP_GENERATED, Instant.now(),
 						verificationSession.getConcurrentAccessCount(), 0, 0);
 
-				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA, recipient.getId());
+				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA,
+						recipientData.getId());
 			}
 
 		}
@@ -923,7 +924,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 						esignVerification.getResendCount());
 
-				remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, lastAttemptTime).getSeconds());
+				remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, nextAllowedAttempt).getSeconds());
 
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_COOLDOWN_LOCK,
 						new String[] { remainingTimeInSeconds });
