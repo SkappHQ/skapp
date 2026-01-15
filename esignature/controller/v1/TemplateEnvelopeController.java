@@ -27,7 +27,7 @@ public class TemplateEnvelopeController {
 	@Operation(summary = "Create a new template for an envelope",
 			description = "This endpoint creates a new envelope template with the provided details.")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> createNewEnvelopeTemplate(
 			@Valid @RequestBody TemplateEnvelopeDto envelopeTemplateDto) {
 		ResponseEntityDto response = templateEnvelopeService.createNewEnvelopeTemplate(envelopeTemplateDto);
@@ -37,7 +37,7 @@ public class TemplateEnvelopeController {
 	@Operation(summary = "Validate Envelope Template Name",
 			description = "This endpoint returns if the envelope template name already exists or not.")
 	@GetMapping(value = "/name-exists", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> searchTemplateNameExists(@RequestParam String name) {
 		ResponseEntityDto response = templateEnvelopeService.searchTemplateNameExists(name);
 		return new ResponseEntity<>(response, HttpStatus.OK);

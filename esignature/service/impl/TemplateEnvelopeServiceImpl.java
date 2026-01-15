@@ -145,7 +145,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		validateEnvelopeTemplateName(envelopeTemplateDto.getName());
 
 		TemplateEnvelope templateEnvelope = new TemplateEnvelope();
-		templateEnvelope.setName(envelopeTemplateDto.getName());
+		templateEnvelope.setName(envelopeTemplateDto.getName().trim());
 		templateEnvelope.setSubject(envelopeTemplateDto.getSubject());
 		templateEnvelope.setMessage(envelopeTemplateDto.getMessage());
 		templateEnvelope.setSignType(envelopeTemplateDto.getSignType());
@@ -261,12 +261,16 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private void validateEnvelopeTemplateName(String envelopeTemplateName) {
 
-		if (envelopeTemplateName.length() > ENVELOPE_TEMPLATE_NAME_MAX_LENGTH) {
+		if (envelopeTemplateName == null || envelopeTemplateName.trim().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED);
+		}
+
+		if (envelopeTemplateName.trim().length() > ENVELOPE_TEMPLATE_NAME_MAX_LENGTH) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED);
 		}
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
-			.findByNameIgnoreCase(envelopeTemplateName);
+			.findByNameIgnoreCase(envelopeTemplateName.trim());
 
 		if (templateEnvelopeOptional.isPresent()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
@@ -276,13 +280,32 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private void validateEnvelopeTemplateDocument(List<Long> documentIds) {
 
+		if (documentIds == null || documentIds.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
+		}
+
+		List<Long> ids = documentIds.stream().filter(Objects::nonNull).distinct().toList();
+
+		if (ids.isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
+		}
+
 		if (documentIds.size() > ENVELOPE_TEMPLATE_MAX_DOCUMENT_COUNT) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED);
 		}
+
 	}
 
 	private void validateEnvelopeTemplateRecipients(List<TemplateRecipientDto> recipientTemplates,
 			List<Long> documentIds) {
+
+		boolean noRecipientFieldDocuments = recipientTemplates.stream()
+			.flatMap(recipient -> recipient.getTemplateFields().stream())
+			.anyMatch(field -> field.getTemplateDocumentId() == null);
+
+		if (noRecipientFieldDocuments) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+		}
 
 		boolean hasInvalidDocumentId = recipientTemplates.stream()
 			.flatMap(recipient -> recipient.getTemplateFields().stream())
@@ -290,6 +313,14 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		if (hasInvalidDocumentId) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
+		}
+
+		boolean hasNoRecipientRole = recipientTemplates.stream()
+			.anyMatch(
+					recipient -> recipient.getRecipientRole() == null || recipient.getRecipientRole().trim().isEmpty());
+
+		if (hasNoRecipientRole) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_REQUIRED);
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()

@@ -63,7 +63,7 @@ public class AmazonS3Controller {
 	}
 
 	@PostMapping(value = "/esign/files/envelope/template/signed-url", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_ADMIN', 'ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> getPreSignedS3UrlForEsignEnvelopeTemplate(
 			@Valid @RequestBody AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
 		ResponseEntityDto response = amazonS3Service.getSignedUrlForEnvelopeTemplate(amazonS3SignedUrlRequestDto);
