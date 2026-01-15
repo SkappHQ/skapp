@@ -156,26 +156,14 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_MFA_NOT_VALIDATED("ep.esign.error.mfa.not.validated"),
 	ESIGN_ERROR_USER_VERIFICATION_NOT_FOUND("ep.esign.error.recipient.verification.not-found"),
 	ESIGN_ERROR_VERIFICATION_CODE_INVALID("ep.esign.error.verification.code.invalid"),
-	ESIGN_ERROR_VERIFICATION_MAX_ATTEMPTS_REACHED("ep.esign.error.verification.max.attempts.reached"),
-	ESIGN_ERROR_OTP_REQUEST_COOLDOWN_ACTIVE("ep.esign.error.otp.request.cooldown.active"),
 	ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION("ep.esign.error.invalid.inputs.for.otp.verification"),
-	ESIGN_ERROR_VERIFICATION_DAILY_OTP_LIMIT_REACHED(
-			"ep.esign.error.verification.document.access.daily.otp.limit.reached"),
-	ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS("ep.esign.error.verification.too.many.attempts"),
-
 	ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS("ep.esign.response.verification.otp.sent.via.sms"),
 	ESIGN_ERROR_VERIFICATION_NOT_FOUND("ep.esign.error.verification.not-found"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0("ep.esign.error.verification.lockout.level-0"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1("ep.esign.error.verification.lockout.level-1"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2("ep.esign.error.verification.lockout.level-2"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3("ep.esign.error.verification.lockout.level-3"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.lockout.max-level"),
-	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.verification.document.access.blocked"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0("ep.esign.error.verification.attempt.lockout.level-0"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1("ep.esign.error.verification.attempt.lockout.level-1"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2("ep.esign.error.verification.attempt.lockout.level-2"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3("ep.esign.error.verification.attempt.lockout.level-3"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level");
+	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.otp.generation.document.access.blocked"),
+	ESIGN_ERROR_OTP_GENERATION_COOLDOWN_LOCK("ep.esign.error.otp.generation.cooldown.lock"),
+	ESIGN_ERROR_OTP_GENERATION_BLOCKED("ep.esign.error.otp.generation.blocked"),
+	ESIGN_ERROR_VERIFICATION_COOLDOWN_LOCK("ep.esign.error.otp.verification.attempt.cooldown.lock"),
+	ESIGN_ERROR_VERIFICATION_BLOCKED("ep.esign.error.otp.verification.attempt.blocked");
 
 	private final String messageKey;
 
