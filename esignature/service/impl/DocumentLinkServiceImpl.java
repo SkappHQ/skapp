@@ -355,7 +355,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
 
-		if (isVerificationEnabled && getMfaVerificationStatus(null, documentId, recipientId)) {
+		if (isVerificationEnabled && !getMfaVerificationStatus(null, documentId, recipientId)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
@@ -501,7 +501,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
 
-		if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
+		if (isVerificationEnabled && !getMfaVerificationStatus(documentLink, null, null)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
