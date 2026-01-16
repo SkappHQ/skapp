@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,8 +17,8 @@ public class TemplateEnvelopeData {
 
 	private AddressBookBasicResponseDto owner;
 
-	private LocalDate createdAt;
+	private LocalDate createdDate;
 
-	private LocalDate lastUpdatedAt;
+	private LocalDate lastModifiedDate;
 
 }

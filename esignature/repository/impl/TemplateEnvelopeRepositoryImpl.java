@@ -73,9 +73,10 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<TemplateEnvelope> countRoot = countQuery.from(TemplateEnvelope.class);
-		Join<TemplateEnvelope, AddressBook> countAddressBookJoin = countRoot.join(TemplateEnvelope_.owner, JoinType.LEFT);
-		List<Predicate> countPredicates = buildPredicates(templateEnvelopeFilterDto, isAllEnvelopeTemplates, cb, countRoot,
-				countAddressBookJoin, userId);
+		Join<TemplateEnvelope, AddressBook> countAddressBookJoin = countRoot.join(TemplateEnvelope_.owner,
+				JoinType.LEFT);
+		List<Predicate> countPredicates = buildPredicates(templateEnvelopeFilterDto, isAllEnvelopeTemplates, cb,
+				countRoot, countAddressBookJoin, userId);
 		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
 
 		Long totalElements = entityManager.createQuery(countQuery).getSingleResult();

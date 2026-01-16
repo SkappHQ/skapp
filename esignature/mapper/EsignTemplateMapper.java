@@ -7,6 +7,7 @@ import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplat
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeData;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface EsignTemplateMapper {
@@ -19,6 +20,8 @@ public interface EsignTemplateMapper {
 	DocumentTemplateDetailResponseDto templateDocumentToDocumentTemplateDetailResponseDto(
 			TemplateDocument templateDocument);
 
+	@Mapping(source = "createdDate", target = "createdDate")
+	@Mapping(source = "lastModifiedDate", target = "lastModifiedDate")
 	TemplateEnvelopeData templateEnvelopeToTemplateEnvelopeData(TemplateEnvelope templateEnvelope);
 
 }
