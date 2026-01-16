@@ -4,7 +4,7 @@ interface Props {
   fill?: string;
 }
 
-function SecurityLockIcon({ fill = "black" }: Props): JSX.Element {
+const SecurityLockIcon = ({ fill = "black" }: Props): JSX.Element => {
   return (
     <svg
       width="16"
@@ -29,6 +29,6 @@ function SecurityLockIcon({ fill = "black" }: Props): JSX.Element {
       />
     </svg>
   );
-}
+};
 
 export default SecurityLockIcon;
