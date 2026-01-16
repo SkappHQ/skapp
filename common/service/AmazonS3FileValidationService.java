@@ -6,4 +6,6 @@ public interface AmazonS3FileValidationService {
 
 	void validateS3FileUpload(AmazonS3SignedUrlValidatedRequestDto amazonS3SignedUrlValidatedRequestDto);
 
+	void validateS3FileUploadFileType(String fileType);
+
 }

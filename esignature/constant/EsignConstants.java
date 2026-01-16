@@ -99,4 +99,6 @@ public class EsignConstants {
 
 	public static final int VERIFICATION_LOCKOUT_LEVEL_RESET_DAYS = 1;
 
+	public static final String SUCCESSFUL = "successful";
+
 }

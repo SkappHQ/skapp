@@ -27,4 +27,6 @@ public interface AmazonS3Service {
 	ResponseEntityDto getSignedUrlWithFileValidations(
 			@Valid AmazonS3SignedUrlValidatedRequestDto amazonS3SignedUrlValidatedRequestDto);
 
+	ResponseEntityDto getSignedUrlForEnvelopeTemplate(AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto);
+
 }
