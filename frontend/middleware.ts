@@ -1,6 +1,7 @@
-import { NextRequestWithAuth, withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
+import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
@@ -170,137 +171,134 @@ const allowedRoutes: Record<
   ...commonRoutes
 };
 
-export default withAuth(
-  async function middleware(request: NextRequestWithAuth) {
-    const currentPath = request.nextUrl.pathname;
+export function middleware(request: NextRequest) {
+  // Get accessToken from cookies
+  const token = request.cookies.get("accessToken")?.value;
 
-    if (
-      currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-      currentPath.startsWith(ROUTES.SIGN.SIGN) ||
-      currentPath.startsWith(ROUTES.SIGN.INFO)
-    ) {
-      return NextResponse.next();
-    }
-    const { token } = request.nextauth;
+  const claims = extractClaimsFromToken(token || "");
 
-    const roles: (
-      | AdminTypes
-      | ManagerTypes
-      | EmployeeTypes
-      | SuperAdminType
-      | SenderTypes
-    )[] = token?.roles || [];
+  const currentPath = request.nextUrl.pathname;
 
-    const isPasswordChangedForTheFirstTime =
-      token?.isPasswordChangedForTheFirstTime;
+  if (
+    currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
+    currentPath.startsWith(ROUTES.SIGN.SIGN) ||
+    currentPath.startsWith(ROUTES.SIGN.INFO)
+  ) {
+    return NextResponse.next();
+  }
 
-    if (
-      !isPasswordChangedForTheFirstTime &&
-      currentPath !== ROUTES.AUTH.RESET_PASSWORD
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
-      );
-    } else if (
-      isPasswordChangedForTheFirstTime &&
-      currentPath === ROUTES.AUTH.RESET_PASSWORD
-    ) {
-      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
-    }
+  const roles: (
+    | AdminTypes
+    | ManagerTypes
+    | EmployeeTypes
+    | SuperAdminType
+    | SenderTypes
+  )[] = claims?.roles || [];
 
-    if (
-      roles.includes(ManagerTypes.LEAVE_MANAGER) &&
-      !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-      currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
+  const isPasswordChangedForTheFirstTime =
+    request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
 
-    if (
-      currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
-      !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
-      !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
-      !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
-    ) {
-      if (roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) {
-        return NextResponse.redirect(
-          new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
-        );
-      }
-    }
-
-    const isAllowed = roles.some((role) =>
-      allowedRoutes[role]?.some((url) =>
-        request.nextUrl.pathname.startsWith(url)
-      )
+  if (
+    !isPasswordChangedForTheFirstTime &&
+    currentPath !== ROUTES.AUTH.RESET_PASSWORD
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
     );
+  } else if (
+    isPasswordChangedForTheFirstTime &&
+    currentPath === ROUTES.AUTH.RESET_PASSWORD
+  ) {
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+  }
 
-    if (isAllowed) {
-      if (
-        request.nextUrl.pathname.includes(ROUTES.SIGN.BASE) &&
-        !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-      ) {
-        return NextResponse.redirect(
-          new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-        );
-      }
+  if (
+    roles.includes(ManagerTypes.LEAVE_MANAGER) &&
+    !roles.includes(AdminTypes.LEAVE_ADMIN) &&
+    currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+    );
+  }
 
-      if (
-        request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-        token?.tier !== "PRO"
-      ) {
-        return NextResponse.redirect(
-          new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-        );
-      }
-
-      // Check manager restricted routes
-      const managerRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        managerRestrictedRoutes,
-        AdminTypes.PEOPLE_ADMIN,
-        roles
-      );
-      if (managerRedirect) return managerRedirect;
-
-      // Check invoice employee restricted routes
-      const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        invoiceEmployeeRestrictedRoutes,
-        ManagerTypes.INVOICE_MANAGER,
-        roles
-      );
-      if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
-
-      // Check employee restricted routes
-      const employeeRedirect = checkRestrictedRoutesAndRedirect(
-        request,
-        employeeRestrictedRoutes,
-        ManagerTypes.PEOPLE_MANAGER,
-        roles
-      );
-      if (employeeRedirect) return employeeRedirect;
-
-      return NextResponse.next();
-    }
-
-    // Redirect to /unauthorized if no access
-    if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
+  if (
+    currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
+    !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
+    !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
+    !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
+  ) {
+    if (roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) {
       return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+        new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
       );
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token
     }
   }
-);
 
-// Define the matcher patterns for this middleware
+  const isAllowed = roles.some((role) =>
+    allowedRoutes[role]?.some((url) => request.nextUrl.pathname.startsWith(url))
+  );
+
+  if (isAllowed) {
+    if (
+      request.nextUrl.pathname.includes(ROUTES.SIGN.BASE) &&
+      !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    if (
+      request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
+      claims?.tier !== "PRO"
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    // Check manager restricted routes
+    const managerRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      managerRestrictedRoutes,
+      AdminTypes.PEOPLE_ADMIN,
+      roles
+    );
+    if (managerRedirect) return managerRedirect;
+
+    // Check invoice employee restricted routes
+    const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      invoiceEmployeeRestrictedRoutes,
+      ManagerTypes.INVOICE_MANAGER,
+      roles
+    );
+    if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
+
+    // Check employee restricted routes
+    const employeeRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      employeeRestrictedRoutes,
+      ManagerTypes.PEOPLE_MANAGER,
+      roles
+    );
+    if (employeeRedirect) return employeeRedirect;
+
+    return NextResponse.next();
+  }
+
+  // Redirect to /unauthorized if no access
+  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+    );
+  } else {
+    return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
+  }
+}
+
+// Configure which routes middleware should run on
 export const config = {
   matcher: [
     // All community routes

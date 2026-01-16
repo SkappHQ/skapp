@@ -1,9 +1,9 @@
 import { Badge, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import ClockWidget from "~community/attendance/components/molecules/ClockWidget/ClockWidget";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUnreadNotificationsCount } from "~community/common/api/notificationsApi";
 import { notificationsQueryKeys } from "~community/common/api/utils/QueryKeys";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -31,7 +31,7 @@ const AppBar = () => {
 
   const { handleDrawer } = useDrawer();
 
-  const { data: session, status } = useSession();
+  const { user } = useAuth();
 
   const userInfoRef = useRef<HTMLDivElement | null>(null);
   const { notifyData, setNotifyData } = useCommonStore((state) => state);
@@ -68,9 +68,9 @@ const AppBar = () => {
 
   useEffect(() => {
     setShowClockWidget(
-      session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE) || false
+      user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE) || false
     );
-  }, [session]);
+  }, [user]);
 
   return (
     <>

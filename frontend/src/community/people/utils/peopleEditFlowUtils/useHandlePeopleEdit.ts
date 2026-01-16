@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -12,6 +11,7 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import { handleError } from "../directoryUtils/addNewResourceFlowUtils/addNewResourceUtils";
 import uploadImage from "../image/uploadImage";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 export const useHandlePeopleEdit = () => {
   const { profilePic, thumbnail, setCommonDetails } = usePeopleStore(
@@ -26,14 +26,14 @@ export const useHandlePeopleEdit = () => {
 
   let employeeId;
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const { id } = router.query;
 
   const asPath = router.asPath;
 
   if (asPath === ROUTES.PEOPLE.ACCOUNT) {
-    employeeId = data?.user?.userId;
+    employeeId = user?.userId;
   } else {
     employeeId = id;
   }

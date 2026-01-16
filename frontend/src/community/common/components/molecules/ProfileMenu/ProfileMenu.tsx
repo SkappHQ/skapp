@@ -1,9 +1,9 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
@@ -25,9 +25,9 @@ interface Props {
 const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const router = useRouter();
   const translateText = useTranslator("appBar");
-  const { data: session } = useSession();
+  const { user, signOut } = useAuth();
   const { data: employee } = useGetUserPersonalDetails();
-  const isPeopleManagerOrSuperAdmin = session?.user.roles?.includes(
+  const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
   );
 
@@ -70,10 +70,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
     typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
 
   const handleSignOut = async () => {
-    await signOut({
-      callbackUrl: `/signin?tenantId=${tenantId}`,
-      redirect: true
-    });
+    await signOut();
   };
 
   return (
