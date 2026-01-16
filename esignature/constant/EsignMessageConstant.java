@@ -211,7 +211,17 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.document-template.already.associated.with-envelope-template"),
 	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.error.document-template.deletion.failed"),
-	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty");
+	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty"),
+
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND("ep.esign.error.envelope-template.not-found"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_ACCESS_DENIED("ep.esign.error.envelope-template.access.denied"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ID_REQUIRED(
+			"ep.esign.error.envelope-template.custody.transfer.new-owner.id.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ROLE_INVALID(
+			"ep.esign.error.envelope-template.custody.transfer.new-owner.role.invalid"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED("ep.esign.success.envelope-template.custody.transferred");
+	;
 
 	private final String messageKey;
 

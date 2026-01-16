@@ -1,15 +1,20 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
+import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -20,10 +25,12 @@ import com.skapp.enterprise.esignature.model.TemplateEnvelopeSetting;
 import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeData;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
@@ -31,8 +38,14 @@ import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 
+import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,6 +78,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private final EsignTemplateMapper esignTemplateMapper;
 
 	private final MessageUtil messageUtil;
+
+	private final AmazonS3Service amazonS3Service;
+
+	@Value("${aws.s3.bucket-name}")
+	private String bucketName;
 
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
@@ -120,6 +138,85 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_NAME_READY_TO_USE), false);
+
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeTemplates(TemplateEnvelopeFilterDto templateEnvelopeFilterDto) {
+
+		User currentUser = userService.getCurrentUser();
+
+		boolean isAllSentEnvelopes = validateAccessFromUserRole(currentUser);
+
+		Pageable pageable = templateEnvelopeFilterDto.getSize() <= 0 ? Pageable.unpaged() : PageRequest.of(
+				templateEnvelopeFilterDto.getPage(), templateEnvelopeFilterDto.getSize(),
+				Sort.by(templateEnvelopeFilterDto.getSortOrder(), templateEnvelopeFilterDto.getSortKey().toString()));
+
+		Page<TemplateEnvelope> templateEnvelopesPage = templateEnvelopeDao.findAllTemplateEnvelopesByFilter(
+				templateEnvelopeFilterDto, currentUser.getUserId(), isAllSentEnvelopes, pageable);
+
+		List<TemplateEnvelopeData> mappedItems = templateEnvelopesPage.getContent()
+			.stream()
+			.map(esignTemplateMapper::templateEnvelopeToTemplateEnvelopeData)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(mappedItems);
+		pageDto.setCurrentPage(templateEnvelopesPage.getNumber());
+		pageDto.setTotalItems(templateEnvelopesPage.getTotalElements());
+		pageDto.setTotalPages(templateEnvelopesPage.getTotalPages());
+
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	public ResponseEntityDto getEnvelopeTemplateById(Long id) {
+
+		User currentUser = userService.getCurrentUser();
+
+		boolean isAllSentEnvelopes = validateAccessFromUserRole(currentUser);
+
+		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao.findById(id);
+
+		if (templateEnvelopeOptional.isEmpty()) {
+			throw new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND);
+		}
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeOptional.get();
+
+		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
+			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
+
+		if (!isAllSentEnvelopes) {
+			if ((templateEnvelope.getOwner().getType().equals(UserType.INTERNAL)
+					&& !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId()))
+					|| templateEnvelope.getOwner().getType().equals(UserType.EXTERNAL)) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_ACCESS_DENIED);
+			}
+
+		}
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto deleteEnvelopeTemplate(Long id) {
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
+
+		templateEnvelope.getTemplateDocuments().forEach(tempDocument -> {
+			AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
+			amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + tempDocument.getFilePath());
+
+			amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
+		});
+
+		templateEnvelopeDao.delete(templateEnvelope);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED), false);
 
 	}
 
@@ -349,6 +446,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_DUPLICATED);
 		}
 
+	}
+
+	private boolean validateAccessFromUserRole(User currentUser) {
+
+		return currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.ESIGN_ADMIN)
+				|| currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.SUPER_ADMIN);
 	}
 
 }

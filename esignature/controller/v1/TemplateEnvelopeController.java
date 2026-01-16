@@ -2,20 +2,17 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,6 +37,35 @@ public class TemplateEnvelopeController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> searchTemplateNameExists(@RequestParam String name) {
 		ResponseEntityDto response = templateEnvelopeService.searchTemplateNameExists(name);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Envelope Templates",
+			description = "This endpoint returns a list of the envelope templates in the paginated format.")
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeTemplates(
+			@Valid TemplateEnvelopeFilterDto templateEnvelopeFilterDto) {
+		ResponseEntityDto response = templateEnvelopeService.getEnvelopeTemplates(templateEnvelopeFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve Envelope Template by ID",
+			description = "This endpoint returns an envelope template by ID.")
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> getEnvelopeTemplateById(
+			@PathVariable @Schema(description = "ID of the envelope template to retrieve", example = "1") Long id) {
+		ResponseEntityDto response = templateEnvelopeService.getEnvelopeTemplateById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete Envelope Template",
+			description = "This endpoint allows deleting an envelope template by its ID")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> deleteEnvelopeTemplate(@PathVariable Long id) {
+		ResponseEntityDto response = templateEnvelopeService.deleteEnvelopeTemplate(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
