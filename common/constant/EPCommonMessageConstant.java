@@ -183,7 +183,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_SEND_MESSAGE_ERROR("ep.common.error.send-message-error"),
 	EP_COMMON_SEND_MESSAGE_ERROR_PHONE_NUMBER_NOT_AVAILABLE(
 			"ep.common.error.send-message-error-phone.number-not-available"),
-	EP_COMMON_SEND_MESSAGE_ERROR_CONTENT_NOT_AVAILABLE("ep.common.error.send-message-error-content-not-available");
+	EP_COMMON_SEND_MESSAGE_ERROR_CONTENT_NOT_AVAILABLE("ep.common.error.send-message-error-content-not-available"),
+	EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT("ep.common.error.tenant-status-not-pro-account");
 
 	private final String messageKey;
 

@@ -187,7 +187,31 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1("ep.esign.error.verification.attempt.lockout.level-1"),
 	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2("ep.esign.error.verification.attempt.lockout.level-2"),
 	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3("ep.esign.error.verification.attempt.lockout.level-3"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level");
+	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level"),
+
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS("ep.esign.error.envelope-template.name.already.exists"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_NAME_READY_TO_USE("ep.esign.success.envelope-template.name.ready.to.use"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED("ep.esign.error.envelope-template.document.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_MAX_LIMIT_EXCEEDED(
+			"ep.esign.error.envelope-template.document.max.limit.exceeded"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND("ep.esign.error.template-document.id.not-found"),
+	ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE(
+			"ep.esign.error.template-document.already.assigned-to-template-envelope"),
+	ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID("ep.esign.error.invalid.template-document.id"),
+	ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_REQUIRED("ep.esign.error.template-recipient.role.required"),
+	ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED(
+			"ep.esign.error.template-recipient.role.max.length.exceeded"),
+	ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_DUPLICATED("ep.esign.error.template-recipient.role.duplicated"),
+	ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED(
+			"ep.esign.error.template-recipient.field.document-id.required"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND("ep.esign.error.document-template.not-found"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE(
+			"ep.esign.error.document-template.already.associated.with-envelope-template"),
+	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.error.document-template.deletion.failed"),
+	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty");
 
 	private final String messageKey;
 

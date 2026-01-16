@@ -192,6 +192,21 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	}
 
 	@Override
+	public ResponseEntityDto getSignedUrlForEnvelopeTemplate(AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto) {
+
+		log.info("Generating signed URL for action: {}", amazonS3SignedUrlRequestDto.getAction());
+
+		amazonS3FileValidationService.validateS3FileUploadFileType(amazonS3SignedUrlRequestDto.getFileType());
+
+		AmazonS3SignedUrlResponseDto responseDto = new AmazonS3SignedUrlResponseDto();
+		responseDto.setSignedUrl(
+				generateSignedUrl(amazonS3SignedUrlRequestDto.getAction(), amazonS3SignedUrlRequestDto.getFolderPath(),
+						amazonS3SignedUrlRequestDto.getFileType(), EpCommonConstants.S3_SIGNED_URL_DURATION));
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
 	public byte[] downloadFileAsBytes(String bucketName, String objectKey) {
 		try {
 			log.info("Downloading file from S3... : downloadFileAsBytes");
