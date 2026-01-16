@@ -12,4 +12,6 @@ public interface TemplateDocumentService {
 
 	ResponseEntityDto deleteDocumentTemplate(Long id);
 
+	ResponseEntityDto deleteDocumentTemplateFromS3(String filePath);
+
 }

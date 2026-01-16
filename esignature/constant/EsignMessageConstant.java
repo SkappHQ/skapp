@@ -203,12 +203,11 @@ public enum EsignMessageConstant implements MessageConstant {
 
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND("ep.esign.error.envelope-template.not-found"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_ACCESS_DENIED("ep.esign.error.envelope-template.access.denied"),
-	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ID_REQUIRED(
-			"ep.esign.error.envelope-template.custody.transfer.new-owner.id.required"),
-	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ROLE_INVALID(
-			"ep.esign.error.envelope-template.custody.transfer.new-owner.role.invalid"),
-	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED("ep.esign.success.envelope-template.custody.transferred");
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED(
+			"ep.esign.error.document-template.modification.and-deletion.access.denied"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED(
+			"ep.esign.error.envelope-template.modification.and-deletion.access.denied"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted");
 
 	private final String messageKey;
 

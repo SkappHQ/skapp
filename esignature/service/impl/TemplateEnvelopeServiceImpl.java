@@ -34,11 +34,13 @@ import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelop
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
+import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 
 import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.util.EsignTemplateAccessRoleValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,7 +81,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final MessageUtil messageUtil;
 
-	private final AmazonS3Service amazonS3Service;
+	private final TemplateDocumentService templateDocumentService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -146,7 +148,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllEnvelopeTemplates = validateAccessFromUserRole(currentUser);
+		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
 
 		Pageable pageable = templateEnvelopeFilterDto.getSize() <= 0 ? Pageable.unpaged() : PageRequest.of(
 				templateEnvelopeFilterDto.getPage(), templateEnvelopeFilterDto.getSize(),
@@ -174,7 +176,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllEnvelopeTemplates = validateAccessFromUserRole(currentUser);
+		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao.findById(id);
 
@@ -202,15 +204,21 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Override
 	public ResponseEntityDto deleteEnvelopeTemplate(Long id) {
 
+		User currentUser = userService.getCurrentUser();
+
+		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+
 		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
 
-		templateEnvelope.getTemplateDocuments().forEach(tempDocument -> {
-			AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
-			amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + tempDocument.getFilePath());
+		if (!isAllEnvelopeTemplates && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
 
-			amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
+		templateEnvelope.getTemplateDocuments().forEach(tempDocument -> {
+			templateDocumentService.deleteDocumentTemplateFromS3(tempDocument.getFilePath());
 		});
 
 		templateEnvelopeDao.delete(templateEnvelope);
@@ -446,12 +454,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_DUPLICATED);
 		}
 
-	}
-
-	private boolean validateAccessFromUserRole(User currentUser) {
-
-		return currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.ESIGN_ADMIN)
-				|| currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.SUPER_ADMIN);
 	}
 
 }
