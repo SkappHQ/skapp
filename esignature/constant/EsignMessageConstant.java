@@ -171,17 +171,11 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_INVALID_INPUTS_FOR_OTP_VERIFICATION("ep.esign.error.invalid.inputs.for.otp.verification"),
 	ESIGN_RESPONSE_VERIFICATION_OTP_SENT_VIA_SMS("ep.esign.response.verification.otp.sent.via.sms"),
 	ESIGN_ERROR_VERIFICATION_NOT_FOUND("ep.esign.error.verification.not-found"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0("ep.esign.error.verification.lockout.level-0"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1("ep.esign.error.verification.lockout.level-1"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2("ep.esign.error.verification.lockout.level-2"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3("ep.esign.error.verification.lockout.level-3"),
-	ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.lockout.max-level"),
-	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.verification.document.access.blocked"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0("ep.esign.error.verification.attempt.lockout.level-0"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1("ep.esign.error.verification.attempt.lockout.level-1"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2("ep.esign.error.verification.attempt.lockout.level-2"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3("ep.esign.error.verification.attempt.lockout.level-3"),
-	ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL("ep.esign.error.verification.attempt.lockout.max-level"),
+	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.otp.generation.document.access.blocked"),
+	ESIGN_ERROR_OTP_GENERATION_COOLDOWN_LOCK("ep.esign.error.otp.generation.cooldown.lock"),
+	ESIGN_ERROR_OTP_GENERATION_BLOCKED("ep.esign.error.otp.generation.blocked"),
+	ESIGN_ERROR_VERIFICATION_COOLDOWN_LOCK("ep.esign.error.otp.verification.attempt.cooldown.lock"),
+	ESIGN_ERROR_VERIFICATION_BLOCKED("ep.esign.error.otp.verification.attempt.blocked"),
 
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED("ep.esign.error.envelope-template.name.required"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED("ep.esign.error.envelope-template.name.max.length.exceeded"),
@@ -206,11 +200,6 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.error.document-template.deletion.failed"),
 	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty");
-	ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED("ep.esign.error.otp.generation.document.access.blocked"),
-	ESIGN_ERROR_OTP_GENERATION_COOLDOWN_LOCK("ep.esign.error.otp.generation.cooldown.lock"),
-	ESIGN_ERROR_OTP_GENERATION_BLOCKED("ep.esign.error.otp.generation.blocked"),
-	ESIGN_ERROR_VERIFICATION_COOLDOWN_LOCK("ep.esign.error.otp.verification.attempt.cooldown.lock"),
-	ESIGN_ERROR_VERIFICATION_BLOCKED("ep.esign.error.otp.verification.attempt.blocked");
 
 	private final String messageKey;
 
