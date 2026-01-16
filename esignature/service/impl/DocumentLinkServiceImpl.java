@@ -355,7 +355,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(recipient);
 
-		if (isVerificationEnabled && getMfaVerificationStatus(null, documentId, recipientId)) {
+		if (isVerificationEnabled && !getMfaVerificationStatus(null, documentId, recipientId)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
@@ -501,7 +501,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		boolean isVerificationEnabled = validateMfaVerificationEnable(documentLink.getRecipientId());
 
-		if (isVerificationEnabled && getMfaVerificationStatus(documentLink, null, null)) {
+		if (isVerificationEnabled && !getMfaVerificationStatus(documentLink, null, null)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
@@ -853,7 +853,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						EsignVerificationEventType.OTP_GENERATED, Instant.now(),
 						verificationSession.getConcurrentAccessCount(), 0, 0);
 
-				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA, recipient.getId());
+				esignMessageService.sendOtpMessage(target, otpCode, TwilioMessageSource.ESIGN_MFA,
+						recipientData.getId());
 			}
 
 		}
@@ -903,6 +904,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		Instant timeNow = Instant.now();
 
+		String remainingTimeInSeconds;
+
 		// Reset verification lockout level if reset period passed
 		if (esignVerification.getVerificationLockoutResetTime() != null
 				&& timeNow.isAfter(esignVerification.getVerificationLockoutResetTime())) {
@@ -921,7 +924,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 						esignVerification.getResendCount());
 
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_TOO_MANY_ATTEMPTS);
+				remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, nextAllowedAttempt).getSeconds());
+
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_COOLDOWN_LOCK,
+						new String[] { remainingTimeInSeconds });
 			}
 		}
 
@@ -940,19 +946,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						esignVerification.getConcurrentAccessCount(), esignVerification.getAttemptCount(),
 						esignVerification.getResendCount());
 
-				// Throw different exceptions based on lockout level
-				switch (lockoutLevel) {
-					case 0 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_0);
-					case 1 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_1);
-					case 2 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_2);
-					case 3 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_LEVEL_3);
-					default -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_ATTEMPT_LOCKOUT_MAX_LEVEL);
-				}
+				remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, lockoutUntil).getSeconds());
+
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_BLOCKED,
+						new String[] { remainingTimeInSeconds });
 			}
 
 			// Lockout expired - increase level and reset counters
@@ -1042,6 +1039,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		int currentAttemptCount = verificationSession.getAttemptCount();
 		int concurrentSessionCount = verificationSession.getConcurrentAccessCount();
 
+		String remainingTimeInSeconds;
+
 		// Reset lockout level
 		if (verificationSession.getLockoutLevelResetTime() != null
 				&& timeNow.isAfter(verificationSession.getLockoutLevelResetTime())) {
@@ -1056,7 +1055,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 					currentAttemptCount, currentResendCount);
 
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OTP_REQUEST_COOLDOWN_ACTIVE);
+			remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, coolDownTime).getSeconds());
+
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OTP_GENERATION_COOLDOWN_LOCK,
+					new String[] { remainingTimeInSeconds });
 		}
 
 		// Progressive lockout checks BOTH resend AND concurrent count
@@ -1075,19 +1077,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 						verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 						currentAttemptCount, currentResendCount);
 
-				// Throw different exceptions based on lockout level
-				switch (lockoutLevel) {
-					case 0 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_0);
-					case 1 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_1);
-					case 2 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_2);
-					case 3 -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_LEVEL_3);
-					default -> throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_VERIFICATION_OTP_REQUEST_LOCKOUT_MAX_LEVEL);
-				}
+				remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, lockoutUntil).getSeconds());
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_OTP_GENERATION_BLOCKED,
+						new String[] { remainingTimeInSeconds });
 
 			}
 
@@ -1108,7 +1100,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 					verificationSession.getDocument().getId(), eventType, timeNow, concurrentSessionCount,
 					currentAttemptCount, currentResendCount);
 
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED);
+			remainingTimeInSeconds = String.valueOf(Duration.between(timeNow, accessBlockTime).getSeconds());
+
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_VERIFICATION_DOCUMENT_ACCESS_BLOCKED,
+					new String[] { remainingTimeInSeconds });
 		}
 
 		// Explicitly invalidate previous OTP
