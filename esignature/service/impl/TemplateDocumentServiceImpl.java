@@ -1,9 +1,12 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
 import com.skapp.enterprise.esignature.model.TemplateDocument;
@@ -12,7 +15,7 @@ import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
-import com.skapp.enterprise.invoice.constant.InvoiceCommonConstant;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	private final EsignTemplateMapper esignTemplateMapper;
 
 	private final AmazonS3Service amazonS3Service;
+
+	private final MessageUtil messageUtil;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -48,9 +53,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto editDocumentTemplate(Long id, EditDocumentDto editDocumentDto) {
 
-		TemplateDocument templateDocument = templateDocumentDao.findById(id).orElseThrow(() -> {
-			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND);
-		});
+		TemplateDocument templateDocument = templateDocumentDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
 
 		if (templateDocument.getTemplateEnvelope() != null) {
 			throw new ModuleException(
@@ -76,9 +81,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto deleteDocumentTemplate(Long id) {
 
-		TemplateDocument templateDocument = templateDocumentDao.findById(id).orElseThrow(() -> {
-			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND);
-		});
+		TemplateDocument templateDocument = templateDocumentDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
 
 		if (templateDocument.getTemplateEnvelope() != null) {
 			throw new ModuleException(
@@ -90,14 +95,16 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 		ResponseEntityDto s3Response = amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 
-		if (s3Response.getStatus().equalsIgnoreCase(InvoiceCommonConstant.SUCCESSFUL)) {
+		if (s3Response.getStatus().equalsIgnoreCase(EsignConstants.SUCCESSFUL)) {
 
 			templateDocumentDao.delete(templateDocument);
 
-			return new ResponseEntityDto(false, EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED);
+			return new ResponseEntityDto(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED), false);
 		}
 		else {
-			return new ResponseEntityDto(true, EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED);
+			return new ResponseEntityDto(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED), true);
 		}
 
 	}

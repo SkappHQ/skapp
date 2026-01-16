@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -29,6 +30,7 @@ import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private final AddressBookDao addressBookDao;
 
 	private final EsignTemplateMapper esignTemplateMapper;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
@@ -114,7 +118,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
 		}
 
-		return new ResponseEntityDto(false, true);
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_NAME_READY_TO_USE), false);
 
 	}
 
