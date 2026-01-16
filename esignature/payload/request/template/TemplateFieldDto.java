@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.payload.request.template;
 
 import com.skapp.enterprise.esignature.type.FieldType;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -21,17 +22,19 @@ public class TemplateFieldDto {
 	private Integer pageNumber;
 
 	@NotNull(message = "{validation.template.field.xPosition.notnull}")
-	@Min(value = 0, message = "{validation.template.field.xPosition.min}")
+	@DecimalMin(value = "0.0", message = "{validation.template.field.xPosition.min}")
 	private Float xPosition;
 
 	@NotNull(message = "{validation.template.field.yPosition.notnull}")
-	@Min(value = 0, message = "{validation.template.field.xPosition.min}")
+	@DecimalMin(value = "0.0", message = "{validation.template.field.xPosition.min}")
 	private Float yPosition;
 
 	@NotNull(message = "{validation.template.field.width.notnull}")
+	@DecimalMin(value = "0.0", message = "{validation.template.field.width.min}")
 	private Float width;
 
 	@NotNull(message = "{validation.template.field.height.notnull}")
+	@DecimalMin(value = "0.0", message = "{validation.template.field.height.min}")
 	private Float height;
 
 }
