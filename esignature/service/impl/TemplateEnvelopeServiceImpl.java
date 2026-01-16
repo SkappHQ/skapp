@@ -146,14 +146,14 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllSentEnvelopes = validateAccessFromUserRole(currentUser);
+		boolean isAllEnvelopeTemplates = validateAccessFromUserRole(currentUser);
 
 		Pageable pageable = templateEnvelopeFilterDto.getSize() <= 0 ? Pageable.unpaged() : PageRequest.of(
 				templateEnvelopeFilterDto.getPage(), templateEnvelopeFilterDto.getSize(),
 				Sort.by(templateEnvelopeFilterDto.getSortOrder(), templateEnvelopeFilterDto.getSortKey().toString()));
 
 		Page<TemplateEnvelope> templateEnvelopesPage = templateEnvelopeDao.findAllTemplateEnvelopesByFilter(
-				templateEnvelopeFilterDto, currentUser.getUserId(), isAllSentEnvelopes, pageable);
+				templateEnvelopeFilterDto, currentUser.getUserId(), isAllEnvelopeTemplates, pageable);
 
 		List<TemplateEnvelopeData> mappedItems = templateEnvelopesPage.getContent()
 			.stream()
@@ -174,7 +174,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllSentEnvelopes = validateAccessFromUserRole(currentUser);
+		boolean isAllEnvelopeTemplates = validateAccessFromUserRole(currentUser);
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao.findById(id);
 
@@ -187,7 +187,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
 
-		if (!isAllSentEnvelopes) {
+		if (!isAllEnvelopeTemplates) {
 			if ((templateEnvelope.getOwner().getType().equals(UserType.INTERNAL)
 					&& !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId()))
 					|| templateEnvelope.getOwner().getType().equals(UserType.EXTERNAL)) {

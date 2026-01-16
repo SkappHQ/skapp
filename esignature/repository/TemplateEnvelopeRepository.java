@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface TemplateEnvelopeRepository {
 
 	Page<TemplateEnvelope> findAllTemplateEnvelopesByFilter(TemplateEnvelopeFilterDto templateEnvelopeFilterDto,
-			Long userId, boolean isAllSentEnvelopes, Pageable pageable);
+			Long userId, boolean isAllEnvelopeTemplates, Pageable pageable);
 
 }

@@ -209,7 +209,6 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ROLE_INVALID(
 			"ep.esign.error.envelope-template.custody.transfer.new-owner.role.invalid"),
 	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED("ep.esign.success.envelope-template.custody.transferred");
-	;
 
 	private final String messageKey;
 

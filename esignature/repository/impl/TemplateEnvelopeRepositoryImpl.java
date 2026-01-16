@@ -33,7 +33,7 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 
 	@Override
 	public Page<TemplateEnvelope> findAllTemplateEnvelopesByFilter(TemplateEnvelopeFilterDto templateEnvelopeFilterDto,
-			Long userId, boolean isAllTemplateEnvelopes, Pageable pageable) {
+			Long userId, boolean isAllEnvelopeTemplates, Pageable pageable) {
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<TemplateEnvelope> cq = cb.createQuery(TemplateEnvelope.class);
@@ -42,7 +42,7 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (!isAllTemplateEnvelopes) {
+		if (!isAllEnvelopeTemplates) {
 			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
 		}
 
