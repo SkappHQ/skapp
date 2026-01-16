@@ -37,7 +37,7 @@ public interface SignatureProvider {
 	 * @return Signed bytes (raw signature)
 	 * @throws ModuleException if signing operation fails
 	 */
-	byte[] signHash(byte[] contentToSign) throws ModuleException;
+	byte[] signContent(byte[] contentToSign) throws ModuleException;
 
 	/**
 	 * Retrieve the certificate chain for signature validation.
@@ -58,16 +58,6 @@ public interface SignatureProvider {
 	 * @return Signature algorithm name
 	 */
 	String getSignatureAlgorithm();
-
-	/**
-	 * Test provider connectivity and operational status.
-	 *
-	 * This method should verify that the provider is accessible, authenticated, and ready
-	 * to perform signing operations. For local providers, this might check file access.
-	 * For cloud providers, this would test API connectivity and authentication.
-	 * @return true if provider is operational, false otherwise
-	 */
-	boolean testConnection();
 
 	/**
 	 * Get the provider type for logging and monitoring purposes.
