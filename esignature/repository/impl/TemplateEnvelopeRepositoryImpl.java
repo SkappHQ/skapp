@@ -40,17 +40,10 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		Root<TemplateEnvelope> root = cq.from(TemplateEnvelope.class);
 		Join<TemplateEnvelope, AddressBook> addressBookJoin = root.join(TemplateEnvelope_.owner, JoinType.LEFT);
 
-		List<Predicate> predicates = new ArrayList<>();
-
-		if (!isAllEnvelopeTemplates) {
-			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
-		}
-
 		String keyword = templateEnvelopeFilterDto.getSearchKeyword();
 
-		if (keyword != null && !keyword.isBlank()) {
-			predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
-		}
+		List<Predicate> predicates = buildPredicates(templateEnvelopeFilterDto, isAllEnvelopeTemplates, cb, root,
+				addressBookJoin, userId);
 
 		cq.where(predicates.toArray(new Predicate[0]));
 
@@ -73,17 +66,41 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		orderList.addAll(QueryUtils.toOrders(pageable.getSort(), root, cb));
 		cq.orderBy(orderList);
 
-		TypedQuery<TemplateEnvelope> query = entityManager.createQuery(cq);
+		TypedQuery<TemplateEnvelope> typedQuery = entityManager.createQuery(cq);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<TemplateEnvelope> results = typedQuery.getResultList();
 
-		int totalRows = query.getResultList().size();
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<TemplateEnvelope> countRoot = countQuery.from(TemplateEnvelope.class);
+		Join<TemplateEnvelope, AddressBook> countAddressBookJoin = countRoot.join(TemplateEnvelope_.owner, JoinType.LEFT);
+		List<Predicate> countPredicates = buildPredicates(templateEnvelopeFilterDto, isAllEnvelopeTemplates, cb, countRoot,
+				countAddressBookJoin, userId);
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
 
-		if (pageable.isPaged()) {
-			query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-			query.setMaxResults(pageable.getPageSize());
+		Long totalElements = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(results, pageable, totalElements);
+
+	}
+
+	private List<Predicate> buildPredicates(TemplateEnvelopeFilterDto templateEnvelopeFilterDto,
+			boolean isAllEnvelopeTemplates, CriteriaBuilder cb, Root<TemplateEnvelope> root,
+			Join<TemplateEnvelope, AddressBook> addressBookJoin, Long userId) {
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		if (!isAllEnvelopeTemplates) {
+			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
 		}
 
-		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+		String keyword = templateEnvelopeFilterDto.getSearchKeyword();
 
+		if (keyword != null && !keyword.isBlank()) {
+			predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
+		}
+
+		return predicates;
 	}
 
 }
