@@ -18,7 +18,7 @@ import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplat
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 
-import com.skapp.enterprise.esignature.util.EsignTemplateAccessRoleValidation;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -69,9 +69,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
 		}
 
-		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
-		if (!isAllEnvelopeTemplates
+		if (!isSuperAdminOrEsignAdmin
 				&& !templateDocument.getTemplateEnvelope().getOwner().getUserId().equals(currentUser.getUserId())) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
@@ -107,9 +107,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
 		}
 
-		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
-		if (!isAllEnvelopeTemplates
+		if (!isSuperAdminOrEsignAdmin
 				&& !templateDocument.getTemplateEnvelope().getOwner().getUserId().equals(currentUser.getUserId())) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);

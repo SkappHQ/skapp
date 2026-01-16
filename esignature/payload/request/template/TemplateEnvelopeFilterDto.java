@@ -14,12 +14,14 @@ public class TemplateEnvelopeFilterDto {
 	private Integer page = 0;
 
 	@Min(value = 0, message = "{validation.template.envelope.size.min}")
-	private Integer size = 0;
+	private Integer size = 6;
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	private TemplateEnvelopeSortKey sortKey;
+	private TemplateEnvelopeSortKey sortKey = TemplateEnvelopeSortKey.NAME;
 
 	private String searchKeyword;
+
+	private Boolean isExport = false;
 
 }

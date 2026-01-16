@@ -6,15 +6,12 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
-import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -30,7 +27,7 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelope
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
-import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeData;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
@@ -40,7 +37,7 @@ import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 
 import com.skapp.enterprise.esignature.type.UserType;
-import com.skapp.enterprise.esignature.util.EsignTemplateAccessRoleValidation;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -148,16 +145,22 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
-		Pageable pageable = templateEnvelopeFilterDto.getSize() <= 0 ? Pageable.unpaged() : PageRequest.of(
-				templateEnvelopeFilterDto.getPage(), templateEnvelopeFilterDto.getSize(),
+		int pageSize = templateEnvelopeFilterDto.getSize();
+
+		boolean isExport = templateEnvelopeFilterDto.getIsExport();
+		if (isExport) {
+			pageSize = (int) templateEnvelopeDao.count();
+		}
+
+		Pageable pageable = PageRequest.of(templateEnvelopeFilterDto.getPage(), pageSize,
 				Sort.by(templateEnvelopeFilterDto.getSortOrder(), templateEnvelopeFilterDto.getSortKey().toString()));
 
 		Page<TemplateEnvelope> templateEnvelopesPage = templateEnvelopeDao.findAllTemplateEnvelopesByFilter(
-				templateEnvelopeFilterDto, currentUser.getUserId(), isAllEnvelopeTemplates, pageable);
+				templateEnvelopeFilterDto, currentUser.getUserId(), isSuperAdminOrEsignAdmin, pageable);
 
-		List<TemplateEnvelopeData> mappedItems = templateEnvelopesPage.getContent()
+		List<TemplateEnvelopeResponseDto> mappedItems = templateEnvelopesPage.getContent()
 			.stream()
 			.map(esignTemplateMapper::templateEnvelopeToTemplateEnvelopeData)
 			.toList();
@@ -176,7 +179,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao.findById(id);
 
@@ -189,7 +192,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
 
-		if (!isAllEnvelopeTemplates) {
+		if (!isSuperAdminOrEsignAdmin) {
 			if ((templateEnvelope.getOwner().getType().equals(UserType.INTERNAL)
 					&& !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId()))
 					|| templateEnvelope.getOwner().getType().equals(UserType.EXTERNAL)) {
@@ -206,13 +209,13 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		boolean isAllEnvelopeTemplates = EsignTemplateAccessRoleValidation.validateAccessFromUserRole(currentUser);
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
 		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
 
-		if (!isAllEnvelopeTemplates && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
 		}

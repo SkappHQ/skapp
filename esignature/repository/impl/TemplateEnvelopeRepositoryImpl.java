@@ -51,7 +51,8 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 
 		if (templateEnvelopeFilterDto.getSearchKeyword() != null
 				&& !templateEnvelopeFilterDto.getSearchKeyword().isEmpty()) {
-			Order sortingOrder = cb.asc(cb.selectCase().when(cb.like(cb.lower(root.get("name")), keyword), 1));
+			Order sortingOrder = cb
+				.asc(cb.selectCase().when(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), keyword), 1));
 			orderList.add(sortingOrder);
 		}
 		else {
@@ -98,7 +99,7 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		String keyword = templateEnvelopeFilterDto.getSearchKeyword();
 
 		if (keyword != null && !keyword.isBlank()) {
-			predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
+			predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + keyword.toLowerCase() + "%"));
 		}
 
 		return predicates;

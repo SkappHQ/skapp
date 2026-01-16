@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.util;
 
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
@@ -202,6 +204,13 @@ public class EsignUtil {
 			default:
 				return audit.getAction().toString();
 		}
+	}
+
+	public static boolean validateEsignRoleAsSuperAdminOrEsignAdmin(User currentUser) {
+
+		return currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.ESIGN_ADMIN)
+				|| currentUser.getEmployee().getEmployeeRole().getEsignRole().equals(Role.SUPER_ADMIN);
+
 	}
 
 }
