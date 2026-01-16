@@ -126,44 +126,58 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 	 * @throws CertificateException
 	 */
 	@PostConstruct
-	public void init() throws CertificateException, IOException {
-		// Normalize Key Vault URL by removing trailing slash if present
-		if (StringUtils.hasText(keyVaultUrl) && keyVaultUrl.endsWith("/")) {
-			keyVaultUrl = keyVaultUrl.substring(0, keyVaultUrl.length() - 1);
+	public void init() {
+		try {
+			// Normalize Key Vault URL by removing trailing slash if present
+			if (StringUtils.hasText(keyVaultUrl) && keyVaultUrl.endsWith("/")) {
+				keyVaultUrl = keyVaultUrl.substring(0, keyVaultUrl.length() - 1);
+			}
+
+			log.info("Initializing AzureKeyVaultSignatureProvider");
+			log.info("  - Key Vault URL: {}", keyVaultUrl);
+			log.info("  - Key Name: {}", keyName);
+			log.info("  - Certificate Name: {}", certificateName);
+
+			// 1. Validate configuration
+			validateConfiguration();
+
+			// 2. Create authentication credential
+			TokenCredential credential = createCredential();
+
+			// 3. Initialize Management clients
+			initializeCertificateClient(credential);
+			initializeKeyClient(credential);
+
+			// 4. Load certificate and determine correct Key Version
+			String specificKeyId = loadCertificateAndGetKeyId();
+
+			// 5. Initialize Cryptography client with specific Key Version
+			initializeCryptographyClient(credential, specificKeyId);
+
+			// 6. Determine signature algorithm
+			determineSignatureAlgorithm();
+
+			// 7. Validate connectivity
+			validateConnection();
+
+			log.info("AzureKeyVaultSignatureProvider initialized successfully");
+			log.info("  - Signature algorithm: {}", signatureAlgorithm);
+			log.info("  - Certificate subject: {}", certificateChain[0].getSubjectX500Principal());
+			log.info("  - Certificate valid until: {}", certificateChain[0].getNotAfter());
+			log.info("  - Certificate chain length: {}", certificateChain.length);
 		}
-
-		log.info("Initializing AzureKeyVaultSignatureProvider");
-		log.info("  - Key Vault URL: {}", keyVaultUrl);
-		log.info("  - Key Name: {}", keyName);
-		log.info("  - Certificate Name: {}", certificateName);
-
-		// 1. Validate configuration
-		validateConfiguration();
-
-		// 2. Create authentication credential
-		TokenCredential credential = createCredential();
-
-		// 3. Initialize Management clients
-		initializeCertificateClient(credential);
-		initializeKeyClient(credential);
-
-		// 4. Load certificate and determine correct Key Version
-		String specificKeyId = loadCertificateAndGetKeyId();
-
-		// 5. Initialize Cryptography client with specific Key Version
-		initializeCryptographyClient(credential, specificKeyId);
-
-		// 6. Determine signature algorithm
-		determineSignatureAlgorithm();
-
-		// 7. Validate connectivity
-		validateConnection();
-
-		log.info("AzureKeyVaultSignatureProvider initialized successfully");
-		log.info("  - Signature algorithm: {}", signatureAlgorithm);
-		log.info("  - Certificate subject: {}", certificateChain[0].getSubjectX500Principal());
-		log.info("  - Certificate valid until: {}", certificateChain[0].getNotAfter());
-		log.info("  - Certificate chain length: {}", certificateChain.length);
+		catch (CertificateException e) {
+			log.error("AzureKeyVaultSignatureProvider init failed due to CertificateException", e);
+		}
+		catch (IOException e) {
+			log.error("AzureKeyVaultSignatureProvider init failed due to IOException", e);
+		}
+		catch (ModuleException e) {
+			log.error("AzureKeyVaultSignatureProvider init failed due to ModuleException: {}", e.getMessage());
+		}
+		catch (Exception e) {
+			log.error("AzureKeyVaultSignatureProvider init failed due to Unknown Exception", e);
+		}
 	}
 
 	private void validateConfiguration() {
