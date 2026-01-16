@@ -34,9 +34,6 @@ public class TemplateDocument extends Auditable<String> {
 	@Column(name = "file_path")
 	private String filePath;
 
-	@Column(name = "num_of_pages")
-	private int numOfPages;
-
 	@ManyToOne
 	@JoinColumn(name = "template_envelope_id")
 	private TemplateEnvelope templateEnvelope;
