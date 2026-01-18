@@ -207,7 +207,9 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.document-template.modification.and-deletion.access.denied"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED(
 			"ep.esign.error.envelope-template.modification.and-deletion.access.denied"),
-	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted");
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_DENIED_INVALID_FILE_PATH(
+			"ep.esign.error.document-template.deletion.denied.invalid.file-path");
 
 	private final String messageKey;
 

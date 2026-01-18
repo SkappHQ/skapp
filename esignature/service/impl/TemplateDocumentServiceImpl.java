@@ -40,6 +40,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
+	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "eSign/envelop/original/";
+
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
 
@@ -133,6 +135,10 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	@Override
 	public ResponseEntityDto deleteDocumentTemplateFromS3(String filePath) {
+
+		if (!filePath.contains(TEMPLATE_DOCUMENT_FILE_PATH_PREFIX)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_DENIED_INVALID_FILE_PATH);
+		}
 
 		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
 		amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + filePath);
