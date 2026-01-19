@@ -18,5 +18,7 @@ public interface TemplateEnvelopeService {
 
 	ResponseEntityDto deleteEnvelopeTemplate(Long id);
 
-	ResponseEntityDto transferEnvelopeTemplateCustody(Long id, EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto);
+	ResponseEntityDto transferEnvelopeTemplateCustody(Long id,
+			EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto);
+
 }

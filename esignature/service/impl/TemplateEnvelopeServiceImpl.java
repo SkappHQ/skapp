@@ -228,7 +228,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	}
 
 	@Override
-	public ResponseEntityDto transferEnvelopeTemplateCustody(Long id, EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
+	public ResponseEntityDto transferEnvelopeTemplateCustody(Long id,
+			EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
 		return null;
 	}
 
