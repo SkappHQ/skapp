@@ -353,8 +353,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null) {
-			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
-					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope, true);
 
 			List<TemplateDocument> allTemplateDocuments = templateDocumentDao
 				.findAllById(templateEnvelopeUpdateRequestDto.getTemplateDocumentIds());
@@ -368,6 +366,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 				throw new ModuleException(
 						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
 			}
+
+			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
+					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope, true);
 
 			templateEnvelope.setTemplateDocuments(updatedTemplateDocuments);
 		}
