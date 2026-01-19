@@ -51,6 +51,8 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 
 	public static final String DOCUMENT_S3_PATH_URL = "/envelop/process/documents/";
 
+	public static final String TEMPLATE_DOCUMENT_S3_PATH_URL = "/template/";
+
 	public static final String WILDCARD_PATH = "/*";
 
 	@Value("${aws.cloudfront.s3-default.key-pair-id}")
@@ -107,6 +109,15 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 		String signatureObjectKey = addressBook.getMySignatureLink();
 		String resourceUrlPath = EsignUtil.removeEsignPrefix(signatureObjectKey);
 		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + "/" + resourceUrlPath;
+		return generateCloudFrontSignedCookies(resourceUrl);
+	}
+
+	@Override
+	public Map<String, String> generateCloudFrontTemplateDocumentSignedCookies() {
+
+		String tenant = TenantContext.getCurrentTenant();
+
+		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + TEMPLATE_DOCUMENT_S3_PATH_URL + tenant + WILDCARD_PATH;
 		return generateCloudFrontSignedCookies(resourceUrl);
 	}
 
