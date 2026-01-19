@@ -144,7 +144,8 @@ public class AmazonCloudFrontController {
 			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontTemplateDocumentSignedCookies();
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, DOCUMENT_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						TEMPLATE_DOCUMENT_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
