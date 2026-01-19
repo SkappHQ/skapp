@@ -273,8 +273,8 @@ const nextConfig = {
         destination: "/enterprise/sign/template/:id"
       },
       {
-        source: "/sign/create-template",
-        destination: "/enterprise/sign/create-template"
+        source: "/sign/template/create",
+        destination: "/enterprise/sign/template/create"
       },
       {
         source: "/sign/contacts",

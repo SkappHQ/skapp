@@ -111,7 +111,7 @@ const ROUTES = {
       BASE: "/sign/inbox/envelope",
       ID: (id: number) => `/sign/inbox/envelope/${id}`
     },
-    CREATE_TEMPLATE: "/sign/create-template",
+    CREATE_TEMPLATE: "/sign/template/create",
     EDIT_TEMPLATE: {
       BASE: "/sign/template/",
       ID: (id: number | string) => `/sign/template/${id}`

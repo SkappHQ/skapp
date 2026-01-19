@@ -329,7 +329,6 @@ export const config = {
     "/sign",
     "/sign/contacts/:path*",
     "/sign/create/:path*",
-    "/sign/create-template/:path*",
     "/sign/folders/:path*",
     "/sign/inbox/:path*",
     "/sign/sent/:path*",
