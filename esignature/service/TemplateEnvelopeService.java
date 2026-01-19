@@ -1,8 +1,11 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.esignature.payload.request.template.*;
-import jakarta.validation.Valid;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSearchDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 
 public interface TemplateEnvelopeService {
 
