@@ -43,6 +43,7 @@ const superAdminRoutes = {
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
     ROUTES.SIGN.TEMPLATE,
     ROUTES.AUTH.VERIFY,
     ROUTES.AUTH.VERIFY_SUCCESS,
@@ -71,10 +72,10 @@ const adminRoutes = {
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
     ROUTES.SIGN.CREATE_TEMPLATE,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
-    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
@@ -195,8 +196,9 @@ export function middleware(request: NextRequest) {
     | SenderTypes
   )[] = claims?.roles || [];
 
-  const isPasswordChangedForTheFirstTime =
-    request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
+  const isPasswordChangedForTheFirstTime = request.cookies.get(
+    "isPasswordChangedForTheFirstTime"
+  )?.value;
 
   if (
     !isPasswordChangedForTheFirstTime &&
