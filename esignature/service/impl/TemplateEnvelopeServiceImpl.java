@@ -114,7 +114,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		TemplateEnvelope templateEnvelope = initializeTemplateEnvelope(envelopeTemplateDto);
 
 		List<TemplateDocument> templateDocuments = assignTemplateDocumentsToTemplateEnvelope(
-				envelopeTemplateDto.getTemplateDocumentIds(), templateEnvelope);
+				envelopeTemplateDto.getTemplateDocumentIds(), templateEnvelope, false);
 
 		templateEnvelope.setTemplateDocuments(templateDocuments);
 
@@ -281,8 +281,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
 		}
 
-		AddressBook existingOwner = templateEnvelope.getOwner();
-
 		AddressBook newOwner = addressBookDao.findById(envelopeTemplateCustodyTransferDto.getNewOwnerId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
@@ -349,14 +347,27 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		List<TemplateDocument> updatedTemplateDocuments = new ArrayList<>();
 
-		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() == null
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null
 				&& templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
 		}
 
-		if (!templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null) {
 			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
-					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope);
+					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope, true);
+
+			List<TemplateDocument> allTemplateDocuments = templateDocumentDao
+				.findAllById(templateEnvelopeUpdateRequestDto.getTemplateDocumentIds());
+
+			List<TemplateDocument> alreadyAssignedTemplateDocuments = allTemplateDocuments.stream()
+				.filter(doc -> doc.getTemplateEnvelope() != null
+						&& !doc.getTemplateEnvelope().getId().equals(templateEnvelope.getId()))
+				.toList();
+
+			if (!alreadyAssignedTemplateDocuments.isEmpty()) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			}
 
 			templateEnvelope.setTemplateDocuments(updatedTemplateDocuments);
 		}
@@ -430,6 +441,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		}
 		else {
+
+			if (searchKeyword.trim().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_SEARCH_KEYWORD_IS_EMPTY);
+			}
+
 			templateEnvelopes = templateEnvelopeDao.findEnvelopeTemplateByName(searchKeyword.trim(), showAllTemplates,
 					currentUser.getUserId());
 		}
@@ -477,7 +493,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	}
 
 	private List<TemplateDocument> assignTemplateDocumentsToTemplateEnvelope(List<Long> documentIds,
-			TemplateEnvelope templateEnvelope) {
+			TemplateEnvelope templateEnvelope, boolean isUpdate) {
 
 		validateEnvelopeTemplateDocument(documentIds);
 
@@ -487,15 +503,18 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND);
 		}
 
-		// Check if any of the documents already have an envelope
-		List<TemplateDocument> alreadyAssignedTemplateDocuments = templateDocuments.stream()
-			.filter(doc -> doc.getTemplateEnvelope() != null)
-			.toList();
+		if (!isUpdate) {
+			// Check if any of the documents already have an envelope
+			List<TemplateDocument> alreadyAssignedTemplateDocuments = templateDocuments.stream()
+				.filter(doc -> doc.getTemplateEnvelope() != null)
+				.toList();
 
-		if (!alreadyAssignedTemplateDocuments.isEmpty()) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			if (!alreadyAssignedTemplateDocuments.isEmpty()) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			}
 		}
+
 		templateDocuments.forEach(doc -> doc.setTemplateEnvelope(templateEnvelope));
 		return templateDocuments;
 
@@ -649,9 +668,10 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()
-			.anyMatch(recipient -> recipient.getRecipientRole()
-				.trim()
-				.length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
+			.map(TemplateRecipientDto::getRecipientRole)
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.anyMatch(role -> role.length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
 
 		if (exceedMaxRecipientRoleLength) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);

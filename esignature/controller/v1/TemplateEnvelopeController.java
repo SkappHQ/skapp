@@ -106,7 +106,8 @@ public class TemplateEnvelopeController {
 			description = "This endpoint searches and returns a limited or filtered list of envelope templates based on the provided criteria.")
 	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
-	public ResponseEntity<ResponseEntityDto> searchEnvelopeTemplates(@RequestParam String searchKeyword) {
+	public ResponseEntity<ResponseEntityDto> searchEnvelopeTemplates(
+			@RequestParam(required = false) String searchKeyword) {
 		ResponseEntityDto response = templateEnvelopeService.searchEnvelopeTemplates(searchKeyword);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
