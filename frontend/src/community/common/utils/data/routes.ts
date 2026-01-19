@@ -263,7 +263,7 @@ const routes = [
     url: ROUTES.PROJECTS.BASE,
     icon: IconName.PROJECTS_ICON,
     hasSubTree: true,
-    badge: "New",
+    // badge: "New",
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
