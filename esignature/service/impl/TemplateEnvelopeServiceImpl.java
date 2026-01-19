@@ -233,6 +233,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		return null;
 	}
 
+	@Override
+	public ResponseEntityDto editEnvelopeTemplate(Long id,
+			TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
+		return null;
+	}
+
 	private void processTierLimitation() {
 
 		String currentTenant = TenantContext.getCurrentTenant();

@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -81,6 +82,16 @@ public class TemplateEnvelopeController {
 		ResponseEntityDto response = templateEnvelopeService.transferEnvelopeTemplateCustody(id,
 				envelopeTemplateCustodyTransferDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Edit Envelope Template",
+			description = "This endpoint allows editing all details of an envelope template")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> editEnvelopeTemplate(@PathVariable Long id,
+			@RequestBody TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
+		ResponseEntityDto response = templateEnvelopeService.editEnvelopeTemplate(id, templateEnvelopeUpdateRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
