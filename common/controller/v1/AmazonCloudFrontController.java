@@ -27,7 +27,7 @@ public class AmazonCloudFrontController {
 
 	public static final String DOCUMENT_PATH = "/envelop/process/documents";
 
-	public static final String TEMPLATE_DOCUMENT_PATH = "/template/";
+	public static final String TEMPLATE_DOCUMENT_PATH = "/template";
 
 	public static final String SIGNATURE_PATH = "/envelop/document/signature/original";
 
