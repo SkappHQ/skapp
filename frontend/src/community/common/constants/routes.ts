@@ -111,11 +111,11 @@ const ROUTES = {
       BASE: "/sign/inbox/envelope",
       ID: (id: number) => `/sign/inbox/envelope/${id}`
     },
-    TEMPLATE_INFO: {
-      BASE: "/sign/template/info",
-      ID: (id: string) => `/sign/template/info/${id}`
-    },
-    CREATE_TEMPLATE: "/sign/create-template"
+    CREATE_TEMPLATE: "/sign/create-template",
+    EDIT_TEMPLATE: {
+      BASE: "/sign/template/",
+      ID: (id: number | string) => `/sign/template/${id}`
+    }
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",

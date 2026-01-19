@@ -269,8 +269,8 @@ const nextConfig = {
         destination: "/enterprise/sign/template"
       },
       {
-        source: "/sign/template/info/:id",
-        destination: "/enterprise/sign/template/info/:id"
+        source: "/sign/template/:id",
+        destination: "/enterprise/sign/template/:id"
       },
       {
         source: "/sign/create-template",
