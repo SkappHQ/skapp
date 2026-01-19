@@ -27,6 +27,7 @@ import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelop
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
+import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -34,6 +35,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,9 +45,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -68,6 +72,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final TemplateEnvelopeDao templateEnvelopeDao;
 
+	private final TemplateRecipientDao templateRecipientDao;
+
 	private final AddressBookDao addressBookDao;
 
 	private final EsignTemplateMapper esignTemplateMapper;
@@ -78,6 +84,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
+
+	public static final String HTTPS_PROTOCOL = "https://";
 
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
@@ -188,6 +199,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
 
+		responseDto.getTemplateDocuments().forEach(doc -> {
+			doc.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
+		});
+
 		if (!isSuperAdminOrEsignAdmin) {
 			if ((templateEnvelope.getOwner().getType().equals(UserType.INTERNAL)
 					&& !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId()))
@@ -233,10 +249,97 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public ResponseEntityDto editEnvelopeTemplate(Long id,
 			TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
-		return null;
+
+		User currentUser = userService.getCurrentUser();
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
+
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getName() != null) {
+			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName());
+			templateEnvelope.setName(templateEnvelopeUpdateRequestDto.getName().trim());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getSubject() != null) {
+			templateEnvelope.setSubject(templateEnvelopeUpdateRequestDto.getSubject());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getMessage() != null) {
+			templateEnvelope.setMessage(templateEnvelopeUpdateRequestDto.getMessage());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getSignType() != null) {
+			templateEnvelope.setSignType(templateEnvelopeUpdateRequestDto.getSignType());
+		}
+
+		List<TemplateDocument> updatedTemplateDocuments = new ArrayList<>();
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null
+				&& !templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
+			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
+					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope);
+
+			templateEnvelope.setTemplateDocuments(updatedTemplateDocuments);
+		}
+
+		List<Long> documentIds = templateEnvelope.getTemplateDocuments()
+			.stream()
+			.map(TemplateDocument::getId)
+			.collect(Collectors.toList());
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateRecipients() != null) {
+
+			templateRecipientDao.deleteAll(templateEnvelope.getTemplateRecipients());
+
+			if (templateEnvelopeUpdateRequestDto.getTemplateRecipients().isEmpty()) {
+				templateEnvelope.setTemplateRecipients(new ArrayList<>());
+			}
+			else {
+
+				List<TemplateRecipient> templateRecipients = assignTemplateRecipientsToTemplateEnvelope(
+						templateEnvelopeUpdateRequestDto.getTemplateRecipients(), templateEnvelope, documentIds);
+				templateEnvelope.setTemplateRecipients(templateRecipients);
+
+			}
+
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto() != null) {
+
+			if (templateEnvelope.getTemplateEnvelopeSetting() != null) {
+				TemplateEnvelopeSetting templateEnvelopeSetting = templateEnvelope.getTemplateEnvelopeSetting();
+
+				templateEnvelopeSetting.setReminderDays(
+						templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto().getReminderDays());
+
+				templateEnvelope.setTemplateEnvelopeSetting(templateEnvelopeSetting);
+			}
+			else {
+				TemplateEnvelopeSetting templateEnvelopeSetting = buildTemplateEnvelopeSetting(
+						templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto(), templateEnvelope);
+
+				templateEnvelope.setTemplateEnvelopeSetting(templateEnvelopeSetting);
+			}
+		}
+
+		TemplateEnvelope savedTemplateEnvelope = templateEnvelopeDao.save(templateEnvelope);
+
+		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
+			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private void processTierLimitation() {
