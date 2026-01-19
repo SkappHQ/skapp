@@ -18,7 +18,7 @@ public class RecipientTemplateDetailResponseDto {
 
 	private MemberRole memberRole;
 
-	private int signingOrder;
+	private Integer signingOrder;
 
 	private String color;
 
@@ -26,7 +26,7 @@ public class RecipientTemplateDetailResponseDto {
 
 	private AddressBookBasicResponseDto addressBook;
 
-	private boolean mfaVerificationEnabled;
+	private Boolean mfaVerificationEnabled;
 
 	private EsignVerificationType mfaVerificationMethod;
 

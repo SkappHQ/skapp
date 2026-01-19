@@ -199,7 +199,17 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.document-template.already.associated.with-envelope-template"),
 	ESIGN_SUCCESS_DOCUMENT_TEMPLATE_DELETED("ep.esign.success.document-template.deleted"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED("ep.esign.error.document-template.deletion.failed"),
-	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty");
+	ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY("ep.esign.error.non-cc-recipient.fields.cannot.be.empty"),
+
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND("ep.esign.error.envelope-template.not-found"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_ACCESS_DENIED("ep.esign.error.envelope-template.access.denied"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED(
+			"ep.esign.error.document-template.modification.and-deletion.access.denied"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED(
+			"ep.esign.error.envelope-template.modification.and-deletion.access.denied"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted"),
+	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_DENIED_INVALID_FILE_PATH(
+			"ep.esign.error.document-template.deletion.denied.invalid.file-path");
 
 	private final String messageKey;
 

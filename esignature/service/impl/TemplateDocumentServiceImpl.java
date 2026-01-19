@@ -2,7 +2,9 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
@@ -16,6 +18,7 @@ import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplat
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,8 +35,12 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	private final MessageUtil messageUtil;
 
+	private final UserService userService;
+
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "/eSign/template/";
 
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
@@ -53,6 +60,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto editDocumentTemplate(Long id, EditDocumentDto editDocumentDto) {
 
+		User currentUser = userService.getCurrentUser();
+
 		TemplateDocument templateDocument = templateDocumentDao.findById(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
@@ -60,6 +69,14 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 		if (templateDocument.getTemplateEnvelope() != null) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
+		}
+
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		if (!isSuperAdminOrEsignAdmin
+				&& !templateDocument.getTemplateEnvelope().getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
 		}
 
 		if (editDocumentDto.getName() != null) {
@@ -81,6 +98,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto deleteDocumentTemplate(Long id) {
 
+		User currentUser = userService.getCurrentUser();
+
 		TemplateDocument templateDocument = templateDocumentDao.findById(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
@@ -90,10 +109,15 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
 		}
 
-		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
-		amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + templateDocument.getFilePath());
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
-		ResponseEntityDto s3Response = amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
+		if (!isSuperAdminOrEsignAdmin
+				&& !templateDocument.getTemplateEnvelope().getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
+
+		ResponseEntityDto s3Response = deleteDocumentTemplateFromS3(templateDocument.getFilePath());
 
 		if (s3Response.getStatus().equalsIgnoreCase(EsignConstants.SUCCESSFUL)) {
 
@@ -107,6 +131,20 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_FAILED), true);
 		}
 
+	}
+
+	@Override
+	public ResponseEntityDto deleteDocumentTemplateFromS3(String filePath) {
+
+		if (!filePath.contains(TEMPLATE_DOCUMENT_FILE_PATH_PREFIX)) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_DENIED_INVALID_FILE_PATH);
+		}
+
+		AmazonS3DeleteItemRequestDto amazonS3DeleteItemRequestDto = new AmazonS3DeleteItemRequestDto();
+		amazonS3DeleteItemRequestDto.setFolderPath(bucketName + "/" + filePath);
+
+		return amazonS3Service.deleteFileFromS3(amazonS3DeleteItemRequestDto);
 	}
 
 }

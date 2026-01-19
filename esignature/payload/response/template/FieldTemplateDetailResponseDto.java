@@ -13,7 +13,7 @@ public class FieldTemplateDetailResponseDto {
 
 	private FieldType type;
 
-	private int pageNumber;
+	private Integer pageNumber;
 
 	private Float xPosition;
 
