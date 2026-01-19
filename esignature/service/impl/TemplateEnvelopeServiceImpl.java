@@ -255,7 +255,52 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Override
 	public ResponseEntityDto transferEnvelopeTemplateCustody(Long id,
 			EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
-		return null;
+
+		User currentUser = userService.getCurrentUser();
+
+		if (id == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_ID_REQUIRED);
+		}
+
+		if (envelopeTemplateCustodyTransferDto.getNewOwnerId() == null) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ID_REQUIRED);
+		}
+
+		addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
+
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
+
+		AddressBook existingOwner = templateEnvelope.getOwner();
+
+		AddressBook newOwner = addressBookDao.findById(envelopeTemplateCustodyTransferDto.getNewOwnerId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		if (newOwner.getInternalUser() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_IS_NOT_AN_INTERNAL_USER);
+
+		}
+
+		if (templateEnvelope.getOwner().getId().equals(newOwner.getUserId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE_TEMPLATE);
+		}
+
+		templateEnvelope.setOwner(newOwner);
+		templateEnvelopeDao.save(templateEnvelope);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED),
+				false);
 	}
 
 	@Transactional
