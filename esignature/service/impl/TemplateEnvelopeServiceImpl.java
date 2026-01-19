@@ -21,11 +21,7 @@ import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateEnvelopeSetting;
 import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
+import com.skapp.enterprise.esignature.payload.request.template.*;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -229,6 +225,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED), false);
 
+	}
+
+	@Override
+	public ResponseEntityDto transferEnvelopeTemplateCustody(Long id, EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
+		return null;
 	}
 
 	private void processTierLimitation() {
