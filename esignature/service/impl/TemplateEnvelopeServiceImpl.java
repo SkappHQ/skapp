@@ -28,7 +28,6 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSearchDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
@@ -72,6 +71,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private static final int ENVELOPE_TEMPLATE_DEFAULT_LIMIT = 4;
 
+	private static final String HTTPS_PROTOCOL = "https://";
+
 	private final TenantContext tenantContext;
 
 	private final TenantDao tenantDao;
@@ -97,8 +98,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;
-
-	public static final String HTTPS_PROTOCOL = "https://";
 
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
@@ -278,7 +277,16 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		if (templateEnvelopeUpdateRequestDto.getName() != null) {
-			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName());
+			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName(), true);
+
+			Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
+				.findByNameIgnoreCase(templateEnvelopeUpdateRequestDto.getName().trim());
+
+			if (templateEnvelopeOptional.isPresent()
+					&& !templateEnvelopeOptional.get().getId().equals(templateEnvelope.getId())) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
+			}
+
 			templateEnvelope.setName(templateEnvelopeUpdateRequestDto.getName().trim());
 		}
 
@@ -296,8 +304,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		List<TemplateDocument> updatedTemplateDocuments = new ArrayList<>();
 
-		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null
-				&& !templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() == null
+				&& templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
+		}
+
+		if (!templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
 			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
 					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope);
 
@@ -349,11 +361,16 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
 
+		responseDto.getTemplateDocuments().forEach(doc -> {
+			doc.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
+		});
+
 		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
-	public ResponseEntityDto searchEnvelopeTemplates(EnvelopeTemplateSearchDto envelopeTemplateSearchDto) {
+	public ResponseEntityDto searchEnvelopeTemplates(String searchKeyword) {
 
 		User currentUser = userService.getCurrentUser();
 
@@ -361,15 +378,15 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		List<TemplateEnvelope> templateEnvelopes = new ArrayList<>();
 
-		if (envelopeTemplateSearchDto.getSearchKeyword() == null) {
+		if (searchKeyword == null) {
 
 			templateEnvelopes = templateEnvelopeDao.findLatestEnvelopeTemplates(currentUser.getUserId(),
 					showAllTemplates, ENVELOPE_TEMPLATE_DEFAULT_LIMIT);
 
 		}
 		else {
-			templateEnvelopes = templateEnvelopeDao.findEnvelopeTemplateByName(
-					envelopeTemplateSearchDto.getSearchKeyword(), showAllTemplates, currentUser.getUserId());
+			templateEnvelopes = templateEnvelopeDao.findEnvelopeTemplateByName(searchKeyword.trim(), showAllTemplates,
+					currentUser.getUserId());
 		}
 
 		List<TemplateEnvelopeBasicInfoDto> responseDto = templateEnvelopes.stream()
@@ -403,7 +420,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private TemplateEnvelope initializeTemplateEnvelope(TemplateEnvelopeDto envelopeTemplateDto) {
 
-		validateEnvelopeTemplateName(envelopeTemplateDto.getName());
+		validateEnvelopeTemplateName(envelopeTemplateDto.getName(), false);
 
 		TemplateEnvelope templateEnvelope = new TemplateEnvelope();
 		templateEnvelope.setName(envelopeTemplateDto.getName().trim());
@@ -520,7 +537,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	}
 
-	private void validateEnvelopeTemplateName(String envelopeTemplateName) {
+	private void validateEnvelopeTemplateName(String envelopeTemplateName, boolean isUpdate) {
 
 		if (envelopeTemplateName == null || envelopeTemplateName.trim().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED);
@@ -530,11 +547,13 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED);
 		}
 
-		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
-			.findByNameIgnoreCase(envelopeTemplateName.trim());
+		if (!isUpdate) {
+			Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
+				.findByNameIgnoreCase(envelopeTemplateName.trim());
 
-		if (templateEnvelopeOptional.isPresent()) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
+			if (templateEnvelopeOptional.isPresent()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
+			}
 		}
 
 	}
@@ -585,7 +604,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()
-			.anyMatch(recipient -> recipient.getRecipientRole().length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
+			.anyMatch(recipient -> recipient.getRecipientRole()
+				.trim()
+				.length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
 
 		if (exceedMaxRecipientRoleLength) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);

@@ -5,7 +5,6 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope_;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSearchDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeRepository;
 import jakarta.persistence.EntityManager;
@@ -125,7 +124,8 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		if (!showAllTemplates) {
 			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
 		}
-		predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
+		predicates
+			.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + searchKeyword.trim().toLowerCase() + "%"));
 
 		cq.where(predicates.toArray(new Predicate[0]));
 		cq.orderBy(cb.asc(root.get(TemplateEnvelope_.NAME)));
