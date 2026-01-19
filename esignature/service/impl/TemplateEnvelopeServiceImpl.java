@@ -21,8 +21,16 @@ import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateEnvelopeSetting;
 import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
-import com.skapp.enterprise.esignature.payload.request.template.*;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateSearchDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
@@ -61,6 +69,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private static final int ENVELOPE_TEMPLATE_MAX_DOCUMENT_COUNT = 1;
 
 	private static final int ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH = 25;
+
+	private static final int ENVELOPE_TEMPLATE_DEFAULT_LIMIT = 4;
 
 	private final TenantContext tenantContext;
 
@@ -338,6 +348,33 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto searchEnvelopeTemplates(EnvelopeTemplateSearchDto envelopeTemplateSearchDto) {
+
+		User currentUser = userService.getCurrentUser();
+
+		boolean showAllTemplates = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		List<TemplateEnvelope> templateEnvelopes = new ArrayList<>();
+
+		if (envelopeTemplateSearchDto.getSearchKeyword() == null) {
+
+			templateEnvelopes = templateEnvelopeDao.findLatestEnvelopeTemplates(currentUser.getUserId(),
+					showAllTemplates, ENVELOPE_TEMPLATE_DEFAULT_LIMIT);
+
+		}
+		else {
+			templateEnvelopes = templateEnvelopeDao.findEnvelopeTemplateByName(
+					envelopeTemplateSearchDto.getSearchKeyword(), showAllTemplates, currentUser.getUserId());
+		}
+
+		List<TemplateEnvelopeBasicInfoDto> responseDto = templateEnvelopes.stream()
+			.map(esignTemplateMapper::templateEnvelopeToTemplateEnvelopeBasicInfoDto)
+			.toList();
 
 		return new ResponseEntityDto(false, responseDto);
 	}

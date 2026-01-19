@@ -1,10 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.template.*;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -91,6 +96,16 @@ public class TemplateEnvelopeController {
 	public ResponseEntity<ResponseEntityDto> editEnvelopeTemplate(@PathVariable Long id,
 			@RequestBody TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
 		ResponseEntityDto response = templateEnvelopeService.editEnvelopeTemplate(id, templateEnvelopeUpdateRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Search Envelope Templates",
+			description = "This endpoint returns a list of the envelope templates in the paginated format.")
+	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> searchEnvelopeTemplates(
+			@Valid EnvelopeTemplateSearchDto envelopeTemplateSearchDto) {
+		ResponseEntityDto response = templateEnvelopeService.searchEnvelopeTemplates(envelopeTemplateSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
