@@ -444,7 +444,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateRecipient.setTemplateFields(templateFields);
 
 			return templateRecipient;
-		}).toList();
+		}).collect(Collectors.toList());
 
 	}
 
