@@ -44,7 +44,8 @@ public interface EidVerificationAuditLogRepository extends JpaRepository<EidVeri
 	Optional<EidVerificationAuditLog> findFirstByOrderByIdDesc();
 
 	/**
-	 * Verify hash chain integrity by finding any record where the previous hash doesn't match.
+	 * Verify hash chain integrity by finding any record where the previous hash doesn't
+	 * match.
 	 */
 	@Query("SELECT COUNT(a) FROM EidVerificationAuditLog a WHERE a.id > 1 AND a.previousHash IS NULL")
 	long countBrokenHashChain();

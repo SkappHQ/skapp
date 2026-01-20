@@ -1,9 +1,9 @@
 package com.skapp.enterprise.esignature.eid.type;
 
 /**
- * Enum representing supported eID verification providers.
- * Note: SMS MFA is NOT included here as it's a separate mechanism for document access control.
- * eID verification is specifically for signing identity verification with cryptographic binding.
+ * Enum representing supported eID verification providers. Note: SMS MFA is NOT included
+ * here as it's a separate mechanism for document access control. eID verification is
+ * specifically for signing identity verification with cryptographic binding.
  */
 public enum EidProviderType {
 

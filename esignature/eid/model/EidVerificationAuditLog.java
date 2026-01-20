@@ -22,10 +22,11 @@ import lombok.Setter;
 import java.time.Instant;
 
 /**
- * Immutable audit log for eID verification events. Uses a hash chain for tamper detection.
+ * Immutable audit log for eID verification events. Uses a hash chain for tamper
+ * detection.
  * <p>
- * Each entry includes a hash of the current record and a reference to the previous hash, creating
- * an immutable chain that can be verified for integrity.
+ * Each entry includes a hash of the current record and a reference to the previous hash,
+ * creating an immutable chain that can be verified for integrity.
  */
 @Getter
 @Setter
@@ -33,7 +34,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "eid_verification_audit_log")
+@Table(name = "es_eid_verification_audit_log")
 public class EidVerificationAuditLog {
 
 	@Id

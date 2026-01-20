@@ -29,8 +29,9 @@ import lombok.Setter;
 import java.time.Instant;
 
 /**
- * Entity storing verified identity information from eID providers. This captures the identity data
- * returned after successful verification (e.g., name, personal number from BankID).
+ * Entity storing verified identity information from eID providers. This captures the
+ * identity data returned after successful verification (e.g., name, personal number from
+ * BankID).
  * <p>
  * The personal number is encrypted at rest for GDPR compliance.
  */
@@ -40,7 +41,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "verified_identity")
+@Table(name = "es_verified_identity")
 public class VerifiedIdentity extends Auditable<String> {
 
 	@Id
@@ -96,8 +97,8 @@ public class VerifiedIdentity extends Auditable<String> {
 	private Instant verifiedAt;
 
 	/**
-	 * BankID XML signature (Base64 encoded). This cryptographically proves the user signed the
-	 * document.
+	 * BankID XML signature (Base64 encoded). This cryptographically proves the user
+	 * signed the document.
 	 */
 	@Lob
 	@Column(name = "signature_data")

@@ -33,11 +33,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Entity representing an eID verification session. This is used for identity verification during
- * document signing (e.g., Swedish BankID).
+ * Entity representing an eID verification session. This is used for identity verification
+ * during document signing (e.g., Swedish BankID).
  * <p>
- * Note: This is separate from SMS MFA which is for document access control. eID verification
- * provides cryptographic binding between the signer's identity and the document.
+ * Note: This is separate from SMS MFA which is for document access control. eID
+ * verification provides cryptographic binding between the signer's identity and the
+ * document.
  */
 @Getter
 @Setter
@@ -45,7 +46,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "eid_verification_session")
+@Table(name = "es_eid_verification_session")
 public class EidVerificationSession extends Auditable<String> {
 
 	@Id
@@ -93,8 +94,8 @@ public class EidVerificationSession extends Auditable<String> {
 	private String endUserIp;
 
 	/**
-	 * SHA-256 hash of the document being signed. This creates cryptographic binding between the
-	 * signature and the specific document version.
+	 * SHA-256 hash of the document being signed. This creates cryptographic binding
+	 * between the signature and the specific document version.
 	 */
 	@Column(name = "document_hash", nullable = false, length = 64)
 	private String documentHash;
