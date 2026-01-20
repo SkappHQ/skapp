@@ -305,6 +305,10 @@ const nextConfig = {
         destination: "/enterprise/sign/document/access"
       },
       {
+        source: "/sign/document/access/mfa-verify",
+        destination: "/enterprise/sign/document/access/mfa-verify"
+      },
+      {
         source: "/sign/complete",
         destination: "/enterprise/sign/complete"
       },
@@ -394,7 +398,8 @@ const nextConfig = {
       },
       {
         source: "/invoice/customers/customer-details/projects/:id",
-        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
+        destination:
+          "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
         source: "/app-link",
