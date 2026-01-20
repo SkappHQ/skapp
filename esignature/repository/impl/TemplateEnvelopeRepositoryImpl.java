@@ -86,6 +86,61 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 
 	}
 
+	@Override
+	public List<TemplateEnvelope> findLatestEnvelopeTemplates(Long userId, boolean showAllTemplates, int limit) {
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TemplateEnvelope> cq = cb.createQuery(TemplateEnvelope.class);
+		Root<TemplateEnvelope> root = cq.from(TemplateEnvelope.class);
+		Join<TemplateEnvelope, AddressBook> addressBookJoin = root.join(TemplateEnvelope_.owner, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		if (!showAllTemplates) {
+			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
+		}
+
+		cq.where(predicates.toArray(new Predicate[0]));
+		cq.orderBy(cb.desc(root.get(TemplateEnvelope_.CREATED_DATE)));
+
+		TypedQuery<TemplateEnvelope> query = entityManager.createQuery(cq);
+		query.setMaxResults(limit);
+
+		return query.getResultList();
+
+	}
+
+	@Override
+	public List<TemplateEnvelope> findEnvelopeTemplateByName(String searchKeyword, boolean showAllTemplates,
+			Long userId) {
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TemplateEnvelope> cq = cb.createQuery(TemplateEnvelope.class);
+		Root<TemplateEnvelope> root = cq.from(TemplateEnvelope.class);
+		Join<TemplateEnvelope, AddressBook> addressBookJoin = root.join(TemplateEnvelope_.owner, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		if (!showAllTemplates) {
+			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
+		}
+
+		String safeSearchKeyword = searchKeyword.trim()
+			.toLowerCase()
+			.replace("\\", "\\\\")
+			.replace("%", "\\%")
+			.replace("_", "\\_");
+
+		predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + safeSearchKeyword + "%"));
+
+		cq.where(predicates.toArray(new Predicate[0]));
+		cq.orderBy(cb.asc(root.get(TemplateEnvelope_.NAME)));
+
+		TypedQuery<TemplateEnvelope> query = entityManager.createQuery(cq);
+
+		return query.getResultList();
+	}
+
 	private List<Predicate> buildPredicates(TemplateEnvelopeFilterDto templateEnvelopeFilterDto,
 			boolean isAllEnvelopeTemplates, CriteriaBuilder cb, Root<TemplateEnvelope> root,
 			Join<TemplateEnvelope, AddressBook> addressBookJoin, Long userId) {
@@ -99,7 +154,14 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		String keyword = templateEnvelopeFilterDto.getSearchKeyword();
 
 		if (keyword != null && !keyword.isBlank()) {
-			predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + keyword.toLowerCase() + "%"));
+
+			String safeSearchKeyword = keyword.trim()
+				.toLowerCase()
+				.replace("\\", "\\\\")
+				.replace("%", "\\%")
+				.replace("_", "\\_");
+
+			predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + safeSearchKeyword + "%"));
 		}
 
 		return predicates;

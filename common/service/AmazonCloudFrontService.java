@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface AmazonCloudFrontService {
 
-	Map<String, String> generateCloudFrontDocumentSignedCookies();
+	Map<String, String> generateCloudFrontDocumentSignedCookies(String path);
 
 	Map<String, String> generateCloudFrontSignatureSignedCookies(boolean isInternal);
 

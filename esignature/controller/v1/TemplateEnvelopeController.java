@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,6 +76,39 @@ public class TemplateEnvelopeController {
 	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> deleteEnvelopeTemplate(@PathVariable Long id) {
 		ResponseEntityDto response = templateEnvelopeService.deleteEnvelopeTemplate(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Custody Transfer of Envelope Template",
+			description = "This endpoint updates the owner of an envelope Template (custody transfer) to a new owner.")
+	@PatchMapping(value = "/custody-transfer/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> transferEnvelopeTemplateCustody(
+			@PathVariable @Schema(description = "ID of the envelope template to transfer custody",
+					example = "1") Long id,
+			@Valid @RequestBody EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
+		ResponseEntityDto response = templateEnvelopeService.transferEnvelopeTemplateCustody(id,
+				envelopeTemplateCustodyTransferDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Edit Envelope Template",
+			description = "This endpoint allows editing all details of an envelope template")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> editEnvelopeTemplate(@PathVariable Long id,
+			@Valid @RequestBody TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
+		ResponseEntityDto response = templateEnvelopeService.editEnvelopeTemplate(id, templateEnvelopeUpdateRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Search Envelope Templates",
+			description = "This endpoint searches and returns a limited or filtered list of envelope templates based on the provided criteria.")
+	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	public ResponseEntity<ResponseEntityDto> searchEnvelopeTemplates(
+			@RequestParam(required = false) String searchKeyword) {
+		ResponseEntityDto response = templateEnvelopeService.searchEnvelopeTemplates(searchKeyword);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.AmazonCloudFrontService;
 import com.skapp.enterprise.esignature.payload.response.CfSignedCookieResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,10 +26,6 @@ public class AmazonCloudFrontController {
 
 	public static final String SET_COOKIE = "Set-Cookie";
 
-	public static final String DOCUMENT_PATH = "/envelop/process/documents";
-
-	public static final String SIGNATURE_PATH = "/envelop/document/signature/original";
-
 	private static final String FAILED_TO_SET_SIGNED_COOKIES = "Failed to set signed cookies";
 
 	private final AmazonCloudFrontService amazonCloudFrontService;
@@ -47,10 +44,12 @@ public class AmazonCloudFrontController {
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesDocumentInternal(HttpServletResponse response) {
 		try {
 
-			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontDocumentSignedCookies();
+			Map<String, String> cookies = amazonCloudFrontService
+				.generateCloudFrontDocumentSignedCookies(EpCommonConstants.DOCUMENT_PATH);
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, DOCUMENT_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						EpCommonConstants.DOCUMENT_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
@@ -70,10 +69,12 @@ public class AmazonCloudFrontController {
 	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesDocument(HttpServletResponse response) {
 		try {
 
-			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontDocumentSignedCookies();
+			Map<String, String> cookies = amazonCloudFrontService
+				.generateCloudFrontDocumentSignedCookies(EpCommonConstants.DOCUMENT_PATH);
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, DOCUMENT_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						EpCommonConstants.DOCUMENT_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
@@ -96,7 +97,8 @@ public class AmazonCloudFrontController {
 			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies(true);
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						EpCommonConstants.SIGNATURE_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 
@@ -119,7 +121,33 @@ public class AmazonCloudFrontController {
 			Map<String, String> cookies = amazonCloudFrontService.generateCloudFrontSignatureSignedCookies(false);
 
 			cookies.forEach((name, value) -> {
-				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain, SIGNATURE_PATH);
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						EpCommonConstants.SIGNATURE_PATH);
+				response.addHeader(SET_COOKIE, cookieHeader);
+			});
+
+			CfSignedCookieResponseDto cfSignedCookieResponseDto = new CfSignedCookieResponseDto();
+			cfSignedCookieResponseDto.setExpiresAt(signCookiesExpiration);
+
+			return new ResponseEntity<>(new ResponseEntityDto(false, cfSignedCookieResponseDto), HttpStatus.OK);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<>(new ResponseEntityDto(true, FAILED_TO_SET_SIGNED_COOKIES),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ESIGN_SENDER')")
+	@GetMapping(value = "/cookies/template/document", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> setCloudFrontCookiesTemplateDocument(HttpServletResponse response) {
+		try {
+
+			Map<String, String> cookies = amazonCloudFrontService
+				.generateCloudFrontDocumentSignedCookies(EpCommonConstants.TEMPLATE_DOCUMENT_PATH);
+
+			cookies.forEach((name, value) -> {
+				String cookieHeader = buildSetCookieHeader(value, signCookiesExpiration, cookieDomain,
+						EpCommonConstants.TEMPLATE_DOCUMENT_PATH);
 				response.addHeader(SET_COOKIE, cookieHeader);
 			});
 

@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.AmazonCloudFrontService;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -47,9 +48,9 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 
 	private static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
 
-	public static final String HTTPS_PROTOCOL = "https://";
-
 	public static final String DOCUMENT_S3_PATH_URL = "/envelop/process/documents/";
+
+	public static final String TEMPLATE_DOCUMENT_S3_PATH_URL = "/template/";
 
 	public static final String WILDCARD_PATH = "/*";
 
@@ -74,10 +75,24 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 	private final AddressBookDao addressBookDao;
 
 	@Override
-	public Map<String, String> generateCloudFrontDocumentSignedCookies() {
+	public Map<String, String> generateCloudFrontDocumentSignedCookies(String path) {
 		String tenant = TenantContext.getCurrentTenant();
 
-		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + DOCUMENT_S3_PATH_URL + tenant + WILDCARD_PATH;
+		String resourceUrl = null;
+
+		if (path.equals(EpCommonConstants.DOCUMENT_PATH)) {
+
+			resourceUrl = EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + DOCUMENT_S3_PATH_URL + tenant
+					+ WILDCARD_PATH;
+
+		}
+		else if (path.equals(EpCommonConstants.TEMPLATE_DOCUMENT_PATH)) {
+
+			resourceUrl = EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + TEMPLATE_DOCUMENT_S3_PATH_URL + tenant
+					+ WILDCARD_PATH;
+
+		}
+
 		return generateCloudFrontSignedCookies(resourceUrl);
 	}
 
@@ -106,7 +121,7 @@ public class AmazonCloudFrontServiceImpl implements AmazonCloudFrontService {
 
 		String signatureObjectKey = addressBook.getMySignatureLink();
 		String resourceUrlPath = EsignUtil.removeEsignPrefix(signatureObjectKey);
-		String resourceUrl = HTTPS_PROTOCOL + cloudFrontDomain + "/" + resourceUrlPath;
+		String resourceUrl = EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/" + resourceUrlPath;
 		return generateCloudFrontSignedCookies(resourceUrl);
 	}
 

@@ -209,7 +209,14 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.envelope-template.modification.and-deletion.access.denied"),
 	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_DELETED("ep.esign.success.envelope-template.deleted"),
 	ESIGN_ERROR_DOCUMENT_TEMPLATE_DELETION_DENIED_INVALID_FILE_PATH(
-			"ep.esign.error.document-template.deletion.denied.invalid.file-path");
+			"ep.esign.error.document-template.deletion.denied.invalid.file-path"),
+	ESIGN_ERROR_ADDRESS_BOOK_USER_IS_NOT_AN_INTERNAL_USER("ep.esign.error.address-book.user.is-not-an-internal-user"),
+	ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE_TEMPLATE("ep.esign.error.user.already.owner.of.envelope-template"),
+	ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED("ep.esign.success.envelope-template.custody.transferred"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_ID_REQUIRED("ep.esign.error.envelope-template.id.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ID_REQUIRED(
+			"ep.esign.error.envelope-template.custody.transfer.new-owner.id.required"),
+	ESIGN_ERROR_ENVELOPE_TEMPLATE_SEARCH_KEYWORD_IS_EMPTY("ep.esign.error.envelope-template.search.keyword.empty");
 
 	private final String messageKey;
 

@@ -26,11 +26,15 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelope
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
+import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -38,6 +42,7 @@ import com.skapp.enterprise.esignature.type.MemberRole;
 
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,9 +52,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -62,6 +69,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private static final int ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH = 25;
 
+	private static final int ENVELOPE_TEMPLATE_DEFAULT_LIMIT = 4;
+
 	private final TenantContext tenantContext;
 
 	private final TenantDao tenantDao;
@@ -71,6 +80,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private final TemplateDocumentDao templateDocumentDao;
 
 	private final TemplateEnvelopeDao templateEnvelopeDao;
+
+	private final TemplateRecipientDao templateRecipientDao;
 
 	private final AddressBookDao addressBookDao;
 
@@ -82,6 +93,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	@Value("${aws.cloudfront.s3-default.domain-name}")
+	private String cloudFrontDomain;
 
 	@Override
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
@@ -98,7 +112,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		TemplateEnvelope templateEnvelope = initializeTemplateEnvelope(envelopeTemplateDto);
 
 		List<TemplateDocument> templateDocuments = assignTemplateDocumentsToTemplateEnvelope(
-				envelopeTemplateDto.getTemplateDocumentIds(), templateEnvelope);
+				envelopeTemplateDto.getTemplateDocumentIds(), templateEnvelope, false);
 
 		templateEnvelope.setTemplateDocuments(templateDocuments);
 
@@ -192,6 +206,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
 
+		responseDto.getTemplateDocuments().forEach(doc -> {
+			doc.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
+		});
+
 		if (!isSuperAdminOrEsignAdmin) {
 			if ((templateEnvelope.getOwner().getType().equals(UserType.INTERNAL)
 					&& !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId()))
@@ -231,6 +250,228 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	}
 
+	@Override
+	public ResponseEntityDto transferEnvelopeTemplateCustody(Long id,
+			EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto) {
+
+		User currentUser = userService.getCurrentUser();
+
+		if (id == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_ID_REQUIRED);
+		}
+
+		if (envelopeTemplateCustodyTransferDto.getNewOwnerId() == null) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_CUSTODY_TRANSFER_NEW_OWNER_ID_REQUIRED);
+		}
+
+		addressBookDao.findByInternalUser(currentUser)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
+
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
+
+		AddressBook newOwner = addressBookDao.findById(envelopeTemplateCustodyTransferDto.getNewOwnerId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
+
+		if (newOwner.getInternalUser() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_IS_NOT_AN_INTERNAL_USER);
+
+		}
+
+		if (templateEnvelope.getOwner().getId().equals(newOwner.getUserId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_USER_ALREADY_OWNER_OF_ENVELOPE_TEMPLATE);
+		}
+
+		templateEnvelope.setOwner(newOwner);
+		templateEnvelopeDao.save(templateEnvelope);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EsignMessageConstant.ESIGN_SUCCESS_ENVELOPE_TEMPLATE_CUSTODY_TRANSFERRED),
+				false);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto editEnvelopeTemplate(Long id,
+			TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto) {
+
+		User currentUser = userService.getCurrentUser();
+
+		TemplateEnvelope templateEnvelope = templateEnvelopeDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
+
+		List<TemplateDocument> exitingTemplateDocuments = templateEnvelope.getTemplateDocuments();
+
+		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_MODIFICATION_AND_DELETION_ACCESS_DENIED);
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getName() != null) {
+			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName());
+
+			Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
+				.findByNameIgnoreCase(templateEnvelopeUpdateRequestDto.getName().trim());
+
+			if (templateEnvelopeOptional.isPresent()
+					&& !templateEnvelopeOptional.get().getId().equals(templateEnvelope.getId())) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
+			}
+
+			templateEnvelope.setName(templateEnvelopeUpdateRequestDto.getName().trim());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getSubject() != null) {
+			templateEnvelope.setSubject(templateEnvelopeUpdateRequestDto.getSubject());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getMessage() != null) {
+			templateEnvelope.setMessage(templateEnvelopeUpdateRequestDto.getMessage());
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getSignType() != null) {
+			templateEnvelope.setSignType(templateEnvelopeUpdateRequestDto.getSignType());
+		}
+
+		List<TemplateDocument> updatedTemplateDocuments = new ArrayList<>();
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null
+				&& templateEnvelopeUpdateRequestDto.getTemplateDocumentIds().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_DOCUMENT_REQUIRED);
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateDocumentIds() != null) {
+
+			List<TemplateDocument> allTemplateDocuments = templateDocumentDao
+				.findAllById(templateEnvelopeUpdateRequestDto.getTemplateDocumentIds());
+
+			List<TemplateDocument> alreadyAssignedTemplateDocuments = allTemplateDocuments.stream()
+				.filter(doc -> doc.getTemplateEnvelope() != null
+						&& !doc.getTemplateEnvelope().getId().equals(templateEnvelope.getId()))
+				.toList();
+
+			if (!alreadyAssignedTemplateDocuments.isEmpty()) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			}
+
+			updatedTemplateDocuments = assignTemplateDocumentsToTemplateEnvelope(
+					templateEnvelopeUpdateRequestDto.getTemplateDocumentIds(), templateEnvelope, true);
+
+			templateEnvelope.setTemplateDocuments(updatedTemplateDocuments);
+		}
+
+		List<Long> documentIds = templateEnvelope.getTemplateDocuments()
+			.stream()
+			.map(TemplateDocument::getId)
+			.collect(Collectors.toList());
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateRecipients() != null) {
+
+			templateRecipientDao.deleteAll(templateEnvelope.getTemplateRecipients());
+
+			if (templateEnvelopeUpdateRequestDto.getTemplateRecipients().isEmpty()) {
+				templateEnvelope.setTemplateRecipients(new ArrayList<>());
+			}
+			else {
+
+				List<TemplateRecipient> templateRecipients = assignTemplateRecipientsToTemplateEnvelope(
+						templateEnvelopeUpdateRequestDto.getTemplateRecipients(), templateEnvelope, documentIds);
+				templateEnvelope.setTemplateRecipients(templateRecipients);
+
+			}
+
+		}
+
+		if (templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto() != null) {
+
+			if (templateEnvelope.getTemplateEnvelopeSetting() != null) {
+				TemplateEnvelopeSetting templateEnvelopeSetting = templateEnvelope.getTemplateEnvelopeSetting();
+
+				templateEnvelopeSetting.setReminderDays(
+						templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto().getReminderDays());
+
+				templateEnvelope.setTemplateEnvelopeSetting(templateEnvelopeSetting);
+			}
+			else {
+				TemplateEnvelopeSetting templateEnvelopeSetting = buildTemplateEnvelopeSetting(
+						templateEnvelopeUpdateRequestDto.getTemplateEnvelopeSettingDto(), templateEnvelope);
+
+				templateEnvelope.setTemplateEnvelopeSetting(templateEnvelopeSetting);
+			}
+		}
+
+		TemplateEnvelope savedTemplateEnvelope = templateEnvelopeDao.save(templateEnvelope);
+
+		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
+			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
+
+		List<TemplateDocument> currentTemplateDocuments = savedTemplateEnvelope.getTemplateDocuments();
+
+		// Remove only orphaned documents
+		if (!currentTemplateDocuments.isEmpty() && !exitingTemplateDocuments.isEmpty()) {
+			List<Long> updatedIds = currentTemplateDocuments.stream()
+				.map(TemplateDocument::getId)
+				.collect(Collectors.toList());
+
+			List<TemplateDocument> orphanedDocs = exitingTemplateDocuments.stream()
+				.filter(doc -> !updatedIds.contains(doc.getId()))
+				.toList();
+			templateDocumentDao.deleteAll(orphanedDocs);
+		}
+
+		responseDto.getTemplateDocuments().forEach(doc -> {
+			doc.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
+		});
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto searchEnvelopeTemplates(String searchKeyword) {
+
+		User currentUser = userService.getCurrentUser();
+
+		boolean showAllTemplates = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
+
+		List<TemplateEnvelope> templateEnvelopes = new ArrayList<>();
+
+		if (searchKeyword == null) {
+
+			templateEnvelopes = templateEnvelopeDao.findLatestEnvelopeTemplates(currentUser.getUserId(),
+					showAllTemplates, ENVELOPE_TEMPLATE_DEFAULT_LIMIT);
+
+		}
+		else {
+
+			if (searchKeyword.trim().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_SEARCH_KEYWORD_IS_EMPTY);
+			}
+
+			templateEnvelopes = templateEnvelopeDao.findEnvelopeTemplateByName(searchKeyword.trim(), showAllTemplates,
+					currentUser.getUserId());
+		}
+
+		List<TemplateEnvelopeBasicInfoDto> responseDto = templateEnvelopes.stream()
+			.map(esignTemplateMapper::templateEnvelopeToTemplateEnvelopeBasicInfoDto)
+			.toList();
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
 	private void processTierLimitation() {
 
 		String currentTenant = TenantContext.getCurrentTenant();
@@ -256,6 +497,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private TemplateEnvelope initializeTemplateEnvelope(TemplateEnvelopeDto envelopeTemplateDto) {
 
 		validateEnvelopeTemplateName(envelopeTemplateDto.getName());
+		validateEnvelopeTemplateNameExists(envelopeTemplateDto.getName());
 
 		TemplateEnvelope templateEnvelope = new TemplateEnvelope();
 		templateEnvelope.setName(envelopeTemplateDto.getName().trim());
@@ -267,7 +509,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	}
 
 	private List<TemplateDocument> assignTemplateDocumentsToTemplateEnvelope(List<Long> documentIds,
-			TemplateEnvelope templateEnvelope) {
+			TemplateEnvelope templateEnvelope, boolean isUpdate) {
 
 		validateEnvelopeTemplateDocument(documentIds);
 
@@ -277,15 +519,18 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND);
 		}
 
-		// Check if any of the documents already have an envelope
-		List<TemplateDocument> alreadyAssignedTemplateDocuments = templateDocuments.stream()
-			.filter(doc -> doc.getTemplateEnvelope() != null)
-			.toList();
+		if (!isUpdate) {
+			// Check if any of the documents already have an envelope
+			List<TemplateDocument> alreadyAssignedTemplateDocuments = templateDocuments.stream()
+				.filter(doc -> doc.getTemplateEnvelope() != null)
+				.toList();
 
-		if (!alreadyAssignedTemplateDocuments.isEmpty()) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			if (!alreadyAssignedTemplateDocuments.isEmpty()) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ALREADY_ASSIGNED_TO_TEMPLATE_ENVELOPE);
+			}
 		}
+
 		templateDocuments.forEach(doc -> doc.setTemplateEnvelope(templateEnvelope));
 		return templateDocuments;
 
@@ -333,7 +578,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateRecipient.setTemplateFields(templateFields);
 
 			return templateRecipient;
-		}).toList();
+		}).collect(Collectors.toList());
 
 	}
 
@@ -381,6 +626,10 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		if (envelopeTemplateName.trim().length() > ENVELOPE_TEMPLATE_NAME_MAX_LENGTH) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED);
 		}
+
+	}
+
+	private void validateEnvelopeTemplateNameExists(String envelopeTemplateName) {
 
 		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
 			.findByNameIgnoreCase(envelopeTemplateName.trim());
@@ -437,7 +686,10 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		boolean exceedMaxRecipientRoleLength = recipientTemplates.stream()
-			.anyMatch(recipient -> recipient.getRecipientRole().length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
+			.map(TemplateRecipientDto::getRecipientRole)
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.anyMatch(role -> role.length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
 
 		if (exceedMaxRecipientRoleLength) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);

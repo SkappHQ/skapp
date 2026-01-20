@@ -10,6 +10,7 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.type.TwilioMessageSource;
 import com.skapp.enterprise.common.util.OtpUtil;
 import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
@@ -116,8 +117,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
 	public static final String STATE_STRING = "&state=";
-
-	public static final String HTTPS_PROTOCOL = "https://";
 
 	private static final String SMS_VERIFICATION_CHANNEL = "sms";
 
@@ -365,7 +364,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		if (recipient.getAddressBook().getMySignatureLink() != null) {
 			recipientResponseDto.getAddressBook()
-				.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+				.setMySignatureLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 						+ EsignUtil.removeEsignPrefix(recipient.getAddressBook().getMySignatureLink()));
 		}
 
@@ -644,7 +643,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 		dto.setId(document.getId());
 		dto.setName(document.getName());
-		dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+		dto.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 		dto.setNumOfPages(document.getNumOfPages());
 		return dto;

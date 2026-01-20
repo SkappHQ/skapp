@@ -6,10 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TemplateEnvelopeRepository {
 
 	Page<TemplateEnvelope> findAllTemplateEnvelopesByFilter(TemplateEnvelopeFilterDto templateEnvelopeFilterDto,
 			Long userId, boolean isAllEnvelopeTemplates, Pageable pageable);
+
+	List<TemplateEnvelope> findLatestEnvelopeTemplates(Long userId, boolean showAllTemplates, int limit);
+
+	List<TemplateEnvelope> findEnvelopeTemplateByName(String searchKeyword, boolean showAllTemplates, Long userId);
 
 }

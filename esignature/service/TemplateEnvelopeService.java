@@ -1,8 +1,10 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 
 public interface TemplateEnvelopeService {
 
@@ -15,5 +17,12 @@ public interface TemplateEnvelopeService {
 	ResponseEntityDto getEnvelopeTemplateById(Long id);
 
 	ResponseEntityDto deleteEnvelopeTemplate(Long id);
+
+	ResponseEntityDto transferEnvelopeTemplateCustody(Long id,
+			EnvelopeTemplateCustodyTransferDto envelopeTemplateCustodyTransferDto);
+
+	ResponseEntityDto editEnvelopeTemplate(Long id, TemplateEnvelopeUpdateRequestDto templateEnvelopeUpdateRequestDto);
+
+	ResponseEntityDto searchEnvelopeTemplates(String searchKeyword);
 
 }
