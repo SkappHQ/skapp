@@ -124,8 +124,14 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		if (!showAllTemplates) {
 			predicates.add(cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID), userId));
 		}
-		predicates
-			.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + searchKeyword.trim().toLowerCase() + "%"));
+
+		String safeSearchKeyword = searchKeyword.trim()
+			.toLowerCase()
+			.replace("\\", "\\\\")
+			.replace("%", "\\%")
+			.replace("_", "\\_");
+
+		predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + safeSearchKeyword + "%"));
 
 		cq.where(predicates.toArray(new Predicate[0]));
 		cq.orderBy(cb.asc(root.get(TemplateEnvelope_.NAME)));
@@ -148,7 +154,14 @@ public class TemplateEnvelopeRepositoryImpl implements TemplateEnvelopeRepositor
 		String keyword = templateEnvelopeFilterDto.getSearchKeyword();
 
 		if (keyword != null && !keyword.isBlank()) {
-			predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + keyword.toLowerCase() + "%"));
+
+			String safeSearchKeyword = keyword.trim()
+				.toLowerCase()
+				.replace("\\", "\\\\")
+				.replace("%", "\\%")
+				.replace("_", "\\_");
+
+			predicates.add(cb.like(cb.lower(root.get(TemplateEnvelope_.NAME)), "%" + safeSearchKeyword + "%"));
 		}
 
 		return predicates;
