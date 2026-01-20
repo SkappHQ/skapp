@@ -71,8 +71,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private static final int ENVELOPE_TEMPLATE_DEFAULT_LIMIT = 4;
 
-	private static final String HTTPS_PROTOCOL = "https://";
-
 	private final TenantContext tenantContext;
 
 	private final TenantDao tenantDao;
@@ -209,7 +207,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(templateEnvelope);
 
 		responseDto.getTemplateDocuments().forEach(doc -> {
-			doc.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			doc.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
 		});
 
@@ -419,7 +417,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
 
 		responseDto.getTemplateDocuments().forEach(doc -> {
-			doc.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			doc.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, doc.getFilePath()));
 		});
 
