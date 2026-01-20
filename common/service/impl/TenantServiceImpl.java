@@ -58,7 +58,15 @@ public class TenantServiceImpl implements TenantService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NAME_REQUIRED);
 		}
 
+		String currentTenant = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
 		Tenant tenant = tenantDao.findByTenantName(tenantName);
+
+		if (currentTenant != null) {
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
+		}
+
 		if (tenant == null) {
 			log.error("getTenant: Tenant not found: {}", tenantName);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
