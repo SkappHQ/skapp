@@ -310,6 +310,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NOT_FOUND));
 
+		List<TemplateDocument> exitingTemplateDocuments = templateEnvelope.getTemplateDocuments();
+
 		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
 		if (!isSuperAdminOrEsignAdmin && !templateEnvelope.getOwner().getUserId().equals(currentUser.getUserId())) {
@@ -415,6 +417,20 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		EnvelopeTemplateDetailedResponseDto responseDto = esignTemplateMapper
 			.templateEnvelopeToEnvelopeTemplateDetailedResponseDto(savedTemplateEnvelope);
+
+		List<TemplateDocument> currentTemplateDocuments = savedTemplateEnvelope.getTemplateDocuments();
+
+		// Remove only orphaned documents
+		if (!currentTemplateDocuments.isEmpty() && !exitingTemplateDocuments.isEmpty()) {
+			List<Long> updatedIds = currentTemplateDocuments.stream()
+				.map(TemplateDocument::getId)
+				.collect(Collectors.toList());
+
+			List<TemplateDocument> orphanedDocs = exitingTemplateDocuments.stream()
+				.filter(doc -> !updatedIds.contains(doc.getId()))
+				.toList();
+			templateDocumentDao.deleteAll(orphanedDocs);
+		}
 
 		responseDto.getTemplateDocuments().forEach(doc -> {
 			doc.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
