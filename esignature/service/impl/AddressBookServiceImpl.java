@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -37,8 +38,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AddressBookServiceImpl implements AddressBookService {
-
-	public static final String HTTPS_PROTOCOL = "https://";
 
 	private final ExternalUserService externalUserService;
 
@@ -157,7 +156,7 @@ public class AddressBookServiceImpl implements AddressBookService {
 		mySignatureLinkResponseDto.setLastName(addressBook.getLastName());
 
 		if (addressBook.getMySignatureLink() != null) {
-			mySignatureLinkResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			mySignatureLinkResponseDto.setMySignatureLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 		}
 

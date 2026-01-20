@@ -143,8 +143,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;
 
-	public static final String HTTPS_PROTOCOL = "https://";
-
 	private final EsignMapper eSignMapper;
 
 	private final EnvelopeDao envelopeDao;
@@ -855,7 +853,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
 		if (addressBook.getMySignatureLink() != null) {
-			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			addressBookBasicResponseDto.setMySignatureLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 		}
 		envelopeInfoResponseDto.setAddressBook(addressBookBasicResponseDto);
@@ -884,7 +882,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBookBasicResponseDto addressBookBasicResponseDto = eSignMapper
 			.addressBookToAddressBookBasicResponseDto(addressBook);
 		if (addressBook.getMySignatureLink() != null) {
-			addressBookBasicResponseDto.setMySignatureLink(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			addressBookBasicResponseDto.setMySignatureLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeEsignPrefix(addressBook.getMySignatureLink()));
 		}
 
@@ -925,7 +923,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			DocumentDetailResponseDto dto = new DocumentDetailResponseDto();
 			dto.setId(document.getId());
 			dto.setName(document.getName());
-			dto.setFilePath(HTTPS_PROTOCOL + cloudFrontDomain + "/"
+			dto.setFilePath(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
 			return dto;
