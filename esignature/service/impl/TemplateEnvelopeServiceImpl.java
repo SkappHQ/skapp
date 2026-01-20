@@ -318,7 +318,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		if (templateEnvelopeUpdateRequestDto.getName() != null) {
-			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName(), true);
+			validateEnvelopeTemplateName(templateEnvelopeUpdateRequestDto.getName());
 
 			Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
 				.findByNameIgnoreCase(templateEnvelopeUpdateRequestDto.getName().trim());
@@ -480,7 +480,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private TemplateEnvelope initializeTemplateEnvelope(TemplateEnvelopeDto envelopeTemplateDto) {
 
-		validateEnvelopeTemplateName(envelopeTemplateDto.getName(), false);
+		validateEnvelopeTemplateName(envelopeTemplateDto.getName());
+		validateEnvelopeTemplateNameExists(envelopeTemplateDto.getName());
 
 		TemplateEnvelope templateEnvelope = new TemplateEnvelope();
 		templateEnvelope.setName(envelopeTemplateDto.getName().trim());
@@ -600,7 +601,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	}
 
-	private void validateEnvelopeTemplateName(String envelopeTemplateName, boolean isUpdate) {
+	private void validateEnvelopeTemplateName(String envelopeTemplateName) {
 
 		if (envelopeTemplateName == null || envelopeTemplateName.trim().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_REQUIRED);
@@ -610,13 +611,15 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_MAX_LENGTH_EXCEEDED);
 		}
 
-		if (!isUpdate) {
-			Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
-				.findByNameIgnoreCase(envelopeTemplateName.trim());
+	}
 
-			if (templateEnvelopeOptional.isPresent()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
-			}
+	private void validateEnvelopeTemplateNameExists(String envelopeTemplateName) {
+
+		Optional<TemplateEnvelope> templateEnvelopeOptional = templateEnvelopeDao
+			.findByNameIgnoreCase(envelopeTemplateName.trim());
+
+		if (templateEnvelopeOptional.isPresent()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_NAME_ALREADY_EXISTS);
 		}
 
 	}
