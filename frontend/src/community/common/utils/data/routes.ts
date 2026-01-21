@@ -235,6 +235,17 @@ const routes = [
       },
       {
         id: "4C",
+        name: "Templates",
+        url: ROUTES.SIGN.TEMPLATE,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          SenderTypes.ESIGN_SENDER,
+          AdminTypes.ESIGN_ADMIN
+        ]
+      },
+      {
+        id: "4D",
         name: "Contacts",
         url: ROUTES.SIGN.CONTACTS,
         hasSubTree: false,

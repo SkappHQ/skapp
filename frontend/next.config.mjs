@@ -265,6 +265,18 @@ const nextConfig = {
         destination: "/enterprise/sign/sent/envelope/:id"
       },
       {
+        source: "/sign/template",
+        destination: "/enterprise/sign/template"
+      },
+      {
+        source: "/sign/template/:id",
+        destination: "/enterprise/sign/template/:id"
+      },
+      {
+        source: "/sign/template/create",
+        destination: "/enterprise/sign/template/create"
+      },
+      {
         source: "/sign/contacts",
         destination: "/enterprise/sign/contacts"
       },

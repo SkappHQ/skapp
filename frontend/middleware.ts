@@ -43,6 +43,8 @@ const superAdminRoutes = {
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.AUTH.VERIFY,
     ROUTES.AUTH.VERIFY_SUCCESS,
     ROUTES.SETTINGS.MODULES,
@@ -69,6 +71,8 @@ const adminRoutes = {
   [AdminTypes.ESIGN_ADMIN]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
@@ -103,6 +107,8 @@ const managerRoutes = {
   [SenderTypes.ESIGN_SENDER]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
@@ -143,6 +149,8 @@ const senderRoutes = {
   [SenderTypes.ESIGN_SENDER]: [
     ROUTES.SIGN.CONTACTS,
     ROUTES.SIGN.CREATE_DOCUMENT,
+    ROUTES.SIGN.CREATE_TEMPLATE,
+    ROUTES.SIGN.TEMPLATE,
     ROUTES.SIGN.FOLDERS,
     ROUTES.SIGN.INBOX,
     ROUTES.SIGN.SENT,
@@ -189,8 +197,9 @@ export function middleware(request: NextRequest) {
     | SenderTypes
   )[] = claims?.roles || [];
 
-  const isPasswordChangedForTheFirstTime =
-    request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
+  const isPasswordChangedForTheFirstTime = request.cookies.get(
+    "isPasswordChangedForTheFirstTime"
+  )?.value;
 
   if (
     !isPasswordChangedForTheFirstTime &&
@@ -326,6 +335,7 @@ export const config = {
     "/sign/folders/:path*",
     "/sign/inbox/:path*",
     "/sign/sent/:path*",
+    "/sign/template/:path*",
     "/sign/complete/:path*",
     // Project routes
     "/projects/:path*",
