@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.eid;
+package com.skapp.enterprise.esignature.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;

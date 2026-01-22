@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +52,7 @@ public class EidVerificationController {
 	public ResponseEntity<ResponseEntityDto> initiateVerification(
 			@Valid @RequestBody InitiateVerificationRequestDto request, HttpServletRequest httpRequest) {
 
-		String endUserIp = getClientIpAddress(httpRequest);
+		String endUserIp = EsignUtil.getClientIp(httpRequest);
 		ResponseEntityDto response = eidVerificationService.initiateVerification(request, endUserIp);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -78,24 +79,6 @@ public class EidVerificationController {
 
 		ResponseEntityDto response = eidVerificationService.cancelVerification(sessionId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	/**
-	 * Extract client IP address from request, handling proxies.
-	 */
-	private String getClientIpAddress(HttpServletRequest request) {
-		String xForwardedFor = request.getHeader("X-Forwarded-For");
-		if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-			// X-Forwarded-For may contain multiple IPs; take the first (client IP)
-			return xForwardedFor.split(",")[0].trim();
-		}
-
-		String xRealIp = request.getHeader("X-Real-IP");
-		if (xRealIp != null && !xRealIp.isEmpty()) {
-			return xRealIp;
-		}
-
-		return request.getRemoteAddr();
 	}
 
 }

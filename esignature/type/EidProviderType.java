@@ -9,12 +9,6 @@ public enum EidProviderType {
 
 	SWEDISH_BANKID("Swedish BankID", "sv_SE"),
 
-	NORWEGIAN_BANKID("Norwegian BankID", "nb_NO"),
-
-	DANISH_MITID("Danish MitID", "da_DK"),
-
-	FINNISH_TRUST_NETWORK("Finnish Trust Network", "fi_FI"),
-
 	NONE("None", null);
 
 	private final String displayName;
