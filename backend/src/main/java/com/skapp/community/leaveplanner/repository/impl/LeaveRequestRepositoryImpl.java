@@ -983,7 +983,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		predicates.add(criteriaBuilder.equal(manager.get(Employee_.employeeId), employeeId));
 		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.PENDING));
 
-		criteriaQuery.select(criteriaBuilder.count(root)).where(predicates.toArray(new Predicate[0])).distinct(true);
+		criteriaQuery.select(criteriaBuilder.countDistinct(root)).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getSingleResult();
 	}
