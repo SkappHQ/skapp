@@ -45,8 +45,8 @@ public interface EidProvider {
 	 * @param documentHash SHA-256 hash of the document (hex string)
 	 * @return Session with provider-specific data (autoStartToken, qrStartToken, etc.)
 	 */
-	EidVerificationSession initiateSigning(Long recipientId, Long documentId, String endUserIp, String userVisibleData,
-			String documentHash);
+	EidVerificationSession initiateVerification(Long recipientId, Long documentId, String endUserIp,
+			String userVisibleData, String documentHash);
 
 	/**
 	 * Check the current status of a verification session.

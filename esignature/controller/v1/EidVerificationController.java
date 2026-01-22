@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.net.InetAddress;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,6 +54,14 @@ public class EidVerificationController {
 			@Valid @RequestBody InitiateVerificationRequestDto request, HttpServletRequest httpRequest) {
 
 		String endUserIp = EsignUtil.getClientIp(httpRequest);
+
+		// Validate IP using Java's InetAddress to ensure it's a valid IPv4 or IPv6 format
+		// This prevents header injection attacks (e.g., X-Forwarded-For containing
+		// scripts/SQL)
+		if (!isValidIpAddress(endUserIp)) {
+			endUserIp = httpRequest.getRemoteAddr();
+		}
+
 		ResponseEntityDto response = eidVerificationService.initiateVerification(request, endUserIp);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -65,6 +74,7 @@ public class EidVerificationController {
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
 	@GetMapping(value = "/status/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(@PathVariable String sessionId) {
+		// TODO: remove this override once the mock provider is gone
 		RequestMethodContext.setReadOnly(false);
 		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(sessionId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -79,6 +89,19 @@ public class EidVerificationController {
 
 		ResponseEntityDto response = eidVerificationService.cancelVerification(sessionId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	private boolean isValidIpAddress(String ip) {
+		if (ip == null || ip.isEmpty()) {
+			return false;
+		}
+		try {
+			InetAddress.getByName(ip);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 
 }

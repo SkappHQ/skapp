@@ -87,7 +87,7 @@ public class MockBankIdProvider implements EidProvider {
 	}
 
 	@Override
-	public EidVerificationSession initiateSigning(Long recipientId, Long documentId, String endUserIp,
+	public EidVerificationSession initiateVerification(Long recipientId, Long documentId, String endUserIp,
 			String userVisibleData, String documentHash) {
 		log.info("MockBankIdProvider: Initiating signing for recipient={}, document={}", recipientId, documentId);
 

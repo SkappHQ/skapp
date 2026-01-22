@@ -80,8 +80,8 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			});
 
 		// Initiate verification with provider
-		EidVerificationSession session = provider.initiateSigning(request.getRecipientId(), request.getDocumentId(),
-				endUserIp, request.getUserVisibleData(), request.getDocumentHash());
+		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
+				request.getDocumentId(), endUserIp, request.getUserVisibleData(), request.getDocumentHash());
 
 		// Map to response DTO
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
