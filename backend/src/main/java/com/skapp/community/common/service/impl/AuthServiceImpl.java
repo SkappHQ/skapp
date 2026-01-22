@@ -552,17 +552,11 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
-		if (passwordEncoder.matches(newPassword, user.getPassword()) || user.getPreviousPasswordsList()
-			.stream()
-			.anyMatch(prevPassword -> passwordEncoder.matches(newPassword, prevPassword))) {
+		if (passwordEncoder.matches(newPassword, user.getPassword())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
 		String encodedNewPassword = passwordEncoder.encode(newPassword);
-
-		if (user.getPassword() != null) {
-			user.addPreviousPassword(user.getPassword());
-		}
 
 		user.setPassword(encodedNewPassword);
 		user.setIsPasswordChangedForTheFirstTime(true);
