@@ -13,7 +13,6 @@ import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -58,6 +57,33 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 			.otherwise(cb.nullLiteral(String.class));
 
 		query.select(caseExpression).where(cb.equal(recipient.get(Recipient_.ID), recipientId));
+
+		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
+	public Long countPendingDocumentsForUser(Long addressBookId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Recipient> recipient = query.from(Recipient.class);
+
+		query.select(cb.countDistinct(recipient))
+			.where(cb.and(cb.equal(recipient.get(Recipient_.ADDRESS_BOOK).get(AddressBook_.ID), addressBookId),
+					cb.equal(recipient.get(Recipient_.INBOX_STATUS),
+							com.skapp.enterprise.esignature.type.InboxStatus.NEED_TO_SIGN)));
+
+		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
+	public Long countPendingDocumentsForSendersAndAdmins() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Recipient> recipient = query.from(Recipient.class);
+
+		query.select(cb.countDistinct(recipient))
+			.where(cb.equal(recipient.get(Recipient_.INBOX_STATUS),
+					com.skapp.enterprise.esignature.type.InboxStatus.NEED_TO_SIGN));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
