@@ -58,6 +58,13 @@ public class VerificationStatusResponseDto {
 	private Instant expiresAt;
 
 	/**
+	 * Pre-computed QR code data for cross-device flow. Format:
+	 * bankid.{qrStartToken}.{time}.{qrAuthCode}. Refreshed on each poll while session is
+	 * pending.
+	 */
+	private String qrCode;
+
+	/**
 	 * Verified identity information (only populated when status is VERIFIED).
 	 */
 	private VerifiedIdentityDto verifiedIdentity;

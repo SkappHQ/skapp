@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.skapp.enterprise.esignature.eid.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
@@ -21,13 +22,13 @@ public interface EidMapper {
 	@Mapping(source = "recipient.id", target = "recipientId")
 	@Mapping(source = "document.id", target = "documentId")
 	@Mapping(source = "providerData", target = "autoStartToken", qualifiedByName = "extractAutoStartToken")
-	@Mapping(source = "providerData", target = "qrStartToken", qualifiedByName = "extractQrStartToken")
-	@Mapping(source = "providerData", target = "qrStartSecret", qualifiedByName = "extractQrStartSecret")
+	@Mapping(target = "qrCode", expression = "java(computeQrCode(session))")
 	VerificationInitiationResponseDto sessionToVerificationInitiationResponse(EidVerificationSession session);
 
 	@Mapping(source = "sessionUuid", target = "sessionId")
 	@Mapping(source = "providerData", target = "hintCode", qualifiedByName = "extractHintCode")
 	@Mapping(source = "verifiedIdentity", target = "verifiedIdentity")
+	@Mapping(target = "qrCode", expression = "java(computeQrCodeForStatus(session))")
 	VerificationStatusResponseDto sessionToVerificationStatusResponse(EidVerificationSession session);
 
 	VerifiedIdentityDto verifiedIdentityToDto(VerifiedIdentity identity);
@@ -37,19 +38,43 @@ public interface EidMapper {
 		return extractJsonField(providerData, "autoStartToken");
 	}
 
-	@Named("extractQrStartToken")
-	default String extractQrStartToken(JsonNode providerData) {
-		return extractJsonField(providerData, "qrStartToken");
-	}
-
-	@Named("extractQrStartSecret")
-	default String extractQrStartSecret(JsonNode providerData) {
-		return extractJsonField(providerData, "qrStartSecret");
-	}
-
 	@Named("extractHintCode")
 	default String extractHintCode(JsonNode providerData) {
 		return extractJsonField(providerData, "hintCode");
+	}
+
+	/**
+	 * Computes the BankID QR code for initiation response.
+	 */
+	@Named("computeQrCode")
+	default String computeQrCode(EidVerificationSession session) {
+		if (session == null || session.getProviderData() == null) {
+			return null;
+		}
+		return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
+	}
+
+	/**
+	 * Computes the BankID QR code for status response. Only returns QR code if session is
+	 * still active (PENDING or USER_ACTION_REQUIRED).
+	 */
+	@Named("computeQrCodeForStatus")
+	default String computeQrCodeForStatus(EidVerificationSession session) {
+		if (session == null || session.getProviderData() == null) {
+			return null;
+		}
+		// Only return QR code for active sessions
+		var status = session.getStatus();
+		if (status == null) {
+			return null;
+		}
+		switch (status) {
+			case PENDING:
+			case USER_ACTION_REQUIRED:
+				return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
+			default:
+				return null;
+		}
 	}
 
 	default String extractJsonField(JsonNode node, String fieldName) {

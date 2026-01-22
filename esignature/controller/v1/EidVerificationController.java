@@ -44,8 +44,8 @@ public class EidVerificationController {
 
 	@Operation(summary = "Initiate eID verification",
 			description = "Starts a new verification session with the specified provider. "
-					+ "Returns tokens needed to launch the eID app (autoStartToken for same-device, "
-					+ "qrStartToken for cross-device).")
+					+ "Returns autoStartToken for same-device launch and pre-computed qrCode for cross-device. "
+					+ "The qrCode is refreshed on each status poll.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
 	@PostMapping(value = "/initiate", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> initiateVerification(
@@ -58,6 +58,7 @@ public class EidVerificationController {
 
 	@Operation(summary = "Check verification status",
 			description = "Polls the current status of a verification session. "
+					+ "Returns updated qrCode for cross-device flow (refreshed each call). "
 					+ "Frontend should call this every 2 seconds until status is terminal "
 					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED).")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")

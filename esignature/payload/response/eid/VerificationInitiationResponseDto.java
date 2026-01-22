@@ -39,14 +39,11 @@ public class VerificationInitiationResponseDto {
 	private String autoStartToken;
 
 	/**
-	 * Token for QR code generation (other-device flow).
+	 * Pre-computed QR code data for cross-device flow. Format:
+	 * bankid.{qrStartToken}.{time}.{qrAuthCode} where qrAuthCode =
+	 * HMAC_SHA256(qrStartSecret, time). This is refreshed on each status poll.
 	 */
-	private String qrStartToken;
-
-	/**
-	 * Secret for animated QR code generation.
-	 */
-	private String qrStartSecret;
+	private String qrCode;
 
 	/**
 	 * When the session will expire.
