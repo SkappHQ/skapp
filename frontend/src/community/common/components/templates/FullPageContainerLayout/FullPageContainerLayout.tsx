@@ -31,7 +31,7 @@ interface Props {
     title?: string;
   };
   title: string;
-  stepText: string;
+  stepText?: string;
   customStyles?: {
     wrapper?: SxProps;
     container?: SxProps;
@@ -117,12 +117,14 @@ const FullPageContainerLayout = ({
               sx={mergeSx([classes.title, customStyles?.title])}
             >
               <Typography variant="h1">{title}</Typography>
-              <Typography
-                variant="body2"
-                sx={mergeSx([classes.stepText, customStyles?.stepText])}
-              >
-                {stepText}
-              </Typography>
+              {stepText && (
+                <Typography
+                  variant="body2"
+                  sx={mergeSx([classes.stepText, customStyles?.stepText])}
+                >
+                  {stepText}
+                </Typography>
+              )}
             </Stack>
             {kebabMenuComponent && (
               <Stack sx={{ marginLeft: "auto" }}>{kebabMenuComponent}</Stack>
