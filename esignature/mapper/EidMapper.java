@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerifiedIdentityDto;
+import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 
 import org.mapstruct.Mapper;
@@ -68,20 +69,21 @@ public interface EidMapper {
 		if (status == null) {
 			return null;
 		}
-		switch (status) {
-			case PENDING:
-			case USER_ACTION_REQUIRED:
-				return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
-			default:
-				return null;
+		if (status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED) {
+			return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
 		}
+		return null;
 	}
 
 	default String extractJsonField(JsonNode node, String fieldName) {
 		if (node == null || !node.has(fieldName)) {
 			return null;
 		}
-		return node.get(fieldName).asText();
+		JsonNode fieldNode = node.get(fieldName);
+		if (fieldNode == null || fieldNode.isNull()) {
+			return null;
+		}
+		return fieldNode.asText();
 	}
 
 }
