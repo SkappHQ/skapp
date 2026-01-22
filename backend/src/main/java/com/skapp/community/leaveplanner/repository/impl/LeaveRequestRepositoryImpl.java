@@ -964,6 +964,31 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
+	public Long countSupervisedPendingLeaveRequests(Long employeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		Join<LeaveRequest, Employee> employee = root.join(LeaveRequest_.employee);
+		Join<Employee, User> user = employee.join(Employee_.user);
+		Join<Employee, EmployeeManager> employeeManager = employee.join(Employee_.employeeManagers);
+		Join<EmployeeManager, Employee> manager = employeeManager.join(EmployeeManager_.manager);
+
+		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
+		predicates.add(criteriaBuilder
+			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
+
+		predicates.add(criteriaBuilder.equal(manager.get(Employee_.employeeId), employeeId));
+		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.PENDING));
+
+		criteriaQuery.select(criteriaBuilder.count(root)).where(predicates.toArray(new Predicate[0])).distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
 	public List<LeaveRequest> getEmployeesOnLeaveByTeamAndDate(List<Long> teams, LocalDate current, Long currentUserId,
 			boolean isLeaveAdmin) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
