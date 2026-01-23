@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "es_field_option_value")
-public class FieldOptionValue extends Auditable<String> {
+public class FieldOption {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +22,7 @@ public class FieldOptionValue extends Auditable<String> {
 	@Column(name = "display_order")
 	private int displayOrder;
 
-	@OneToOne
-	@JoinColumn(name = "field_id")
+	@OneToOne(mappedBy = "fieldOption")
 	private Field field;
 
 }

@@ -31,25 +31,8 @@ import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.AddressBook;
-import com.skapp.enterprise.esignature.model.AuditTrail;
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.DocumentLink;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.EnvelopeSetting;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
-import com.skapp.enterprise.esignature.payload.request.FieldDto;
-import com.skapp.enterprise.esignature.payload.request.RecipientDto;
-import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
+import com.skapp.enterprise.esignature.model.*;
+import com.skapp.enterprise.esignature.payload.request.*;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
@@ -59,6 +42,7 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
@@ -481,7 +465,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
 
-			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
+			List<Field> fields = new ArrayList<>();
+
+			fields.addAll(buildFieldsForRecipient(recipientDto.getFields(), recipient));
+
+			if(recipientDto.getAdvanceFields() != null && !recipientDto.getAdvanceFields().isEmpty()){
+				fields.addAll(buildAdvanceFieldsForRecipient(recipientDto.getAdvanceFields(), recipient));
+			}
+
 			recipient.setFields(fields);
 
 			return recipient;
@@ -517,6 +508,39 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setHeight(fieldDto.getHeight());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
+
+			return field;
+		}).toList();
+	}
+
+	private List<Field> buildAdvanceFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
+		return fieldDtos.stream().map(fieldDto -> {
+			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
+					.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+
+			Field field = new Field();
+			field.setType(fieldDto.getType());
+			field.setStatus(fieldDto.getStatus());
+			field.setPageNumber(fieldDto.getPageNumber());
+			field.setXPosition(fieldDto.getXposition());
+			field.setYPosition(fieldDto.getYposition());
+			field.setWidth(fieldDto.getWidth());
+			field.setHeight(fieldDto.getHeight());
+			field.setDocument(fieldDocument);
+			field.setRecipient(recipient);
+
+//			if (fieldDto.getFieldContainer() != null) {
+//				FieldContainer fieldContainer = eSignMapper
+//						.fieldContainerDtoToFieldContainer(fieldDto.getFieldContainer());
+//				field.setFieldContainer(fieldContainer);
+//			}
+//
+//			if (fieldDto.getFieldOption() != null) {
+//
+//				FieldOption fieldOption = eSignMapper.fieldOptionDtoToFieldOptionValue(fieldDto.getFieldOption());
+//
+//				field.setFieldOption(fieldOption);
+//			}
 
 			return field;
 		}).toList();

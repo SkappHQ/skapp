@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class FieldDto {
@@ -34,12 +36,6 @@ public class FieldDto {
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
 	private Float yposition;
 
-	@NotNull(message = "{validation.field.fontFamily.notnull}")
-	private String fontFamily;
-
-	@NotNull(message = "{validation.field.fontColor.notnull}")
-	private String fontColor;
-
 	@NotNull(message = "{validation.field.width.notnull}")
 	private Float width;
 
@@ -48,5 +44,6 @@ public class FieldDto {
 
 	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;
+
 
 }

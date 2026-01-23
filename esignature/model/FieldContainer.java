@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "es_field_container")
-public class FieldContainer extends Auditable<String> {
+public class FieldContainer {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

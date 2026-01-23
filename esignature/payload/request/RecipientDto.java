@@ -37,6 +37,8 @@ public class RecipientDto {
 	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
 	private List<FieldDto> fields;
 
+	private List<FieldDto> advanceFields;
+
 	private EsignVerificationType verificationType = EsignVerificationType.NONE;
 
 }

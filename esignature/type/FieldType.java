@@ -4,7 +4,7 @@ import java.util.List;
 
 public enum FieldType {
 
-	SIGNATURE, DATE, STAMP, INITIAL, APPROVE, DECLINE, NAME, EMAIL;
+	SIGNATURE, DATE, STAMP, INITIAL, APPROVE, DECLINE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO;
 
 	public static List<FieldType> imageFieldTypes() {
 		return List.of(SIGNATURE, STAMP, INITIAL);

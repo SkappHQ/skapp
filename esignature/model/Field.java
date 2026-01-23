@@ -46,11 +46,12 @@ public class Field {
 	@JoinColumn(name = "recipient_id", nullable = false)
 	private Recipient recipient;
 
-	@ManyToOne
-	@JoinColumn(name = "field_container_id")
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "container_id")
 	private FieldContainer fieldContainer;
 
-	@OneToOne(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private FieldOptionValue fieldOptionValue;
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "option_id")
+	private FieldOption fieldOption;
 
 }
