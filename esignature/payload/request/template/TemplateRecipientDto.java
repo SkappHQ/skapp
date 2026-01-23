@@ -32,7 +32,6 @@ public class TemplateRecipientDto {
 	@NotNull(message = "{validation.template.recipient.verificationType.notnull}")
 	private EsignVerificationType verificationType = EsignVerificationType.NONE;
 
-	@NotEmpty(message = "{validation.template.recipient.templateFields.not_empty}")
 	private List<TemplateFieldDto> templateFields;
 
 }

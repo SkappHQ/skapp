@@ -558,9 +558,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
-			else if (templateRecipientDto.getTemplateFields().isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY);
-			}
 
 			TemplateRecipient templateRecipient = new TemplateRecipient();
 			templateRecipient.setAddressBook(addressBook);
@@ -573,9 +570,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateRecipient.setMfaVerificationMethod(templateRecipientDto.getVerificationType());
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
 
-			List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
-					templateRecipientDto.getTemplateFields(), templateRecipient);
-			templateRecipient.setTemplateFields(templateFields);
+			if (templateRecipientDto.getTemplateFields() != null
+					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
+				List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
+						templateRecipientDto.getTemplateFields(), templateRecipient);
+				templateRecipient.setTemplateFields(templateFields);
+			}
 
 			return templateRecipient;
 		}).collect(Collectors.toList());
@@ -661,20 +661,32 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private void validateEnvelopeTemplateRecipients(List<TemplateRecipientDto> recipientTemplates,
 			List<Long> documentIds) {
 
-		boolean noRecipientFieldDocuments = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> field.getTemplateDocumentId() == null);
-
-		if (noRecipientFieldDocuments) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+		if (recipientTemplates == null || recipientTemplates.isEmpty()) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_LEAST_ONE_RECIPIENTS_ROLE_REQUIRED);
 		}
 
-		boolean hasInvalidDocumentId = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> !documentIds.contains(field.getTemplateDocumentId()));
+		boolean noRecipientFields = recipientTemplates.stream()
+			.anyMatch(recipient -> recipient.getTemplateFields() == null || recipient.getTemplateFields().isEmpty()
+					|| recipient.getTemplateFields().stream().anyMatch(field -> field.getTemplateDocumentId() == null));
 
-		if (hasInvalidDocumentId) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
+		if (!noRecipientFields) {
+			boolean noRecipientFieldDocuments = recipientTemplates.stream()
+				.flatMap(recipient -> recipient.getTemplateFields().stream())
+				.anyMatch(field -> field.getTemplateDocumentId() == null);
+
+			if (noRecipientFieldDocuments) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+			}
+
+			boolean hasInvalidDocumentId = recipientTemplates.stream()
+				.flatMap(recipient -> recipient.getTemplateFields().stream())
+				.anyMatch(field -> !documentIds.contains(field.getTemplateDocumentId()));
+
+			if (hasInvalidDocumentId) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
+			}
 		}
 
 		boolean hasNoRecipientRole = recipientTemplates.stream()
