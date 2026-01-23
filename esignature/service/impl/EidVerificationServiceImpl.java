@@ -117,6 +117,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		EidVerificationSession session = sessionRepository.findBySessionUuid(sessionId)
 			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_FOUND));
 
+		// Validate that the current user has permission to check this session
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
+
 		// Only poll provider if session is still active
 		if (isSessionActive(session)) {
 			EidProvider provider = providerRegistry.getProvider(session.getProviderType())
@@ -138,6 +142,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		EidVerificationSession session = sessionRepository.findBySessionUuid(sessionId)
 			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_FOUND));
+
+		// Validate that the current user has permission to cancel this session
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
 
 		if (!isSessionActive(session)) {
 			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_ACTIVE);
