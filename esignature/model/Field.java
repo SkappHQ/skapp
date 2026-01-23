@@ -2,16 +2,7 @@ package com.skapp.enterprise.esignature.model;
 
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,12 +32,6 @@ public class Field {
 	@Column(name = "y_position")
 	private float yPosition;
 
-	@Column(name = "font_family")
-	private String fontFamily;
-
-	@Column(name = "font_color")
-	private String fontColor;
-
 	@Column(name = "width")
 	private float width;
 
@@ -60,5 +45,12 @@ public class Field {
 	@ManyToOne
 	@JoinColumn(name = "recipient_id", nullable = false)
 	private Recipient recipient;
+
+	@ManyToOne
+	@JoinColumn(name = "field_container_id")
+	private FieldContainer fieldContainer;
+
+	@OneToOne(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private FieldOptionValue fieldOptionValue;
 
 }
