@@ -513,8 +513,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setPageNumber(fieldDto.getPageNumber());
 			field.setXPosition(fieldDto.getXposition());
 			field.setYPosition(fieldDto.getYposition());
-			field.setFontFamily(fieldDto.getFontFamily());
-			field.setFontColor(fieldDto.getFontColor());
 			field.setWidth(fieldDto.getWidth());
 			field.setHeight(fieldDto.getHeight());
 			field.setDocument(fieldDocument);
