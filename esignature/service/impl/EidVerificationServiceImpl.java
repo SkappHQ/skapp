@@ -157,7 +157,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		provider.cancelVerification(session);
 
 		log.info("cancelVerification: session={} cancelled", sessionId);
-		return new ResponseEntityDto(false, "Verification cancelled successfully");
+		return new ResponseEntityDto(false, EidMessageConstant.EID_SUCCESS_VERIFICATION_CANCELLED);
 	}
 
 	private boolean isSessionActive(EidVerificationSession session) {

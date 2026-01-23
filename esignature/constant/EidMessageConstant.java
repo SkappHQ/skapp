@@ -22,7 +22,10 @@ public enum EidMessageConstant implements MessageConstant {
 
 	// Validation errors
 	EID_VALIDATION_RECIPIENT_NOT_FOUND("ep.esign.eid.validation.recipient.not-found"),
-	EID_VALIDATION_DOCUMENT_NOT_FOUND("ep.esign.eid.validation.document.not-found");
+	EID_VALIDATION_DOCUMENT_NOT_FOUND("ep.esign.eid.validation.document.not-found"),
+
+	// Success messages
+	EID_SUCCESS_VERIFICATION_CANCELLED("ep.esign.eid.success.verification.cancelled");
 
 	private final String messageKey;
 
