@@ -31,7 +31,7 @@ public enum EidVerificationStatus {
 	FAILED,
 
 	/**
-	 * Verification session expired (BankID has 30 second timeout).
+	 * Verification session expired (timeout duration depends on provider).
 	 */
 	EXPIRED,
 

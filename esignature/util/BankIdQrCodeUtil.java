@@ -109,10 +109,14 @@ public final class BankIdQrCodeUtil {
 	 * Safely extracts a string field from a JSON node.
 	 */
 	private static String getJsonField(JsonNode node, String fieldName) {
-		if (node == null || !node.has(fieldName) || node.get(fieldName).isNull()) {
+		if (node == null || !node.has(fieldName)) {
 			return null;
 		}
-		return node.get(fieldName).asText();
+		JsonNode fieldNode = node.get(fieldName);
+		if (fieldNode == null || fieldNode.isNull()) {
+			return null;
+		}
+		return fieldNode.asText();
 	}
 
 }
