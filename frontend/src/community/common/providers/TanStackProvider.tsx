@@ -57,7 +57,6 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
           error?.response?.data?.results?.[0]?.messageKey ===
             COMMON_ERROR_INVALID_TOKEN
         ) {
-          console.log("Token expired or invalid, signing out...");
           await signOut();
         }
 
