@@ -15,6 +15,7 @@ import com.skapp.enterprise.common.payload.response.DashboardNotificationCountDt
 import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.DashboardService;
 import com.skapp.enterprise.common.util.EpDateTimeUtils;
+import com.skapp.enterprise.common.util.RoleUtil;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import lombok.RequiredArgsConstructor;
@@ -80,23 +81,23 @@ public class DashboardServiceImpl implements DashboardService {
 		Employee employee = currentUser.getEmployee();
 		Long employeeId = employee.getEmployeeId();
 
-		DashboardNotificationCountDto notificationCounts = new DashboardNotificationCountDto(0L, 0L, 0L);
+		DashboardNotificationCountDto notificationCounts = new DashboardNotificationCountDto();
 
 		Role leaveRole = employee.getEmployeeRole().getLeaveRole();
 		Role attendanceRole = employee.getEmployeeRole().getAttendanceRole();
 		Role esignRole = employee.getEmployeeRole().getEsignRole();
 
-		if (isLeaveManagerOrAdmin(leaveRole)) {
+		if (RoleUtil.isLeaveManagerOrAdmin(leaveRole)) {
 			notificationCounts
 				.setPendingLeaveRequestsCount(leaveRequestDao.countSupervisedPendingLeaveRequests(employeeId));
 		}
 
-		if (isAttendanceManagerOrAdmin(attendanceRole)) {
+		if (RoleUtil.isAttendanceManagerOrAdmin(attendanceRole)) {
 			notificationCounts
 				.setPendingTimeEntryRequestsCount(timeRequestDao.countSupervisedPendingTimeRequests(employeeId));
 		}
 
-		if (isEsignSenderAdminOrSuperAdmin(esignRole)) {
+		if (RoleUtil.isEsignSenderAdminOrSuperAdmin(esignRole)) {
 			notificationCounts.setPendingDocumentsToSignCount(recipientDao.countPendingDocumentsForSendersAndAdmins());
 		}
 		else if (esignRole == Role.ESIGN_EMPLOYEE) {
@@ -112,19 +113,6 @@ public class DashboardServiceImpl implements DashboardService {
 				notificationCounts.getPendingDocumentsToSignCount());
 
 		return notificationCounts;
-	}
-
-	private boolean isLeaveManagerOrAdmin(Role leaveRole) {
-		return leaveRole == Role.LEAVE_MANAGER || leaveRole == Role.LEAVE_ADMIN || leaveRole == Role.SUPER_ADMIN;
-	}
-
-	private boolean isAttendanceManagerOrAdmin(Role attendanceRole) {
-		return attendanceRole == Role.ATTENDANCE_MANAGER || attendanceRole == Role.ATTENDANCE_ADMIN
-				|| attendanceRole == Role.SUPER_ADMIN;
-	}
-
-	private boolean isEsignSenderAdminOrSuperAdmin(Role esignRole) {
-		return esignRole == Role.ESIGN_SENDER || esignRole == Role.ESIGN_ADMIN || esignRole == Role.SUPER_ADMIN;
 	}
 
 }
