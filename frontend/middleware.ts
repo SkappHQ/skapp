@@ -197,9 +197,8 @@ export function middleware(request: NextRequest) {
     | SenderTypes
   )[] = claims?.roles || [];
 
-  const isPasswordChangedForTheFirstTime = request.cookies.get(
-    "isPasswordChangedForTheFirstTime"
-  )?.value;
+  const isPasswordChangedForTheFirstTime =
+    request.cookies.get("isPasswordChangedForTheFirstTime")?.value === "true";
 
   if (
     !isPasswordChangedForTheFirstTime &&

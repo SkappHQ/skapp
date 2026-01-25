@@ -44,24 +44,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
-  const signOut = useCallback(async (redirect?: boolean) => {
-    try {
-      setIsLoading(true);
-      await clearCookies();
-      setUser(null);
-      setIsAuthenticated(false);
+  const signOut = useCallback(
+    async (redirect?: boolean) => {
+      try {
+        setIsLoading(true);
+        await clearCookies();
+        setUser(null);
+        setIsAuthenticated(false);
 
-      if (redirect === false) {
-        return;
-      } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
-        router.push(ROUTES.AUTH.SIGNIN);
+        if (redirect === false) {
+          return;
+        } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
+          await router.push(ROUTES.AUTH.SIGNIN);
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [router]
+  );
 
   // Check authentication status
   const checkAuth = useCallback(async () => {
@@ -155,10 +158,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAuth();
     }
   }, [checkAuth]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [router.pathname]);
 
   const value: AuthContextType = {
     isLoading,
