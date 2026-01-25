@@ -16,6 +16,7 @@ import {
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
+import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
@@ -128,25 +129,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signIn = useCallback(
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
-        setIsLoading(true);
-
         const response = await handleSignIn(params);
 
-        // Refresh auth state after successful sign in
-        await checkAuth();
+        if (response.status === SignInStatus.SUCCESS) {
+          setIsLoading(true);
+          // Refresh auth state after successful sign in
+          await checkAuth();
 
-        if (params.redirect) {
-          const redirectPath =
-            (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
-          router.push(redirectPath);
+          if (params.redirect) {
+            const redirectPath =
+              (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
+            router.push(redirectPath);
+          }
         }
 
         return response;
       } catch (error) {
         console.error("Login error:", error);
         throw error;
-      } finally {
-        setIsLoading(false);
       }
     },
     [router, checkAuth]
