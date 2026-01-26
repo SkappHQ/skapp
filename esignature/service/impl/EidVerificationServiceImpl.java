@@ -2,10 +2,12 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.util.Validation;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.model.Recipient;
@@ -18,6 +20,7 @@ import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -67,9 +70,13 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto initiateVerification(InitiateVerificationRequestDto request, String endUserIp) {
+	public ResponseEntityDto initiateVerification(InitiateVerificationRequestDto request,
+			HttpServletRequest httpRequest) {
 		log.info("initiateVerification: starting for recipient={}, document={}, provider={}", request.getRecipientId(),
 				request.getDocumentId(), request.getProviderType());
+
+		// Extract and validate the client IP address
+		String endUserIp = extractClientIp(httpRequest);
 
 		// Validate that the current user has permission to initiate verification for this
 		// recipient/document
@@ -171,6 +178,19 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			return false;
 		}
 		return auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_DOC_ACCESS"::equals);
+	}
+
+	private String extractClientIp(HttpServletRequest httpRequest) {
+		String endUserIp = EsignUtil.getClientIp(httpRequest);
+
+		// Validate IP using Java's InetAddress to ensure it's a valid IPv4 or IPv6 format
+		// This prevents header injection attacks (e.g., X-Forwarded-For containing
+		// scripts/SQL)
+		if (!Validation.isValidIpAddress(endUserIp)) {
+			endUserIp = httpRequest.getRemoteAddr();
+		}
+
+		return endUserIp;
 	}
 
 }

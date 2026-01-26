@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service interface for eID verification operations.
@@ -17,10 +18,10 @@ public interface EidVerificationService {
 	/**
 	 * Initiate a verification session.
 	 * @param request The initiation request
-	 * @param endUserIp IP address of the end user
+	 * @param httpRequest The HTTP servlet request (used to extract client IP)
 	 * @return ResponseEntityDto containing VerificationInitiationResponseDto
 	 */
-	ResponseEntityDto initiateVerification(InitiateVerificationRequestDto request, String endUserIp);
+	ResponseEntityDto initiateVerification(InitiateVerificationRequestDto request, HttpServletRequest httpRequest);
 
 	/**
 	 * Check the status of a verification session.

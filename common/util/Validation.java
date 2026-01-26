@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetAddress;
 import java.net.URI;
 
 @Slf4j
@@ -33,6 +34,19 @@ public class Validation {
 
 	public static boolean isValidFilePath(String filePath) {
 		return filePath != null && !filePath.isEmpty() && !filePath.contains("..");
+	}
+
+	public static boolean isValidIpAddress(String ip) {
+		if (ip == null || ip.isEmpty()) {
+			return false;
+		}
+		try {
+			InetAddress.getByName(ip);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 
 }
