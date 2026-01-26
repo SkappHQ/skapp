@@ -20,12 +20,6 @@ public interface EidProvider {
 	EidProviderType getProviderType();
 
 	/**
-	 * Get human-readable display name for the provider.
-	 * @return Display name (e.g., "Swedish BankID")
-	 */
-	String getDisplayName();
-
-	/**
 	 * Check if this provider is currently enabled and available.
 	 * @return true if provider can be used, false otherwise
 	 */

@@ -19,11 +19,6 @@ public class AvailableProviderResponseDto {
 	private EidProviderType providerType;
 
 	/**
-	 * Human-readable display name.
-	 */
-	private String displayName;
-
-	/**
 	 * Whether this provider is currently enabled.
 	 */
 	private boolean enabled;

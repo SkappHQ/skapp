@@ -7,21 +7,12 @@ package com.skapp.enterprise.esignature.type;
  */
 public enum EidProviderType {
 
-	SWEDISH_BANKID("Swedish BankID", "sv_SE"),
-
-	NONE("None", null);
-
-	private final String displayName;
+	SWEDISH_BANKID("sv_SE");
 
 	private final String locale;
 
-	EidProviderType(String displayName, String locale) {
-		this.displayName = displayName;
+	EidProviderType(String locale) {
 		this.locale = locale;
-	}
-
-	public String getDisplayName() {
-		return displayName;
 	}
 
 	public String getLocale() {

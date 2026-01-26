@@ -19,29 +19,24 @@ public class ProviderFrontendConfigDto {
 	private EidProviderType providerType;
 
 	/**
-	 * Display name for UI.
-	 */
-	private String displayName;
-
-	/**
 	 * How often frontend should poll for status updates (milliseconds).
 	 */
-	private int pollIntervalMs;
+	private Integer pollIntervalMs;
 
 	/**
 	 * Session timeout duration (seconds).
 	 */
-	private int sessionTimeoutSeconds;
+	private Integer sessionTimeoutSeconds;
 
 	/**
 	 * Whether QR code flow is supported.
 	 */
-	private boolean qrCodeEnabled;
+	private Boolean qrCodeEnabled;
 
 	/**
 	 * Whether same-device auto-start is supported.
 	 */
-	private boolean sameDeviceEnabled;
+	private Boolean sameDeviceEnabled;
 
 	/**
 	 * URL scheme for same-device launch (e.g., "bankid://").
@@ -51,6 +46,6 @@ public class ProviderFrontendConfigDto {
 	/**
 	 * Whether this is a mock provider (for testing).
 	 */
-	private boolean mockMode;
+	private Boolean mockMode;
 
 }

@@ -59,7 +59,6 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			.stream()
 			.map(provider -> AvailableProviderResponseDto.builder()
 				.providerType(provider.getProviderType())
-				.displayName(provider.getDisplayName())
 				.enabled(provider.isEnabled())
 				.locale(provider.getProviderType().getLocale())
 				.frontendConfig(provider.getFrontendConfig())

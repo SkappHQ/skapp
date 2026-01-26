@@ -47,7 +47,7 @@ public class EidProviderRegistryImpl implements EidProviderRegistry {
 		}
 
 		providerMap.put(type, provider);
-		log.info("Registered eID provider: {} (enabled: {})", provider.getDisplayName(), provider.isEnabled());
+		log.info("Registered eID provider: {} (enabled: {})", type.name(), provider.isEnabled());
 	}
 
 	@Override

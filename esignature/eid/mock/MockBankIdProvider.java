@@ -77,11 +77,6 @@ public class MockBankIdProvider implements EidProvider {
 	}
 
 	@Override
-	public String getDisplayName() {
-		return "Swedish BankID (Mock)";
-	}
-
-	@Override
 	public boolean isEnabled() {
 		return true;
 	}
@@ -195,7 +190,6 @@ public class MockBankIdProvider implements EidProvider {
 	public ProviderFrontendConfigDto getFrontendConfig() {
 		return ProviderFrontendConfigDto.builder()
 			.providerType(EidProviderType.SWEDISH_BANKID)
-			.displayName(getDisplayName())
 			.pollIntervalMs(POLL_INTERVAL_MS)
 			.sessionTimeoutSeconds(SESSION_TIMEOUT_SECONDS)
 			.qrCodeEnabled(true)
