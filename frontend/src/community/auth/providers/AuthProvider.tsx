@@ -16,6 +16,7 @@ import {
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
+import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
@@ -44,24 +45,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
-  const signOut = useCallback(async (redirect?: boolean) => {
-    try {
-      setIsLoading(true);
-      await clearCookies();
-      setUser(null);
-      setIsAuthenticated(false);
+  const signOut = useCallback(
+    async (redirect?: boolean) => {
+      try {
+        setIsLoading(true);
+        await clearCookies();
+        setUser(null);
+        setIsAuthenticated(false);
 
-      if (redirect === false) {
-        return;
-      } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
-        router.push(ROUTES.AUTH.SIGNIN);
+        if (redirect === false) {
+          return;
+        } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
+          await router.push(ROUTES.AUTH.SIGNIN);
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [router]
+  );
 
   // Check authentication status
   const checkAuth = useCallback(async () => {
@@ -125,25 +129,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signIn = useCallback(
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
-        setIsLoading(true);
-
         const response = await handleSignIn(params);
 
-        // Refresh auth state after successful sign in
-        await checkAuth();
+        if (response.status === SignInStatus.SUCCESS) {
+          setIsLoading(true);
+          // Refresh auth state after successful sign in
+          await checkAuth();
 
-        if (params.redirect) {
-          const redirectPath =
-            (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
-          router.push(redirectPath);
+          if (params.redirect) {
+            const redirectPath =
+              (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
+            router.push(redirectPath);
+          }
         }
 
         return response;
       } catch (error) {
         console.error("Login error:", error);
         throw error;
-      } finally {
-        setIsLoading(false);
       }
     },
     [router, checkAuth]
@@ -155,10 +158,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAuth();
     }
   }, [checkAuth]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [router.pathname]);
 
   const value: AuthContextType = {
     isLoading,

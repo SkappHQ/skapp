@@ -21,6 +21,7 @@ import { config } from "../../../../middleware";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { AuthResponseType } from "../types/auth";
 import authAxios from "./authInterceptor";
+import ROUTES from "~community/common/constants/routes";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -98,10 +99,17 @@ export const getNewAccessToken = async (): Promise<string | null> => {
         setAccessToken(accessToken);
         return accessToken;
       } else {
+        await clearCookies();
+        if (typeof window !== "undefined") {
+          window.location.href = ROUTES.AUTH.SIGNIN;
+        }
         return null;
       }
     } catch (error) {
-      console.error("Token refresh failed:", error);
+      await clearCookies();
+      if (typeof window !== "undefined") {
+        window.location.href = ROUTES.AUTH.SIGNIN;
+      }
       return null;
     } finally {
       isRefreshing = false;
