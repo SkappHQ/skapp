@@ -7,9 +7,11 @@ import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
+import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.response.eid.AvailableProviderResponseDto;
@@ -109,8 +111,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
 				request.getDocumentId(), endUserIp, request.getUserVisibleData(), request.getDocumentHash());
 
-		// Map to response DTO
+		// Map to response DTO and set computed fields
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
+		response.setAutoStartToken(extractJsonField(session.getProviderData(), "autoStartToken"));
+		response.setQrCode(computeQrCode(session));
 
 		log.info("initiateVerification: session created with uuid={}", session.getSessionUuid());
 		return new ResponseEntityDto(false, response);
@@ -137,6 +141,12 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
+		response.setHintCode(extractJsonField(session.getProviderData(), "hintCode"));
+
+		// Only compute QR code for active sessions
+		if (isSessionActive(session)) {
+			response.setQrCode(computeQrCode(session));
+		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());
 		return new ResponseEntityDto(false, response);
@@ -191,6 +201,24 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
+	}
+
+	private String computeQrCode(EidVerificationSession session) {
+		if (session == null || session.getProviderData() == null) {
+			return null;
+		}
+		return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
+	}
+
+	private String extractJsonField(JsonNode node, String fieldName) {
+		if (node == null || !node.has(fieldName)) {
+			return null;
+		}
+		JsonNode fieldNode = node.get(fieldName);
+		if (fieldNode == null || fieldNode.isNull()) {
+			return null;
+		}
+		return fieldNode.asText();
 	}
 
 }
