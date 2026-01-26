@@ -129,6 +129,7 @@ import StampIcon from "~community/common/assets/Icons/StampIcon";
 import SuccessIcon from "~community/common/assets/Icons/SuccessIcon";
 import SuperAdminIcon from "~community/common/assets/Icons/SuperAdminIcon";
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
+import TextIcon from "~community/common/assets/Icons/TextIcon";
 import ThreeDotsIcon from "~community/common/assets/Icons/ThreeDotsIcon";
 import TickIcon from "~community/common/assets/Icons/TickIcon";
 import TimerIcon from "~community/common/assets/Icons/TimerIcon";
@@ -203,6 +204,7 @@ export const IconMapping: Partial<
   [IconName.WARNING_ICON]: WarningIcon,
   [IconName.SUCCESS_ICON]: SuccessIcon,
   [IconName.THREE_DOTS_ICON]: ThreeDotsIcon,
+  [IconName.TEXT_ICON]: TextIcon,
   [IconName.MORE_ICON]: MoreIcon,
   [IconName.DANCING_WOMEN_ICON]: DancingWomenIcon,
   [IconName.RESTORE_ICON]: RestoreIcon,
