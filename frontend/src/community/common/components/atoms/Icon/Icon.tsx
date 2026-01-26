@@ -113,6 +113,7 @@ import RingBellIcon from "~community/common/assets/Icons/RingBellIcon";
 import RotateLeftIcon from "~community/common/assets/Icons/RotateLeftIcon";
 import RoundedCloseIcon from "~community/common/assets/Icons/RoundedCloseIcon";
 import SaveIcon from "~community/common/assets/Icons/SaveIcon";
+import ScanDocumentIcon from "~community/common/assets/Icons/ScanDocumentIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import SelectedIcon from "~community/common/assets/Icons/SelectedIcon";
 import SendIcon from "~community/common/assets/Icons/SendIcon";
@@ -135,6 +136,7 @@ import UnCheckedIcon from "~community/common/assets/Icons/UnCheckedIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
 import UpArrowIcon from "~community/common/assets/Icons/UpArrowIcon";
 import UpgradeInfoIcon from "~community/common/assets/Icons/UpgradeInfoIcon";
+import UploadDocumentIcon from "~community/common/assets/Icons/UploadDocumentIcon";
 import UserIcon from "~community/common/assets/Icons/UserIcon";
 import UserUploadIcon from "~community/common/assets/Icons/UserUploadIcon";
 import ViewIcon from "~community/common/assets/Icons/ViewIcon";
@@ -305,7 +307,9 @@ export const IconMapping: Partial<
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
   [IconName.CAMERA_ICON]: CameraIcon,
   [IconName.OUTLOOK_ICON]: OutlookIcon,
-  [IconName.PERCENTAGE_ICON]: PercentageIcon
+  [IconName.PERCENTAGE_ICON]: PercentageIcon,
+  [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
+  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon
   // Add more icons here as needed
 };
 
