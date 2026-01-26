@@ -49,6 +49,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import DropdownIcon from "~community/common/assets/Icons/DropdownIcon";
 import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
@@ -269,6 +270,7 @@ export const IconMapping: Partial<
   [IconName.APPROVED_ICON]: ApprovedIcon,
   [IconName.DECLINED_ICON]: DeclinedIcon,
   [IconName.SIGNATURE_ICON]: SignatureIcon,
+  [IconName.DROPDOWN_ICON]: DropdownIcon,
   [IconName.INVITE_ICON]: InviteIcon,
   [IconName.REMOVE_PEOPLE_ICON]: PeopleRemoveIcon,
   [IconName.MINUS_ICON]: MinusIcon,
