@@ -1,4 +1,5 @@
 import { unitConversion } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
 import {
   AdminTypes,
   AuthEmployeeType,
@@ -21,7 +22,6 @@ import { config } from "../../../../middleware";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { AuthResponseType } from "../types/auth";
 import authAxios from "./authInterceptor";
-import ROUTES from "~community/common/constants/routes";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -126,7 +126,7 @@ export const setAccessToken = (token: string) => {
       Date.now() + unitConversion.MILLISECONDS_PER_DAY
     );
 
-    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
+    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
   }
 };
 
@@ -136,7 +136,7 @@ export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
       Date.now() + unitConversion.MILLISECONDS_PER_MONTH
     );
 
-    document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Strict`;
+    document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
   }
 };
 
@@ -153,9 +153,9 @@ export const clearCookies = async (): Promise<void> => {
 
   if (typeof window !== "undefined") {
     document.cookie =
-      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
+      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
-      "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
+      "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
   }
 };
 
