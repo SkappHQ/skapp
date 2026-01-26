@@ -21,6 +21,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -105,7 +106,8 @@ public class EidVerificationSession extends Auditable<String> {
 	@Column(name = "user_visible_data")
 	private String userVisibleData;
 
-	@Column(name = "initiated_at", nullable = false)
+	@CreationTimestamp
+	@Column(name = "initiated_at", nullable = false, updatable = false)
 	private Instant initiatedAt;
 
 	@Column(name = "expires_at")
@@ -127,9 +129,6 @@ public class EidVerificationSession extends Auditable<String> {
 	protected void onCreate() {
 		if (sessionUuid == null) {
 			sessionUuid = UUID.randomUUID().toString();
-		}
-		if (initiatedAt == null) {
-			initiatedAt = Instant.now();
 		}
 	}
 
