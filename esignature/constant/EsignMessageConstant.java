@@ -218,7 +218,7 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.envelope-template.custody.transfer.new-owner.id.required"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_SEARCH_KEYWORD_IS_EMPTY("ep.esign.error.envelope-template.search.keyword.empty"),
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_LEAST_ONE_RECIPIENTS_ROLE_REQUIRED(
-			"ep.esign.error.envelope-template.least.one-recipients.role.required");
+			"ep.esign.error.envelope-template.least.one-recipient.role.required");
 
 	private final String messageKey;
 
