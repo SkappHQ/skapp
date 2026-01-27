@@ -4,7 +4,11 @@ import com.skapp.enterprise.esignature.model.TemplateDocument;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
-import com.skapp.enterprise.esignature.payload.response.template.*;
+import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.FieldTemplateDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
