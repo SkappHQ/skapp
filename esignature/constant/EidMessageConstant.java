@@ -14,10 +14,12 @@ public enum EidMessageConstant implements MessageConstant {
 	// Provider errors
 	EID_ERROR_PROVIDER_NOT_FOUND("ep.eid.error.provider.not-found"),
 	EID_ERROR_PROVIDER_NOT_ENABLED("ep.eid.error.provider.not-enabled"),
+	EID_ERROR_PROVIDER_INITIATION_FAILED("ep.eid.error.provider.initiation-failed"),
+	EID_ERROR_PROVIDER_STATUS_CHECK_FAILED("ep.eid.error.provider.status-check-failed"),
 
 	// Session errors
 	EID_ERROR_SESSION_NOT_FOUND("ep.eid.error.session.not-found"),
-	EID_ERROR_SESSION_NOT_ACTIVE("ep.eid.error.session.not-activ"),
+	EID_ERROR_SESSION_NOT_ACTIVE("ep.eid.error.session.not-active"),
 	EID_ERROR_SESSION_ALREADY_ACTIVE("ep.eid.error.session.already-active"),
 
 	// Validation errors
