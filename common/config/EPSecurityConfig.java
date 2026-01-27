@@ -152,6 +152,7 @@ public class EPSecurityConfig {
 		source.registerCorsConfiguration("/v2/ep/auth/session/signin/sso/google", credentialedConfig);
 		source.registerCorsConfiguration("/v2/ep/auth/session/signin/sso/microsoft", credentialedConfig);
 		source.registerCorsConfiguration("/v1/ep/auth/session/code-challenge/verify", credentialedConfig);
+		source.registerCorsConfiguration("/v1/ep/auth/session/signin/guest/verify-otp", credentialedConfig);
 		source.registerCorsConfiguration("/v1/ep/cf/cookies/**", credentialedConfig);
 
 		source.registerCorsConfiguration("/**", configuration);
