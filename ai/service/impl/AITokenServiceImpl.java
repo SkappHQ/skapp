@@ -11,7 +11,7 @@ import com.skapp.enterprise.ai.mapper.AITokenMapper;
 import com.skapp.enterprise.ai.model.AIToken;
 import com.skapp.enterprise.ai.payload.request.DailyTokenUsageRequestDto;
 import com.skapp.enterprise.ai.payload.response.DailyTokenUsageResponseDto;
-import com.skapp.enterprise.ai.repository.AITokenRepository;
+import com.skapp.enterprise.ai.repository.AITokenDao;
 import com.skapp.enterprise.ai.service.AITokenService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import lombok.NonNull;
@@ -27,7 +27,7 @@ import java.time.Instant;
 @Slf4j
 public class AITokenServiceImpl implements AITokenService {
 
-	private final AITokenRepository aiTokenRepository;
+	private final AITokenDao aiTokenDao;
 
 	private final AITokenMapper aiTokenMapper;
 
@@ -50,7 +50,7 @@ public class AITokenServiceImpl implements AITokenService {
 
 		User currentUser = userService.getCurrentUser();
 
-		AIToken aiToken = aiTokenRepository.findByUser(currentUser).orElseGet(() -> {
+		AIToken aiToken = aiTokenDao.findByUser(currentUser).orElseGet(() -> {
 			AIToken newToken = new AIToken();
 			newToken.setUser(currentUser);
 			return newToken;
@@ -59,7 +59,7 @@ public class AITokenServiceImpl implements AITokenService {
 		aiToken.setChatbotDailyUsage(dailyTokenUsageRequestDto.getChatbotDailyUsage());
 		aiToken.setChatbotTokensLastUpdatedAt(Instant.now());
 
-		aiTokenRepository.save(aiToken);
+		aiTokenDao.save(aiToken);
 
 		DailyTokenUsageResponseDto responseDto = aiTokenMapper.aiTokenToDailyTokenUsageResponseDto(aiToken);
 
@@ -82,7 +82,7 @@ public class AITokenServiceImpl implements AITokenService {
 			return cachedResponse;
 		}
 
-		AIToken aiToken = aiTokenRepository.findByUser(currentUser).orElse(null);
+		AIToken aiToken = aiTokenDao.findByUser(currentUser).orElse(null);
 
 		if (aiToken == null) {
 			log.info("getChatbotDailyUsageByCurrentUser: No record found for user: {}, returning default values",

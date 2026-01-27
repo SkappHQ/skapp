@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface AITokenRepository extends JpaRepository<AIToken, Long> {
+public interface AITokenDao extends JpaRepository<AIToken, Long> {
 
 	Optional<AIToken> findByUser(User user);
 
