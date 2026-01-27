@@ -2,11 +2,9 @@ package com.skapp.enterprise.esignature.mapper;
 
 import com.skapp.enterprise.esignature.model.TemplateDocument;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
+import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
-import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
-import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
-import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -26,5 +24,8 @@ public interface EsignTemplateMapper {
 	TemplateEnvelopeResponseDto templateEnvelopeToTemplateEnvelopeData(TemplateEnvelope templateEnvelope);
 
 	TemplateEnvelopeBasicInfoDto templateEnvelopeToTemplateEnvelopeBasicInfoDto(TemplateEnvelope templateEnvelope);
+
+	@Mapping(source = "templateDocument.id", target = "documentId")
+	FieldTemplateDetailResponseDto templateFieldToFieldTemplateDetailResponseDto(TemplateField templateField);
 
 }
