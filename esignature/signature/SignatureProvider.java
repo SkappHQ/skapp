@@ -1,7 +1,7 @@
 package com.skapp.enterprise.esignature.signature;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.enterprise.esignature.model.SignatureProviderType;
+import com.skapp.enterprise.esignature.type.SignatureProviderType;
 
 import java.security.cert.X509Certificate;
 
