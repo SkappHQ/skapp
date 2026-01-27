@@ -558,9 +558,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CC_RECIPIENT_CANNOT_HAVE_FIELDS);
 			}
-			else if (templateRecipientDto.getTemplateFields().isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_NON_CC_RECIPIENT_FIELDS_CANNOT_BE_EMPTY);
-			}
 
 			TemplateRecipient templateRecipient = new TemplateRecipient();
 			templateRecipient.setAddressBook(addressBook);
@@ -573,9 +570,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateRecipient.setMfaVerificationMethod(templateRecipientDto.getVerificationType());
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
 
-			List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
-					templateRecipientDto.getTemplateFields(), templateRecipient);
-			templateRecipient.setTemplateFields(templateFields);
+			if (templateRecipientDto.getTemplateFields() != null
+					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
+				List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
+						templateRecipientDto.getTemplateFields(), templateRecipient);
+				templateRecipient.setTemplateFields(templateFields);
+			}
 
 			return templateRecipient;
 		}).collect(Collectors.toList());
@@ -661,26 +661,15 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private void validateEnvelopeTemplateRecipients(List<TemplateRecipientDto> recipientTemplates,
 			List<Long> documentIds) {
 
-		boolean noRecipientFieldDocuments = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> field.getTemplateDocumentId() == null);
-
-		if (noRecipientFieldDocuments) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+		if (recipientTemplates == null || recipientTemplates.isEmpty()) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_ENVELOPE_TEMPLATE_LEAST_ONE_RECIPIENTS_ROLE_REQUIRED);
 		}
 
-		boolean hasInvalidDocumentId = recipientTemplates.stream()
-			.flatMap(recipient -> recipient.getTemplateFields().stream())
-			.anyMatch(field -> !documentIds.contains(field.getTemplateDocumentId()));
-
-		if (hasInvalidDocumentId) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
-		}
-
+		// Validate recipient roles
 		boolean hasNoRecipientRole = recipientTemplates.stream()
 			.anyMatch(
 					recipient -> recipient.getRecipientRole() == null || recipient.getRecipientRole().trim().isEmpty());
-
 		if (hasNoRecipientRole) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_REQUIRED);
 		}
@@ -690,7 +679,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			.filter(Objects::nonNull)
 			.map(String::trim)
 			.anyMatch(role -> role.length() > ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH);
-
 		if (exceedMaxRecipientRoleLength) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_MAX_LENGTH_EXCEEDED);
 		}
@@ -704,9 +692,24 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 				.map(TemplateRecipientDto::getRecipientRole)
 				.filter(Objects::nonNull)
 				.count();
-
 		if (duplicateRecipientRole) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_ROLE_DUPLICATED);
+		}
+
+		// Validate fields for all recipients
+		for (TemplateRecipientDto recipient : recipientTemplates) {
+			List<TemplateFieldDto> fields = recipient.getTemplateFields();
+			if (fields != null && !fields.isEmpty()) {
+				for (TemplateFieldDto field : fields) {
+					if (field.getTemplateDocumentId() == null) {
+						throw new ModuleException(
+								EsignMessageConstant.ESIGN_ERROR_TEMPLATE_RECIPIENT_FIELD_DOCUMENT_ID_REQUIRED);
+					}
+					if (!documentIds.contains(field.getTemplateDocumentId())) {
+						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_TEMPLATE_DOCUMENT_ID);
+					}
+				}
+			}
 		}
 
 	}
