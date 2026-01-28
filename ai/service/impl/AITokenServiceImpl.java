@@ -39,14 +39,47 @@ public class AITokenServiceImpl implements AITokenService {
 
 	@Override
 	@Transactional
-	public DailyTokenUsageResponseDto updateChatbotDailyUsage(
+	public DailyTokenUsageResponseDto incrementChatbotDailyUsage(
 			@NonNull DailyTokenUsageRequestDto dailyTokenUsageRequestDto) {
-		log.info("updateChatbotDailyUsage: Updating chatbot daily usage to: {}",
+		log.info("incrementChatbotDailyUsage: Incrementing chatbot daily usage by: {}",
 				dailyTokenUsageRequestDto.getChatbotDailyUsage());
 
 		if (dailyTokenUsageRequestDto.getChatbotDailyUsage() == null) {
 			throw new ModuleException(AIMessageConstant.AI_ERROR_CHATBOT_DAILY_USAGE_REQUIRED);
 		}
+
+		if (dailyTokenUsageRequestDto.getChatbotDailyUsage() < 0) {
+			throw new ModuleException(AIMessageConstant.AI_ERROR_CHATBOT_DAILY_USAGE_MUST_BE_NON_NEGATIVE);
+		}
+
+		User currentUser = userService.getCurrentUser();
+
+		AIToken aiToken = aiTokenDao.findByUser(currentUser).orElseGet(() -> {
+			AIToken newToken = new AIToken();
+			newToken.setUser(currentUser);
+			newToken.setChatbotDailyUsage(0L);
+			return newToken;
+		});
+
+		Long currentUsage = aiToken.getChatbotDailyUsage() != null ? aiToken.getChatbotDailyUsage() : 0L;
+		aiToken.setChatbotDailyUsage(currentUsage + dailyTokenUsageRequestDto.getChatbotDailyUsage());
+		aiToken.setChatbotTokensLastUpdatedAt(Instant.now());
+
+		aiTokenDao.save(aiToken);
+
+		DailyTokenUsageResponseDto responseDto = aiTokenMapper.aiTokenToDailyTokenUsageResponseDto(aiToken);
+
+		setCachedDailyTokenUsage(currentUser.getUserId(), responseDto);
+
+		log.info("incrementChatbotDailyUsage: Successfully incremented chatbot daily usage for user: {}",
+				currentUser.getUserId());
+		return responseDto;
+	}
+
+	@Override
+	@Transactional
+	public DailyTokenUsageResponseDto resetChatbotDailyUsage() {
+		log.info("resetChatbotDailyUsage: Resetting chatbot daily usage for current user");
 
 		User currentUser = userService.getCurrentUser();
 
@@ -56,7 +89,7 @@ public class AITokenServiceImpl implements AITokenService {
 			return newToken;
 		});
 
-		aiToken.setChatbotDailyUsage(dailyTokenUsageRequestDto.getChatbotDailyUsage());
+		aiToken.setChatbotDailyUsage(0L);
 		aiToken.setChatbotTokensLastUpdatedAt(Instant.now());
 
 		aiTokenDao.save(aiToken);
@@ -65,7 +98,7 @@ public class AITokenServiceImpl implements AITokenService {
 
 		setCachedDailyTokenUsage(currentUser.getUserId(), responseDto);
 
-		log.info("updateChatbotDailyUsage: Successfully updated chatbot daily usage for user: {}",
+		log.info("resetChatbotDailyUsage: Successfully reset chatbot daily usage for user: {}",
 				currentUser.getUserId());
 		return responseDto;
 	}
