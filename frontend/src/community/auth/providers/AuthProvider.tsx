@@ -50,8 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         setIsLoading(true);
         await clearCookies();
-        setUser(null);
-        setIsAuthenticated(false);
 
         if (redirect === false) {
           return;
