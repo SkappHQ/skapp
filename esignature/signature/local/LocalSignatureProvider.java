@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.signature.local;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
-import com.skapp.enterprise.esignature.model.SignatureProviderType;
+import com.skapp.enterprise.esignature.type.SignatureProviderType;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

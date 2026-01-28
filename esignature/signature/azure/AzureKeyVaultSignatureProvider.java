@@ -16,7 +16,7 @@ import com.azure.security.keyvault.keys.models.JsonWebKey;
 import com.azure.security.keyvault.keys.models.KeyVaultKey;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
-import com.skapp.enterprise.esignature.model.SignatureProviderType;
+import com.skapp.enterprise.esignature.type.SignatureProviderType;
 import com.skapp.enterprise.esignature.signature.SignatureProvider;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

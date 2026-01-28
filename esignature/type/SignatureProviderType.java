@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.model;
+package com.skapp.enterprise.esignature.type;
 
 /**
  * Enum representing the type of signature provider being used.
