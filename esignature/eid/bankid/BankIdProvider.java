@@ -13,6 +13,7 @@ import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCompletionData;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignResponse;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdUser;
+import com.skapp.enterprise.esignature.eid.bankid.exception.BankIdApiException;
 import com.skapp.enterprise.esignature.eid.config.BankIdProperties;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
@@ -145,7 +146,7 @@ public class BankIdProvider implements EidProvider {
 			return session;
 
 		}
-		catch (BankIdClient.BankIdApiException e) {
+		catch (BankIdApiException e) {
 			log.error("BankIdProvider: Failed to initiate signing: {}", e.getMessage());
 			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_INITIATION_FAILED);
 		}
@@ -176,7 +177,7 @@ public class BankIdProvider implements EidProvider {
 			return sessionRepository.save(session);
 
 		}
-		catch (BankIdClient.BankIdApiException e) {
+		catch (BankIdApiException e) {
 			log.error("BankIdProvider: Failed to collect status: {}", e.getMessage());
 
 			// If the error indicates order not found, mark as expired
@@ -203,7 +204,7 @@ public class BankIdProvider implements EidProvider {
 			bankIdClient.cancel(cancelRequest);
 
 		}
-		catch (BankIdClient.BankIdApiException e) {
+		catch (BankIdApiException e) {
 			// Log but don't throw - cancel may fail if order already expired
 			log.warn("BankIdProvider: Cancel request failed (may already be expired): {}", e.getMessage());
 		}

@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCollectResponse;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdErrorResponse;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignResponse;
+import com.skapp.enterprise.esignature.eid.bankid.exception.BankIdApiException;
 import com.skapp.enterprise.esignature.eid.config.BankIdProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,12 +70,12 @@ public class BankIdClient {
 				return response.getBody();
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /sign", null);
+			throw new BankIdApiException("Unexpected response from BankID /sign", "sign", null);
 
 		}
 		catch (HttpStatusCodeException e) {
 			handleApiError("sign", e);
-			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), extractErrorResponse(e));
+			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), "sign", extractErrorResponse(e));
 		}
 	}
 
@@ -104,12 +105,13 @@ public class BankIdClient {
 				return body;
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /collect", null);
+			throw new BankIdApiException("Unexpected response from BankID /collect", "collect", null);
 
 		}
 		catch (HttpStatusCodeException e) {
 			handleApiError("collect", e);
-			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), extractErrorResponse(e));
+			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), "collect",
+					extractErrorResponse(e));
 		}
 	}
 
@@ -140,7 +142,7 @@ public class BankIdClient {
 				return;
 			}
 			handleApiError("cancel", e);
-			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), extractErrorResponse(e));
+			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), "cancel", extractErrorResponse(e));
 		}
 	}
 
@@ -169,28 +171,6 @@ public class BankIdClient {
 		catch (Exception ex) {
 			return null;
 		}
-	}
-
-	/**
-	 * Exception thrown when BankID API call fails.
-	 */
-	public static class BankIdApiException extends RuntimeException {
-
-		private final BankIdErrorResponse errorResponse;
-
-		public BankIdApiException(String message, BankIdErrorResponse errorResponse) {
-			super(message);
-			this.errorResponse = errorResponse;
-		}
-
-		public BankIdErrorResponse getErrorResponse() {
-			return errorResponse;
-		}
-
-		public String getErrorCode() {
-			return errorResponse != null ? errorResponse.getErrorCode() : null;
-		}
-
 	}
 
 }
