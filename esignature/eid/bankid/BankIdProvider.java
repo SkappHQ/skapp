@@ -166,7 +166,7 @@ public class BankIdProvider implements EidProvider {
 
 		try {
 			// Call BankID /collect endpoint
-			BankIdCollectRequest collectRequest = BankIdCollectRequest.builder().orderRef(orderRef).build();
+			BankIdCollectRequest collectRequest = new BankIdCollectRequest(orderRef);
 
 			BankIdCollectResponse collectResponse = bankIdClient.collect(collectRequest);
 
@@ -198,7 +198,7 @@ public class BankIdProvider implements EidProvider {
 
 		try {
 			// Call BankID /cancel endpoint
-			BankIdCancelRequest cancelRequest = BankIdCancelRequest.builder().orderRef(orderRef).build();
+			BankIdCancelRequest cancelRequest = new BankIdCancelRequest(orderRef);
 
 			bankIdClient.cancel(cancelRequest);
 

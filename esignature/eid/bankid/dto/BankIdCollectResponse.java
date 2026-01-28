@@ -1,7 +1,5 @@
 package com.skapp.enterprise.esignature.eid.bankid.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,22 +9,15 @@ import lombok.NoArgsConstructor;
  * <p>
  * The response structure varies based on the status:
  * <ul>
- * <li>pending: Contains orderRef, status, hintCode</li>
- * <li>failed: Contains orderRef, status, hintCode</li>
- * <li>complete: Contains orderRef, status, completionData</li>
+ * <li>pending: Contains status, hintCode</li>
+ * <li>failed: Contains status, hintCode</li>
+ * <li>complete: Contains status, completionData</li>
  * </ul>
  * </p>
  */
 @Data
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class BankIdCollectResponse {
-
-	/**
-	 * Reference to this order.
-	 */
-	private String orderRef;
 
 	/**
 	 * Status of the order. One of: "pending", "failed", "complete".

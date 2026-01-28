@@ -14,8 +14,7 @@ import lombok.NoArgsConstructor;
  * The user must have a valid BankID certificate to sign.
  * </p>
  *
- * @see <a href=
- * "https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide">BankID
+ * @see <a href= "https://developers.bankid.com/api-references/auth--sign/overview">BankID
  * Technical Integration Guide</a>
  */
 @Data
@@ -38,21 +37,10 @@ public class BankIdSignRequest {
 	private String userVisibleData;
 
 	/**
-	 * Format of userVisibleData. Optional. Set to "simpleMarkdownV1" to enable markdown
-	 * formatting.
-	 */
-	private String userVisibleDataFormat;
-
-	/**
 	 * Data not displayed to the user but included in the signature. Optional. Typically
 	 * used to include document hash. Must be Base64 encoded. Max 200,000 characters after
 	 * encoding.
 	 */
 	private String userNonVisibleData;
-
-	/**
-	 * Requirements on how the signing must be performed. Optional.
-	 */
-	private BankIdRequirement requirement;
 
 }
