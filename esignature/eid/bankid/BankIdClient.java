@@ -37,6 +37,12 @@ import org.springframework.web.client.RestTemplate;
 @ConditionalOnProperty(name = "skapp.esign.eid.providers.swedish-bankid.enabled", havingValue = "true")
 public class BankIdClient {
 
+	private static final String OP_SIGN = "sign";
+
+	private static final String OP_COLLECT = "collect";
+
+	private static final String OP_CANCEL = "cancel";
+
 	private final RestTemplate restTemplate;
 
 	private final BankIdProperties bankIdProperties;
@@ -70,12 +76,12 @@ public class BankIdClient {
 				return response.getBody();
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /sign", "sign", null);
+			throw new BankIdApiException("Unexpected response from BankID /sign", OP_SIGN, null);
 
 		}
 		catch (HttpStatusCodeException e) {
-			handleApiError("sign", e);
-			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), "sign", extractErrorResponse(e));
+			handleApiError(OP_SIGN, e);
+			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), OP_SIGN, extractErrorResponse(e));
 		}
 	}
 
@@ -105,12 +111,12 @@ public class BankIdClient {
 				return body;
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /collect", "collect", null);
+			throw new BankIdApiException("Unexpected response from BankID /collect", OP_COLLECT, null);
 
 		}
 		catch (HttpStatusCodeException e) {
-			handleApiError("collect", e);
-			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), "collect",
+			handleApiError(OP_COLLECT, e);
+			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), OP_COLLECT,
 					extractErrorResponse(e));
 		}
 	}
@@ -141,8 +147,8 @@ public class BankIdClient {
 				log.debug("BankID /cancel returned 404 - order already expired or cancelled");
 				return;
 			}
-			handleApiError("cancel", e);
-			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), "cancel", extractErrorResponse(e));
+			handleApiError(OP_CANCEL, e);
+			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), OP_CANCEL, extractErrorResponse(e));
 		}
 	}
 
