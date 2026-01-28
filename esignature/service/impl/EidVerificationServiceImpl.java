@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.util.Validation;
@@ -7,21 +8,24 @@ import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
-import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.response.eid.AvailableProviderResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationStatusResponseDto;
+import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
+import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +54,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private final RecipientDao recipientDao;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final DocumentRepository documentRepository;
+
+	private final DocumentVersionDao documentVersionDao;
 
 	@Override
 	public ResponseEntityDto getAvailableProviders() {
@@ -106,9 +114,29 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 				throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_ALREADY_ACTIVE);
 			});
 
+		// Retrieve document and its latest version to get the hash
+		Document document = documentRepository.findById(request.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		DocumentVersion latestVersion = documentVersionDao
+			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), document.getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+		// Get document hash from the latest version (computed and stored when document
+		// was uploaded/signed)
+		String documentHash = latestVersion.getDocumentHash();
+		if (documentHash == null || documentHash.isBlank()) {
+			log.error("Document hash is missing for document={}, version={}", document.getId(),
+					latestVersion.getVersionNumber());
+			throw new ModuleException(EidMessageConstant.EID_ERROR_DOCUMENT_HASH_MISSING);
+		}
+
+		// Generate user-visible data from document metadata
+		String userVisibleData = generateUserVisibleData(document);
+
 		// Initiate verification with provider
 		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
-				request.getDocumentId(), endUserIp, request.getUserVisibleData(), request.getDocumentHash());
+				request.getDocumentId(), endUserIp, userVisibleData, documentHash);
 
 		// Map to response DTO and set computed fields
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
@@ -218,6 +246,14 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			return null;
 		}
 		return fieldNode.asText();
+	}
+
+	private String generateUserVisibleData(Document document) {
+		String documentName = document.getName();
+		if (documentName == null || documentName.isBlank()) {
+			documentName = "document";
+		}
+		return String.format("I hereby sign the document \"%s\".", documentName);
 	}
 
 }

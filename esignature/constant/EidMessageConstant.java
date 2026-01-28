@@ -22,6 +22,9 @@ public enum EidMessageConstant implements MessageConstant {
 	EID_ERROR_SESSION_NOT_ACTIVE("ep.eid.error.session.not-active"),
 	EID_ERROR_SESSION_ALREADY_ACTIVE("ep.eid.error.session.already-active"),
 
+	// Document errors
+	EID_ERROR_DOCUMENT_HASH_MISSING("ep.eid.error.document.hash-missing"),
+
 	// Validation errors
 	EID_VALIDATION_RECIPIENT_NOT_FOUND("ep.eid.validation.recipient.not-found"),
 	EID_VALIDATION_DOCUMENT_NOT_FOUND("ep.eid.validation.document.not-found"),

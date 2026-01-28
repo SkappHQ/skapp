@@ -148,7 +148,8 @@ public class BankIdClient {
 				return;
 			}
 			handleApiError(OP_CANCEL, e);
-			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), OP_CANCEL, extractErrorResponse(e));
+			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), OP_CANCEL,
+					extractErrorResponse(e));
 		}
 	}
 
