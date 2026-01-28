@@ -260,6 +260,16 @@ export function middleware(request: NextRequest) {
       );
     }
 
+    // Note: Fake tier validation to disable esign templates for production
+    if (
+      request.nextUrl.pathname.startsWith(ROUTES.SIGN.TEMPLATE) ||
+      request.nextUrl.pathname === ROUTES.SIGN.CREATE_TEMPLATE
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
     // Check manager restricted routes
     const managerRedirect = checkRestrictedRoutesAndRedirect(
       request,
