@@ -5,7 +5,9 @@ import com.skapp.enterprise.ai.payload.response.DailyTokenUsageResponseDto;
 
 public interface AITokenService {
 
-	DailyTokenUsageResponseDto updateChatbotDailyUsage(DailyTokenUsageRequestDto dailyTokenUsageRequestDto);
+	DailyTokenUsageResponseDto incrementChatbotDailyUsage(DailyTokenUsageRequestDto dailyTokenUsageRequestDto);
+
+	DailyTokenUsageResponseDto resetChatbotDailyUsage();
 
 	DailyTokenUsageResponseDto getChatbotDailyUsageByCurrentUser();
 

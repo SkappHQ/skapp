@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,13 +22,22 @@ public class AITokenController {
 
 	private final AITokenService aiTokenService;
 
-	@Operation(summary = "Update chatbot daily usage",
-			description = "This endpoint allows to update the chatbot daily usage for AI.")
+	@Operation(summary = "Increment chatbot daily usage",
+			description = "This endpoint allows to increment the chatbot daily usage for AI.")
 	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
-	@PatchMapping(value = "/daily-usage")
-	public ResponseEntity<DailyTokenUsageResponseDto> updateChatbotDailyUsage(
+	@PostMapping(value = "/daily-usage")
+	public ResponseEntity<DailyTokenUsageResponseDto> incrementChatbotDailyUsage(
 			@RequestBody DailyTokenUsageRequestDto dailyTokenUsageRequestDto) {
-		DailyTokenUsageResponseDto response = aiTokenService.updateChatbotDailyUsage(dailyTokenUsageRequestDto);
+		DailyTokenUsageResponseDto response = aiTokenService.incrementChatbotDailyUsage(dailyTokenUsageRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reset chatbot daily usage",
+			description = "This endpoint allows to reset the chatbot daily usage for the current user.")
+	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
+	@DeleteMapping(value = "/daily-usage")
+	public ResponseEntity<DailyTokenUsageResponseDto> resetChatbotDailyUsage() {
+		DailyTokenUsageResponseDto response = aiTokenService.resetChatbotDailyUsage();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
