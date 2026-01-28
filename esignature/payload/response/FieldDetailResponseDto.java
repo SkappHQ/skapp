@@ -25,12 +25,14 @@ public class FieldDetailResponseDto {
 
 	private String recipientMail;
 
-	private String fontFamily;
-
-	private String fontColor;
-
 	private String width;
 
 	private String height;
+
+	private Long fieldContainerId;
+
+	private FieldContainerResponseDto fieldContainer;
+
+	private FieldOptionResponseDto fieldOption;
 
 }

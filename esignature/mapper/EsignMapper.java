@@ -4,22 +4,8 @@ import com.skapp.community.common.model.User;
 import com.skapp.enterprise.esignature.model.*;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.request.*;
-import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
-import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
-import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
-import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
-import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
-import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
-import com.skapp.enterprise.esignature.payload.response.MySignatureLinkResponseDto;
-import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
-import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
+import com.skapp.enterprise.esignature.payload.response.*;
+import com.skapp.enterprise.esignature.payload.response.template.FieldTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
@@ -153,8 +139,8 @@ public interface EsignMapper {
 		return subject.replaceFirst(COMPLETE_VIA_SKAPP_REGEX, "");
 	}
 
-	FieldContainer fieldContainerDtoToFieldContainer(FieldContainerDto fieldContainerDto);
+	FieldOptionResponseDto fieldOptionToFieldOptionResponseDto(FieldOption fieldOption);
 
-	FieldOption fieldOptionDtoToFieldOptionValue(FieldOptionDto fieldOptionDto);
+	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
 
 }
