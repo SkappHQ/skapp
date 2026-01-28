@@ -77,15 +77,7 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
-import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.EmailReminderStatus;
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
-import com.skapp.enterprise.esignature.type.EsignVerificationType;
-import com.skapp.enterprise.esignature.type.InboxStatus;
-import com.skapp.enterprise.esignature.type.MemberRole;
-import com.skapp.enterprise.esignature.type.RecipientStatus;
-import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.type.UserType;
+import com.skapp.enterprise.esignature.type.*;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
@@ -507,6 +499,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
+
+		validateGroupedFieldOptions(fieldDtos);
+
 		List<Field> fieldList = new ArrayList<>();
 		Map<String, FieldContainer> containerMap = new HashMap<>();
 
@@ -525,40 +520,28 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
-			// Handle FieldContainer sharing
-			if (dto.getFieldContainerId() != null) {
-				FieldContainer container = containerMap.get(dto.getFieldContainerId());
-				if (container == null && dto.getFieldContainer() != null) {
-					container = new FieldContainer();
-					// Set container properties from dto.getFieldContainer()
-					container.setFontFamily(dto.getFieldContainer().getFontFamily() != null
-							? dto.getFieldContainer().getFontFamily() : null);
-					container.setFontColor(dto.getFieldContainer().getFontColor() != null
-							? dto.getFieldContainer().getFontColor() : null);
-					container.setFontSize(dto.getFieldContainer().getFontSize() != null
-							? dto.getFieldContainer().getFontSize() : null);
-					container.setIsBold(
-							dto.getFieldContainer().getIsBold() != null ? dto.getFieldContainer().getIsBold() : null);
-					container.setIsItalic(dto.getFieldContainer().getIsItalic() != null
-							? dto.getFieldContainer().getIsItalic() : null);
-					container.setIsUnderline(dto.getFieldContainer().getIsUnderline() != null
-							? dto.getFieldContainer().getIsUnderline() : null);
-					container.setIsRequired(dto.getFieldContainer().getIsRequired() != null
-							? dto.getFieldContainer().getIsRequired() : false);
-					container.setIsMultiSelect(dto.getFieldContainer().getIsMultiSelect() != null
-							? dto.getFieldContainer().getIsMultiSelect() : false);
-					containerMap.put(dto.getFieldContainerId(), container);
-				}
-				field.setFieldContainer(containerMap.get(dto.getFieldContainerId()));
+			if (dto.getFieldContainerId() != null && dto.getFieldContainer() != null) {
+				FieldContainer container = containerMap.computeIfAbsent(dto.getFieldContainerId(), id -> {
+					FieldContainer fc = new FieldContainer();
+					fc.setFontFamily(dto.getFieldContainer().getFontFamily());
+					fc.setFontColor(dto.getFieldContainer().getFontColor());
+					fc.setFontSize(dto.getFieldContainer().getFontSize());
+					fc.setIsBold(dto.getFieldContainer().getIsBold());
+					fc.setIsItalic(dto.getFieldContainer().getIsItalic());
+					fc.setIsUnderline(dto.getFieldContainer().getIsUnderline());
+					fc.setIsRequired(Boolean.TRUE.equals(dto.getFieldContainer().getIsRequired()));
+					fc.setIsMultiSelect(Boolean.TRUE.equals(dto.getFieldContainer().getIsMultiSelect()));
+					return fc;
+				});
+				field.setFieldContainer(container);
 			}
 			else {
 				field.setFieldContainer(null);
 			}
 
-			// Handle FieldOption
 			if (dto.getFieldOption() != null) {
 				FieldOption option = new FieldOption();
-				option.setOptionValue(dto.getFieldOption().getOptionValue());
+				option.setOptionValue(dto.getFieldOption().getOptionValue().trim());
 				option.setDisplayOrder(dto.getFieldOption().getDisplayOrder());
 				field.setFieldOption(option);
 			}
@@ -1425,6 +1408,59 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		else {
 			return startDateTime.plusYears(1);
+		}
+	}
+
+	private void validateGroupedFieldOptions(List<FieldDto> fieldDtos) {
+		Map<String, List<FieldDto>> groupedByContainer = fieldDtos.stream()
+			.filter(dto -> dto.getFieldContainerId() != null && (dto.getType() == FieldType.DROPDOWN
+					|| dto.getType() == FieldType.RADIO_BUTTON || dto.getType() == FieldType.CHECKBOX))
+			.collect(Collectors.groupingBy(FieldDto::getFieldContainerId));
+
+		for (List<FieldDto> group : groupedByContainer.values()) {
+			FieldType type = group.getFirst().getType();
+			List<String> optionValues = group.stream()
+				.map(dto -> dto.getFieldOption() != null ? dto.getFieldOption().getOptionValue() : null)
+				.filter(Objects::nonNull)
+				.map(String::trim)
+				.toList();
+
+			// Option count validation
+			if (type == FieldType.DROPDOWN && optionValues.isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION);
+			}
+			if (type == FieldType.RADIO_BUTTON && optionValues.size() < 2) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTIONS);
+			}
+			if (type == FieldType.CHECKBOX && optionValues.isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CHECKBOX_FIELD_MUST_HAVE_AT_LEAST_1_OPTION);
+			}
+
+			// Duplicate values and length validation
+			Set<String> existingOptionValue = new HashSet<>();
+			Set<Integer> existingDisplayOrder = new HashSet<>();
+			for (FieldDto dto : group) {
+				if (dto.getFieldOption() != null) {
+					String value = dto.getFieldOption().getOptionValue();
+					if (value != null) {
+						value = value.trim();
+						if (value.length() > 100) {
+							throw new ModuleException(
+									EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
+						}
+						if (!existingOptionValue.add(value)) {
+							throw new ModuleException(
+									EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
+						}
+					}
+					Integer displayOrder = dto.getFieldOption().getDisplayOrder();
+					if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
+						throw new ModuleException(
+								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
+					}
+				}
+			}
 		}
 	}
 
