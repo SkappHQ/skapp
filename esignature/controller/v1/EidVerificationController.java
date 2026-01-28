@@ -1,7 +1,6 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,16 +54,15 @@ public class EidVerificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Check verification status",
-			description = "Polls the current status of a verification session. "
+	@Operation(summary = "Poll verification status",
+			description = "Polls the current status of a verification session and updates the session state. "
 					+ "Returns updated qrCode for cross-device flow (refreshed each call). "
 					+ "Frontend should call this every 2 seconds until status is terminal "
-					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED).")
+					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED). "
+					+ "Uses POST because polling updates session state from the external provider.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
-	@GetMapping(value = "/status/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/status/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(@PathVariable String sessionId) {
-		// TODO: remove this override once the mock provider is gone
-		RequestMethodContext.setReadOnly(false);
 		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(sessionId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
