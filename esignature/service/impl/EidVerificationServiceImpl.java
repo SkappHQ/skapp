@@ -204,6 +204,39 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		return new ResponseEntityDto(false, EidMessageConstant.EID_SUCCESS_VERIFICATION_CANCELLED);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getActiveSession(Long recipientId, Long documentId) {
+		log.info("getActiveSession: checking for active session for recipient={}, document={}", recipientId,
+				documentId);
+
+		// Validate that the current user has permission to access this recipient/document
+		Recipient recipient = recipientDao.findById(recipientId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentId);
+
+		// Find the most recent session for this recipient/document
+		// Note: We only return sessionId and status here. Frontend should call
+		// /status/{sessionId} to get fresh qrCode and other dynamic data.
+		return sessionRepository.findFirstByRecipientIdAndDocumentIdOrderByInitiatedAtDesc(recipientId, documentId)
+			.filter(this::isSessionActive)
+			.map(session -> {
+				log.info("getActiveSession: found active session={} with status={}", session.getSessionUuid(),
+						session.getStatus());
+
+				VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
+
+				return new ResponseEntityDto(false, response);
+			})
+			.orElseGet(() -> {
+				log.info("getActiveSession: no active session found for recipient={}, document={}", recipientId,
+						documentId);
+				return new ResponseEntityDto(false, null);
+			});
+	}
+
 	private boolean isSessionActive(EidVerificationSession session) {
 		EidVerificationStatus status = session.getStatus();
 		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;

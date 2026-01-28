@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -76,6 +77,18 @@ public class EidVerificationController {
 	public ResponseEntity<ResponseEntityDto> cancelVerification(@PathVariable String sessionId) {
 
 		ResponseEntityDto response = eidVerificationService.cancelVerification(sessionId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get active verification session",
+			description = "Retrieves any active verification session for the specified recipient and document. "
+					+ "This allows the frontend to recover from lost session IDs (e.g., after page refresh). "
+					+ "Returns the session details if an active session exists, or null if no active session.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
+	@GetMapping(value = "/session/active", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getActiveSession(@RequestParam Long recipientId,
+			@RequestParam Long documentId) {
+		ResponseEntityDto response = eidVerificationService.getActiveSession(recipientId, documentId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
