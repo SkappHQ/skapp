@@ -1201,7 +1201,7 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 			else {
 				DocumentVersionField documentVersionField = switch (fieldType) {
-					case DATE, APPROVE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO ->
+					case DATE, APPROVE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
 						signTextField(fieldSignDto, privateKey, field);
 					default -> throw new IllegalStateException("Unsupported field type: " + fieldType);
 				};
@@ -1279,7 +1279,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 		return switch (fieldSignDto.getType()) {
-			case DATE, APPROVE, DECLINE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO ->
+			case DATE, APPROVE, DECLINE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
 				signTextField(fieldSignDto, privateKey, field);
 			case SIGNATURE, INITIAL, STAMP -> signImageField(fieldSignDto, privateKey, field);
 		};

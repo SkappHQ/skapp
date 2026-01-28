@@ -31,8 +31,27 @@ import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.*;
-import com.skapp.enterprise.esignature.payload.request.*;
+import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
+import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.EnvelopeSetting;
+import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.FieldContainer;
+import com.skapp.enterprise.esignature.model.FieldOption;
+import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
+import com.skapp.enterprise.esignature.payload.request.FieldDto;
+import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EmployeeKPIResponseDto;
@@ -42,7 +61,6 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
@@ -95,6 +113,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -465,13 +484,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
 
-			List<Field> fields = new ArrayList<>();
-
-			fields.addAll(buildFieldsForRecipient(recipientDto.getFields(), recipient));
-
-			if(recipientDto.getAdvanceFields() != null && !recipientDto.getAdvanceFields().isEmpty()){
-				fields.addAll(buildAdvanceFieldsForRecipient(recipientDto.getAdvanceFields(), recipient));
-			}
+			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
 
 			recipient.setFields(fields);
 
@@ -494,56 +507,68 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
-		return fieldDtos.stream().map(fieldDto -> {
-			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
+		List<Field> fieldList = new ArrayList<>();
+		Map<String, FieldContainer> containerMap = new HashMap<>();
+
+		for (FieldDto dto : fieldDtos) {
+			Document fieldDocument = documentDao.findById(dto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
 			Field field = new Field();
-			field.setType(fieldDto.getType());
-			field.setStatus(fieldDto.getStatus());
-			field.setPageNumber(fieldDto.getPageNumber());
-			field.setXPosition(fieldDto.getXposition());
-			field.setYPosition(fieldDto.getYposition());
-			field.setWidth(fieldDto.getWidth());
-			field.setHeight(fieldDto.getHeight());
+			field.setType(dto.getType());
+			field.setStatus(dto.getStatus());
+			field.setPageNumber(dto.getPageNumber());
+			field.setXPosition(dto.getXposition());
+			field.setYPosition(dto.getYposition());
+			field.setWidth(dto.getWidth());
+			field.setHeight(dto.getHeight());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
-			return field;
-		}).toList();
-	}
+			// Handle FieldContainer sharing
+			if (dto.getFieldContainerId() != null) {
+				FieldContainer container = containerMap.get(dto.getFieldContainerId());
+				if (container == null && dto.getFieldContainer() != null) {
+					container = new FieldContainer();
+					// Set container properties from dto.getFieldContainer()
+					container.setFontFamily(dto.getFieldContainer().getFontFamily() != null
+							? dto.getFieldContainer().getFontFamily() : null);
+					container.setFontColor(dto.getFieldContainer().getFontColor() != null
+							? dto.getFieldContainer().getFontColor() : null);
+					container.setFontSize(dto.getFieldContainer().getFontSize() != null
+							? dto.getFieldContainer().getFontSize() : null);
+					container.setIsBold(
+							dto.getFieldContainer().getIsBold() != null ? dto.getFieldContainer().getIsBold() : null);
+					container.setIsItalic(dto.getFieldContainer().getIsItalic() != null
+							? dto.getFieldContainer().getIsItalic() : null);
+					container.setIsUnderline(dto.getFieldContainer().getIsUnderline() != null
+							? dto.getFieldContainer().getIsUnderline() : null);
+					container.setIsRequired(dto.getFieldContainer().getIsRequired() != null
+							? dto.getFieldContainer().getIsRequired() : false);
+					container.setIsMultiSelect(dto.getFieldContainer().getIsMultiSelect() != null
+							? dto.getFieldContainer().getIsMultiSelect() : false);
+					containerMap.put(dto.getFieldContainerId(), container);
+				}
+				field.setFieldContainer(containerMap.get(dto.getFieldContainerId()));
+			}
+			else {
+				field.setFieldContainer(null);
+			}
 
-	private List<Field> buildAdvanceFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
-		return fieldDtos.stream().map(fieldDto -> {
-			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
-					.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+			// Handle FieldOption
+			if (dto.getFieldOption() != null) {
+				FieldOption option = new FieldOption();
+				option.setOptionValue(dto.getFieldOption().getOptionValue());
+				option.setDisplayOrder(dto.getFieldOption().getDisplayOrder());
+				field.setFieldOption(option);
+			}
+			else {
+				field.setFieldOption(null);
+			}
 
-			Field field = new Field();
-			field.setType(fieldDto.getType());
-			field.setStatus(fieldDto.getStatus());
-			field.setPageNumber(fieldDto.getPageNumber());
-			field.setXPosition(fieldDto.getXposition());
-			field.setYPosition(fieldDto.getYposition());
-			field.setWidth(fieldDto.getWidth());
-			field.setHeight(fieldDto.getHeight());
-			field.setDocument(fieldDocument);
-			field.setRecipient(recipient);
-
-//			if (fieldDto.getFieldContainer() != null) {
-//				FieldContainer fieldContainer = eSignMapper
-//						.fieldContainerDtoToFieldContainer(fieldDto.getFieldContainer());
-//				field.setFieldContainer(fieldContainer);
-//			}
-//
-//			if (fieldDto.getFieldOption() != null) {
-//
-//				FieldOption fieldOption = eSignMapper.fieldOptionDtoToFieldOptionValue(fieldDto.getFieldOption());
-//
-//				field.setFieldOption(fieldOption);
-//			}
-
-			return field;
-		}).toList();
+			fieldList.add(field);
+		}
+		return fieldList;
 	}
 
 	private void processVoidRequest(Envelope envelope) {

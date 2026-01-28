@@ -47,11 +47,11 @@ public class Field {
 	private Recipient recipient;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "container_id")
+	@JoinColumn(name = "field_container_id")
 	private FieldContainer fieldContainer;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "option_id")
+	@JoinColumn(name = "field_option_id")
 	private FieldOption fieldOption;
 
 }

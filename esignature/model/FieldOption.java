@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "es_field_option_value")
+@Table(name = "es_field_option")
 public class FieldOption {
 
 	@Id
@@ -20,7 +20,7 @@ public class FieldOption {
 	private String optionValue;
 
 	@Column(name = "display_order")
-	private int displayOrder;
+	private Integer displayOrder;
 
 	@OneToOne(mappedBy = "fieldOption")
 	private Field field;
