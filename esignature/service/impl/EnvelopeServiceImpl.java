@@ -77,7 +77,16 @@ import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
-import com.skapp.enterprise.esignature.type.*;
+import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.EmailReminderStatus;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.EsignVerificationType;
+import com.skapp.enterprise.esignature.type.FieldType;
+import com.skapp.enterprise.esignature.type.InboxStatus;
+import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
+import com.skapp.enterprise.esignature.type.SignType;
+import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
@@ -1445,7 +1454,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					String value = dto.getFieldOption().getOptionValue();
 					if (value != null) {
 						value = value.trim();
-						if (value.length() > 100) {
+						if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
 							throw new ModuleException(
 									EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
 						}
