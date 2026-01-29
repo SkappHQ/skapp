@@ -24,7 +24,7 @@ public class AITokenController {
 
 	@Operation(summary = "Increment chatbot daily usage",
 			description = "This endpoint allows to increment the chatbot daily usage for AI.")
-	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN', 'ROLE_PM_GUEST_EMPLOYEE')")
 	@PostMapping(value = "/daily-usage")
 	public ResponseEntity<DailyTokenUsageResponseDto> incrementChatbotDailyUsage(
 			@RequestBody DailyTokenUsageRequestDto dailyTokenUsageRequestDto) {
@@ -34,7 +34,7 @@ public class AITokenController {
 
 	@Operation(summary = "Reset chatbot daily usage",
 			description = "This endpoint allows to reset the chatbot daily usage for the current user.")
-	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN', 'ROLE_PM_GUEST_EMPLOYEE')")
 	@DeleteMapping(value = "/daily-usage")
 	public ResponseEntity<DailyTokenUsageResponseDto> resetChatbotDailyUsage() {
 		DailyTokenUsageResponseDto response = aiTokenService.resetChatbotDailyUsage();
@@ -43,7 +43,7 @@ public class AITokenController {
 
 	@Operation(summary = "Get chatbot daily usage by current user",
 			description = "This endpoint allows to retrieve the chatbot daily usage for the current user.")
-	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PM_EMPLOYEE', 'ROLE_SUPER_ADMIN', 'ROLE_PM_GUEST_EMPLOYEE')")
 	@GetMapping(value = "/daily-usage")
 	public ResponseEntity<DailyTokenUsageResponseDto> getChatbotDailyUsageByCurrentUser() {
 		DailyTokenUsageResponseDto response = aiTokenService.getChatbotDailyUsageByCurrentUser();
