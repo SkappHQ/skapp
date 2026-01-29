@@ -165,6 +165,11 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 				.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
 
 			session = provider.checkStatus(session);
+
+			// Handle verification completion at the service layer
+			if (session.getStatus() == EidVerificationStatus.VERIFIED) {
+				updateRecipientVerificationStatus(session);
+			}
 		}
 
 		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
@@ -240,6 +245,21 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private boolean isSessionActive(EidVerificationSession session) {
 		EidVerificationStatus status = session.getStatus();
 		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;
+	}
+
+	private void updateRecipientVerificationStatus(EidVerificationSession session) {
+		Recipient recipient = session.getRecipient();
+		recipient.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+
+		// Link the verified identity if available
+		if (session.getVerifiedIdentity() != null) {
+			recipient.setVerifiedIdentity(session.getVerifiedIdentity());
+		}
+
+		recipientDao.save(recipient);
+		log.info(
+				"updateRecipientVerificationStatus: Recipient eID verification status updated to VERIFIED for recipient={}",
+				recipient.getId());
 	}
 
 	private boolean isCurrentUserDocAccessRole() {

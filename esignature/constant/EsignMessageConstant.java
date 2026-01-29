@@ -236,7 +236,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER(
 			"ep.esign.error.different.field.types.cannot.contain.in.the.same.container"),
 	ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED("ep.esign.error.field.option.value.required"),
-	ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED("ep.esign.error.field.option.valid.display.order.required");
+	ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED("ep.esign.error.field.option.valid.display.order.required"),
+
+	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required");
 
 	private final String messageKey;
 

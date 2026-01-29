@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.enterprise.esignature.type.EidProviderType;
+import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
@@ -18,6 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -99,5 +102,33 @@ public class Recipient {
 
 	@OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<EsignVerificationSession> verificationSessions;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "eid_verification_method")
+	private EidProviderType eidVerificationMethod = EidProviderType.NONE;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "eid_verification_status")
+	private EidVerificationStatus eidVerificationStatus = EidVerificationStatus.NOT_REQUIRED;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "verified_identity_id")
+	private VerifiedIdentity verifiedIdentity;
+
+	/**
+	 * Check if this recipient requires eID verification before signing.
+	 * @return true if eID verification is required
+	 */
+	public boolean requiresEidVerification() {
+		return eidVerificationMethod != null && eidVerificationMethod.requiresVerification();
+	}
+
+	/**
+	 * Check if eID verification has been completed for this recipient.
+	 * @return true if verification is complete or not required
+	 */
+	public boolean isEidVerificationComplete() {
+		return !requiresEidVerification() || eidVerificationStatus == EidVerificationStatus.VERIFIED;
+	}
 
 }

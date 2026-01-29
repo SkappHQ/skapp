@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.skapp.enterprise.esignature.type.EidProviderType;
+import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
@@ -27,5 +29,9 @@ public class RecipientResponseDto {
 	private boolean isMfaVerificationEnabled;
 
 	private EsignVerificationType mfaVerificationMethod;
+
+	private EidProviderType eidVerificationMethod;
+
+	private EidVerificationStatus eidVerificationStatus;
 
 }

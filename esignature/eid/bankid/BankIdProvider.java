@@ -287,23 +287,31 @@ public class BankIdProvider implements EidProvider {
 
 		// Create verified identity
 		if (completionData != null) {
-			createVerifiedIdentity(session, completionData);
+			VerifiedIdentity verifiedIdentity = createVerifiedIdentity(session, completionData);
+			if (verifiedIdentity != null) {
+				session.setVerifiedIdentity(verifiedIdentity);
+			}
 		}
+
+		log.info("BankIdProvider: Verification completed for session={}", session.getSessionUuid());
 	}
 
-	private void createVerifiedIdentity(EidVerificationSession session, BankIdCompletionData completionData) {
+	private VerifiedIdentity createVerifiedIdentity(EidVerificationSession session,
+			BankIdCompletionData completionData) {
 		// Check if already exists
 		if (verifiedIdentityRepository.existsByRecipientIdAndDocumentId(session.getRecipient().getId(),
 				session.getDocument().getId())) {
 			log.debug("BankIdProvider: VerifiedIdentity already exists for recipient={}, document={}",
 					session.getRecipient().getId(), session.getDocument().getId());
-			return;
+			return verifiedIdentityRepository
+				.findByRecipientIdAndDocumentId(session.getRecipient().getId(), session.getDocument().getId())
+				.orElse(null);
 		}
 
 		BankIdUser user = completionData.getUser();
 		if (user == null) {
 			log.warn("BankIdProvider: No user data in completion data");
-			return;
+			return null;
 		}
 
 		// Hash the personal number for storage (never store plain text)
@@ -327,10 +335,12 @@ public class BankIdProvider implements EidProvider {
 			.ocspResponse(completionData.getOcspResponse())
 			.build();
 
-		verifiedIdentityRepository.save(identity);
+		identity = verifiedIdentityRepository.save(identity);
 
 		log.info("BankIdProvider: Created verified identity for session={}, name={}", session.getSessionUuid(),
 				user.getName());
+
+		return identity;
 	}
 
 	private void updateHintCode(EidVerificationSession session, String hintCode) {

@@ -275,6 +275,10 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
 		}
 
+		if (recipient.requiresEidVerification() && !recipient.isEidVerificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_VERIFICATION_REQUIRED);
+		}
+
 		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(),
 				documentSignDto.getDocumentId());
 
@@ -488,6 +492,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (!document.getEnvelope().getId().equals(documentSignDto.getEnvelopeId())) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
+		}
+
+		if (recipient.requiresEidVerification() && !recipient.isEidVerificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_VERIFICATION_REQUIRED);
 		}
 
 		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
