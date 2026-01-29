@@ -106,18 +106,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signUp = useCallback(
     async (params: EnterpriseSignUpParams): Promise<AuthResponseType> => {
       try {
-        setIsLoading(true);
-
         const response = await handleSignUp(params);
 
-        await checkAuth();
+        if (response.status === SignInStatus.SUCCESS) {
+          await checkAuth();
+        }
 
         return response;
       } catch (error) {
-        console.error("Login error:", error);
+        console.error("Signup error");
         throw error;
-      } finally {
-        setIsLoading(false);
       }
     },
     [checkAuth]
