@@ -109,13 +109,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const response = await handleSignUp(params);
 
         if (response.status === SignInStatus.SUCCESS) {
-          setIsLoading(true);
           await checkAuth();
         }
 
         return response;
       } catch (error) {
-        console.error("Login error:", error);
+        console.error("Signup error");
         throw error;
       }
     },
