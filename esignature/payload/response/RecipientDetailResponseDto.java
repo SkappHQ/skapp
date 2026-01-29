@@ -32,6 +32,8 @@ public class RecipientDetailResponseDto {
 
 	private List<FieldDetailResponseDto> fields;
 
+	private List<FieldContainerResponseDto> fieldContainers;
+
 	private Long addressBookId;
 
 	private String reminderBatchId;

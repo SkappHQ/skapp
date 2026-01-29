@@ -64,10 +64,12 @@ public interface EsignMapper {
 	DocumentDetailResponseDto documentToDocumentDetailDto(Document document);
 
 	@Mapping(target = "addressBookId", source = "addressBook.id")
+	@Mapping(target = "fieldContainers", expression = "java(mapFieldContainers(recipient))")
 	RecipientDetailResponseDto recipientToRecipientDetailDto(Recipient recipient);
 
 	@Mapping(target = "documentId", source = "document.id")
 	@Mapping(target = "recipientMail", source = "recipient.email")
+	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldDetailResponseDto fieldToFieldDetailDto(Field field);
 
 	@Mapping(target = "envelopeId", source = "id")
@@ -142,5 +144,17 @@ public interface EsignMapper {
 	FieldOptionResponseDto fieldOptionToFieldOptionResponseDto(FieldOption fieldOption);
 
 	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
+
+	default List<FieldContainerResponseDto> mapFieldContainers(Recipient recipient) {
+		if (recipient.getFields() == null)
+			return null;
+		return recipient.getFields()
+			.stream()
+			.map(Field::getFieldContainer)
+			.filter(java.util.Objects::nonNull)
+			.distinct()
+			.map(this::fieldContainerToFieldContainerResponseDto)
+			.collect(java.util.stream.Collectors.toList());
+	}
 
 }

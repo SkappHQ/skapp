@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class FieldContainerResponseDto {
 
+	private Long id;
+
 	private String fontFamily;
 
 	private String fontColor;

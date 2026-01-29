@@ -529,8 +529,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
-			if (dto.getFieldContainerId() != null && dto.getFieldContainer() != null) {
-				FieldContainer container = containerMap.computeIfAbsent(dto.getFieldContainerId(), id -> {
+			FieldContainer container = null;
+
+			if (dto.getFieldContainerId() != null) {
+				if (containerMap.containsKey(dto.getFieldContainerId())) {
+					container = containerMap.get(dto.getFieldContainerId());
+				}
+				else if (dto.getFieldContainer() != null) {
 					FieldContainer fc = new FieldContainer();
 					fc.setFontFamily(dto.getFieldContainer().getFontFamily());
 					fc.setFontColor(dto.getFieldContainer().getFontColor());
@@ -540,8 +545,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					fc.setIsUnderline(dto.getFieldContainer().getIsUnderline());
 					fc.setIsRequired(Boolean.TRUE.equals(dto.getFieldContainer().getIsRequired()));
 					fc.setIsMultiSelect(Boolean.TRUE.equals(dto.getFieldContainer().getIsMultiSelect()));
-					return fc;
-				});
+					containerMap.put(dto.getFieldContainerId(), fc);
+					container = fc;
+				}
 				field.setFieldContainer(container);
 			}
 			else {

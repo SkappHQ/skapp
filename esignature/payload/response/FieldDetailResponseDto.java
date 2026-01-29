@@ -31,8 +31,6 @@ public class FieldDetailResponseDto {
 
 	private Long fieldContainerId;
 
-	private FieldContainerResponseDto fieldContainer;
-
 	private FieldOptionResponseDto fieldOption;
 
 }
