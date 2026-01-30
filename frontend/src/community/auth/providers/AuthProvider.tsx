@@ -149,7 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (accessToken && isPasswordChangedForTheFirstTime !== null) {
               const redirectPath =
                 (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
-              router.push(redirectPath);
+              window.location.href = redirectPath;
             } else {
               console.error("Access token cookie not found after sign-in");
               throw new Error("Authentication cookies not properly set");
