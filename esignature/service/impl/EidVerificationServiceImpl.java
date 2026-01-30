@@ -295,9 +295,9 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private String generateUserVisibleData(Document document) {
 		String documentName = document.getName();
 		if (documentName == null || documentName.isBlank()) {
-			documentName = "document";
+			documentName = "dokument";
 		}
-		return String.format("I hereby sign the document \"%s\".", documentName);
+		return String.format("Jag undertecknar härmed dokumentet \"%s\".", documentName);
 	}
 
 }
