@@ -80,7 +80,6 @@ public class BankIdClient {
 
 		}
 		catch (HttpStatusCodeException e) {
-			handleApiError(OP_SIGN, e);
 			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), OP_SIGN, extractErrorResponse(e));
 		}
 	}
@@ -115,7 +114,6 @@ public class BankIdClient {
 
 		}
 		catch (HttpStatusCodeException e) {
-			handleApiError(OP_COLLECT, e);
 			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), OP_COLLECT,
 					extractErrorResponse(e));
 		}
@@ -142,12 +140,6 @@ public class BankIdClient {
 
 		}
 		catch (HttpStatusCodeException e) {
-			// 404 is acceptable for cancel - order may have already expired
-			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-				log.debug("BankID /cancel returned 404 - order already expired or cancelled");
-				return;
-			}
-			handleApiError(OP_CANCEL, e);
 			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), OP_CANCEL,
 					extractErrorResponse(e));
 		}
@@ -157,18 +149,6 @@ public class BankIdClient {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		return headers;
-	}
-
-	private void handleApiError(String operation, HttpStatusCodeException e) {
-		BankIdErrorResponse error = extractErrorResponse(e);
-		if (error != null && error.getErrorCode() != null) {
-			log.warn("BankID /{} failed: errorCode={}, details={}", operation, error.getErrorCode(),
-					error.getDetails());
-		}
-		else {
-			log.warn("BankID /{} failed: status={}, body={}", operation, e.getStatusCode(),
-					e.getResponseBodyAsString());
-		}
 	}
 
 	private BankIdErrorResponse extractErrorResponse(HttpStatusCodeException e) {
