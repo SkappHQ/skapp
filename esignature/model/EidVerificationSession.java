@@ -1,13 +1,10 @@
 package com.skapp.enterprise.esignature.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.model.Auditable;
-import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -77,14 +74,6 @@ public class EidVerificationSession extends Auditable<String> {
 	 */
 	@Column(name = "provider_session_id", length = 255)
 	private String providerSessionId;
-
-	/**
-	 * Provider-specific data stored as JSON. For BankID, this includes autoStartToken,
-	 * qrStartToken, qrStartSecret, and documentHash.
-	 */
-	@Convert(converter = JsonTypeConverter.class)
-	@Column(name = "provider_data", columnDefinition = "json")
-	private JsonNode providerData;
 
 	/**
 	 * IP address of the end user initiating the verification.

@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.util.Validation;
@@ -8,6 +7,7 @@ import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
+import com.skapp.enterprise.esignature.eid.bankid.BankIdSessionCache;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -58,6 +58,8 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private final DocumentRepository documentRepository;
 
 	private final DocumentVersionDao documentVersionDao;
+
+	private final BankIdSessionCache bankIdSessionCache;
 
 	@Override
 	public ResponseEntityDto getAvailableProviders() {
@@ -138,10 +140,13 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
 				request.getDocumentId(), endUserIp, userVisibleData, documentHash);
 
-		// Map to response DTO and set computed fields
+		// Map to response DTO and set computed fields from in-memory cache
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
-		response.setAutoStartToken(extractJsonField(session.getProviderData(), "autoStartToken"));
-		response.setQrCode(computeQrCode(session));
+		bankIdSessionCache.get(session.getSessionUuid()).ifPresent(cached -> {
+			response.setAutoStartToken(cached.getAutoStartToken());
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
+					session.getInitiatedAt()));
+		});
 
 		log.info("initiateVerification: session created with uuid={}", session.getSessionUuid());
 		return new ResponseEntityDto(false, response);
@@ -172,12 +177,16 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			}
 		}
 
-		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
-		response.setHintCode(extractJsonField(session.getProviderData(), "hintCode"));
+		EidVerificationSession updatedSession = session;
+		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(updatedSession);
 
-		// Only compute QR code for active sessions
-		if (isSessionActive(session)) {
-			response.setQrCode(computeQrCode(session));
+		// Read transient data (hintCode, QR code) from in-memory cache
+		if (isSessionActive(updatedSession)) {
+			bankIdSessionCache.get(updatedSession.getSessionUuid()).ifPresent(cached -> {
+				response.setHintCode(cached.getHintCode());
+				response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
+						updatedSession.getInitiatedAt()));
+			});
 		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());
@@ -281,24 +290,6 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
-	}
-
-	private String computeQrCode(EidVerificationSession session) {
-		if (session == null || session.getProviderData() == null) {
-			return null;
-		}
-		return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
-	}
-
-	private String extractJsonField(JsonNode node, String fieldName) {
-		if (node == null || !node.has(fieldName)) {
-			return null;
-		}
-		JsonNode fieldNode = node.get(fieldName);
-		if (fieldNode == null || fieldNode.isNull()) {
-			return null;
-		}
-		return fieldNode.asText();
 	}
 
 	private String generateUserVisibleData(Document document) {

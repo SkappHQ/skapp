@@ -36,7 +36,7 @@ public interface EidProvider {
 	 * @param documentId ID of the document being signed
 	 * @param endUserIp IP address of the end user (required by BankID)
 	 * @param userVisibleData Text shown to user in eID app (Base64 encoded for BankID)
-	 * @param documentHash SHA-256 hash of the document (hex string)
+	 * @param documentHash SHA-3-256 hash of the document (Base64-encoded string)
 	 * @return Session with provider-specific data (autoStartToken, qrStartToken, etc.)
 	 */
 	EidVerificationSession initiateVerification(Long recipientId, Long documentId, String endUserIp,

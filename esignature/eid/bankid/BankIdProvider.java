@@ -1,8 +1,5 @@
 package com.skapp.enterprise.esignature.eid.bankid;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
@@ -57,7 +54,7 @@ import java.util.HexFormat;
 @ConditionalOnProperty(name = "skapp.esign.eid.providers.swedish-bankid.enabled", havingValue = "true")
 public class BankIdProvider implements EidProvider {
 
-	private static final int POLL_INTERVAL_MS = 2000;
+	private static final int POLL_INTERVAL_MS = 1000;
 
 	private static final int SESSION_TIMEOUT_SECONDS = 30;
 
@@ -73,7 +70,7 @@ public class BankIdProvider implements EidProvider {
 
 	private final DocumentDao documentDao;
 
-	private final ObjectMapper objectMapper;
+	private final BankIdSessionCache sessionCache;
 
 	@PostConstruct
 	public void init() {
@@ -108,29 +105,20 @@ public class BankIdProvider implements EidProvider {
 		BankIdSignRequest signRequest = BankIdSignRequest.builder()
 			.endUserIp(endUserIp)
 			.userVisibleData(Base64.getEncoder().encodeToString(userVisibleData.getBytes(StandardCharsets.UTF_8)))
-			.userNonVisibleData(Base64.getEncoder().encodeToString(documentHash.getBytes(StandardCharsets.UTF_8)))
+			.userNonVisibleData(documentHash)
 			.build();
 
 		try {
 			// Call BankID /sign endpoint
 			BankIdSignResponse signResponse = bankIdClient.sign(signRequest);
 
-			// Create provider data JSON
-			ObjectNode providerData = objectMapper.createObjectNode();
-			providerData.put("orderRef", signResponse.getOrderRef());
-			providerData.put("autoStartToken", signResponse.getAutoStartToken());
-			providerData.put("qrStartToken", signResponse.getQrStartToken());
-			providerData.put("qrStartSecret", signResponse.getQrStartSecret());
-			providerData.put("documentHash", documentHash);
-
-			// Create and save session
+			// Create and save session (no secrets in providerData)
 			EidVerificationSession session = EidVerificationSession.builder()
 				.recipient(recipient)
 				.document(document)
 				.providerType(EidProviderType.SWEDISH_BANKID)
 				.status(EidVerificationStatus.PENDING)
 				.providerSessionId(signResponse.getOrderRef())
-				.providerData(providerData)
 				.endUserIp(endUserIp)
 				.documentHash(documentHash)
 				.userVisibleData(userVisibleData)
@@ -139,6 +127,11 @@ public class BankIdProvider implements EidProvider {
 				.build();
 
 			session = sessionRepository.save(session);
+
+			// Store transient secrets in memory only — never persisted to DB.
+			// Per BankID docs, qrStartSecret must not leave the backend.
+			sessionCache.put(session.getSessionUuid(), signResponse.getQrStartToken(),
+					signResponse.getQrStartSecret(), signResponse.getAutoStartToken());
 
 			log.info("BankIdProvider: Created session uuid={}, orderRef={}", session.getSessionUuid(),
 					signResponse.getOrderRef());
@@ -162,6 +155,7 @@ public class BankIdProvider implements EidProvider {
 			session.setStatus(EidVerificationStatus.EXPIRED);
 			session.setErrorCode("expiredTransaction");
 			session.setErrorMessage("The transaction has expired.");
+			sessionCache.evict(session.getSessionUuid());
 			return sessionRepository.save(session);
 		}
 
@@ -214,6 +208,7 @@ public class BankIdProvider implements EidProvider {
 		session.setErrorCode("userCancel");
 		session.setErrorMessage("User cancelled the verification.");
 
+		sessionCache.evict(session.getSessionUuid());
 		sessionRepository.save(session);
 	}
 
@@ -235,8 +230,7 @@ public class BankIdProvider implements EidProvider {
 		String status = collectResponse.getStatus();
 		String hintCode = collectResponse.getHintCode();
 
-		// Update hint code in provider data
-		updateHintCode(session, hintCode);
+		sessionCache.get(session.getSessionUuid()).ifPresent(cached -> cached.setHintCode(hintCode));
 
 		switch (status) {
 			case "pending" -> handlePendingStatus(session, hintCode);
@@ -279,6 +273,8 @@ public class BankIdProvider implements EidProvider {
 				session.setErrorMessage("Signing failed: " + hintCode);
 			}
 		}
+
+		sessionCache.evict(session.getSessionUuid());
 	}
 
 	private void handleCompleteStatus(EidVerificationSession session, BankIdCompletionData completionData) {
@@ -293,6 +289,7 @@ public class BankIdProvider implements EidProvider {
 			}
 		}
 
+		sessionCache.evict(session.getSessionUuid());
 		log.info("BankIdProvider: Verification completed for session={}", session.getSessionUuid());
 	}
 
@@ -341,13 +338,6 @@ public class BankIdProvider implements EidProvider {
 				user.getName());
 
 		return identity;
-	}
-
-	private void updateHintCode(EidVerificationSession session, String hintCode) {
-		JsonNode providerData = session.getProviderData();
-		if (providerData instanceof ObjectNode objectNode) {
-			objectNode.put("hintCode", hintCode);
-		}
 	}
 
 	private String hashPersonalNumber(String personalNumber) {
