@@ -16,6 +16,7 @@ import {
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
+import { getCookieValue } from "../../common/utils/commonUtil";
 import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
@@ -125,6 +126,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signIn = useCallback(
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
+        // Clear all existing cookies before signing in
+        await fetch("/api/clear-cookies", {
+          method: "POST"
+        });
+
         const response = await handleSignIn(params);
 
         if (response.status === SignInStatus.SUCCESS) {
@@ -133,9 +139,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await checkAuth();
 
           if (params.redirect) {
-            const redirectPath =
-              (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
-            router.push(redirectPath);
+            // Verify that cookies are set before redirecting
+            const accessToken = getCookieValue("accessToken");
+            const isPasswordChangedForTheFirstTime = getCookieValue(
+              "isPasswordChangedForTheFirstTime"
+            );
+
+            // Ensure critical cookies are available before redirect
+            if (accessToken && isPasswordChangedForTheFirstTime !== null) {
+              const redirectPath =
+                (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
+              router.push(redirectPath);
+            } else {
+              console.error("Access token cookie not found after sign-in");
+              throw new Error("Authentication cookies not properly set");
+            }
           }
         }
 
