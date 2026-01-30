@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             );
 
             // Ensure critical cookies are available before redirect
-            if (accessToken && isPasswordChangedForTheFirstTime) {
+            if (accessToken && isPasswordChangedForTheFirstTime !== null) {
               const redirectPath =
                 (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
               router.push(redirectPath);
