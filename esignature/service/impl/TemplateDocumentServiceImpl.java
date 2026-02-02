@@ -66,11 +66,6 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
 
-		// if (templateDocument.getTemplateEnvelope() != null) {
-		// throw new ModuleException(
-		// EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
-		// }
-
 		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
 		if (!isSuperAdminOrEsignAdmin
@@ -103,11 +98,6 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 		TemplateDocument templateDocument = templateDocumentDao.findById(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_NOT_FOUND));
-
-		// if (templateDocument.getTemplateEnvelope() != null) {
-		// throw new ModuleException(
-		// EsignMessageConstant.ESIGN_ERROR_DOCUMENT_TEMPLATE_ALREADY_ASSOCIATED_WITH_ENVELOPE_TEMPLATE);
-		// }
 
 		boolean isSuperAdminOrEsignAdmin = EsignUtil.validateEsignRoleAsSuperAdminOrEsignAdmin(currentUser);
 
