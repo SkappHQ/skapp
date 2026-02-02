@@ -1448,6 +1448,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.map(dto -> dto.getFieldOption() != null ? dto.getFieldOption().getOptionValue() : null)
 				.filter(Objects::nonNull)
 				.map(String::trim)
+					.filter(value -> !value.isEmpty())
 				.toList();
 
 			// Option count validation
