@@ -116,3 +116,21 @@ export const peopleDirectoryTestId = {
     quickAddCancelBtn: "quick-add-cancel-btn"
   }
 };
+
+export const attendanceModalsTestId = {
+  clockOutModal: {
+    confirmBtn: "clock-out-confirm-btn",
+    cancelBtn: "clock-out-cancel-btn"
+  },
+  addEditTimeEntry: {
+    submitBtn: "time-entry-submit-btn",
+    cancelBtn: "time-entry-cancel-btn"
+  }
+};
+
+export const profileMenuTestId = {
+  buttons: {
+    viewAccountBtn: "profile-menu-view-account-btn",
+    logoutBtn: "profile-menu-logout-btn"
+  }
+};

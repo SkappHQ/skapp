@@ -35,6 +35,7 @@ import TimeInput from "~community/common/components/atoms/TimeInput/TimeInput";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import { attendanceModalsTestId } from "~community/common/constants/testIds";
 import {
   ButtonStyle,
   ButtonTypes
@@ -501,6 +502,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         buttonStyle={ButtonStyle.PRIMARY}
         endIcon={IconName.CHECK_ICON}
         type={ButtonTypes.SUBMIT}
+        dataTestId={attendanceModalsTestId.addEditTimeEntry.submitBtn}
         disabled={
           isSubmitDisabled(
             values,
@@ -516,6 +518,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         endIcon={IconName.CLOSE_ICON}
         onClick={() => setIsEmployeeTimesheetModalOpen(false)}
         type={ButtonTypes.RESET}
+        dataTestId={attendanceModalsTestId.addEditTimeEntry.cancelBtn}
       />
     </Form>
   );

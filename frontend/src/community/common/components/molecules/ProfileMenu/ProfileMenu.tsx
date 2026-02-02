@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { JSX } from "react";
 
 import ROUTES from "~community/common/constants/routes";
-import { appBarTestId } from "~community/common/constants/testIds";
+import { appBarTestId, profileMenuTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
@@ -134,6 +134,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
         label={translateText(["logout"])}
         styles={{ mt: "1rem" }}
         onClick={handleSignOut}
+        dataTestId={profileMenuTestId.buttons.logoutBtn}
       />
     </Box>
   );
