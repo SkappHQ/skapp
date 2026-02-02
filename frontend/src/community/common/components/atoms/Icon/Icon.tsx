@@ -9,6 +9,7 @@ import AssetIcon from "~community/common/assets/Icons/AssetIcon";
 import AssetModuleIcon from "~community/common/assets/Icons/AssetModuleIcon";
 import AttachmentIcon from "~community/common/assets/Icons/AttachmentIcon";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
+import BackArrowIcon from "~community/common/assets/Icons/BackArrowIcon";
 import BackIcon from "~community/common/assets/Icons/BackIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
@@ -205,6 +206,7 @@ export const IconMapping: Partial<
   [IconName.SUCCESS_ICON]: SuccessIcon,
   [IconName.THREE_DOTS_ICON]: ThreeDotsIcon,
   [IconName.TEXT_ICON]: TextIcon,
+  [IconName.BACK_ARROW_ICON]: BackArrowIcon,
   [IconName.MORE_ICON]: MoreIcon,
   [IconName.DANCING_WOMEN_ICON]: DancingWomenIcon,
   [IconName.RESTORE_ICON]: RestoreIcon,
