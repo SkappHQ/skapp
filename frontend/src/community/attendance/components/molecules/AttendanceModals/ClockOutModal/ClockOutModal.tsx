@@ -12,6 +12,7 @@ import Button from "~community/common/components/atoms/Button/Button";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { attendanceModalsTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -101,6 +102,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               ariaLabel={translateText(["confirm"])}
               isLoading={isPending}
               buttonStyle={ButtonStyle.PRIMARY}
+              dataTestId={attendanceModalsTestId.clockOutModal.confirmBtn}
               accessibility={{
                 ariaHidden: true
               }}
@@ -111,6 +113,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
               endIcon={IconName.CLOSE_ICON}
               onClick={handleUndoClockOut}
               ariaLabel={translateText(["cancel"])}
+              dataTestId={attendanceModalsTestId.clockOutModal.cancelBtn}
               accessibility={{
                 ariaHidden: true
               }}
