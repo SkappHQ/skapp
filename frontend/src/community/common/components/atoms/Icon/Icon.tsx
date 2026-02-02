@@ -9,6 +9,7 @@ import AssetIcon from "~community/common/assets/Icons/AssetIcon";
 import AssetModuleIcon from "~community/common/assets/Icons/AssetModuleIcon";
 import AttachmentIcon from "~community/common/assets/Icons/AttachmentIcon";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
+import BackArrowIcon from "~community/common/assets/Icons/BackArrowIcon";
 import BackIcon from "~community/common/assets/Icons/BackIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
@@ -49,6 +50,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import DropdownIcon from "~community/common/assets/Icons/DropdownIcon";
 import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
@@ -128,6 +130,7 @@ import StampIcon from "~community/common/assets/Icons/StampIcon";
 import SuccessIcon from "~community/common/assets/Icons/SuccessIcon";
 import SuperAdminIcon from "~community/common/assets/Icons/SuperAdminIcon";
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
+import TextIcon from "~community/common/assets/Icons/TextIcon";
 import ThreeDotsIcon from "~community/common/assets/Icons/ThreeDotsIcon";
 import TickIcon from "~community/common/assets/Icons/TickIcon";
 import TimerIcon from "~community/common/assets/Icons/TimerIcon";
@@ -202,6 +205,8 @@ export const IconMapping: Partial<
   [IconName.WARNING_ICON]: WarningIcon,
   [IconName.SUCCESS_ICON]: SuccessIcon,
   [IconName.THREE_DOTS_ICON]: ThreeDotsIcon,
+  [IconName.TEXT_ICON]: TextIcon,
+  [IconName.BACK_ARROW_ICON]: BackArrowIcon,
   [IconName.MORE_ICON]: MoreIcon,
   [IconName.DANCING_WOMEN_ICON]: DancingWomenIcon,
   [IconName.RESTORE_ICON]: RestoreIcon,
@@ -269,6 +274,7 @@ export const IconMapping: Partial<
   [IconName.APPROVED_ICON]: ApprovedIcon,
   [IconName.DECLINED_ICON]: DeclinedIcon,
   [IconName.SIGNATURE_ICON]: SignatureIcon,
+  [IconName.DROPDOWN_ICON]: DropdownIcon,
   [IconName.INVITE_ICON]: InviteIcon,
   [IconName.REMOVE_PEOPLE_ICON]: PeopleRemoveIcon,
   [IconName.MINUS_ICON]: MinusIcon,
