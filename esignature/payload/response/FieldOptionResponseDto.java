@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class FieldOptionResponseDto {
 
+	private Long id;
+
 	private String optionValue;
 
 	private Integer displayOrder;

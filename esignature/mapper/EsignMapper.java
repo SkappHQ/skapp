@@ -126,6 +126,7 @@ public interface EsignMapper {
 
 	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
 
+	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldResponseDto fieldToFieldResponseDto(Field field);
 
 	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
