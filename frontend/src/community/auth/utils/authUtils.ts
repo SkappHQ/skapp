@@ -210,7 +210,7 @@ export const extractUserFromToken = (token: string): User | null => {
 
     return {
       userId: claims?.userId,
-      email: claims?.email,
+      email: claims?.sub,
       name: claims?.employee
         ? `${claims.employee.firstName} ${claims.employee.lastName || ""}`
         : "",
