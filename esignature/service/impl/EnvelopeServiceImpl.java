@@ -514,7 +514,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Field> fieldList = new ArrayList<>();
 		Map<String, FieldContainer> containerMap = new HashMap<>();
 
-		fieldDtoList.forEach(fieldDto -> {
+		// To sort the field values. If by any chance the advance field comes in as the
+		// fieldContainer object as null in a group we sort it to be first
+		List<FieldDto> fieldDtoSortedList = groupAndSortFieldsByContainer(fieldDtoList);
+
+		fieldDtoSortedList.forEach(fieldDto -> {
 			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
@@ -549,6 +553,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					containerMap.put(fieldDto.getFieldContainerId(), fieldContainer);
 					container = fieldContainer;
 				}
+				else {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED);
+				}
 				field.setFieldContainer(container);
 			}
 			else {
@@ -557,7 +564,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (fieldDto.getFieldOption() != null) {
 				FieldOption fieldOption = new FieldOption();
-				fieldOption.setOptionValue(fieldDto.getFieldOption().getOptionValue().trim());
+				fieldOption.setOptionValue(fieldDto.getFieldOption().getOptionValue() != null
+						? fieldDto.getFieldOption().getOptionValue().trim() : null);
 				fieldOption.setDisplayOrder(fieldDto.getFieldOption().getDisplayOrder());
 				field.setFieldOption(fieldOption);
 			}
@@ -1479,6 +1487,37 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param fieldDtoList
+	 * @return
+	 *
+	 * 1. Items with null fieldContainerId come first 2. If both have fieldContainerId,
+	 * group by fieldContainerId 3. Within the same group, fieldContainer != null comes
+	 * first
+	 */
+	private List<FieldDto> groupAndSortFieldsByContainer(List<FieldDto> fieldDtoList) {
+
+		fieldDtoList.sort((a, b) -> {
+			if (a.getFieldContainerId() == null && b.getFieldContainerId() != null)
+				return -1;
+			if (a.getFieldContainerId() != null && b.getFieldContainerId() == null)
+				return 1;
+			if (a.getFieldContainerId() != null && b.getFieldContainerId() != null) {
+				int cmp = a.getFieldContainerId().compareTo(b.getFieldContainerId());
+				if (cmp != 0)
+					return cmp;
+				boolean aHasContainer = a.getFieldContainer() != null;
+				boolean bHasContainer = b.getFieldContainer() != null;
+				if (aHasContainer && !bHasContainer)
+					return -1;
+				if (!aHasContainer && bHasContainer)
+					return 1;
+			}
+			return 0;
+		});
+		return fieldDtoList;
 	}
 
 }
