@@ -507,46 +507,47 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
+	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtoList, Recipient recipient) {
 
-		validateGroupedFieldOptions(fieldDtos);
+		validateGroupedFieldOptions(fieldDtoList);
 
 		List<Field> fieldList = new ArrayList<>();
 		Map<String, FieldContainer> containerMap = new HashMap<>();
 
-		for (FieldDto dto : fieldDtos) {
-			Document fieldDocument = documentDao.findById(dto.getDocumentId())
+		fieldDtoList.forEach(fieldDto -> {
+			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
 			Field field = new Field();
-			field.setType(dto.getType());
-			field.setStatus(dto.getStatus());
-			field.setPageNumber(dto.getPageNumber());
-			field.setXPosition(dto.getXposition());
-			field.setYPosition(dto.getYposition());
-			field.setWidth(dto.getWidth());
-			field.setHeight(dto.getHeight());
+			field.setType(fieldDto.getType());
+			field.setStatus(fieldDto.getStatus());
+			field.setPageNumber(fieldDto.getPageNumber());
+			field.setXPosition(fieldDto.getXposition());
+			field.setYPosition(fieldDto.getYposition());
+			field.setWidth(fieldDto.getWidth());
+			field.setHeight(fieldDto.getHeight());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
 			FieldContainer container = null;
 
-			if (dto.getFieldContainerId() != null) {
-				if (containerMap.containsKey(dto.getFieldContainerId())) {
-					container = containerMap.get(dto.getFieldContainerId());
+			if (fieldDto.getFieldContainerId() != null) {
+				if (containerMap.containsKey(fieldDto.getFieldContainerId())) {
+					container = containerMap.get(fieldDto.getFieldContainerId());
 				}
-				else if (dto.getFieldContainer() != null) {
-					FieldContainer fc = new FieldContainer();
-					fc.setFontFamily(dto.getFieldContainer().getFontFamily());
-					fc.setFontColor(dto.getFieldContainer().getFontColor());
-					fc.setFontSize(dto.getFieldContainer().getFontSize());
-					fc.setIsBold(dto.getFieldContainer().getIsBold());
-					fc.setIsItalic(dto.getFieldContainer().getIsItalic());
-					fc.setIsUnderline(dto.getFieldContainer().getIsUnderline());
-					fc.setIsRequired(Boolean.TRUE.equals(dto.getFieldContainer().getIsRequired()));
-					fc.setIsMultiSelect(Boolean.TRUE.equals(dto.getFieldContainer().getIsMultiSelect()));
-					containerMap.put(dto.getFieldContainerId(), fc);
-					container = fc;
+				else if (fieldDto.getFieldContainer() != null) {
+					FieldContainer fieldContainer = new FieldContainer();
+					fieldContainer.setFontFamily(fieldDto.getFieldContainer().getFontFamily());
+					fieldContainer.setFontColor(fieldDto.getFieldContainer().getFontColor());
+					fieldContainer.setFontSize(fieldDto.getFieldContainer().getFontSize());
+					fieldContainer.setIsBold(fieldDto.getFieldContainer().getIsBold());
+					fieldContainer.setIsItalic(fieldDto.getFieldContainer().getIsItalic());
+					fieldContainer.setIsUnderline(fieldDto.getFieldContainer().getIsUnderline());
+					fieldContainer.setIsRequired(Boolean.TRUE.equals(fieldDto.getFieldContainer().getIsRequired()));
+					fieldContainer
+						.setIsMultiSelect(Boolean.TRUE.equals(fieldDto.getFieldContainer().getIsMultiSelect()));
+					containerMap.put(fieldDto.getFieldContainerId(), fieldContainer);
+					container = fieldContainer;
 				}
 				field.setFieldContainer(container);
 			}
@@ -554,18 +555,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				field.setFieldContainer(null);
 			}
 
-			if (dto.getFieldOption() != null) {
-				FieldOption option = new FieldOption();
-				option.setOptionValue(dto.getFieldOption().getOptionValue().trim());
-				option.setDisplayOrder(dto.getFieldOption().getDisplayOrder());
-				field.setFieldOption(option);
+			if (fieldDto.getFieldOption() != null) {
+				FieldOption fieldOption = new FieldOption();
+				fieldOption.setOptionValue(fieldDto.getFieldOption().getOptionValue().trim());
+				fieldOption.setDisplayOrder(fieldDto.getFieldOption().getDisplayOrder());
+				field.setFieldOption(fieldOption);
 			}
 			else {
 				field.setFieldOption(null);
 			}
 
 			fieldList.add(field);
-		}
+		});
+
 		return fieldList;
 	}
 
