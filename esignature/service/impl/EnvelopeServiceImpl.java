@@ -272,14 +272,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			return document;
 		}).toList();
 
-		// Send Envelopes to recipient - async
+		// Prepare document links and recipient metadata (no emails sent yet)
 		RecipientService.DocumentLinksAndRecipientsData documentLinksAndRecipientsData = recipientService
-			.notifyDocumentFirstRecipients(savedEnvelope.getRecipients(), envelopeDetailDto.getSignType());
+			.prepareDocumentFirstRecipients(savedEnvelope.getRecipients(), envelopeDetailDto.getSignType());
 
 		List<Recipient> notifyRecipients = documentLinksAndRecipientsData.recipientList();
 
 		List<DocumentLink> documentLinkList = documentLinksAndRecipientsData.documentLinkList();
 		documentLinkRepository.saveAll(documentLinkList);
+
+		Map<Long, String> recipientAccessUrls = documentLinksAndRecipientsData.recipientAccessUrls();
 
 		Map<Long, Recipient> notifyMap = notifyRecipients.stream()
 			.collect(Collectors.toMap(Recipient::getId, Function.identity()));
@@ -287,8 +289,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		for (Recipient recipient : notifyRecipients) {
 			Recipient updated = notifyMap.get(recipient.getId());
 			if (updated != null) {
-				recipient.setReminderBatchId(updated.getReminderBatchId());
-				recipient.setReminderStatus(updated.getReminderStatus());
 				recipient.setEmailStatus(updated.getEmailStatus());
 				recipient.setReceivedAt(getCurrentUtcDateTime());
 
@@ -324,7 +324,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		LocalDateTime sentAtTime = responseDto.getSentAt();
 
-		// Register a post-commit callback to handle scheduling after transaction commit
+		// Send emails and schedule expiration only after transaction commits
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
@@ -334,6 +334,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
 									sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX));
 				}
+				recipientService.sendEnvelopeEmailNotifications(envelope, recipientAccessUrls);
 			}
 		});
 

@@ -327,7 +327,19 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
-		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
+		if (isDocumentComplete(nextSignRecipientList)) {
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
+		}
+
+		// Prepare document links and recipient metadata (no emails sent yet)
+		RecipientService.DocumentLinksAndRecipientsData nextRecipientsData = recipientService
+			.prepareNextRecipients(nextSignRecipientList, document);
+
+		List<Recipient> updatedRecipients = nextRecipientsData.recipientList();
+
+		documentLinkRepository.saveAll(nextRecipientsData.documentLinkList());
+
+		Map<Long, String> nextRecipientAccessUrls = nextRecipientsData.recipientAccessUrls();
 
 		for (Recipient rec : updatedRecipients) {
 			rec.setReceivedAt(getCurrentUtcDateTime());
@@ -343,10 +355,6 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
-		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
-		}
-
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
@@ -355,6 +363,16 @@ public class DocumentServiceImpl implements DocumentService {
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
+
+		Envelope sequentialEnvelope = document.getEnvelope();
+
+		// Send emails to next recipients only after transaction commits
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				recipientService.sendEnvelopeEmailNotifications(sequentialEnvelope, nextRecipientAccessUrls);
+			}
+		});
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
@@ -623,7 +641,23 @@ public class DocumentServiceImpl implements DocumentService {
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 			recipientDao.saveAll(recipients);
 
-			recipientService.sendDocumentCompletedEmailNotifications(envelope);
+			// Create and persist document links within this transaction
+			List<DocumentLink> parallelDocumentLinkList = new ArrayList<>();
+			Map<Long, String> parallelRecipientAccessUrls = new HashMap<>();
+			Document parallelEnvelopeDocument = envelope.getDocuments().getFirst();
+
+			for (Recipient mailRecipient : envelope.getRecipients()) {
+				DocumentAccessUrlDto parallelDocAccessUrlDto = new DocumentAccessUrlDto(
+						parallelEnvelopeDocument.getId(), mailRecipient.getId(), DocumentPermissionType.READ);
+
+				DocumentLinkService.DocumentLinkData parallelDocLinkData = documentLinkService
+					.createDocumentLinkData(parallelDocAccessUrlDto, mailRecipient, parallelEnvelopeDocument, envelope);
+
+				parallelDocumentLinkList.add(parallelDocLinkData.documentLink());
+				parallelRecipientAccessUrls.put(mailRecipient.getId(), parallelDocLinkData.accessUrl());
+			}
+
+			documentLinkRepository.saveAll(parallelDocumentLinkList);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
@@ -634,6 +668,7 @@ public class DocumentServiceImpl implements DocumentService {
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
 					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+					recipientService.sendDocumentCompletedEmailNotifications(envelope, parallelRecipientAccessUrls);
 				}
 			});
 

@@ -14,13 +14,15 @@ import java.util.Optional;
 
 public interface RecipientService {
 
-	DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType);
+	DocumentLinksAndRecipientsData prepareDocumentFirstRecipients(List<Recipient> recipients, SignType signType);
 
-	List<Recipient> sendEmailToNextRecipients(List<Recipient> nextRecipientList, Document document);
+	DocumentLinksAndRecipientsData prepareNextRecipients(List<Recipient> nextRecipientList, Document document);
 
 	List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId);
 
 	void sendDocumentCompletedEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls);
+
+	void sendEnvelopeEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls);
 
 	ResponseEntityDto updateRecipient(Long recipientId, RecipientUpdateDto recipientUpdateDto);
 
@@ -36,7 +38,8 @@ public interface RecipientService {
 
 	ResponseEntityDto updateInternalRecipientConsent(Long recipientId, boolean isConsent);
 
-	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList) {
+	record DocumentLinksAndRecipientsData(List<DocumentLink> documentLinkList, List<Recipient> recipientList,
+			Map<Long, String> recipientAccessUrls) {
 	}
 
 }

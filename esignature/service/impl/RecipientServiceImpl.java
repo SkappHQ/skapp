@@ -23,7 +23,6 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
-import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
@@ -49,6 +48,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,8 +74,9 @@ public class RecipientServiceImpl implements RecipientService {
 	private final EsignEmailService esignEmailService;
 
 	@Override
-	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
-		log.info("notifyRecipients: execution started");
+	public DocumentLinksAndRecipientsData prepareDocumentFirstRecipients(List<Recipient> recipients,
+			SignType signType) {
+		log.info("prepareDocumentFirstRecipients: execution started");
 
 		List<Recipient> nextRecipientList = signType.equals(SignType.SEQUENTIAL)
 				? getNextInLineRecipients(Optional.empty(), recipients) : recipients;
@@ -86,9 +87,8 @@ public class RecipientServiceImpl implements RecipientService {
 
 		Envelope envelopeData = nextRecipientList.getFirst().getEnvelope();
 
-		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(envelopeData);
-
 		List<DocumentLink> documentLinkList = new ArrayList<>();
+		Map<Long, String> recipientAccessUrls = new HashMap<>();
 
 		List<Recipient> updatedRecipients = nextRecipientList.stream().map(recipient -> {
 
@@ -105,37 +105,36 @@ public class RecipientServiceImpl implements RecipientService {
 			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
 					documentAccessUrlDto, recipient, envelopeData.getDocuments().getFirst(), envelopeData);
 
-			String documentAccessUrl = documentLinkData.accessUrl();
-
 			documentLinkList.add(documentLinkData.documentLink());
+			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
-			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
-					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
-					epEsignEmailDataDto);
+			return prepareRecipientMetadata(recipient);
 		}).toList();
 
-		log.info("notifyRecipients: execution end");
+		log.info("prepareDocumentFirstRecipients: execution end");
 
-		return new DocumentLinksAndRecipientsData(documentLinkList, updatedRecipients);
+		return new DocumentLinksAndRecipientsData(documentLinkList, updatedRecipients, recipientAccessUrls);
 	}
 
 	@Override
-	public List<Recipient> sendEmailToNextRecipients(List<Recipient> nextRecipientList, Document document) {
-		log.info("sendEnvelopToRecipientEmail: process started");
+	public DocumentLinksAndRecipientsData prepareNextRecipients(List<Recipient> nextRecipientList, Document document) {
+		log.info("prepareNextRecipients: process started");
 
 		if (nextRecipientList.isEmpty()) {
-			return Collections.emptyList();
+			return new DocumentLinksAndRecipientsData(Collections.emptyList(), Collections.emptyList(),
+					Collections.emptyMap());
 		}
 
 		if (document.getEnvelope() == null) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		}
 
-		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(document.getEnvelope());
+		Envelope envelopeData = document.getEnvelope();
 
-		log.info("sendEnvelopToRecipientEmail: process ended");
+		List<DocumentLink> documentLinkList = new ArrayList<>();
+		Map<Long, String> recipientAccessUrls = new HashMap<>();
 
-		return nextRecipientList.stream().map(recipient -> {
+		List<Recipient> updatedRecipients = nextRecipientList.stream().map(recipient -> {
 
 			DocumentPermissionType permissionType = MemberRole.CC.toString()
 				.equalsIgnoreCase(recipient.getMemberRole().name()) ? DocumentPermissionType.READ
@@ -144,13 +143,44 @@ public class RecipientServiceImpl implements RecipientService {
 			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(document.getId(), recipient.getId(),
 					permissionType);
 
-			DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
-			String documentAccessUrl = documentLink.getUrl();
+			documentLinkService.validatePermissionForGenerateAccessUrl(envelopeData, recipient,
+					documentAccessUrlDto.getPermissionType());
 
-			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
-					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
-					epEsignEmailDataDto);
+			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService
+				.createDocumentLinkData(documentAccessUrlDto, recipient, document, envelopeData);
+
+			documentLinkList.add(documentLinkData.documentLink());
+			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
+
+			return prepareRecipientMetadata(recipient);
 		}).toList();
+
+		log.info("prepareNextRecipients: process ended");
+
+		return new DocumentLinksAndRecipientsData(documentLinkList, updatedRecipients, recipientAccessUrls);
+	}
+
+	// TODO: Decouple reminder scheduling from email sending - reminder scheduling
+	// (handleReminderScheduling) is currently embedded inside
+	// sendEnvelopeToRecipientEmail,
+	// which forces us to persist reminder metadata (batchId, status) here after the fact.
+	// These should be separate concerns.
+	@Async
+	@Override
+	public void sendEnvelopeEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls) {
+		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(envelope);
+
+		Optional.ofNullable(envelope)
+			.map(Envelope::getRecipients)
+			.ifPresent(recipients -> recipients.forEach(recipient -> {
+				String documentAccessUrl = recipientAccessUrls.get(recipient.getId());
+				if (documentAccessUrl != null) {
+					Recipient updatedRecipient = sendEnvelopeToRecipientEmail(recipient,
+							recipient.getAddressBook().getName(), recipient.getAddressBook().getEmail(),
+							recipient.getMemberRole().toString(), documentAccessUrl, epEsignEmailDataDto);
+					recipientDao.save(updatedRecipient);
+				}
+			}));
 	}
 
 	@Override
@@ -260,6 +290,12 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		return nextRecipientList;
+	}
+
+	private Recipient prepareRecipientMetadata(Recipient recipient) {
+		RecipientUpdateDto recipientUpdateDto = new RecipientUpdateDto();
+		recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
+		return setUpdatedRecipient(recipient, recipientUpdateDto);
 	}
 
 	private Recipient sendEnvelopeToRecipientEmail(Recipient recipient, String userName, String userEmail,
