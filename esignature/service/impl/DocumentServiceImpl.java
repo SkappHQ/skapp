@@ -12,16 +12,7 @@ import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.AddressBook;
-import com.skapp.enterprise.esignature.model.AuditTrail;
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.DocumentSignature;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.DocumentVersionField;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.model.UserKey;
+import com.skapp.enterprise.esignature.model.*;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
@@ -93,13 +84,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
@@ -287,6 +273,7 @@ public class DocumentServiceImpl implements DocumentService {
 		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
+
 			DocumentVersionFieldBulk result = processDocumentFields(documentSignDto, currentVersion);
 
 			documentVersionFieldRepository.saveAll(result.documentVersionFields());
@@ -295,6 +282,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
+			.filter(field -> field.getFieldContainer() == null)
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -509,6 +497,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
+			.filter(field -> field.getFieldContainer() == null)
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -1161,6 +1150,7 @@ public class DocumentServiceImpl implements DocumentService {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
 		Map<String, DocumentVersionField> signedImageCache = new HashMap<>();
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		if (documentSignDto.getFieldSignDtoList() == null || documentSignDto.getFieldSignDtoList().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST);
@@ -1198,6 +1188,15 @@ public class DocumentServiceImpl implements DocumentService {
 				populateFieldMetadata(documentVersionField, fieldSignDto, field, currentVersion);
 				documentVersionFields.add(documentVersionField);
 				markField(field, fields, FieldStatus.COMPLETED);
+
+				if (field.getFieldContainer() != null
+						&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+					Long containerId = field.getFieldContainer().getId();
+					groupFieldsMap.computeIfAbsent(containerId,
+							k -> fieldRepository.findByFieldContainer_Id(containerId));
+				}
 			}
 			else {
 				DocumentVersionField documentVersionField = switch (fieldType) {
@@ -1209,7 +1208,44 @@ public class DocumentServiceImpl implements DocumentService {
 				populateFieldMetadata(documentVersionField, fieldSignDto, field, currentVersion);
 				documentVersionFields.add(documentVersionField);
 				markField(field, fields, FieldStatus.COMPLETED);
+
+				if (field.getFieldContainer() != null
+						&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+					Long containerId = field.getFieldContainer().getId();
+					groupFieldsMap.computeIfAbsent(containerId,
+							k -> fieldRepository.findByFieldContainer_Id(containerId));
+				}
 			}
+		}
+
+		List<Field> allFieldList = fieldRepository.findByDocument_Id(documentSignDto.getDocumentId());
+
+		List<FieldContainer> distinctFieldContainerList = allFieldList.stream()
+			.map(Field::getFieldContainer)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+
+		if (!distinctFieldContainerList.isEmpty()) {
+			for (FieldContainer fieldContainer : distinctFieldContainerList) {
+				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED);
+				}
+			}
+		}
+
+		if (!groupFieldsMap.isEmpty()) {
+			groupFieldsMap.forEach((key, value) -> {
+				// Mark all fields in the group as COMPLETED
+				value.forEach(groupField -> {
+					if (!fields.contains(groupField)) {
+						groupField.setStatus(FieldStatus.COMPLETED);
+						fields.add(groupField);
+					}
+				});
+			});
 		}
 
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
@@ -1224,6 +1260,8 @@ public class DocumentServiceImpl implements DocumentService {
 			DocumentVersion currentVersion) {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
+
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		documentSignDto.getFieldSignDtoList().forEach(fieldSignDto -> {
 			Field field = fieldRepository.findById(fieldSignDto.getFieldId())
@@ -1259,9 +1297,47 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionField.setDocumentVersion(currentVersion);
 
 			documentVersionFields.add(documentVersionField);
+
+			if (field.getFieldContainer() != null
+					&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+							|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+				Long containerId = field.getFieldContainer().getId();
+				groupFieldsMap.computeIfAbsent(containerId, k -> fieldRepository.findByFieldContainer_Id(containerId));
+			}
+
 			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
+
+		List<Field> allFieldList = fieldRepository.findByDocument_Id(documentSignDto.getDocumentId());
+
+		List<FieldContainer> distinctFieldContainerList = allFieldList.stream()
+			.map(Field::getFieldContainer)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+
+		if (!distinctFieldContainerList.isEmpty()) {
+			for (FieldContainer fieldContainer : distinctFieldContainerList) {
+				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED);
+				}
+			}
+		}
+
+		if (!groupFieldsMap.isEmpty()) {
+			groupFieldsMap.forEach((key, value) -> {
+				// Mark all fields in the group as COMPLETED
+				value.forEach(groupField -> {
+					if (!fields.contains(groupField)) {
+						groupField.setStatus(FieldStatus.COMPLETED);
+						fields.add(groupField);
+					}
+				});
+			});
+		}
+
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
 

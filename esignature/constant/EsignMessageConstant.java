@@ -227,7 +227,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH("ep.esign.error.field.option.value.exceeds.max.length"),
 	ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE("ep.esign.error.field.option.value.must.be.unique"),
 	ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE("ep.esign.error.field.option.display.order.must.be.unique"),
-	ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED("ep.esign.error.field.container.details.required");
+	ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED("ep.esign.error.field.container.details.required"),
+	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED("ep.esign.error.at.least.one.field.required");
 
 	private final String messageKey;
 
