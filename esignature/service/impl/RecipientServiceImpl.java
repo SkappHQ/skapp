@@ -7,8 +7,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -28,9 +26,7 @@ import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseDto;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
-import com.skapp.enterprise.esignature.repository.RecipientRepository;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.RecipientService;
@@ -54,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -63,8 +60,6 @@ import java.util.Optional;
 public class RecipientServiceImpl implements RecipientService {
 
 	private final RecipientDao recipientDao;
-
-	private final DocumentLinkRepository documentLinkRepository;
 
 	private final EsignMapper eSignMapper;
 
@@ -174,33 +169,16 @@ public class RecipientServiceImpl implements RecipientService {
 
 	@Async
 	@Override
-	public void sendDocumentCompletedEmailNotifications(Envelope envelope) {
-
-		String tenantId = TenantContext.getCurrentTenant();
-
-		if (tenantId == null) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_ID_NOT_FOUND);
-		}
-
-		List<DocumentLink> documentLinkList = new ArrayList<>();
+	public void sendDocumentCompletedEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls) {
 
 		Optional.ofNullable(envelope)
 			.map(Envelope::getRecipients)
 			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-				DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(
-						envelope.getDocuments().getFirst().getId(), mailRecipient.getId(), DocumentPermissionType.READ);
-
-				DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService.createDocumentLinkData(
-						documentAccessUrlDto, mailRecipient, envelope.getDocuments().getFirst(), envelope);
-
-				String documentAccessUrl = documentLinkData.accessUrl();
-
-				documentLinkList.add(documentLinkData.documentLink());
-				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
-
+				String documentAccessUrl = recipientAccessUrls.get(mailRecipient.getId());
+				if (documentAccessUrl != null) {
+					esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
+				}
 			}));
-
-		documentLinkRepository.saveAll(documentLinkList);
 
 		esignEmailService.sendCompleteEmailToSender(envelope);
 	}

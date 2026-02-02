@@ -9,6 +9,7 @@ import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.type.SignType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface RecipientService {
@@ -19,7 +20,7 @@ public interface RecipientService {
 
 	List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId);
 
-	void sendDocumentCompletedEmailNotifications(Envelope envelope);
+	void sendDocumentCompletedEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls);
 
 	ResponseEntityDto updateRecipient(Long recipientId, RecipientUpdateDto recipientUpdateDto);
 
