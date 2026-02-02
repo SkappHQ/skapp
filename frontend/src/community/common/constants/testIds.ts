@@ -130,7 +130,6 @@ export const attendanceModalsTestId = {
 
 export const profileMenuTestId = {
   buttons: {
-    viewAccountBtn: "profile-menu-view-account-btn",
     logoutBtn: "profile-menu-logout-btn"
   }
 };
