@@ -325,16 +325,17 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		LocalDateTime sentAtTime = responseDto.getSentAt();
 
 		// Send emails and schedule expiration only after transaction commits
+		Long savedEnvelopeId = savedEnvelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
-					scheduleService.scheduleExpiration(savedEnvelope.getId(), tenantId, QuartzEntityType.ENVELOPE,
+					scheduleService.scheduleExpiration(savedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE,
 							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
 									sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX));
 				}
-				recipientService.sendEnvelopeEmailNotifications(envelope, recipientAccessUrls);
+				recipientService.sendEnvelopeEmailNotifications(savedEnvelopeId, recipientAccessUrls);
 			}
 		});
 

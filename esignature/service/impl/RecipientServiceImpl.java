@@ -160,16 +160,29 @@ public class RecipientServiceImpl implements RecipientService {
 		return new DocumentLinksAndRecipientsData(documentLinkList, updatedRecipients, recipientAccessUrls);
 	}
 
-	// TODO: Decouple reminder scheduling from email sending - reminder scheduling
-	// (handleReminderScheduling) is currently embedded inside
-	// sendEnvelopeToRecipientEmail,
-	// which forces us to persist reminder metadata (batchId, status) here after the fact.
-	// These should be separate concerns.
+	/*
+	 * TODO: Decouple reminder scheduling from email sending - reminder scheduling
+	 * (handleReminderScheduling) is currently embedded inside
+	 * sendEnvelopeToRecipientEmail, which forces us to persist reminder metadata
+	 * (batchId, status) here after the fact. These should be separate concerns.
+	 */
 	@Async
+	@Transactional
 	@Override
-	public void sendEnvelopeEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls) {
+	public void sendEnvelopeEmailNotifications(Long envelopeId, Map<Long, String> recipientAccessUrls) {
+		if (envelopeId == null) {
+			log.warn("sendEnvelopeEmailNotifications: envelopeId is null, skipping email notifications");
+			return;
+		}
+
+		Envelope envelope = recipientDao.findByEnvelopeId(envelopeId)
+			.filter(recipients -> !recipients.isEmpty())
+			.map(recipients -> recipients.getFirst().getEnvelope())
+			.orElse(null);
+
 		if (envelope == null) {
-			log.warn("sendEnvelopeEmailNotifications: envelope is null, skipping email notifications");
+			log.warn("sendEnvelopeEmailNotifications: envelope not found for id {}, skipping email notifications",
+					envelopeId);
 			return;
 		}
 
@@ -206,17 +219,32 @@ public class RecipientServiceImpl implements RecipientService {
 	}
 
 	@Async
+	@Transactional
 	@Override
-	public void sendDocumentCompletedEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls) {
+	public void sendDocumentCompletedEmailNotifications(Long envelopeId, Map<Long, String> recipientAccessUrls) {
+		if (envelopeId == null) {
+			log.warn("sendDocumentCompletedEmailNotifications: envelopeId is null, skipping email notifications");
+			return;
+		}
 
-		Optional.ofNullable(envelope)
-			.map(Envelope::getRecipients)
-			.ifPresent(recipients -> recipients.forEach(mailRecipient -> {
-				String documentAccessUrl = recipientAccessUrls.get(mailRecipient.getId());
-				if (documentAccessUrl != null) {
-					esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
-				}
-			}));
+		Envelope envelope = recipientDao.findByEnvelopeId(envelopeId)
+			.filter(recipients -> !recipients.isEmpty())
+			.map(recipients -> recipients.getFirst().getEnvelope())
+			.orElse(null);
+
+		if (envelope == null) {
+			log.warn(
+					"sendDocumentCompletedEmailNotifications: envelope not found for id {}, skipping email notifications",
+					envelopeId);
+			return;
+		}
+
+		envelope.getRecipients().forEach(mailRecipient -> {
+			String documentAccessUrl = recipientAccessUrls.get(mailRecipient.getId());
+			if (documentAccessUrl != null) {
+				esignEmailService.sendCompleteEmailsToRecipient(envelope, mailRecipient, documentAccessUrl);
+			}
+		});
 
 		esignEmailService.sendCompleteEmailToSender(envelope);
 	}

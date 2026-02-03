@@ -364,13 +364,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		Envelope sequentialEnvelope = document.getEnvelope();
+		Long sequentialEnvelopeId = document.getEnvelope().getId();
 
 		// Send emails to next recipients only after transaction commits
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
-				recipientService.sendEnvelopeEmailNotifications(sequentialEnvelope, nextRecipientAccessUrls);
+				recipientService.sendEnvelopeEmailNotifications(sequentialEnvelopeId, nextRecipientAccessUrls);
 			}
 		});
 
@@ -450,12 +450,13 @@ public class DocumentServiceImpl implements DocumentService {
 		documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
+		Long completedEnvelopeId = envelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
-				recipientService.sendDocumentCompletedEmailNotifications(envelope, recipientAccessUrls);
+				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				recipientService.sendDocumentCompletedEmailNotifications(completedEnvelopeId, recipientAccessUrls);
 			}
 
 			@Override
@@ -663,12 +664,14 @@ public class DocumentServiceImpl implements DocumentService {
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
+			Long parallelEnvelopeId = envelope.getId();
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
-					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
-					recipientService.sendDocumentCompletedEmailNotifications(envelope, parallelRecipientAccessUrls);
+					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+					recipientService.sendDocumentCompletedEmailNotifications(parallelEnvelopeId,
+							parallelRecipientAccessUrls);
 				}
 			});
 

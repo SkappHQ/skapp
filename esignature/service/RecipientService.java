@@ -3,7 +3,6 @@ package com.skapp.enterprise.esignature.service;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentLink;
-import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.type.SignType;
@@ -20,9 +19,9 @@ public interface RecipientService {
 
 	List<Recipient> getNextSignRecipientData(Optional<Long> recipientId, Long envelopeId);
 
-	void sendDocumentCompletedEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls);
+	void sendDocumentCompletedEmailNotifications(Long envelopeId, Map<Long, String> recipientAccessUrls);
 
-	void sendEnvelopeEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls);
+	void sendEnvelopeEmailNotifications(Long envelopeId, Map<Long, String> recipientAccessUrls);
 
 	ResponseEntityDto updateRecipient(Long recipientId, RecipientUpdateDto recipientUpdateDto);
 
