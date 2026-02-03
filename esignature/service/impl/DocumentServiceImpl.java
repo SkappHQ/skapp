@@ -12,7 +12,17 @@ import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.*;
+import com.skapp.enterprise.esignature.model.AddressBook;
+import com.skapp.enterprise.esignature.model.AuditTrail;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentSignature;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
+import com.skapp.enterprise.esignature.model.DocumentVersionField;
+import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.FieldContainer;
+import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
@@ -84,8 +94,14 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Objects;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
@@ -1211,41 +1227,8 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
-		List<Field> allRecipientFieldList = fieldRepository
-			.findByDocument_IdAndRecipient_Id(documentSignDto.getDocumentId(), documentSignDto.getRecipientId());
-
-		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
-			.map(Field::getFieldContainer)
-			.filter(Objects::nonNull)
-			.distinct()
-			.toList();
-
-		if (!distinctFieldContainerList.isEmpty()) {
-			for (FieldContainer fieldContainer : distinctFieldContainerList) {
-				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
-					throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
-							new String[] { fieldContainer.getId().toString() });
-				}
-				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
-						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
-							new String[] { fieldContainer.getId().toString() });
-				}
-			}
-		}
-
-		if (!groupFieldsMap.isEmpty()) {
-			groupFieldsMap.forEach((key, value) -> {
-				// Mark all fields in the container as COMPLETED
-				value.forEach(groupField -> {
-					if (!fields.contains(groupField)) {
-						groupField.setStatus(FieldStatus.COMPLETED);
-						fields.add(groupField);
-					}
-				});
-			});
-		}
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
 
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
@@ -1309,41 +1292,8 @@ public class DocumentServiceImpl implements DocumentService {
 			fields.add(field);
 		});
 
-		List<Field> allRecipientFieldList = fieldRepository
-			.findByDocument_IdAndRecipient_Id(documentSignDto.getDocumentId(), documentSignDto.getRecipientId());
-
-		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
-			.map(Field::getFieldContainer)
-			.filter(Objects::nonNull)
-			.distinct()
-			.toList();
-
-		if (!distinctFieldContainerList.isEmpty()) {
-			for (FieldContainer fieldContainer : distinctFieldContainerList) {
-				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
-					throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
-							new String[] { fieldContainer.getId().toString() });
-				}
-				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
-						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
-							new String[] { fieldContainer.getId().toString() });
-				}
-			}
-		}
-
-		if (!groupFieldsMap.isEmpty()) {
-			groupFieldsMap.forEach((key, value) -> {
-				// Mark all fields in the group as COMPLETED
-				value.forEach(groupField -> {
-					if (!fields.contains(groupField)) {
-						groupField.setStatus(FieldStatus.COMPLETED);
-						fields.add(groupField);
-					}
-				});
-			});
-		}
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
 
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
@@ -1823,6 +1773,47 @@ public class DocumentServiceImpl implements DocumentService {
 			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
 			return documentBytes;
 		}
+	}
+
+	private List<Field> processAndValidateAdvanceFields(Long documentId, Long recipientId, List<Field> fields,
+			Map<Long, List<Field>> groupFieldsMap) {
+
+		List<Field> allRecipientFieldList = fieldRepository.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+
+		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
+			.map(Field::getFieldContainer)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+
+		if (!distinctFieldContainerList.isEmpty()) {
+			for (FieldContainer fieldContainer : distinctFieldContainerList) {
+				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
+							new String[] { fieldContainer.getId().toString() });
+				}
+				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
+						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
+							new String[] { fieldContainer.getId().toString() });
+				}
+			}
+		}
+
+		if (!groupFieldsMap.isEmpty()) {
+			groupFieldsMap.forEach((key, value) -> {
+				// Mark all fields in the container as COMPLETED
+				value.forEach(groupField -> {
+					if (!fields.contains(groupField)) {
+						groupField.setStatus(FieldStatus.COMPLETED);
+						fields.add(groupField);
+					}
+				});
+			});
+		}
+
+		return fields;
 	}
 
 }
