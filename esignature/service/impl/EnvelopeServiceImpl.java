@@ -1519,8 +1519,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	 * first
 	 */
 	private List<FieldDto> groupAndSortFieldsByContainer(List<FieldDto> fieldDtoList) {
-
-		fieldDtoList.sort((a, b) -> {
+		List<FieldDto> sortedList = new ArrayList<>(fieldDtoList);
+		sortedList.sort((a, b) -> {
 			if (a.getFieldContainerId() == null && b.getFieldContainerId() != null)
 				return -1;
 			if (a.getFieldContainerId() != null && b.getFieldContainerId() == null)
@@ -1538,7 +1538,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 			return 0;
 		});
-		return fieldDtoList;
+		return sortedList;
 	}
 
 }
