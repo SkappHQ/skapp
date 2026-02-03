@@ -46,8 +46,8 @@ import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
-import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
+import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
@@ -564,6 +564,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 
 			if (fieldDto.getFieldOption() != null) {
+
 				FieldOption fieldOption = new FieldOption();
 				fieldOption.setOptionValue(fieldDto.getFieldOption().getOptionValue() != null
 						? fieldDto.getFieldOption().getOptionValue().trim() : null);
@@ -1439,12 +1440,25 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private void validateGroupedFieldOptions(List<FieldDto> fieldDtos) {
 		Map<String, List<FieldDto>> groupedByContainer = fieldDtos.stream()
-			.filter(dto -> dto.getFieldContainerId() != null && (dto.getType() == FieldType.DROPDOWN
-					|| dto.getType() == FieldType.RADIO_BUTTON || dto.getType() == FieldType.CHECKBOX))
+			.filter(dto -> dto.getFieldContainerId() != null
+					&& (dto.getType() == FieldType.DROPDOWN || dto.getType() == FieldType.RADIO_BUTTON
+							|| dto.getType() == FieldType.CHECKBOX || dto.getType() == FieldType.TEXT))
 			.collect(Collectors.groupingBy(FieldDto::getFieldContainerId));
 
 		for (List<FieldDto> group : groupedByContainer.values()) {
-			FieldType type = group.getFirst().getType();
+
+			// Ensure all fields in the same container share the same type
+			FieldType firstType = group.getFirst().getType();
+			boolean hasMixedTypes = group.stream()
+				.map(FieldDto::getType)
+				.filter(Objects::nonNull)
+				.anyMatch(type -> type != firstType);
+			if (hasMixedTypes) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER);
+			}
+
+			FieldType type = firstType;
 			List<String> optionValues = group.stream()
 				.map(dto -> dto.getFieldOption() != null ? dto.getFieldOption().getOptionValue() : null)
 				.filter(Objects::nonNull)
@@ -1468,24 +1482,29 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Set<String> existingOptionValue = new HashSet<>();
 			Set<Integer> existingDisplayOrder = new HashSet<>();
 			for (FieldDto dto : group) {
-				if (dto.getFieldOption() != null) {
-					String value = dto.getFieldOption().getOptionValue();
-					if (value != null) {
-						value = value.trim();
-						if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
-							throw new ModuleException(
-									EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
-						}
-						if (!existingOptionValue.add(value)) {
-							throw new ModuleException(
-									EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
-						}
-					}
-					Integer displayOrder = dto.getFieldOption().getDisplayOrder();
-					if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
-						throw new ModuleException(
-								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
-					}
+
+				if (dto.getFieldOption().getOptionValue().trim().isEmpty()) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+				}
+
+				String value = dto.getFieldOption().getOptionValue();
+				value = value.trim();
+				if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
+				}
+				if (!existingOptionValue.add(value)) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
+				}
+				Integer displayOrder = dto.getFieldOption().getDisplayOrder();
+
+				if (displayOrder != null && displayOrder <= 0) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
+				}
+
+				if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
 				}
 			}
 		}

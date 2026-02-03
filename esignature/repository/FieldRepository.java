@@ -16,8 +16,6 @@ public interface FieldRepository extends JpaRepository<Field, Long> {
 
 	List<Field> findByRecipientAndTypeAndStatus(Recipient recipient, FieldType type, FieldStatus status);
 
-	List<Field> findByFieldContainer_Id(Long fieldContainerId);
-
 	List<Field> findByDocument_IdAndRecipient_Id(Long documentId, Long recipientId);
 
 }

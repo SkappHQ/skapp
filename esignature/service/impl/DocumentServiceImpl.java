@@ -1786,12 +1786,14 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (!distinctFieldContainerList.isEmpty()) {
 			for (FieldContainer fieldContainer : distinctFieldContainerList) {
-				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
+				if (Boolean.TRUE.equals(fieldContainer.getIsRequired())
+						&& !groupFieldsMap.containsKey(fieldContainer.getId())) {
 					throw new ModuleException(
 							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
 							new String[] { fieldContainer.getId().toString() });
 				}
-				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
+				if (Boolean.FALSE.equals(fieldContainer.getIsMultiSelect())
+						&& groupFieldsMap.containsKey(fieldContainer.getId())
 						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
 					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED,
 							new String[] { fieldContainer.getId().toString() });
