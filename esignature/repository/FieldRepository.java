@@ -18,6 +18,6 @@ public interface FieldRepository extends JpaRepository<Field, Long> {
 
 	List<Field> findByFieldContainer_Id(Long fieldContainerId);
 
-	List<Field> findByDocument_Id(Long documentId);
+	List<Field> findByDocument_IdAndRecipient_Id(Long documentId, Long recipientId);
 
 }

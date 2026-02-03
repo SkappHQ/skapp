@@ -1211,9 +1211,10 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
-		List<Field> allFieldList = fieldRepository.findByDocument_Id(documentSignDto.getDocumentId());
+		List<Field> allRecipientFieldList = fieldRepository
+			.findByDocument_IdAndRecipient_Id(documentSignDto.getDocumentId(), documentSignDto.getRecipientId());
 
-		List<FieldContainer> distinctFieldContainerList = allFieldList.stream()
+		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
 			.map(Field::getFieldContainer)
 			.filter(Objects::nonNull)
 			.distinct()
@@ -1308,9 +1309,10 @@ public class DocumentServiceImpl implements DocumentService {
 			fields.add(field);
 		});
 
-		List<Field> allFieldList = fieldRepository.findByDocument_Id(documentSignDto.getDocumentId());
+		List<Field> allRecipientFieldList = fieldRepository
+			.findByDocument_IdAndRecipient_Id(documentSignDto.getDocumentId(), documentSignDto.getRecipientId());
 
-		List<FieldContainer> distinctFieldContainerList = allFieldList.stream()
+		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
 			.map(Field::getFieldContainer)
 			.filter(Objects::nonNull)
 			.distinct()
