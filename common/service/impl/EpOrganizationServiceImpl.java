@@ -180,6 +180,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		epOrganizationDao.save(epCommonMapper.epOrganizationDtoToEPOrganization(organizationDto));
 		log.info("Organization saved for: {}", companyDomain);
 
+		cacheService.invalidate(EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getKey());
+
 		EpOrganization epOrganization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 
 		setDefaultOrganizationConfigsForEp();
@@ -412,6 +414,19 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		invoiceConfigService.setDefaultInvoiceConfigs(organization.getOrganizationLogo(), organization.getCountry());
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
+	}
+
+	@Override
+	public String getOrganizationTimeZone() {
+		String cacheKey = EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getKey();
+		String cachedTimezone = cacheService.get(cacheKey);
+		if (cachedTimezone != null) {
+			return cachedTimezone;
+		}
+		String timezone = super.getOrganizationTimeZone();
+		cacheService.put(cacheKey, timezone, EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getTtl(),
+			EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getTimeUnit());
+		return timezone;
 	}
 
 }
