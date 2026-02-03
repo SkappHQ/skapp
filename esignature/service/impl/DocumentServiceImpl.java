@@ -1188,15 +1188,6 @@ public class DocumentServiceImpl implements DocumentService {
 				populateFieldMetadata(documentVersionField, fieldSignDto, field, currentVersion);
 				documentVersionFields.add(documentVersionField);
 				markField(field, fields, FieldStatus.COMPLETED);
-
-				if (field.getFieldContainer() != null
-						&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
-								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
-
-					Long containerId = field.getFieldContainer().getId();
-					groupFieldsMap.computeIfAbsent(containerId,
-							k -> fieldRepository.findByFieldContainer_Id(containerId));
-				}
 			}
 			else {
 				DocumentVersionField documentVersionField = switch (fieldType) {
@@ -1231,14 +1222,21 @@ public class DocumentServiceImpl implements DocumentService {
 		if (!distinctFieldContainerList.isEmpty()) {
 			for (FieldContainer fieldContainer : distinctFieldContainerList) {
 				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED);
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
+							new String[] { fieldContainer.getId().toString() });
+				}
+				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
+						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
+							new String[] { fieldContainer.getId().toString() });
 				}
 			}
 		}
 
 		if (!groupFieldsMap.isEmpty()) {
 			groupFieldsMap.forEach((key, value) -> {
-				// Mark all fields in the group as COMPLETED
+				// Mark all fields in the container as COMPLETED
 				value.forEach(groupField -> {
 					if (!fields.contains(groupField)) {
 						groupField.setStatus(FieldStatus.COMPLETED);
@@ -1321,7 +1319,14 @@ public class DocumentServiceImpl implements DocumentService {
 		if (!distinctFieldContainerList.isEmpty()) {
 			for (FieldContainer fieldContainer : distinctFieldContainerList) {
 				if (fieldContainer.getIsRequired() && !groupFieldsMap.containsKey(fieldContainer.getId())) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED);
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
+							new String[] { fieldContainer.getId().toString() });
+				}
+				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
+						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
+							new String[] { fieldContainer.getId().toString() });
 				}
 			}
 		}

@@ -228,7 +228,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE("ep.esign.error.field.option.value.must.be.unique"),
 	ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE("ep.esign.error.field.option.display.order.must.be.unique"),
 	ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED("ep.esign.error.field.container.details.required"),
-	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED("ep.esign.error.at.least.one.field.required");
+	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID(
+			"ep.esign.error.at.least.one.field.required.for.container.id"),
+	ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED("ep.esign.error.multiselection.not.allowed");
 
 	private final String messageKey;
 
