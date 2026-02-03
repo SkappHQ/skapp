@@ -168,19 +168,27 @@ public class RecipientServiceImpl implements RecipientService {
 	@Async
 	@Override
 	public void sendEnvelopeEmailNotifications(Envelope envelope, Map<Long, String> recipientAccessUrls) {
+		if (envelope == null) {
+			log.warn("sendEnvelopeEmailNotifications: envelope is null, skipping email notifications");
+			return;
+		}
+
 		EpEsignEmailEnvelopeDataDto epEsignEmailDataDto = getEpEsignEmailEnvelopeDataDto(envelope);
 
-		Optional.ofNullable(envelope)
-			.map(Envelope::getRecipients)
-			.ifPresent(recipients -> recipients.forEach(recipient -> {
-				String documentAccessUrl = recipientAccessUrls.get(recipient.getId());
-				if (documentAccessUrl != null) {
-					Recipient updatedRecipient = sendEnvelopeToRecipientEmail(recipient,
-							recipient.getAddressBook().getName(), recipient.getAddressBook().getEmail(),
-							recipient.getMemberRole().toString(), documentAccessUrl, epEsignEmailDataDto);
-					recipientDao.save(updatedRecipient);
-				}
-			}));
+		List<Recipient> recipients = envelope.getRecipients();
+		if (recipients == null || recipients.isEmpty()) {
+			return;
+		}
+
+		recipients.forEach(recipient -> {
+			String documentAccessUrl = recipientAccessUrls.get(recipient.getId());
+			if (documentAccessUrl != null) {
+				Recipient updatedRecipient = sendEnvelopeToRecipientEmail(recipient,
+						recipient.getAddressBook().getName(), recipient.getAddressBook().getEmail(),
+						recipient.getMemberRole().toString(), documentAccessUrl, epEsignEmailDataDto);
+				recipientDao.save(updatedRecipient);
+			}
+		});
 	}
 
 	@Override
@@ -294,7 +302,9 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private Recipient prepareRecipientMetadata(Recipient recipient) {
 		RecipientUpdateDto recipientUpdateDto = new RecipientUpdateDto();
-		recipientUpdateDto.setEmailStatus(EmailStatus.SENT);
+		// Keep email status as not-sent during preparation; it will be set to SENT
+		// in sendEnvelopeToRecipientEmail after the email is actually dispatched.
+		recipientUpdateDto.setEmailStatus(EmailStatus.EMPTY);
 		return setUpdatedRecipient(recipient, recipientUpdateDto);
 	}
 
