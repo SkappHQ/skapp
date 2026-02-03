@@ -18,9 +18,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -66,19 +63,5 @@ public class User {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	@PrimaryKeyJoinColumn
 	private UserSettings settings;
-
-	public List<String> getPreviousPasswordsList() {
-		if (previousPasswords == null || previousPasswords.isEmpty()) {
-			return new ArrayList<>();
-		}
-		return new ArrayList<>(List.of(previousPasswords.split(",")));
-	}
-
-	public void addPreviousPassword(String password) {
-		List<String> previousPasswordList = getPreviousPasswordsList();
-
-		previousPasswordList.add(password);
-		this.previousPasswords = String.join(",", previousPasswordList);
-	}
 
 }
