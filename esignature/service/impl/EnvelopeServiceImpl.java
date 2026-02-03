@@ -1511,12 +1511,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	/**
-	 * @param fieldDtoList
-	 * @return
+	 * Groups and sorts a list of FieldDto objects by their fieldContainerId.
 	 *
-	 * 1. Items with null fieldContainerId come first 2. If both have fieldContainerId,
-	 * group by fieldContainerId 3. Within the same group, fieldContainer != null comes
-	 * first
+	 * Sorting rules: 1. Items with null fieldContainerId come first. 2. Items with the
+	 * same non-null fieldContainerId are grouped together. 3. Within each group, items
+	 * with a non-null fieldContainer are ordered before those with a null fieldContainer.
+	 * @param fieldDtoList the list of FieldDto objects to group and sort
+	 * @return a new sorted list of FieldDto objects
 	 */
 	private List<FieldDto> groupAndSortFieldsByContainer(List<FieldDto> fieldDtoList) {
 		List<FieldDto> sortedList = new ArrayList<>(fieldDtoList);
