@@ -514,8 +514,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Field> fieldList = new ArrayList<>();
 		Map<String, FieldContainer> containerMap = new HashMap<>();
 
-		// To sort the field values. If by any chance the advance field comes in as the
-		// fieldContainer object as null in a group we sort it to be first
+		// To sort the field values. If, within a group, some fields have a populated
+		// fieldContainer object and others are null, we sort the non-null fieldContainer
+		// entries first
 		List<FieldDto> fieldDtoSortedList = groupAndSortFieldsByContainer(fieldDtoList);
 
 		fieldDtoSortedList.forEach(fieldDto -> {

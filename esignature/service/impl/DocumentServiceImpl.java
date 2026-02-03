@@ -298,7 +298,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
-			.filter(field -> field.getFieldContainer() == null)
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -513,7 +512,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
-			.filter(field -> field.getFieldContainer() == null)
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -1075,7 +1073,7 @@ public class DocumentServiceImpl implements DocumentService {
 			FieldSignDto fieldSignDto, byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> {
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON -> {
 				verifyTextField(documentVersionField.getValue(), keyPairSign.getPublic(),
 						documentVersionField.getFieldSignature());
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
@@ -1120,7 +1118,8 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+				documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 
 			case SIGNATURE, INITIAL, STAMP -> {
 				String imageUrl = documentVersionField.getValue();
@@ -1221,8 +1220,7 @@ public class DocumentServiceImpl implements DocumentService {
 								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
 
 					Long containerId = field.getFieldContainer().getId();
-					groupFieldsMap.computeIfAbsent(containerId,
-							k -> fieldRepository.findByFieldContainer_Id(containerId));
+					groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
 				}
 			}
 		}
@@ -1285,7 +1283,7 @@ public class DocumentServiceImpl implements DocumentService {
 							|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
 
 				Long containerId = field.getFieldContainer().getId();
-				groupFieldsMap.computeIfAbsent(containerId, k -> fieldRepository.findByFieldContainer_Id(containerId));
+				groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
 			}
 
 			field.setStatus(FieldStatus.COMPLETED);
@@ -1795,7 +1793,7 @@ public class DocumentServiceImpl implements DocumentService {
 				}
 				if (!fieldContainer.getIsMultiSelect() && groupFieldsMap.containsKey(fieldContainer.getId())
 						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MUTILSELECTION_NOT_ALLOWED,
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED,
 							new String[] { fieldContainer.getId().toString() });
 				}
 			}
