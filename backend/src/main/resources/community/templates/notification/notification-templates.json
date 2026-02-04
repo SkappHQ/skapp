@@ -285,6 +285,38 @@
         "title": "A time entry request has been declined!",
         "message": "Time entry request form {{employeeName}} for the {{timeEntryDate}} has been declined."
       }
+    ],
+    "esign": [
+      {
+        "id": "esign-document-sign-request",
+        "title": "Document requires your signature",
+        "message": "You are requested to complete the {{documentName}}"
+      },
+      {
+        "id": "esign-document-completed",
+        "title": "Document completed",
+        "message": "{{recipientName}} has completed the {{documentName}}"
+      },
+      {
+        "id": "esign-document-declined",
+        "title": "Document declined",
+        "message": "{{recipientName}} has declined the {{documentName}}"
+      },
+      {
+        "id": "esign-document-voided",
+        "title": "Document voided",
+        "message": "{{senderName}} has voided the {{documentName}}"
+      },
+      {
+        "id": "esign-document-reminder",
+        "title": "Document reminder",
+        "message": "Reminder to complete the {{documentName}}"
+      },
+      {
+        "id": "esign-document-expired",
+        "title": "Document expired",
+        "message": "{{documentName}} is expiring today. Please review and sign."
+      }
     ]
   }
 }

@@ -36,7 +36,8 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
     isAttendanceEmployee,
     isLeaveEmployee,
     isLeaveManager,
-    isAttendanceManager
+    isAttendanceManager,
+    isEsignatureModuleEnabled
   } = useSessionData();
 
   return (
@@ -112,6 +113,21 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   isAttendanceModuleDisabled={
                     item?.notificationType ===
                       NotificationItemsTypes.TIME_ENTRY && !isAttendanceEmployee
+                  }
+                  isEsignatureModuleDisabled={
+                    (item?.notificationType ===
+                      NotificationItemsTypes.DOCUMENT_SIGN_REQUEST ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.DOCUMENT_COMPLETED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.DOCUMENT_DECLINED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.DOCUMENT_VOIDED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.DOCUMENT_REMINDER ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.DOCUMENT_EXPIRED) &&
+                    !isEsignatureModuleEnabled
                   }
                   item={item}
                 />

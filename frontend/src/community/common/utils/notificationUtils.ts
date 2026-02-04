@@ -48,6 +48,18 @@ export const handleNotifyRow = ({
     isAttendanceManager
   ) {
     router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS);
+  } else if (
+    notificationType === NotificationItemsTypes.DOCUMENT_SIGN_REQUEST ||
+    notificationType === NotificationItemsTypes.DOCUMENT_REMINDER
+  ) {
+    router.push(`${ROUTES.SIGN.SIGN}?envelopeId=${id}`);
+  } else if (
+    notificationType === NotificationItemsTypes.DOCUMENT_COMPLETED ||
+    notificationType === NotificationItemsTypes.DOCUMENT_DECLINED ||
+    notificationType === NotificationItemsTypes.DOCUMENT_VOIDED ||
+    notificationType === NotificationItemsTypes.DOCUMENT_EXPIRED
+  ) {
+    router.push(ROUTES.SIGN.INBOX_INFO.ID(id));
   }
   mutate(id);
 };
