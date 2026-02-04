@@ -32,14 +32,13 @@ public class BankIdSignRequest {
 
 	/**
 	 * The text to be displayed and signed. Required. The text can be formatted using
-	 * simpleMarkdownV1. Must be Base64 encoded. Max 40,000 characters after encoding.
+	 * simpleMarkdownV1. Must be Base64 encoded.
 	 */
 	private String userVisibleData;
 
 	/**
 	 * Data not displayed to the user but included in the signature. Optional. Typically
-	 * used to include document hash. Must be Base64 encoded. Max 200,000 characters after
-	 * encoding.
+	 * used to include document hash. Must be Base64 encoded.
 	 */
 	private String userNonVisibleData;
 

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.eid.bankid;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCancelRequest;
@@ -30,11 +31,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.HexFormat;
 
 /**
  * Swedish BankID provider implementation.
@@ -130,8 +128,8 @@ public class BankIdProvider implements EidProvider {
 
 			// Store transient secrets in memory only — never persisted to DB.
 			// Per BankID docs, qrStartSecret must not leave the backend.
-			sessionCache.put(session.getSessionUuid(), signResponse.getQrStartToken(),
-					signResponse.getQrStartSecret(), signResponse.getAutoStartToken());
+			sessionCache.put(session.getSessionUuid(), signResponse.getQrStartToken(), signResponse.getQrStartSecret(),
+					signResponse.getAutoStartToken());
 
 			log.info("BankIdProvider: Created session uuid={}, orderRef={}", session.getSessionUuid(),
 					signResponse.getOrderRef());
@@ -344,15 +342,7 @@ public class BankIdProvider implements EidProvider {
 		if (personalNumber == null || personalNumber.isEmpty()) {
 			return null;
 		}
-		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[] hash = digest.digest(personalNumber.getBytes(StandardCharsets.UTF_8));
-			return HexFormat.of().formatHex(hash);
-		}
-		catch (NoSuchAlgorithmException e) {
-			log.error("SHA-256 algorithm not available", e);
-			throw new IllegalStateException("SHA-256 algorithm not available", e);
-		}
+		return HashUtil.hashSha256Hex(personalNumber);
 	}
 
 }
