@@ -21,6 +21,7 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEma
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -170,7 +171,7 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
 				String.valueOf(recipient.getEnvelope().getId()), NotificationType.DOCUMENT_REMINDER,
 				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER,
-				Map.of("documentName", truncateDocumentName(concatDocumentNames(recipient.getEnvelope().getDocuments()))),
+				Map.of("documentName", EsignUtil.truncateDocumentName(concatDocumentNames(recipient.getEnvelope().getDocuments()))),
 				NotificationCategory.ESIGN);
 		}
 
@@ -230,13 +231,6 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 			}
 		}
 
-		return documentName;
-	}
-
-	private String truncateDocumentName(String documentName) {
-		if (documentName != null && documentName.length() > 25) {
-			return documentName.substring(0, 25) + "...";
-		}
 		return documentName;
 	}
 

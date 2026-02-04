@@ -380,7 +380,7 @@ public class DocumentServiceImpl implements DocumentService {
 		envelopeDao.save(envelope);
 
 		// Create in-app notification for sender
-		String documentName = envelope.getDocuments().get(0).getName();
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().get(0).getName());
 		Map<String, String> notificationFields = Map.of("documentName", documentName, "recipientName", recipient.getAddressBook().getName());
 		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
 			String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,

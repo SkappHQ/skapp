@@ -46,6 +46,7 @@ import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,7 +127,7 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = envelopeData.getDocuments().get(0).getName();
+				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().get(0).getName());
 				Map<String, String> notificationFields = Map.of("documentName", documentName);
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
@@ -181,7 +182,7 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = document.getEnvelope().getDocuments().get(0).getName();
+				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().get(0).getName());
 				Map<String, String> notificationFields = Map.of("documentName", documentName);
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
@@ -631,7 +632,7 @@ public class RecipientServiceImpl implements RecipientService {
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
 		// Create in-app notification for reminder
-		String documentName = recipient.getEnvelope().getDocuments().get(0).getName();
+		String documentName = EsignUtil.truncateDocumentName(recipient.getEnvelope().getDocuments().get(0).getName());
 		Map<String, String> notificationFields = Map.of("documentName", documentName);
 
 		if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {

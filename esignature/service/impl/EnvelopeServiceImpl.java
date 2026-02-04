@@ -974,7 +974,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope = envelopeDao.save(envelope);
 
 		// Create in-app notifications for void - all recipients get notified
-		String documentName = envelope.getDocuments().get(0).getName();
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().get(0).getName());
 		Map<String, String> notificationFields = Map.of("documentName", documentName, "senderName", envelope.getOwner().getName());
 
 		for (Recipient rec : envelope.getRecipients()) {
@@ -1238,7 +1238,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeDao.save(envelope);
 
 		// Create in-app notifications for decline
-		String documentName = envelope.getDocuments().get(0).getName();
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().get(0).getName());
 		Map<String, String> notificationFields = Map.of("documentName", documentName, "recipientName", recipient.getAddressBook().getName());
 
 		// Sender always gets notification
@@ -1304,7 +1304,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelopeDao.save(envelope);
 
 			// Create in-app notifications for expiration - sender and all recipients
-			String documentName = envelope.getDocuments().get(0).getName();
+			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().get(0).getName());
 			Map<String, String> notificationFields = Map.of("documentName", documentName);
 
 			// Notify sender
