@@ -6,6 +6,10 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.community.common.service.NotificationService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
@@ -142,6 +146,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentProcessingService documentProcessingService;
 
 	private final RecipientService recipientService;
+
+	private final NotificationService notificationService;
 
 	private final FieldRepository fieldRepository;
 
@@ -372,6 +378,14 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setStatus(EnvelopeStatus.COMPLETED);
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
+
+		// Create in-app notification for sender
+		String documentName = envelope.getDocuments().get(0).getName();
+		Map<String, String> notificationFields = Map.of("documentName", documentName, "recipientName", recipient.getAddressBook().getName());
+		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
+			String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
+			EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, notificationFields,
+			NotificationCategory.ESIGN);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 

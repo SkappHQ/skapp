@@ -3,6 +3,10 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailButtonText;
@@ -24,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -38,6 +43,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	private final EmailService emailService;
 
 	private final OrganizationDao organizationDao;
+
+	private final NotificationService notificationService;
 
 	@Value("${app.protocol}")
 	private String protocol;
@@ -158,6 +165,15 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
 				recipient.getAddressBook().getEmail());
 
+		// Create in-app notification for reminder
+		if (recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
+				String.valueOf(recipient.getEnvelope().getId()), NotificationType.DOCUMENT_REMINDER,
+				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER,
+				Map.of("documentName", truncateDocumentName(concatDocumentNames(recipient.getEnvelope().getDocuments()))),
+				NotificationCategory.ESIGN);
+		}
+
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipient.getId());
 	}
 
@@ -214,6 +230,13 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 			}
 		}
 
+		return documentName;
+	}
+
+	private String truncateDocumentName(String documentName) {
+		if (documentName != null && documentName.length() > 25) {
+			return documentName.substring(0, 25) + "...";
+		}
 		return documentName;
 	}
 

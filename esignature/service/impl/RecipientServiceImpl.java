@@ -6,7 +6,11 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
@@ -54,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -77,6 +82,8 @@ public class RecipientServiceImpl implements RecipientService {
 	private final DocumentLinkService documentLinkService;
 
 	private final EsignEmailService esignEmailService;
+
+	private final NotificationService notificationService;
 
 	@Override
 	public DocumentLinksAndRecipientsData notifyDocumentFirstRecipients(List<Recipient> recipients, SignType signType) {
@@ -113,6 +120,23 @@ public class RecipientServiceImpl implements RecipientService {
 			String documentAccessUrl = documentLinkData.accessUrl();
 
 			documentLinkList.add(documentLinkData.documentLink());
+
+			// Create in-app notification for document sign request
+			if (!recipient.getMemberRole().equals(MemberRole.CC) 
+					&& recipient.getAddressBook() != null 
+					&& recipient.getAddressBook().getInternalUser() != null 
+					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+				String documentName = envelopeData.getDocuments().get(0).getName();
+				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				notificationService.createNotification(
+						recipient.getAddressBook().getInternalUser().getEmployee(),
+						String.valueOf(envelopeData.getId()),
+						NotificationType.DOCUMENT_SIGN_REQUEST,
+						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
+						notificationFields,
+						NotificationCategory.ESIGN
+				);
+			}
 
 			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
 					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
@@ -151,6 +175,23 @@ public class RecipientServiceImpl implements RecipientService {
 
 			DocumentLinkResponseDto documentLink = documentLinkService.generateDocumentAccessUrl(documentAccessUrlDto);
 			String documentAccessUrl = documentLink.getUrl();
+
+			// Create in-app notification for next recipient
+			if (!recipient.getMemberRole().equals(MemberRole.CC) 
+					&& recipient.getAddressBook() != null 
+					&& recipient.getAddressBook().getInternalUser() != null 
+					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+				String documentName = document.getEnvelope().getDocuments().get(0).getName();
+				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				notificationService.createNotification(
+						recipient.getAddressBook().getInternalUser().getEmployee(),
+						String.valueOf(document.getEnvelope().getId()),
+						NotificationType.DOCUMENT_SIGN_REQUEST,
+						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
+						notificationFields,
+						NotificationCategory.ESIGN
+				);
+			}
 
 			return sendEnvelopeToRecipientEmail(recipient, recipient.getAddressBook().getName(),
 					recipient.getAddressBook().getEmail(), recipient.getMemberRole().toString(), documentAccessUrl,
@@ -588,6 +629,17 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
+
+		// Create in-app notification for reminder
+		String documentName = recipient.getEnvelope().getDocuments().get(0).getName();
+		Map<String, String> notificationFields = Map.of("documentName", documentName);
+
+		if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
+				String.valueOf(recipient.getEnvelope().getId()), NotificationType.DOCUMENT_REMINDER,
+				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, notificationFields,
+				NotificationCategory.ESIGN);
+		}
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");
