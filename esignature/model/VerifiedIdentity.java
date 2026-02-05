@@ -73,14 +73,7 @@ public class VerifiedIdentity extends Auditable<String> {
 	private String surname;
 
 	/**
-	 * Encrypted personal number (e.g., Swedish personnummer). AES-256 encrypted for GDPR
-	 * compliance.
-	 */
-	@Column(name = "personal_number_encrypted")
-	private byte[] personalNumberEncrypted;
-
-	/**
-	 * SHA-256 hash of personal number for lookups without decryption.
+	 * SHA-256 hash of personal number for lookups without storing the actual value.
 	 */
 	@Column(name = "personal_number_hash", length = 64)
 	private String personalNumberHash;
