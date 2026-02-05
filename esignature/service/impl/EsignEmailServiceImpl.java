@@ -166,15 +166,6 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 				EpEmailBodyTemplates.ESIGNATURE_MODULE_ENVELOPE_EMAIL_REMINDER, emailFields,
 				recipient.getAddressBook().getEmail());
 
-		// Create in-app notification for reminder
-		if (recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
-				String.valueOf(recipient.getEnvelope().getId()), NotificationType.DOCUMENT_REMINDER,
-				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER,
-				Map.of("documentName", EsignUtil.truncateDocumentName(concatDocumentNames(recipient.getEnvelope().getDocuments()))),
-				NotificationCategory.ESIGN);
-		}
-
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipient.getId());
 	}
 
