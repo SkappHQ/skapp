@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementation of EidVerificationService.
@@ -59,7 +60,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 	private final DocumentVersionDao documentVersionDao;
 
-	private final BankIdSessionCache bankIdSessionCache;
+	private final Optional<BankIdSessionCache> bankIdSessionCache;
 
 	@Override
 	public ResponseEntityDto getAvailableProviders() {
@@ -142,7 +143,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Map to response DTO and set computed fields from in-memory cache
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
-		bankIdSessionCache.get(session.getSessionUuid()).ifPresent(cached -> {
+		bankIdSessionCache.flatMap(cache -> cache.get(session.getSessionUuid())).ifPresent(cached -> {
 			response.setAutoStartToken(cached.getAutoStartToken());
 			response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
 					session.getInitiatedAt()));
@@ -182,7 +183,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Read transient data (hintCode, QR code) from in-memory cache
 		if (isSessionActive(updatedSession)) {
-			bankIdSessionCache.get(updatedSession.getSessionUuid()).ifPresent(cached -> {
+			bankIdSessionCache.flatMap(cache -> cache.get(updatedSession.getSessionUuid())).ifPresent(cached -> {
 				response.setHintCode(cached.getHintCode());
 				response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
 						updatedSession.getInitiatedAt()));
