@@ -57,7 +57,7 @@ public class Field {
 	@JoinColumn(name = "recipient_id", nullable = false)
 	private Recipient recipient;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToOne
 	@JoinColumn(name = "field_container_id")
 	private FieldContainer fieldContainer;
 

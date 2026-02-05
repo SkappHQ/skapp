@@ -50,7 +50,4 @@ public class FieldContainer extends Auditable<String> {
 	@Column(name = "is_multiselect")
 	private Boolean isMultiSelect;
 
-	@OneToMany(mappedBy = "fieldContainer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Field> fields;
-
 }

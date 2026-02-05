@@ -28,7 +28,4 @@ public class FieldOption extends Auditable<String> {
 	@Column(name = "display_order")
 	private Integer displayOrder;
 
-	@OneToOne(mappedBy = "fieldOption")
-	private Field field;
-
 }

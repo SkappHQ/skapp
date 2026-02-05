@@ -67,6 +67,7 @@ import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
+import com.skapp.enterprise.esignature.repository.FieldContainerDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
@@ -186,6 +187,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
 	private final SignatureCertificateService signatureCertificateService;
+
+	private final FieldContainerDao fieldContainerDao;
 
 	private static final int LEAP_DAY = 29;
 
@@ -557,7 +560,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				else {
 					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED);
 				}
-				field.setFieldContainer(container);
+
+				FieldContainer savedContainer = fieldContainerDao.save(container);
+
+				field.setFieldContainer(savedContainer);
 			}
 			else {
 				field.setFieldContainer(null);
@@ -1439,6 +1445,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void validateGroupedFieldOptions(List<FieldDto> fieldDtos) {
+
 		Map<String, List<FieldDto>> groupedByContainer = fieldDtos.stream()
 			.filter(dto -> dto.getFieldContainerId() != null
 					&& (dto.getType() == FieldType.DROPDOWN || dto.getType() == FieldType.RADIO_BUTTON
@@ -1483,29 +1490,33 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Set<Integer> existingDisplayOrder = new HashSet<>();
 			for (FieldDto dto : group) {
 
-				if (dto.getFieldOption().getOptionValue().trim().isEmpty()) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+				if (type != FieldType.TEXT) {
+					if (dto.getFieldOption().getOptionValue().trim().isEmpty()) {
+						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+					}
+
+					String value = dto.getFieldOption().getOptionValue();
+					value = value.trim();
+					if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
+						throw new ModuleException(
+								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
+					}
+					if (!existingOptionValue.add(value)) {
+						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
+					}
+					Integer displayOrder = dto.getFieldOption().getDisplayOrder();
+
+					if (displayOrder != null && displayOrder <= 0) {
+						throw new ModuleException(
+								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
+					}
+
+					if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
+						throw new ModuleException(
+								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
+					}
 				}
 
-				String value = dto.getFieldOption().getOptionValue();
-				value = value.trim();
-				if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
-				}
-				if (!existingOptionValue.add(value)) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
-				}
-				Integer displayOrder = dto.getFieldOption().getDisplayOrder();
-
-				if (displayOrder != null && displayOrder <= 0) {
-					throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
-				}
-
-				if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
-					throw new ModuleException(
-							EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
-				}
 			}
 		}
 	}
