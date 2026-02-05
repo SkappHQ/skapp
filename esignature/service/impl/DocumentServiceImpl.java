@@ -37,6 +37,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDt
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
+import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
@@ -380,11 +381,13 @@ public class DocumentServiceImpl implements DocumentService {
 		envelopeDao.save(envelope);
 
 		// Create in-app notification for sender
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().get(0).getName());
-		Map<String, String> notificationFields = Map.of("documentName", documentName, "recipientName", recipient.getAddressBook().getName());
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+		esignEmailDynamicFields.setDocumentName(documentName);
+		esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
 		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
 			String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
-			EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, notificationFields,
+			EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields,
 			NotificationCategory.ESIGN);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));

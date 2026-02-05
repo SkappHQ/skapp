@@ -27,6 +27,7 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
@@ -127,16 +128,17 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().get(0).getName());
-				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().getFirst().getName());
+				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+				esignEmailDynamicFields.setDocumentName(documentName);
 				// Store envelopeId,documentId,recipientId for frontend routing
-				String resourceId = envelopeData.getId() + "," + envelopeData.getDocuments().get(0).getId() + "," + recipient.getId();
+				String resourceId = envelopeData.getId() + "," + envelopeData.getDocuments().getFirst().getId() + "," + recipient.getId();
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
 						resourceId,
 						NotificationType.DOCUMENT_SIGN_REQUEST,
 						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
-						notificationFields,
+						esignEmailDynamicFields,
 						NotificationCategory.ESIGN
 				);
 			}
@@ -184,8 +186,9 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().get(0).getName());
-				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
+				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+				esignEmailDynamicFields.setDocumentName(documentName);
 				// Store envelopeId,documentId,recipientId for frontend routing
 				String resourceId = document.getEnvelope().getId() + "," + document.getId() + "," + recipient.getId();
 				notificationService.createNotification(
@@ -193,7 +196,7 @@ public class RecipientServiceImpl implements RecipientService {
 						resourceId,
 						NotificationType.DOCUMENT_SIGN_REQUEST,
 						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
-						notificationFields,
+						esignEmailDynamicFields,
 						NotificationCategory.ESIGN
 				);
 			}
@@ -636,15 +639,15 @@ public class RecipientServiceImpl implements RecipientService {
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
 		// Create in-app notification for reminder
-		String documentName = EsignUtil.truncateDocumentName(recipient.getEnvelope().getDocuments().get(0).getName());
-		Map<String, String> notificationFields = Map.of("documentName", documentName);
-		// Store envelopeId,documentId,recipientId for frontend routing
-		String resourceId = recipient.getEnvelope().getId() + "," + recipient.getEnvelope().getDocuments().get(0).getId() + "," + recipient.getId();
+		String documentName = EsignUtil.truncateDocumentName(recipient.getEnvelope().getDocuments().getFirst().getName());
+		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+		esignEmailDynamicFields.setDocumentName(documentName);
+		String resourceId = recipient.getEnvelope().getId() + "," + recipient.getEnvelope().getDocuments().getFirst().getId() + "," + recipient.getId();
 
 		if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
 			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
 				resourceId, NotificationType.DOCUMENT_REMINDER,
-				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, notificationFields,
+				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, esignEmailDynamicFields,
 				NotificationCategory.ESIGN);
 		}
 
