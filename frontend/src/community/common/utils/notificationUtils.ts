@@ -5,6 +5,7 @@ import { NotificationItemsTypes } from "~community/common/types/notificationType
 
 interface HandleNotifyRowParams {
   id: number;
+  resourceId?: string;
   notificationType: NotificationItemsTypes | null;
   isCausedByCurrentUser: boolean;
   router: AppRouterInstance;
@@ -17,6 +18,7 @@ interface HandleNotifyRowParams {
 
 export const handleNotifyRow = ({
   id,
+  resourceId,
   notificationType,
   isCausedByCurrentUser,
   router,
@@ -52,14 +54,21 @@ export const handleNotifyRow = ({
     notificationType === NotificationItemsTypes.DOCUMENT_SIGN_REQUEST ||
     notificationType === NotificationItemsTypes.DOCUMENT_REMINDER
   ) {
-    router.push(`${ROUTES.SIGN.SIGN}?envelopeId=${id}`);
+    if (resourceId) {
+      const [envelopeId, documentId, recipientId] = resourceId.split(",");
+      router.push(
+        `${ROUTES.SIGN.SIGN}?isInternalUser=true&envelopeId=${envelopeId}&documentId=${documentId}&recipientId=${recipientId}`
+      );
+    }
   } else if (
     notificationType === NotificationItemsTypes.DOCUMENT_COMPLETED ||
     notificationType === NotificationItemsTypes.DOCUMENT_DECLINED ||
     notificationType === NotificationItemsTypes.DOCUMENT_VOIDED ||
     notificationType === NotificationItemsTypes.DOCUMENT_EXPIRED
   ) {
-    router.push(ROUTES.SIGN.INBOX_INFO.ID(id));
+    if (resourceId) {
+      router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
+    }
   }
   mutate(id);
 };

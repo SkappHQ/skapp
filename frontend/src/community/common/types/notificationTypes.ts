@@ -6,7 +6,7 @@ export interface NotificationDataTypes {
   notificationType: NotificationItemsTypes | null;
   isViewed: boolean;
   isCausedByCurrentUser: boolean;
-  resourceId: number;
+  resourceId: string;
   authPic?: string;
 }
 

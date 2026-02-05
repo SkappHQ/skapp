@@ -94,6 +94,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                 onClick={() =>
                   handleNotifyRow({
                     id: item.id,
+                    resourceId: item.resourceId,
                     notificationType: item.notificationType,
                     isCausedByCurrentUser: item.isCausedByCurrentUser,
                     router,
