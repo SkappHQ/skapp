@@ -129,9 +129,11 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
 				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().get(0).getName());
 				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				// Store envelopeId,documentId,recipientId for frontend routing
+				String resourceId = envelopeData.getId() + "," + envelopeData.getDocuments().get(0).getId() + "," + recipient.getId();
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(envelopeData.getId()),
+						resourceId,
 						NotificationType.DOCUMENT_SIGN_REQUEST,
 						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
 						notificationFields,
@@ -184,9 +186,11 @@ public class RecipientServiceImpl implements RecipientService {
 					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
 				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().get(0).getName());
 				Map<String, String> notificationFields = Map.of("documentName", documentName);
+				// Store envelopeId,documentId,recipientId for frontend routing
+				String resourceId = document.getEnvelope().getId() + "," + document.getId() + "," + recipient.getId();
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(document.getEnvelope().getId()),
+						resourceId,
 						NotificationType.DOCUMENT_SIGN_REQUEST,
 						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
 						notificationFields,
@@ -634,10 +638,12 @@ public class RecipientServiceImpl implements RecipientService {
 		// Create in-app notification for reminder
 		String documentName = EsignUtil.truncateDocumentName(recipient.getEnvelope().getDocuments().get(0).getName());
 		Map<String, String> notificationFields = Map.of("documentName", documentName);
+		// Store envelopeId,documentId,recipientId for frontend routing
+		String resourceId = recipient.getEnvelope().getId() + "," + recipient.getEnvelope().getDocuments().get(0).getId() + "," + recipient.getId();
 
 		if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
 			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
-				String.valueOf(recipient.getEnvelope().getId()), NotificationType.DOCUMENT_REMINDER,
+				resourceId, NotificationType.DOCUMENT_REMINDER,
 				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, notificationFields,
 				NotificationCategory.ESIGN);
 		}
