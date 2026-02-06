@@ -40,6 +40,7 @@ import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
+import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
@@ -122,7 +123,7 @@ const Drawer = (): JSX.Element => {
         tier: user?.tier ?? "",
         isEnterprise,
         globalLoginMethod,
-        tenantID: user?.tenantId,
+        tenantID: tenantID as string,
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:

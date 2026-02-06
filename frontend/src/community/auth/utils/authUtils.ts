@@ -19,6 +19,7 @@ import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoin
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import { config } from "../../../../middleware";
+import { COOKIE_EXPIRY_DAYS } from "../constants/authContants";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { AuthResponseType } from "../types/auth";
 import authAxios from "./authInterceptor";
@@ -123,7 +124,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
     const expiryDate = new Date(
-      Date.now() + unitConversion.MILLISECONDS_PER_DAY
+      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
 
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
@@ -133,7 +134,7 @@ export const setAccessToken = (token: string) => {
 export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
   if (typeof window !== "undefined") {
     const expiryDate = new Date(
-      Date.now() + unitConversion.MILLISECONDS_PER_MONTH
+      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
 
     document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
