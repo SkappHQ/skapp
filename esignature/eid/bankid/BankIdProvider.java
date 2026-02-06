@@ -22,6 +22,9 @@ import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
+import com.skapp.enterprise.esignature.type.BankIdErrorCode;
+import com.skapp.enterprise.esignature.type.BankIdHintCode;
+import com.skapp.enterprise.esignature.type.BankIdStatus;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.annotation.PostConstruct;
@@ -147,7 +150,7 @@ public class BankIdProvider implements EidProvider {
 		// Check if session has expired locally
 		if (session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())) {
 			session.setStatus(EidVerificationStatus.EXPIRED);
-			session.setErrorCode("expiredTransaction");
+			session.setErrorCode(BankIdHintCode.EXPIRED_TRANSACTION.getValue());
 			session.setErrorMessage("The transaction has expired.");
 			clearTransientData(session);
 			return sessionRepository.save(session);
@@ -169,9 +172,9 @@ public class BankIdProvider implements EidProvider {
 			log.error("BankIdProvider: Failed to collect status: {}", e.getMessage());
 
 			// If the error indicates order not found, mark as expired
-			if ("notFound".equals(e.getErrorCode())) {
+			if (BankIdErrorCode.NOT_FOUND.getValue().equals(e.getErrorCode())) {
 				session.setStatus(EidVerificationStatus.EXPIRED);
-				session.setErrorCode("notFound");
+				session.setErrorCode(BankIdErrorCode.NOT_FOUND.getValue());
 				session.setErrorMessage("Order not found or expired.");
 				return sessionRepository.save(session);
 			}
@@ -199,7 +202,7 @@ public class BankIdProvider implements EidProvider {
 
 		// Update session status regardless of API result
 		session.setStatus(EidVerificationStatus.CANCELLED);
-		session.setErrorCode("userCancel");
+		session.setErrorCode(BankIdHintCode.USER_CANCEL.getValue());
 		session.setErrorMessage("User cancelled the verification.");
 
 		clearTransientData(session);
@@ -227,21 +230,24 @@ public class BankIdProvider implements EidProvider {
 		// Update hint code on the session entity
 		session.setHintCode(hintCode);
 
-		switch (status) {
-			case "pending" -> handlePendingStatus(session, hintCode);
-			case "failed" -> handleFailedStatus(session, hintCode);
-			case "complete" -> handleCompleteStatus(session, collectResponse.getCompletionData());
-			default -> log.warn("BankIdProvider: Unknown status from BankID: {}", status);
+		BankIdStatus bankIdStatus = BankIdStatus.fromValue(status);
+		if (bankIdStatus == null) {
+			log.warn("BankIdProvider: Unknown status from BankID: {}", status);
+			return;
+		}
+
+		switch (bankIdStatus) {
+			case PENDING -> handlePendingStatus(session, hintCode);
+			case FAILED -> handleFailedStatus(session, hintCode);
+			case COMPLETE -> handleCompleteStatus(session, collectResponse.getCompletionData());
 		}
 	}
 
 	private void handlePendingStatus(EidVerificationSession session, String hintCode) {
-		// Map BankID hint codes to our status
-		if ("userSign".equals(hintCode)) {
+		if (BankIdHintCode.USER_SIGN.getValue().equals(hintCode)) {
 			session.setStatus(EidVerificationStatus.USER_ACTION_REQUIRED);
 		}
 		else {
-			// outstandingTransaction, noClient, started
 			session.setStatus(EidVerificationStatus.PENDING);
 		}
 	}
@@ -249,21 +255,28 @@ public class BankIdProvider implements EidProvider {
 	private void handleFailedStatus(EidVerificationSession session, String hintCode) {
 		session.setErrorCode(hintCode);
 
-		switch (hintCode) {
-			case "expiredTransaction" -> {
+		BankIdHintCode bankIdHintCode = BankIdHintCode.fromValue(hintCode);
+		if (bankIdHintCode == null) {
+			session.setStatus(EidVerificationStatus.FAILED);
+			session.setErrorMessage("Signing failed: " + hintCode);
+			clearTransientData(session);
+			return;
+		}
+
+		switch (bankIdHintCode) {
+			case EXPIRED_TRANSACTION -> {
 				session.setStatus(EidVerificationStatus.EXPIRED);
 				session.setErrorMessage("The transaction has expired.");
 			}
-			case "userCancel" -> {
+			case USER_CANCEL -> {
 				session.setStatus(EidVerificationStatus.CANCELLED);
 				session.setErrorMessage("User cancelled the signing.");
 			}
-			case "cancelled" -> {
+			case CANCELLED -> {
 				session.setStatus(EidVerificationStatus.CANCELLED);
 				session.setErrorMessage("The order was cancelled.");
 			}
 			default -> {
-				// certificateErr, startFailed, etc.
 				session.setStatus(EidVerificationStatus.FAILED);
 				session.setErrorMessage("Signing failed: " + hintCode);
 			}
