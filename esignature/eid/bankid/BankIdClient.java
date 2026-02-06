@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignResponse;
 import com.skapp.enterprise.esignature.eid.bankid.exception.BankIdApiException;
 import com.skapp.enterprise.esignature.eid.config.BankIdProperties;
+import com.skapp.enterprise.esignature.type.BankIdOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -37,12 +38,6 @@ import org.springframework.web.client.RestTemplate;
 @ConditionalOnProperty(name = "skapp.esign.eid.providers.swedish-bankid.enabled", havingValue = "true")
 public class BankIdClient {
 
-	private static final String OP_SIGN = "sign";
-
-	private static final String OP_COLLECT = "collect";
-
-	private static final String OP_CANCEL = "cancel";
-
 	private final RestTemplate restTemplate;
 
 	private final BankIdProperties bankIdProperties;
@@ -63,8 +58,8 @@ public class BankIdClient {
 	 * @throws BankIdApiException if the API call fails
 	 */
 	public BankIdSignResponse sign(BankIdSignRequest request) {
-		String url = bankIdProperties.getApiBaseUrl() + "/sign";
-		log.debug("BankID /sign request to {}", url);
+		String url = bankIdProperties.getApiBaseUrl() + BankIdOperation.SIGN.getEndpoint();
+		log.debug("BankID {} request to {}", BankIdOperation.SIGN.getEndpoint(), url);
 
 		try {
 			HttpEntity<BankIdSignRequest> entity = new HttpEntity<>(request, createHeaders());
@@ -72,15 +67,18 @@ public class BankIdClient {
 					BankIdSignResponse.class);
 
 			if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-				log.debug("BankID /sign successful, orderRef={}", response.getBody().getOrderRef());
+				log.debug("BankID {} successful, orderRef={}", BankIdOperation.SIGN.getEndpoint(),
+						response.getBody().getOrderRef());
 				return response.getBody();
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /sign", OP_SIGN, null);
+			throw new BankIdApiException("Unexpected response from BankID " + BankIdOperation.SIGN.getEndpoint(),
+					BankIdOperation.SIGN, null);
 
 		}
 		catch (HttpStatusCodeException e) {
-			throw new BankIdApiException("BankID /sign failed: " + e.getMessage(), OP_SIGN, extractErrorResponse(e));
+			throw new BankIdApiException("BankID " + BankIdOperation.SIGN.getEndpoint() + " failed: " + e.getMessage(),
+					BankIdOperation.SIGN, extractErrorResponse(e));
 		}
 	}
 
@@ -96,8 +94,8 @@ public class BankIdClient {
 	 * @throws BankIdApiException if the API call fails
 	 */
 	public BankIdCollectResponse collect(BankIdCollectRequest request) {
-		String url = bankIdProperties.getApiBaseUrl() + "/collect";
-		log.debug("BankID /collect request for orderRef={}", request.getOrderRef());
+		String url = bankIdProperties.getApiBaseUrl() + BankIdOperation.COLLECT.getEndpoint();
+		log.debug("BankID {} request for orderRef={}", BankIdOperation.COLLECT.getEndpoint(), request.getOrderRef());
 
 		try {
 			HttpEntity<BankIdCollectRequest> entity = new HttpEntity<>(request, createHeaders());
@@ -106,16 +104,19 @@ public class BankIdClient {
 
 			if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
 				BankIdCollectResponse body = response.getBody();
-				log.debug("BankID /collect response: status={}, hintCode={}", body.getStatus(), body.getHintCode());
+				log.debug("BankID {} response: status={}, hintCode={}", BankIdOperation.COLLECT.getEndpoint(),
+						body.getStatus(), body.getHintCode());
 				return body;
 			}
 
-			throw new BankIdApiException("Unexpected response from BankID /collect", OP_COLLECT, null);
+			throw new BankIdApiException("Unexpected response from BankID " + BankIdOperation.COLLECT.getEndpoint(),
+					BankIdOperation.COLLECT, null);
 
 		}
 		catch (HttpStatusCodeException e) {
-			throw new BankIdApiException("BankID /collect failed: " + e.getMessage(), OP_COLLECT,
-					extractErrorResponse(e));
+			throw new BankIdApiException(
+					"BankID " + BankIdOperation.COLLECT.getEndpoint() + " failed: " + e.getMessage(),
+					BankIdOperation.COLLECT, extractErrorResponse(e));
 		}
 	}
 
@@ -130,18 +131,20 @@ public class BankIdClient {
 	 * @throws BankIdApiException if the API call fails
 	 */
 	public void cancel(BankIdCancelRequest request) {
-		String url = bankIdProperties.getApiBaseUrl() + "/cancel";
-		log.debug("BankID /cancel request for orderRef={}", request.getOrderRef());
+		String url = bankIdProperties.getApiBaseUrl() + BankIdOperation.CANCEL.getEndpoint();
+		log.debug("BankID {} request for orderRef={}", BankIdOperation.CANCEL.getEndpoint(), request.getOrderRef());
 
 		try {
 			HttpEntity<BankIdCancelRequest> entity = new HttpEntity<>(request, createHeaders());
 			restTemplate.postForEntity(url, entity, Void.class);
-			log.debug("BankID /cancel successful for orderRef={}", request.getOrderRef());
+			log.debug("BankID {} successful for orderRef={}", BankIdOperation.CANCEL.getEndpoint(),
+					request.getOrderRef());
 
 		}
 		catch (HttpStatusCodeException e) {
-			throw new BankIdApiException("BankID /cancel failed: " + e.getMessage(), OP_CANCEL,
-					extractErrorResponse(e));
+			throw new BankIdApiException(
+					"BankID " + BankIdOperation.CANCEL.getEndpoint() + " failed: " + e.getMessage(),
+					BankIdOperation.CANCEL, extractErrorResponse(e));
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.eid.bankid.exception;
 
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdErrorResponse;
+import com.skapp.enterprise.esignature.type.BankIdOperation;
 import lombok.Getter;
 
 /**
@@ -16,15 +17,16 @@ public class BankIdApiException extends RuntimeException {
 
 	private final transient BankIdErrorResponse errorResponse;
 
-	private final String operation;
+	private final BankIdOperation operation;
 
-	public BankIdApiException(String message, String operation, BankIdErrorResponse errorResponse) {
+	public BankIdApiException(String message, BankIdOperation operation, BankIdErrorResponse errorResponse) {
 		super(message);
 		this.operation = operation;
 		this.errorResponse = errorResponse;
 	}
 
-	public BankIdApiException(String message, String operation, BankIdErrorResponse errorResponse, Throwable cause) {
+	public BankIdApiException(String message, BankIdOperation operation, BankIdErrorResponse errorResponse,
+			Throwable cause) {
 		super(message, cause);
 		this.operation = operation;
 		this.errorResponse = errorResponse;
