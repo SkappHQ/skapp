@@ -42,7 +42,7 @@ public class BankIdClientConfig {
 
 	@PostConstruct
 	public void logConfiguration() {
-		log.info("=".repeat(60));
+		log.info("============================================================");
 		log.info("BankID Integration: ENABLED");
 		log.info("  API Base URL: {}", bankIdProperties.getApiBaseUrl());
 		log.info("  Certificate Path: {}", bankIdProperties.getCertificatePath() != null
@@ -51,7 +51,7 @@ public class BankIdClientConfig {
 		if (bankIdProperties.isTrustAllCertificates()) {
 			log.warn("  ⚠️  WARNING: trust-all-certificates is ENABLED - DO NOT use in production!");
 		}
-		log.info("=".repeat(60));
+		log.info("============================================================");
 	}
 
 	/**

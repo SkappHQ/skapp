@@ -70,10 +70,10 @@ public class BankIdProvider implements EidProvider {
 
 	@PostConstruct
 	public void init() {
-		log.info("=".repeat(60));
+		log.info("============================================================");
 		log.info("BankIdProvider initialized");
 		log.info("  API Base URL: {}", bankIdProperties.getApiBaseUrl());
-		log.info("=".repeat(60));
+		log.info("============================================================");
 	}
 
 	@Override
