@@ -20,6 +20,7 @@ import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
@@ -99,6 +100,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
@@ -287,6 +289,7 @@ public class DocumentServiceImpl implements DocumentService {
 		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
+
 			DocumentVersionFieldBulk result = processDocumentFields(documentSignDto, currentVersion);
 
 			documentVersionFieldRepository.saveAll(result.documentVersionFields());
@@ -1070,7 +1073,7 @@ public class DocumentServiceImpl implements DocumentService {
 			FieldSignDto fieldSignDto, byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> {
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON -> {
 				verifyTextField(documentVersionField.getValue(), keyPairSign.getPublic(),
 						documentVersionField.getFieldSignature());
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
@@ -1115,7 +1118,8 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+				documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 
 			case SIGNATURE, INITIAL, STAMP -> {
 				String imageUrl = documentVersionField.getValue();
@@ -1161,6 +1165,7 @@ public class DocumentServiceImpl implements DocumentService {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
 		Map<String, DocumentVersionField> signedImageCache = new HashMap<>();
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		if (documentSignDto.getFieldSignDtoList() == null || documentSignDto.getFieldSignDtoList().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST);
@@ -1201,15 +1206,27 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 			else {
 				DocumentVersionField documentVersionField = switch (fieldType) {
-					case DATE, APPROVE, NAME, EMAIL -> signTextField(fieldSignDto, privateKey, field);
+					case DATE, APPROVE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+						signTextField(fieldSignDto, privateKey, field);
 					default -> throw new IllegalStateException("Unsupported field type: " + fieldType);
 				};
 
 				populateFieldMetadata(documentVersionField, fieldSignDto, field, currentVersion);
 				documentVersionFields.add(documentVersionField);
 				markField(field, fields, FieldStatus.COMPLETED);
+
+				if (field.getFieldContainer() != null
+						&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+					Long containerId = field.getFieldContainer().getId();
+					groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
+				}
 			}
 		}
+
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
 
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
@@ -1223,6 +1240,8 @@ public class DocumentServiceImpl implements DocumentService {
 			DocumentVersion currentVersion) {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
+
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		documentSignDto.getFieldSignDtoList().forEach(fieldSignDto -> {
 			Field field = fieldRepository.findById(fieldSignDto.getFieldId())
@@ -1258,9 +1277,22 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionField.setDocumentVersion(currentVersion);
 
 			documentVersionFields.add(documentVersionField);
+
+			if (field.getFieldContainer() != null
+					&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+							|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+				Long containerId = field.getFieldContainer().getId();
+				groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
+			}
+
 			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
+
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
+
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
 
@@ -1278,7 +1310,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 		return switch (fieldSignDto.getType()) {
-			case DATE, APPROVE, DECLINE, NAME, EMAIL -> signTextField(fieldSignDto, privateKey, field);
+			case DATE, APPROVE, DECLINE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+				signTextField(fieldSignDto, privateKey, field);
 			case SIGNATURE, INITIAL, STAMP -> signImageField(fieldSignDto, privateKey, field);
 		};
 	}
@@ -1738,6 +1771,49 @@ public class DocumentServiceImpl implements DocumentService {
 			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
 			return documentBytes;
 		}
+	}
+
+	private List<Field> processAndValidateAdvanceFields(Long documentId, Long recipientId, List<Field> fields,
+			Map<Long, List<Field>> groupFieldsMap) {
+
+		List<Field> allRecipientFieldList = fieldRepository.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+
+		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
+			.map(Field::getFieldContainer)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+
+		if (!distinctFieldContainerList.isEmpty()) {
+			for (FieldContainer fieldContainer : distinctFieldContainerList) {
+				if (Boolean.TRUE.equals(fieldContainer.getIsRequired())
+						&& !groupFieldsMap.containsKey(fieldContainer.getId())) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
+							new String[] { fieldContainer.getId().toString() });
+				}
+				if (Boolean.FALSE.equals(fieldContainer.getIsMultiSelect())
+						&& groupFieldsMap.containsKey(fieldContainer.getId())
+						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED,
+							new String[] { fieldContainer.getId().toString() });
+				}
+			}
+		}
+
+		if (!groupFieldsMap.isEmpty()) {
+			groupFieldsMap.forEach((key, value) -> {
+				// Mark all fields in the container as COMPLETED
+				value.forEach(groupField -> {
+					if (!fields.contains(groupField)) {
+						groupField.setStatus(FieldStatus.COMPLETED);
+						fields.add(groupField);
+					}
+				});
+			});
+		}
+
+		return fields;
 	}
 
 }
