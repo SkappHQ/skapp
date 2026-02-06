@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
+import com.skapp.enterprise.esignature.payload.request.eid.VerificationSessionRequestDto;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,9 +61,10 @@ public class EidVerificationController {
 					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED). "
 					+ "Uses POST because polling updates session state from the external provider.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
-	@PostMapping(value = "/status/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(@PathVariable String sessionId) {
-		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(sessionId);
+	@PostMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(
+			@Valid @RequestBody VerificationSessionRequestDto request) {
+		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(request.getSessionId());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -71,10 +72,10 @@ public class EidVerificationController {
 			description = "Cancels an ongoing verification session. "
 					+ "This should be called when the user closes the verification modal.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
-	@PostMapping(value = "/cancel/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> cancelVerification(@PathVariable String sessionId) {
-
-		ResponseEntityDto response = eidVerificationService.cancelVerification(sessionId);
+	@PostMapping(value = "/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> cancelVerification(
+			@Valid @RequestBody VerificationSessionRequestDto request) {
+		ResponseEntityDto response = eidVerificationService.cancelVerification(request.getSessionId());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
