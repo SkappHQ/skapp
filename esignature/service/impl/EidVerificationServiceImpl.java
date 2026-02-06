@@ -7,7 +7,6 @@ import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
-import com.skapp.enterprise.esignature.eid.bankid.BankIdSessionCache;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Implementation of EidVerificationService.
@@ -59,8 +57,6 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private final DocumentRepository documentRepository;
 
 	private final DocumentVersionDao documentVersionDao;
-
-	private final Optional<BankIdSessionCache> bankIdSessionCache;
 
 	@Override
 	public ResponseEntityDto getAvailableProviders() {
@@ -141,13 +137,13 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
 				request.getDocumentId(), endUserIp, userVisibleData, documentHash);
 
-		// Map to response DTO and set computed fields from in-memory cache
+		// Map to response DTO and set computed fields from session entity
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
-		bankIdSessionCache.flatMap(cache -> cache.get(session.getSessionUuid())).ifPresent(cached -> {
-			response.setAutoStartToken(cached.getAutoStartToken());
-			response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
+		response.setAutoStartToken(session.getAutoStartToken());
+		if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
 					session.getInitiatedAt()));
-		});
+		}
 
 		log.info("initiateVerification: session created with uuid={}", session.getSessionUuid());
 		return new ResponseEntityDto(false, response);
@@ -178,16 +174,15 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			}
 		}
 
-		EidVerificationSession updatedSession = session;
-		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(updatedSession);
+		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
 
-		// Read transient data (hintCode, QR code) from in-memory cache
-		if (isSessionActive(updatedSession)) {
-			bankIdSessionCache.flatMap(cache -> cache.get(updatedSession.getSessionUuid())).ifPresent(cached -> {
-				response.setHintCode(cached.getHintCode());
-				response.setQrCode(BankIdQrCodeUtil.computeQrCode(cached.getQrStartToken(), cached.getQrStartSecret(),
-						updatedSession.getInitiatedAt()));
-			});
+		// Set transient data (hintCode, QR code) from session entity
+		if (isSessionActive(session)) {
+			response.setHintCode(session.getHintCode());
+			if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+				response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+						session.getInitiatedAt()));
+			}
 		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());

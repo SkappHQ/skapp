@@ -111,6 +111,35 @@ public class EidVerificationSession extends Auditable<String> {
 	@Column(name = "error_message", length = 500)
 	private String errorMessage;
 
+	/**
+	 * BankID QR start token - used together with qrStartSecret to generate dynamic QR
+	 * codes. Cleared when session reaches a terminal state.
+	 */
+	@Column(name = "qr_start_token", length = 255)
+	private String qrStartToken;
+
+	/**
+	 * BankID QR start secret - used to generate dynamic QR codes. Per BankID
+	 * documentation, this must remain server-side only.
+	 */
+	@Column(name = "qr_start_secret", length = 255)
+	private String qrStartSecret;
+
+	/**
+	 * BankID auto-start token - used for same-device launch (bankid:// URL scheme).
+	 * Cleared when session reaches a terminal state.
+	 */
+	@Column(name = "auto_start_token", length = 255)
+	private String autoStartToken;
+
+	/**
+	 * BankID hint code - updated on each poll to provide status messages (e.g.,
+	 * "outstandingTransaction", "userSign"). Cleared when session reaches a terminal
+	 * state.
+	 */
+	@Column(name = "hint_code", length = 50)
+	private String hintCode;
+
 	@OneToOne(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private VerifiedIdentity verifiedIdentity;
 

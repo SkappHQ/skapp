@@ -68,8 +68,6 @@ public class BankIdProvider implements EidProvider {
 
 	private final DocumentDao documentDao;
 
-	private final BankIdSessionCache sessionCache;
-
 	@PostConstruct
 	public void init() {
 		log.info("=".repeat(60));
@@ -110,7 +108,7 @@ public class BankIdProvider implements EidProvider {
 			// Call BankID /sign endpoint
 			BankIdSignResponse signResponse = bankIdClient.sign(signRequest);
 
-			// Create and save session (no secrets in providerData)
+			// Create and save session with BankID transient data
 			EidVerificationSession session = EidVerificationSession.builder()
 				.recipient(recipient)
 				.document(document)
@@ -122,14 +120,12 @@ public class BankIdProvider implements EidProvider {
 				.userVisibleData(userVisibleData)
 				.initiatedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+				.qrStartToken(signResponse.getQrStartToken())
+				.qrStartSecret(signResponse.getQrStartSecret())
+				.autoStartToken(signResponse.getAutoStartToken())
 				.build();
 
 			session = sessionRepository.save(session);
-
-			// Store transient secrets in memory only — never persisted to DB.
-			// Per BankID docs, qrStartSecret must not leave the backend.
-			sessionCache.put(session.getSessionUuid(), signResponse.getQrStartToken(), signResponse.getQrStartSecret(),
-					signResponse.getAutoStartToken());
 
 			log.info("BankIdProvider: Created session uuid={}, orderRef={}", session.getSessionUuid(),
 					signResponse.getOrderRef());
@@ -153,7 +149,7 @@ public class BankIdProvider implements EidProvider {
 			session.setStatus(EidVerificationStatus.EXPIRED);
 			session.setErrorCode("expiredTransaction");
 			session.setErrorMessage("The transaction has expired.");
-			sessionCache.evict(session.getSessionUuid());
+			clearTransientData(session);
 			return sessionRepository.save(session);
 		}
 
@@ -206,7 +202,7 @@ public class BankIdProvider implements EidProvider {
 		session.setErrorCode("userCancel");
 		session.setErrorMessage("User cancelled the verification.");
 
-		sessionCache.evict(session.getSessionUuid());
+		clearTransientData(session);
 		sessionRepository.save(session);
 	}
 
@@ -228,7 +224,8 @@ public class BankIdProvider implements EidProvider {
 		String status = collectResponse.getStatus();
 		String hintCode = collectResponse.getHintCode();
 
-		sessionCache.get(session.getSessionUuid()).ifPresent(cached -> cached.setHintCode(hintCode));
+		// Update hint code on the session entity
+		session.setHintCode(hintCode);
 
 		switch (status) {
 			case "pending" -> handlePendingStatus(session, hintCode);
@@ -272,7 +269,7 @@ public class BankIdProvider implements EidProvider {
 			}
 		}
 
-		sessionCache.evict(session.getSessionUuid());
+		clearTransientData(session);
 	}
 
 	private void handleCompleteStatus(EidVerificationSession session, BankIdCompletionData completionData) {
@@ -287,7 +284,7 @@ public class BankIdProvider implements EidProvider {
 			}
 		}
 
-		sessionCache.evict(session.getSessionUuid());
+		clearTransientData(session);
 		log.info("BankIdProvider: Verification completed for session={}", session.getSessionUuid());
 	}
 
@@ -343,6 +340,17 @@ public class BankIdProvider implements EidProvider {
 			return null;
 		}
 		return HashUtil.hashSha256Hex(personalNumber);
+	}
+
+	/**
+	 * Clears transient BankID data from the session when it reaches a terminal state.
+	 * This data is only needed during active verification.
+	 */
+	private void clearTransientData(EidVerificationSession session) {
+		session.setQrStartToken(null);
+		session.setQrStartSecret(null);
+		session.setAutoStartToken(null);
+		session.setHintCode(null);
 	}
 
 }
