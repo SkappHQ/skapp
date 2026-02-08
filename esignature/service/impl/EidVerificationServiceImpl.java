@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.RecipientEidConfig;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.response.eid.AvailableProviderResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
@@ -254,11 +255,20 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 	private void updateRecipientVerificationStatus(EidVerificationSession session) {
 		Recipient recipient = session.getRecipient();
-		recipient.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+		RecipientEidConfig eidConfig = recipient.getEidConfig();
 
-		// Link the verified identity if available
+		if (eidConfig == null) {
+			eidConfig = RecipientEidConfig.builder()
+				.recipient(recipient)
+				.eidVerificationMethod(session.getProviderType())
+				.build();
+			recipient.setEidConfig(eidConfig);
+		}
+
+		eidConfig.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+
 		if (session.getVerifiedIdentity() != null) {
-			recipient.setVerifiedIdentity(session.getVerifiedIdentity());
+			eidConfig.setVerifiedIdentity(session.getVerifiedIdentity());
 		}
 
 		recipientDao.save(recipient);

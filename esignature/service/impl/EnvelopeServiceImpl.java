@@ -42,6 +42,7 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.RecipientEidConfig;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -490,20 +491,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
 
-			// Set eID verification method (for BankID and similar providers)
+			// Set eID verification config (for BankID and similar providers)
 			EidProviderType eidMethod = recipientDto.getEidVerificationMethod();
 			if (eidMethod == null) {
 				eidMethod = EidProviderType.NONE;
 			}
-			recipient.setEidVerificationMethod(eidMethod);
-
-			// Set initial eID verification status based on whether verification is
-			// required
 			if (eidMethod.requiresVerification()) {
-				recipient.setEidVerificationStatus(EidVerificationStatus.NOT_STARTED);
-			}
-			else {
-				recipient.setEidVerificationStatus(EidVerificationStatus.NOT_REQUIRED);
+				RecipientEidConfig eidConfig = RecipientEidConfig.builder()
+					.recipient(recipient)
+					.eidVerificationMethod(eidMethod)
+					.eidVerificationStatus(EidVerificationStatus.NOT_STARTED)
+					.build();
+				recipient.setEidConfig(eidConfig);
 			}
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);

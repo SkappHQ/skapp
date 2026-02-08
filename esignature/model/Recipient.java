@@ -103,32 +103,27 @@ public class Recipient {
 	@OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<EsignVerificationSession> verificationSessions;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "eid_verification_method")
-	private EidProviderType eidVerificationMethod = EidProviderType.NONE;
+	@OneToOne(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	private RecipientEidConfig eidConfig;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "eid_verification_status")
-	private EidVerificationStatus eidVerificationStatus = EidVerificationStatus.NOT_REQUIRED;
-
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "verified_identity_id")
-	private VerifiedIdentity verifiedIdentity;
-
-	/**
-	 * Check if this recipient requires eID verification before signing.
-	 * @return true if eID verification is required
-	 */
 	public boolean requiresEidVerification() {
-		return eidVerificationMethod != null && eidVerificationMethod.requiresVerification();
+		return eidConfig != null && eidConfig.requiresVerification();
 	}
 
-	/**
-	 * Check if eID verification has been completed for this recipient.
-	 * @return true if verification is complete or not required
-	 */
 	public boolean isEidVerificationComplete() {
-		return !requiresEidVerification() || eidVerificationStatus == EidVerificationStatus.VERIFIED;
+		return eidConfig == null || eidConfig.isVerificationComplete();
+	}
+
+	public EidProviderType getEidVerificationMethod() {
+		return eidConfig != null ? eidConfig.getEidVerificationMethod() : EidProviderType.NONE;
+	}
+
+	public EidVerificationStatus getEidVerificationStatus() {
+		return eidConfig != null ? eidConfig.getEidVerificationStatus() : EidVerificationStatus.NOT_REQUIRED;
+	}
+
+	public VerifiedIdentity getVerifiedIdentity() {
+		return eidConfig != null ? eidConfig.getVerifiedIdentity() : null;
 	}
 
 }
