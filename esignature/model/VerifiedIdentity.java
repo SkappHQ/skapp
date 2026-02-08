@@ -1,11 +1,8 @@
 package com.skapp.enterprise.esignature.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.model.Auditable;
-import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -101,12 +98,5 @@ public class VerifiedIdentity extends Auditable<String> {
 	@Lob
 	@Column(name = "ocsp_response")
 	private String ocspResponse;
-
-	/**
-	 * Additional certificate information stored as JSON.
-	 */
-	@Convert(converter = JsonTypeConverter.class)
-	@Column(name = "certificate_info", columnDefinition = "json")
-	private JsonNode certificateInfo;
 
 }
