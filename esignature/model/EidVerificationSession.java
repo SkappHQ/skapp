@@ -1,13 +1,10 @@
 package com.skapp.enterprise.esignature.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.model.Auditable;
-import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -79,14 +76,6 @@ public class EidVerificationSession extends Auditable<String> {
 	private String providerSessionId;
 
 	/**
-	 * Provider-specific data stored as JSON. For BankID, this includes autoStartToken,
-	 * qrStartToken, qrStartSecret, and documentHash.
-	 */
-	@Convert(converter = JsonTypeConverter.class)
-	@Column(name = "provider_data", columnDefinition = "json")
-	private JsonNode providerData;
-
-	/**
 	 * IP address of the end user initiating the verification.
 	 */
 	@Column(name = "end_user_ip", length = 45)
@@ -121,6 +110,35 @@ public class EidVerificationSession extends Auditable<String> {
 
 	@Column(name = "error_message", length = 500)
 	private String errorMessage;
+
+	/**
+	 * BankID QR start token - used together with qrStartSecret to generate dynamic QR
+	 * codes. Cleared when session reaches a terminal state.
+	 */
+	@Column(name = "qr_start_token", length = 255)
+	private String qrStartToken;
+
+	/**
+	 * BankID QR start secret - used to generate dynamic QR codes. Per BankID
+	 * documentation, this must remain server-side only.
+	 */
+	@Column(name = "qr_start_secret", length = 255)
+	private String qrStartSecret;
+
+	/**
+	 * BankID auto-start token - used for same-device launch (bankid:// URL scheme).
+	 * Cleared when session reaches a terminal state.
+	 */
+	@Column(name = "auto_start_token", length = 255)
+	private String autoStartToken;
+
+	/**
+	 * BankID hint code - updated on each poll to provide status messages (e.g.,
+	 * "outstandingTransaction", "userSign"). Cleared when session reaches a terminal
+	 * state.
+	 */
+	@Column(name = "hint_code", length = 50)
+	private String hintCode;
 
 	@OneToOne(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private VerifiedIdentity verifiedIdentity;

@@ -37,4 +37,15 @@ public interface EidVerificationService {
 	 */
 	ResponseEntityDto cancelVerification(String sessionId);
 
+	/**
+	 * Get the active verification session for a recipient and document, if one exists.
+	 * This allows the frontend to recover from lost session IDs by retrieving any
+	 * existing active session.
+	 * @param recipientId The recipient ID
+	 * @param documentId The document ID
+	 * @return ResponseEntityDto containing VerificationStatusResponseDto if active
+	 * session exists, or null data if no active session
+	 */
+	ResponseEntityDto getActiveSession(Long recipientId, Long documentId);
+
 }

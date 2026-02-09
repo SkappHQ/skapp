@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
+import com.skapp.enterprise.esignature.type.EidProviderType;
+import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EmailStatus;
@@ -18,6 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -99,5 +102,28 @@ public class Recipient {
 
 	@OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<EsignVerificationSession> verificationSessions;
+
+	@OneToOne(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	private RecipientEidConfig eidConfig;
+
+	public boolean requiresEidVerification() {
+		return eidConfig != null && eidConfig.requiresVerification();
+	}
+
+	public boolean isEidVerificationComplete() {
+		return eidConfig == null || eidConfig.isVerificationComplete();
+	}
+
+	public EidProviderType getEidVerificationMethod() {
+		return eidConfig != null ? eidConfig.getEidVerificationMethod() : EidProviderType.NONE;
+	}
+
+	public EidVerificationStatus getEidVerificationStatus() {
+		return eidConfig != null ? eidConfig.getEidVerificationStatus() : EidVerificationStatus.NOT_REQUIRED;
+	}
+
+	public VerifiedIdentity getVerifiedIdentity() {
+		return eidConfig != null ? eidConfig.getVerifiedIdentity() : null;
+	}
 
 }

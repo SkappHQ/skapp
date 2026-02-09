@@ -1,8 +1,8 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.config.RequestMethodContext;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
+import com.skapp.enterprise.esignature.payload.request.eid.VerificationSessionRequestDto;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,10 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -54,17 +54,17 @@ public class EidVerificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Check verification status",
-			description = "Polls the current status of a verification session. "
+	@Operation(summary = "Poll verification status",
+			description = "Polls the current status of a verification session and updates the session state. "
 					+ "Returns updated qrCode for cross-device flow (refreshed each call). "
 					+ "Frontend should call this every 2 seconds until status is terminal "
-					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED).")
+					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED). "
+					+ "Uses POST because polling updates session state from the external provider.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
-	@GetMapping(value = "/status/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(@PathVariable String sessionId) {
-		// TODO: remove this override once the mock provider is gone
-		RequestMethodContext.setReadOnly(false);
-		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(sessionId);
+	@PostMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(
+			@Valid @RequestBody VerificationSessionRequestDto request) {
+		ResponseEntityDto response = eidVerificationService.checkVerificationStatus(request.getSessionId());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -72,10 +72,22 @@ public class EidVerificationController {
 			description = "Cancels an ongoing verification session. "
 					+ "This should be called when the user closes the verification modal.")
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
-	@PostMapping(value = "/cancel/{sessionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> cancelVerification(@PathVariable String sessionId) {
+	@PostMapping(value = "/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> cancelVerification(
+			@Valid @RequestBody VerificationSessionRequestDto request) {
+		ResponseEntityDto response = eidVerificationService.cancelVerification(request.getSessionId());
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
-		ResponseEntityDto response = eidVerificationService.cancelVerification(sessionId);
+	@Operation(summary = "Get active verification session",
+			description = "Retrieves any active verification session for the specified recipient and document. "
+					+ "This allows the frontend to recover from lost session IDs (e.g., after page refresh). "
+					+ "Returns the session details if an active session exists, or null if no active session.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
+	@GetMapping(value = "/session/active", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getActiveSession(@RequestParam Long recipientId,
+			@RequestParam Long documentId) {
+		ResponseEntityDto response = eidVerificationService.getActiveSession(recipientId, documentId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

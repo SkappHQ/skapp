@@ -103,4 +103,6 @@ public class EsignConstants {
 
 	public static final String SUCCESSFUL = "successful";
 
+	public static final int MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH = 100;
+
 }

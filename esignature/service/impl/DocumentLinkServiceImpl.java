@@ -37,13 +37,15 @@ import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDt
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResendStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldContainerResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldOptionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
+import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.EsignVerificationSessionDao;
 import com.skapp.enterprise.esignature.repository.EsignVerificationSessionLogDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
@@ -657,6 +659,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		List<FieldResponseDto> fieldResponseDtoList = permissionType == DocumentPermissionType.WRITE
 				? getFieldResponseDtos(recipient) : Collections.emptyList();
 
+		List<FieldContainerResponseDto> fieldContainerResponseList = permissionType == DocumentPermissionType.WRITE
+				? getFieldContainerResponseDtos(recipient) : Collections.emptyList();
+
 		DocumentAccessLinkDataResponseDto documentAccessLinkData = new DocumentAccessLinkDataResponseDto();
 		documentAccessLinkData.setName(recipient.getAddressBook().getName());
 		documentAccessLinkData.setEmail(recipient.getAddressBook().getEmail());
@@ -668,6 +673,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
 		documentAccessLinkData.setDocumentDetailResponseDto(documentDetailResponseDto);
 		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);
+		documentAccessLinkData.setFieldContainerResponseDtoList(fieldContainerResponseList);
 		return documentAccessLinkData;
 	}
 
@@ -681,9 +687,31 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			FieldValueResponseDto fieldValueResponseDto = eSignMapper
 				.documentVersionFieldToFieldValueResponseDto(documentVersionField);
 			fieldResponseDto.setFieldValueResponseDto(fieldValueResponseDto);
+
+			FieldOptionResponseDto fieldOptionResponseDto = eSignMapper
+				.fieldOptionToFieldOptionResponseDto(field.getFieldOption());
+			fieldResponseDto.setFieldOptionResponseDto(fieldOptionResponseDto);
 			fieldResponseDtoList.add(fieldResponseDto);
 		});
 		return fieldResponseDtoList;
+	}
+
+	private List<FieldContainerResponseDto> getFieldContainerResponseDtos(Recipient recipientObj) {
+		List<Field> fields = recipientObj.getFields();
+		List<FieldContainerResponseDto> fieldContainerResponseDtoList = new ArrayList<>();
+
+		fields.stream()
+			.filter(field -> field.getFieldContainer() != null)
+			.map(Field::getFieldContainer)
+			.distinct()
+			.forEach(fieldContainer -> {
+				FieldContainerResponseDto fieldContainerResponseDto = eSignMapper
+					.fieldContainerToFieldContainerResponseDto(fieldContainer);
+
+				fieldContainerResponseDtoList.add(fieldContainerResponseDto);
+			});
+
+		return fieldContainerResponseDtoList;
 	}
 
 	private String generateSignAccessToken(UserDetails userDetails, DocumentAccessData documentAccessData) {

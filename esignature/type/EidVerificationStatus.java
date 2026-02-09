@@ -6,6 +6,11 @@ package com.skapp.enterprise.esignature.type;
 public enum EidVerificationStatus {
 
 	/**
+	 * eID verification is not required for this recipient.
+	 */
+	NOT_REQUIRED,
+
+	/**
 	 * Verification has not been started.
 	 */
 	NOT_STARTED,

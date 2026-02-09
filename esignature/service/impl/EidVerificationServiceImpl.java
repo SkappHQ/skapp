@@ -7,21 +7,25 @@ import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
-import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
+import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.RecipientEidConfig;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.response.eid.AvailableProviderResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationStatusResponseDto;
+import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
+import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +54,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private final RecipientDao recipientDao;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final DocumentRepository documentRepository;
+
+	private final DocumentVersionDao documentVersionDao;
 
 	@Override
 	public ResponseEntityDto getAvailableProviders() {
@@ -106,14 +114,37 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 				throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_ALREADY_ACTIVE);
 			});
 
+		// Retrieve document and its latest version to get the hash
+		Document document = documentRepository.findById(request.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
+
+		DocumentVersion latestVersion = documentVersionDao
+			.findByVersionNumberAndDocumentId(document.getCurrentVersion(), document.getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_VERSION_NOT_FOUND));
+
+		// Get document hash from the latest version (computed and stored when document
+		// was uploaded/signed)
+		String documentHash = latestVersion.getDocumentHash();
+		if (documentHash == null || documentHash.isBlank()) {
+			log.error("Document hash is missing for document={}, version={}", document.getId(),
+					latestVersion.getVersionNumber());
+			throw new ModuleException(EidMessageConstant.EID_ERROR_DOCUMENT_HASH_MISSING);
+		}
+
+		// Generate user-visible data from document metadata
+		String userVisibleData = generateUserVisibleData(document);
+
 		// Initiate verification with provider
 		EidVerificationSession session = provider.initiateVerification(request.getRecipientId(),
-				request.getDocumentId(), endUserIp, request.getUserVisibleData(), request.getDocumentHash());
+				request.getDocumentId(), endUserIp, userVisibleData, documentHash);
 
-		// Map to response DTO and set computed fields
+		// Map to response DTO and set computed fields from session entity
 		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
-		response.setAutoStartToken(extractJsonField(session.getProviderData(), "autoStartToken"));
-		response.setQrCode(computeQrCode(session));
+		response.setAutoStartToken(session.getAutoStartToken());
+		if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+					session.getInitiatedAt()));
+		}
 
 		log.info("initiateVerification: session created with uuid={}", session.getSessionUuid());
 		return new ResponseEntityDto(false, response);
@@ -137,14 +168,22 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 				.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
 
 			session = provider.checkStatus(session);
+
+			// Handle verification completion at the service layer
+			if (session.getStatus() == EidVerificationStatus.VERIFIED) {
+				updateRecipientVerificationStatus(session);
+			}
 		}
 
 		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
-		response.setHintCode(extractJsonField(session.getProviderData(), "hintCode"));
 
-		// Only compute QR code for active sessions
+		// Set transient data (hintCode, QR code) from session entity
 		if (isSessionActive(session)) {
-			response.setQrCode(computeQrCode(session));
+			response.setHintCode(session.getHintCode());
+			if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+				response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+						session.getInitiatedAt()));
+			}
 		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());
@@ -176,9 +215,66 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		return new ResponseEntityDto(false, EidMessageConstant.EID_SUCCESS_VERIFICATION_CANCELLED);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getActiveSession(Long recipientId, Long documentId) {
+		log.info("getActiveSession: checking for active session for recipient={}, document={}", recipientId,
+				documentId);
+
+		// Validate that the current user has permission to access this recipient/document
+		Recipient recipient = recipientDao.findById(recipientId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentId);
+
+		// Find the most recent session for this recipient/document
+		// Note: We only return sessionId and status here. Frontend should call
+		// /status/{sessionId} to get fresh qrCode and other dynamic data.
+		return sessionRepository.findFirstByRecipientIdAndDocumentIdOrderByInitiatedAtDesc(recipientId, documentId)
+			.filter(this::isSessionActive)
+			.map(session -> {
+				log.info("getActiveSession: found active session={} with status={}", session.getSessionUuid(),
+						session.getStatus());
+
+				VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
+
+				return new ResponseEntityDto(false, response);
+			})
+			.orElseGet(() -> {
+				log.info("getActiveSession: no active session found for recipient={}, document={}", recipientId,
+						documentId);
+				return new ResponseEntityDto(false, null);
+			});
+	}
+
 	private boolean isSessionActive(EidVerificationSession session) {
 		EidVerificationStatus status = session.getStatus();
 		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;
+	}
+
+	private void updateRecipientVerificationStatus(EidVerificationSession session) {
+		Recipient recipient = session.getRecipient();
+		RecipientEidConfig eidConfig = recipient.getEidConfig();
+
+		if (eidConfig == null) {
+			eidConfig = RecipientEidConfig.builder()
+				.recipient(recipient)
+				.eidVerificationMethod(session.getProviderType())
+				.build();
+			recipient.setEidConfig(eidConfig);
+		}
+
+		eidConfig.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+
+		if (session.getVerifiedIdentity() != null) {
+			eidConfig.setVerifiedIdentity(session.getVerifiedIdentity());
+		}
+
+		recipientDao.save(recipient);
+		log.info(
+				"updateRecipientVerificationStatus: Recipient eID verification status updated to VERIFIED for recipient={}",
+				recipient.getId());
 	}
 
 	private boolean isCurrentUserDocAccessRole() {
@@ -202,22 +298,12 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		return endUserIp;
 	}
 
-	private String computeQrCode(EidVerificationSession session) {
-		if (session == null || session.getProviderData() == null) {
-			return null;
+	private String generateUserVisibleData(Document document) {
+		String documentName = document.getName();
+		if (documentName == null || documentName.isBlank()) {
+			documentName = "dokument";
 		}
-		return BankIdQrCodeUtil.computeQrCode(session.getProviderData(), session.getInitiatedAt());
-	}
-
-	private String extractJsonField(JsonNode node, String fieldName) {
-		if (node == null || !node.has(fieldName)) {
-			return null;
-		}
-		JsonNode fieldNode = node.get(fieldName);
-		if (fieldNode == null || fieldNode.isNull()) {
-			return null;
-		}
-		return fieldNode.asText();
+		return String.format("Jag undertecknar härmed dokumentet \"%s\".", documentName);
 	}
 
 }

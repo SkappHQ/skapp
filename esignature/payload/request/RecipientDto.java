@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.payload.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
@@ -38,5 +39,11 @@ public class RecipientDto {
 	private List<FieldDto> fields;
 
 	private EsignVerificationType verificationType = EsignVerificationType.NONE;
+
+	/**
+	 * eID verification method for this recipient. When set to a value other than NONE,
+	 * the recipient must complete eID verification (e.g., BankID) before signing.
+	 */
+	private EidProviderType eidVerificationMethod = EidProviderType.NONE;
 
 }

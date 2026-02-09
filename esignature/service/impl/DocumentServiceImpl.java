@@ -19,15 +19,18 @@ import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
@@ -41,6 +44,7 @@ import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
@@ -56,6 +60,7 @@ import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
@@ -104,6 +109,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
@@ -129,6 +135,8 @@ public class DocumentServiceImpl implements DocumentService {
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
 	private final DocumentRepository documentRepository;
+
+	private final DocumentLinkRepository documentLinkRepository;
 
 	private final AddressBookDao addressBookDao;
 
@@ -280,6 +288,10 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
 		}
 
+		if (recipient.requiresEidVerification() && !recipient.isEidVerificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_VERIFICATION_REQUIRED);
+		}
+
 		DocumentVersion currentVersion = getDocumentVersion(document.getCurrentVersion(),
 				documentSignDto.getDocumentId());
 
@@ -294,6 +306,7 @@ public class DocumentServiceImpl implements DocumentService {
 		verifyDocumentSignature(documentBytes, currentVersion, keyPairVerify.getPublic());
 
 		if (documentSignDto.getFieldSignDtoList() != null && !documentSignDto.getFieldSignDtoList().isEmpty()) {
+
 			DocumentVersionFieldBulk result = processDocumentFields(documentSignDto, currentVersion);
 
 			documentVersionFieldRepository.saveAll(result.documentVersionFields());
@@ -328,7 +341,19 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
-		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
+		if (isDocumentComplete(nextSignRecipientList)) {
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
+		}
+
+		// Prepare document links and recipient metadata (no emails sent yet)
+		RecipientService.DocumentLinksAndRecipientsData nextRecipientsData = recipientService
+			.prepareNextRecipients(nextSignRecipientList, document);
+
+		List<Recipient> updatedRecipients = nextRecipientsData.recipientList();
+
+		documentLinkRepository.saveAll(nextRecipientsData.documentLinkList());
+
+		Map<Long, String> nextRecipientAccessUrls = nextRecipientsData.recipientAccessUrls();
 
 		for (Recipient rec : updatedRecipients) {
 			rec.setReceivedAt(getCurrentUtcDateTime());
@@ -342,10 +367,6 @@ public class DocumentServiceImpl implements DocumentService {
 				rec.setStatus(RecipientStatus.NEED_TO_SIGN);
 				rec.setInboxStatus(InboxStatus.NEED_TO_SIGN);
 			}
-		}
-
-		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
 		}
 
 		document = documentRepository.save(document);
@@ -371,6 +392,16 @@ public class DocumentServiceImpl implements DocumentService {
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
+
+		Long sequentialEnvelopeId = document.getEnvelope().getId();
+
+		// Send emails to next recipients only after transaction commits
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				recipientService.sendEnvelopeEmailNotifications(sequentialEnvelopeId, nextRecipientAccessUrls);
+			}
+		});
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
@@ -436,18 +467,37 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientDao.saveAll(envelope.getRecipients());
 
-		recipientService.sendDocumentCompletedEmailNotifications(envelope);
+		// Create and persist document links within this transaction so they are
+		// committed before any emails are sent
+		List<DocumentLink> documentLinkList = new ArrayList<>();
+		Map<Long, String> recipientAccessUrls = new HashMap<>();
+		Document envelopeDocument = envelope.getDocuments().getFirst();
+
+		for (Recipient mailRecipient : envelope.getRecipients()) {
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelopeDocument.getId(),
+					mailRecipient.getId(), DocumentPermissionType.READ);
+
+			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService
+				.createDocumentLinkData(documentAccessUrlDto, mailRecipient, envelopeDocument, envelope);
+
+			documentLinkList.add(documentLinkData.documentLink());
+			recipientAccessUrls.put(mailRecipient.getId(), documentLinkData.accessUrl());
+		}
+
+		documentLinkRepository.saveAll(documentLinkList);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
+		Long completedEnvelopeId = envelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				recipientService.sendDocumentCompletedEmailNotifications(completedEnvelopeId, recipientAccessUrls);
 			}
 
 			@Override
@@ -519,6 +569,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (!document.getEnvelope().getId().equals(documentSignDto.getEnvelopeId())) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_ENVELOPE_ID);
+		}
+
+		if (recipient.requiresEidVerification() && !recipient.isEidVerificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_VERIFICATION_REQUIRED);
 		}
 
 		DocumentVersion currentVersion = getDocumentVersionForUpdate(document.getCurrentVersion(), document.getId());
@@ -649,17 +703,36 @@ public class DocumentServiceImpl implements DocumentService {
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 			recipientDao.saveAll(recipients);
 
-			recipientService.sendDocumentCompletedEmailNotifications(envelope);
+			// Create and persist document links within this transaction
+			List<DocumentLink> parallelDocumentLinkList = new ArrayList<>();
+			Map<Long, String> parallelRecipientAccessUrls = new HashMap<>();
+			Document parallelEnvelopeDocument = envelope.getDocuments().getFirst();
+
+			for (Recipient mailRecipient : envelope.getRecipients()) {
+				DocumentAccessUrlDto parallelDocAccessUrlDto = new DocumentAccessUrlDto(
+						parallelEnvelopeDocument.getId(), mailRecipient.getId(), DocumentPermissionType.READ);
+
+				DocumentLinkService.DocumentLinkData parallelDocLinkData = documentLinkService
+					.createDocumentLinkData(parallelDocAccessUrlDto, mailRecipient, parallelEnvelopeDocument, envelope);
+
+				parallelDocumentLinkList.add(parallelDocLinkData.documentLink());
+				parallelRecipientAccessUrls.put(mailRecipient.getId(), parallelDocLinkData.accessUrl());
+			}
+
+			documentLinkRepository.saveAll(parallelDocumentLinkList);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
+			Long parallelEnvelopeId = envelope.getId();
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
-					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+					recipientService.sendDocumentCompletedEmailNotifications(parallelEnvelopeId,
+							parallelRecipientAccessUrls);
 				}
 			});
 
@@ -1120,7 +1193,7 @@ public class DocumentServiceImpl implements DocumentService {
 			FieldSignDto fieldSignDto, byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> {
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON -> {
 				verifyTextField(documentVersionField.getValue(), keyPairSign.getPublic(),
 						documentVersionField.getFieldSignature());
 				yield documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
@@ -1165,7 +1238,8 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] documentBytes, Map<String, byte[]> imageCache) {
 
 		return switch (documentVersionField.getField().getType()) {
-			case DATE, NAME, EMAIL -> documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
+			case DATE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+				documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 
 			case SIGNATURE, INITIAL, STAMP -> {
 				String imageUrl = documentVersionField.getValue();
@@ -1211,6 +1285,7 @@ public class DocumentServiceImpl implements DocumentService {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
 		Map<String, DocumentVersionField> signedImageCache = new HashMap<>();
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		if (documentSignDto.getFieldSignDtoList() == null || documentSignDto.getFieldSignDtoList().isEmpty()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EMPTY_FIELD_SIGN_LIST);
@@ -1251,15 +1326,27 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 			else {
 				DocumentVersionField documentVersionField = switch (fieldType) {
-					case DATE, APPROVE, NAME, EMAIL -> signTextField(fieldSignDto, privateKey, field);
+					case DATE, APPROVE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+						signTextField(fieldSignDto, privateKey, field);
 					default -> throw new IllegalStateException("Unsupported field type: " + fieldType);
 				};
 
 				populateFieldMetadata(documentVersionField, fieldSignDto, field, currentVersion);
 				documentVersionFields.add(documentVersionField);
 				markField(field, fields, FieldStatus.COMPLETED);
+
+				if (field.getFieldContainer() != null
+						&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+								|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+					Long containerId = field.getFieldContainer().getId();
+					groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
+				}
 			}
 		}
+
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
 
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
@@ -1273,6 +1360,8 @@ public class DocumentServiceImpl implements DocumentService {
 			DocumentVersion currentVersion) {
 		List<DocumentVersionField> documentVersionFields = new ArrayList<>();
 		List<Field> fields = new ArrayList<>();
+
+		Map<Long, List<Field>> groupFieldsMap = new HashMap<>();
 
 		documentSignDto.getFieldSignDtoList().forEach(fieldSignDto -> {
 			Field field = fieldRepository.findById(fieldSignDto.getFieldId())
@@ -1308,9 +1397,22 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionField.setDocumentVersion(currentVersion);
 
 			documentVersionFields.add(documentVersionField);
+
+			if (field.getFieldContainer() != null
+					&& (field.getType() == FieldType.CHECKBOX || field.getType() == FieldType.RADIO_BUTTON
+							|| field.getType() == FieldType.DROPDOWN || field.getType() == FieldType.TEXT)) {
+
+				Long containerId = field.getFieldContainer().getId();
+				groupFieldsMap.computeIfAbsent(containerId, k -> new ArrayList<>()).add(field);
+			}
+
 			field.setStatus(FieldStatus.COMPLETED);
 			fields.add(field);
 		});
+
+		fields.addAll(processAndValidateAdvanceFields(documentSignDto.getDocumentId(), documentSignDto.getRecipientId(),
+				fields, groupFieldsMap));
+
 		return new DocumentVersionFieldBulk(documentVersionFields, fields);
 	}
 
@@ -1328,7 +1430,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentVersionField signFieldVersion(FieldSignDto fieldSignDto, PrivateKey privateKey, Field field) {
 		return switch (fieldSignDto.getType()) {
-			case DATE, APPROVE, DECLINE, NAME, EMAIL -> signTextField(fieldSignDto, privateKey, field);
+			case DATE, APPROVE, DECLINE, NAME, EMAIL, TEXT, DROPDOWN, CHECKBOX, RADIO_BUTTON ->
+				signTextField(fieldSignDto, privateKey, field);
 			case SIGNATURE, INITIAL, STAMP -> signImageField(fieldSignDto, privateKey, field);
 		};
 	}
@@ -1788,6 +1891,49 @@ public class DocumentServiceImpl implements DocumentService {
 			log.error("Failed to append certificate for envelope {}. Returning original bytes.", envelope.getId(), e);
 			return documentBytes;
 		}
+	}
+
+	private List<Field> processAndValidateAdvanceFields(Long documentId, Long recipientId, List<Field> fields,
+			Map<Long, List<Field>> groupFieldsMap) {
+
+		List<Field> allRecipientFieldList = fieldRepository.findByDocument_IdAndRecipient_Id(documentId, recipientId);
+
+		List<FieldContainer> distinctFieldContainerList = allRecipientFieldList.stream()
+			.map(Field::getFieldContainer)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList();
+
+		if (!distinctFieldContainerList.isEmpty()) {
+			for (FieldContainer fieldContainer : distinctFieldContainerList) {
+				if (Boolean.TRUE.equals(fieldContainer.getIsRequired())
+						&& !groupFieldsMap.containsKey(fieldContainer.getId())) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID,
+							new String[] { fieldContainer.getId().toString() });
+				}
+				if (Boolean.FALSE.equals(fieldContainer.getIsMultiSelect())
+						&& groupFieldsMap.containsKey(fieldContainer.getId())
+						&& groupFieldsMap.get(fieldContainer.getId()).size() > 1) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED,
+							new String[] { fieldContainer.getId().toString() });
+				}
+			}
+		}
+
+		if (!groupFieldsMap.isEmpty()) {
+			groupFieldsMap.forEach((key, value) -> {
+				// Mark all fields in the container as COMPLETED
+				value.forEach(groupField -> {
+					if (!fields.contains(groupField)) {
+						groupField.setStatus(FieldStatus.COMPLETED);
+						fields.add(groupField);
+					}
+				});
+			});
+		}
+
+		return fields;
 	}
 
 }

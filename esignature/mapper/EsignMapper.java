@@ -10,6 +10,8 @@ import com.skapp.enterprise.esignature.model.EnvelopeSetting;
 import com.skapp.enterprise.esignature.model.EsignConfig;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.Field;
+import com.skapp.enterprise.esignature.model.FieldContainer;
+import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
@@ -26,7 +28,9 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponse
 import com.skapp.enterprise.esignature.payload.response.EnvelopeSettingResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.ExternalUserResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldContainerResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldDetailResponseDto;
+import com.skapp.enterprise.esignature.payload.response.FieldOptionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.InternalUserResponseDto;
@@ -92,10 +96,12 @@ public interface EsignMapper {
 	DocumentDetailResponseDto documentToDocumentDetailDto(Document document);
 
 	@Mapping(target = "addressBookId", source = "addressBook.id")
+	@Mapping(target = "fieldContainers", expression = "java(mapFieldContainers(recipient))")
 	RecipientDetailResponseDto recipientToRecipientDetailDto(Recipient recipient);
 
 	@Mapping(target = "documentId", source = "document.id")
 	@Mapping(target = "recipientMail", source = "recipient.email")
+	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldDetailResponseDto fieldToFieldDetailDto(Field field);
 
 	@Mapping(target = "envelopeId", source = "id")
@@ -119,6 +125,7 @@ public interface EsignMapper {
 
 	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
 
+	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldResponseDto fieldToFieldResponseDto(Field field);
 
 	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
@@ -165,6 +172,22 @@ public interface EsignMapper {
 		if (subject == null)
 			return null;
 		return subject.replaceFirst(COMPLETE_VIA_SKAPP_REGEX, "");
+	}
+
+	FieldOptionResponseDto fieldOptionToFieldOptionResponseDto(FieldOption fieldOption);
+
+	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
+
+	default List<FieldContainerResponseDto> mapFieldContainers(Recipient recipient) {
+		if (recipient.getFields() == null)
+			return null;
+		return recipient.getFields()
+			.stream()
+			.map(Field::getFieldContainer)
+			.filter(java.util.Objects::nonNull)
+			.distinct()
+			.map(this::fieldContainerToFieldContainerResponseDto)
+			.collect(java.util.stream.Collectors.toList());
 	}
 
 }
