@@ -66,6 +66,8 @@ public interface LeaveRequestRepository {
 
 	List<LeaveRequest> findPendingLeaveRequestsByManager(Long employeeId, String searchKeyword);
 
+	Long countSupervisedPendingLeaveRequests(Long employeeId);
+
 	List<LeaveRequest> getEmployeesOnLeaveByTeamAndDate(List<Long> teams, LocalDate current, Long currentUserId,
 			boolean isLeaveAdmin);
 

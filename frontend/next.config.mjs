@@ -265,6 +265,18 @@ const nextConfig = {
         destination: "/enterprise/sign/sent/envelope/:id"
       },
       {
+        source: "/sign/template",
+        destination: "/enterprise/sign/template"
+      },
+      {
+        source: "/sign/template/:id",
+        destination: "/enterprise/sign/template/:id"
+      },
+      {
+        source: "/sign/template/create",
+        destination: "/enterprise/sign/template/create"
+      },
+      {
         source: "/sign/contacts",
         destination: "/enterprise/sign/contacts"
       },
@@ -291,6 +303,10 @@ const nextConfig = {
       {
         source: "/sign/document/access",
         destination: "/enterprise/sign/document/access"
+      },
+      {
+        source: "/sign/document/access/mfa-verify",
+        destination: "/enterprise/sign/document/access/mfa-verify"
       },
       {
         source: "/sign/complete",
@@ -382,7 +398,8 @@ const nextConfig = {
       },
       {
         source: "/invoice/customers/customer-details/projects/:id",
-        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
+        destination:
+          "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
         source: "/app-link",

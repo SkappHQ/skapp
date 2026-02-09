@@ -31,7 +31,7 @@ interface Props {
     title?: string;
   };
   title: string;
-  stepText: string;
+  stepText?: string;
   customStyles?: {
     wrapper?: SxProps;
     container?: SxProps;
@@ -43,6 +43,7 @@ interface Props {
   children?: ReactNode;
   id?: string;
   tabIndex?: number;
+  kebabMenuComponent?: ReactNode;
 }
 
 const FullPageContainerLayout = ({
@@ -53,7 +54,8 @@ const FullPageContainerLayout = ({
   customStyles,
   children,
   id,
-  tabIndex
+  tabIndex,
+  kebabMenuComponent
 }: Props): JSX.Element => {
   const router = useRouter();
 
@@ -115,13 +117,18 @@ const FullPageContainerLayout = ({
               sx={mergeSx([classes.title, customStyles?.title])}
             >
               <Typography variant="h1">{title}</Typography>
-              <Typography
-                variant="body2"
-                sx={mergeSx([classes.stepText, customStyles?.stepText])}
-              >
-                {stepText}
-              </Typography>
+              {stepText && (
+                <Typography
+                  variant="body2"
+                  sx={mergeSx([classes.stepText, customStyles?.stepText])}
+                >
+                  {stepText}
+                </Typography>
+              )}
             </Stack>
+            {kebabMenuComponent && (
+              <Stack sx={{ marginLeft: "auto" }}>{kebabMenuComponent}</Stack>
+            )}
           </Stack>
           <Stack component="main" sx={mergeSx([customStyles?.body])}>
             {children}

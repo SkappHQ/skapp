@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
@@ -24,7 +24,7 @@ const LeaveRequests: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveRequests");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchErrors] = useState<string | undefined>(undefined);
@@ -47,8 +47,8 @@ const LeaveRequests: NextPage = () => {
 
   const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
     if (
-      data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
-      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN)
+      user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
+      user?.roles?.includes(AdminTypes.SUPER_ADMIN)
     ) {
       setSelectedEmployeeId(employeeId);
       const url = `${ROUTES.PEOPLE.EDIT(employeeId)}?tab=leave`;
