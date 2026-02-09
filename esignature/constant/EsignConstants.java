@@ -70,6 +70,8 @@ public class EsignConstants {
 
 	public static final int MAX_RETRY_LIMIT = 5;
 
+	public static final int DOCUMENT_NAME_TRUNCATE_LENGTH = 25;
+
 	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
 
 	/**
