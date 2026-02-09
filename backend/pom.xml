@@ -182,7 +182,7 @@
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
-            <version>9.5.0</version>
+            <version>9.7.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
