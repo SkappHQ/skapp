@@ -10,6 +10,8 @@ import {
 import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
 
+import { tenantID } from "../utils/axiosInterceptor";
+
 const useSessionData = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
 
@@ -89,8 +91,6 @@ const useSessionData = () => {
     () => user?.roles?.includes(SenderTypes.ESIGN_SENDER),
     [user?.roles]
   );
-
-  const tenantID = useMemo(() => user?.tenantId, [user?.tenantId]);
 
   return {
     isFreeTier,

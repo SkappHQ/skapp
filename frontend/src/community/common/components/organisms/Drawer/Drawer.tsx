@@ -55,6 +55,7 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
+import { tenantID } from "~community/common/utils/axiosInterceptor";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -122,7 +123,7 @@ const Drawer = (): JSX.Element => {
         tier: user?.tier ?? "",
         isEnterprise,
         globalLoginMethod,
-        tenantID: user?.tenantId,
+        tenantID: tenantID as string,
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
