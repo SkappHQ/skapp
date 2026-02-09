@@ -117,8 +117,6 @@ public class RecipientServiceImpl implements RecipientService {
 
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
-
-			// Create in-app notification for document sign request
 			if (!recipient.getMemberRole().equals(MemberRole.CC) 
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
@@ -136,7 +134,6 @@ public class RecipientServiceImpl implements RecipientService {
 						NotificationCategory.ESIGN
 				);
 			}
-			
 			return prepareRecipientMetadata(recipient);
 		}).toList();
 
@@ -175,6 +172,12 @@ public class RecipientServiceImpl implements RecipientService {
 			documentLinkService.validatePermissionForGenerateAccessUrl(envelopeData, recipient,
 					documentAccessUrlDto.getPermissionType());
 
+			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService
+				.createDocumentLinkData(documentAccessUrlDto, recipient, document, envelopeData);
+
+			documentLinkList.add(documentLinkData.documentLink());
+			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
+
 			if (!recipient.getMemberRole().equals(MemberRole.CC) 
 					&& recipient.getAddressBook() != null 
 					&& recipient.getAddressBook().getInternalUser() != null 
@@ -192,12 +195,6 @@ public class RecipientServiceImpl implements RecipientService {
 						NotificationCategory.ESIGN
 				);
 			}
-			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService
-				.createDocumentLinkData(documentAccessUrlDto, recipient, document, envelopeData);
-
-			documentLinkList.add(documentLinkData.documentLink());
-			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
-
 			return prepareRecipientMetadata(recipient);
 		}).toList();
 
@@ -699,7 +696,14 @@ public class RecipientServiceImpl implements RecipientService {
 				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, esignEmailDynamicFields,
 				NotificationCategory.ESIGN);
 		}
-eEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
+
+		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
+		return new ResponseEntityDto(false, "Reminder email sent successfully");
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto voidAllRecipientsByEnvelopeId(Long envelopeId) {
 
 		Optional<List<Recipient>> recipientListOptional = recipientDao.findByEnvelopeId(envelopeId);
 

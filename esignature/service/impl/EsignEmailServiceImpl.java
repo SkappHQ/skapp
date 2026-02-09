@@ -21,7 +21,6 @@ import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEma
 import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
