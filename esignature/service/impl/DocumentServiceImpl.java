@@ -15,6 +15,7 @@ import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
+import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.DocumentVersionField;
@@ -25,6 +26,7 @@ import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
@@ -37,6 +39,7 @@ import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
+import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.DocumentVersionFieldRepository;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
@@ -52,6 +55,7 @@ import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.service.UserKeyService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
@@ -126,6 +130,8 @@ public class DocumentServiceImpl implements DocumentService {
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
 	private final DocumentRepository documentRepository;
+
+	private final DocumentLinkRepository documentLinkRepository;
 
 	private final AddressBookDao addressBookDao;
 
@@ -328,7 +334,19 @@ public class DocumentServiceImpl implements DocumentService {
 		List<Recipient> nextSignRecipientList = recipientService
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
-		List<Recipient> updatedRecipients = recipientService.sendEmailToNextRecipients(nextSignRecipientList, document);
+		if (isDocumentComplete(nextSignRecipientList)) {
+			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
+		}
+
+		// Prepare document links and recipient metadata (no emails sent yet)
+		RecipientService.DocumentLinksAndRecipientsData nextRecipientsData = recipientService
+			.prepareNextRecipients(nextSignRecipientList, document);
+
+		List<Recipient> updatedRecipients = nextRecipientsData.recipientList();
+
+		documentLinkRepository.saveAll(nextRecipientsData.documentLinkList());
+
+		Map<Long, String> nextRecipientAccessUrls = nextRecipientsData.recipientAccessUrls();
 
 		for (Recipient rec : updatedRecipients) {
 			rec.setReceivedAt(getCurrentUtcDateTime());
@@ -344,10 +362,6 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
-		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
-		}
-
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
@@ -356,6 +370,16 @@ public class DocumentServiceImpl implements DocumentService {
 		auditTrailDao.save(auditTrail);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
+
+		Long sequentialEnvelopeId = document.getEnvelope().getId();
+
+		// Send emails to next recipients only after transaction commits
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				recipientService.sendEnvelopeEmailNotifications(sequentialEnvelopeId, nextRecipientAccessUrls);
+			}
+		});
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
@@ -409,18 +433,37 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientDao.saveAll(envelope.getRecipients());
 
-		recipientService.sendDocumentCompletedEmailNotifications(envelope);
+		// Create and persist document links within this transaction so they are
+		// committed before any emails are sent
+		List<DocumentLink> documentLinkList = new ArrayList<>();
+		Map<Long, String> recipientAccessUrls = new HashMap<>();
+		Document envelopeDocument = envelope.getDocuments().getFirst();
+
+		for (Recipient mailRecipient : envelope.getRecipients()) {
+			DocumentAccessUrlDto documentAccessUrlDto = new DocumentAccessUrlDto(envelopeDocument.getId(),
+					mailRecipient.getId(), DocumentPermissionType.READ);
+
+			DocumentLinkService.DocumentLinkData documentLinkData = documentLinkService
+				.createDocumentLinkData(documentAccessUrlDto, mailRecipient, envelopeDocument, envelope);
+
+			documentLinkList.add(documentLinkData.documentLink());
+			recipientAccessUrls.put(mailRecipient.getId(), documentLinkData.accessUrl());
+		}
+
+		documentLinkRepository.saveAll(documentLinkList);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
 
+		Long completedEnvelopeId = envelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				recipientService.sendDocumentCompletedEmailNotifications(completedEnvelopeId, recipientAccessUrls);
 			}
 
 			@Override
@@ -610,17 +653,36 @@ public class DocumentServiceImpl implements DocumentService {
 			recipients.forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 			recipientDao.saveAll(recipients);
 
-			recipientService.sendDocumentCompletedEmailNotifications(envelope);
+			// Create and persist document links within this transaction
+			List<DocumentLink> parallelDocumentLinkList = new ArrayList<>();
+			Map<Long, String> parallelRecipientAccessUrls = new HashMap<>();
+			Document parallelEnvelopeDocument = envelope.getDocuments().getFirst();
+
+			for (Recipient mailRecipient : envelope.getRecipients()) {
+				DocumentAccessUrlDto parallelDocAccessUrlDto = new DocumentAccessUrlDto(
+						parallelEnvelopeDocument.getId(), mailRecipient.getId(), DocumentPermissionType.READ);
+
+				DocumentLinkService.DocumentLinkData parallelDocLinkData = documentLinkService
+					.createDocumentLinkData(parallelDocAccessUrlDto, mailRecipient, parallelEnvelopeDocument, envelope);
+
+				parallelDocumentLinkList.add(parallelDocLinkData.documentLink());
+				parallelRecipientAccessUrls.put(mailRecipient.getId(), parallelDocLinkData.accessUrl());
+			}
+
+			documentLinkRepository.saveAll(parallelDocumentLinkList);
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
 					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
 
+			Long parallelEnvelopeId = envelope.getId();
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
-					scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+					recipientService.sendDocumentCompletedEmailNotifications(parallelEnvelopeId,
+							parallelRecipientAccessUrls);
 				}
 			});
 
