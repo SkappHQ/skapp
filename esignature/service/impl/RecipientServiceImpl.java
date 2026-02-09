@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -131,7 +130,6 @@ public class RecipientServiceImpl implements RecipientService {
 				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().getFirst().getName());
 				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 				esignEmailDynamicFields.setDocumentName(documentName);
-				// Store envelopeId,documentId,recipientId for frontend routing
 				String resourceId = envelopeData.getId() + "," + envelopeData.getDocuments().getFirst().getId() + "," + recipient.getId();
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
@@ -189,7 +187,6 @@ public class RecipientServiceImpl implements RecipientService {
 				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
 				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 				esignEmailDynamicFields.setDocumentName(documentName);
-				// Store envelopeId,documentId,recipientId for frontend routing
 				String resourceId = document.getEnvelope().getId() + "," + document.getId() + "," + recipient.getId();
 				notificationService.createNotification(
 						recipient.getAddressBook().getInternalUser().getEmployee(),
