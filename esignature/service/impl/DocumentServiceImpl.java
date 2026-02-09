@@ -312,19 +312,6 @@ public class DocumentServiceImpl implements DocumentService {
 		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientDao.save(recipient);
 
-		// Create in-app notification for sender when recipient completes
-		Envelope envelope = document.getEnvelope();
-		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
-				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
-			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
-		}
-
 		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes);
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
@@ -363,6 +350,21 @@ public class DocumentServiceImpl implements DocumentService {
 
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
+
+		// Create in-app notification for sender when recipient completes
+		if (document.getEnvelope().getOwner() != null
+				&& document.getEnvelope().getOwner().getInternalUser() != null
+				&& document.getEnvelope().getOwner().getInternalUser().getEmployee() != null) {
+			String documentName = EsignUtil
+				.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
+			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+			esignEmailDynamicFields.setDocumentName(documentName);
+			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
+			notificationService.createNotification(
+					document.getEnvelope().getOwner().getInternalUser().getEmployee(),
+					String.valueOf(document.getEnvelope().getId()), NotificationType.DOCUMENT_COMPLETED,
+					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
+		}
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
@@ -551,19 +553,6 @@ public class DocumentServiceImpl implements DocumentService {
 		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientDao.save(recipient);
 
-		// Create in-app notification for sender when recipient completes
-		Envelope envelope = document.getEnvelope();
-		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
-				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
-			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
-		}
-
 		List<Long> fieldIdList = recipient.getFields().stream().map(Field::getId).toList();
 
 		List<DocumentVersionField> fieldVersionList = documentVersionFieldRepository.findByField_IdIn(fieldIdList);
@@ -582,6 +571,21 @@ public class DocumentServiceImpl implements DocumentService {
 		documentRepository.save(document);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
+
+		// Create in-app notification for sender when recipient completes
+		if (document.getEnvelope().getOwner() != null
+				&& document.getEnvelope().getOwner().getInternalUser() != null
+				&& document.getEnvelope().getOwner().getInternalUser().getEmployee() != null) {
+			String documentName = EsignUtil
+				.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
+			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+			esignEmailDynamicFields.setDocumentName(documentName);
+			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
+			notificationService.createNotification(
+					document.getEnvelope().getOwner().getInternalUser().getEmployee(),
+					String.valueOf(document.getEnvelope().getId()), NotificationType.DOCUMENT_COMPLETED,
+					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
+		}
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 
@@ -608,6 +612,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 			document.setCurrentVersion(finalVersion.getVersionNumber());
 			documentRepository.save(document);
+			Envelope envelope = document.getEnvelope();
+			envelope.setStatus(EnvelopeStatus.COMPLETED);
+			envelope.setCompletedAt(getCurrentUtcDateTime());
+			envelopeDao.save(envelope);
 
 
 
