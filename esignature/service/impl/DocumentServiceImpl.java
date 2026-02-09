@@ -312,6 +312,19 @@ public class DocumentServiceImpl implements DocumentService {
 		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientDao.save(recipient);
 
+		// Create in-app notification for sender when recipient completes
+		Envelope envelope = document.getEnvelope();
+		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
+				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
+			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+			esignEmailDynamicFields.setDocumentName(documentName);
+			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
+			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
+					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
+					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
+		}
+
 		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes);
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
@@ -380,15 +393,17 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		// Create in-app notification for sender
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-		esignEmailDynamicFields.setDocumentName(documentName);
-		esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-			String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
-			EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields,
-			NotificationCategory.ESIGN);
+		// Create in-app notification for sender when envelope is completed
+		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
+				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
+			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+			esignEmailDynamicFields.setDocumentName(documentName);
+			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
+			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
+					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
+					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
+		}
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
@@ -536,6 +551,19 @@ public class DocumentServiceImpl implements DocumentService {
 		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientDao.save(recipient);
 
+		// Create in-app notification for sender when recipient completes
+		Envelope envelope = document.getEnvelope();
+		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
+				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
+			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+			esignEmailDynamicFields.setDocumentName(documentName);
+			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
+			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
+					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
+					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
+		}
+
 		List<Long> fieldIdList = recipient.getFields().stream().map(Field::getId).toList();
 
 		List<DocumentVersionField> fieldVersionList = documentVersionFieldRepository.findByField_IdIn(fieldIdList);
@@ -581,10 +609,7 @@ public class DocumentServiceImpl implements DocumentService {
 			document.setCurrentVersion(finalVersion.getVersionNumber());
 			documentRepository.save(document);
 
-			Envelope envelope = document.getEnvelope();
-			envelope.setStatus(EnvelopeStatus.COMPLETED);
-			envelope.setCompletedAt(getCurrentUtcDateTime());
-			envelopeDao.save(envelope);
+
 
 			List<AuditTrail> auditTrails = new ArrayList<>();
 
