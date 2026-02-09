@@ -42,6 +42,7 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.RecipientEidConfig;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -79,6 +80,8 @@ import com.skapp.enterprise.esignature.service.EnvelopeService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.EidProviderType;
+import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -487,6 +490,20 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			recipient.setMfaVerificationEnabled(!recipientDto.getVerificationType().equals(EsignVerificationType.NONE));
 			recipient.setMfaVerificationMethod(recipientDto.getVerificationType());
 			recipient.setEnvelope(envelope);
+
+			// Set eID verification config (for BankID and similar providers)
+			EidProviderType eidMethod = recipientDto.getEidVerificationMethod();
+			if (eidMethod == null) {
+				eidMethod = EidProviderType.NONE;
+			}
+			if (eidMethod.requiresVerification()) {
+				RecipientEidConfig eidConfig = RecipientEidConfig.builder()
+					.recipient(recipient)
+					.eidVerificationMethod(eidMethod)
+					.eidVerificationStatus(EidVerificationStatus.NOT_STARTED)
+					.build();
+				recipient.setEidConfig(eidConfig);
+			}
 
 			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
 

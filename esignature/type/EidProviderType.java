@@ -7,7 +7,7 @@ package com.skapp.enterprise.esignature.type;
  */
 public enum EidProviderType {
 
-	SWEDISH_BANKID("sv_SE");
+	SWEDISH_BANKID("sv_SE"), NONE(null);
 
 	private final String locale;
 
@@ -17,6 +17,14 @@ public enum EidProviderType {
 
 	public String getLocale() {
 		return locale;
+	}
+
+	/**
+	 * Check if this provider type requires actual eID verification.
+	 * @return true if verification is required, false for NONE
+	 */
+	public boolean requiresVerification() {
+		return this != NONE;
 	}
 
 }

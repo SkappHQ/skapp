@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
@@ -58,23 +57,6 @@ public final class BankIdQrCodeUtil {
 	}
 
 	/**
-	 * Computes the BankID QR code string from provider data JSON.
-	 * @param providerData JSON node containing qrStartToken and qrStartSecret
-	 * @param initiatedAt When the session was initiated
-	 * @return The QR code string, or null if required fields are missing
-	 */
-	public static String computeQrCode(JsonNode providerData, Instant initiatedAt) {
-		if (providerData == null || initiatedAt == null) {
-			return null;
-		}
-
-		String qrStartToken = getJsonField(providerData, "qrStartToken");
-		String qrStartSecret = getJsonField(providerData, "qrStartSecret");
-
-		return computeQrCode(qrStartToken, qrStartSecret, initiatedAt);
-	}
-
-	/**
 	 * Computes HMAC-SHA256 of the data using the secret key.
 	 * @param secret The secret key
 	 * @param data The data to sign
@@ -103,20 +85,6 @@ public final class BankIdQrCodeUtil {
 			sb.append(String.format("%02x", b));
 		}
 		return sb.toString();
-	}
-
-	/**
-	 * Safely extracts a string field from a JSON node.
-	 */
-	private static String getJsonField(JsonNode node, String fieldName) {
-		if (node == null || !node.has(fieldName)) {
-			return null;
-		}
-		JsonNode fieldNode = node.get(fieldName);
-		if (fieldNode == null || fieldNode.isNull()) {
-			return null;
-		}
-		return fieldNode.asText();
 	}
 
 }
