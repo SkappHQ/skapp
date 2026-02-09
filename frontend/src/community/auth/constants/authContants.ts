@@ -1,1 +1,1 @@
-export const COOKIE_EXPIRY_DAYS = 31;
+export const COOKIE_EXPIRY_DAYS = 30;
