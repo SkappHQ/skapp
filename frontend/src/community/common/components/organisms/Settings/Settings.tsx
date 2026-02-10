@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { FC, ReactNode } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
@@ -28,13 +29,14 @@ import ManageSubscriptionSettingsSection from "~enterprise/settings/components/m
 
 import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface SettingsSectionProps {
   customSettingsComponent?: ReactNode;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) => {
+const SettingsSection: FC<SettingsSectionProps> = ({
+  customSettingsComponent
+}) => {
   const translatedText = useTranslator("settings");
 
   const theme: Theme = useTheme();
@@ -130,13 +132,9 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
             </>
           )}
 
-          {customSettingsComponent && (
-            <>
-              {customSettingsComponent}        
-            </>
-          )}
+          {customSettingsComponent && <>{customSettingsComponent}</>}
 
-          <Box sx={{ py: "1.5rem" }}>
+          <Box sx={{ py: "0.5rem" }}>
             <Typography variant="h2" sx={{ pb: "0.75rem" }}>
               {translatedText(["organizationSettingsTitle"])}
             </Typography>
@@ -188,7 +186,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
 
       {globalLoginMethod === GlobalLoginMethod.CREDENTIALS && (
         <>
-          <Box sx={{ py: "1.5rem" }}>
+          <Box sx={{ py: "0.5rem" }}>
             <Typography variant="h2" sx={{ pb: "0.75rem" }}>
               {translatedText(["securitySettingsTitle"])}
             </Typography>
