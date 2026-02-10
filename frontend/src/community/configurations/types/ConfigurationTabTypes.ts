@@ -7,4 +7,5 @@ export interface ConfigurationTab {
   label: string;
   requiredRoles: AdminTypes[];
   component: ReactNode;
+  position?: number;
 }

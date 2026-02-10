@@ -12,19 +12,22 @@ export const getConfigurationTabs = (
       id: "time",
       label: translateText(["tabs", "time"]),
       requiredRoles: [AdminTypes.SUPER_ADMIN],
-      component: <TimeConfigurations />
+      component: <TimeConfigurations />,
+      position: 1
     },
     {
       id: "attendance",
       label: translateText(["tabs", "attendance"]),
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN],
-      component: <AttendanceConfiguration />
+      component: <AttendanceConfiguration />,
+      position: 2
     },
     {
       id: "user-roles",
       label: translateText(["tabs", "userRoles"]),
-      requiredRoles: [AdminTypes.SUPER_ADMIN],
-      component: <UserRolesTable />
+      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.PEOPLE_ADMIN],
+      component: <UserRolesTable />,
+      position: 4
     }
   ];
 };
