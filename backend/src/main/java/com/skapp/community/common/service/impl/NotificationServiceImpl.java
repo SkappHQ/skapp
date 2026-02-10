@@ -84,11 +84,11 @@ public class NotificationServiceImpl implements NotificationService {
 			notification.setBody(body);
 			notification.setIsViewed(false);
 			notification.setNotificationType(notificationType);
-			
+
 			if (notification.getCreatedBy() == null && employee != null && employee.getEmployeeId() != null) {
 				notification.setCreatedBy(employee.getEmployeeId().toString());
 			}
-			
+
 			notificationDao.save(notification);
 
 			pushNotificationService.sendNotification(notification.getEmployee().getEmployeeId(), notification, title);
