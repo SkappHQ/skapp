@@ -117,17 +117,17 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   }
                   isEsignatureModuleDisabled={
                     (item?.notificationType ===
-                      NotificationItemsTypes.DOCUMENT_SIGN_REQUEST ||
+                      NotificationItemsTypes.ESIGN_DOCUMENT_SIGN_REQUEST ||
                       item?.notificationType ===
-                        NotificationItemsTypes.DOCUMENT_COMPLETED ||
+                        NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED ||
                       item?.notificationType ===
-                        NotificationItemsTypes.DOCUMENT_DECLINED ||
+                        NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED ||
                       item?.notificationType ===
-                        NotificationItemsTypes.DOCUMENT_VOIDED ||
+                        NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED ||
                       item?.notificationType ===
-                        NotificationItemsTypes.DOCUMENT_REMINDER ||
+                        NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER ||
                       item?.notificationType ===
-                        NotificationItemsTypes.DOCUMENT_EXPIRED) &&
+                        NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED) &&
                     !isEsignatureModuleEnabled
                   }
                   item={item}

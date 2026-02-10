@@ -16,12 +16,14 @@ interface Props {
   item: NotificationDataTypes;
   isLeaveModuleDisabled?: boolean;
   isAttendanceModuleDisabled?: boolean;
+  isEsignatureModuleDisabled?: boolean;
 }
 
 const NotificationContent = ({
   item,
   isLeaveModuleDisabled,
-  isAttendanceModuleDisabled
+  isAttendanceModuleDisabled,
+  isEsignatureModuleDisabled
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("notifications");
@@ -29,7 +31,8 @@ const NotificationContent = ({
   const isViewed =
     item.isViewed ||
     isLeaveModuleDisabled === true ||
-    isAttendanceModuleDisabled === true;
+    isAttendanceModuleDisabled === true ||
+    isEsignatureModuleDisabled === true;
 
   return (
     <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
