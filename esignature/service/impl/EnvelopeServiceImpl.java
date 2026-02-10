@@ -351,13 +351,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
-					scheduleEnvelopeExpirationJobs(savedEnvelopeId, tenantId, 
+					scheduleEnvelopeExpirationJobs(savedEnvelopeId, tenantId,
 							envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), sentAtTime);
 				}
 				recipientService.sendEnvelopeEmailNotifications(savedEnvelopeId, recipientAccessUrls);
 			}
 		});
-
 
 		log.info("createNewEnvelope: execution end {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseDto);
@@ -370,29 +369,27 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return envelopeSetting;
 	}
 
-	private void scheduleEnvelopeExpirationJobs(Long envelopeId, String tenantId, 
-			LocalDate expirationDate, LocalDateTime sentAtTime) {
+	private void scheduleEnvelopeExpirationJobs(Long envelopeId, String tenantId, LocalDate expirationDate,
+			LocalDateTime sentAtTime) {
 		LocalDateTime expirationDateTime = calculateExpirationDateTime(expirationDate, sentAtTime);
-		
+
 		scheduleService.scheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE, expirationDateTime);
-		
+
 		scheduleExpirationReminderIfEligible(envelopeId, tenantId, expirationDateTime);
 	}
 
 	private LocalDateTime calculateExpirationDateTime(LocalDate expirationDate, LocalDateTime sentAtTime) {
-		return LocalDateTime.of(expirationDate, 
-				sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX);
+		return LocalDateTime.of(expirationDate, sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX);
 	}
 
-	private void scheduleExpirationReminderIfEligible(Long envelopeId, String tenantId, 
+	private void scheduleExpirationReminderIfEligible(Long envelopeId, String tenantId,
 			LocalDateTime expirationDateTime) {
 		LocalDateTime reminderDateTime = expirationDateTime.minusHours(24);
-		
+
 		if (reminderDateTime.isAfter(LocalDateTime.now())) {
-			scheduleService.scheduleExpiration(envelopeId, tenantId, 
-					QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER, reminderDateTime);
-			log.info("Scheduled expiration reminder for envelope ID: {} at {}", 
-					envelopeId, reminderDateTime);
+			scheduleService.scheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER,
+					reminderDateTime);
+			log.info("Scheduled expiration reminder for envelope ID: {} at {}", envelopeId, reminderDateTime);
 		}
 	}
 
@@ -1100,15 +1097,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE);
-				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
+				scheduleService.unScheduleExpiration(envelopeId, tenantId,
+						QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 			}
 		});
-				log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
+		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
 
 	private List<SignedDocumentResponse> getDocumentsFirstVersion(EnvelopeDetailDto envelopeDetailDto,
-																  Envelope envelope) {
+			Envelope envelope) {
 		List<SignedDocumentResponse> signedDocumentResponseList = new ArrayList<>();
 
 		envelopeDetailDto.getDocumentIds().forEach(doc -> {
@@ -1350,7 +1348,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
-				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId,
+						QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 			}
 		});
 		return new ResponseEntityDto(false, "Envelope declined successfully");
@@ -1382,7 +1381,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			envelopeDao.save(envelope);
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null, null, null);			
+					AuditAction.ENVELOPE_EXPIRED, null, null, null);
 
 			auditTrailDao.save(auditTrail);
 
@@ -1394,18 +1393,18 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	@Override
 	@Transactional
 	public void sendExpirationReminder(Long envelopeId) {
-		log.info("Processing expiration reminder for envelope ID: {} in tenant: {}", 
-				envelopeId, TenantContext.getCurrentTenant());
-		
+		log.info("Processing expiration reminder for envelope ID: {} in tenant: {}", envelopeId,
+				TenantContext.getCurrentTenant());
+
 		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
 		if (envelopeOptional.isEmpty()) {
 			log.warn("sendExpirationReminder: envelope with ID {} not found", envelopeId);
 			return;
 		}
-		
+
 		Envelope envelope = envelopeOptional.get();
-		
-		if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty() 
+
+		if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty()
 				&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
 			esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
 			log.info("Expiration reminder notifications sent for envelope ID: {}", envelopeId);
