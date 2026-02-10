@@ -952,8 +952,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		AddressBook addressBook = envelope.getOwner();
 
 		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+		Role peopleRole = currentUser.getEmployee().getEmployeeRole().getPeopleRole();
 
-		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN);
+		boolean isAllSentEnvelopes = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.SUPER_ADMIN)
+				|| peopleRole.equals(Role.PEOPLE_ADMIN);
 
 		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
 			.map(AddressBook::getInternalUser)

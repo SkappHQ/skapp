@@ -122,7 +122,7 @@ public class EnvelopeController {
 	@Operation(summary = "Get envelope details created by the current sender",
 			description = "Returns the details of the envelope created or sent by the currently logged-in user.")
 	@GetMapping(value = "envelope-sender/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ESIGN_SENDER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> getEnvelopeForSender(
 			@PathVariable @Schema(description = "ID of the envelope to get") Long id) {
 		ResponseEntityDto response = envelopeService.getEnvelopeForSender(id);
