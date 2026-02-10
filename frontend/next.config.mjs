@@ -47,10 +47,8 @@ const nextConfig = {
           : "/community/signin"
       },
       {
-        source: "/settings/account",
-        destination: isEnterpriseMode
-          ? "/enterprise/settings/account"
-          : "/community/settings/account"
+        source: "/settings",
+        destination: "/community/settings"
       },
       {
         source: "/settings/billing",
@@ -311,18 +309,6 @@ const nextConfig = {
       {
         source: "/sign/complete",
         destination: "/enterprise/sign/complete"
-      },
-      {
-        source: "/settings/modules",
-        destination: "/enterprise/settings/modules"
-      },
-      {
-        source: "/integrations",
-        destination: "/enterprise/settings/account"
-      },
-      {
-        source: "/settings/integrations",
-        destination: "/enterprise/settings/integrations"
       },
       {
         source: "/remove-people",

@@ -220,7 +220,12 @@
     "outlookCalendarAddErrorDes": "Failed to add Outlook Calendar. Please try again.",
     "outlookCalendarRemoveErrorDes": "Failed to remove Outlook Calendar. Please try again.",
     "outlookCalendarAccMismatchTitle": "No account found",
-    "outlookCalendarAccMismatchDes": "Please use the account linked to your work email."
+    "outlookCalendarAccMismatchDes": "Please use the account linked to your work email.",
+    "tabs": {
+      "account": "Account",
+      "integrations": "Integrations",
+      "modules": "Modules"
+    }
   },
   "unauthorized": {
     "pageHead": "Access Denied | Skapp",
