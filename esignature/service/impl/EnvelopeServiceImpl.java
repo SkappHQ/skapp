@@ -1056,7 +1056,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
-		// Create in-app notifications for void - all recipients get notified
 		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
@@ -1065,7 +1064,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		for (Recipient rec : envelope.getRecipients()) {
 			if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null) {
 				notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_VOIDED,
+					String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_VOIDED,
 					EmailBodyTemplates.ESIGN_DOCUMENT_VOIDED, esignEmailDynamicFields,
 					NotificationCategory.ESIGN);
 			}
@@ -1330,7 +1329,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		// Sender always gets notification
 		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-			String.valueOf(envelope.getId()), NotificationType.DOCUMENT_DECLINED,
+			String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED,
 			EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED, esignEmailDynamicFields,
 			NotificationCategory.ESIGN);
 
@@ -1340,7 +1339,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			for (Recipient rec : envelope.getRecipients()) {
 				if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null && !rec.getId().equals(recipient.getId())) {
 					notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(envelope.getId()), NotificationType.DOCUMENT_DECLINED,
+						String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED,
 						EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED, esignEmailDynamicFields,
 						NotificationCategory.ESIGN);
 				}
@@ -1397,7 +1396,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			// Notify sender
 			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-				String.valueOf(envelope.getId()), NotificationType.DOCUMENT_EXPIRED,
+				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_EXPIRED,
 				EmailBodyTemplates.ESIGN_DOCUMENT_EXPIRED, esignEmailDynamicFields,
 				NotificationCategory.ESIGN);
 
@@ -1405,7 +1404,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			for (Recipient rec : envelope.getRecipients()) {
 				if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null) {
 					notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(envelope.getId()), NotificationType.DOCUMENT_EXPIRED,
+						String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_EXPIRED,
 						EmailBodyTemplates.ESIGN_DOCUMENT_EXPIRED, esignEmailDynamicFields,
 						NotificationCategory.ESIGN);
 				}

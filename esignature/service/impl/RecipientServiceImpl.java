@@ -35,6 +35,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseD
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
@@ -83,6 +84,8 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final NotificationService notificationService;
 
+	private final EsignNotificationService esignNotificationService;
+
 	@Override
 	public DocumentLinksAndRecipientsData prepareDocumentFirstRecipients(List<Recipient> recipients,
 			SignType signType) {
@@ -117,23 +120,11 @@ public class RecipientServiceImpl implements RecipientService {
 
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
-			if (!recipient.getMemberRole().equals(MemberRole.CC) 
-					&& recipient.getAddressBook() != null 
-					&& recipient.getAddressBook().getInternalUser() != null 
-					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = EsignUtil.truncateDocumentName(envelopeData.getDocuments().getFirst().getName());
-				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-				esignEmailDynamicFields.setDocumentName(documentName);
-				String resourceId = envelopeData.getId() + "," + envelopeData.getDocuments().getFirst().getId() + "," + recipient.getId();
-				notificationService.createNotification(
-						recipient.getAddressBook().getInternalUser().getEmployee(),
-						resourceId,
-						NotificationType.DOCUMENT_SIGN_REQUEST,
-						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
-						esignEmailDynamicFields,
-						NotificationCategory.ESIGN
-				);
-			}
+			
+			esignNotificationService.notifyRecipientOnSignRequest(recipient, 
+					envelopeData.getDocuments().getFirst().getId().toString(), 
+					envelopeData.getId().toString());
+			
 			return prepareRecipientMetadata(recipient);
 		}).toList();
 
@@ -178,23 +169,10 @@ public class RecipientServiceImpl implements RecipientService {
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
-			if (!recipient.getMemberRole().equals(MemberRole.CC) 
-					&& recipient.getAddressBook() != null 
-					&& recipient.getAddressBook().getInternalUser() != null 
-					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-				String documentName = EsignUtil.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
-				EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-				esignEmailDynamicFields.setDocumentName(documentName);
-				String resourceId = document.getEnvelope().getId() + "," + document.getId() + "," + recipient.getId();
-				notificationService.createNotification(
-						recipient.getAddressBook().getInternalUser().getEmployee(),
-						resourceId,
-						NotificationType.DOCUMENT_SIGN_REQUEST,
-						EmailBodyTemplates.ESIGN_DOCUMENT_SIGN_REQUEST,
-						esignEmailDynamicFields,
-						NotificationCategory.ESIGN
-				);
-			}
+			esignNotificationService.notifyRecipientOnSignRequest(recipient, 
+					document.getId().toString(), 
+					document.getEnvelope().getId().toString());
+			
 			return prepareRecipientMetadata(recipient);
 		}).toList();
 
@@ -684,18 +662,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
-		// Create in-app notification for reminder
-		String documentName = EsignUtil.truncateDocumentName(recipient.getEnvelope().getDocuments().getFirst().getName());
-		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-		esignEmailDynamicFields.setDocumentName(documentName);
-		String resourceId = recipient.getEnvelope().getId() + "," + recipient.getEnvelope().getDocuments().getFirst().getId() + "," + recipient.getId();
-
-		if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null && recipient.getAddressBook().getInternalUser().getEmployee() != null) {
-			notificationService.createNotification(recipient.getAddressBook().getInternalUser().getEmployee(),
-				resourceId, NotificationType.DOCUMENT_REMINDER,
-				EmailBodyTemplates.ESIGN_DOCUMENT_REMINDER, esignEmailDynamicFields,
-				NotificationCategory.ESIGN);
-		}
+		esignNotificationService.notifyRecipientOnReminder(recipient);
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");

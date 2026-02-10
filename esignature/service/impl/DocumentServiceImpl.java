@@ -6,10 +6,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.community.common.service.NotificationService;
-import com.skapp.community.common.type.EmailBodyTemplates;
-import com.skapp.community.common.type.NotificationCategory;
-import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
@@ -40,7 +36,6 @@ import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDt
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
@@ -55,6 +50,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
@@ -156,7 +152,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final RecipientService recipientService;
 
-	private final NotificationService notificationService;
+	private final EsignNotificationService esignNotificationService;
 
 	private final FieldRepository fieldRepository;
 
@@ -373,19 +369,7 @@ public class DocumentServiceImpl implements DocumentService {
 		recipientDao.saveAll(updatedRecipients);
 
 		// Create in-app notification for sender when recipient completes
-		if (document.getEnvelope().getOwner() != null
-				&& document.getEnvelope().getOwner().getInternalUser() != null
-				&& document.getEnvelope().getOwner().getInternalUser().getEmployee() != null) {
-			String documentName = EsignUtil
-				.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-			notificationService.createNotification(
-					document.getEnvelope().getOwner().getInternalUser().getEmployee(),
-					String.valueOf(document.getEnvelope().getId()), NotificationType.DOCUMENT_COMPLETED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
-		}
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
@@ -427,16 +411,7 @@ public class DocumentServiceImpl implements DocumentService {
 		envelopeDao.save(envelope);
 
 		// Create in-app notification for sender when envelope is completed
-		if (envelope.getOwner() != null && envelope.getOwner().getInternalUser() != null
-				&& envelope.getOwner().getInternalUser().getEmployee() != null) {
-			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-					String.valueOf(envelope.getId()), NotificationType.DOCUMENT_COMPLETED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
-		}
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope, recipient);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
@@ -627,19 +602,7 @@ public class DocumentServiceImpl implements DocumentService {
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
 		// Create in-app notification for sender when recipient completes
-		if (document.getEnvelope().getOwner() != null
-				&& document.getEnvelope().getOwner().getInternalUser() != null
-				&& document.getEnvelope().getOwner().getInternalUser().getEmployee() != null) {
-			String documentName = EsignUtil
-				.truncateDocumentName(document.getEnvelope().getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-			esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-			notificationService.createNotification(
-					document.getEnvelope().getOwner().getInternalUser().getEmployee(),
-					String.valueOf(document.getEnvelope().getId()), NotificationType.DOCUMENT_COMPLETED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
-		}
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 
