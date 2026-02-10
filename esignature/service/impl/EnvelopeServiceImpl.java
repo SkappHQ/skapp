@@ -391,7 +391,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (reminderDateTime.isAfter(LocalDateTime.now())) {
 			scheduleService.scheduleExpiration(envelopeId, tenantId, 
 					QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER, reminderDateTime);
-			log.info("Scheduled expiration reminder for envelope ID: {} at {} (24h before expiration)", 
+			log.info("Scheduled expiration reminder for envelope ID: {} at {}", 
 					envelopeId, reminderDateTime);
 		}
 	}
@@ -1084,19 +1084,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-		esignEmailDynamicFields.setDocumentName(documentName);
-		esignEmailDynamicFields.setSenderName(envelope.getOwner().getName());
-
-		for (Recipient rec : envelope.getRecipients()) {
-			if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null) {
-				notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-					String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_VOIDED,
-					EmailBodyTemplates.ESIGN_DOCUMENT_VOIDED, esignEmailDynamicFields,
-					NotificationCategory.ESIGN);
-			}
-		}
+		esignNotificationService.notifyOnEnvelopeVoided(envelope);
 
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
@@ -1115,6 +1103,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 			}
 		});
+				log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
 
@@ -1348,30 +1337,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
 
-		// Create in-app notifications for decline
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-		esignEmailDynamicFields.setDocumentName(documentName);
-		esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
-
-		// Sender always gets notification
-		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-			String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED,
-			EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED, esignEmailDynamicFields,
-			NotificationCategory.ESIGN);
-
-		// For parallel signing or sequential with multiple recipients, all recipients get notification
-		if (envelope.getSignType().equals(SignType.PARALLEL) ||
-			(envelope.getSignType().equals(SignType.SEQUENTIAL) && envelope.getRecipients().size() > 1)) {
-			for (Recipient rec : envelope.getRecipients()) {
-				if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null && !rec.getId().equals(recipient.getId())) {
-					notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED,
-						EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED, esignEmailDynamicFields,
-						NotificationCategory.ESIGN);
-				}
-			}
-		}
+		esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
@@ -1415,29 +1381,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			envelopeDao.save(envelope);
 
-			// Create in-app notifications for expiration - sender and all recipients
-			String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
-			EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
-			esignEmailDynamicFields.setDocumentName(documentName);
-
-			// Notify sender
-			notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_EXPIRED,
-				EmailBodyTemplates.ESIGN_DOCUMENT_EXPIRED, esignEmailDynamicFields,
-				NotificationCategory.ESIGN);
-
-			// Notify all recipients
-			for (Recipient rec : envelope.getRecipients()) {
-				if (rec.getAddressBook() != null && rec.getAddressBook().getInternalUser() != null && rec.getAddressBook().getInternalUser().getEmployee() != null) {
-					notificationService.createNotification(rec.getAddressBook().getInternalUser().getEmployee(),
-						String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_EXPIRED,
-						EmailBodyTemplates.ESIGN_DOCUMENT_EXPIRED, esignEmailDynamicFields,
-						NotificationCategory.ESIGN);
-				}
-			}
-
-			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null, null, null);
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());

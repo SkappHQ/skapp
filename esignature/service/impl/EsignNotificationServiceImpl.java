@@ -123,7 +123,6 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
 		
-		// Notify all recipients who haven't completed signing
 		for (Recipient recipient : envelope.getRecipients()) {
 			if (recipient.getStatus() != RecipientStatus.COMPLETED 
 					&& recipient.getAddressBook() != null 
@@ -145,6 +144,91 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 				
 				log.info("Created expiration reminder notification for recipient ID: {} in envelope ID: {}", 
 						recipient.getId(), envelopeId);
+			}
+		}
+	}
+
+	@Override
+	public void notifyOnEnvelopeDeclined(Envelope envelope, Recipient decliningRecipient) {
+		log.info("Sending decline notifications for envelope ID: {} declined by recipient ID: {}", 
+				envelope.getId(), decliningRecipient.getId());
+		
+		if (envelope.getOwner() == null || envelope.getOwner().getInternalUser() == null 
+				|| envelope.getOwner().getInternalUser().getEmployee() == null) {
+			log.warn("Envelope owner not found for envelope ID: {}", envelope.getId());
+			return;
+		}
+		
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+		esignEmailDynamicFields.setDocumentName(documentName);
+		esignEmailDynamicFields.setRecipientName(decliningRecipient.getAddressBook().getName());
+		
+		notificationService.createNotification(
+				envelope.getOwner().getInternalUser().getEmployee(),
+				String.valueOf(envelope.getId()),
+				NotificationType.ESIGN_DOCUMENT_DECLINED,
+				EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED,
+				esignEmailDynamicFields,
+				NotificationCategory.ESIGN
+		);
+		
+		log.info("Created decline notification for envelope owner. Envelope ID: {}", envelope.getId());
+		
+		if (envelope.getSignType().equals(com.skapp.enterprise.esignature.type.SignType.PARALLEL) ||
+				(envelope.getSignType().equals(com.skapp.enterprise.esignature.type.SignType.SEQUENTIAL) 
+						&& envelope.getRecipients().size() > 1)) {
+			
+			for (Recipient recipient : envelope.getRecipients()) {
+				if (recipient.getAddressBook() != null 
+						&& recipient.getAddressBook().getInternalUser() != null 
+						&& recipient.getAddressBook().getInternalUser().getEmployee() != null 
+						&& !recipient.getId().equals(decliningRecipient.getId())) {
+					
+					notificationService.createNotification(
+							recipient.getAddressBook().getInternalUser().getEmployee(),
+							String.valueOf(envelope.getId()),
+							NotificationType.ESIGN_DOCUMENT_DECLINED,
+							EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED,
+							esignEmailDynamicFields,
+							NotificationCategory.ESIGN
+					);
+					
+					log.info("Created decline notification for recipient ID: {} in envelope ID: {}", 
+							recipient.getId(), envelope.getId());
+				}
+			}
+		}
+	}
+
+	@Override
+	public void notifyOnEnvelopeVoided(Envelope envelope) {
+		log.info("Sending void notifications for envelope ID: {}", envelope.getId());
+		
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+		esignEmailDynamicFields.setDocumentName(documentName);
+		
+		if (envelope.getOwner() != null) {
+			esignEmailDynamicFields.setSenderName(envelope.getOwner().getName());
+		}
+		
+		for (Recipient recipient : envelope.getRecipients()) {
+			if (recipient.getAddressBook() != null 
+					&& recipient.getAddressBook().getInternalUser() != null 
+					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+				
+				notificationService.createNotification(
+						recipient.getAddressBook().getInternalUser().getEmployee(),
+						String.valueOf(envelope.getId()),
+						NotificationType.ESIGN_DOCUMENT_VOIDED,
+						EmailBodyTemplates.ESIGN_DOCUMENT_VOIDED,
+						esignEmailDynamicFields,
+						NotificationCategory.ESIGN
+				);
+				
+				log.info("Created void notification for recipient ID: {} in envelope ID: {}", 
+						recipient.getId(), envelope.getId());
 			}
 		}
 	}

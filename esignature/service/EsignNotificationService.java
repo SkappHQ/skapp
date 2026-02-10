@@ -13,4 +13,8 @@ public interface EsignNotificationService {
 
 	void notifyRecipientsOnExpirationReminder(Long envelopeId);
 
+	void notifyOnEnvelopeDeclined(Envelope envelope, Recipient decliningRecipient);
+
+	void notifyOnEnvelopeVoided(Envelope envelope);
+
 }
