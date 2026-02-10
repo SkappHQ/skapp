@@ -585,6 +585,15 @@ export const formatISODateWithSuffix = (isoString: string): string => {
   return `${day}${suffix} ${date.toFormat("MMMM yyyy")}`;
 };
 
+// Example: "2024-03-05T23:00:00Z" → "6th March 2024" (in PST/UTC-8)
+export const formatISODateWithSuffixLocal = (isoString: string): string => {
+  const date = DateTime.fromISO(isoString, { zone: "utc" }).setZone("local");
+  const day = date.day;
+  const suffix = getDaySuffix(day);
+
+  return `${day}${suffix} ${date.toFormat("MMMM yyyy")}`;
+};
+
 // Example: "2024-03-05" → "March 2024"
 export const formatISODateToMonthYear = (isoString: string): string => {
   if (isoString !== "") {
