@@ -344,7 +344,9 @@ const routes = [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.ATTENDANCE_ADMIN,
       AdminTypes.INVOICE_ADMIN,
-      AdminTypes.ESIGN_ADMIN
+      AdminTypes.ESIGN_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      AdminTypes.LEAVE_ADMIN
     ]
   },
   {
