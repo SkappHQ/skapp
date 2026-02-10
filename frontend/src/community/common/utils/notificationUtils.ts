@@ -52,7 +52,8 @@ export const handleNotifyRow = ({
     router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS);
   } else if (
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_SIGN_REQUEST ||
-    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED
   ) {
     if (resourceId) {
       const [envelopeId, documentId, recipientId] = resourceId.split(",");
@@ -63,8 +64,7 @@ export const handleNotifyRow = ({
   } else if (
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED ||
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED ||
-    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED ||
-    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED
   ) {
     if (resourceId) {
       router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
