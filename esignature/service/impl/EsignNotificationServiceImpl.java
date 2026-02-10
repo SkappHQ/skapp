@@ -7,11 +7,15 @@ import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
+import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EsignNotificationService;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -19,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class EsignNotificationServiceImpl implements EsignNotificationService {
 
 	private final NotificationService notificationService;
+
+	private final EnvelopeDao envelopeDao;
 
 	@Override
 	public void notifyEnvelopeOwnerOnDocumentCompleted(Envelope envelope, Recipient recipient) {
@@ -99,6 +105,48 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		);
 		
 		log.info("Created reminder notification for recipient ID: {}", recipient.getId());
+	}
+
+	@Override
+	public void notifyRecipientsOnExpirationReminder(Long envelopeId) {
+		log.info("Sending expiration reminder notifications for envelope ID: {}", envelopeId);
+		
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		if (envelopeOptional.isEmpty()) {
+			log.warn("Envelope with ID {} not found for expiration reminder", envelopeId);
+			return;
+		}
+		
+		Envelope envelope = envelopeOptional.get();
+		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		
+		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
+		esignEmailDynamicFields.setDocumentName(documentName);
+		
+		// Notify all recipients who haven't completed signing
+		for (Recipient recipient : envelope.getRecipients()) {
+			if (recipient.getStatus() != RecipientStatus.COMPLETED 
+					&& recipient.getAddressBook() != null 
+					&& recipient.getAddressBook().getInternalUser() != null 
+					&& recipient.getAddressBook().getInternalUser().getEmployee() != null) {
+				
+				String resourceId = envelope.getId() + "," 
+						+ envelope.getDocuments().getFirst().getId() + "," 
+						+ recipient.getId();
+				
+				notificationService.createNotification(
+						recipient.getAddressBook().getInternalUser().getEmployee(),
+						resourceId,
+						NotificationType.ESIGN_DOCUMENT_EXPIRED,
+						EmailBodyTemplates.ESIGN_DOCUMENT_EXPIRED,
+						esignEmailDynamicFields,
+						NotificationCategory.ESIGN
+				);
+				
+				log.info("Created expiration reminder notification for recipient ID: {} in envelope ID: {}", 
+						recipient.getId(), envelopeId);
+			}
+		}
 	}
 
 }

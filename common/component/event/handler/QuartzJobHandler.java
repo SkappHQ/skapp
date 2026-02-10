@@ -47,6 +47,7 @@ public class QuartzJobHandler implements Job {
 			switch (entityType) {
 				case ENVELOPE -> envelopeService.expireEnvelope(entityId);
 				case INVOICE -> invoiceService.handleInvoiceExpiration(entityId);
+				case ENVELOPE_EXPIRATION_REMINDER -> envelopeService.sendExpirationReminder(entityId);
 				default -> log.warn("No handler implemented for entity type: {}", entityType);
 			}
 

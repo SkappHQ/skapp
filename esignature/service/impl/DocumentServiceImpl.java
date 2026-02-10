@@ -472,6 +472,7 @@ public class DocumentServiceImpl implements DocumentService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 				recipientService.sendDocumentCompletedEmailNotifications(completedEnvelopeId, recipientAccessUrls);
 			}
 
@@ -694,6 +695,7 @@ public class DocumentServiceImpl implements DocumentService {
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
 					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 					recipientService.sendDocumentCompletedEmailNotifications(parallelEnvelopeId,
 							parallelRecipientAccessUrls);
 				}
