@@ -368,7 +368,6 @@ public class DocumentServiceImpl implements DocumentService {
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
-		// Create in-app notification for sender when recipient completes
 		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
@@ -602,7 +601,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		// Create in-app notification for sender when recipient completes
 		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
