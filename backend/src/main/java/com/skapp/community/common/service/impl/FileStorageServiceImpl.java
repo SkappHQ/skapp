@@ -31,17 +31,23 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +60,14 @@ import java.util.stream.Stream;
 public class FileStorageServiceImpl implements FileStorageService {
 
 	private static final String ALGORITHM = "AES";
+
+	private static final String TRANSFORMATION = "AES/GCM/NoPadding";
+
+	private static final int GCM_IV_LENGTH = 12;
+
+	private static final int GCM_TAG_LENGTH = 128;
+
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final FileStorageConfig fileStorageConfig;
 
@@ -245,29 +259,54 @@ public class FileStorageServiceImpl implements FileStorageService {
 	}
 
 	private void encryptFile(File file) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		Key key = generateKey();
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
-		cipher.init(Cipher.ENCRYPT_MODE, key);
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+		SecretKey key = generateKey();
+
+		byte[] iv = new byte[GCM_IV_LENGTH];
+		SECURE_RANDOM.nextBytes(iv);
+
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+		cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
 
 		byte[] inputBytes = readFileToByteArray(file);
-		byte[] outputBytes = cipher.doFinal(inputBytes);
+		byte[] encryptedBytes = cipher.doFinal(inputBytes);
+
+		byte[] outputBytes = ByteBuffer.allocate(iv.length + encryptedBytes.length).put(iv).put(encryptedBytes).array();
 
 		writeByteArrayToFile(file, outputBytes);
 	}
 
 	private byte[] decryptFile(File file) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		Key key = generateKey();
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
-		cipher.init(Cipher.DECRYPT_MODE, key);
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+		SecretKey key = generateKey();
 
-		byte[] inputBytes = readFileToByteArray(file);
-		return cipher.doFinal(inputBytes);
+		byte[] fileBytes = readFileToByteArray(file);
+
+		ByteBuffer byteBuffer = ByteBuffer.wrap(fileBytes);
+		byte[] iv = new byte[GCM_IV_LENGTH];
+		byteBuffer.get(iv);
+		byte[] encryptedBytes = new byte[byteBuffer.remaining()];
+		byteBuffer.get(encryptedBytes);
+
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+		cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
+
+		return cipher.doFinal(encryptedBytes);
 	}
 
-	private Key generateKey() {
-		return new SecretKeySpec(fileStorageEncryptionKey.getBytes(), ALGORITHM);
+	private SecretKey generateKey() {
+		try {
+			byte[] keyBytes = fileStorageEncryptionKey.getBytes(StandardCharsets.UTF_8);
+			MessageDigest sha = MessageDigest.getInstance("SHA-256");
+			keyBytes = sha.digest(keyBytes);
+			return new SecretKeySpec(keyBytes, ALGORITHM);
+		}
+		catch (NoSuchAlgorithmException e) {
+			log.error("Failed to generate encryption key: {}", e.getMessage());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_DECRYPTION_SET_KEY_FAILED);
+		}
 	}
 
 	private byte[] readFileToByteArray(File file) throws IOException {
