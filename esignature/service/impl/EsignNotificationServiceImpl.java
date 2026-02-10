@@ -7,7 +7,6 @@ import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -15,16 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EsignNotificationServiceImpl implements EsignNotificationService {
 
 	private final NotificationService notificationService;
-
-	private final EnvelopeDao envelopeDao;
 
 	@Override
 	public void notifyEnvelopeOwnerOnDocumentCompleted(Envelope envelope, Recipient recipient) {
@@ -52,7 +47,8 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		if (recipient.getMemberRole().equals(com.skapp.enterprise.esignature.type.MemberRole.CC) 
 				|| recipient.getAddressBook() == null 
 				|| recipient.getAddressBook().getInternalUser() == null 
-				|| recipient.getAddressBook().getInternalUser().getEmployee() == null) {
+				|| recipient.getAddressBook().getInternalUser().getEmployee() == null
+				|| recipient.getEnvelope() == null) {
 			return;
 		}
 
@@ -81,7 +77,8 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 	public void notifyRecipientOnReminder(Recipient recipient) {
 		if (recipient.getAddressBook() == null 
 				|| recipient.getAddressBook().getInternalUser() == null 
-				|| recipient.getAddressBook().getInternalUser().getEmployee() == null) {
+				|| recipient.getAddressBook().getInternalUser().getEmployee() == null
+				|| recipient.getEnvelope() == null) {
 			return;
 		}
 
@@ -108,16 +105,14 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 	}
 
 	@Override
-	public void notifyRecipientsOnExpirationReminder(Long envelopeId) {
-		log.info("Sending expiration reminder notifications for envelope ID: {}", envelopeId);
+	public void notifyRecipientsOnExpirationReminder(Envelope envelope) {
+		log.info("Sending expiration reminder notifications for envelope ID: {}", envelope.getId());
 		
-		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
-		if (envelopeOptional.isEmpty()) {
-			log.warn("Envelope with ID {} not found for expiration reminder", envelopeId);
+		if (envelope.getDocuments() == null || envelope.getDocuments().isEmpty()) {
+			log.warn("No documents found for envelope ID: {}", envelope.getId());
 			return;
 		}
 		
-		Envelope envelope = envelopeOptional.get();
 		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
 		
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
@@ -143,7 +138,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 				);
 				
 				log.info("Created expiration reminder notification for recipient ID: {} in envelope ID: {}", 
-						recipient.getId(), envelopeId);
+						recipient.getId(), envelope.getId());
 			}
 		}
 	}

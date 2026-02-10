@@ -409,7 +409,6 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		// Create in-app notification for sender when envelope is completed
 		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope, recipient);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));

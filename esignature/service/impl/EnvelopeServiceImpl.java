@@ -1381,6 +1381,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			envelopeDao.save(envelope);
 
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+					AuditAction.ENVELOPE_EXPIRED, null, null, null);			
+
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
@@ -1402,8 +1405,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		
 		Envelope envelope = envelopeOptional.get();
 		
-		if (EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
-			esignNotificationService.notifyRecipientsOnExpirationReminder(envelopeId);
+		if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty() 
+				&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
+			esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
 			log.info("Expiration reminder notifications sent for envelope ID: {}", envelopeId);
 		}
 	}
