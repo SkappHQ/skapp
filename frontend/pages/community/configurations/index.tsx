@@ -3,57 +3,27 @@ import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useMemo, useState } from "react";
 
-import AttendanceConfiguration from "~community/attendance/components/organisms/AttendanceConfiguration/AttendanceConfiguration";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
-import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
-import InvoiceConfigurations from "~enterprise/configurations/components/organisms/InvoiceConfigurations/InvoiceConfigurations";
-import SignConfigurations from "~enterprise/configurations/components/organisms/signConfigurations/signConfigurations";
-
-enum ConfigurationTabIds {
-  TIME = "time",
-  ATTENDANCE = "attendance",
-  SIGN = "sign",
-  USER_ROLES = "user-roles",
-  INVOICE = "invoice"
-}
+import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
 
 const Configurations: NextPage = () => {
   const { user } = useAuth();
   const translateText = useTranslator("configurations");
+  const environment = useGetEnvironment();
+  const isEnterprise = environment === appModes.ENTERPRISE;
 
   const allTabs = useMemo(
-    () => [
-      {
-        id: ConfigurationTabIds.TIME,
-        label: translateText(["tabs", "time"]),
-        requiredRoles: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: ConfigurationTabIds.ATTENDANCE,
-        label: translateText(["tabs", "attendance"]),
-        requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
-      },
-      {
-        id: ConfigurationTabIds.SIGN,
-        label: translateText(["tabs", "sign"]),
-        requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
-      },
-      {
-        id: ConfigurationTabIds.USER_ROLES,
-        label: translateText(["tabs", "userRoles"]),
-        requiredRoles: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: ConfigurationTabIds.INVOICE,
-        label: translateText(["tabs", "invoice"]),
-        requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
-      }
-    ],
-    [translateText]
+    () =>
+      isEnterprise
+        ? getEnterpriseConfigurationTabs(translateText)
+        : getConfigurationTabs(translateText),
+    [translateText, isEnterprise]
   );
 
   const visibleTabs = useMemo(() => {
@@ -65,26 +35,7 @@ const Configurations: NextPage = () => {
     });
   }, [allTabs, user?.roles]);
 
-  const [activeTab, setActiveTab] = useState<ConfigurationTabIds>(
-    visibleTabs[0]?.id as ConfigurationTabIds
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case ConfigurationTabIds.TIME:
-        return <TimeConfigurations />;
-      case ConfigurationTabIds.ATTENDANCE:
-        return <AttendanceConfiguration />;
-      case ConfigurationTabIds.SIGN:
-        return <SignConfigurations />;
-      case ConfigurationTabIds.USER_ROLES:
-        return <UserRolesTable />;
-      case ConfigurationTabIds.INVOICE:
-        return <InvoiceConfigurations />;
-      default:
-        return null;
-    }
-  };
+  const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 
   return (
     <ContentLayout
@@ -98,11 +49,11 @@ const Configurations: NextPage = () => {
         <Tabs
           tabs={visibleTabs}
           activeTabId={activeTab}
-          onTabChange={(id) => setActiveTab(id as ConfigurationTabIds)}
+          onTabChange={(id) => setActiveTab(id)}
           size="lg"
         />
         <Divider />
-        {renderTabContent()}
+        {visibleTabs.find((tab) => tab.id === activeTab)?.component}
       </Box>
     </ContentLayout>
   );
