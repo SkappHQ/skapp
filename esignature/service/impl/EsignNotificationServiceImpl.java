@@ -47,8 +47,8 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 
 	@Override
 	public void notifyRecipientOnSignRequest(Recipient recipient, String documentId, String envelopeId) {
-		if (recipient.getMemberRole().equals(MemberRole.CC)
-				|| recipient.getAddressBook() == null || recipient.getAddressBook().getInternalUser() == null
+		if (recipient.getMemberRole().equals(MemberRole.CC) || recipient.getAddressBook() == null
+				|| recipient.getAddressBook().getInternalUser() == null
 				|| recipient.getAddressBook().getInternalUser().getEmployee() == null
 				|| recipient.getEnvelope() == null) {
 			return;
@@ -149,8 +149,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		log.info("Created decline notification for envelope owner. Envelope ID: {}", envelope.getId());
 
 		if (envelope.getSignType().equals(SignType.PARALLEL)
-				|| (envelope.getSignType().equals(SignType.SEQUENTIAL)
-						&& envelope.getRecipients().size() > 0)) {
+				|| (envelope.getSignType().equals(SignType.SEQUENTIAL) && envelope.getRecipients().size() > 0)) {
 
 			for (Recipient recipient : envelope.getRecipients()) {
 				if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null
