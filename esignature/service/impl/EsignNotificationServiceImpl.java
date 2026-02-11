@@ -8,6 +8,8 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.service.EsignNotificationService;
+import com.skapp.enterprise.esignature.type.MemberRole;
+import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +47,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 
 	@Override
 	public void notifyRecipientOnSignRequest(Recipient recipient, String documentId, String envelopeId) {
-		if (recipient.getMemberRole().equals(com.skapp.enterprise.esignature.type.MemberRole.CC)
+		if (recipient.getMemberRole().equals(MemberRole.CC)
 				|| recipient.getAddressBook() == null || recipient.getAddressBook().getInternalUser() == null
 				|| recipient.getAddressBook().getInternalUser().getEmployee() == null
 				|| recipient.getEnvelope() == null) {
@@ -146,9 +148,9 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 
 		log.info("Created decline notification for envelope owner. Envelope ID: {}", envelope.getId());
 
-		if (envelope.getSignType().equals(com.skapp.enterprise.esignature.type.SignType.PARALLEL)
-				|| (envelope.getSignType().equals(com.skapp.enterprise.esignature.type.SignType.SEQUENTIAL)
-						&& envelope.getRecipients().size() > 1)) {
+		if (envelope.getSignType().equals(SignType.PARALLEL)
+				|| (envelope.getSignType().equals(SignType.SEQUENTIAL)
+						&& envelope.getRecipients().size() > 0)) {
 
 			for (Recipient recipient : envelope.getRecipients()) {
 				if (recipient.getAddressBook() != null && recipient.getAddressBook().getInternalUser() != null
