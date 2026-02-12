@@ -84,7 +84,7 @@ public class EnvelopeController {
 					+ "sender email, status, expiry date, and received date. Supports filtering by envelope status, "
 					+ "searching by subject or sender email, and sorting by expire and received dates.")
 	@GetMapping(value = "/inbox/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or (hasRole('ROLE_PEOPLE_ADMIN') and hasAnyRole('ESIGN_ADMIN', 'ESIGN_SENDER'))")
 	public ResponseEntity<ResponseEntityDto> getAllUserEnvelopesByUserId(
 			@Valid EnvelopeInboxFilterDto envelopeInboxFilterDto, @PathVariable Long userId) {
 		ResponseEntityDto response = envelopeService.getAllUserEnvelopesByUserId(envelopeInboxFilterDto, userId);
@@ -122,7 +122,7 @@ public class EnvelopeController {
 	@Operation(summary = "Get envelope details created by the current sender",
 			description = "Returns the details of the envelope created or sent by the currently logged-in user.")
 	@GetMapping(value = "envelope-sender/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ESIGN_SENDER')")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or (hasRole('ROLE_PEOPLE_ADMIN') and hasAnyRole('ESIGN_ADMIN', 'ESIGN_SENDER')) or hasRole('ESIGN_SENDER')")
 	public ResponseEntity<ResponseEntityDto> getEnvelopeForSender(
 			@PathVariable @Schema(description = "ID of the envelope to get") Long id) {
 		ResponseEntityDto response = envelopeService.getEnvelopeForSender(id);

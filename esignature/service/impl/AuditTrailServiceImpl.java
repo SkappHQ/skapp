@@ -8,6 +8,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.config.AuditContext;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -264,12 +265,21 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private static void checkAuthorization(boolean isInbox, User currentUser, Envelope envelope,
 			AddressBook ownerAddressBook) {
-		Role esignRole = currentUser.getEmployee().getEmployeeRole().getEsignRole();
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		Role esignRole = employeeRole.getEsignRole();
+		Role peopleRole = employeeRole.getPeopleRole();
+
+		boolean isSuperAdmin = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin());
+		boolean hasAdminAccess = isSuperAdmin || (peopleRole.equals(Role.PEOPLE_ADMIN)
+				&& (esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.ESIGN_SENDER)));
+
+		if (hasAdminAccess) {
+			return;
+		}
 
 		boolean isSenderRole = esignRole.equals(Role.ESIGN_SENDER);
 		boolean isEmployee = esignRole.equals(Role.ESIGN_EMPLOYEE);
 
-		// Check if user is authorized to access this envelope's audit trail
 		boolean needsRecipientCheck = isInbox || isEmployee;
 		boolean needsOwnerCheck = !isInbox && isSenderRole;
 
