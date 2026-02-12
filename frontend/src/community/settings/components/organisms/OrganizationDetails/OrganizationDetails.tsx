@@ -3,7 +3,6 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { useFormik } from "formik";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
-import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useUpdateOrganizationDetails } from "~community/common/api/settingsApi";
 import Button from "~community/common/components/atoms/Button/Button";
 import DropdownSearch from "~community/common/components/molecules/DropDownSearch/DropDownSearch";
@@ -15,13 +14,20 @@ import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import { OrganizationDetailsType } from "~community/common/types/OrganizationCreateTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { generateTimezoneList } from "~community/common/utils/dateTimeUtils";
 import { organizationSetupValidation } from "~community/common/utils/validation";
 import useGetCountryList from "~community/people/hooks/useGetCountryList";
 import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
 
-const OrganizationDetails = (): JSX.Element => {
+interface OrganizationDetailsProps {
+  organizationDetails: OrganizationDetailsType;
+}
+
+const OrganizationDetails = ({
+  organizationDetails
+}: OrganizationDetailsProps): JSX.Element => {
   const translateText = useTranslator("settings");
 
   const theme: Theme = useTheme();
@@ -33,8 +39,6 @@ const OrganizationDetails = (): JSX.Element => {
     "onboarding",
     "organizationCreate"
   );
-
-  const { data: organizationDetails } = useGetOrganization();
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
@@ -54,17 +58,15 @@ const OrganizationDetails = (): JSX.Element => {
   });
 
   useEffect(() => {
-    if (organizationDetails?.results[0]) {
+    if (organizationDetails) {
       setInitialValues({
-        organizationName: organizationDetails.results[0].organizationName || "",
-        organizationWebsite:
-          organizationDetails.results[0].organizationWebsite || "",
-        country: organizationDetails.results[0].country || "",
-        organizationTimeZone:
-          organizationDetails.results[0].organizationTimeZone || "",
+        organizationName: organizationDetails.organizationName || "",
+        organizationWebsite: organizationDetails.organizationWebsite || "",
+        country: organizationDetails.country || "",
+        organizationTimeZone: organizationDetails.organizationTimeZone || "",
         companyDomain: tenantID as string,
         organizationGlobalLogin: globalLogin || "",
-        organizationLogo: organizationDetails.results[0].organizationLogo || ""
+        organizationLogo: organizationDetails.organizationLogo || ""
       });
       setIsInitialLoadComplete(true);
     }

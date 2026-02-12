@@ -7,7 +7,8 @@ import BrandingDetails from "../BrandingDetails/BrandingDetails";
 import OrganizationDetails from "../OrganizationDetails/OrganizationDetails";
 
 const OrganizationSettings = (): JSX.Element => {
-  const { data: organizationDetails } = useGetOrganization();
+  const { data: organizationResponse } = useGetOrganization();
+  const organizationDetails = organizationResponse?.results[0];
 
   return (
     <Box>
@@ -19,12 +20,9 @@ const OrganizationSettings = (): JSX.Element => {
           flexDirection: "column"
         }}
       >
-        <OrganizationDetails />
+        <OrganizationDetails organizationDetails={organizationDetails} />
         <Divider />
-        <BrandingDetails
-          themeColor={organizationDetails.results[0].themeColor}
-          logo={organizationDetails.results[0].organizationLogo}
-        />
+        <BrandingDetails organizationDetails={organizationDetails} />
       </Box>
     </Box>
   );

@@ -18,6 +18,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { OrganizationDetailsType } from "~community/common/types/OrganizationCreateTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
@@ -28,18 +29,19 @@ interface FormValues {
 }
 
 interface BrandingDetailsProps {
-  themeColor: ThemeTypes;
-  logo: string;
+  organizationDetails: OrganizationDetailsType;
 }
 
 const BrandingDetails = ({
-  themeColor,
-  logo
+  organizationDetails
 }: BrandingDetailsProps): JSX.Element => {
   const translateText = useTranslator("settings");
 
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
+
+  const themeColor = organizationDetails.themeColor;
+  const logo = organizationDetails.organizationLogo;
 
   const [formValues, setFormValues] = useState<FormValues>({
     organizationLogo: logo,
