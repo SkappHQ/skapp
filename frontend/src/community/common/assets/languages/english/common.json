@@ -113,6 +113,7 @@
     "dropDownListLabel": "Global default login method",
     "resetPasswordButtonText": "Reset password",
     "organizationDetailsTitle": "Organization details",
+    "brandingSettingsTitle": "Branding settings",
     "organizationSettingsDescription": "Change the organizational settings you set up in the onboarding flow.",
     "organizationDetailsButtonText": "Organization details",
     "brandingSettingsButtonText": "Branding settings",
