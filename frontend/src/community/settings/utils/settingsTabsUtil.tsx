@@ -9,13 +9,6 @@ export const getSettingsTabs = (
 ): SettingsTab[] => {
   return [
     {
-      id: "organization",
-      label: translateText(["tabs", "organization"]),
-      requiredRoles: [AdminTypes.SUPER_ADMIN],
-      component: <OrganizationSettings />,
-      position: 4
-    },
-    {
       id: "account",
       label: translateText(["tabs", "account"]),
       requiredRoles: [
@@ -26,6 +19,13 @@ export const getSettingsTabs = (
       ],
       component: <AccountSettings />,
       position: 1
+    },
+    {
+      id: "organization",
+      label: translateText(["tabs", "organization"]),
+      requiredRoles: [AdminTypes.SUPER_ADMIN],
+      component: <OrganizationSettings />,
+      position: 4
     }
   ];
 };

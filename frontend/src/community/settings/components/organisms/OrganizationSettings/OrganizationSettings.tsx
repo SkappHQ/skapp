@@ -210,7 +210,15 @@ const OrganizationSettings = (): JSX.Element => {
             handleFileAttachments={handleFileAttachments}
           />
 
-          <Stack spacing={2} sx={{ width: "31.25rem" }}>
+          <Stack sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+            <Button
+              label={translateText(["cancelBtnText"])}
+              buttonStyle={ButtonStyle.TERTIARY}
+              isFullWidth={false}
+              onClick={handleCancel}
+              endIcon={IconName.CLOSE_ICON}
+              disabled={isLoading}
+            />
             <Button
               label={translateText(["saveChangesBtnText"])}
               buttonStyle={ButtonStyle.PRIMARY}
@@ -220,13 +228,7 @@ const OrganizationSettings = (): JSX.Element => {
               }
               isLoading={isLoading}
               onClick={() => handleSubmit()}
-            />
-            <Button
-              label={translateText(["cancelBtnText"])}
-              buttonStyle={ButtonStyle.TERTIARY}
-              endIcon={IconName.CLOSE_ICON}
-              disabled={isLoading}
-              onClick={handleCancel}
+              isFullWidth={false}
             />
           </Stack>
         </Box>

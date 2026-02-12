@@ -133,54 +133,6 @@ const SettingsSection: FC<SettingsSectionProps> = ({
           )}
 
           {customSettingsComponent && <>{customSettingsComponent}</>}
-
-          <Box sx={{ py: "0.5rem" }}>
-            <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-              {translatedText(["organizationSettingsTitle"])}
-            </Typography>
-
-            <Typography variant="body1">
-              {translatedText(["organizationSettingsDescription"])}
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                width: "100%",
-                flexDirection: isLargeScreen ? "column" : "row",
-                gap: "0.75rem",
-                mt: "1.25rem"
-              }}
-            >
-              <Button
-                label={translatedText(["organizationDetailsButtonText"])}
-                startIcon={IconName.WRENCH_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_ORGANIZATION_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-              <Button
-                label={translatedText(["brandingSettingsButtonText"])}
-                startIcon={IconName.PAINT_TRAY_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_BRANDING_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-            </Box>
-          </Box>
-
-          <Divider />
         </>
       )}
 
