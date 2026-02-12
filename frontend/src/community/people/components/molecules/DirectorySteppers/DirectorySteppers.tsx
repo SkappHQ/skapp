@@ -32,7 +32,7 @@ const DirectorySteppers = ({
 
   const { user } = useAuth();
 
-  const { isPeopleAdmin } = useSessionData();
+  const { isSuperAdmin, isPeopleAdmin, isESignSender } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
 
@@ -99,7 +99,9 @@ const DirectorySteppers = ({
     user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-    ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
+    ...(isSuperAdmin || (isPeopleAdmin && isESignSender)
+      ? [translateText(["editAllInfo", "documents"])]
+      : [])
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
