@@ -133,6 +133,8 @@ export const useUpdateOrganizationDetails = (onSuccess: () => void) => {
       organizationName?: string;
       organizationWebsite?: string;
       country?: string;
+      organizationTimeZone?: string;
+      companyDomain?: string;
       organizationLogo?: string | null;
       themeColor?: string;
     }) =>
