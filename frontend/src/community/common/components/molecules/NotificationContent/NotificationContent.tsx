@@ -3,7 +3,10 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { NotificationDataTypes, notificationDefaultImage } from "~community/common/types/notificationTypes";
+import {
+  NotificationDataTypes,
+  notificationDefaultImage
+} from "~community/common/types/notificationTypes";
 import { fromDateToRelativeTime } from "~community/common/utils/dateTimeUtils";
 import i18n from "~i18n";
 
@@ -13,12 +16,14 @@ interface Props {
   item: NotificationDataTypes;
   isLeaveModuleDisabled?: boolean;
   isAttendanceModuleDisabled?: boolean;
+  isEsignatureModuleDisabled?: boolean;
 }
 
 const NotificationContent = ({
   item,
   isLeaveModuleDisabled,
-  isAttendanceModuleDisabled
+  isAttendanceModuleDisabled,
+  isEsignatureModuleDisabled
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("notifications");
@@ -26,8 +31,9 @@ const NotificationContent = ({
   const isViewed =
     item.isViewed ||
     isLeaveModuleDisabled === true ||
-    isAttendanceModuleDisabled === true;
-  
+    isAttendanceModuleDisabled === true ||
+    isEsignatureModuleDisabled === true;
+
   return (
     <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
       <Box>
