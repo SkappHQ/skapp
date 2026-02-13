@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { FC, ReactNode } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
@@ -28,13 +29,14 @@ import ManageSubscriptionSettingsSection from "~enterprise/settings/components/m
 
 import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface SettingsSectionProps {
   customSettingsComponent?: ReactNode;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) => {
+const SettingsSection: FC<SettingsSectionProps> = ({
+  customSettingsComponent
+}) => {
   const translatedText = useTranslator("settings");
 
   const theme: Theme = useTheme();
@@ -130,65 +132,13 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
             </>
           )}
 
-          {customSettingsComponent && (
-            <>
-              {customSettingsComponent}        
-            </>
-          )}
-
-          <Box sx={{ py: "1.5rem" }}>
-            <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-              {translatedText(["organizationSettingsTitle"])}
-            </Typography>
-
-            <Typography variant="body1">
-              {translatedText(["organizationSettingsDescription"])}
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                width: "100%",
-                flexDirection: isLargeScreen ? "column" : "row",
-                gap: "0.75rem",
-                mt: "1.25rem"
-              }}
-            >
-              <Button
-                label={translatedText(["organizationDetailsButtonText"])}
-                startIcon={IconName.WRENCH_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_ORGANIZATION_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-              <Button
-                label={translatedText(["brandingSettingsButtonText"])}
-                startIcon={IconName.PAINT_TRAY_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_BRANDING_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-            </Box>
-          </Box>
-
-          <Divider />
+          {customSettingsComponent && <>{customSettingsComponent}</>}
         </>
       )}
 
       {globalLoginMethod === GlobalLoginMethod.CREDENTIALS && (
         <>
-          <Box sx={{ py: "1.5rem" }}>
+          <Box sx={{ py: "0.5rem" }}>
             <Typography variant="h2" sx={{ pb: "0.75rem" }}>
               {translatedText(["securitySettingsTitle"])}
             </Typography>

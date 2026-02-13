@@ -1,3 +1,5 @@
+import { ThemeTypes } from "./AvailableThemeColors";
+
 export interface SuperAdminCreateType {
   firstName: string;
   lastName: string;
@@ -27,3 +29,12 @@ export type Organization = {
   accountUrl?: string;
   loginMethod?: string;
 };
+
+export interface OrganizationDetailsType {
+  organizationName: string;
+  organizationWebsite: string;
+  country: string;
+  organizationTimeZone: string;
+  organizationLogo: string;
+  themeColor: ThemeTypes;
+}

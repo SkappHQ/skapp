@@ -43,8 +43,7 @@ const ColorInputField: FC<Props> = ({
 
   useEffect(() => {
     setSelectedColor((value as string) ?? defaultColor);
-    onSelect?.(inputName, value ?? defaultColor);
-  }, []);
+  }, [value]);
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);

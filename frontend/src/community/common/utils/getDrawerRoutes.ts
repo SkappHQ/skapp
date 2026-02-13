@@ -250,7 +250,7 @@ const getDrawerRoutes = ({
           return {
             id: route?.id,
             name: route?.name,
-            url: ROUTES.SETTINGS.ACCOUNT,
+            url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: false,
             badge: route?.badge
