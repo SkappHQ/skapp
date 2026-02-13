@@ -48,6 +48,8 @@ public interface EnvelopeService {
 
 	void expireEnvelope(Long envelopeId);
 
+	void sendExpirationReminder(Long envelopeId);
+
 	ResponseEntityDto getEnvelopeTierLimitations();
 
 }

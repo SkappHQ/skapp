@@ -213,4 +213,11 @@ public class EsignUtil {
 
 	}
 
+	public static String truncateDocumentName(String documentName) {
+		if (documentName != null && documentName.length() > EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) {
+			return documentName.substring(0, EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) + "...";
+		}
+		return documentName;
+	}
+
 }

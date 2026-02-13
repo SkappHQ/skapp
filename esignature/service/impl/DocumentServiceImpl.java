@@ -50,6 +50,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
@@ -150,6 +151,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private final DocumentProcessingService documentProcessingService;
 
 	private final RecipientService recipientService;
+
+	private final EsignNotificationService esignNotificationService;
 
 	private final FieldRepository fieldRepository;
 
@@ -365,6 +368,8 @@ public class DocumentServiceImpl implements DocumentService {
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
+
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
 		auditTrailDao.save(auditTrail);
@@ -403,6 +408,8 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setStatus(EnvelopeStatus.COMPLETED);
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
+
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope, recipient);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
@@ -463,6 +470,8 @@ public class DocumentServiceImpl implements DocumentService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(completedEnvelopeId, tenantId,
+						QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 				recipientService.sendDocumentCompletedEmailNotifications(completedEnvelopeId, recipientAccessUrls);
 			}
 
@@ -592,6 +601,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
+
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 
 		// Process complete document if all recipients have completed
@@ -617,7 +628,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 			document.setCurrentVersion(finalVersion.getVersionNumber());
 			documentRepository.save(document);
-
 			Envelope envelope = document.getEnvelope();
 			envelope.setStatus(EnvelopeStatus.COMPLETED);
 			envelope.setCompletedAt(getCurrentUtcDateTime());
@@ -681,6 +691,8 @@ public class DocumentServiceImpl implements DocumentService {
 				public void afterCommit() {
 					String tenantId = TenantContext.getCurrentTenant();
 					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId, QuartzEntityType.ENVELOPE);
+					scheduleService.unScheduleExpiration(parallelEnvelopeId, tenantId,
+							QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 					recipientService.sendDocumentCompletedEmailNotifications(parallelEnvelopeId,
 							parallelRecipientAccessUrls);
 				}

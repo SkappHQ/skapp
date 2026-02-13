@@ -3,6 +3,10 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailButtonText;
@@ -38,6 +42,8 @@ public class EsignEmailServiceImpl implements EsignEmailService {
 	private final EmailService emailService;
 
 	private final OrganizationDao organizationDao;
+
+	private final NotificationService notificationService;
 
 	@Value("${app.protocol}")
 	private String protocol;
