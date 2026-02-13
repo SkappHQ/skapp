@@ -23,6 +23,8 @@ import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
 import CheckCircleOutlineIcon from "~community/common/assets/Icons/CheckCircleOutlineIcon";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CheckWrapperIcon from "~community/common/assets/Icons/CheckWrapperIcon";
+import CheckboxIcon from "~community/common/assets/Icons/CheckboxIcon";
+import CheckboxSelectedIcon from "~community/common/assets/Icons/CheckboxSelectedIcon";
 import ChevronLeftIcon from "~community/common/assets/Icons/ChevronLeftIcon";
 import ChevronRightIcon from "~community/common/assets/Icons/ChevronRightIcon";
 import ClockDenyIcon from "~community/common/assets/Icons/ClockDenyIcon";
@@ -136,6 +138,7 @@ import TickIcon from "~community/common/assets/Icons/TickIcon";
 import TimerIcon from "~community/common/assets/Icons/TimerIcon";
 import TimeSheetIcon from "~community/common/assets/Icons/TimesheetIcon";
 import UnCheckedIcon from "~community/common/assets/Icons/UnCheckedIcon";
+import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
 import UpArrowIcon from "~community/common/assets/Icons/UpArrowIcon";
 import UpgradeInfoIcon from "~community/common/assets/Icons/UpgradeInfoIcon";
@@ -218,6 +221,7 @@ export const IconMapping: Partial<
   [IconName.TICK_ICON]: TickIcon,
   [IconName.EMOJI_ICON]: EmojiIcon,
   [IconName.UNCHECKED_ICON]: UnCheckedIcon,
+  [IconName.RADIO_SELECTED_ICON]: RadioSelectedIcon,
   [IconName.DOWNLOAD_ICON]: DownloadIcon,
   [IconName.ASSET_ICON]: AssetIcon,
   [IconName.OBJECTIVES_ICON]: ObjectivesIcon,
@@ -227,6 +231,8 @@ export const IconMapping: Partial<
   [IconName.PAUSE_ICON]: PauseIcon,
   [IconName.UNDO_ICON]: UndoIcon,
   [IconName.CHECK_ICON]: CheckIcon,
+  [IconName.CHECKBOX_ICON]: CheckboxIcon,
+  [IconName.CHECKBOX_SELECTED_ICON]: CheckboxSelectedIcon,
   [IconName.RESTRICTIONS_ICON]: RestrictionsIcon,
   [IconName.DENIED_ICON]: DeniedIcon,
   [IconName.CALENDAR_ICON]: CalendarIcon,
