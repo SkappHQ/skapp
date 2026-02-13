@@ -5,6 +5,7 @@ import { NotificationItemsTypes } from "~community/common/types/notificationType
 
 interface HandleNotifyRowParams {
   id: number;
+  resourceId?: string;
   notificationType: NotificationItemsTypes | null;
   isCausedByCurrentUser: boolean;
   router: AppRouterInstance;
@@ -17,6 +18,7 @@ interface HandleNotifyRowParams {
 
 export const handleNotifyRow = ({
   id,
+  resourceId,
   notificationType,
   isCausedByCurrentUser,
   router,
@@ -48,6 +50,25 @@ export const handleNotifyRow = ({
     isAttendanceManager
   ) {
     router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS);
+  } else if (
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_SIGN_REQUEST ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED
+  ) {
+    if (resourceId) {
+      const [envelopeId, documentId, recipientId] = resourceId.split(",");
+      router.push(
+        `${ROUTES.SIGN.SIGN}?isInternalUser=true&envelopeId=${envelopeId}&documentId=${documentId}&recipientId=${recipientId}`
+      );
+    }
+  } else if (
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED
+  ) {
+    if (resourceId && !isNaN(Number(resourceId))) {
+      router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
+    }
   }
   mutate(id);
 };
