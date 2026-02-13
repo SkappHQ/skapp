@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.util.RoleUtil;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
@@ -953,12 +954,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
 		Role esignRole = employeeRole.getEsignRole();
-		Role peopleRole = employeeRole.getPeopleRole();
 
-		boolean isSuperAdmin = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin());
-		boolean hasEsignAccess = esignRole.equals(Role.ESIGN_ADMIN) || esignRole.equals(Role.ESIGN_SENDER);
-		boolean isAllSentEnvelopes = isSuperAdmin || esignRole.equals(Role.ESIGN_ADMIN)
-				|| (peopleRole.equals(Role.PEOPLE_ADMIN) && hasEsignAccess);
+		boolean isAllSentEnvelopes = RoleUtil.hasEnvelopeAdminAccess(employeeRole)
+				|| esignRole.equals(Role.ESIGN_ADMIN);
 
 		if (!isAllSentEnvelopes && (Optional.ofNullable(addressBook)
 			.map(AddressBook::getInternalUser)
