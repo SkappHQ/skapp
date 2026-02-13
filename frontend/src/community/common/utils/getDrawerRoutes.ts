@@ -258,69 +258,6 @@ const getDrawerRoutes = ({
         }
       }
 
-      if (route?.name === "Configurations") {
-        const isSuperAdmin = userRoles?.some((role) =>
-          [AdminTypes.SUPER_ADMIN].includes(role as AdminTypes)
-        );
-
-        if (isSuperAdmin) {
-          const subRoutes = route?.subTree?.filter((subRoute) => {
-            if (
-              subRoute.name === "Attendance" &&
-              !userRoles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-            ) {
-              return false;
-            }
-            if (
-              subRoute.name === "Sign" &&
-              !userRoles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-            ) {
-              return false;
-            }
-            return subRoute.requiredAuthLevel?.some((requiredRole) =>
-              userRoles?.includes(requiredRole as Role)
-            );
-          });
-
-          return {
-            id: route?.id,
-            name: route?.name,
-            url: ROUTES.CONFIGURATIONS.BASE,
-            icon: route?.icon,
-            hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
-          };
-        }
-
-        const isEsignAdmin = userRoles?.some((role) =>
-          [AdminTypes.ESIGN_ADMIN].includes(role as AdminTypes)
-        );
-
-        if (isEsignAdmin) {
-          const subRoutes = route?.subTree?.filter((subRoute) => {
-            if (
-              subRoute.name === "Sign" &&
-              !userRoles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-            ) {
-              return false;
-            }
-            return subRoute.requiredAuthLevel?.some((requiredRole) =>
-              userRoles?.includes(requiredRole as Role)
-            );
-          });
-
-          return {
-            id: route?.id,
-            name: route?.name,
-            url: ROUTES.CONFIGURATIONS.BASE,
-            icon: route?.icon,
-            hasSubTree: route?.hasSubTree,
-            subTree: subRoutes,
-            badge: route?.badge
-          };
-        }
-      }
-
       if (route?.name === "Sign") {
         if (!userRoles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)) {
           return null;

@@ -173,24 +173,12 @@ const nextConfig = {
         destination: "/community/leave/analytics/reports"
       },
       {
-        source: "/configurations/attendance",
-        destination: "/community/configurations/attendance"
-      },
-      {
-        source: "/configurations/time",
-        destination: "/community/configurations/time"
-      },
-      {
-        source: "/configurations/esign",
-        destination: "/enterprise/configurations/esign"
+        source: "/configurations",
+        destination: "/community/configurations"
       },
       {
         source: "/configurations/user-roles",
         destination: "/community/configurations/user-roles"
-      },
-      {
-        source: "/configurations/invoice",
-        destination: "/enterprise/configurations/invoice"
       },
       {
         source: "/configurations/user-roles/attendance",

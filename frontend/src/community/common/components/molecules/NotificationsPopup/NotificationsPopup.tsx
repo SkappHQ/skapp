@@ -51,84 +51,85 @@ const NotificationsPopup = ({
 
   return (
     <>
-    <Box
-      sx={{
-        maxHeight: isSmallPhoneScreen ? "44vh" : "calc(100vh - 30rem)",
-        overflowY: "auto",
-        "&::-webkit-scrollbar": {
-          width: "0.25rem"
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#ccc",
-          borderRadius: "0.25rem"
-        }
-      }}
-    >
-      {notifications?.length === 0 ? (
-        <TableEmptyScreen
-          title={translateText(["emptyScreenTitle"])}
-          description={translateText(["emptyScreenDescription"])}
-          customStyles={{
-            wrapper: { height: "100%", py: "3rem" }
-          }}
-        />
-      ) : (
-        <>
-          {notifications?.map(
-            (item: NotificationDataTypes, index: Key | null | undefined) => (
-              <MenuItem
-                key={index}
-                sx={{
-                  pt: "1.75rem",
-                  pb: "1rem",
-                  cursor: item.isViewed ? "default" : "pointer",
-                  "&:hover": { background: "transparent" }
-                }}
-                divider
-                disableGutters
-                disableRipple
-                onClick={() => {
-                  handleNotifyRow({
-                    id: item.id,
-                    notificationType: item.notificationType,
-                    isCausedByCurrentUser: item.isCausedByCurrentUser,
-                    router,
-                    mutate,
-                    isLeaveEmployee,
-                    isLeaveManager,
-                    isAttendanceManager,
-                    isAttendanceEmployee
-                  });
-                }}
-                tabIndex={0}
-              >
-                <NotificationContent
-                  isLeaveModuleDisabled={
-                    item?.notificationType ===
-                      NotificationItemsTypes.LEAVE_REQUEST && !isLeaveEmployee
-                  }
-                  isAttendanceModuleDisabled={
-                    item?.notificationType ===
-                      NotificationItemsTypes.TIME_ENTRY && !isAttendanceEmployee
-                  }
-                  item={item}
-                />
-              </MenuItem>
-            )
-          )}
-          
-        </>
-      )}
-    </Box>
-    <Button
-            buttonStyle={ButtonStyle.TERTIARY}
-            label={translateText(["viewAllNotificationsButtonText"])}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            styles={{ mt: "1rem" }}
-            onClick={handelAllNotification}
-            disabled={notifications?.length === 0}
+      <Box
+        sx={{
+          maxHeight: isSmallPhoneScreen ? "44vh" : "calc(100vh - 30rem)",
+          overflowY: "auto",
+          "&::-webkit-scrollbar": {
+            width: "0.25rem"
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#ccc",
+            borderRadius: "0.25rem"
+          }
+        }}
+      >
+        {notifications?.length === 0 ? (
+          <TableEmptyScreen
+            title={translateText(["emptyScreenTitle"])}
+            description={translateText(["emptyScreenDescription"])}
+            customStyles={{
+              wrapper: { height: "100%", py: "3rem" }
+            }}
           />
-         </> 
+        ) : (
+          <>
+            {notifications?.map(
+              (item: NotificationDataTypes, index: Key | null | undefined) => (
+                <MenuItem
+                  key={index}
+                  sx={{
+                    pt: "1.75rem",
+                    pb: "1rem",
+                    cursor: item.isViewed ? "default" : "pointer",
+                    "&:hover": { background: "transparent" }
+                  }}
+                  divider
+                  disableGutters
+                  disableRipple
+                  onClick={() => {
+                    handleNotifyRow({
+                      id: item.id,
+                      resourceId: item.resourceId,
+                      notificationType: item.notificationType,
+                      isCausedByCurrentUser: item.isCausedByCurrentUser,
+                      router,
+                      mutate,
+                      isLeaveEmployee,
+                      isLeaveManager,
+                      isAttendanceManager,
+                      isAttendanceEmployee
+                    });
+                  }}
+                  tabIndex={0}
+                >
+                  <NotificationContent
+                    isLeaveModuleDisabled={
+                      item?.notificationType ===
+                        NotificationItemsTypes.LEAVE_REQUEST && !isLeaveEmployee
+                    }
+                    isAttendanceModuleDisabled={
+                      item?.notificationType ===
+                        NotificationItemsTypes.TIME_ENTRY &&
+                      !isAttendanceEmployee
+                    }
+                    item={item}
+                  />
+                </MenuItem>
+              )
+            )}
+          </>
+        )}
+      </Box>
+      <Button
+        buttonStyle={ButtonStyle.TERTIARY}
+        label={translateText(["viewAllNotificationsButtonText"])}
+        endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        styles={{ mt: "1rem" }}
+        onClick={handelAllNotification}
+        disabled={notifications?.length === 0}
+      />
+    </>
   );
 };
 

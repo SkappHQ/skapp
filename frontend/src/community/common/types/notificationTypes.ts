@@ -6,7 +6,7 @@ export interface NotificationDataTypes {
   notificationType: NotificationItemsTypes | null;
   isViewed: boolean;
   isCausedByCurrentUser: boolean;
-  resourceId: number;
+  resourceId: string;
   authPic?: string;
 }
 
@@ -25,7 +25,13 @@ export interface NotificationTypes {
 
 export enum NotificationItemsTypes {
   LEAVE_REQUEST = "LEAVE_REQUEST",
-  TIME_ENTRY = "TIME_ENTRY"
+  TIME_ENTRY = "TIME_ENTRY",
+  ESIGN_DOCUMENT_SIGN_REQUEST = "ESIGN_DOCUMENT_SIGN_REQUEST",
+  ESIGN_DOCUMENT_COMPLETED = "ESIGN_DOCUMENT_COMPLETED",
+  ESIGN_DOCUMENT_DECLINED = "ESIGN_DOCUMENT_DECLINED",
+  ESIGN_DOCUMENT_VOIDED = "ESIGN_DOCUMENT_VOIDED",
+  ESIGN_DOCUMENT_REMINDER = "ESIGN_DOCUMENT_REMINDER",
+  ESIGN_DOCUMENT_EXPIRED = "ESIGN_DOCUMENT_EXPIRED"
 }
 
 export const notificationDefaultImage = "/logo/skapp-thumbnail_16_16.svg";

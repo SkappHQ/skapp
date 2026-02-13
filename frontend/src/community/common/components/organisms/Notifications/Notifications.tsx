@@ -36,7 +36,8 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
     isAttendanceEmployee,
     isLeaveEmployee,
     isLeaveManager,
-    isAttendanceManager
+    isAttendanceManager,
+    isEsignatureModuleEnabled
   } = useSessionData();
 
   return (
@@ -93,6 +94,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                 onClick={() =>
                   handleNotifyRow({
                     id: item.id,
+                    resourceId: item.resourceId,
                     notificationType: item.notificationType,
                     isCausedByCurrentUser: item.isCausedByCurrentUser,
                     router,
@@ -112,6 +114,21 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   isAttendanceModuleDisabled={
                     item?.notificationType ===
                       NotificationItemsTypes.TIME_ENTRY && !isAttendanceEmployee
+                  }
+                  isEsignatureModuleDisabled={
+                    (item?.notificationType ===
+                      NotificationItemsTypes.ESIGN_DOCUMENT_SIGN_REQUEST ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED) &&
+                    !isEsignatureModuleEnabled
                   }
                   item={item}
                 />
