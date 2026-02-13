@@ -55,6 +55,8 @@ const DirectorySteppers = ({
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 
+  const isEditView = !isIndividualView && !isAccountView;
+
   useEffect(() => {
     if (supervisedData && !supervisorDataLoading) {
       if (isLeaveAdmin) {
@@ -83,12 +85,12 @@ const DirectorySteppers = ({
     translateText(["editAllInfo", "personal"]),
     ...(isIndividualView ? [] : [translateText(["editAllInfo", "emergency"])]),
     translateText(["editAllInfo", "employment"]),
-    ...(isIndividualView || isAccountView
-      ? []
-      : [translateText(["editAllInfo", "systemPermissions"])]),
-    ...(isIndividualView || isAccountView
-      ? []
-      : [translateText(["editAllInfo", "timeline"])]),
+    ...(isEditView
+      ? [translateText(["editAllInfo", "systemPermissions"])]
+      : []),
+    ...(isEditView
+      ? [translateText(["editAllInfo", "timeline"])]
+      : []),
     ...(isLeaveTabVisible &&
     !isAccountView &&
     user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
@@ -99,7 +101,7 @@ const DirectorySteppers = ({
     user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-    ...(isSuperAdmin || (isPeopleAdmin && isESignSender)
+    ...(isEditView && (isSuperAdmin || (isPeopleAdmin && isESignSender))
       ? [translateText(["editAllInfo", "documents"])]
       : [])
   ];
@@ -127,7 +129,7 @@ const DirectorySteppers = ({
       stepperStyles={{
         marginBottom: "1.75rem"
       }}
-      isFullWidth={!(isIndividualView || isAccountView)}
+      isFullWidth={isEditView}
     />
   );
 };
