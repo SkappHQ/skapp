@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +26,7 @@ public class FieldContainerDto {
 
 	private Boolean isMultiSelect;
 
+	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
 	private List<FieldDto> fields;
 
 }

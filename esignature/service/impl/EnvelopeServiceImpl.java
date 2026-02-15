@@ -587,6 +587,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Recipient recipient) {
 		List<Field> fieldList = new ArrayList<>();
 		for (FieldContainerDto fieldContainerDto : fieldContainerDtos) {
+
+			if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+			}
+
 			FieldContainer fieldContainer = eSignMapper.fieldContainerDtoToFieldContainer(fieldContainerDto);
 
 			if (fieldContainerDto.getIsRequired() == null) {

@@ -98,7 +98,7 @@ public interface EsignMapper {
 	DocumentDetailResponseDto documentToDocumentDetailDto(Document document);
 
 	@Mapping(target = "addressBookId", source = "addressBook.id")
-	@Mapping(target = "fieldContainers", expression = "java(mapFieldContainers(recipient))")
+	@Mapping(target = "advanceFieldContainers", expression = "java(mapFieldContainers(recipient))")
 	RecipientDetailResponseDto recipientToRecipientDetailDto(Recipient recipient);
 
 	@Mapping(target = "documentId", source = "document.id")
