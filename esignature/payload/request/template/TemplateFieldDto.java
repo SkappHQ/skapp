@@ -37,4 +37,8 @@ public class TemplateFieldDto {
 	@DecimalMin(value = "0.0", message = "{validation.template.field.height.min}")
 	private Float height;
 
+	private String optionValue;
+
+	private Integer displayOrder;
+
 }

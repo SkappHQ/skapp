@@ -3,7 +3,10 @@ package com.skapp.enterprise.esignature.mapper;
 import com.skapp.enterprise.esignature.model.TemplateDocument;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateField;
+import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.FieldTemplateDetailResponseDto;
@@ -31,5 +34,10 @@ public interface EsignTemplateMapper {
 
 	@Mapping(source = "templateDocument.id", target = "documentId")
 	FieldTemplateDetailResponseDto templateFieldToFieldTemplateDetailResponseDto(TemplateField templateField);
+
+	TemplateFieldContainer templateFieldContainerDtoToTemplateFieldContainer(
+			TemplateFieldContainerDto templateFieldContainerDto);
+
+	TemplateField templateFieldDtoToTemplateField(TemplateFieldDto advanceFieldDto);
 
 }

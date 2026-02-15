@@ -52,4 +52,12 @@ public class TemplateField extends Auditable<String> {
 	@JoinColumn(name = "template_recipient_id", nullable = false)
 	private TemplateRecipient templateRecipient;
 
+	@ManyToOne
+	@JoinColumn(name = "template_field_container_id")
+	private TemplateFieldContainer templateFieldContainer;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "template_field_option_id")
+	private TemplateFieldOption templateFieldOption;
+
 }

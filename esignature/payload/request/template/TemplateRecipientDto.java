@@ -34,4 +34,6 @@ public class TemplateRecipientDto {
 
 	private List<TemplateFieldDto> templateFields;
 
+	private List<TemplateFieldContainerDto> advanceTemplateFieldContainers;
+
 }

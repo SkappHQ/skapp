@@ -13,6 +13,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -20,10 +21,13 @@ import com.skapp.enterprise.esignature.model.TemplateDocument;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateEnvelopeSetting;
 import com.skapp.enterprise.esignature.model.TemplateField;
+import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
+import com.skapp.enterprise.esignature.model.TemplateFieldOption;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeFilterDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeSettingDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
@@ -31,13 +35,16 @@ import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplate
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
+
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
+import com.skapp.enterprise.esignature.repository.TemplateFieldContainerDao;
 import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
+import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 
 import com.skapp.enterprise.esignature.type.UserType;
@@ -53,9 +60,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -84,6 +93,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private final TemplateRecipientDao templateRecipientDao;
 
 	private final AddressBookDao addressBookDao;
+
+	private final TemplateFieldContainerDao templateFieldContainerDao;
 
 	private final EsignTemplateMapper esignTemplateMapper;
 
@@ -570,11 +581,18 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateRecipient.setMfaVerificationMethod(templateRecipientDto.getVerificationType());
 			templateRecipient.setTemplateEnvelope(templateEnvelope);
 
+			List<TemplateField> templateFields = new ArrayList<>();
+
 			if (templateRecipientDto.getTemplateFields() != null
 					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
-				List<TemplateField> templateFields = buildTemplateFieldsForRecipient(
-						templateRecipientDto.getTemplateFields(), templateRecipient);
+				templateFields.addAll(
+						buildTemplateFieldsForRecipient(templateRecipientDto.getTemplateFields(), templateRecipient));
 				templateRecipient.setTemplateFields(templateFields);
+			}
+
+			if (templateRecipientDto.getAdvanceTemplateFieldContainers() != null) {
+				templateFields.addAll(buildTemplateAdvanceFieldsForRecipient(
+						templateRecipientDto.getAdvanceTemplateFieldContainers(), templateRecipient));
 			}
 
 			return templateRecipient;
@@ -605,6 +623,115 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			return templateField;
 		}).toList();
 
+	}
+
+	private List<TemplateField> buildTemplateAdvanceFieldsForRecipient(
+			List<TemplateFieldContainerDto> templateFieldContainerDtos, TemplateRecipient templateRecipient) {
+
+		List<TemplateField> fieldList = new ArrayList<>();
+		for (TemplateFieldContainerDto templateFieldContainerDto : templateFieldContainerDtos) {
+			TemplateFieldContainer templateFieldContainer = esignTemplateMapper
+				.templateFieldContainerDtoToTemplateFieldContainer(templateFieldContainerDto);
+
+			if (templateFieldContainerDto.getIsRequired() == null) {
+				templateFieldContainer.setIsRequired(false);
+
+			}
+
+			if (templateFieldContainerDto.getIsMultiSelect() == null) {
+				templateFieldContainer.setIsMultiSelect(false);
+			}
+
+			Set<String> existingOptionValue = new HashSet<>();
+			Set<Integer> existingDisplayOrder = new HashSet<>();
+
+			// Check for RADIO_BUTTON or DROPDOWN fields
+			boolean isRadioOrDropdown = templateFieldContainerDto.getFields()
+				.stream()
+				.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN);
+
+			if (isRadioOrDropdown) {
+				// Get the type for error message
+				String typeName = templateFieldContainerDto.getFields()
+					.stream()
+					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
+					.findFirst()
+					.map(f -> f.getType().name())
+					.orElse(null);
+
+				long optionCount = templateFieldContainerDto.getFields()
+					.stream()
+					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
+					.map(TemplateFieldDto::getOptionValue)
+					.filter(Objects::nonNull)
+					.distinct()
+					.count();
+				if (optionCount < 2) {
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
+							new String[] { typeName });
+				}
+			}
+
+			for (TemplateFieldDto advanceFieldDto : templateFieldContainerDto.getFields()) {
+				fieldList.add(createAdvanceField(advanceFieldDto, templateRecipient, templateFieldContainer,
+						existingOptionValue, existingDisplayOrder));
+			}
+
+			templateFieldContainerDao.save(templateFieldContainer);
+		}
+		return fieldList;
+	}
+
+	private TemplateField createAdvanceField(TemplateFieldDto advanceFieldDto, TemplateRecipient templateRecipient,
+			TemplateFieldContainer templateFieldContainer, Set<String> existingOptionValue,
+			Set<Integer> existingDisplayOrder) {
+		TemplateDocument templateFieldDocument = templateDocumentDao.findById(advanceFieldDto.getTemplateDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+		TemplateField templateField = esignTemplateMapper.templateFieldDtoToTemplateField(advanceFieldDto);
+		templateField.setXPosition(advanceFieldDto.getXPosition());
+		templateField.setYPosition(advanceFieldDto.getYPosition());
+		templateField.setTemplateRecipient(templateRecipient);
+		templateField.setTemplateDocument(templateFieldDocument);
+		templateField.setTemplateFieldContainer(templateFieldContainer);
+
+		if (!isAdvanceFieldTypeWithOption(advanceFieldDto.getType())) {
+			validateOptionValue(advanceFieldDto, existingOptionValue);
+			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
+
+			TemplateFieldOption templateFieldOption = new TemplateFieldOption();
+			templateFieldOption.setOptionValue(advanceFieldDto.getOptionValue().trim());
+			templateFieldOption.setDisplayOrder(advanceFieldDto.getDisplayOrder());
+			templateField.setTemplateFieldOption(templateFieldOption);
+		}
+
+		return templateField;
+	}
+
+	private boolean isAdvanceFieldTypeWithOption(FieldType type) {
+		return FieldType.TEXT.equals(type) || FieldType.CHECKBOX.equals(type);
+	}
+
+	private void validateOptionValue(TemplateFieldDto templateFieldDto, Set<String> existingOptionValue) {
+		String value = templateFieldDto.getOptionValue();
+		if (value == null || value.trim().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+		}
+		if (value.trim().length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
+		}
+		if (!existingOptionValue.add(value.trim())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
+		}
+	}
+
+	private void validateDisplayOrder(TemplateFieldDto templateFieldDto, Set<Integer> existingDisplayOrder) {
+		Integer displayOrder = templateFieldDto.getDisplayOrder();
+		if (displayOrder != null && displayOrder <= 0) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
+		}
+		if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
+		}
 	}
 
 	private TemplateEnvelopeSetting buildTemplateEnvelopeSetting(TemplateEnvelopeSettingDto templateEnvelopeSettingDto,
