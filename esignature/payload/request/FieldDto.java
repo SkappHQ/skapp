@@ -43,10 +43,8 @@ public class FieldDto {
 	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;
 
-	private String fieldContainerId;
+	private String optionValue;
 
-	private FieldContainerDto fieldContainer;
-
-	private FieldOptionDto fieldOption;
+	private Integer displayOrder;
 
 }

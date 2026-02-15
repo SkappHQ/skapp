@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.payload.request;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class FieldContainerDto {
@@ -22,5 +24,7 @@ public class FieldContainerDto {
 	private Boolean isRequired;
 
 	private Boolean isMultiSelect;
+
+	private List<FieldDto> fields;
 
 }
