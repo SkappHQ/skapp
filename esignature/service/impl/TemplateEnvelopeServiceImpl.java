@@ -39,6 +39,7 @@ import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelop
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
+import com.skapp.enterprise.esignature.repository.TemplateFieldDao;
 import com.skapp.enterprise.esignature.repository.TemplateFieldContainerDao;
 import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
@@ -96,6 +97,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final TemplateFieldContainerDao templateFieldContainerDao;
 
+	private final TemplateFieldDao templateFieldDao;
+
 	private final EsignTemplateMapper esignTemplateMapper;
 
 	private final MessageUtil messageUtil;
@@ -109,6 +112,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private String cloudFrontDomain;
 
 	@Override
+	@Transactional
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
 		User currentUser = userService.getCurrentUser();
@@ -552,7 +556,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		validateEnvelopeTemplateRecipients(recipients, documentIds);
 
-		return recipients.stream().map(templateRecipientDto -> {
+		List<TemplateRecipient> templateRecipients = new ArrayList<>();
+
+		recipients.forEach(templateRecipientDto -> {
 
 			AddressBook addressBook = null;
 
@@ -595,8 +601,10 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 						templateRecipientDto.getAdvanceTemplateFieldContainers(), templateRecipient));
 			}
 
-			return templateRecipient;
-		}).collect(Collectors.toList());
+			templateRecipients.add(templateRecipient);
+		});
+
+		return templateRecipients;
 
 	}
 
@@ -646,20 +654,20 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			Set<Integer> existingDisplayOrder = new HashSet<>();
 
 			// Check for RADIO_BUTTON or DROPDOWN fields
-			boolean isRadioOrDropdown = templateFieldContainerDto.getFields()
+			boolean isRadioOrDropdown = templateFieldContainerDto.getTemplateFields()
 				.stream()
 				.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN);
 
 			if (isRadioOrDropdown) {
 				// Get the type for error message
-				String typeName = templateFieldContainerDto.getFields()
+				String typeName = templateFieldContainerDto.getTemplateFields()
 					.stream()
 					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
 					.findFirst()
 					.map(f -> f.getType().name())
 					.orElse(null);
 
-				long optionCount = templateFieldContainerDto.getFields()
+				long optionCount = templateFieldContainerDto.getTemplateFields()
 					.stream()
 					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
 					.map(TemplateFieldDto::getOptionValue)
@@ -672,13 +680,14 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 				}
 			}
 
-			for (TemplateFieldDto advanceFieldDto : templateFieldContainerDto.getFields()) {
+			for (TemplateFieldDto advanceFieldDto : templateFieldContainerDto.getTemplateFields()) {
 				fieldList.add(createAdvanceField(advanceFieldDto, templateRecipient, templateFieldContainer,
 						existingOptionValue, existingDisplayOrder));
 			}
 
 			templateFieldContainerDao.save(templateFieldContainer);
 		}
+
 		return fieldList;
 	}
 

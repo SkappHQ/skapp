@@ -25,6 +25,6 @@ public class TemplateFieldContainerDto {
 
 	private Boolean isMultiSelect;
 
-	private List<TemplateFieldDto> fields;
+	private List<TemplateFieldDto> templateFields;
 
 }

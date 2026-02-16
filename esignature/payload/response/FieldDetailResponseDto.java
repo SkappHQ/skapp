@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
 import lombok.Getter;
@@ -29,8 +30,10 @@ public class FieldDetailResponseDto {
 
 	private String height;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Long fieldContainerId;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private FieldOptionResponseDto fieldOption;
 
 }
