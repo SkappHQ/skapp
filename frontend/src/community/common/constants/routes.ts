@@ -25,7 +25,10 @@ const ROUTES = {
   INTEGRATIONS: "/integrations",
   SETTINGS: {
     BASE: "/settings",
-
+    BILLING: "/settings/billing",
+    ACCOUNT: "/settings/account",
+    MODULES: "/settings/modules",
+    INTEGRATIONS: "/settings/integrations",
     PAYMENT: "/payment"
   },
   TIMESHEET: {

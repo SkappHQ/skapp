@@ -1,4 +1,4 @@
-import { AdminTypes } from "~community/common/types/AuthTypes";
+import { AdminTypes, EmployeeTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { SettingsTab } from "~community/settings/types/SettingsTabTypes";
 
 import AccountSettings from "../components/organisms/AccountSettings/AccountSettings";
@@ -15,7 +15,13 @@ export const getSettingsTabs = (
         AdminTypes.SUPER_ADMIN,
         AdminTypes.PEOPLE_ADMIN,
         AdminTypes.ATTENDANCE_ADMIN,
-        AdminTypes.LEAVE_ADMIN
+        AdminTypes.LEAVE_ADMIN,
+        ManagerTypes.PEOPLE_MANAGER,
+        ManagerTypes.LEAVE_MANAGER,
+        ManagerTypes.ATTENDANCE_MANAGER,
+        EmployeeTypes.PEOPLE_EMPLOYEE,
+        EmployeeTypes.LEAVE_EMPLOYEE,
+        EmployeeTypes.ATTENDANCE_EMPLOYEE
       ],
       component: <AccountSettings />,
       position: 1

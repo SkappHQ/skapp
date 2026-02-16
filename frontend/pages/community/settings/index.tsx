@@ -7,7 +7,11 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
+import {
+  AdminTypes,
+  EmployeeTypes,
+  ManagerTypes
+} from "~community/common/types/AuthTypes";
 import { getSettingsTabs } from "~community/settings/utils/settingsTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseSettingsTabs } from "~enterprise/settings/utils/settingsTabsUtil";
@@ -30,7 +34,9 @@ const Settings: NextPage = () => {
     const userRoles = user?.roles || [];
     return allTabs.filter((tab) => {
       return userRoles.some((role) =>
-        tab.requiredRoles.includes(role as AdminTypes)
+        tab.requiredRoles.includes(
+          role as AdminTypes | ManagerTypes | EmployeeTypes
+        )
       );
     });
   }, [allTabs, user?.roles]);
