@@ -397,7 +397,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(documentVersion);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
-		Document savedDocument = documentRepository.save(document);
+		documentRepository.save(document);
 
 		Envelope envelope = document.getEnvelope();
 		envelope.setStatus(EnvelopeStatus.COMPLETED);
@@ -432,8 +432,8 @@ public class DocumentServiceImpl implements DocumentService {
 					documentVersion, processedDocumentBytes);
 			documentVersionDao.save(auditTrailAppendedVersion);
 
-			savedDocument.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
-			documentRepository.save(savedDocument);
+			document.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
+			documentRepository.save(document);
 		}
 
 		recipientDao.saveAll(envelope.getRecipients());
@@ -593,7 +593,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(newVersion);
 
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		Document savedDocument = documentRepository.save(document);
+		documentRepository.save(document);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
@@ -657,12 +657,12 @@ public class DocumentServiceImpl implements DocumentService {
 						keyPairSign.getPrivate());
 
 				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
-						newHashWithAuditTrail, signatureWithAuditTrail, currentAddressBookUser);
+						newHashWithAuditTrail, signatureWithAuditTrail, envelope.getOwner());
 
 				DocumentVersion auditTrailAppendedDocumentVersion = documentVersionDao.save(auditTrailAppendedVersion);
 
-				savedDocument.setCurrentVersion(auditTrailAppendedDocumentVersion.getVersionNumber());
-				documentRepository.save(savedDocument);
+				document.setCurrentVersion(auditTrailAppendedDocumentVersion.getVersionNumber());
+				documentRepository.save(document);
 			}
 
 			// Update all recipients
