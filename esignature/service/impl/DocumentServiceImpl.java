@@ -427,8 +427,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Update document version with final file path
 		if (finalDocumentPath != null) {
-			documentVersion.setFilePath(finalDocumentPath);
-			documentVersionDao.save(documentVersion);
+			String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
+
+			// String signatureWithAuditTrail =
+			// signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
+			// keyPairSign.getPrivate());
+
+			// DocumentVersion auditTrailAppendedVersion =
+			// buildNewDocumentVersion(documentVersion, finalDocumentPath,
+			// newHashWithAuditTrail, signatureWithAuditTrail, currentAddressBookUser);
+			DocumentVersion auditTrailAppendedVersion = verifyDocumentVersionsRelatedToDocument(document,
+					documentVersion, processedDocumentBytes);
+			documentVersionDao.save(auditTrailAppendedVersion);
 		}
 
 		recipientDao.saveAll(envelope.getRecipients());
@@ -642,11 +652,20 @@ public class DocumentServiceImpl implements DocumentService {
 			// This will sign the document WITH the appended certificate
 			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
 
-			// Update document version with final file path
+			// Create a new document version for the final signed PDF (after signing with
+			// the sender's key) with certificate along with the audit trail (if signing
+			// is enabled)
 			if (finalDocumentPath != null) {
-				finalVersion.setFilePath(finalDocumentPath);
+				String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
+
+				String signatureWithAuditTrail = signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
+						keyPairSign.getPrivate());
+
+				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
+						newHashWithAuditTrail, signatureWithAuditTrail, currentAddressBookUser);
+
+				documentVersionDao.save(auditTrailAppendedVersion);
 			}
-			documentVersionDao.save(finalVersion);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
