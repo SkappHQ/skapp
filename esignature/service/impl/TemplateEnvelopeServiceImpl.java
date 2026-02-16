@@ -708,7 +708,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			TemplateFieldContainer templateFieldContainer, Set<String> existingOptionValue,
 			Set<Integer> existingDisplayOrder) {
 		TemplateDocument templateFieldDocument = templateDocumentDao.findById(advanceFieldDto.getTemplateDocumentId())
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND));
 		TemplateField templateField = esignTemplateMapper.templateFieldDtoToTemplateField(advanceFieldDto);
 		templateField.setXPosition(advanceFieldDto.getXPosition());
 		templateField.setYPosition(advanceFieldDto.getYPosition());
