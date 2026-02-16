@@ -97,8 +97,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final TemplateFieldContainerDao templateFieldContainerDao;
 
-	private final TemplateFieldDao templateFieldDao;
-
 	private final EsignTemplateMapper esignTemplateMapper;
 
 	private final MessageUtil messageUtil;
@@ -593,13 +591,14 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 					&& !templateRecipientDto.getTemplateFields().isEmpty()) {
 				templateFields.addAll(
 						buildTemplateFieldsForRecipient(templateRecipientDto.getTemplateFields(), templateRecipient));
-				templateRecipient.setTemplateFields(templateFields);
 			}
 
 			if (templateRecipientDto.getAdvanceTemplateFieldContainers() != null) {
 				templateFields.addAll(buildTemplateAdvanceFieldsForRecipient(
 						templateRecipientDto.getAdvanceTemplateFieldContainers(), templateRecipient));
 			}
+
+			templateRecipient.setTemplateFields(templateFields);
 
 			templateRecipients.add(templateRecipient);
 		});
@@ -653,19 +652,17 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			Set<String> existingOptionValue = new HashSet<>();
 			Set<Integer> existingDisplayOrder = new HashSet<>();
 
+			if (templateFieldContainerDto.getTemplateFields() == null
+					|| templateFieldContainerDto.getTemplateFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+			}
+
 			// Check for RADIO_BUTTON or DROPDOWN fields
 			boolean isRadioOrDropdown = templateFieldContainerDto.getTemplateFields()
 				.stream()
 				.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN);
 
 			if (isRadioOrDropdown) {
-				// Get the type for error message
-				String typeName = templateFieldContainerDto.getTemplateFields()
-					.stream()
-					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
-					.findFirst()
-					.map(f -> f.getType().name())
-					.orElse(null);
 
 				long optionCount = templateFieldContainerDto.getTemplateFields()
 					.stream()
@@ -674,10 +671,26 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 					.filter(Objects::nonNull)
 					.distinct()
 					.count();
-				if (optionCount < 2) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
-							new String[] { typeName });
+
+				boolean isRadio = templateFieldContainerDto.getTemplateFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON);
+
+				boolean isDropdown = templateFieldContainerDto.getTemplateFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.DROPDOWN);
+
+				if (isRadio && optionCount < 2) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTION,
+							new String[] { FieldType.RADIO_BUTTON.name() });
 				}
+				if (isDropdown && optionCount < 1) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
+							new String[] { FieldType.DROPDOWN.name() });
+				}
+
 			}
 
 			for (TemplateFieldDto advanceFieldDto : templateFieldContainerDto.getTemplateFields()) {
@@ -703,7 +716,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		templateField.setTemplateDocument(templateFieldDocument);
 		templateField.setTemplateFieldContainer(templateFieldContainer);
 
-		if (!isAdvanceFieldTypeWithOption(advanceFieldDto.getType())) {
+		if (!isAdvanceFieldTypeWithoutOption(advanceFieldDto.getType())) {
 			validateOptionValue(advanceFieldDto, existingOptionValue);
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
@@ -716,7 +729,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		return templateField;
 	}
 
-	private boolean isAdvanceFieldTypeWithOption(FieldType type) {
+	private boolean isAdvanceFieldTypeWithoutOption(FieldType type) {
 		return FieldType.TEXT.equals(type) || FieldType.CHECKBOX.equals(type);
 	}
 

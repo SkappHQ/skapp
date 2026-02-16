@@ -26,7 +26,7 @@ public class FieldContainerDto {
 
 	private Boolean isMultiSelect;
 
-	@NotEmpty(message = "{validation.recipient.fields.not-empty}")
+	@NotEmpty(message = "{validation.field-container.fields.not-empty}")
 	private List<FieldDto> fields;
 
 }
