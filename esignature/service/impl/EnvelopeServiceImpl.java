@@ -596,7 +596,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (fieldContainerDto.getIsRequired() == null) {
 				fieldContainer.setIsRequired(false);
-
 			}
 
 			if (fieldContainerDto.getIsMultiSelect() == null) {
@@ -612,13 +611,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN);
 
 			if (isRadioOrDropdown) {
-				// Get the type for error message
-				String typeName = fieldContainerDto.getFields()
-					.stream()
-					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
-					.findFirst()
-					.map(f -> f.getType().name())
-					.orElse(null);
 
 				long optionCount = fieldContainerDto.getFields()
 					.stream()
@@ -627,9 +619,24 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 					.filter(Objects::nonNull)
 					.distinct()
 					.count();
-				if (optionCount < 2) {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
-							new String[] { typeName });
+
+				boolean isRadio = fieldContainerDto.getFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON);
+
+				boolean isDropdown = fieldContainerDto.getFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.DROPDOWN);
+
+				if (isRadio && optionCount < 2) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTION,
+							new String[] { FieldType.RADIO_BUTTON.name() });
+				}
+				if (isDropdown && optionCount < 1) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
+							new String[] { FieldType.DROPDOWN.name() });
 				}
 			}
 
@@ -654,7 +661,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		field.setDocument(fieldDocument);
 		field.setFieldContainer(fieldContainer);
 
-		if (!isAdvanceFieldTypeWithOption(advanceFieldDto.getType())) {
+		if (!isAdvanceFieldTypeWithoutOption(advanceFieldDto.getType())) {
 			validateOptionValue(advanceFieldDto, existingOptionValue);
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
@@ -667,7 +674,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return field;
 	}
 
-	private boolean isAdvanceFieldTypeWithOption(FieldType type) {
+	private boolean isAdvanceFieldTypeWithoutOption(FieldType type) {
 		return FieldType.TEXT.equals(type) || FieldType.CHECKBOX.equals(type);
 	}
 

@@ -68,7 +68,6 @@ public interface EsignTemplateMapper {
 	TemplateFieldOptionResponseDto templateFieldOptionToTemplateFieldOptionResponseDto(
 			TemplateFieldOption templateFieldOption);
 
-	// @Mapping(target = "addressBookId", source = "addressBook.id")
 	@Mapping(target = "advanceTemplateFieldContainers",
 			expression = "java(mapTemplateFieldContainers(templateRecipient))")
 	RecipientTemplateDetailResponseDto templateRecipientToRecipientTemplateDetailResponseDto(

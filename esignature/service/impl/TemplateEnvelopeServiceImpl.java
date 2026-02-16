@@ -39,7 +39,6 @@ import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelop
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
-import com.skapp.enterprise.esignature.repository.TemplateFieldDao;
 import com.skapp.enterprise.esignature.repository.TemplateFieldContainerDao;
 import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
@@ -642,7 +641,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 			if (templateFieldContainerDto.getIsRequired() == null) {
 				templateFieldContainer.setIsRequired(false);
-
 			}
 
 			if (templateFieldContainerDto.getIsMultiSelect() == null) {
