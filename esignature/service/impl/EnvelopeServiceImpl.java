@@ -592,6 +592,16 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
 			}
 
+			Set<FieldType> fieldTypes = fieldContainerDto.getFields()
+				.stream()
+				.map(FieldDto::getType)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+			if (fieldTypes.size() > 1) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER);
+			}
+
 			FieldContainer fieldContainer = eSignMapper.fieldContainerDtoToFieldContainer(fieldContainerDto);
 
 			if (fieldContainerDto.getIsRequired() == null) {

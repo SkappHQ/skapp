@@ -636,6 +636,22 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		List<TemplateField> fieldList = new ArrayList<>();
 		for (TemplateFieldContainerDto templateFieldContainerDto : templateFieldContainerDtos) {
+
+			if (templateFieldContainerDto.getTemplateFields() == null
+					|| templateFieldContainerDto.getTemplateFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+			}
+
+			Set<FieldType> fieldTypes = templateFieldContainerDto.getTemplateFields()
+				.stream()
+				.map(TemplateFieldDto::getType)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+			if (fieldTypes.size() > 1) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER);
+			}
+
 			TemplateFieldContainer templateFieldContainer = esignTemplateMapper
 				.templateFieldContainerDtoToTemplateFieldContainer(templateFieldContainerDto);
 
