@@ -397,7 +397,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(documentVersion);
 
 		document.setCurrentVersion(documentVersion.getVersionNumber());
-		documentRepository.save(document);
+		Document savedDocument = documentRepository.save(document);
 
 		Envelope envelope = document.getEnvelope();
 		envelope.setStatus(EnvelopeStatus.COMPLETED);
@@ -427,18 +427,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Update document version with final file path
 		if (finalDocumentPath != null) {
-			String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
 
-			// String signatureWithAuditTrail =
-			// signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
-			// keyPairSign.getPrivate());
-
-			// DocumentVersion auditTrailAppendedVersion =
-			// buildNewDocumentVersion(documentVersion, finalDocumentPath,
-			// newHashWithAuditTrail, signatureWithAuditTrail, currentAddressBookUser);
 			DocumentVersion auditTrailAppendedVersion = verifyDocumentVersionsRelatedToDocument(document,
 					documentVersion, processedDocumentBytes);
 			documentVersionDao.save(auditTrailAppendedVersion);
+
+			savedDocument.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
+			documentRepository.save(savedDocument);
 		}
 
 		recipientDao.saveAll(envelope.getRecipients());
@@ -598,7 +593,7 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionDao.save(newVersion);
 
 		document.setCurrentVersion(newVersion.getVersionNumber());
-		documentRepository.save(document);
+		Document savedDocument = documentRepository.save(document);
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
@@ -664,7 +659,10 @@ public class DocumentServiceImpl implements DocumentService {
 				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
 						newHashWithAuditTrail, signatureWithAuditTrail, currentAddressBookUser);
 
-				documentVersionDao.save(auditTrailAppendedVersion);
+				DocumentVersion auditTrailAppendedDocumentVersion = documentVersionDao.save(auditTrailAppendedVersion);
+
+				savedDocument.setCurrentVersion(auditTrailAppendedDocumentVersion.getVersionNumber());
+				documentRepository.save(savedDocument);
 			}
 
 			// Update all recipients
