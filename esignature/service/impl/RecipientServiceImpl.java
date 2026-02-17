@@ -35,7 +35,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseD
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
-import com.skapp.enterprise.esignature.service.EsignNotificationService;
+// import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
@@ -84,7 +84,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final NotificationService notificationService;
 
-	private final EsignNotificationService esignNotificationService;
+	// private final EsignNotificationService esignNotificationService;
 
 	@Override
 	public DocumentLinksAndRecipientsData prepareDocumentFirstRecipients(List<Recipient> recipients,
@@ -121,8 +121,9 @@ public class RecipientServiceImpl implements RecipientService {
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
-			esignNotificationService.notifyRecipientOnSignRequest(recipient,
-					envelopeData.getDocuments().getFirst().getId().toString(), envelopeData.getId().toString());
+			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
+			// envelopeData.getDocuments().getFirst().getId().toString(),
+			// envelopeData.getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
@@ -168,8 +169,9 @@ public class RecipientServiceImpl implements RecipientService {
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
-			esignNotificationService.notifyRecipientOnSignRequest(recipient, document.getId().toString(),
-					document.getEnvelope().getId().toString());
+			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
+			// document.getId().toString(),
+			// document.getEnvelope().getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
@@ -660,7 +662,7 @@ public class RecipientServiceImpl implements RecipientService {
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
 
-		esignNotificationService.notifyRecipientOnReminder(recipient);
+		// esignNotificationService.notifyRecipientOnReminder(recipient);
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");

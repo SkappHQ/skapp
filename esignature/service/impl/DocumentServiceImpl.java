@@ -50,7 +50,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.DocumentService;
-import com.skapp.enterprise.esignature.service.EsignNotificationService;
+// import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.PdfSigningService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
@@ -152,7 +152,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private final RecipientService recipientService;
 
-	private final EsignNotificationService esignNotificationService;
+	// private final EsignNotificationService esignNotificationService;
 
 	private final FieldRepository fieldRepository;
 
@@ -368,7 +368,8 @@ public class DocumentServiceImpl implements DocumentService {
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
+		// esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(),
+		// recipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
@@ -409,7 +410,8 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope, recipient);
+		// esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope,
+		// recipient);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
@@ -434,8 +436,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Update document version with final file path
 		if (finalDocumentPath != null) {
-			documentVersion.setFilePath(finalDocumentPath);
-			documentVersionDao.save(documentVersion);
+
+			DocumentVersion auditTrailAppendedVersion = verifyDocumentVersionsRelatedToDocument(document,
+					documentVersion, processedDocumentBytes);
+			documentVersionDao.save(auditTrailAppendedVersion);
+
+			document.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
+			documentRepository.save(document);
 		}
 
 		recipientDao.saveAll(envelope.getRecipients());
@@ -601,7 +608,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
+		// esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(),
+		// recipient);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 
@@ -652,11 +660,23 @@ public class DocumentServiceImpl implements DocumentService {
 			// This will sign the document WITH the appended certificate
 			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
 
-			// Update document version with final file path
+			// Create a new document version for the final signed PDF (after signing with
+			// the sender's key) with certificate along with the audit trail (if signing
+			// is enabled)
 			if (finalDocumentPath != null) {
-				finalVersion.setFilePath(finalDocumentPath);
+				String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
+
+				String signatureWithAuditTrail = signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
+						keyPairSign.getPrivate());
+
+				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
+						newHashWithAuditTrail, signatureWithAuditTrail, envelope.getOwner());
+
+				DocumentVersion auditTrailAppendedDocumentVersion = documentVersionDao.save(auditTrailAppendedVersion);
+
+				document.setCurrentVersion(auditTrailAppendedDocumentVersion.getVersionNumber());
+				documentRepository.save(document);
 			}
-			documentVersionDao.save(finalVersion);
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
