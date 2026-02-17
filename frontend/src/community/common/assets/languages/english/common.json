@@ -112,7 +112,8 @@
     "securitySettingsDescription": "Reset your password when required to maintain your account's security",
     "dropDownListLabel": "Global default login method",
     "resetPasswordButtonText": "Reset password",
-    "organizationSettingsTitle": "Organization settings",
+    "organizationDetailsTitle": "Organization details",
+    "brandingSettingsTitle": "Branding settings",
     "organizationSettingsDescription": "Change the organizational settings you set up in the onboarding flow.",
     "organizationDetailsButtonText": "Organization details",
     "brandingSettingsButtonText": "Branding settings",
@@ -220,7 +221,13 @@
     "outlookCalendarAddErrorDes": "Failed to add Outlook Calendar. Please try again.",
     "outlookCalendarRemoveErrorDes": "Failed to remove Outlook Calendar. Please try again.",
     "outlookCalendarAccMismatchTitle": "No account found",
-    "outlookCalendarAccMismatchDes": "Please use the account linked to your work email."
+    "outlookCalendarAccMismatchDes": "Please use the account linked to your work email.",
+    "tabs": {
+      "account": "Account",
+      "integrations": "Integrations",
+      "modules": "Modules",
+      "organization": "Organization"
+    }
   },
   "unauthorized": {
     "pageHead": "Access Denied | Skapp",
