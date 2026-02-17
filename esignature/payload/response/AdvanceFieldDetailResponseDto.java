@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FieldDetailResponseDto {
+public class AdvanceFieldDetailResponseDto {
 
 	private Long id;
 
@@ -28,5 +28,7 @@ public class FieldDetailResponseDto {
 	private String width;
 
 	private String height;
+
+	private FieldOptionResponseDto fieldOption;
 
 }

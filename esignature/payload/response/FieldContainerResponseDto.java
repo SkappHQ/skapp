@@ -3,6 +3,8 @@ package com.skapp.enterprise.esignature.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class FieldContainerResponseDto {
@@ -24,5 +26,7 @@ public class FieldContainerResponseDto {
 	private Boolean isRequired;
 
 	private Boolean isMultiSelect;
+
+	private List<AdvanceFieldDetailResponseDto> fields;
 
 }
