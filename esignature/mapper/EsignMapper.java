@@ -163,7 +163,6 @@ public interface EsignMapper {
 
 	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
 
-	// Java
 	default List<FieldContainerResponseDto> mapFieldContainers(Recipient recipient) {
 		if (recipient.getFields() == null)
 			return null;
