@@ -79,8 +79,9 @@ public class EPSecurityConfig {
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
 			.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/versions",
-						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project")
+				.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions",
+						"/internal/v1/ep/jobs", "/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
+						"/internal/v1/ep/organization/timezone")
 				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
