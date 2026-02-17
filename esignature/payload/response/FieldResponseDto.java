@@ -35,8 +35,4 @@ public class FieldResponseDto {
 
 	private FieldValueResponseDto fieldValueResponseDto;
 
-	private Long fieldContainerId;
-
-	private FieldOptionResponseDto fieldOptionResponseDto;
-
 }
