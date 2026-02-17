@@ -122,7 +122,8 @@ public class RecipientServiceImpl implements RecipientService {
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
 			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
-			// 		envelopeData.getDocuments().getFirst().getId().toString(), envelopeData.getId().toString());
+			// envelopeData.getDocuments().getFirst().getId().toString(),
+			// envelopeData.getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
@@ -168,8 +169,9 @@ public class RecipientServiceImpl implements RecipientService {
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
 
-			// esignNotificationService.notifyRecipientOnSignRequest(recipient, document.getId().toString(),
-			// 		document.getEnvelope().getId().toString());
+			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
+			// document.getId().toString(),
+			// document.getEnvelope().getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
