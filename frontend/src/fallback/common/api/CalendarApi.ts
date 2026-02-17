@@ -3,3 +3,11 @@ export const useIsGoogleCalendarConnected = () => {
     data: false
   };
 };
+
+export const useGetOrganizationCalendarStatus = () => {
+  return {
+    data: null,
+    isLoading: false,
+    error: null
+  };
+};

@@ -1,3 +1,4 @@
+import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -11,9 +12,7 @@ import {
 import { getCookieValue } from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
-  EnterpriseSignUpParams,
-  enterpriseSignIn,
-  enterpriseSignUp
+  EnterpriseSignUpParams
 } from "~enterprise/auth/utils/authUtils";
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
@@ -21,7 +20,12 @@ import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { config } from "../../../../middleware";
 import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
-import { AuthResponseType } from "../types/auth";
+import { SignInStatus } from "../enums/auth";
+import {
+  AuthResponseType,
+  CommunitySignInParams,
+  CommunitySignUpParams
+} from "../types/auth";
 import authAxios from "./authInterceptor";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
@@ -237,20 +241,75 @@ export const extractUserFromToken = (token: string): User | null => {
   }
 };
 
-export const communitySignIn = async (_email: string, _password: string) => {};
+const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
+  const accessToken = response?.data?.results[0]?.accessToken;
+  const isPasswordChangedForTheFirstTime =
+    response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
+
+  if (accessToken) {
+    setAccessToken(accessToken);
+
+    setIsPasswordChangedForTheFirstTime(
+      isPasswordChangedForTheFirstTime ?? true
+    );
+
+    return { status: SignInStatus.SUCCESS };
+  } else {
+    return { status: SignInStatus.FAILURE, error: response?.data?.message };
+  }
+};
+
+export const communitySignIn = async (
+  params: CommunitySignInParams
+): Promise<AuthResponseType> => {
+  const payload = { email: params.email, password: params.password };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_IN,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
+
+export const communitySignUp = async (
+  params: CommunitySignUpParams
+): Promise<AuthResponseType> => {
+  const payload = {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    email: params.email,
+    password: params.password
+  };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_UP,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
 
 export const handleSignIn = async (
   params: EnterpriseSignInParams
 ): Promise<AuthResponseType> => {
-  const response = await enterpriseSignIn(params);
-  return response;
+  return communitySignIn(params);
 };
 
 export const handleSignUp = async (
   params: EnterpriseSignUpParams
 ): Promise<AuthResponseType> => {
-  const response = await enterpriseSignUp(params);
-  return response;
+  return communitySignUp(params);
 };
 
 export const checkUserAuthentication = async (): Promise<User | null> => {

@@ -1,6 +1,7 @@
 import { SxProps, Theme } from "@mui/material";
 import { NextRequest, NextResponse } from "next/server";
 
+import { appModes } from "~community/common/constants/configs";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
@@ -532,4 +533,8 @@ export const getCookieValue = (name: string): string | null => {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
   return match ? decodeURIComponent(match[2]) : null;
+};
+
+export const isEnterpriseMode = (): boolean => {
+  return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
