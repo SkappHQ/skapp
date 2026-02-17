@@ -8,16 +8,18 @@ import {
 } from "@mui/material";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
-import { JSX, ReactNode, useMemo } from "react";
+import { JSX, ReactNode, useEffect, useMemo } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import Icon from "../../atoms/Icon/Icon";
+import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import styles from "./styles";
 
 interface Props {
@@ -63,7 +65,16 @@ const FullPageContainerLayout = ({
 
   const translateAria = useTranslator("commonAria", "components");
 
-  const { data: organizationDetails } = useGetOrganization();
+  const { data: organizationDetails, isLoading: orgLoading } =
+    useGetOrganization();
+
+  const { setOrgData } = useCommonStore();
+
+  useEffect(() => {
+    if (organizationDetails?.results[0] && !orgLoading) {
+      setOrgData(organizationDetails?.results[0]);
+    }
+  }, [organizationDetails, orgLoading]);
 
   const updatedTheme = useMemo(() => {
     return themeSelector(
@@ -82,6 +93,8 @@ const FullPageContainerLayout = ({
       router.back();
     }
   };
+  if (orgLoading) return <FullScreenLoader />;
+
   return (
     <>
       <Head>
