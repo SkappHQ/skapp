@@ -6,7 +6,13 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
+import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.service.EpEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
@@ -21,6 +27,7 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEnvelopeRecipientEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientUpdateDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponseDto;
@@ -28,6 +35,7 @@ import com.skapp.enterprise.esignature.payload.response.RecipientDetailResponseD
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EsignEmailService;
+// import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EmailReminderStatus;
@@ -37,6 +45,7 @@ import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +82,10 @@ public class RecipientServiceImpl implements RecipientService {
 
 	private final EsignEmailService esignEmailService;
 
+	private final NotificationService notificationService;
+
+	// private final EsignNotificationService esignNotificationService;
+
 	@Override
 	public DocumentLinksAndRecipientsData prepareDocumentFirstRecipients(List<Recipient> recipients,
 			SignType signType) {
@@ -107,6 +120,10 @@ public class RecipientServiceImpl implements RecipientService {
 
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
+
+			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
+			// envelopeData.getDocuments().getFirst().getId().toString(),
+			// envelopeData.getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
@@ -151,6 +168,10 @@ public class RecipientServiceImpl implements RecipientService {
 
 			documentLinkList.add(documentLinkData.documentLink());
 			recipientAccessUrls.put(recipient.getId(), documentLinkData.accessUrl());
+
+			// esignNotificationService.notifyRecipientOnSignRequest(recipient,
+			// document.getId().toString(),
+			// document.getEnvelope().getId().toString());
 
 			return prepareRecipientMetadata(recipient);
 		}).toList();
@@ -640,6 +661,8 @@ public class RecipientServiceImpl implements RecipientService {
 		}
 
 		esignEmailService.sendNudgeEmail(recipient, documentLinkUrl);
+
+		// esignNotificationService.notifyRecipientOnReminder(recipient);
 
 		log.info("sendReminderEmail: Reminder email sent successfully to recipient with ID {}", recipientId);
 		return new ResponseEntityDto(false, "Reminder email sent successfully");

@@ -11,7 +11,11 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -43,6 +47,7 @@ import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.RecipientEidConfig;
+import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -77,6 +82,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
+// import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -157,6 +163,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final UserService userService;
 
+	private final NotificationService notificationService;
+
 	private final DocumentDao documentDao;
 
 	private final AddressBookDao addressBookDao;
@@ -192,6 +200,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	private final SignatureCertificateService signatureCertificateService;
 
 	private final FieldContainerDao fieldContainerDao;
+
+	// private final EsignNotificationService esignNotificationService;
 
 	private static final int LEAP_DAY = 29;
 
@@ -341,9 +351,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
-					scheduleService.scheduleExpiration(savedEnvelopeId, tenantId, QuartzEntityType.ENVELOPE,
-							LocalDateTime.of(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(),
-									sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX));
+					scheduleEnvelopeExpirationJobs(savedEnvelopeId, tenantId,
+							envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), sentAtTime);
 				}
 				recipientService.sendEnvelopeEmailNotifications(savedEnvelopeId, recipientAccessUrls);
 			}
@@ -358,6 +367,30 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelopeSetting.setExpirationDate(envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate());
 		envelopeSetting.setReminderDays(envelopeDetailDto.getEnvelopeSettingDto().getReminderDays());
 		return envelopeSetting;
+	}
+
+	private void scheduleEnvelopeExpirationJobs(Long envelopeId, String tenantId, LocalDate expirationDate,
+			LocalDateTime sentAtTime) {
+		LocalDateTime expirationDateTime = calculateExpirationDateTime(expirationDate, sentAtTime);
+
+		scheduleService.scheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE, expirationDateTime);
+
+		scheduleExpirationReminderIfEligible(envelopeId, tenantId, expirationDateTime);
+	}
+
+	private LocalDateTime calculateExpirationDateTime(LocalDate expirationDate, LocalDateTime sentAtTime) {
+		return LocalDateTime.of(expirationDate, sentAtTime != null ? sentAtTime.toLocalTime() : LocalTime.MAX);
+	}
+
+	private void scheduleExpirationReminderIfEligible(Long envelopeId, String tenantId,
+			LocalDateTime expirationDateTime) {
+		LocalDateTime reminderDateTime = expirationDateTime.minusHours(24);
+
+		if (reminderDateTime.isAfter(LocalDateTime.now())) {
+			scheduleService.scheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER,
+					reminderDateTime);
+			log.info("Scheduled expiration reminder for envelope ID: {} at {}", envelopeId, reminderDateTime);
+		}
 	}
 
 	@Deprecated
@@ -1048,6 +1081,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
+		// esignNotificationService.notifyOnEnvelopeVoided(envelope);
+
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
 
@@ -1062,9 +1097,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelopeId, tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(envelopeId, tenantId,
+						QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 			}
 		});
-
 		log.info("voidEnvelope: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope voided successfully");
 	}
@@ -1298,6 +1334,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
+
+		// esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
+
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, recipient,
@@ -1309,10 +1348,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
 				scheduleService.unScheduleExpiration(envelope.getId(), tenantId, QuartzEntityType.ENVELOPE);
+				scheduleService.unScheduleExpiration(envelope.getId(), tenantId,
+						QuartzEntityType.ENVELOPE_EXPIRATION_REMINDER);
 			}
 		});
-
-		log.info("declineEnvelope: execution ended for recipient ID: {}", recipientId);
 		return new ResponseEntityDto(false, "Envelope declined successfully");
 	}
 
@@ -1343,11 +1382,34 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
 					AuditAction.ENVELOPE_EXPIRED, null, null, null);
+
 			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
 
+	}
+
+	@Override
+	@Transactional
+	public void sendExpirationReminder(Long envelopeId) {
+		log.info("Processing expiration reminder for envelope ID: {} in tenant: {}", envelopeId,
+				TenantContext.getCurrentTenant());
+
+		Optional<Envelope> envelopeOptional = envelopeDao.findById(envelopeId);
+		if (envelopeOptional.isEmpty()) {
+			log.warn("sendExpirationReminder: envelope with ID {} not found", envelopeId);
+			return;
+		}
+
+		Envelope envelope = envelopeOptional.get();
+
+		// if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty()
+		// && EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
+		// esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
+		// log.info("Expiration reminder notifications sent for envelope ID: {}",
+		// envelopeId);
+		// }
 	}
 
 	@Override
