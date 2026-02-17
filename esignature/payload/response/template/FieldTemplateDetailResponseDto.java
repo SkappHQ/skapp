@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.response.template;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.skapp.enterprise.esignature.type.FieldType;
 import lombok.Getter;
 import lombok.Setter;
