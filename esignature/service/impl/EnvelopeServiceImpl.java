@@ -82,7 +82,7 @@ import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EnvelopeService;
-import com.skapp.enterprise.esignature.service.EsignNotificationService;
+// import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.service.RecipientService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -201,7 +201,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final FieldContainerDao fieldContainerDao;
 
-	private final EsignNotificationService esignNotificationService;
+	// private final EsignNotificationService esignNotificationService;
 
 	private static final int LEAP_DAY = 29;
 
@@ -1081,7 +1081,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
-		esignNotificationService.notifyOnEnvelopeVoided(envelope);
+		// esignNotificationService.notifyOnEnvelopeVoided(envelope);
 
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
@@ -1335,7 +1335,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
 
-		esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
+		// esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
@@ -1404,11 +1404,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		Envelope envelope = envelopeOptional.get();
 
-		if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty()
-				&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
-			esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
-			log.info("Expiration reminder notifications sent for envelope ID: {}", envelopeId);
-		}
+		// if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty()
+		// 		&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
+		// 	esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
+		// 	log.info("Expiration reminder notifications sent for envelope ID: {}", envelopeId);
+		// }
 	}
 
 	@Override
