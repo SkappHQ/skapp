@@ -24,13 +24,7 @@ import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.UserKey;
-import com.skapp.enterprise.esignature.payload.request.DocumentDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentAccessUrlDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
-import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
-import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.*;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
@@ -99,14 +93,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
@@ -129,6 +116,9 @@ public class DocumentServiceImpl implements DocumentService {
 	public static final String SKAPP_SIGN_ENVELOPE_TEXT = "Skapp Sign Envelope ID: ";
 
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
+
+	private static final Set<FieldType> ADVANCE_FIELD_TYPES = Set.of(FieldType.TEXT, FieldType.DROPDOWN,
+			FieldType.RADIO_BUTTON, FieldType.CHECKBOX);
 
 	private final DocumentRepository documentRepository;
 
@@ -311,6 +301,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
+			.filter(f -> !ADVANCE_FIELD_TYPES.contains(f.getType()))
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -321,7 +312,12 @@ public class DocumentServiceImpl implements DocumentService {
 		recipient.setInboxStatus(InboxStatus.WAITING);
 		recipientDao.save(recipient);
 
-		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes);
+		List<Field> advanceFields = recipient.getFields()
+			.stream()
+			.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.toList();
+
+		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes, advanceFields);
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
@@ -579,6 +575,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
+			.filter(f -> !ADVANCE_FIELD_TYPES.contains(f.getType()))
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -591,9 +588,16 @@ public class DocumentServiceImpl implements DocumentService {
 
 		List<Long> fieldIdList = recipient.getFields().stream().map(Field::getId).toList();
 
+		// Isolate if there are any advance fields
+		List<Field> advanceFields = recipient.getFields()
+			.stream()
+			.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.toList();
+
 		List<DocumentVersionField> fieldVersionList = documentVersionFieldRepository.findByField_IdIn(fieldIdList);
 
-		byte[] updatedDocumentBytes = mergeFieldsToLatestDocument(fieldVersionList, documentBytes, keyPairSign);
+		byte[] updatedDocumentBytes = mergeFieldsToLatestDocument(fieldVersionList, documentBytes, keyPairSign,
+				advanceFields);
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
@@ -624,7 +628,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairSender.getPublic());
 
-			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes);
+			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes, advanceFields);
 
 			// Create final version with all signatures
 			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
@@ -820,7 +824,8 @@ public class DocumentServiceImpl implements DocumentService {
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_NO_PREVIOUS_VERSION));
 	}
 
-	private byte[] mergeAllFieldsToDocument(DocumentVersion currentVersion, byte[] documentBytes) {
+	private byte[] mergeAllFieldsToDocument(DocumentVersion currentVersion, byte[] documentBytes,
+			List<Field> advanceFields) {
 		List<DocumentVersionField> fieldVersionList = currentVersion.getFieldVersions();
 		byte[] updatedDocumentBytes = documentBytes;
 
@@ -832,11 +837,19 @@ public class DocumentServiceImpl implements DocumentService {
 					imageCache);
 		}
 
+		// Merge Advanced Fields (if any) - these fields are not stored in
+		// DocumentVersionField and thus not part of the normal merge process above
+		if (advanceFields != null && !advanceFields.isEmpty()) {
+
+			updatedDocumentBytes = mergeUnsignedAdvanceFieldsToDocument(advanceFields, fieldVersionList,
+					updatedDocumentBytes);
+		}
+
 		return updatedDocumentBytes;
 	}
 
 	private byte[] mergeFieldsToLatestDocument(List<DocumentVersionField> fieldVersionList, byte[] documentBytes,
-			KeyPair keyPair) {
+			KeyPair keyPair, List<Field> advanceFields) {
 
 		Map<String, byte[]> imageCache = new HashMap<>();
 
@@ -847,14 +860,26 @@ public class DocumentServiceImpl implements DocumentService {
 					updatedBytes, imageCache);
 		}
 
+		// Merge Advanced Fields (if any) - these fields are not stored in
+		// DocumentVersionField and thus not part of the normal merge process above
+		if (advanceFields != null && !advanceFields.isEmpty()) {
+
+			updatedBytes = mergeUnsignedAdvanceFieldsToDocument(advanceFields, fieldVersionList, updatedBytes);
+		}
+
 		return updatedBytes;
 	}
 
-	private byte[] mergeAllFieldsToFinalDocument(Document document, byte[] documentBytes) {
+	private byte[] mergeAllFieldsToFinalDocument(Document document, byte[] documentBytes, List<Field> advanceFields) {
 		byte[] fullDocumentBytes = documentBytes;
+
+		List<DocumentVersionField> fieldVersionList = new ArrayList<>();
 
 		for (DocumentVersion version : document.getVersions()) {
 			if (version.getFieldVersions() != null) {
+
+				fieldVersionList = version.getFieldVersions();
+
 				Map<String, byte[]> imageCache = new HashMap<>();
 
 				for (DocumentVersionField documentVersionField : version.getFieldVersions()) {
@@ -869,7 +894,37 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
+		// Merge Advanced Fields (if any) - these fields are not stored in
+		// DocumentVersionField and thus not part of the normal merge process above
+		if (advanceFields != null && !advanceFields.isEmpty()) {
+
+			fullDocumentBytes = mergeUnsignedAdvanceFieldsToDocument(advanceFields, fieldVersionList,
+					fullDocumentBytes);
+
+		}
+
 		return fullDocumentBytes;
+	}
+
+	private byte[] mergeUnsignedAdvanceFieldsToDocument(List<Field> advanceFields,
+			List<DocumentVersionField> fieldVersionList, byte[] documentBytes) {
+		List<Field> signedAdvanceFields = fieldVersionList.stream()
+			.map(DocumentVersionField::getField)
+			.filter(field -> ADVANCE_FIELD_TYPES.contains(field.getType()))
+			.toList();
+
+		List<Field> unsignedAdvanceFields = advanceFields.stream()
+			.filter(f -> (f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.CHECKBOX)
+					&& !signedAdvanceFields.contains(f))
+			.toList();
+
+		for (Field field : unsignedAdvanceFields) {
+			FieldSignDto fieldSignDto = convertFieldToFieldSignDto(field);
+
+			documentBytes = documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
+		}
+
+		return documentBytes;
 	}
 
 	private DocumentVersion signFinalDocumentVersionBySender(Document document, byte[] documentBytes, String filePath,
@@ -1794,6 +1849,33 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldSignDto.setPageNumber(documentVersionField.getField().getPageNumber());
 		fieldSignDto.setWidth(documentVersionField.getWidth());
 		fieldSignDto.setHeight(documentVersionField.getHeight());
+		fieldSignDto.setType(documentVersionField.getField().getType());
+		fieldSignDto.setSigned(true);
+
+		if (documentVersionField.getField().getType().equals(FieldType.TEXT)) {
+			FieldSignContainerDto fieldSignContainerDto = eSignMapper
+				.fieldContainerToFieldSignContainerDto(documentVersionField.getField().getFieldContainer());
+			fieldSignDto.setFieldSignContainer(fieldSignContainerDto);
+		}
+
+		return fieldSignDto;
+	}
+
+	private FieldSignDto convertFieldToFieldSignDto(Field field) {
+		FieldSignDto fieldSignDto = new FieldSignDto();
+
+		fieldSignDto.setFieldValue(field.getFieldOption() != null ? field.getFieldOption().getOptionValue() : null);
+		fieldSignDto.setXposition(field.getXPosition());
+		fieldSignDto.setYposition(field.getYPosition());
+		fieldSignDto.setPageNumber(field.getPageNumber());
+		fieldSignDto.setWidth(field.getWidth());
+		fieldSignDto.setHeight(field.getHeight());
+		fieldSignDto.setType(field.getType());
+		fieldSignDto.setSigned(false);
+
+		FieldSignContainerDto fieldSignContainerDto = eSignMapper
+			.fieldContainerToFieldSignContainerDto(field.getFieldContainer());
+		fieldSignDto.setFieldSignContainer(fieldSignContainerDto);
 
 		return fieldSignDto;
 	}

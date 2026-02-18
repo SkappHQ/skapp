@@ -46,4 +46,8 @@ public class FieldSignDto {
 	@NotNull(message = "{validation.field.value.notnull}")
 	private String fieldValue;
 
+	private boolean isSigned;
+
+	private FieldSignContainerDto fieldSignContainer;
+
 }

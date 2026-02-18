@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
+import com.skapp.enterprise.esignature.type.FieldType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -69,11 +70,29 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
+	private static final String FONT_BASE_PATH = "enterprise/fonts/";
+
+	private static final String DEFAULT_FONT = "Poppins";
+
 	public static final int DPI = 96;
 
 	public static final String PNG = "png";
 
 	private final MessageUtil messageUtil;
+
+	private static final Map<String, String> FONT_FOLDERS = new HashMap<>();
+
+	static {
+		// Map font family names to their folder names
+		FONT_FOLDERS.put("arial", "Arimo");
+		FONT_FOLDERS.put("calibri", "Carlito");
+		FONT_FOLDERS.put("courier new", "Cousine");
+		FONT_FOLDERS.put("times new roman", "Tinos");
+		FONT_FOLDERS.put("verdana", "DejaVuSans");
+		FONT_FOLDERS.put("ms gothic", "NotoSansJP");
+		FONT_FOLDERS.put("inter", "Inter");
+		FONT_FOLDERS.put("poppins", DEFAULT_FONT);
+	}
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -289,22 +308,33 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 		// Relative to the co-ordinates taken from UI -top left
 		try {
-			// Adjust baseline offset for Y position
-			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
-			float adjustedY = pageHeight - field.getYposition() - yOffset;
 
-			// Adjust baseline offset for x position
-			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getXposition() + xOffset;
+			FieldType fieldType = field.getType();
 
-			contentStream.beginText();
-			PDType0Font font = loadFont(document);
-			contentStream.setFont(font, DEFAULT_FONT_SIZE);
+			if (FieldType.CHECKBOX.equals(fieldType) || FieldType.RADIO_BUTTON.equals(fieldType)) {
+				addCheckboxOrRadioButton(field, contentStream, pageHeight, fieldType, document);
+			}
+			else if (FieldType.TEXT.equals(fieldType)) {
+				addInputTextField(field, contentStream, pageHeight, document);
+			}
+			else {
+				// Adjust baseline offset for Y position
+				float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
+				float adjustedY = pageHeight - field.getYposition() - yOffset;
 
-			// Position text at adjusted coordinates
-			contentStream.newLineAtOffset(adjustedX, adjustedY);
-			contentStream.showText(field.getFieldValue());
-			contentStream.endText();
+				// Adjust baseline offset for x position
+				float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+				float adjustedX = field.getXposition() + xOffset;
+
+				contentStream.beginText();
+				PDType0Font font = loadFont(document);
+				contentStream.setFont(font, DEFAULT_FONT_SIZE);
+
+				// Position text at adjusted coordinates
+				contentStream.newLineAtOffset(adjustedX, adjustedY);
+				contentStream.showText(field.getFieldValue());
+				contentStream.endText();
+			}
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
@@ -320,7 +350,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
 		}
-		if (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty()) {
+		if (field.getType() != FieldType.CHECKBOX
+				&& (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty())) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
@@ -625,6 +656,330 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			log.info("appendCertificateToPdf: execution ended successfully");
 			return mergedPdfBytes;
+		}
+	}
+
+	private void addCheckboxOrRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			FieldType fieldType, PDDocument document) throws IOException {
+
+		float width = field.getWidth();
+		float height = field.getHeight();
+
+		boolean isChecked = field.isSigned();
+
+		// Pass RAW x, y consistently - let each draw method handle its own coordinate
+		// conversion
+		if (FieldType.CHECKBOX.equals(fieldType)) {
+			drawCheckbox(contentStream, field.getXposition(), field.getYposition(), width, height, isChecked,
+					pageHeight);
+		}
+
+		if (FieldType.RADIO_BUTTON.equals(fieldType)) {
+
+			drawRadioButton(contentStream, field.getXposition(), field.getYposition(), width, height, pageHeight,
+					isChecked, document, field.getFieldValue().trim());
+		}
+	}
+
+	private void drawCheckbox(PDPageContentStream contentStream, float x, float y, float width, float height,
+			boolean isChecked, float pageHeight) throws IOException {
+
+		float pixelToPoint = 72f / 96f;
+		float size = Math.min(width, height) * pixelToPoint;
+		float borderWidth = 2f * pixelToPoint;
+		float cornerRadius = 2f * pixelToPoint;
+
+		// Adjust Y position: convert from top-left to bottom-left origin
+		float adjustedY = pageHeight - y - size;
+
+		// Adjust X position as before
+		float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+		float adjustedX = x + xOffset;
+
+		contentStream.setLineWidth(borderWidth);
+		contentStream.setStrokingColor(0f, 0f, 0f);
+
+		if (isChecked) {
+			contentStream.setNonStrokingColor(0f, 0f, 0f);
+			drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
+			contentStream.fillAndStroke(); // atomic - no split fill/stroke
+
+			drawTickMark(contentStream, adjustedX, adjustedY, size);
+		}
+		else {
+			contentStream.setNonStrokingColor(1f, 1f, 1f);
+			drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
+			contentStream.fillAndStroke(); // atomic - no split fill/stroke
+		}
+	}
+
+	// Helper method to draw rounded rectangle
+	private void drawRoundedRect(PDPageContentStream contentStream, float x, float y, float width, float height,
+			float radius) throws IOException {
+		// Move to starting point (top-left, after the curve)
+		contentStream.moveTo(x + radius, y + height);
+
+		// Top edge
+		contentStream.lineTo(x + width - radius, y + height);
+		// Top-right corner
+		contentStream.curveTo(x + width, y + height, x + width, y + height, x + width, y + height - radius);
+
+		// Right edge
+		contentStream.lineTo(x + width, y + radius);
+		// Bottom-right corner
+		contentStream.curveTo(x + width, y, x + width, y, x + width - radius, y);
+
+		// Bottom edge
+		contentStream.lineTo(x + radius, y);
+		// Bottom-left corner
+		contentStream.curveTo(x, y, x, y, x, y + radius);
+
+		// Left edge
+		contentStream.lineTo(x, y + height - radius);
+		// Top-left corner
+		contentStream.curveTo(x, y + height, x, y + height, x + radius, y + height);
+
+		contentStream.closePath();
+	}
+
+	private void drawTickMark(PDPageContentStream contentStream, float x, float y, float size) throws IOException {
+		float pixelToPoint = 72f / 96f;
+		float tickWidth = 2f * pixelToPoint; // Tick mark line width
+
+		// Calculate tick mark coordinates (relative to checkbox)
+		// Short arm (left part going down-left to down-right)
+		float shortArmStartX = x + size * 0.25f;
+		float shortArmStartY = y + size * 0.5f;
+		float shortArmEndX = x + size * 0.4f;
+		float shortArmEndY = y + size * 0.3f;
+
+		// Long arm (from middle going up-right)
+		float longArmEndX = x + size * 0.75f;
+		float longArmEndY = y + size * 0.7f;
+
+		contentStream.setLineWidth(tickWidth);
+
+		contentStream.setStrokingColor(1f, 1f, 1f); // White tick mark
+
+		contentStream.setLineCapStyle(1); // Round cap for smoother appearance
+		contentStream.setLineJoinStyle(1); // Round join
+
+		// Draw tick mark as two connected lines
+		contentStream.moveTo(shortArmStartX, shortArmStartY);
+		contentStream.lineTo(shortArmEndX, shortArmEndY);
+		contentStream.lineTo(longArmEndX, longArmEndY);
+		contentStream.stroke();
+	}
+
+	private void drawRadioButton(PDPageContentStream contentStream, float x, float y, float width, float height,
+			float pageHeight, boolean isChecked, PDDocument document, String value) throws IOException {
+
+		float pixelToPoint = 72f / 96f; // 1 px = 0.75 pt
+		float size = Math.min(width, height) * pixelToPoint;
+		float borderWidth = 2f * pixelToPoint; // 2px border
+		float radius = size / 2f; // Full circle
+
+		// Adjust Y position: convert from top-left to bottom-left origin
+		float adjustedY = pageHeight - y - size;
+
+		// Adjust X position as before
+		float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+		float adjustedX = x + xOffset;
+
+		// Center of the circle
+		float centerX = adjustedX + radius;
+		float centerY = adjustedY + radius;
+
+		contentStream.setLineWidth(borderWidth);
+		contentStream.setStrokingColor(0f, 0f, 0f);
+		contentStream.setNonStrokingColor(1f, 1f, 1f);
+
+		// Use fillAndStrokeEvenOdd instead of fillAndStroke
+		drawCircle(contentStream, centerX, centerY, radius);
+		contentStream.fillAndStrokeEvenOdd();
+
+		if (isChecked) {
+			float innerRadius = radius * 0.6f;
+			contentStream.setNonStrokingColor(0f, 0f, 0f);
+			drawCircle(contentStream, centerX, centerY, innerRadius);
+			contentStream.fill();
+		}
+
+		if (value != null && !value.isEmpty()) {
+			float textPadding = 4f * pixelToPoint;
+			float textX = adjustedX + size + textPadding;
+			float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / 2;
+
+			contentStream.beginText();
+			contentStream.setFont(loadFont(document), DEFAULT_FONT_SIZE);
+			contentStream.setNonStrokingColor(0f, 0f, 0f);
+			contentStream.newLineAtOffset(textX, textY);
+			contentStream.showText(value);
+			contentStream.endText();
+		}
+	}
+
+	// Helper method to draw a circle using Bezier curves
+	private void drawCircle(PDPageContentStream contentStream, float centerX, float centerY, float radius)
+			throws IOException {
+		// Approximate circle using 4 cubic Bezier curves
+		// Magic number 0.5523f is the control point offset for a near-perfect circle
+		float k = radius * 0.5523f;
+
+		// Start at the top
+		contentStream.moveTo(centerX, centerY + radius);
+
+		// Top-right quadrant
+		contentStream.curveTo(centerX + k, centerY + radius, centerX + radius, centerY + k, centerX + radius, centerY);
+
+		// Bottom-right quadrant
+		contentStream.curveTo(centerX + radius, centerY - k, centerX + k, centerY - radius, centerX, centerY - radius);
+
+		// Bottom-left quadrant
+		contentStream.curveTo(centerX - k, centerY - radius, centerX - radius, centerY - k, centerX - radius, centerY);
+
+		// Top-left quadrant
+		contentStream.curveTo(centerX - radius, centerY + k, centerX - k, centerY + radius, centerX, centerY + radius);
+
+		contentStream.closePath();
+	}
+
+	private void addInputTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
+
+		try {
+			float pixelToPoint = 72f / 96f;
+			float size = Math.min(field.getWidth(), field.getHeight()) * pixelToPoint;
+
+			// Adjust Y position: convert from top-left to bottom-left origin
+			float adjustedY = pageHeight - field.getYposition() - size;
+
+			// Adjust X position as before
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+			float adjustedX = field.getXposition() + xOffset;
+
+			String fontFamily = field.getFieldSignContainer().getFontFamily();
+			String fontColor = field.getFieldSignContainer().getFontColor();
+			float fontSize = field.getFieldSignContainer().getFontSize();
+			boolean isBold = field.getFieldSignContainer().getIsBold();
+			boolean isItalic = field.getFieldSignContainer().getIsItalic();
+			boolean isUnderline = field.getFieldSignContainer().getIsUnderline();
+
+			PDType0Font font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
+			float fontSizeToUse = fontSize > 0 ? fontSize : DEFAULT_FONT_SIZE;
+			if (fontColor != null) {
+				Color color = Color.decode(fontColor);
+				contentStream.setFont(font, fontSizeToUse);
+				contentStream.setNonStrokingColor(color.getRed() / 255f, color.getGreen() / 255f,
+						color.getBlue() / 255f);
+			}
+			else {
+				font = loadFont(document);
+				contentStream.setFont(font, DEFAULT_FONT_SIZE);
+				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / 255f, TEXT_COLOR.getGreen() / 255f,
+						TEXT_COLOR.getBlue() / 255f);
+			}
+
+			contentStream.beginText();
+
+			// Position text at adjusted coordinates
+			contentStream.newLineAtOffset(adjustedX, adjustedY);
+			contentStream.showText(field.getFieldValue());
+			contentStream.endText();
+
+			if (isUnderline) {
+				Color underlineColor;
+				if (fontColor != null) {
+					underlineColor = Color.decode(fontColor);
+				}
+				else {
+					font = loadFont(document);
+					underlineColor = TEXT_COLOR;
+				}
+				contentStream.setStrokingColor(underlineColor.getRed() / 255f, underlineColor.getGreen() / 255f,
+						underlineColor.getBlue() / 255f);
+				float textWidth = font.getStringWidth(field.getFieldValue()) / 1000 * fontSize;
+				float underlineY = adjustedY - 1.5f; // adjust as needed
+				contentStream.moveTo(adjustedX, underlineY);
+				contentStream.lineTo(adjustedX + textWidth, underlineY);
+				contentStream.setLineWidth(0.5f);
+				contentStream.stroke();
+			}
+
+		}
+		catch (Exception e) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
+	}
+
+	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
+		String normalizedFamily = fontFamily != null ? fontFamily.toLowerCase().trim() : "";
+		String folderName = FONT_FOLDERS.getOrDefault(normalizedFamily, DEFAULT_FONT);
+		String variant = determineVariant(folderName, isBold, isItalic);
+		String filename = buildFilename(folderName, variant);
+		String fontPath = FONT_BASE_PATH + folderName + "/" + filename;
+
+		return loadFontFromPath(document, fontPath, isBold, isItalic);
+	}
+
+	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {
+		// Handle Noto Sans JP (no italic variants)
+		if ("NotoSansJP".equals(folderName) && isItalic) {
+			return isBold ? "Bold" : "Regular";
+		}
+
+		// Standard variant determination
+		if (isBold && isItalic)
+			return "BoldItalic";
+		if (isBold)
+			return "Bold";
+		if (isItalic)
+			return "Italic";
+		return "Regular";
+	}
+
+	private String buildFilename(String folderName, String variant) {
+		// DejaVu Sans uses "Oblique" instead of "Italic"
+		if ("DejaVuSans".equals(folderName)) {
+			return switch (variant) {
+				case "BoldItalic" -> "DejaVuSans-BoldOblique.ttf";
+				case "Bold" -> "DejaVuSans-Bold.ttf";
+				case "Italic" -> "DejaVuSans-Oblique.ttf";
+				default -> "DejaVuSans.ttf";
+			};
+		}
+
+		// Standard naming: FolderName-Variant.ttf
+		return folderName + "-" + variant + ".ttf";
+	}
+
+	private PDType0Font loadFontFromPath(PDDocument document, String fontPath, boolean isBold, boolean isItalic) {
+		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(fontPath)) {
+			if (fontStream == null) {
+				log.warn("Font not found: {} - falling back to Poppins", fontPath);
+				return loadFallbackFont(document, isBold, isItalic);
+			}
+			return PDType0Font.load(document, fontStream);
+		}
+		catch (IOException e) {
+			log.error("Error loading font: {} - falling back to Poppins", fontPath, e);
+			return loadFallbackFont(document, isBold, isItalic);
+		}
+	}
+
+	private PDType0Font loadFallbackFont(PDDocument document, boolean isBold, boolean isItalic) {
+		String variant = determineVariant(DEFAULT_FONT, isBold, isItalic);
+		String fontPath = FONT_BASE_PATH + "Poppins/Poppins-" + variant + ".ttf";
+
+		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(fontPath)) {
+			if (fontStream == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
+			}
+			return PDType0Font.load(document, fontStream);
+		}
+		catch (IOException e) {
+			log.error("Error loading fallback Poppins font: {}", fontPath, e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
 		}
 	}
 
