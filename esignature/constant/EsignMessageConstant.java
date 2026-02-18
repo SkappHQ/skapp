@@ -35,6 +35,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL("validation.field.null"),
 	ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE("validation.page-number.positive"),
 	ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY("validation.field-value.empty"),
+	ESIGN_VALIDATION_FIELD_TYPE_CANNOT_BE_NULL("validation.field-type.empty"),
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),

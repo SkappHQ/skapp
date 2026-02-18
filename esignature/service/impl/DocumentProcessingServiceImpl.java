@@ -357,6 +357,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
 		}
+
+		if (field.getType() == null) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_TYPE_CANNOT_BE_NULL));
+		}
+
 		if (field.getType() != FieldType.CHECKBOX
 				&& (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty())) {
 			throw new IllegalArgumentException(
