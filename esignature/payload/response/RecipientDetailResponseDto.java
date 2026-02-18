@@ -34,7 +34,7 @@ public class RecipientDetailResponseDto {
 
 	private List<FieldDetailResponseDto> fields;
 
-	private List<FieldContainerResponseDto> fieldContainers;
+	private List<FieldContainerResponseDto> advanceFieldContainers;
 
 	private Long addressBookId;
 

@@ -32,13 +32,13 @@ import com.skapp.enterprise.esignature.payload.request.verification.RecipientCon
 import com.skapp.enterprise.esignature.payload.request.verification.RecipientConvertToOtpValidateRequestDto;
 import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpRequestDto;
 import com.skapp.enterprise.esignature.payload.request.verification.UuidConvertToOtpValidateRequestDto;
+import com.skapp.enterprise.esignature.payload.response.AdvanceFieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentAccessLinkDataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentLinkResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResendStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentTokenResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldContainerResponseDto;
-import com.skapp.enterprise.esignature.payload.response.FieldOptionResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldResponseDto;
 import com.skapp.enterprise.esignature.payload.response.FieldValueResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
@@ -57,6 +57,7 @@ import com.skapp.enterprise.esignature.type.DocumentPermissionType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationEventType;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
+import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.validation.constraints.NotNull;
@@ -673,7 +674,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		documentAccessLinkData.setFieldResponseDtoList(fieldResponseDtoList);
 		documentAccessLinkData.setDocumentDetailResponseDto(documentDetailResponseDto);
 		documentAccessLinkData.setDocumentLinkResponseDto(documentLinkResponseDto);
-		documentAccessLinkData.setFieldContainerResponseDtoList(fieldContainerResponseList);
+		documentAccessLinkData.setAdvanceFieldContainerResponseDtoList(fieldContainerResponseList);
 		return documentAccessLinkData;
 	}
 
@@ -681,18 +682,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		List<Field> fields = recipientObj.getFields();
 		List<FieldResponseDto> fieldResponseDtoList = new ArrayList<>();
 
-		fields.forEach(field -> {
-			FieldResponseDto fieldResponseDto = eSignMapper.fieldToFieldResponseDto(field);
-			DocumentVersionField documentVersionField = documentVersionFieldRepository.findByField(field);
-			FieldValueResponseDto fieldValueResponseDto = eSignMapper
-				.documentVersionFieldToFieldValueResponseDto(documentVersionField);
-			fieldResponseDto.setFieldValueResponseDto(fieldValueResponseDto);
-
-			FieldOptionResponseDto fieldOptionResponseDto = eSignMapper
-				.fieldOptionToFieldOptionResponseDto(field.getFieldOption());
-			fieldResponseDto.setFieldOptionResponseDto(fieldOptionResponseDto);
-			fieldResponseDtoList.add(fieldResponseDto);
-		});
+		fields.stream()
+			.filter(field -> !(field.getType().equals(FieldType.TEXT) || field.getType().equals(FieldType.DROPDOWN)
+					|| field.getType().equals(FieldType.CHECKBOX) || field.getType().equals(FieldType.RADIO_BUTTON)))
+			.forEach(field -> {
+				FieldResponseDto fieldResponseDto = eSignMapper.fieldToFieldResponseDto(field);
+				DocumentVersionField documentVersionField = documentVersionFieldRepository.findByField(field);
+				FieldValueResponseDto fieldValueResponseDto = eSignMapper
+					.documentVersionFieldToFieldValueResponseDto(documentVersionField);
+				fieldResponseDto.setFieldValueResponseDto(fieldValueResponseDto);
+				fieldResponseDtoList.add(fieldResponseDto);
+			});
 		return fieldResponseDtoList;
 	}
 
@@ -708,6 +708,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				FieldContainerResponseDto fieldContainerResponseDto = eSignMapper
 					.fieldContainerToFieldContainerResponseDto(fieldContainer);
 
+				// Collect fields for this container (TEXT, CHECKBOX, RADIO_BUTTON, etc.)
+				List<AdvanceFieldDetailResponseDto> containerFields = fields.stream()
+					.filter(f -> fieldContainer.equals(f.getFieldContainer()))
+					.filter(f -> f.getType().equals(FieldType.TEXT) || f.getType().equals(FieldType.DROPDOWN)
+							|| f.getType().equals(FieldType.CHECKBOX) || f.getType().equals(FieldType.RADIO_BUTTON))
+					.map(eSignMapper::fieldToAdvanceFieldDetailResponseDto)
+					.toList();
+
+				fieldContainerResponseDto.setFields(containerFields);
 				fieldContainerResponseDtoList.add(fieldContainerResponseDto);
 			});
 

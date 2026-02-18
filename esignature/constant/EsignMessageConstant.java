@@ -220,18 +220,17 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ENVELOPE_TEMPLATE_LEAST_ONE_RECIPIENTS_ROLE_REQUIRED(
 			"ep.esign.error.envelope-template.least.one-recipient.role.required"),
 
+	ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTION(
+			"ep.esign.error.radio-button-field.must.have.at.least.two.options"),
 	ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION(
 			"ep.esign.error.dropdown-field.must.have.at.least.one.option"),
-	ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTIONS(
-			"ep.esign.error.radio-button-field.must.have.at.least.two.options"),
 	ESIGN_ERROR_CHECKBOX_FIELD_MUST_HAVE_AT_LEAST_1_OPTION(
 			"ep.esign.error.checkbox-field.must.have.at.least.one.option"),
 	ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH("ep.esign.error.field.option.value.exceeds.max.length"),
 	ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE("ep.esign.error.field.option.value.must.be.unique"),
 	ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE("ep.esign.error.field.option.display.order.must.be.unique"),
 	ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED("ep.esign.error.field.container.details.required"),
-	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER_ID(
-			"ep.esign.error.at.least.one.field.required.for.container.id"),
+	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER("ep.esign.error.at.least.one.field.required.for.container"),
 	ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED("ep.esign.error.multiselection.not.allowed"),
 	ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER(
 			"ep.esign.error.different.field.types.cannot.contain.in.the.same.container"),

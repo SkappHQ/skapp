@@ -13,9 +13,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.EmailBodyTemplates;
-import com.skapp.community.common.type.NotificationCategory;
-import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -47,7 +44,7 @@ import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.RecipientEidConfig;
-import com.skapp.enterprise.esignature.payload.email.EsignEmailDynamicFields;
+import com.skapp.enterprise.esignature.payload.request.AdvanceFieldDto;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -55,6 +52,7 @@ import com.skapp.enterprise.esignature.payload.request.EnvelopeInboxFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeNextFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeSentFilterDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeUpdateDto;
+import com.skapp.enterprise.esignature.payload.request.FieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.request.VoidEnvelopeRequestDto;
@@ -540,7 +538,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				recipient.setEidConfig(eidConfig);
 			}
 
-			List<Field> fields = buildFieldsForRecipient(recipientDto.getFields(), recipient);
+			List<Field> fields = new ArrayList<>(buildFieldsForRecipient(recipientDto.getFields(), recipient));
+
+			if (recipientDto.getAdvanceFieldContainers() != null) {
+				fields.addAll(buildAdvanceFieldsForRecipient(recipientDto.getAdvanceFieldContainers(), recipient));
+			}
 
 			recipient.setFields(fields);
 
@@ -562,19 +564,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtoList, Recipient recipient) {
-
-		validateGroupedFieldOptions(fieldDtoList);
-
-		List<Field> fieldList = new ArrayList<>();
-		Map<String, FieldContainer> containerMap = new HashMap<>();
-
-		// To sort the field values. If, within a group, some fields have a populated
-		// fieldContainer object and others are null, we sort the non-null fieldContainer
-		// entries first
-		List<FieldDto> fieldDtoSortedList = groupAndSortFieldsByContainer(fieldDtoList);
-
-		fieldDtoSortedList.forEach(fieldDto -> {
+	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
+		return fieldDtos.stream().map(fieldDto -> {
 			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
@@ -589,54 +580,136 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
-			FieldContainer container = null;
+			return field;
+		}).toList();
+	}
 
-			if (fieldDto.getFieldContainerId() != null) {
-				if (containerMap.containsKey(fieldDto.getFieldContainerId())) {
-					container = containerMap.get(fieldDto.getFieldContainerId());
+	private List<Field> buildAdvanceFieldsForRecipient(List<FieldContainerDto> fieldContainerDtos,
+			Recipient recipient) {
+		List<Field> fieldList = new ArrayList<>();
+		for (FieldContainerDto fieldContainerDto : fieldContainerDtos) {
+
+			if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+			}
+
+			Set<FieldType> fieldTypes = fieldContainerDto.getFields()
+				.stream()
+				.map(AdvanceFieldDto::getType)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+			if (fieldTypes.size() > 1) {
+				throw new ModuleException(
+						EsignMessageConstant.ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER);
+			}
+
+			FieldContainer fieldContainer = eSignMapper.fieldContainerDtoToFieldContainer(fieldContainerDto);
+
+			if (fieldContainerDto.getIsRequired() == null) {
+				fieldContainer.setIsRequired(false);
+			}
+
+			if (fieldContainerDto.getIsMultiSelect() == null) {
+				fieldContainer.setIsMultiSelect(false);
+			}
+
+			Set<String> existingOptionValue = new HashSet<>();
+			Set<Integer> existingDisplayOrder = new HashSet<>();
+
+			// Check for RADIO_BUTTON or DROPDOWN fields
+			boolean isRadioOrDropdown = fieldContainerDto.getFields()
+				.stream()
+				.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN);
+
+			if (isRadioOrDropdown) {
+
+				long optionCount = fieldContainerDto.getFields()
+					.stream()
+					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
+					.map(AdvanceFieldDto::getFieldOption)
+					.filter(Objects::nonNull)
+					.distinct()
+					.count();
+
+				boolean isRadio = fieldContainerDto.getFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.RADIO_BUTTON);
+
+				boolean isDropdown = fieldContainerDto.getFields()
+					.stream()
+					.anyMatch(f -> f.getType() == FieldType.DROPDOWN);
+
+				if (isRadio && optionCount < 2) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTION,
+							new String[] { FieldType.RADIO_BUTTON.name() });
 				}
-				else if (fieldDto.getFieldContainer() != null) {
-					FieldContainer fieldContainer = new FieldContainer();
-					fieldContainer.setFontFamily(fieldDto.getFieldContainer().getFontFamily());
-					fieldContainer.setFontColor(fieldDto.getFieldContainer().getFontColor());
-					fieldContainer.setFontSize(fieldDto.getFieldContainer().getFontSize());
-					fieldContainer.setIsBold(fieldDto.getFieldContainer().getIsBold());
-					fieldContainer.setIsItalic(fieldDto.getFieldContainer().getIsItalic());
-					fieldContainer.setIsUnderline(fieldDto.getFieldContainer().getIsUnderline());
-					fieldContainer.setIsRequired(Boolean.TRUE.equals(fieldDto.getFieldContainer().getIsRequired()));
-					fieldContainer
-						.setIsMultiSelect(Boolean.TRUE.equals(fieldDto.getFieldContainer().getIsMultiSelect()));
-					containerMap.put(fieldDto.getFieldContainerId(), fieldContainer);
-					container = fieldContainer;
+				if (isDropdown && optionCount < 1) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION,
+							new String[] { FieldType.DROPDOWN.name() });
 				}
-				else {
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED);
-				}
-
-				FieldContainer savedContainer = fieldContainerDao.save(container);
-
-				field.setFieldContainer(savedContainer);
-			}
-			else {
-				field.setFieldContainer(null);
 			}
 
-			if (fieldDto.getFieldOption() != null) {
-
-				FieldOption fieldOption = new FieldOption();
-				fieldOption.setOptionValue(fieldDto.getFieldOption().getOptionValue() != null
-						? fieldDto.getFieldOption().getOptionValue().trim() : null);
-				fieldOption.setDisplayOrder(fieldDto.getFieldOption().getDisplayOrder());
-				field.setFieldOption(fieldOption);
-			}
-			else {
-				field.setFieldOption(null);
+			for (AdvanceFieldDto advanceFieldDto : fieldContainerDto.getFields()) {
+				fieldList.add(createAdvanceField(advanceFieldDto, recipient, fieldContainer, existingOptionValue,
+						existingDisplayOrder));
 			}
 
-			fieldList.add(field);
-		});
-
+			fieldContainerDao.save(fieldContainer);
+		}
 		return fieldList;
+	}
+
+	private Field createAdvanceField(AdvanceFieldDto advanceFieldDto, Recipient recipient,
+			FieldContainer fieldContainer, Set<String> existingOptionValue, Set<Integer> existingDisplayOrder) {
+		Document fieldDocument = documentDao.findById(advanceFieldDto.getDocumentId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
+		field.setXPosition(advanceFieldDto.getXposition());
+		field.setYPosition(advanceFieldDto.getYposition());
+		field.setRecipient(recipient);
+		field.setDocument(fieldDocument);
+		field.setFieldContainer(fieldContainer);
+
+		if (!isAdvanceFieldTypeWithoutOption(advanceFieldDto.getType())) {
+			validateOptionValue(advanceFieldDto, existingOptionValue);
+			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
+
+			FieldOption fieldOption = new FieldOption();
+			fieldOption.setOptionValue(advanceFieldDto.getFieldOption().getOptionValue().trim());
+			fieldOption.setDisplayOrder(advanceFieldDto.getFieldOption().getDisplayOrder());
+			field.setFieldOption(fieldOption);
+		}
+
+		return field;
+	}
+
+	private boolean isAdvanceFieldTypeWithoutOption(FieldType type) {
+		return FieldType.TEXT.equals(type) || FieldType.CHECKBOX.equals(type);
+	}
+
+	private void validateOptionValue(AdvanceFieldDto advancefieldDto, Set<String> existingOptionValue) {
+		String value = advancefieldDto.getFieldOption().getOptionValue();
+		if (value == null || value.trim().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+		}
+		if (value.trim().length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
+		}
+		if (!existingOptionValue.add(value.trim())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
+		}
+	}
+
+	private void validateDisplayOrder(AdvanceFieldDto advancefieldDto, Set<Integer> existingDisplayOrder) {
+		Integer displayOrder = advancefieldDto.getFieldOption().getDisplayOrder();
+		if (displayOrder != null && displayOrder <= 0) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
+		}
+		if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
+		}
 	}
 
 	private void processVoidRequest(Envelope envelope) {
@@ -1523,115 +1596,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		else {
 			return startDateTime.plusYears(1);
 		}
-	}
-
-	private void validateGroupedFieldOptions(List<FieldDto> fieldDtos) {
-
-		Map<String, List<FieldDto>> groupedByContainer = fieldDtos.stream()
-			.filter(dto -> dto.getFieldContainerId() != null
-					&& (dto.getType() == FieldType.DROPDOWN || dto.getType() == FieldType.RADIO_BUTTON
-							|| dto.getType() == FieldType.CHECKBOX || dto.getType() == FieldType.TEXT))
-			.collect(Collectors.groupingBy(FieldDto::getFieldContainerId));
-
-		for (List<FieldDto> group : groupedByContainer.values()) {
-
-			// Ensure all fields in the same container share the same type
-			FieldType firstType = group.getFirst().getType();
-			boolean hasMixedTypes = group.stream()
-				.map(FieldDto::getType)
-				.filter(Objects::nonNull)
-				.anyMatch(type -> type != firstType);
-			if (hasMixedTypes) {
-				throw new ModuleException(
-						EsignMessageConstant.ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER);
-			}
-
-			FieldType type = firstType;
-			List<String> optionValues = group.stream()
-				.map(dto -> dto.getFieldOption() != null ? dto.getFieldOption().getOptionValue() : null)
-				.filter(Objects::nonNull)
-				.map(String::trim)
-				.filter(value -> !value.isEmpty())
-				.toList();
-
-			// Option count validation
-			if (type == FieldType.DROPDOWN && optionValues.isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_DROPDOWN_FIELD_MUST_HAVE_AT_LEAST_1_OPTION);
-			}
-			if (type == FieldType.RADIO_BUTTON && optionValues.size() < 2) {
-				throw new ModuleException(
-						EsignMessageConstant.ESIGN_ERROR_RADIO_BUTTON_FIELD_MUST_HAVE_AT_LEAST_2_OPTIONS);
-			}
-			if (type == FieldType.CHECKBOX && optionValues.isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_CHECKBOX_FIELD_MUST_HAVE_AT_LEAST_1_OPTION);
-			}
-
-			// Duplicate values and length validation
-			Set<String> existingOptionValue = new HashSet<>();
-			Set<Integer> existingDisplayOrder = new HashSet<>();
-			for (FieldDto dto : group) {
-
-				if (type != FieldType.TEXT) {
-					if (dto.getFieldOption().getOptionValue().trim().isEmpty()) {
-						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
-					}
-
-					String value = dto.getFieldOption().getOptionValue();
-					value = value.trim();
-					if (value.length() > EsignConstants.MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH) {
-						throw new ModuleException(
-								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_EXCEEDS_MAX_LENGTH);
-					}
-					if (!existingOptionValue.add(value)) {
-						throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_MUST_BE_UNIQUE);
-					}
-					Integer displayOrder = dto.getFieldOption().getDisplayOrder();
-
-					if (displayOrder != null && displayOrder <= 0) {
-						throw new ModuleException(
-								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
-					}
-
-					if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
-						throw new ModuleException(
-								EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
-					}
-				}
-
-			}
-		}
-	}
-
-	/**
-	 * Groups and sorts a list of FieldDto objects by their fieldContainerId.
-	 *
-	 * Sorting rules: 1. Items with null fieldContainerId come first. 2. Items with the
-	 * same non-null fieldContainerId are grouped together. 3. Within each group, items
-	 * with a non-null fieldContainer are ordered before those with a null fieldContainer.
-	 * @param fieldDtoList the list of FieldDto objects to group and sort
-	 * @return a new sorted list of FieldDto objects
-	 */
-	private List<FieldDto> groupAndSortFieldsByContainer(List<FieldDto> fieldDtoList) {
-		List<FieldDto> sortedList = new ArrayList<>(fieldDtoList);
-		sortedList.sort((a, b) -> {
-			if (a.getFieldContainerId() == null && b.getFieldContainerId() != null)
-				return -1;
-			if (a.getFieldContainerId() != null && b.getFieldContainerId() == null)
-				return 1;
-			if (a.getFieldContainerId() != null && b.getFieldContainerId() != null) {
-				int cmp = a.getFieldContainerId().compareTo(b.getFieldContainerId());
-				if (cmp != 0)
-					return cmp;
-				boolean aHasContainer = a.getFieldContainer() != null;
-				boolean bHasContainer = b.getFieldContainer() != null;
-				if (aHasContainer && !bHasContainer)
-					return -1;
-				if (!aHasContainer && bHasContainer)
-					return 1;
-			}
-			return 0;
-		});
-		return sortedList;
 	}
 
 }

@@ -14,12 +14,15 @@ import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
+import com.skapp.enterprise.esignature.payload.request.AdvanceFieldDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
+import com.skapp.enterprise.esignature.payload.request.FieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
+import com.skapp.enterprise.esignature.payload.response.AdvanceFieldDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
@@ -41,11 +44,13 @@ import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResp
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
 import com.skapp.enterprise.esignature.type.DateFormatType;
+import com.skapp.enterprise.esignature.type.FieldType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface EsignMapper {
@@ -96,12 +101,12 @@ public interface EsignMapper {
 	DocumentDetailResponseDto documentToDocumentDetailDto(Document document);
 
 	@Mapping(target = "addressBookId", source = "addressBook.id")
-	@Mapping(target = "fieldContainers", expression = "java(mapFieldContainers(recipient))")
+	@Mapping(target = "advanceFieldContainers", expression = "java(mapFieldContainers(recipient))")
+	@Mapping(target = "fields", expression = "java(mapNameAndDateFieldsToFieldResponseDto(recipient.getFields()))")
 	RecipientDetailResponseDto recipientToRecipientDetailDto(Recipient recipient);
 
 	@Mapping(target = "documentId", source = "document.id")
 	@Mapping(target = "recipientMail", source = "recipient.email")
-	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldDetailResponseDto fieldToFieldDetailDto(Field field);
 
 	@Mapping(target = "envelopeId", source = "id")
@@ -125,7 +130,6 @@ public interface EsignMapper {
 
 	RecipientResponseDto recipientToRecipientResponseDto(Recipient recipient);
 
-	@Mapping(target = "fieldContainerId", source = "fieldContainer.id")
 	FieldResponseDto fieldToFieldResponseDto(Field field);
 
 	FieldValueResponseDto documentVersionFieldToFieldValueResponseDto(DocumentVersionField documentVersionField);
@@ -178,6 +182,12 @@ public interface EsignMapper {
 
 	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
 
+	FieldContainer fieldContainerDtoToFieldContainer(FieldContainerDto fieldContainerDto);
+
+	AdvanceFieldDetailResponseDto fieldToAdvanceFieldDetailResponseDto(Field field);
+
+	Field advanceFieldDtoToField(AdvanceFieldDto advanceFieldDto);
+
 	default List<FieldContainerResponseDto> mapFieldContainers(Recipient recipient) {
 		if (recipient.getFields() == null)
 			return null;
@@ -186,8 +196,28 @@ public interface EsignMapper {
 			.map(Field::getFieldContainer)
 			.filter(java.util.Objects::nonNull)
 			.distinct()
-			.map(this::fieldContainerToFieldContainerResponseDto)
-			.collect(java.util.stream.Collectors.toList());
+			.map(container -> {
+				FieldContainerResponseDto dto = fieldContainerToFieldContainerResponseDto(container);
+				// Filter fields belonging to this container
+				List<AdvanceFieldDetailResponseDto> fieldsForContainer = recipient.getFields()
+					.stream()
+					.filter(f -> container.equals(f.getFieldContainer()))
+					.map(this::fieldToAdvanceFieldDetailResponseDto)
+					.collect(Collectors.toList());
+				dto.setFields(fieldsForContainer);
+				return dto;
+			})
+			.collect(Collectors.toList());
+	}
+
+	default List<FieldDetailResponseDto> mapNameAndDateFieldsToFieldResponseDto(List<Field> fields) {
+		if (fields == null)
+			return null;
+		return fields.stream()
+			.filter(f -> !(f.getType().equals(FieldType.TEXT) || f.getType().equals(FieldType.DROPDOWN)
+					|| f.getType().equals(FieldType.CHECKBOX) || f.getType().equals(FieldType.RADIO_BUTTON)))
+			.map(this::fieldToFieldDetailDto)
+			.collect(Collectors.toList());
 	}
 
 }

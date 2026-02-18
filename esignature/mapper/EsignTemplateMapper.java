@@ -1,16 +1,32 @@
 package com.skapp.enterprise.esignature.mapper;
 
+import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
 import com.skapp.enterprise.esignature.model.TemplateDocument;
 import com.skapp.enterprise.esignature.model.TemplateEnvelope;
 import com.skapp.enterprise.esignature.model.TemplateField;
+import com.skapp.enterprise.esignature.model.TemplateFieldOption;
+import com.skapp.enterprise.esignature.model.TemplateRecipient;
+
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.template.AdvanceTemplateFieldDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
+import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
+import com.skapp.enterprise.esignature.payload.response.template.AdvanceFieldTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.FieldTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateFieldContainerResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.TemplateFieldOptionResponseDto;
+import com.skapp.enterprise.esignature.payload.response.template.RecipientTemplateDetailResponseDto;
+
+import com.skapp.enterprise.esignature.type.FieldType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface EsignTemplateMapper {
@@ -31,5 +47,62 @@ public interface EsignTemplateMapper {
 
 	@Mapping(source = "templateDocument.id", target = "documentId")
 	FieldTemplateDetailResponseDto templateFieldToFieldTemplateDetailResponseDto(TemplateField templateField);
+
+	TemplateFieldContainer templateFieldContainerDtoToTemplateFieldContainer(
+			TemplateFieldContainerDto templateFieldContainerDto);
+
+	TemplateField templateFieldDtoToTemplateField(TemplateFieldDto advanceFieldDto);
+
+	TemplateFieldContainerResponseDto templateFieldContainerToTemplateFieldContainerResponseDto(
+			TemplateFieldContainer templateFieldContainer);
+
+	TemplateFieldOptionResponseDto templateFieldOptionToTemplateFieldOptionResponseDto(
+			TemplateFieldOption templateFieldOption);
+
+	@Mapping(target = "advanceTemplateFieldContainers",
+			expression = "java(mapTemplateFieldContainers(templateRecipient))")
+	@Mapping(target = "templateFields",
+			expression = "java(mapNameAndDateFieldsToFieldResponseDto(templateRecipient.getTemplateFields()))")
+	RecipientTemplateDetailResponseDto templateRecipientToRecipientTemplateDetailResponseDto(
+			TemplateRecipient templateRecipient);
+
+	AdvanceFieldTemplateDetailResponseDto templateFieldToAdvanceFieldTemplateDetailResponseDto(
+			TemplateField templateField);
+
+	TemplateField advanceTemplateFieldDtoToTemplateField(AdvanceTemplateFieldDto advanceFieldDto);
+
+	default List<TemplateFieldContainerResponseDto> mapTemplateFieldContainers(TemplateRecipient templateRecipient) {
+		if (templateRecipient.getTemplateFields() == null)
+			return null;
+		return templateRecipient.getTemplateFields()
+			.stream()
+			.map(TemplateField::getTemplateFieldContainer)
+			.filter(java.util.Objects::nonNull)
+			.distinct()
+			.map(container -> {
+				TemplateFieldContainerResponseDto dto = templateFieldContainerToTemplateFieldContainerResponseDto(
+						container);
+				// Filter fields belonging to this container
+				List<AdvanceFieldTemplateDetailResponseDto> fieldsForContainer = templateRecipient.getTemplateFields()
+					.stream()
+					.filter(f -> container.equals(f.getTemplateFieldContainer()))
+					.map(this::templateFieldToAdvanceFieldTemplateDetailResponseDto)
+					.collect(Collectors.toList());
+				dto.setTemplateFields(fieldsForContainer);
+				return dto;
+			})
+			.collect(Collectors.toList());
+	}
+
+	default List<FieldTemplateDetailResponseDto> mapNameAndDateFieldsToFieldResponseDto(
+			List<TemplateField> templateFields) {
+		if (templateFields == null)
+			return null;
+		return templateFields.stream()
+			.filter(f -> !(f.getType().equals(FieldType.TEXT) || f.getType().equals(FieldType.DROPDOWN)
+					|| f.getType().equals(FieldType.CHECKBOX) || f.getType().equals(FieldType.RADIO_BUTTON)))
+			.map(this::templateFieldToFieldTemplateDetailResponseDto)
+			.collect(Collectors.toList());
+	}
 
 }
