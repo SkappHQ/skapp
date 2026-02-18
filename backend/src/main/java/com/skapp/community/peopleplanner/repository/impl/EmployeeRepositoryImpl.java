@@ -196,8 +196,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user, JoinType.LEFT);
+		Join<Employee, EmployeeRole> roleJoin = root.join((Employee_.employeeRole));
 
 		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 
 		if (accountStatuses != null && !accountStatuses.isEmpty()) {
 			predicates.add(root.get(Employee_.accountStatus).in(accountStatuses));
@@ -424,6 +427,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE);
 
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
+		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			predicates.add(findByEmailName(keyword, criteriaBuilder, root, userJoin));
