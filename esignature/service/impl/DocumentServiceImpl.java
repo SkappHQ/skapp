@@ -109,6 +109,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 
@@ -937,19 +939,20 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private byte[] mergeUnsignedAdvanceFieldsToDocument(List<Field> advanceFields,
 			List<DocumentVersionField> fieldVersionList, byte[] documentBytes) {
-		List<Field> signedAdvanceFields = fieldVersionList.stream()
+
+		Set<Long> signedAdvanceFieldIds = fieldVersionList.stream()
 			.map(DocumentVersionField::getField)
 			.filter(field -> ADVANCE_FIELD_TYPES.contains(field.getType()))
-			.toList();
+			.map(Field::getId)
+			.collect(Collectors.toSet());
 
 		List<Field> unsignedAdvanceFields = advanceFields.stream()
 			.filter(f -> (f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.CHECKBOX)
-					&& !signedAdvanceFields.contains(f))
+					&& !signedAdvanceFieldIds.contains(f.getId()))
 			.toList();
 
 		for (Field field : unsignedAdvanceFields) {
 			FieldSignDto fieldSignDto = convertFieldToFieldSignDto(field);
-
 			documentBytes = documentProcessingService.mergeTextFieldToDocument(fieldSignDto, documentBytes);
 		}
 
