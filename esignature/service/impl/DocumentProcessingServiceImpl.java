@@ -306,14 +306,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
-		// Relative to the co-ordinates taken from UI -top left
+
 		try {
 
 			FieldType fieldType = field.getType();
 
-			if (FieldType.CHECKBOX.equals(fieldType) || FieldType.RADIO_BUTTON.equals(fieldType)) {
-				addCheckboxOrRadioButton(field, contentStream, pageHeight, fieldType, document);
+			if (FieldType.CHECKBOX.equals(fieldType)) {
+				drawCheckbox(field, contentStream, pageHeight);
 			}
+			else
+
+			if (FieldType.RADIO_BUTTON.equals(fieldType)) {
+
+				drawRadioButton(field, contentStream, pageHeight, document);
+			}
+
 			else if (FieldType.TEXT.equals(fieldType)) {
 				addInputTextField(field, contentStream, pageHeight, document);
 			}
@@ -659,189 +666,218 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckboxOrRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			FieldType fieldType, PDDocument document) throws IOException {
+	private void drawCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight) {
 
-		float width = field.getWidth();
-		float height = field.getHeight();
+		try {
 
-		boolean isChecked = field.isSigned();
+			float width = field.getWidth();
+			float height = field.getHeight();
 
-		// Pass RAW x, y consistently - let each draw method handle its own coordinate
-		// conversion
-		if (FieldType.CHECKBOX.equals(fieldType)) {
-			drawCheckbox(contentStream, field.getXposition(), field.getYposition(), width, height, isChecked,
-					pageHeight);
+			boolean isChecked = field.isSigned();
+
+			float pixelToPoint = 72f / 96f;
+			float size = Math.min(width, height) * pixelToPoint;
+			float borderWidth = 2f * pixelToPoint;
+			float cornerRadius = 2f * pixelToPoint;
+
+			// Adjust Y position: convert from top-left to bottom-left origin
+			float adjustedY = pageHeight - field.getYposition() - size;
+
+			// Adjust X position as before
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+			float adjustedX = field.getXposition() + xOffset;
+
+			contentStream.setLineWidth(borderWidth);
+			contentStream.setStrokingColor(0f, 0f, 0f);
+
+			if (isChecked) {
+				contentStream.setNonStrokingColor(0f, 0f, 0f);
+				drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
+				contentStream.fillAndStroke(); // atomic - no split fill/stroke
+
+				drawTickMark(contentStream, adjustedX, adjustedY, size);
+			}
+			else {
+				contentStream.setNonStrokingColor(1f, 1f, 1f);
+				drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
+				contentStream.fillAndStroke(); // atomic - no split fill/stroke
+			}
 		}
-
-		if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-
-			drawRadioButton(contentStream, field.getXposition(), field.getYposition(), width, height, pageHeight,
-					isChecked, document, field.getFieldValue().trim());
-		}
-	}
-
-	private void drawCheckbox(PDPageContentStream contentStream, float x, float y, float width, float height,
-			boolean isChecked, float pageHeight) throws IOException {
-
-		float pixelToPoint = 72f / 96f;
-		float size = Math.min(width, height) * pixelToPoint;
-		float borderWidth = 2f * pixelToPoint;
-		float cornerRadius = 2f * pixelToPoint;
-
-		// Adjust Y position: convert from top-left to bottom-left origin
-		float adjustedY = pageHeight - y - size;
-
-		// Adjust X position as before
-		float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-		float adjustedX = x + xOffset;
-
-		contentStream.setLineWidth(borderWidth);
-		contentStream.setStrokingColor(0f, 0f, 0f);
-
-		if (isChecked) {
-			contentStream.setNonStrokingColor(0f, 0f, 0f);
-			drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
-			contentStream.fillAndStroke(); // atomic - no split fill/stroke
-
-			drawTickMark(contentStream, adjustedX, adjustedY, size);
-		}
-		else {
-			contentStream.setNonStrokingColor(1f, 1f, 1f);
-			drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
-			contentStream.fillAndStroke(); // atomic - no split fill/stroke
+		catch (IOException e) {
+			log.error("Error drawCheckbox: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
 	}
 
 	// Helper method to draw rounded rectangle
 	private void drawRoundedRect(PDPageContentStream contentStream, float x, float y, float width, float height,
-			float radius) throws IOException {
-		// Move to starting point (top-left, after the curve)
-		contentStream.moveTo(x + radius, y + height);
+			float radius) {
 
-		// Top edge
-		contentStream.lineTo(x + width - radius, y + height);
-		// Top-right corner
-		contentStream.curveTo(x + width, y + height, x + width, y + height, x + width, y + height - radius);
+		try {
+			// Move to starting point (top-left, after the curve)
+			contentStream.moveTo(x + radius, y + height);
 
-		// Right edge
-		contentStream.lineTo(x + width, y + radius);
-		// Bottom-right corner
-		contentStream.curveTo(x + width, y, x + width, y, x + width - radius, y);
+			// Top edge
+			contentStream.lineTo(x + width - radius, y + height);
+			// Top-right corner
+			contentStream.curveTo(x + width, y + height, x + width, y + height, x + width, y + height - radius);
 
-		// Bottom edge
-		contentStream.lineTo(x + radius, y);
-		// Bottom-left corner
-		contentStream.curveTo(x, y, x, y, x, y + radius);
+			// Right edge
+			contentStream.lineTo(x + width, y + radius);
+			// Bottom-right corner
+			contentStream.curveTo(x + width, y, x + width, y, x + width - radius, y);
 
-		// Left edge
-		contentStream.lineTo(x, y + height - radius);
-		// Top-left corner
-		contentStream.curveTo(x, y + height, x, y + height, x + radius, y + height);
+			// Bottom edge
+			contentStream.lineTo(x + radius, y);
+			// Bottom-left corner
+			contentStream.curveTo(x, y, x, y, x, y + radius);
 
-		contentStream.closePath();
-	}
+			// Left edge
+			contentStream.lineTo(x, y + height - radius);
+			// Top-left corner
+			contentStream.curveTo(x, y + height, x, y + height, x + radius, y + height);
 
-	private void drawTickMark(PDPageContentStream contentStream, float x, float y, float size) throws IOException {
-		float pixelToPoint = 72f / 96f;
-		float tickWidth = 2f * pixelToPoint; // Tick mark line width
-
-		// Calculate tick mark coordinates (relative to checkbox)
-		// Short arm (left part going down-left to down-right)
-		float shortArmStartX = x + size * 0.25f;
-		float shortArmStartY = y + size * 0.5f;
-		float shortArmEndX = x + size * 0.4f;
-		float shortArmEndY = y + size * 0.3f;
-
-		// Long arm (from middle going up-right)
-		float longArmEndX = x + size * 0.75f;
-		float longArmEndY = y + size * 0.7f;
-
-		contentStream.setLineWidth(tickWidth);
-
-		contentStream.setStrokingColor(1f, 1f, 1f); // White tick mark
-
-		contentStream.setLineCapStyle(1); // Round cap for smoother appearance
-		contentStream.setLineJoinStyle(1); // Round join
-
-		// Draw tick mark as two connected lines
-		contentStream.moveTo(shortArmStartX, shortArmStartY);
-		contentStream.lineTo(shortArmEndX, shortArmEndY);
-		contentStream.lineTo(longArmEndX, longArmEndY);
-		contentStream.stroke();
-	}
-
-	private void drawRadioButton(PDPageContentStream contentStream, float x, float y, float width, float height,
-			float pageHeight, boolean isChecked, PDDocument document, String value) throws IOException {
-
-		float pixelToPoint = 72f / 96f; // 1 px = 0.75 pt
-		float size = Math.min(width, height) * pixelToPoint;
-		float borderWidth = 2f * pixelToPoint; // 2px border
-		float radius = size / 2f; // Full circle
-
-		// Adjust Y position: convert from top-left to bottom-left origin
-		float adjustedY = pageHeight - y - size;
-
-		// Adjust X position as before
-		float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-		float adjustedX = x + xOffset;
-
-		// Center of the circle
-		float centerX = adjustedX + radius;
-		float centerY = adjustedY + radius;
-
-		contentStream.setLineWidth(borderWidth);
-		contentStream.setStrokingColor(0f, 0f, 0f);
-		contentStream.setNonStrokingColor(1f, 1f, 1f);
-
-		// Use fillAndStrokeEvenOdd instead of fillAndStroke
-		drawCircle(contentStream, centerX, centerY, radius);
-		contentStream.fillAndStrokeEvenOdd();
-
-		if (isChecked) {
-			float innerRadius = radius * 0.6f;
-			contentStream.setNonStrokingColor(0f, 0f, 0f);
-			drawCircle(contentStream, centerX, centerY, innerRadius);
-			contentStream.fill();
+			contentStream.closePath();
 		}
+		catch (IOException e) {
+			log.error("Error drawRoundedRect: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
+	}
 
-		if (value != null && !value.isEmpty()) {
-			float textPadding = 4f * pixelToPoint;
-			float textX = adjustedX + size + textPadding;
-			float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / 2;
+	private void drawTickMark(PDPageContentStream contentStream, float x, float y, float size) {
 
-			contentStream.beginText();
-			contentStream.setFont(loadFont(document), DEFAULT_FONT_SIZE);
-			contentStream.setNonStrokingColor(0f, 0f, 0f);
-			contentStream.newLineAtOffset(textX, textY);
-			contentStream.showText(value);
-			contentStream.endText();
+		try {
+			float pixelToPoint = 72f / 96f;
+			float tickWidth = 2f * pixelToPoint; // Tick mark line width
+
+			// Calculate tick mark coordinates (relative to checkbox)
+			// Short arm (left part going down-left to down-right)
+			float shortArmStartX = x + size * 0.25f;
+			float shortArmStartY = y + size * 0.5f;
+			float shortArmEndX = x + size * 0.4f;
+			float shortArmEndY = y + size * 0.3f;
+
+			// Long arm (from middle going up-right)
+			float longArmEndX = x + size * 0.75f;
+			float longArmEndY = y + size * 0.7f;
+
+			contentStream.setLineWidth(tickWidth);
+
+			contentStream.setStrokingColor(1f, 1f, 1f); // White tick mark
+
+			contentStream.setLineCapStyle(1); // Round cap for smoother appearance
+			contentStream.setLineJoinStyle(1); // Round join
+
+			// Draw tick mark as two connected lines
+			contentStream.moveTo(shortArmStartX, shortArmStartY);
+			contentStream.lineTo(shortArmEndX, shortArmEndY);
+			contentStream.lineTo(longArmEndX, longArmEndY);
+			contentStream.stroke();
+		}
+		catch (IOException e) {
+			log.error("Error drawTickMark: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
+	}
+
+	private void drawRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
+
+		try {
+
+			float width = field.getWidth();
+			float height = field.getHeight();
+
+			boolean isChecked = field.isSigned();
+
+			float pixelToPoint = 72f / 96f; // 1 px = 0.75 pt
+			float size = Math.min(width, height) * pixelToPoint;
+			float borderWidth = 2f * pixelToPoint; // 2px border
+			float radius = size / 2f; // Full circle
+
+			// Adjust Y position: convert from top-left to bottom-left origin
+			float adjustedY = pageHeight - field.getYposition() - size;
+
+			// Adjust X position as before
+			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+			float adjustedX = field.getXposition() + xOffset;
+
+			// Center of the circle
+			float centerX = adjustedX + radius;
+			float centerY = adjustedY + radius;
+
+			contentStream.setLineWidth(borderWidth);
+			contentStream.setStrokingColor(0f, 0f, 0f);
+			contentStream.setNonStrokingColor(1f, 1f, 1f);
+
+			// Use fillAndStrokeEvenOdd instead of fillAndStroke
+			drawCircle(contentStream, centerX, centerY, radius);
+			contentStream.fillAndStrokeEvenOdd();
+
+			if (isChecked) {
+				float innerRadius = radius * 0.6f;
+				contentStream.setNonStrokingColor(0f, 0f, 0f);
+				drawCircle(contentStream, centerX, centerY, innerRadius);
+				contentStream.fill();
+			}
+
+			String value = field.getFieldValue().trim();
+
+			if (!value.isEmpty()) {
+				float textPadding = 4f * pixelToPoint;
+				float textX = adjustedX + size + textPadding;
+				float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / 2;
+
+				contentStream.beginText();
+				contentStream.setFont(loadFont(document), DEFAULT_FONT_SIZE);
+				contentStream.setNonStrokingColor(0f, 0f, 0f);
+				contentStream.newLineAtOffset(textX, textY);
+				contentStream.showText(value);
+				contentStream.endText();
+			}
+
+		}
+		catch (IOException e) {
+			log.error("Error drawRadioButton: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
 	}
 
 	// Helper method to draw a circle using Bezier curves
-	private void drawCircle(PDPageContentStream contentStream, float centerX, float centerY, float radius)
-			throws IOException {
-		// Approximate circle using 4 cubic Bezier curves
-		// Magic number 0.5523f is the control point offset for a near-perfect circle
-		float k = radius * 0.5523f;
+	private void drawCircle(PDPageContentStream contentStream, float centerX, float centerY, float radius) {
+		try {
 
-		// Start at the top
-		contentStream.moveTo(centerX, centerY + radius);
+			// Approximate circle using 4 cubic Bezier curves
+			// Magic number 0.5523f is the control point offset for a near-perfect circle
+			float k = radius * 0.5523f;
 
-		// Top-right quadrant
-		contentStream.curveTo(centerX + k, centerY + radius, centerX + radius, centerY + k, centerX + radius, centerY);
+			// Start at the top
+			contentStream.moveTo(centerX, centerY + radius);
 
-		// Bottom-right quadrant
-		contentStream.curveTo(centerX + radius, centerY - k, centerX + k, centerY - radius, centerX, centerY - radius);
+			// Top-right quadrant
+			contentStream.curveTo(centerX + k, centerY + radius, centerX + radius, centerY + k, centerX + radius,
+					centerY);
 
-		// Bottom-left quadrant
-		contentStream.curveTo(centerX - k, centerY - radius, centerX - radius, centerY - k, centerX - radius, centerY);
+			// Bottom-right quadrant
+			contentStream.curveTo(centerX + radius, centerY - k, centerX + k, centerY - radius, centerX,
+					centerY - radius);
 
-		// Top-left quadrant
-		contentStream.curveTo(centerX - radius, centerY + k, centerX - k, centerY + radius, centerX, centerY + radius);
+			// Bottom-left quadrant
+			contentStream.curveTo(centerX - k, centerY - radius, centerX - radius, centerY - k, centerX - radius,
+					centerY);
 
-		contentStream.closePath();
+			// Top-left quadrant
+			contentStream.curveTo(centerX - radius, centerY + k, centerX - k, centerY + radius, centerX,
+					centerY + radius);
+
+			contentStream.closePath();
+
+		}
+		catch (IOException e) {
+			log.error("Error drawCircle: {}", e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
 	}
 
 	private void addInputTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
