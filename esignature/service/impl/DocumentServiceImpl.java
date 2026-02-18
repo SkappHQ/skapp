@@ -642,7 +642,19 @@ public class DocumentServiceImpl implements DocumentService {
 
 			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairSender.getPublic());
 
-			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes, advanceFields);
+			List<Field> allRecipientsFields = recipient.getEnvelope()
+				.getRecipients()
+				.stream()
+				.flatMap(rec -> rec.getFields().stream())
+				.toList();
+
+			// Isolate if there are any advance fields
+			List<Field> allRecipientsAdvanceFields = allRecipientsFields.stream()
+				.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+				.toList();
+
+			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes,
+					allRecipientsAdvanceFields);
 
 			// Create final version with all signatures
 			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
@@ -884,7 +896,8 @@ public class DocumentServiceImpl implements DocumentService {
 		return updatedBytes;
 	}
 
-	private byte[] mergeAllFieldsToFinalDocument(Document document, byte[] documentBytes, List<Field> advanceFields) {
+	private byte[] mergeAllFieldsToFinalDocument(Document document, byte[] documentBytes,
+			List<Field> allRecipientsAdvanceFields) {
 		byte[] fullDocumentBytes = documentBytes;
 
 		List<DocumentVersionField> fieldVersionList = new ArrayList<>();
@@ -912,9 +925,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Merge Advanced Fields (if any) - these fields are not stored in
 		// DocumentVersionField and thus not part of the normal merge process above
-		if (advanceFields != null && !advanceFields.isEmpty()) {
+		if (allRecipientsAdvanceFields != null && !allRecipientsAdvanceFields.isEmpty()) {
 
-			fullDocumentBytes = mergeUnsignedAdvanceFieldsToDocument(advanceFields, fieldVersionList,
+			fullDocumentBytes = mergeUnsignedAdvanceFieldsToDocument(allRecipientsAdvanceFields, fieldVersionList,
 					fullDocumentBytes);
 
 		}
