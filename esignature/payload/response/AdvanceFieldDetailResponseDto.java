@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FieldResponseDto {
+public class AdvanceFieldDetailResponseDto {
 
 	private Long id;
 
@@ -25,14 +25,10 @@ public class FieldResponseDto {
 
 	private String recipientMail;
 
-	private String fontFamily;
-
-	private String fontColor;
-
 	private String width;
 
 	private String height;
 
-	private FieldValueResponseDto fieldValueResponseDto;
+	private FieldOptionResponseDto fieldOption;
 
 }

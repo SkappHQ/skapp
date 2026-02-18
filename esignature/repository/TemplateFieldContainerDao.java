@@ -1,10 +1,10 @@
 package com.skapp.enterprise.esignature.repository;
 
-import com.skapp.enterprise.esignature.model.FieldContainer;
+import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface FieldContainerDao extends JpaRepository<FieldContainer, Long> {
+public interface TemplateFieldContainerDao extends JpaRepository<TemplateFieldContainer, Long> {
 
 }

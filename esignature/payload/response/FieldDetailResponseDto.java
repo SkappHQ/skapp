@@ -29,8 +29,4 @@ public class FieldDetailResponseDto {
 
 	private String height;
 
-	private Long fieldContainerId;
-
-	private FieldOptionResponseDto fieldOption;
-
 }

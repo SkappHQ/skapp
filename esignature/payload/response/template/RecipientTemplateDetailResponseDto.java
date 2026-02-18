@@ -24,6 +24,8 @@ public class RecipientTemplateDetailResponseDto {
 
 	private List<FieldTemplateDetailResponseDto> templateFields;
 
+	private List<TemplateFieldContainerResponseDto> advanceTemplateFieldContainers;
+
 	private AddressBookBasicResponseDto addressBook;
 
 	private Boolean mfaVerificationEnabled;

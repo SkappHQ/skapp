@@ -1,4 +1,4 @@
-package com.skapp.enterprise.esignature.payload.request;
+package com.skapp.enterprise.esignature.payload.request.template;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class FieldContainerDto {
+public class TemplateFieldContainerDto {
 
 	private String fontFamily;
 
@@ -26,7 +26,7 @@ public class FieldContainerDto {
 
 	private Boolean isMultiSelect;
 
-	@NotEmpty(message = "{validation.field-container.fields.not-empty}")
-	private List<AdvanceFieldDto> fields;
+	@NotEmpty(message = "{validation.template-field-container.template-fields.not-empty}")
+	private List<AdvanceTemplateFieldDto> templateFields;
 
 }
