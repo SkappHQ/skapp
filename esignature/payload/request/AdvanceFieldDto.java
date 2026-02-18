@@ -1,10 +1,7 @@
 package com.skapp.enterprise.esignature.payload.request;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
-import com.skapp.enterprise.esignature.util.deserializer.DocumentFieldStatusDeserializer;
-import com.skapp.enterprise.esignature.util.deserializer.DocumentFieldTypeDeserializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -15,11 +12,9 @@ import lombok.Setter;
 public class AdvanceFieldDto {
 
 	@NotNull(message = "{validation.field.type.notnull}")
-	@JsonDeserialize(using = DocumentFieldTypeDeserializer.class)
 	private FieldType type;
 
 	@NotNull(message = "{validation.field.status.notnull}")
-	@JsonDeserialize(using = DocumentFieldStatusDeserializer.class)
 	private FieldStatus status;
 
 	@NotNull(message = "{validation.field.pageNumber.notnull}")
