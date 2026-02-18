@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
+import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
@@ -79,6 +80,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	public static final String PNG = "png";
 
 	private final MessageUtil messageUtil;
+
+	private static final String DEFAULT_FONT_COLOR = "#000000";
 
 	private static final Map<String, String> FONT_FOLDERS = new HashMap<>();
 
@@ -900,26 +903,30 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
-			String fontFamily = field.getFieldSignContainer().getFontFamily();
-			String fontColor = field.getFieldSignContainer().getFontColor();
-			float fontSize = field.getFieldSignContainer().getFontSize();
-			boolean isBold = field.getFieldSignContainer().getIsBold();
-			boolean isItalic = field.getFieldSignContainer().getIsItalic();
-			boolean isUnderline = field.getFieldSignContainer().getIsUnderline();
+			FieldSignContainerDto container = field.getFieldSignContainer();
 
-			PDType0Font font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
+			String fontFamily = container != null ? container.getFontFamily() : null;
+			String fontColor = container != null && container.getFontColor() != null ? container.getFontColor() : null;
+			float fontSize = container != null ? container.getFontSize() : DEFAULT_FONT_SIZE;
+			boolean isBold = container != null && Boolean.TRUE.equals(container.getIsBold());
+			boolean isItalic = container != null && Boolean.TRUE.equals(container.getIsItalic());
+			boolean isUnderline = container != null && Boolean.TRUE.equals(container.getIsUnderline());
+
+			PDType0Font font;
 			float fontSizeToUse = fontSize > 0 ? fontSize : DEFAULT_FONT_SIZE;
-			if (fontColor != null) {
+
+			if (fontFamily == null || fontColor == null) {
+				font = loadFont(document);
+				contentStream.setFont(font, fontSizeToUse);
+				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / 255f, TEXT_COLOR.getGreen() / 255f,
+						TEXT_COLOR.getBlue() / 255f);
+			}
+			else {
+				font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
 				Color color = Color.decode(fontColor);
 				contentStream.setFont(font, fontSizeToUse);
 				contentStream.setNonStrokingColor(color.getRed() / 255f, color.getGreen() / 255f,
 						color.getBlue() / 255f);
-			}
-			else {
-				font = loadFont(document);
-				contentStream.setFont(font, DEFAULT_FONT_SIZE);
-				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / 255f, TEXT_COLOR.getGreen() / 255f,
-						TEXT_COLOR.getBlue() / 255f);
 			}
 
 			contentStream.beginText();
@@ -940,7 +947,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				}
 				contentStream.setStrokingColor(underlineColor.getRed() / 255f, underlineColor.getGreen() / 255f,
 						underlineColor.getBlue() / 255f);
-				float textWidth = font.getStringWidth(field.getFieldValue()) / 1000 * fontSize;
+				float textWidth = font.getStringWidth(field.getFieldValue()) / 1000 * fontSizeToUse;
 				float underlineY = adjustedY - 1.5f; // adjust as needed
 				contentStream.moveTo(adjustedX, underlineY);
 				contentStream.lineTo(adjustedX + textWidth, underlineY);
