@@ -892,11 +892,13 @@ public class DocumentServiceImpl implements DocumentService {
 		for (DocumentVersion version : document.getVersions()) {
 			if (version.getFieldVersions() != null) {
 
-				fieldVersionList = version.getFieldVersions();
+				List<DocumentVersionField> versionFieldVersions = version.getFieldVersions();
+
+				fieldVersionList.addAll(versionFieldVersions);
 
 				Map<String, byte[]> imageCache = new HashMap<>();
 
-				for (DocumentVersionField documentVersionField : version.getFieldVersions()) {
+				for (DocumentVersionField documentVersionField : versionFieldVersions) {
 					FieldSignDto fieldSignDto = convertToFieldSignDto(documentVersionField);
 
 					KeyPair keyPair = loadKeyPair(
