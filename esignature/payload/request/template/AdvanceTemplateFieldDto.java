@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.request.template;
 
+import com.skapp.enterprise.esignature.payload.request.FieldOptionDto;
 import com.skapp.enterprise.esignature.type.FieldType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -9,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TemplateFieldDto {
+public class AdvanceTemplateFieldDto {
 
 	@NotNull(message = "{validation.template.field.templateDocumentId.notnull}")
 	private Long templateDocumentId;
@@ -36,5 +37,7 @@ public class TemplateFieldDto {
 	@NotNull(message = "{validation.template.field.height.notnull}")
 	@DecimalMin(value = "0.0", message = "{validation.template.field.height.min}")
 	private Float height;
+
+	private FieldOptionDto fieldOption;
 
 }

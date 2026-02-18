@@ -44,6 +44,7 @@ import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.RecipientEidConfig;
+import com.skapp.enterprise.esignature.payload.request.AdvanceFieldDto;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
@@ -594,7 +595,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			Set<FieldType> fieldTypes = fieldContainerDto.getFields()
 				.stream()
-				.map(FieldDto::getType)
+				.map(AdvanceFieldDto::getType)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 			if (fieldTypes.size() > 1) {
@@ -625,7 +626,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				long optionCount = fieldContainerDto.getFields()
 					.stream()
 					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
-					.map(FieldDto::getOptionValue)
+					.map(AdvanceFieldDto::getFieldOption)
 					.filter(Objects::nonNull)
 					.distinct()
 					.count();
@@ -650,7 +651,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				}
 			}
 
-			for (FieldDto advanceFieldDto : fieldContainerDto.getFields()) {
+			for (AdvanceFieldDto advanceFieldDto : fieldContainerDto.getFields()) {
 				fieldList.add(createAdvanceField(advanceFieldDto, recipient, fieldContainer, existingOptionValue,
 						existingDisplayOrder));
 			}
@@ -660,11 +661,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return fieldList;
 	}
 
-	private Field createAdvanceField(FieldDto advanceFieldDto, Recipient recipient, FieldContainer fieldContainer,
-			Set<String> existingOptionValue, Set<Integer> existingDisplayOrder) {
+	private Field createAdvanceField(AdvanceFieldDto advanceFieldDto, Recipient recipient,
+			FieldContainer fieldContainer, Set<String> existingOptionValue, Set<Integer> existingDisplayOrder) {
 		Document fieldDocument = documentDao.findById(advanceFieldDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
-		Field field = eSignMapper.fieldDtoToField(advanceFieldDto);
+		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
 		field.setXPosition(advanceFieldDto.getXposition());
 		field.setYPosition(advanceFieldDto.getYposition());
 		field.setRecipient(recipient);
@@ -676,8 +677,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
 			FieldOption fieldOption = new FieldOption();
-			fieldOption.setOptionValue(advanceFieldDto.getOptionValue().trim());
-			fieldOption.setDisplayOrder(advanceFieldDto.getDisplayOrder());
+			fieldOption.setOptionValue(advanceFieldDto.getFieldOption().getOptionValue().trim());
+			fieldOption.setDisplayOrder(advanceFieldDto.getFieldOption().getDisplayOrder());
 			field.setFieldOption(fieldOption);
 		}
 
@@ -688,8 +689,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return FieldType.TEXT.equals(type) || FieldType.CHECKBOX.equals(type);
 	}
 
-	private void validateOptionValue(FieldDto fieldDto, Set<String> existingOptionValue) {
-		String value = fieldDto.getOptionValue();
+	private void validateOptionValue(AdvanceFieldDto advancefieldDto, Set<String> existingOptionValue) {
+		String value = advancefieldDto.getFieldOption().getOptionValue();
 		if (value == null || value.trim().isBlank()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
 		}
@@ -701,8 +702,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private void validateDisplayOrder(FieldDto fieldDto, Set<Integer> existingDisplayOrder) {
-		Integer displayOrder = fieldDto.getDisplayOrder();
+	private void validateDisplayOrder(AdvanceFieldDto advancefieldDto, Set<Integer> existingDisplayOrder) {
+		Integer displayOrder = advancefieldDto.getFieldOption().getDisplayOrder();
 		if (displayOrder != null && displayOrder <= 0) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
 		}

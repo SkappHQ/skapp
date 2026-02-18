@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.model.TemplateFieldOption;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
 
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
+import com.skapp.enterprise.esignature.payload.request.template.AdvanceTemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.response.template.AdvanceFieldTemplateDetailResponseDto;
@@ -65,6 +66,11 @@ public interface EsignTemplateMapper {
 	RecipientTemplateDetailResponseDto templateRecipientToRecipientTemplateDetailResponseDto(
 			TemplateRecipient templateRecipient);
 
+	AdvanceFieldTemplateDetailResponseDto templateFieldToAdvanceFieldTemplateDetailResponseDto(
+			TemplateField templateField);
+
+	TemplateField advanceTemplateFieldDtoToTemplateField(AdvanceTemplateFieldDto advanceFieldDto);
+
 	default List<TemplateFieldContainerResponseDto> mapTemplateFieldContainers(TemplateRecipient templateRecipient) {
 		if (templateRecipient.getTemplateFields() == null)
 			return null;
@@ -87,9 +93,6 @@ public interface EsignTemplateMapper {
 			})
 			.collect(Collectors.toList());
 	}
-
-	AdvanceFieldTemplateDetailResponseDto templateFieldToAdvanceFieldTemplateDetailResponseDto(
-			TemplateField templateField);
 
 	default List<FieldTemplateDetailResponseDto> mapNameAndDateFieldsToFieldResponseDto(
 			List<TemplateField> templateFields) {

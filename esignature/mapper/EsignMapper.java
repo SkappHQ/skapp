@@ -14,6 +14,7 @@ import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.email.EpEsignEmailEnvelopeDataDto;
+import com.skapp.enterprise.esignature.payload.request.AdvanceFieldDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EnvelopeDetailDto;
 import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
@@ -181,6 +182,12 @@ public interface EsignMapper {
 
 	FieldContainerResponseDto fieldContainerToFieldContainerResponseDto(FieldContainer fieldContainer);
 
+	FieldContainer fieldContainerDtoToFieldContainer(FieldContainerDto fieldContainerDto);
+
+	AdvanceFieldDetailResponseDto fieldToAdvanceFieldDetailResponseDto(Field field);
+
+	Field advanceFieldDtoToField(AdvanceFieldDto advanceFieldDto);
+
 	default List<FieldContainerResponseDto> mapFieldContainers(Recipient recipient) {
 		if (recipient.getFields() == null)
 			return null;
@@ -202,10 +209,6 @@ public interface EsignMapper {
 			})
 			.collect(Collectors.toList());
 	}
-
-	FieldContainer fieldContainerDtoToFieldContainer(FieldContainerDto fieldContainerDto);
-
-	AdvanceFieldDetailResponseDto fieldToAdvanceFieldDetailResponseDto(Field field);
 
 	default List<FieldDetailResponseDto> mapNameAndDateFieldsToFieldResponseDto(List<Field> fields) {
 		if (fields == null)

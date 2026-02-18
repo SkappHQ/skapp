@@ -27,6 +27,6 @@ public class TemplateFieldContainerDto {
 	private Boolean isMultiSelect;
 
 	@NotEmpty(message = "{validation.template-field-container.template-fields.not-empty}")
-	private List<TemplateFieldDto> templateFields;
+	private List<AdvanceTemplateFieldDto> templateFields;
 
 }
