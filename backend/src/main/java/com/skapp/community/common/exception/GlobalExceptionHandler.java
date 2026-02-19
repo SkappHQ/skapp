@@ -17,6 +17,7 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -210,6 +211,18 @@ public class GlobalExceptionHandler {
 
 		return new ResponseEntity<>(new ResponseEntityDto(true,
 				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION)), status);
+	}
+
+	@ExceptionHandler(MissingRequestCookieException.class)
+	public ResponseEntity<ResponseEntityDto> handleMissingRequestCookieException(MissingRequestCookieException e) {
+		HttpStatus status = HttpStatus.UNAUTHORIZED;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN);
+		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN.name(), message, status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN)),
+				status);
 	}
 
 	protected void logDetailedException(Exception e, String messageKey, String message, HttpStatus status) {
