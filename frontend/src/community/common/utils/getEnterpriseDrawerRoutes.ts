@@ -53,7 +53,7 @@ const getEnterpriseDrawerRoutes = ({
         return {
           id: route?.id,
           name: "Integrations",
-          url: ROUTES.SETTINGS.ACCOUNT,
+          url: ROUTES.SETTINGS.BASE,
           icon: IconName.INTEGRATIONS_ICON,
           hasSubTree: false,
           requiredAuthLevel: [

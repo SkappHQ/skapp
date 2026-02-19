@@ -51,12 +51,6 @@ const nextConfig = {
         destination: "/community/settings"
       },
       {
-        source: "/settings/account",
-        destination: isEnterpriseMode
-          ? "/enterprise/settings/account"
-          : "/community/settings/account"
-      },
-      {
         source: "/settings/billing",
         destination: "/enterprise/settings/billing"
       },
