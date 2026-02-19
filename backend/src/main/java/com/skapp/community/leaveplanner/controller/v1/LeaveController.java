@@ -111,7 +111,7 @@ public class LeaveController {
 
 	@Operation(summary = "Resource Availability Calendar",
 			description = "Fetch all leave requests assigned to the currently authenticated user.")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
 	@GetMapping("/resource-availability-calender")
 	public ResponseEntity<ResponseEntityDto> getResourceAvailabilityCalendar(
 			ResourceAvailabilityCalendarFilter resourceAvailabilityCalendarFilter) {
