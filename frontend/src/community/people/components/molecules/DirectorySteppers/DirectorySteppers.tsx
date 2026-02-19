@@ -32,7 +32,7 @@ const DirectorySteppers = ({
 
   const { user } = useAuth();
 
-  const { isPeopleAdmin } = useSessionData();
+  const { isSuperAdmin, isPeopleAdmin, isESignSender } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
 
@@ -54,6 +54,8 @@ const DirectorySteppers = ({
   const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
+
+  const isEditView = !isIndividualView && !isAccountView;
 
   useEffect(() => {
     if (supervisedData && !supervisorDataLoading) {
@@ -83,12 +85,12 @@ const DirectorySteppers = ({
     translateText(["editAllInfo", "personal"]),
     ...(isIndividualView ? [] : [translateText(["editAllInfo", "emergency"])]),
     translateText(["editAllInfo", "employment"]),
-    ...(isIndividualView || isAccountView
-      ? []
-      : [translateText(["editAllInfo", "systemPermissions"])]),
-    ...(isIndividualView || isAccountView
-      ? []
-      : [translateText(["editAllInfo", "timeline"])]),
+    ...(isEditView
+      ? [translateText(["editAllInfo", "systemPermissions"])]
+      : []),
+    ...(isEditView
+      ? [translateText(["editAllInfo", "timeline"])]
+      : []),
     ...(isLeaveTabVisible &&
     !isAccountView &&
     user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
@@ -99,8 +101,9 @@ const DirectorySteppers = ({
     user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-      // Feature flagged
-    // ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
+    ...(isEditView && (isSuperAdmin || (isPeopleAdmin && isESignSender))
+      ? [translateText(["editAllInfo", "documents"])]
+      : [])
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
@@ -126,7 +129,7 @@ const DirectorySteppers = ({
       stepperStyles={{
         marginBottom: "1.75rem"
       }}
-      isFullWidth={!(isIndividualView || isAccountView)}
+      isFullWidth={isEditView}
     />
   );
 };
