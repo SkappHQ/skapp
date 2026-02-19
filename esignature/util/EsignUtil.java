@@ -2,13 +2,14 @@ package com.skapp.enterprise.esignature.util;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.time.Instant;
+import java.time.*;
 import java.util.UUID;
 
 public class EsignUtil {
@@ -40,6 +41,14 @@ public class EsignUtil {
 	private static final String DEFAULT_PATH = "/";
 
 	private static final String E_SIGN = "eSign/";
+
+	private static final int LEAP_DAY = 29;
+
+	private static final Month FEBRUARY = Month.FEBRUARY;
+
+	private static final Month MARCH = Month.MARCH;
+
+	private static final int FIRST_DAY = 1;
 
 	private EsignUtil() {
 	}
@@ -218,6 +227,42 @@ public class EsignUtil {
 			return documentName.substring(0, EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) + "...";
 		}
 		return documentName;
+	}
+
+	public static LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
+		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		int year = today.getYear();
+		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
+		if (today.isBefore(thisYearStart)) {
+			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
+		}
+		return thisYearStart.atStartOfDay();
+	}
+
+	public static LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
+		int month = tierStartedDate.getMonthValue();
+		int day = tierStartedDate.getDayOfMonth();
+		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
+			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
+		}
+		else {
+			return LocalDate.of(year, month, day);
+		}
+	}
+
+	public static LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
+		int year = startDateTime.getYear() + 1;
+		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
+			if (Year.isLeap(year)) {
+				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
+			}
+			else {
+				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
+			}
+		}
+		else {
+			return startDateTime.plusYears(1);
+		}
 	}
 
 }

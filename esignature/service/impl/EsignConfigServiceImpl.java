@@ -10,6 +10,7 @@ import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignExternalConfigResponseDto;
 import com.skapp.enterprise.esignature.repository.EsignConfigRepository;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
+import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 	private final EsignConfigRepository esignConfigRepository;
 
 	private final EsignMapper esignMapper;
+
+	private final EsignTierValidationService esignTierValidationService;
 
 	@Override
 	public void setDefaultEsignConfigs() {
@@ -51,6 +54,13 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 		}
 
 		if (esignConfigDto.getIsMfaEnabled() != null) {
+
+			boolean isProTier = esignTierValidationService.isProTier();
+
+			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !isProTier) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+			}
+
 			esignConfig.setIsMfaEnabled(esignConfigDto.getIsMfaEnabled());
 		}
 

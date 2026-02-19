@@ -14,36 +14,19 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
-import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
-import com.skapp.enterprise.esignature.model.AddressBook;
-import com.skapp.enterprise.esignature.model.AuditTrail;
-import com.skapp.enterprise.esignature.model.Document;
-import com.skapp.enterprise.esignature.model.DocumentLink;
-import com.skapp.enterprise.esignature.model.DocumentVersion;
-import com.skapp.enterprise.esignature.model.Envelope;
-import com.skapp.enterprise.esignature.model.EnvelopeSetting;
-import com.skapp.enterprise.esignature.model.Field;
-import com.skapp.enterprise.esignature.model.FieldContainer;
-import com.skapp.enterprise.esignature.model.FieldOption;
-import com.skapp.enterprise.esignature.model.Recipient;
-import com.skapp.enterprise.esignature.model.RecipientEidConfig;
+import com.skapp.enterprise.esignature.model.*;
 import com.skapp.enterprise.esignature.payload.request.AdvanceFieldDto;
 import com.skapp.enterprise.esignature.payload.request.DeclineEnvelopeRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
@@ -65,24 +48,12 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
-import com.skapp.enterprise.esignature.repository.AuditTrailDao;
-import com.skapp.enterprise.esignature.repository.DocumentDao;
-import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
-import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
-import com.skapp.enterprise.esignature.repository.EnvelopeDao;
-import com.skapp.enterprise.esignature.repository.FieldContainerDao;
-import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.repository.*;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeNextData;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeSentData;
-import com.skapp.enterprise.esignature.service.AuditTrailService;
-import com.skapp.enterprise.esignature.service.DocumentLinkService;
-import com.skapp.enterprise.esignature.service.DocumentService;
-import com.skapp.enterprise.esignature.service.EnvelopeService;
+import com.skapp.enterprise.esignature.service.*;
 // import com.skapp.enterprise.esignature.service.EsignNotificationService;
-import com.skapp.enterprise.esignature.service.RecipientService;
-import com.skapp.enterprise.esignature.service.SignatureCertificateService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
@@ -116,13 +87,10 @@ import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -187,12 +155,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final ScheduleService scheduleService;
 
-	private final TenantContext tenantContext;
-
-	private final TenantDao tenantDao;
-
-	private final EmployeeDao employeeDao;
-
 	private final EpEmployeeRoleDao epEmployeeRoleDao;
 
 	private final SignatureCertificateService signatureCertificateService;
@@ -201,13 +163,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	// private final EsignNotificationService esignNotificationService;
 
-	private static final int LEAP_DAY = 29;
+	private final EsignTierValidationService esignTierValidationService;
 
-	private static final Month FEBRUARY = Month.FEBRUARY;
-
-	private static final Month MARCH = Month.MARCH;
-
-	private static final int FIRST_DAY = 1;
+	private final EsignConfigRepository esignConfigRepository;
 
 	@Override
 	@Transactional
@@ -215,7 +173,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
 
-		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = processEnvelopeTierLimitation();
+		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
+			.processEnvelopeTierLimitation();
 
 		if (envelopeTierLimitationResponseDto.isLimitedReached()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_LIMIT_REACHED);
@@ -493,6 +452,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
 		validateSigningOrder(recipientDtos);
+		validateIsActiveProTier(recipientDtos);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -562,6 +522,25 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DUPLICATE_SIGNING_ORDER);
 			}
 		}
+	}
+
+	private void validateIsActiveProTier(List<RecipientDto> recipientDtos) {
+
+		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
+			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
+			.toList();
+
+		EsignConfig esignConfig = esignConfigRepository.findFirstBy()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_CONFIG_NOT_FOUND));
+
+		boolean isActiveProTier = esignTierValidationService.isProTierActive();
+
+		if (Boolean.TRUE.equals(esignConfig.getIsMfaEnabled()) && !smsVerificationEnabledRecipients.isEmpty()
+				&& !isActiveProTier) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_SMS_MFA_FEATURE_AVAILABLE_ONLY_FOR_ACTIVE_PRO_TIER);
+		}
+
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
@@ -1487,115 +1466,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	public ResponseEntityDto getEnvelopeTierLimitations() {
-		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = processEnvelopeTierLimitation();
+		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
+			.processEnvelopeTierLimitation();
 		return new ResponseEntityDto(false, envelopeTierLimitationResponseDto);
-	}
-
-	private EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation() {
-		String currentTenant = TenantContext.getCurrentTenant();
-		try {
-			long employeeCount = employeeDao
-				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
-
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-
-			if (tenant == null) {
-				log.error("getEnvelopeTierLimitations: Tenant not found: {}", currentTenant);
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
-
-			EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = new EnvelopeTierLimitationResponseDto();
-			Tier tier = tenant.getTier();
-
-			LocalDateTime startDateTime;
-			LocalDateTime endDateTime;
-			long allocatedCount;
-
-			if (tier == Tier.FREE) {
-				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
-
-				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
-						endDateTime);
-				allocatedCount = allocatedFreeTierEnvelopeCount;
-
-				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
-				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
-				envelopeTierLimitationResponseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
-			}
-			else if (tier == Tier.PRO) {
-
-				if (tenant.getStripeSubscription() == null
-						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
-					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-				}
-				LocalDate tierStartedDate = DateTimeUtils
-					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
-
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
-
-				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
-						endDateTime);
-
-				allocatedCount = Math.max(envelopeCount, employeeCount * allocatedPerUserEnvelopeCount);
-				long remainingCount = allocatedCount - envelopeCount;
-
-				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
-				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(remainingCount, 0));
-				envelopeTierLimitationResponseDto
-					.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
-			}
-			return envelopeTierLimitationResponseDto;
-		}
-		catch (Exception e) {
-			log.error("Error while fetching envelope tier limitations for tenant {}: {}", currentTenant, e.getMessage(),
-					e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS);
-		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
-	}
-
-	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-		int year = today.getYear();
-		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
-		if (today.isBefore(thisYearStart)) {
-			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
-		}
-		return thisYearStart.atStartOfDay();
-	}
-
-	private LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
-		int month = tierStartedDate.getMonthValue();
-		int day = tierStartedDate.getDayOfMonth();
-		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
-			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
-		}
-		else {
-			return LocalDate.of(year, month, day);
-		}
-	}
-
-	private LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
-		int year = startDateTime.getYear() + 1;
-		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
-			if (Year.isLeap(year)) {
-				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
-			}
-			else {
-				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
-			}
-		}
-		else {
-			return startDateTime.plusYears(1);
-		}
 	}
 
 }
