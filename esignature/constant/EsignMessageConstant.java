@@ -238,7 +238,9 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED("ep.esign.error.field.option.value.required"),
 	ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED("ep.esign.error.field.option.valid.display.order.required"),
 
-	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required");
+	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
+	ESIGN_ERROR_IN_PDF_FONT_LOADING_VIA_S3("ep.esign.error.pdf.font.loading.via.s3"),
+	ESIGN_ERROR_FAILED_TO_CREATE_PDF_FONT_FROM_CACHE("ep.esign.error.failed.create.pdf.font.from.cache");
 
 	private final String messageKey;
 

@@ -7,6 +7,8 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
+import com.skapp.enterprise.esignature.service.PDFFontCacheService;
+import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.FieldType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +73,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
-	private static final String FONT_BASE_PATH = "enterprise/fonts/";
-
 	private static final String DEFAULT_FONT = "Poppins";
 
 	public static final int DPI = 96;
@@ -81,24 +81,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private final MessageUtil messageUtil;
 
-	private static final String DEFAULT_FONT_COLOR = "#000000";
-
-	private static final Map<String, String> FONT_FOLDERS = new HashMap<>();
-
-	static {
-		// Map font family names to their folder names
-		FONT_FOLDERS.put("arial", "Arimo");
-		FONT_FOLDERS.put("calibri", "Carlito");
-		FONT_FOLDERS.put("courier new", "Cousine");
-		FONT_FOLDERS.put("times new roman", "Tinos");
-		FONT_FOLDERS.put("verdana", "DejaVuSans");
-		FONT_FOLDERS.put("ms gothic", "NotoSansJP");
-		FONT_FOLDERS.put("inter", "Inter");
-		FONT_FOLDERS.put("poppins", DEFAULT_FONT);
-	}
-
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
+
+	private final PDFFontCacheService fontCacheService;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
@@ -315,7 +301,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			FieldType fieldType = field.getType();
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
-				drawCheckbox(field, contentStream, pageHeight);
+				drawCheckbox(field, contentStream, pageHeight, document);
 			}
 			else
 
@@ -675,7 +661,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void drawCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight) {
+	private void drawCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
 
 		try {
 
@@ -686,8 +673,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			float pixelToPoint = 72f / 96f;
 			float size = Math.min(width, height) * pixelToPoint;
-			float borderWidth = 2f * pixelToPoint;
-			float cornerRadius = 2f * pixelToPoint;
 
 			// Adjust Y position: convert from top-left to bottom-left origin
 			float adjustedY = pageHeight - field.getYposition() - size;
@@ -696,96 +681,20 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
-			contentStream.setLineWidth(borderWidth);
-			contentStream.setStrokingColor(0f, 0f, 0f);
+			// Load appropriate PNG based on state
+			String imagePath = isChecked ? "enterprise/checkbox-checked.png" : "enterprise/checkbox-unchecked.png";
 
-			if (isChecked) {
-				contentStream.setNonStrokingColor(0f, 0f, 0f);
-				drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
-				contentStream.fillAndStroke(); // atomic - no split fill/stroke
+			try (InputStream imageStream = getClass().getClassLoader().getResourceAsStream(imagePath)) {
+				if (imageStream != null) {
+					PDImageXObject radioImage = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(),
+							"checkbox");
+					contentStream.drawImage(radioImage, adjustedX, adjustedY, size, size);
+				}
+			}
 
-				drawTickMark(contentStream, adjustedX, adjustedY, size);
-			}
-			else {
-				contentStream.setNonStrokingColor(1f, 1f, 1f);
-				drawRoundedRect(contentStream, adjustedX, adjustedY, size, size, cornerRadius);
-				contentStream.fillAndStroke(); // atomic - no split fill/stroke
-			}
 		}
 		catch (IOException e) {
 			log.error("Error drawCheckbox: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
-		}
-	}
-
-	// Helper method to draw rounded rectangle
-	private void drawRoundedRect(PDPageContentStream contentStream, float x, float y, float width, float height,
-			float radius) {
-
-		try {
-			// Move to starting point (top-left, after the curve)
-			contentStream.moveTo(x + radius, y + height);
-
-			// Top edge
-			contentStream.lineTo(x + width - radius, y + height);
-			// Top-right corner
-			contentStream.curveTo(x + width, y + height, x + width, y + height, x + width, y + height - radius);
-
-			// Right edge
-			contentStream.lineTo(x + width, y + radius);
-			// Bottom-right corner
-			contentStream.curveTo(x + width, y, x + width, y, x + width - radius, y);
-
-			// Bottom edge
-			contentStream.lineTo(x + radius, y);
-			// Bottom-left corner
-			contentStream.curveTo(x, y, x, y, x, y + radius);
-
-			// Left edge
-			contentStream.lineTo(x, y + height - radius);
-			// Top-left corner
-			contentStream.curveTo(x, y + height, x, y + height, x + radius, y + height);
-
-			contentStream.closePath();
-		}
-		catch (IOException e) {
-			log.error("Error drawRoundedRect: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
-		}
-	}
-
-	private void drawTickMark(PDPageContentStream contentStream, float x, float y, float size) {
-
-		try {
-			float pixelToPoint = 72f / 96f;
-			float tickWidth = 2f * pixelToPoint; // Tick mark line width
-
-			// Calculate tick mark coordinates (relative to checkbox)
-			// Short arm (left part going down-left to down-right)
-			float shortArmStartX = x + size * 0.25f;
-			float shortArmStartY = y + size * 0.5f;
-			float shortArmEndX = x + size * 0.4f;
-			float shortArmEndY = y + size * 0.3f;
-
-			// Long arm (from middle going up-right)
-			float longArmEndX = x + size * 0.75f;
-			float longArmEndY = y + size * 0.7f;
-
-			contentStream.setLineWidth(tickWidth);
-
-			contentStream.setStrokingColor(1f, 1f, 1f); // White tick mark
-
-			contentStream.setLineCapStyle(1); // Round cap for smoother appearance
-			contentStream.setLineJoinStyle(1); // Round join
-
-			// Draw tick mark as two connected lines
-			contentStream.moveTo(shortArmStartX, shortArmStartY);
-			contentStream.lineTo(shortArmEndX, shortArmEndY);
-			contentStream.lineTo(longArmEndX, longArmEndY);
-			contentStream.stroke();
-		}
-		catch (IOException e) {
-			log.error("Error drawTickMark: {}", e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
 	}
@@ -802,8 +711,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			float pixelToPoint = 72f / 96f; // 1 px = 0.75 pt
 			float size = Math.min(width, height) * pixelToPoint;
-			float borderWidth = 2f * pixelToPoint; // 2px border
-			float radius = size / 2f; // Full circle
 
 			// Adjust Y position: convert from top-left to bottom-left origin
 			float adjustedY = pageHeight - field.getYposition() - size;
@@ -812,23 +719,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
-			// Center of the circle
-			float centerX = adjustedX + radius;
-			float centerY = adjustedY + radius;
+			// Load appropriate PNG based on state
+			String imagePath = isChecked ? "enterprise/radio-checked.png" : "enterprise/radio-unchecked.png";
 
-			contentStream.setLineWidth(borderWidth);
-			contentStream.setStrokingColor(0f, 0f, 0f);
-			contentStream.setNonStrokingColor(1f, 1f, 1f);
-
-			// Use fillAndStrokeEvenOdd instead of fillAndStroke
-			drawCircle(contentStream, centerX, centerY, radius);
-			contentStream.fillAndStrokeEvenOdd();
-
-			if (isChecked) {
-				float innerRadius = radius * 0.6f;
-				contentStream.setNonStrokingColor(0f, 0f, 0f);
-				drawCircle(contentStream, centerX, centerY, innerRadius);
-				contentStream.fill();
+			try (InputStream imageStream = getClass().getClassLoader().getResourceAsStream(imagePath)) {
+				if (imageStream != null) {
+					PDImageXObject radioImage = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(),
+							"radio");
+					contentStream.drawImage(radioImage, adjustedX, adjustedY, size, size);
+				}
 			}
 
 			String value = field.getFieldValue().trim();
@@ -853,42 +752,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	// Helper method to draw a circle using Bezier curves
-	private void drawCircle(PDPageContentStream contentStream, float centerX, float centerY, float radius) {
-		try {
-
-			// Approximate circle using 4 cubic Bezier curves
-			// Magic number 0.5523f is the control point offset for a near-perfect circle
-			float k = radius * 0.5523f;
-
-			// Start at the top
-			contentStream.moveTo(centerX, centerY + radius);
-
-			// Top-right quadrant
-			contentStream.curveTo(centerX + k, centerY + radius, centerX + radius, centerY + k, centerX + radius,
-					centerY);
-
-			// Bottom-right quadrant
-			contentStream.curveTo(centerX + radius, centerY - k, centerX + k, centerY - radius, centerX,
-					centerY - radius);
-
-			// Bottom-left quadrant
-			contentStream.curveTo(centerX - k, centerY - radius, centerX - radius, centerY - k, centerX - radius,
-					centerY);
-
-			// Top-left quadrant
-			contentStream.curveTo(centerX - radius, centerY + k, centerX - k, centerY + radius, centerX,
-					centerY + radius);
-
-			contentStream.closePath();
-
-		}
-		catch (IOException e) {
-			log.error("Error drawCircle: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
-		}
-	}
-
 	private void addInputTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
@@ -896,10 +759,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float pixelToPoint = 72f / 96f;
 			float size = Math.min(field.getWidth(), field.getHeight()) * pixelToPoint;
 
-			// Adjust Y position: convert from top-left to bottom-left origin
 			float adjustedY = pageHeight - field.getYposition() - size;
-
-			// Adjust X position as before
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
@@ -912,11 +772,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			boolean isItalic = container != null && Boolean.TRUE.equals(container.getIsItalic());
 			boolean isUnderline = container != null && Boolean.TRUE.equals(container.getIsUnderline());
 
-			PDType0Font font;
 			float fontSizeToUse = fontSize > 0 ? fontSize : DEFAULT_FONT_SIZE;
 
+			PDType0Font font;
+
 			if (fontFamily == null || fontColor == null) {
-				font = loadFont(document);
+				font = loadDefaultFont(document);
 				contentStream.setFont(font, fontSizeToUse);
 				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / 255f, TEXT_COLOR.getGreen() / 255f,
 						TEXT_COLOR.getBlue() / 255f);
@@ -930,25 +791,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			}
 
 			contentStream.beginText();
-
-			// Position text at adjusted coordinates
 			contentStream.newLineAtOffset(adjustedX, adjustedY);
 			contentStream.showText(field.getFieldValue());
 			contentStream.endText();
 
 			if (isUnderline) {
-				Color underlineColor;
-				if (fontColor != null) {
-					underlineColor = Color.decode(fontColor);
-				}
-				else {
-					font = loadFont(document);
-					underlineColor = TEXT_COLOR;
-				}
+				Color underlineColor = fontColor != null ? Color.decode(fontColor) : TEXT_COLOR;
 				contentStream.setStrokingColor(underlineColor.getRed() / 255f, underlineColor.getGreen() / 255f,
 						underlineColor.getBlue() / 255f);
 				float textWidth = font.getStringWidth(field.getFieldValue()) / 1000 * fontSizeToUse;
-				float underlineY = adjustedY - 1.5f; // adjust as needed
+				float underlineY = adjustedY - 1.5f;
 				contentStream.moveTo(adjustedX, underlineY);
 				contentStream.lineTo(adjustedX + textWidth, underlineY);
 				contentStream.setLineWidth(0.5f);
@@ -957,18 +809,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		}
 		catch (Exception e) {
+			log.error("Error rendering text field to PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
-	}
-
-	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
-		String normalizedFamily = fontFamily != null ? fontFamily.toLowerCase().trim() : "";
-		String folderName = FONT_FOLDERS.getOrDefault(normalizedFamily, DEFAULT_FONT);
-		String variant = determineVariant(folderName, isBold, isItalic);
-		String filename = buildFilename(folderName, variant);
-		String fontPath = FONT_BASE_PATH + folderName + "/" + filename;
-
-		return loadFontFromPath(document, fontPath, isBold, isItalic);
 	}
 
 	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {
@@ -1002,34 +845,40 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return folderName + "-" + variant + ".ttf";
 	}
 
-	private PDType0Font loadFontFromPath(PDDocument document, String fontPath, boolean isBold, boolean isItalic) {
-		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(fontPath)) {
-			if (fontStream == null) {
-				log.warn("Font not found: {} - falling back to Poppins", fontPath);
-				return loadFallbackFont(document, isBold, isItalic);
-			}
-			return PDType0Font.load(document, fontStream);
-		}
-		catch (IOException e) {
-			log.error("Error loading font: {} - falling back to Poppins", fontPath, e);
-			return loadFallbackFont(document, isBold, isItalic);
-		}
+	private PDType0Font loadDefaultFont(PDDocument document) {
+		return loadFont(document);
 	}
 
-	private PDType0Font loadFallbackFont(PDDocument document, boolean isBold, boolean isItalic) {
-		String variant = determineVariant(DEFAULT_FONT, isBold, isItalic);
-		String fontPath = FONT_BASE_PATH + "Poppins/Poppins-" + variant + ".ttf";
+	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
+		String normalizedFamily = fontFamily != null ? fontFamily.toLowerCase().trim() : "";
+		String folderName = EsignFontFamilyType.getFolderByFamily(normalizedFamily);
+		return loadFontFromRelativePath(document, folderName, isBold, isItalic);
+	}
 
-		try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream(fontPath)) {
-			if (fontStream == null) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
-			}
-			return PDType0Font.load(document, fontStream);
+	private PDType0Font loadFontFromRelativePath(PDDocument document, String folderName, boolean isBold,
+			boolean isItalic) {
+
+		if (folderName == null || folderName.isEmpty()) {
+			log.warn("Font family not recognized, falling back to default font");
+			return loadFont(document);
+
 		}
-		catch (IOException e) {
-			log.error("Error loading fallback Poppins font: {}", fontPath, e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT);
+
+		String variant = determineVariant(folderName, isBold, isItalic);
+		String filename = buildFilename(folderName, variant);
+		String relativePath = folderName + "/" + filename;
+
+		PDType0Font font;
+		try {
+			font = fontCacheService.loadFont(document, relativePath);
 		}
+		catch (Exception e) {
+			log.warn("Font not found '{}', falling back to default font: {}", relativePath, e.getMessage());
+			// if an error occurs when downloading font file from S3/cache fallback to
+			// document font loading
+			font = loadFont(document);
+		}
+		return font;
 	}
 
 }
