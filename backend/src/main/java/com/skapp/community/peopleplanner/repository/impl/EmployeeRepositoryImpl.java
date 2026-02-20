@@ -234,6 +234,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		return query.getResultList();
 	}
 
+	@Override
 	public List<Employee> findEmployeesIncludingGuests(List<Long> employeeIds, String searchTerm,
 			Set<AccountStatus> accountStatuses) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
