@@ -443,7 +443,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		User currentUser = userService.getCurrentUser();
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isLeaveAdmin = employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
+				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
 		AdminOnLeaveDto adminOnLeaveDto = employeeDao.findAllEmployeesOnLeave(employeesOnLeaveFilterDto,
 				currentUser.getUserId(), isLeaveAdmin);
 		log.info("getEmployeesOnLeave: Successfully returned all employees on leave");
@@ -993,7 +994,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		User currentUser = userService.getCurrentUser();
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isLeaveAdmin = employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
+				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
 
 		LocalDate twoMonthsBackCurrentDay = currentDate.minusDays(59);
 		LocalDate oneMonthBackCurrentDay = currentDate.minusDays(29);
