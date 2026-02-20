@@ -124,7 +124,8 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_USER_VERSION_MISMATCH("api.error.common.user-version-mismatch"),
 	COMMON_ERROR_VALIDATION_STATE("api.error.common.validation.state"),
 	COMMON_ERROR_USER_TERMINATED_OR_DELETED("api.error.common.user-terminated-or-deleted"),
-	COMMON_ERROR_NO_HANDLER_FOUND("api.error.common.no-handler-found"),;
+	COMMON_ERROR_NO_HANDLER_FOUND("api.error.common.no-handler-found"),
+	COMMON_ERROR_MISSING_COOKIE_IN_TOKEN("api.error.common.missing-cookie-in-token"),;
 
 	private final String messageKey;
 
