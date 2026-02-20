@@ -49,6 +49,7 @@ import UserLimitBanner from "~enterprise/people/components/molecules/UserLimitBa
 import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
 
 import styles from "./styles";
+import { signOut } from "~community/auth/utils/authUtils";
 
 interface Props {
   pageHead: string;
@@ -133,7 +134,7 @@ const ContentLayout = ({
 
   const router = useRouter();
 
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { asPath } = useRouter();
 
   const { showInfoBanner, isDailyNotifyDisplayed } = useVersionUpgradeStore(
