@@ -96,7 +96,7 @@ const SignUp: NextPage = () => {
 
     setIsLoading(false);
 
-    if (result === SignInStatus.SUCCESS) {
+    if (result?.status === SignInStatus.SUCCESS) {
       router.push(ROUTES.ORGANIZATION.SETUP);
     }
   };

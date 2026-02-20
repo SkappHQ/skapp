@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import { appModes } from "~community/common/constants/configs";
@@ -9,7 +10,6 @@ import ROUTES from "~community/common/constants/routes";
 import { APP } from "~community/common/constants/stringConstants";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 export default function Index() {
   const router = useRouter();

@@ -303,8 +303,8 @@ export function middleware(request: NextRequest) {
 // Configure which routes middleware should run on
 export const config = {
   matcher: [
-    // All community routes
-    "/community/:path*",
+    // All community routes (excluding public auth pages)
+    "/community/((?!signin|signup).*)",
     // Super admin routes
     "/setup-organization/:path*",
     "/module-selection",
