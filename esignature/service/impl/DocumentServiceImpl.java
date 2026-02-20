@@ -1893,6 +1893,12 @@ public class DocumentServiceImpl implements DocumentService {
 		return fieldSignDto;
 	}
 
+	/**
+	 * Converts Field entity to FieldSignDto, used for preparing data for signing advance
+	 * fields that are not signed
+	 * @param field
+	 * @return
+	 */
 	private FieldSignDto convertFieldToFieldSignDto(Field field) {
 		FieldSignDto fieldSignDto = new FieldSignDto();
 
