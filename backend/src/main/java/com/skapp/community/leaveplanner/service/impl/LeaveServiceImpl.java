@@ -532,7 +532,8 @@ public class LeaveServiceImpl implements LeaveService {
 
 		User currentUser = userService.getCurrentUser();
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isLeaveAdmin = employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
+				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
 		while (!current.isAfter(calendarEnd)) {
 			DayOfWeek dayOfWeek = current.getDayOfWeek();
 
