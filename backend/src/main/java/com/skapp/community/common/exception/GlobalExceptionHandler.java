@@ -216,7 +216,8 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MissingRequestCookieException.class)
 	public ResponseEntity<ResponseEntityDto> handleMissingRequestCookieException(MissingRequestCookieException e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN);
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN,
+				new Object[] { e.getCookieName() });
 		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN.name(), message, status);
 
 		return new ResponseEntity<>(
