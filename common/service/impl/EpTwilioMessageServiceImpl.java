@@ -2,10 +2,12 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.exception.TwilioApiException;
 import com.skapp.enterprise.common.service.EpTwilioMessageService;
 import com.skapp.enterprise.common.type.TwilioMessageSource;
 import com.skapp.enterprise.common.util.FormatPhoneNumberUtil;
 import com.skapp.enterprise.common.util.PhoneNumberMaskUtil;
+import com.twilio.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,19 +42,35 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 
 		String formattedTarget = FormatPhoneNumberUtil.formatPhoneNumberToE164(phoneNumber);
 
-		// No body when using ContentSid
-		Message message = Message.creator(new PhoneNumber(formattedTarget), messageServiceSid, (String) null)
-			.setContentSid(contentSid)
-			.setContentVariables("{\"1\":\"" + messageContent + "\"}")
-			.create();
+		try {
+			// No body when using ContentSid
+			Message message = Message.creator(new PhoneNumber(formattedTarget), messageServiceSid, (String) null)
+				.setContentSid(contentSid)
+				.setContentVariables("{\"1\":\"" + messageContent + "\"}")
+				.create();
 
-		if (message.getErrorCode() == null) {
-			log.info("{} Message delivery to: {} triggered successfully.", source, identifierId);
+			if (message.getErrorCode() == null) {
+				log.info("{} Message delivery to: {} triggered successfully.", source, identifierId);
+			}
+			else {
+				log.info("{} Message delivery to: {} unsuccessful. errorCode: {}, errorMessage: {}", source,
+						identifierId, message.getErrorCode(), message.getErrorMessage());
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
+			}
 		}
-		else {
-			log.info("{} Message delivery to: {} unsuccessful. errorCode: {}, errorMessage: {}", source, identifierId,
-					message.getErrorCode(), message.getErrorMessage());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
+		catch (ModuleException e) {
+			throw e;
+
+		}
+		catch (ApiException e) {
+			// Catch the ACTUAL Twilio SDK exception, wrap into your custom one
+			// Covers: 401 bad credentials, 403 forbidden, 404 invalid SID,
+			// 429 rate limit, 500/503 Twilio outage, network errors
+			log.error("{} Twilio API error for identifierId: {}. httpStatus: {}, message: {}", source, identifierId,
+					e.getStatusCode(), e.getMessage(), e);
+
+			throw new TwilioApiException("Twilio API call failed for identifierId: " + identifierId, e.getStatusCode(),
+					e.getMessage(), e);
 		}
 
 	}

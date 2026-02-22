@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.exception;
 
-import com.azure.json.implementation.jackson.core.JsonProcessingException;
 import com.skapp.community.common.exception.GlobalExceptionHandler;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -16,7 +15,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -70,6 +68,29 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION)),
 				status);
+	}
+
+	@ExceptionHandler(TwilioApiException.class)
+	public ResponseEntity<ResponseEntityDto> handleTwilioApiException(TwilioApiException e) {
+		HttpStatus status = resolveTwilioStatus(e.getStatusCode());
+		String message = messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION)),
+				status);
+	}
+
+	private HttpStatus resolveTwilioStatus(int twilioHttpStatus) {
+		return switch (twilioHttpStatus) {
+			case 401 -> HttpStatus.UNAUTHORIZED; // Bad auth token / API key
+			case 403 -> HttpStatus.FORBIDDEN; // Valid credentials but no permission
+			case 404 -> HttpStatus.NOT_FOUND; // Invalid SID or resource not found
+			case 429 -> HttpStatus.TOO_MANY_REQUESTS; // Rate limited by Twilio
+			case 500, 503 -> HttpStatus.BAD_GATEWAY; // Twilio-side outage — not your
+														// fault
+			default -> HttpStatus.INTERNAL_SERVER_ERROR;
+		};
 	}
 
 }
