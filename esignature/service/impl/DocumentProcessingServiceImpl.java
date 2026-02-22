@@ -7,7 +7,7 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
-import com.skapp.enterprise.esignature.service.PDFFontCacheService;
+import com.skapp.enterprise.esignature.service.PDFResourceCacheService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.FieldType;
 import lombok.RequiredArgsConstructor;
@@ -73,18 +73,34 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
-	private static final String DEFAULT_FONT = "Poppins";
-
 	public static final int DPI = 96;
 
 	public static final String PNG = "png";
+
+	private static final String RESOURCE_BASE_PATH = "eSign/resources/";
+
+	private static final String FONT_BASE_PATH = "fonts/";
+
+	private static final String SVG_BASE_PATH = "images/";
+
+	private static final String CHECKBOX = "checkbox";
+
+	private static final String RADIO_BUTTON = "radio";
+
+	private static final String CHECKBOX_CHECKED = "checkbox-checked.svg";
+
+	private static final String CHECKBOX_UNCHECKED = "checkbox-unchecked.svg";
+
+	private static final String RADIO_BUTTON_CHECKED = "radio-button-checked.svg";
+
+	private static final String RADIO_BUTTON_UNCHECKED = "radio-button-unchecked.svg";
 
 	private final MessageUtil messageUtil;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
-	private final PDFFontCacheService fontCacheService;
+	private final PDFResourceCacheService pdfResourceCacheService;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
@@ -681,16 +697,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
+			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
 			// Load appropriate PNG based on state
-			String imagePath = isChecked ? "enterprise/checkbox-checked.png" : "enterprise/checkbox-unchecked.png";
+			String imagePath = isChecked ? basePath + CHECKBOX_CHECKED : basePath + CHECKBOX_UNCHECKED;
 
-			try (InputStream imageStream = getClass().getClassLoader().getResourceAsStream(imagePath)) {
-				if (imageStream != null) {
-					PDImageXObject radioImage = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(),
-							"checkbox");
-					contentStream.drawImage(radioImage, adjustedX, adjustedY, size, size);
-				}
-			}
+			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath,
+					width, height, CHECKBOX);
+
+			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
 		}
 		catch (IOException e) {
@@ -719,16 +733,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXposition() + xOffset;
 
-			// Load appropriate PNG based on state
-			String imagePath = isChecked ? "enterprise/radio-checked.png" : "enterprise/radio-unchecked.png";
+			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
 
-			try (InputStream imageStream = getClass().getClassLoader().getResourceAsStream(imagePath)) {
-				if (imageStream != null) {
-					PDImageXObject radioImage = PDImageXObject.createFromByteArray(document, imageStream.readAllBytes(),
-							"radio");
-					contentStream.drawImage(radioImage, adjustedX, adjustedY, size, size);
-				}
-			}
+			// Load appropriate PNG based on state
+			String imagePath = isChecked ? basePath + RADIO_BUTTON_CHECKED : basePath + RADIO_BUTTON_UNCHECKED;
+
+			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath,
+					width, height, RADIO_BUTTON);
+
+			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
 			String value = field.getFieldValue().trim();
 
@@ -866,14 +879,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		String variant = determineVariant(folderName, isBold, isItalic);
 		String filename = buildFilename(folderName, variant);
-		String relativePath = folderName + "/" + filename;
+		String path = RESOURCE_BASE_PATH + FONT_BASE_PATH + folderName + "/" + filename;
 
 		PDType0Font font;
 		try {
-			font = fontCacheService.loadFont(document, relativePath);
+			font = pdfResourceCacheService.loadFont(document, path);
 		}
 		catch (Exception e) {
-			log.warn("Font not found '{}', falling back to default font: {}", relativePath, e.getMessage());
+			log.warn("Font not found '{}', falling back to default font: {}", path, e.getMessage());
 			// if an error occurs when downloading font file from S3/cache fallback to
 			// document font loading
 			font = loadFont(document);
