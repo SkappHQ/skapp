@@ -76,6 +76,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	// The typical DPI for screen pixels
 	private static final float PDFBOX_DPI = 96f;
 
+	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
+
+	private static final float UNDERLINE_OFFSET = 1.5f;
+
+	private static final float UNDERLINE_THICKNESS = 0.5f;
+
+	// In PDFBox, font.getStringWidth() returns the width in "glyph units" (not points).
+	// Most fonts use 1000 glyph units per em square. Dividing by 1000 converts the width
+	// to "em" units, which can then be multiplied by the font size to get the actual
+	// width in points.
+	// Purpose:
+	// 1000 normalizes the glyph width to a scale compatible with the font size, so the
+	// result is the text width in points for rendering.
+	private static final int GLYPH_TO_EM_UNIT = 1000;
+
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
@@ -809,15 +824,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			if (fontFamily == null || fontColor == null) {
 				font = loadDefaultFont(document);
 				contentStream.setFont(font, fontSizeToUse);
-				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / 255f, TEXT_COLOR.getGreen() / 255f,
-						TEXT_COLOR.getBlue() / 255f);
+				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / COLOR_NORMALIZATION_FACTOR,
+						TEXT_COLOR.getGreen() / COLOR_NORMALIZATION_FACTOR,
+						TEXT_COLOR.getBlue() / COLOR_NORMALIZATION_FACTOR);
 			}
 			else {
 				font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
 				Color color = Color.decode(fontColor);
 				contentStream.setFont(font, fontSizeToUse);
-				contentStream.setNonStrokingColor(color.getRed() / 255f, color.getGreen() / 255f,
-						color.getBlue() / 255f);
+				contentStream.setNonStrokingColor(color.getRed() / COLOR_NORMALIZATION_FACTOR,
+						color.getGreen() / COLOR_NORMALIZATION_FACTOR, color.getBlue() / COLOR_NORMALIZATION_FACTOR);
 			}
 
 			contentStream.beginText();
@@ -827,13 +843,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			if (isUnderline) {
 				Color underlineColor = fontColor != null ? Color.decode(fontColor) : TEXT_COLOR;
-				contentStream.setStrokingColor(underlineColor.getRed() / 255f, underlineColor.getGreen() / 255f,
-						underlineColor.getBlue() / 255f);
-				float textWidth = font.getStringWidth(field.getFieldValue()) / 1000 * fontSizeToUse;
-				float underlineY = adjustedY - 1.5f;
+				contentStream.setStrokingColor(underlineColor.getRed() / COLOR_NORMALIZATION_FACTOR,
+						underlineColor.getGreen() / COLOR_NORMALIZATION_FACTOR,
+						underlineColor.getBlue() / COLOR_NORMALIZATION_FACTOR);
+				float textWidth = font.getStringWidth(field.getFieldValue()) / GLYPH_TO_EM_UNIT * fontSizeToUse;
+				float underlineY = adjustedY - UNDERLINE_OFFSET;
 				contentStream.moveTo(adjustedX, underlineY);
 				contentStream.lineTo(adjustedX + textWidth, underlineY);
-				contentStream.setLineWidth(0.5f);
+				contentStream.setLineWidth(UNDERLINE_THICKNESS);
 				contentStream.stroke();
 			}
 
