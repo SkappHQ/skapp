@@ -9,8 +9,6 @@ export interface AuthContextType {
   user: User | null;
   signIn: (params: EnterpriseSignInParams) => Promise<AuthResponseType>;
   signUp: (params: EnterpriseSignUpParams) => Promise<AuthResponseType>;
-  signOut: (redirect?: boolean) => Promise<void>;
-  refreshAccessToken: () => Promise<string | null>;
 }
 
 export interface AuthResponseType {

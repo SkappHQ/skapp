@@ -196,18 +196,19 @@ export function middleware(request: NextRequest) {
     | SenderTypes
   )[] = claims?.roles || [];
 
-  const isPasswordChangedForTheFirstTime =
-    request.cookies.get("isPasswordChangedForTheFirstTime")?.value === "true";
+  const isPasswordChangedForTheFirstTime = request.cookies.get(
+    "isPasswordChangedForTheFirstTime"
+  )?.value;
 
   if (
-    !isPasswordChangedForTheFirstTime &&
+    isPasswordChangedForTheFirstTime === "false" &&
     currentPath !== ROUTES.AUTH.RESET_PASSWORD
   ) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
     );
   } else if (
-    isPasswordChangedForTheFirstTime &&
+    isPasswordChangedForTheFirstTime === "true" &&
     currentPath === ROUTES.AUTH.RESET_PASSWORD
   ) {
     return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));

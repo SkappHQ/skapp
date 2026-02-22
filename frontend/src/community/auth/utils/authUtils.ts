@@ -91,7 +91,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       const response = await authAxios.post(
         authenticationEndpoints.REFRESH_TOKEN,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       const accessToken = response?.data?.results[0]?.accessToken;
@@ -99,18 +99,10 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       if (accessToken) {
         setAccessToken(accessToken);
         return accessToken;
-      } else {
-        await clearCookies();
-        if (typeof window !== "undefined") {
-          window.location.href = ROUTES.AUTH.SIGNIN;
-        }
-        return null;
       }
-    } catch (error) {
-      await clearCookies();
-      if (typeof window !== "undefined") {
-        window.location.href = ROUTES.AUTH.SIGNIN;
-      }
+
+      return null;
+    } catch {
       return null;
     } finally {
       isRefreshing = false;
@@ -148,7 +140,7 @@ export const clearCookies = async (): Promise<void> => {
       {},
       { withCredentials: true }
     );
-  } catch (error) {
+  } catch {
     console.error("Error calling signout API");
   }
 
@@ -263,4 +255,19 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   const userData = extractUserFromToken(token);
 
   return userData;
+};
+
+export const signOut = async (redirect: boolean = true): Promise<void> => {
+  await clearCookies();
+
+  if (redirect === false) return;
+
+  if (typeof window !== 'undefined') {
+    const currentPath = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingCallback = urlParams.get('callback');
+
+    const callbackPath = existingCallback || currentPath;
+    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+  }
 };

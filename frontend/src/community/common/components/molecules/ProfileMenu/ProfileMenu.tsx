@@ -17,6 +17,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
 import Avatar from "../Avatar/Avatar";
+import { signOut } from "~community/auth/utils/authUtils";
 
 interface Props {
   handleCloseMenu: any;
@@ -25,7 +26,7 @@ interface Props {
 const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const router = useRouter();
   const translateText = useTranslator("appBar");
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { data: employee } = useGetUserPersonalDetails();
   const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
@@ -60,14 +61,6 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
 
     handleCloseMenu();
   };
-
-  const getSubDomain = (url: string, multipleValues: boolean = false) => {
-    const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
-    return subdomain;
-  };
-
-  const tenantId =
-    typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
 
   const handleSignOut = async () => {
     await signOut();
