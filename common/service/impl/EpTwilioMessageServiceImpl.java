@@ -58,10 +58,6 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
 			}
 		}
-		catch (ModuleException e) {
-			throw e;
-
-		}
 		catch (ApiException e) {
 			// Catch the ACTUAL Twilio SDK exception, wrap into your custom one
 			// Covers: 401 bad credentials, 403 forbidden, 404 invalid SID,

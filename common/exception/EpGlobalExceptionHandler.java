@@ -75,6 +75,8 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 		HttpStatus status = resolveTwilioStatus(e.getStatusCode());
 		String message = messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION);
 
+		logDetailedException(e, EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION.name(), message, status);
+
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION)),

@@ -15,12 +15,4 @@ public class TwilioApiException extends RuntimeException {
 		this.twilioMessage = twilioMessage;
 	}
 
-	public int getStatusCode() {
-		return statusCode;
-	}
-
-	public String getTwilioMessage() {
-		return twilioMessage;
-	}
-
 }
