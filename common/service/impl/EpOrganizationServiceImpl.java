@@ -425,7 +425,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		}
 		String timezone = super.getOrganizationTimeZone();
 		cacheService.put(cacheKey, timezone, EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getTtl(),
-			EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getTimeUnit());
+				EpCacheKeys.ORGANIZATION_TIMEZONE_CACHE_KEY.getTimeUnit());
 		return timezone;
 	}
 

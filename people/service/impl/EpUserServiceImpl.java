@@ -92,7 +92,7 @@ public class EpUserServiceImpl implements EpUserService {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
 				AccountStatus.TERMINATED);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployeesIncludingGuests(userIds, null, activeStatuses);
 
 		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
 
@@ -121,7 +121,7 @@ public class EpUserServiceImpl implements EpUserService {
 	public List<EpUserAuthPicResponseDto> getAllUserAuthPicsOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
 
-		List<Employee> employees = employeeDao.findEmployees(userIds, null, activeStatuses);
+		List<Employee> employees = employeeDao.findEmployeesIncludingGuests(userIds, null, activeStatuses);
 
 		if (employees.isEmpty()) {
 			return List.of();
