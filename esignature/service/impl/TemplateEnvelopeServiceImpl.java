@@ -42,6 +42,7 @@ import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
 import com.skapp.enterprise.esignature.repository.TemplateFieldContainerDao;
 import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
+import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -103,6 +104,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final TemplateDocumentService templateDocumentService;
 
+	private final EsignTierValidationService esignTierValidationService;
+
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
@@ -113,14 +116,17 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Transactional
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
+		if (!esignTierValidationService.isProTier()) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+		}
+
 		User currentUser = userService.getCurrentUser();
 
 		Optional<AddressBook> addressBookOptional = addressBookDao.findByInternalUser(currentUser);
 
 		AddressBook addressBook = addressBookOptional.filter(AddressBook::getIsActive)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
-
-		processTierLimitation();
 
 		TemplateEnvelope templateEnvelope = initializeTemplateEnvelope(envelopeTemplateDto);
 
@@ -483,28 +489,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			.toList();
 
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private void processTierLimitation() {
-
-		String currentTenant = TenantContext.getCurrentTenant();
-
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		Tenant tenant = tenantDao.findByTenantName(currentTenant);
-		tenantContext.setTenantAndSwitchSchema(currentTenant);
-
-		if (tenant == null) {
-			log.error("getEnvelopeTemplateTierLimitation: Tenant not found: {}", currentTenant);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-					new String[] { currentTenant });
-		}
-
-		Tier tier = tenant.getTier();
-
-		if (tier == Tier.FREE) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT);
-		}
-
 	}
 
 	private TemplateEnvelope initializeTemplateEnvelope(TemplateEnvelopeDto envelopeTemplateDto) {

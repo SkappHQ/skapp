@@ -501,6 +501,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			List<Field> fields = new ArrayList<>(buildFieldsForRecipient(recipientDto.getFields(), recipient));
 
 			if (recipientDto.getAdvanceFieldContainers() != null) {
+
+				if (!esignTierValidationService.isProTier()) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+				}
+
 				fields.addAll(buildAdvanceFieldsForRecipient(recipientDto.getAdvanceFieldContainers(), recipient));
 			}
 

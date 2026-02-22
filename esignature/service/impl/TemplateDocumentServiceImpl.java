@@ -16,6 +16,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
+import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -37,6 +38,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	private final UserService userService;
 
+	private final EsignTierValidationService esignTierValidationService;
+
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
@@ -44,6 +47,11 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
+
+		if (!esignTierValidationService.isProTier()) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+		}
 
 		TemplateDocument templateDocument = esignTemplateMapper.documentDtoToTemplateDocument(documentDto);
 		templateDocument.setFilePath(bucketName + "/" + templateDocument.getFilePath());
