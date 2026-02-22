@@ -10,6 +10,7 @@ import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.PDFResourceCacheService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.FieldType;
+import com.skapp.enterprise.esignature.type.FontVariantType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -69,6 +70,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float X_OFFSET_VALUE = 0.8f;
 
+	// The standard DPI for points in PDF and PostScript. 1 point = 1/72 inch.
+	private static final float STANDARD_DPI = 72f;
+
+	// The typical DPI for screen pixels
+	private static final float PDFBOX_DPI = 96f;
+
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
@@ -94,6 +101,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final String RADIO_BUTTON_CHECKED = "radio-button-checked.svg";
 
 	private static final String RADIO_BUTTON_UNCHECKED = "radio-button-unchecked.svg";
+
+	private static final String DEJAVU_SANS = "DejaVuSans";
+
+	private static final String NOTO_SANS_JP = "NotoSansJP";
+
+	private static final String TFF_FILE = ".ttf";
+
+	private static final Map<FontVariantType, String> DEJAVU_SANS_VARIANT_MAP = Map.of(FontVariantType.BOLD_ITALIC,
+			"DejaVuSans-BoldOblique.ttf", FontVariantType.BOLD, "DejaVuSans-Bold.ttf", FontVariantType.ITALIC,
+			"DejaVuSans-Oblique.ttf", FontVariantType.REGULAR, "DejaVuSans.ttf");
 
 	private final MessageUtil messageUtil;
 
@@ -687,7 +704,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			boolean isChecked = field.isSigned();
 
-			float pixelToPoint = 72f / 96f;
+			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI;
 			float size = Math.min(width, height) * pixelToPoint;
 
 			// Adjust Y position: convert from top-left to bottom-left origin
@@ -723,7 +740,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			boolean isChecked = field.isSigned();
 
-			float pixelToPoint = 72f / 96f; // 1 px = 0.75 pt
+			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI; // 1 px = 0.75 pt
 			float size = Math.min(width, height) * pixelToPoint;
 
 			// Adjust Y position: convert from top-left to bottom-left origin
@@ -769,7 +786,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 
 		try {
-			float pixelToPoint = 72f / 96f;
+			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI;
 			float size = Math.min(field.getWidth(), field.getHeight()) * pixelToPoint;
 
 			float adjustedY = pageHeight - field.getYposition() - size;
@@ -829,33 +846,23 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {
 		// Handle Noto Sans JP (no italic variants)
-		if ("NotoSansJP".equals(folderName) && isItalic) {
-			return isBold ? "Bold" : "Regular";
+		if (NOTO_SANS_JP.equals(folderName) && isItalic) {
+			return FontVariantType.fromFlags(isBold, false).getVariantName();
 		}
-
 		// Standard variant determination
-		if (isBold && isItalic)
-			return "BoldItalic";
-		if (isBold)
-			return "Bold";
-		if (isItalic)
-			return "Italic";
-		return "Regular";
+		return FontVariantType.fromFlags(isBold, isItalic).getVariantName();
 	}
 
 	private String buildFilename(String folderName, String variant) {
+		FontVariantType variantType = FontVariantType.fromString(variant);
+
 		// DejaVu Sans uses "Oblique" instead of "Italic"
-		if ("DejaVuSans".equals(folderName)) {
-			return switch (variant) {
-				case "BoldItalic" -> "DejaVuSans-BoldOblique.ttf";
-				case "Bold" -> "DejaVuSans-Bold.ttf";
-				case "Italic" -> "DejaVuSans-Oblique.ttf";
-				default -> "DejaVuSans.ttf";
-			};
+		if (DEJAVU_SANS.equals(folderName)) {
+			return DEJAVU_SANS_VARIANT_MAP.getOrDefault(variantType, DEJAVU_SANS + TFF_FILE);
 		}
 
 		// Standard naming: FolderName-Variant.ttf
-		return folderName + "-" + variant + ".ttf";
+		return folderName + "-" + variantType.getVariantName() + TFF_FILE;
 	}
 
 	private PDType0Font loadDefaultFont(PDDocument document) {
@@ -872,7 +879,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			boolean isItalic) {
 
 		if (folderName == null || folderName.isEmpty()) {
-			log.warn("Font family not recognized, falling back to default font");
+			log.warn("Font family not recognized, falling back to document font");
 			return loadFont(document);
 
 		}
@@ -886,7 +893,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			font = pdfResourceCacheService.loadFont(document, path);
 		}
 		catch (Exception e) {
-			log.warn("Font not found '{}', falling back to default font: {}", path, e.getMessage());
+			log.warn("Font not found '{}', falling back to document font: {}", path, e.getMessage());
 			// if an error occurs when downloading font file from S3/cache fallback to
 			// document font loading
 			font = loadFont(document);
