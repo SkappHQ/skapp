@@ -233,40 +233,4 @@ public class EsignUtil {
 		return documentName;
 	}
 
-	public static LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-		int year = today.getYear();
-		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
-		if (today.isBefore(thisYearStart)) {
-			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
-		}
-		return thisYearStart.atStartOfDay();
-	}
-
-	public static LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
-		int month = tierStartedDate.getMonthValue();
-		int day = tierStartedDate.getDayOfMonth();
-		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
-			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
-		}
-		else {
-			return LocalDate.of(year, month, day);
-		}
-	}
-
-	public static LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
-		int year = startDateTime.getYear() + 1;
-		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
-			if (Year.isLeap(year)) {
-				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
-			}
-			else {
-				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
-			}
-		}
-		else {
-			return startDateTime.plusYears(1);
-		}
-	}
-
 }

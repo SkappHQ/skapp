@@ -11,11 +11,11 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EsignTierValidationService;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +74,7 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
 						new String[] { currentTenant });
 			}
-			return tenant.getTier() == Tier.PRO && tenant.getSubscriptionStatus().equals(SubscriptionStatus.ACTIVE);
+			return tenant.getTier() == Tier.PRO && SubscriptionStatus.ACTIVE.equals(tenant.getSubscriptionStatus());
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
@@ -93,7 +93,7 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
 
 			if (tenant == null) {
-				log.error("getEnvelopeTierLimitations: Tenant not found: {}", currentTenant);
+				log.error("processEnvelopeTierLimitation: Tenant not found: {}", currentTenant);
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
 						new String[] { currentTenant });
 			}
@@ -107,8 +107,8 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 
 			if (tier == Tier.FREE) {
 				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = EsignUtil.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = EsignUtil.getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -127,8 +127,8 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 				LocalDate tierStartedDate = DateTimeUtils
 					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
 
-				startDateTime = EsignUtil.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = EsignUtil.getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
