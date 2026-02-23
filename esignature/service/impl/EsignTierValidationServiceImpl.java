@@ -14,6 +14,7 @@ import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 	private final EmployeeDao employeeDao;
 
 	@Override
-	public boolean isProTier() {
+	public EsignTierValidationDto resolveTierContext() {
 		String currentTenant = TenantContext.getCurrentTenant();
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
@@ -55,7 +56,7 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
 						new String[] { currentTenant });
 			}
-			return tenant.getTier() == Tier.PRO;
+			return new EsignTierValidationDto(tenant);
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
@@ -63,50 +64,23 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 	}
 
 	@Override
-	public boolean isProTierActive() {
-
-		String currentTenant = TenantContext.getCurrentTenant();
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-
-		try {
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			if (tenant == null) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
-			return tenant.getTier() == Tier.PRO && SubscriptionStatus.ACTIVE.equals(tenant.getSubscriptionStatus());
-		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
-	}
-
-	@Override
-	public EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation() {
+	public EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation(
+			EsignTierValidationDto esignTierValidationDto) {
 		String currentTenant = TenantContext.getCurrentTenant();
 		try {
 			long employeeCount = employeeDao
 				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-
-			if (tenant == null) {
-				log.error("processEnvelopeTierLimitation: Tenant not found: {}", currentTenant);
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
-
 			EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = new EnvelopeTierLimitationResponseDto();
-			Tier tier = tenant.getTier();
+			Tier tier = esignTierValidationDto.getTier();
 
 			LocalDateTime startDateTime;
 			LocalDateTime endDateTime;
 			long allocatedCount;
 
 			if (tier == Tier.FREE) {
-				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
+				LocalDate tierStartedDate = DateTimeUtils
+					.fromUtcInstantToLocaldate(esignTierValidationDto.getCreatedDate());
 				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
 				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
@@ -120,12 +94,12 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 			}
 			else if (tier == Tier.PRO) {
 
-				if (tenant.getStripeSubscription() == null
-						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
+				if (esignTierValidationDto.getStripeSubscription() == null
+						|| esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate() == null) {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 				}
-				LocalDate tierStartedDate = DateTimeUtils
-					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
+				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(
+						esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate());
 
 				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
 				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);

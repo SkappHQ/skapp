@@ -33,6 +33,7 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
+import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
@@ -116,7 +117,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Transactional
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
-		if (!esignTierValidationService.isProTier()) {
+		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+
+		if (!esignTierValidationDto.isProTier()) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 		}

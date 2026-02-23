@@ -58,6 +58,7 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponse
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
+import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -199,8 +200,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
 
+		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
-			.processEnvelopeTierLimitation();
+			.processEnvelopeTierLimitation(esignTierValidationDto);
 
 		if (envelopeTierLimitationResponseDto.isLimitedReached()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_LIMIT_REACHED);
@@ -241,7 +244,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
 		}
 
-		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
+		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope,
+				esignTierValidationDto);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
 		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
@@ -476,9 +480,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		return documents;
 	}
 
-	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
+	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope,
+			EsignTierValidationDto esignTierValidationDto) {
 		validateSigningOrder(recipientDtos);
-		validateIsActiveProTier(recipientDtos);
+		validateIsActiveProTier(recipientDtos, esignTierValidationDto);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -528,7 +533,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (recipientDto.getAdvanceFieldContainers() != null) {
 
-				if (!esignTierValidationService.isProTier()) {
+				if (!esignTierValidationDto.isProTier()) {
 					throw new ModuleException(
 							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 				}
@@ -556,7 +561,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private void validateIsActiveProTier(List<RecipientDto> recipientDtos) {
+	private void validateIsActiveProTier(List<RecipientDto> recipientDtos,
+			EsignTierValidationDto esignTierValidationDto) {
 
 		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
 			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
@@ -565,7 +571,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EsignConfig esignConfig = esignConfigRepository.findFirstBy()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_CONFIG_NOT_FOUND));
 
-		boolean isActiveProTier = esignTierValidationService.isProTierActive();
+		boolean isActiveProTier = esignTierValidationDto.isProTierActive();
 
 		if (Boolean.TRUE.equals(esignConfig.getIsMfaEnabled()) && !smsVerificationEnabledRecipients.isEmpty()
 				&& !isActiveProTier) {
@@ -1497,8 +1503,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	public ResponseEntityDto getEnvelopeTierLimitations() {
+		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
-			.processEnvelopeTierLimitation();
+			.processEnvelopeTierLimitation(esignTierValidationDto);
 		return new ResponseEntityDto(false, envelopeTierLimitationResponseDto);
 	}
 
