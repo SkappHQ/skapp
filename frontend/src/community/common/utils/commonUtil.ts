@@ -19,6 +19,7 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
+import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
 
 export const getLabelByValue = (
@@ -532,4 +533,8 @@ export const getCookieValue = (name: string): string | null => {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
   return match ? decodeURIComponent(match[2]) : null;
+};
+
+export const isEnterpriseMode = (): boolean => {
+  return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };

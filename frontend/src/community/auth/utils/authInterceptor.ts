@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
 
 const authAxios = axios.create({
@@ -10,7 +11,7 @@ const authAxios = axios.create({
 //  request interceptor
 authAxios.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (tenantID) {
+    if (isEnterpriseMode() && tenantID) {
       config.headers["X-Tenant-ID"] = tenantID;
     }
 
