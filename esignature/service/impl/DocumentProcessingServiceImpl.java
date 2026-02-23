@@ -887,7 +887,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
-		String normalizedFamily = fontFamily != null ? fontFamily.toLowerCase().trim() : "";
+		String normalizedFamily = fontFamily != null ? fontFamily.trim() : "";
 		String folderName = EsignFontFamilyType.getFolderByFamily(normalizedFamily);
 		return loadFontFromRelativePath(document, folderName, isBold, isItalic);
 	}
