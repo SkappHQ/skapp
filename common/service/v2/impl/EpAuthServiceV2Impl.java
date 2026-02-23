@@ -286,9 +286,17 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performGoogleSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
+
+			String tenantId = TenantContext.getCurrentTenant();
+			if (tenantId != null && !tenantId.isEmpty()) {
+				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
+				response.addCookie(tenantCookie);
+				log.info("performGoogleSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
+						user.getEmail());
+			}
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -610,9 +618,17 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performMicrosoftSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
+
+			String tenantId = TenantContext.getCurrentTenant();
+			if (tenantId != null && !tenantId.isEmpty()) {
+				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
+				response.addCookie(tenantCookie);
+				log.info("performMicrosoftSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
+						user.getEmail());
+			}
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
