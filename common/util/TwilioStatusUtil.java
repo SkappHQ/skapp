@@ -18,8 +18,9 @@ public class TwilioStatusUtil {
 			case 404 -> EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_INVALID_SID;
 			// Rate limited by Twilio
 			case 429 -> EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_RATE_LIMIT;
-			case 503 -> EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_SERVICE_UNAVAILABLE;
 			// Twilio-side outage — not system fault
+			case 503 -> EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_SERVICE_UNAVAILABLE;
+
 			default -> EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_INTERNAL_SERVER_ERROR;
 		};
 	}
