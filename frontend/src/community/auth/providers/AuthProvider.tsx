@@ -22,8 +22,6 @@ import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
-  clearCookies,
-  getNewAccessToken,
   handleSignIn,
   handleSignUp
 } from "../utils/authUtils";
@@ -46,62 +44,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
-  const signOut = useCallback(
-    async (redirect?: boolean) => {
-      try {
-        setIsLoading(true);
-        await clearCookies();
-
-        if (redirect === false) {
-          return;
-        } else if (router.asPath !== ROUTES.AUTH.SIGNIN) {
-          await router.push(ROUTES.AUTH.SIGNIN);
-        }
-      } catch (error) {
-        console.error("Logout error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [router]
-  );
-
   // Check authentication status
   const checkAuth = useCallback(async () => {
-    // Prevent duplicate checks
     if (isCheckingAuth.current) return;
+    isCheckingAuth.current = true;
+    setIsLoading(true);
 
     try {
-      isCheckingAuth.current = true;
-      setIsLoading(true);
-
       const userData = await checkUserAuthentication();
 
-      if (!userData) {
-        setIsAuthenticated(false);
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
       setUser(userData);
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Authentication check error:", error);
-      setIsAuthenticated(false);
-      setUser(null);
-      setIsLoading(false);
-      await signOut();
+      setIsAuthenticated(!!userData);
     } finally {
+      setIsLoading(false);
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
     }
-  }, [signOut]);
-
-  // Refresh Access Token function
-  const refreshAccessToken = useCallback(async (): Promise<string | null> => {
-    return await getNewAccessToken();
   }, []);
 
   const signUp = useCallback(
@@ -178,9 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     user,
     signIn,
-    signUp,
-    signOut,
-    refreshAccessToken
+    signUp
   };
 
   // Show loading state during initial authentication check
