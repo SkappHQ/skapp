@@ -368,8 +368,7 @@ public class DocumentServiceImpl implements DocumentService {
 		document = documentRepository.save(document);
 		recipientDao.saveAll(updatedRecipients);
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(),
-		recipient);
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(document.getEnvelope(), recipient,
 				AuditAction.ENVELOPE_SIGNED, null, ipAddress, null);
@@ -410,8 +409,7 @@ public class DocumentServiceImpl implements DocumentService {
 		envelope.setCompletedAt(getCurrentUtcDateTime());
 		envelopeDao.save(envelope);
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope,
-		recipient);
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(envelope, recipient);
 
 		envelope.getRecipients().forEach(rec -> rec.setInboxStatus(InboxStatus.COMPLETED));
 
@@ -608,8 +606,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		recipientService.cancelEmailReminders(recipient.getId(), document.getEnvelope().getId());
 
-		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(),
-		recipient);
+		esignNotificationService.notifyEnvelopeOwnerOnDocumentCompleted(document.getEnvelope(), recipient);
 
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 

@@ -1478,10 +1478,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Envelope envelope = envelopeOptional.get();
 
 		if (envelope.getRecipients() != null && !envelope.getRecipients().isEmpty()
-		&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
-		esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
-		log.info("Expiration reminder notifications sent for envelope ID: {}",
-		envelopeId);
+				&& EnvelopeStatus.WAITING.equals(envelope.getStatus())) {
+			esignNotificationService.notifyRecipientsOnExpirationReminder(envelope);
+			log.info("Expiration reminder notifications sent for envelope ID: {}", envelopeId);
 		}
 	}
 
