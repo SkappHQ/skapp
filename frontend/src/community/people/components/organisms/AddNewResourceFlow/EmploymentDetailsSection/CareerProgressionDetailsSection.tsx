@@ -450,7 +450,7 @@ const CareerProgressionDetailsSection = ({
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Poppins, sans-serif",
+        fontFamily: "Inter, sans-serif",
         display:
           (isManager || isProfileView) &&
           employeeCareerDetails?.positionDetails?.length === 0

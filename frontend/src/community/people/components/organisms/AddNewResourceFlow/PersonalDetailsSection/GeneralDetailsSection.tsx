@@ -300,7 +300,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
           padding: "0",
           margin: "0 auto",
           height: "auto",
-          fontFamily: "Poppins, sans-serif"
+          fontFamily: "Inter, sans-serif"
         }}
         dividerStyles={{
           mt: "0.5rem"

@@ -119,14 +119,14 @@ input[type="number"] {
   font-size: 16px;
   font-weight: 500;
   line-height: 140%;
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .full-day-border {

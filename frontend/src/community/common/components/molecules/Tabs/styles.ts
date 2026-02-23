@@ -9,7 +9,7 @@ const styles = (theme: Theme) => ({
     width: "fit-content"
   },
   tab: {
-    fontFamily: "Poppins",
+    fontFamily: "Inter",
     fontWeight: 400,
     fontSize: "1rem",
     color: theme.palette.text.primary,

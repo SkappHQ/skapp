@@ -450,7 +450,7 @@ const Search: FC<Props> = ({
                           borderBottom: selectedTab === "Individual" ? 2 : 0,
                           borderColor: "black",
                           flexDirection: "row",
-                          fontFamily: "Poppins",
+                          fontFamily: "Inter",
                           fontWeight: 700,
                           fontSize: "1rem",
                           color:
@@ -465,7 +465,7 @@ const Search: FC<Props> = ({
                           textTransform: "none",
                           borderBottom: selectedTab === "Team" ? 2 : 0,
                           borderColor: "black",
-                          fontFamily: "Poppins",
+                          fontFamily: "Inter",
                           fontWeight: 700,
                           fontSize: "1rem",
                           color:

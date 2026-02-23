@@ -140,7 +140,7 @@ const PrimaryDetailsSection = forwardRef<RefCallback, Props>(
           margin: "0 auto",
           display: "block",
           overflowY: "unset",
-          fontFamily: "Poppins, sans-serif"
+          fontFamily: "Inter, sans-serif"
         }}
         dividerStyles={{
           mt: "0.5rem"

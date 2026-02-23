@@ -9,7 +9,7 @@ const StyledTextArea = styled("textarea")<StyledTextAreaProps>(
     width: "100%",
     borderRadius: "0.5rem",
     border: "none",
-    fontFamily: "Poppins",
+    fontFamily: "Inter",
     fontStyle: "normal",
     fontWeight: "400",
     color: textColor || theme.palette.text.secondary,

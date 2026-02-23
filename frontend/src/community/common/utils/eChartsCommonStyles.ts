@@ -37,7 +37,7 @@ export const getCommonEChartOptions = (theme: Theme) => ({
     axisLabel: {
       color: theme.palette.common.black,
       fontSize: 13,
-      fontFamily: "Poppins"
+      fontFamily: "Inter"
     },
     scale: true
   },

@@ -55,7 +55,7 @@ export const LeaveTrendForYearLineChartOptions = (
       max: maxMonth,
       axisLabel: {
         margin: 15,
-        fontFamily: "Poppins",
+        fontFamily: "Inter",
         fontSize: 10
       }
     },

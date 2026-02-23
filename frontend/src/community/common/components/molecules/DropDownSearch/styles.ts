@@ -7,7 +7,7 @@ export const useGetSelectStyles = (error: string | string[]) => {
   const commonStyles = {
     fontSize: "1rem",
     fontWeight: 400,
-    fontFamily: "Poppins",
+    fontFamily: "Inter",
     fontStyle: "normal",
     margin: "0rem",
     color: error
@@ -46,7 +46,7 @@ export const useGetSelectStyles = (error: string | string[]) => {
         cursor: isDisabled ? "not-allowed" : "default",
         fontSize: "1rem",
         fontWeight: 400,
-        fontFamily: "Poppins",
+        fontFamily: "Inter",
         fontStyle: "normal",
         paddingLeft: ".9375rem",
         paddingTop: ".125rem",

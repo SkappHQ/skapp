@@ -447,7 +447,7 @@ export const theme = createTheme({
     ]
   },
   typography: {
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     allVariants: { color: "#000000" },
     // Heading, Modal Header
     h1: {
@@ -494,7 +494,7 @@ export const theme = createTheme({
     button: undefined,
     overline: undefined,
     onboardingHeader: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'Inter', sans-serif",
       fontWeight: 600,
       fontSize: "2rem", //32px
       lineHeight: "100%"
@@ -531,7 +531,7 @@ export const theme = createTheme({
     },
     //Document status title
     documentStatusTitle: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'Inter', sans-serif",
       fontWeight: 600,
       fontSize: "1.5rem" // 24px
     }

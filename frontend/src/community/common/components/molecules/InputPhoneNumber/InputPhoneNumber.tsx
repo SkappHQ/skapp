@@ -179,7 +179,7 @@ const InputPhoneNumber: FC<Props> = ({
             color: theme.palette.text.secondary,
             fontSize: "1rem",
             fontWeight: 400,
-            fontFamily: "Poppins",
+            fontFamily: "Inter",
             fontStyle: "normal",
             letterSpacing: "0.0313rem",
             borderTop: error

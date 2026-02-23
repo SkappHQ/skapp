@@ -203,7 +203,7 @@ const DropdownAutocomplete: FC<Props> = ({
               color: theme.palette.text.secondary,
               fontSize: "1rem",
               fontWeight: 400,
-              fontFamily: "Poppins",
+              fontFamily: "Inter",
               fontStyle: "normal",
               boxShadow: "none",
               border: `.0625rem solid ${theme.palette.grey[300]}`
