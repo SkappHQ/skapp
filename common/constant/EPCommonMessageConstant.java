@@ -185,7 +185,18 @@ public enum EPCommonMessageConstant implements MessageConstant {
 			"ep.common.error.send-message-error-phone.number-not-available"),
 	EP_COMMON_SEND_MESSAGE_ERROR_CONTENT_NOT_AVAILABLE("ep.common.error.send-message-error-content-not-available"),
 	EP_COMMON_ERROR_TENANT_STATUS_NOT_PRO_ACCOUNT("ep.common.error.tenant-status-not-pro-account"),
-	EP_COMMON_ERROR_TWILIO_EXCEPTION("ep.common.error.twilio-exception");
+	EP_COMMON_ERROR_TWILIO_EXCEPTION("ep.common.error.twilio-exception"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_CONTENT_VARIABLES_PROCESSING(
+			"ep.common.error.twilio-message-send-error-content-variables-processing"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_BAD_REQUEST("ep.common.error.twilio-message-send-error-bad-request"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_UNAUTHORIZED("ep.common.error.twilio-message-send-error-unauthorized"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_FORBIDDEN("ep.common.error.twilio-message-send-error-forbidden"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_INVALID_SID("ep.common.error.twilio-message-send-error-invalid-sid"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_RATE_LIMIT("ep.common.error.twilio-message-send-error-rate-limit"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_SERVICE_UNAVAILABLE(
+			"ep.common.error.twilio-message-send-error-service-unavailable"),
+	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_INTERNAL_SERVER_ERROR(
+			"ep.common.error.twilio-message-send-error-internal-server-error");
 
 	private final String messageKey;
 

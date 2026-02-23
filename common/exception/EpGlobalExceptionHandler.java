@@ -8,6 +8,7 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.StripeLogDao;
 import com.skapp.enterprise.common.model.master.StripeLog;
 import com.skapp.enterprise.common.type.StripeLogStatus;
+import com.skapp.enterprise.common.util.TwilioStatusUtil;
 import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -68,31 +69,6 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION)),
 				status);
-	}
-
-	@ExceptionHandler(TwilioApiException.class)
-	public ResponseEntity<ResponseEntityDto> handleTwilioApiException(TwilioApiException e) {
-		HttpStatus status = resolveTwilioStatus(e.getStatusCode());
-		String message = messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION);
-
-		logDetailedException(e, EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION.name(), message, status);
-
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, message, EPCommonMessageConstant.EP_COMMON_ERROR_TWILIO_EXCEPTION)),
-				status);
-	}
-
-	private HttpStatus resolveTwilioStatus(int twilioHttpStatus) {
-		return switch (twilioHttpStatus) {
-			case 401 -> HttpStatus.UNAUTHORIZED; // Bad auth token / API key
-			case 403 -> HttpStatus.FORBIDDEN; // Valid credentials but no permission
-			case 404 -> HttpStatus.NOT_FOUND; // Invalid SID or resource not found
-			case 429 -> HttpStatus.TOO_MANY_REQUESTS; // Rate limited by Twilio
-			case 500, 503 -> HttpStatus.BAD_GATEWAY; // Twilio-side outage — not your
-														// fault
-			default -> HttpStatus.INTERNAL_SERVER_ERROR;
-		};
 	}
 
 }
