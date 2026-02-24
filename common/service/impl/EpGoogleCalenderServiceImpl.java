@@ -1,7 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -66,6 +64,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -146,7 +146,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 			if (jsonNode.has(EpCommonConstants.RESULTS) && jsonNode.get(EpCommonConstants.RESULTS).isArray()
 					&& !jsonNode.get(EpCommonConstants.RESULTS).isEmpty()) {
-				String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asText();
+				String redirectUrl = jsonNode.get(EpCommonConstants.RESULTS).get(0).asString();
 
 				log.info("connectGoogleCalendar: execution end");
 

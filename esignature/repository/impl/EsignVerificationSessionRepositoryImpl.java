@@ -4,9 +4,12 @@ import com.skapp.enterprise.esignature.model.EsignVerificationSession;
 import com.skapp.enterprise.esignature.model.EsignVerificationSession_;
 import com.skapp.enterprise.esignature.repository.EsignVerificationSessionRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 

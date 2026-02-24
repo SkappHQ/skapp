@@ -4,7 +4,6 @@ import com.skapp.enterprise.invoice.model.Customer;
 import com.skapp.enterprise.invoice.model.CustomerContact;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentCreateRequestDto;
 import com.skapp.enterprise.invoice.payload.request.CustomerDocumentFilterDto;
-import com.skapp.enterprise.invoice.payload.request.CustomerDocumentRenameRequestDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerBillingDetailsDto;
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDetailsDto;
 

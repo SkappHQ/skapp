@@ -1,6 +1,5 @@
 package com.skapp.enterprise.timeplanner.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
@@ -29,6 +28,7 @@ import com.skapp.community.timeplanner.service.impl.TimeServiceImpl;
 import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 @Primary
 @Service
@@ -36,7 +36,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 
 	private final EpLeaveCalendarService epLeaveCalendarService;
 
-	public EpTimeServiceImpl(TimeConfigDao timeConfigDao, ObjectMapper mapper, MessageUtil messageUtil,
+	public EpTimeServiceImpl(TimeConfigDao timeConfigDao, JsonMapper mapper, MessageUtil messageUtil,
 			UserService userService, TimeRecordDao timeRecordDao, TimeSlotDao timeSlotDao,
 			AttendanceConfigService attendanceConfigService, LeaveRequestDao leaveRequestDao, HolidayDao holidayDao,
 			EmployeeDao employeeDao, PeopleMapper peopleMapper, LeaveMapper leaveMapper, TimeRequestDao timeRequestDao,

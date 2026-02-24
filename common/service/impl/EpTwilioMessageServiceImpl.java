@@ -1,7 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.service.EpTwilioMessageService;
@@ -16,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 
@@ -30,7 +29,7 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 	@Value("${twilio.message-content-sid}")
 	private String contentSid;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Override
 	public void sendSmsMessage(String phoneNumber, String messageContent, TwilioMessageSource source,
@@ -66,11 +65,6 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
 			}
 		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(
-					EPCommonMessageConstant.EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_CONTENT_VARIABLES_PROCESSING);
-		}
-
 		catch (ApiException e) {
 			// Catch the ACTUAL Twilio SDK exception, wrap into your custom one
 			// Covers: 401 bad credentials, 403 forbidden, 404 invalid SID,

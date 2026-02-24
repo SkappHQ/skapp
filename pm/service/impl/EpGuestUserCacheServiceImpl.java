@@ -1,8 +1,5 @@
 package com.skapp.enterprise.pm.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
@@ -13,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +27,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 
 	private final CacheService cacheService;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	private final EpGuestUserInternalService epGuestUserInternalService;
 
@@ -58,21 +57,17 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			return userProjects;
 		}
 
-		try {
-			JsonNode projectsMapNode = objectMapper.readTree(cachedData);
+		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
 
-			if (projectsMapNode != null && projectsMapNode.isObject()) {
-				projectsMapNode.fieldNames().forEachRemaining(projectId -> {
-					JsonNode projectData = projectsMapNode.get(projectId);
-					ProjectRequestDto project = extractProjectForUserFromNode(projectData, userId);
-					if (project != null) {
-						userProjects.add(project);
-					}
-				});
-			}
-		}
-		catch (JsonProcessingException e) {
-			log.error("getUserAssignedProjects: Error parsing cached data: {}", e.getMessage());
+		if (projectsMapNode != null && projectsMapNode.isObject()) {
+			projectsMapNode.properties().forEach(entry -> {
+				JsonNode projectData = entry.getValue();
+
+				ProjectRequestDto project = extractProjectForUserFromNode(projectData, userId);
+				if (project != null) {
+					userProjects.add(project);
+				}
+			});
 		}
 
 		return userProjects;
@@ -106,18 +101,14 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			return guestUsersProjectsMap;
 		}
 
-		try {
-			JsonNode projectsMapNode = objectMapper.readTree(cachedData);
+		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
 
-			if (projectsMapNode != null && projectsMapNode.isObject()) {
-				projectsMapNode.fieldNames().forEachRemaining(projectId -> {
-					JsonNode projectData = projectsMapNode.get(projectId);
-					mapProjectToGuestUsersFromNode(projectData, guestUsersProjectsMap);
-				});
-			}
-		}
-		catch (JsonProcessingException e) {
-			log.error("getAllGuestUsersWithProjects: Error parsing cached data: {}", e.getMessage());
+		if (projectsMapNode != null && projectsMapNode.isObject()) {
+			projectsMapNode.properties().forEach(entry -> {
+				JsonNode projectData = entry.getValue();
+
+				mapProjectToGuestUsersFromNode(projectData, guestUsersProjectsMap);
+			});
 		}
 
 		return guestUsersProjectsMap;
@@ -125,24 +116,19 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 
 	private void cacheProjects(List<JsonNode> projectsData) {
 		EpCacheKeys cacheKey = EpCacheKeys.ALL_PROJECT_DETAILS_CACHE_KEY;
-		try {
-			Map<String, JsonNode> projectsMap = new HashMap<>();
+		Map<String, JsonNode> projectsMap = new HashMap<>();
 
-			for (JsonNode projectNode : projectsData) {
-				JsonNode projectInfo = projectNode.get("projectInfo");
-				if (projectInfo != null && projectInfo.has("id")) {
-					String projectId = projectInfo.get("id").asText();
-					projectsMap.put(projectId, projectNode);
-				}
+		for (JsonNode projectNode : projectsData) {
+			JsonNode projectInfo = projectNode.get("projectInfo");
+			if (projectInfo != null && projectInfo.has("id")) {
+				String projectId = projectInfo.get("id").asString();
+				projectsMap.put(projectId, projectNode);
 			}
+		}
 
-			String projectsJson = objectMapper.writeValueAsString(projectsMap);
-			cacheService.put(cacheKey.format(""), projectsJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
-			log.info("cacheProjects: Cached {} projects", projectsData.size());
-		}
-		catch (JsonProcessingException e) {
-			log.error("cacheProjects: Error caching projects: {}", e.getMessage());
-		}
+		String projectsJson = objectMapper.writeValueAsString(projectsMap);
+		cacheService.put(cacheKey.format(""), projectsJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		log.info("cacheProjects: Cached {} projects", projectsData.size());
 	}
 
 	private ProjectRequestDto extractProjectForUserFromNode(JsonNode projectNode, Long userId) {
@@ -184,15 +170,15 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 		ProjectRequestDto dto = new ProjectRequestDto();
 
 		if (projectInfoNode.has("id")) {
-			dto.setProjectId(Long.parseLong(projectInfoNode.get("id").asText()));
+			dto.setProjectId(Long.parseLong(projectInfoNode.get("id").asString()));
 		}
 
 		if (projectInfoNode.has("key")) {
-			dto.setProjectKey(projectInfoNode.get("key").asText());
+			dto.setProjectKey(projectInfoNode.get("key").asString());
 		}
 
 		if (projectInfoNode.has("name")) {
-			dto.setProjectName(projectInfoNode.get("name").asText());
+			dto.setProjectName(projectInfoNode.get("name").asString());
 		}
 
 		return dto;

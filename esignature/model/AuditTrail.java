@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import jakarta.persistence.Column;
@@ -17,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 
