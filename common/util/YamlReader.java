@@ -4,15 +4,14 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import lombok.experimental.UtilityClass;
 import org.springframework.core.io.ClassPathResource;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.InputStream;
 
 @UtilityClass
 public class YamlReader {
 
-	private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+	private static final YAMLMapper yamlMapper = YAMLMapper.builder().build();
 
 	public static <T> T read(String path, Class<T> clazz) {
 		try (InputStream inputStream = new ClassPathResource(path).getInputStream()) {
