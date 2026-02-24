@@ -8,9 +8,7 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.PDFResourceCacheService;
-import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
-import com.skapp.enterprise.esignature.type.FieldType;
-import com.skapp.enterprise.esignature.type.FontVariantType;
+import com.skapp.enterprise.esignature.type.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -101,33 +99,17 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	public static final String PNG = "png";
 
-	private static final String RESOURCE_BASE_PATH = "eSign/resources/";
+	private static final String RESOURCE_BASE_PATH = "common/";
 
 	private static final String FONT_BASE_PATH = "fonts/";
 
-	private static final String SVG_BASE_PATH = "images/";
+	private static final String SVG_BASE_PATH = "svgs/";
 
 	private static final String CHECKBOX = "checkbox";
 
 	private static final String RADIO_BUTTON = "radio";
 
-	private static final String CHECKBOX_CHECKED = "checkbox-checked.svg";
-
-	private static final String CHECKBOX_UNCHECKED = "checkbox-unchecked.svg";
-
-	private static final String RADIO_BUTTON_CHECKED = "radio-button-checked.svg";
-
-	private static final String RADIO_BUTTON_UNCHECKED = "radio-button-unchecked.svg";
-
-	private static final String DEJAVU_SANS = "DejaVuSans";
-
-	private static final String NOTO_SANS_JP = "NotoSansJP";
-
-	private static final String TFF_FILE = ".ttf";
-
-	private static final Map<FontVariantType, String> DEJAVU_SANS_VARIANT_MAP = Map.of(FontVariantType.BOLD_ITALIC,
-			"DejaVuSans-BoldOblique.ttf", FontVariantType.BOLD, "DejaVuSans-Bold.ttf", FontVariantType.ITALIC,
-			"DejaVuSans-Oblique.ttf", FontVariantType.REGULAR, "DejaVuSans.ttf");
+	private static final String TFF_FILE_EXTENSION = ".ttf";
 
 	private final MessageUtil messageUtil;
 
@@ -353,13 +335,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
 				addCheckbox(field, contentStream, pageHeight, document);
 			}
-			else
-
-			if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-
+			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
 				addRadioButton(field, contentStream, pageHeight, document);
 			}
-
 			else if (FieldType.TEXT.equals(fieldType)) {
 				addInputTextField(field, contentStream, pageHeight, document);
 			}
@@ -733,7 +711,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
 			// Load appropriate PNG based on state
-			String imagePath = isChecked ? basePath + CHECKBOX_CHECKED : basePath + CHECKBOX_UNCHECKED;
+			String imagePath = isChecked ? basePath + EsignImageType.CHECKBOX_CHECKED.getFilename()
+					: basePath + EsignImageType.CHECKBOX_UNCHECKED.getFilename();
 
 			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
 					64f, CHECKBOX);
@@ -770,7 +749,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
 
 			// Load appropriate PNG based on state
-			String imagePath = isChecked ? basePath + RADIO_BUTTON_CHECKED : basePath + RADIO_BUTTON_UNCHECKED;
+			String imagePath = isChecked ? basePath + EsignImageType.RADIO_BUTTON_CHECKED.getFilename()
+					: basePath + EsignImageType.RADIO_BUTTON_UNCHECKED.getFilename();
 
 			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
 					64f, RADIO_BUTTON);
@@ -875,7 +855,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {
 		// Handle Noto Sans JP (no italic variants)
-		if (NOTO_SANS_JP.equals(folderName) && isItalic) {
+		if (EsignFontFamilyType.NOTO_SANS_JP.getFolderName().equals(folderName) && isItalic) {
 			return FontVariantType.fromFlags(isBold, false).getVariantName();
 		}
 		// Standard variant determination
@@ -886,12 +866,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		FontVariantType variantType = FontVariantType.fromString(variant);
 
 		// DejaVu Sans uses "Oblique" instead of "Italic"
-		if (DEJAVU_SANS.equals(folderName)) {
-			return DEJAVU_SANS_VARIANT_MAP.getOrDefault(variantType, DEJAVU_SANS + TFF_FILE);
+		if (EsignFontFamilyType.DEJAVU_SANS.getFolderName().equals(folderName)) {
+			return FontFamilyVariant.getFilenameFor(EsignFontFamilyType.DEJAVU_SANS.getFolderName(), variantType);
 		}
 
 		// Standard naming: FolderName-Variant.ttf
-		return folderName + "-" + variantType.getVariantName() + TFF_FILE;
+		return folderName + "-" + variantType.getVariantName() + TFF_FILE_EXTENSION;
 	}
 
 	private PDType0Font loadDefaultFont(PDDocument document) {
