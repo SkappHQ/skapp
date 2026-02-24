@@ -304,17 +304,19 @@
             <artifactId>twilio</artifactId>
             <version>10.9.2</version>
         </dependency>
+
+        <!-- Apache Batik for SVG transcoding (converting SVG files into other formats) -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>
             <version>1.19</version>
-            <scope>compile</scope>
         </dependency>
+
+        <!-- Apache Batik Codec for PNG/JPEG output -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-codec</artifactId>
             <version>1.19</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Test Packages -->
