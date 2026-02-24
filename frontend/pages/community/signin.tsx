@@ -116,7 +116,7 @@ const SignIn: NextPage = () => {
         method: AuthMethods.CREDENTIAL
       });
 
-      if (result !== SignInStatus.SUCCESS) {
+      if (result?.status === SignInStatus.FAILURE) {
         setToastMessage({
           open: true,
           toastType: "error",

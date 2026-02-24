@@ -5,7 +5,6 @@ import { NextRouter, useRouter } from "next/router";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
 import { useAuth } from "~community/auth/providers/AuthProvider";
-
 import { useCheckOrgSetupStatus } from "~community/common/api/OrganizationCreateApi";
 import SetupSuperAdminForm from "~community/common/components/organisms/Forms/SignUpForm/setupSuperAdminForm/SetupSuperAdminForm";
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
@@ -82,7 +81,7 @@ const SignUp: NextPage = () => {
     if (orgSetupStatus?.data?.results[0]) {
       navigateByStatus(orgSetupStatus?.data?.results[0]);
     }
-  }, [navigateByStatus, orgSetupStatus?.data?.results]);
+  }, [navigateByStatus]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -96,7 +95,7 @@ const SignUp: NextPage = () => {
 
     setIsLoading(false);
 
-    if (result === SignInStatus.SUCCESS) {
+    if (result?.status === SignInStatus.SUCCESS) {
       router.push(ROUTES.ORGANIZATION.SETUP);
     }
   };
