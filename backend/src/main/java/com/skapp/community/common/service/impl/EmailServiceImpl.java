@@ -138,7 +138,6 @@ public class EmailServiceImpl implements EmailService {
 			TypeReference<Map<String, Map<String, List<EmailTemplateMetadata>>>> typeRef = new TypeReference<>() {
 			};
 
-			// 2. Use readerFor - this is the preferred Jackson 3 way
 			Map<String, Map<String, List<EmailTemplateMetadata>>> templates = yamlMapper.readerFor(typeRef)
 				.readValue(inputStream);
 

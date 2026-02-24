@@ -17,7 +17,7 @@ public class EeoDeserializer extends StdDeserializer<EEO> {
 	@Override
 	public EEO deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException {
 		JsonNode jsonNode = p.readValueAsTree();
-		String value = jsonNode.toString().trim();
+		String value = jsonNode.asString().trim();
 
 		if (jsonNode.isNull() || jsonNode.isMissingNode() || value.isEmpty()) {
 			return null;

@@ -17,7 +17,7 @@ public class AccountStatusDeserializer extends StdDeserializer<AccountStatus> {
 	@Override
 	public AccountStatus deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException {
 		JsonNode jsonNode = p.readValueAsTree();
-		String value = jsonNode.toString().trim();
+		String value = jsonNode.asString().trim();
 
 		if (jsonNode.isNull() || jsonNode.isMissingNode() || value.isEmpty()) {
 			return null;

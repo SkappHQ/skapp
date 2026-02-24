@@ -17,7 +17,7 @@ public class EmploymentAllocationDeserializer extends StdDeserializer<Employment
 	@Override
 	public EmploymentAllocation deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException {
 		JsonNode jsonNode = p.readValueAsTree();
-		String value = jsonNode.toString().trim();
+		String value = jsonNode.asString().trim();
 
 		if (jsonNode.isNull() || jsonNode.isMissingNode() || value.isEmpty()) {
 			return null;
