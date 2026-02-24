@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.exception;
 
-import com.azure.json.implementation.jackson.core.JsonProcessingException;
 import com.skapp.community.common.exception.GlobalExceptionHandler;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -9,6 +8,7 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.StripeLogDao;
 import com.skapp.enterprise.common.model.master.StripeLog;
 import com.skapp.enterprise.common.type.StripeLogStatus;
+import com.skapp.enterprise.common.util.TwilioStatusUtil;
 import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
