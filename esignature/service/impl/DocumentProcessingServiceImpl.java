@@ -8,7 +8,12 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.service.PDFResourceService;
-import com.skapp.enterprise.esignature.type.*;
+import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
+import com.skapp.enterprise.esignature.type.EsignImageType;
+import com.skapp.enterprise.esignature.type.FieldType;
+import com.skapp.enterprise.esignature.type.FontFamilyVariant;
+import com.skapp.enterprise.esignature.type.FontVariantType;
+import com.skapp.enterprise.esignature.util.FontStyleExtractorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -84,6 +89,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final float UNDERLINE_OFFSET = 1.5f;
 
 	private static final float UNDERLINE_THICKNESS = 0.5f;
+
+	private static final float VERTICAL_CENTER_DIVISOR = 2f;
+
+	private static final float RADIO_BUTTON_TEXT_GAP = 4f;
+
+	private static final float BLACK_COLOR_COMPONENT = 0f;
 
 	// In PDFBox, font.getStringWidth() returns the width in "glyph units" (not points).
 	// Most fonts use 1000 glyph units per em square. Dividing by 1000 converts the width
@@ -766,13 +777,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String value = field.getFieldValue().trim();
 
 			if (!value.isEmpty()) {
-				float textPadding = 4f * pixelToPoint;
+				float textPadding = RADIO_BUTTON_TEXT_GAP * pixelToPoint;
 				float textX = adjustedX + size + textPadding;
-				float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / 2;
+				float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / VERTICAL_CENTER_DIVISOR;
 
 				contentStream.beginText();
 				contentStream.setFont(loadFont(document), DEFAULT_FONT_SIZE);
-				contentStream.setNonStrokingColor(0f, 0f, 0f);
+				contentStream.setNonStrokingColor(BLACK_COLOR_COMPONENT, BLACK_COLOR_COMPONENT, BLACK_COLOR_COMPONENT);
 				contentStream.newLineAtOffset(textX, textY);
 				contentStream.showText(value);
 				contentStream.endText();
@@ -798,20 +809,18 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			FieldSignContainerDto container = field.getFieldSignContainer();
 
-			String fontFamily = container != null ? container.getFontFamily() : null;
-			String fontColor = container != null && container.getFontColor() != null ? container.getFontColor() : null;
-			float fontSize = container != null ? container.getFontSize() : DEFAULT_FONT_SIZE;
-			boolean isBold = container != null && Boolean.TRUE.equals(container.getIsBold());
-			boolean isItalic = container != null && Boolean.TRUE.equals(container.getIsItalic());
-			boolean isUnderline = container != null && Boolean.TRUE.equals(container.getIsUnderline());
-
-			float fontSizeToUse = fontSize > 0 ? fontSize : DEFAULT_FONT_SIZE;
+			String fontFamily = FontStyleExtractorUtil.extractFontFamily(container);
+			String fontColor = FontStyleExtractorUtil.extractFontColor(container);
+			float fontSize = FontStyleExtractorUtil.extractFontSize(container);
+			boolean isBold = FontStyleExtractorUtil.extractIsBold(container);
+			boolean isItalic = FontStyleExtractorUtil.extractIsItalic(container);
+			boolean isUnderline = FontStyleExtractorUtil.extractIsUnderline(container);
 
 			PDType0Font font;
 
 			if (fontFamily == null || fontColor == null) {
-				font = loadDefaultFont(document);
-				contentStream.setFont(font, fontSizeToUse);
+				font = loadFont(document);
+				contentStream.setFont(font, fontSize);
 				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / COLOR_NORMALIZATION_FACTOR,
 						TEXT_COLOR.getGreen() / COLOR_NORMALIZATION_FACTOR,
 						TEXT_COLOR.getBlue() / COLOR_NORMALIZATION_FACTOR);
@@ -819,7 +828,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			else {
 				font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
 				Color color = Color.decode(fontColor);
-				contentStream.setFont(font, fontSizeToUse);
+				contentStream.setFont(font, fontSize);
 				contentStream.setNonStrokingColor(color.getRed() / COLOR_NORMALIZATION_FACTOR,
 						color.getGreen() / COLOR_NORMALIZATION_FACTOR, color.getBlue() / COLOR_NORMALIZATION_FACTOR);
 			}
@@ -844,7 +853,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				contentStream.setStrokingColor(underlineColor.getRed() / COLOR_NORMALIZATION_FACTOR,
 						underlineColor.getGreen() / COLOR_NORMALIZATION_FACTOR,
 						underlineColor.getBlue() / COLOR_NORMALIZATION_FACTOR);
-				float textWidth = font.getStringWidth(field.getFieldValue()) / GLYPH_TO_EM_UNIT * fontSizeToUse;
+				float textWidth = font.getStringWidth(field.getFieldValue()) / GLYPH_TO_EM_UNIT * fontSize;
 				float underlineY = adjustedY - UNDERLINE_OFFSET;
 				contentStream.moveTo(adjustedX, underlineY);
 				contentStream.lineTo(adjustedX + textWidth, underlineY);
@@ -878,10 +887,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		// Standard naming: FolderName-Variant.ttf
 		return folderName + "-" + variantType.getVariantName() + TFF_FILE_EXTENSION;
-	}
-
-	private PDType0Font loadDefaultFont(PDDocument document) {
-		return loadFont(document);
 	}
 
 	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
