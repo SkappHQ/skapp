@@ -45,4 +45,36 @@ public class CookieUtil {
 		return cookie;
 	}
 
+	/**
+	 * Creates a secure tenant cookie with the specified tenant ID and max age.
+	 * @param tenantId The tenant ID value
+	 * @param cookieMaxAge The maximum age of the cookie in milliseconds
+	 * @return A configured Cookie object
+	 */
+	public Cookie createTenantCookie(String tenantId, long cookieMaxAge) {
+		Cookie cookie = new Cookie("tenant", tenantId);
+		cookie.setHttpOnly(false);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge((int) (cookieMaxAge / 1000));
+		cookie.setDomain(baseDomain);
+		cookie.setAttribute("SameSite", "Lax");
+		return cookie;
+	}
+
+	/**
+	 * Clears the tenant cookie by setting its max age to 0.
+	 * @return A configured Cookie object with max age set to 0 to delete the cookie
+	 */
+	public Cookie clearTenantCookie() {
+		Cookie cookie = new Cookie("tenant", null);
+		cookie.setHttpOnly(false);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		cookie.setDomain(baseDomain);
+		cookie.setAttribute("SameSite", "Lax");
+		return cookie;
+	}
+
 }
