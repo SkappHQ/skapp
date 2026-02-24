@@ -7,7 +7,7 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
-import com.skapp.enterprise.esignature.service.PDFResourceCacheService;
+import com.skapp.enterprise.esignature.service.PDFResourceService;
 import com.skapp.enterprise.esignature.type.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,10 +69,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final float X_OFFSET_VALUE = 0.8f;
 
 	// The standard DPI for points in PDF and PostScript. 1 point = 1/72 inch.
-	private static final float STANDARD_DPI = 72f;
+	// never changes, PDF spec
+	private static final float PDF_POINTS_PER_INCH = 72f;
 
-	// The typical DPI for screen pixels
-	private static final float PDFBOX_DPI = 96f;
+	// Assumption about input coordinates
+	// Actual source pixel density can vary, but 96 DPI is a common standard for screen
+	// coordinates, which is often used as a basis for conversion to PDF points.
+	private static final float SOURCE_PIXEL_DPI = 96f;
+
+	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
 
 	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
 
@@ -116,7 +121,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
-	private final PDFResourceCacheService pdfResourceCacheService;
+	private final PDFResourceService pdfResourceService;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
@@ -699,7 +704,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			boolean isChecked = field.isSigned();
 
-			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI;
+			// converts a measurement in screen pixels into PDF points.
+			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI;
 			float size = Math.min(width, height) * pixelToPoint;
 
 			// Adjust Y position: convert from top-left to bottom-left origin
@@ -714,8 +720,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String imagePath = isChecked ? basePath + EsignImageType.CHECKBOX_CHECKED.getFilename()
 					: basePath + EsignImageType.CHECKBOX_UNCHECKED.getFilename();
 
-			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
-					64f, CHECKBOX);
+			PDImageXObject checkboxImage = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
+					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, CHECKBOX);
 
 			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
@@ -736,7 +742,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			boolean isChecked = field.isSigned();
 
-			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI; // 1 px = 0.75 pt
+			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI; // 1 px = 0.75 pt
 			float size = Math.min(width, height) * pixelToPoint;
 
 			// Adjust Y position: convert from top-left to bottom-left origin
@@ -752,8 +758,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String imagePath = isChecked ? basePath + EsignImageType.RADIO_BUTTON_CHECKED.getFilename()
 					: basePath + EsignImageType.RADIO_BUTTON_UNCHECKED.getFilename();
 
-			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
-					64f, RADIO_BUTTON);
+			PDImageXObject checkboxImage = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
+					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, RADIO_BUTTON);
 
 			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
@@ -783,7 +789,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 
 		try {
-			float pixelToPoint = STANDARD_DPI / PDFBOX_DPI;
+			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI;
 			float size = Math.min(field.getWidth(), field.getHeight()) * pixelToPoint;
 
 			float adjustedY = pageHeight - field.getYposition() - size;
@@ -899,7 +905,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		PDType0Font font;
 		try {
-			font = pdfResourceCacheService.loadFont(document, path);
+			font = pdfResourceService.loadFont(document, path);
 		}
 		catch (Exception e) {
 			log.warn("Font not found '{}', falling back to document font: {}", path, e.getMessage());

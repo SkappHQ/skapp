@@ -4,7 +4,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
-public interface PDFResourceCacheService {
+public interface PDFResourceService {
 
 	PDType0Font loadFont(PDDocument document, String path);
 

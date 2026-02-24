@@ -3,7 +3,7 @@ package com.skapp.enterprise.esignature.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
-import com.skapp.enterprise.esignature.service.PDFResourceCacheService;
+import com.skapp.enterprise.esignature.service.PDFResourceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -18,12 +18,11 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PDFResourceCacheServiceImpl implements PDFResourceCacheService {
+public class PDFResourceServiceImpl implements PDFResourceService {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
