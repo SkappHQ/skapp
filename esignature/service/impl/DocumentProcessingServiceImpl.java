@@ -351,13 +351,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			FieldType fieldType = field.getType();
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
-				drawCheckbox(field, contentStream, pageHeight, document);
+				addCheckbox(field, contentStream, pageHeight, document);
 			}
 			else
 
 			if (FieldType.RADIO_BUTTON.equals(fieldType)) {
 
-				drawRadioButton(field, contentStream, pageHeight, document);
+				addRadioButton(field, contentStream, pageHeight, document);
 			}
 
 			else if (FieldType.TEXT.equals(fieldType)) {
@@ -711,7 +711,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void drawCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		try {
@@ -735,8 +735,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// Load appropriate PNG based on state
 			String imagePath = isChecked ? basePath + CHECKBOX_CHECKED : basePath + CHECKBOX_UNCHECKED;
 
-			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath,
-					width, height, CHECKBOX);
+			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
+					64f, CHECKBOX);
 
 			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
@@ -747,7 +747,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void drawRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		try {
@@ -772,8 +772,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// Load appropriate PNG based on state
 			String imagePath = isChecked ? basePath + RADIO_BUTTON_CHECKED : basePath + RADIO_BUTTON_UNCHECKED;
 
-			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath,
-					width, height, RADIO_BUTTON);
+			PDImageXObject checkboxImage = pdfResourceCacheService.loadSvgImageAndConvertToPng(document, imagePath, 64f,
+					64f, RADIO_BUTTON);
 
 			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 

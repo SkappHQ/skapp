@@ -30,10 +30,8 @@ public class PDFResourceCacheServiceImpl implements PDFResourceCacheService {
 
 	private final AmazonS3Service amazonS3Service;
 
-	private final ConcurrentHashMap<String, byte[]> fontByteCache = new ConcurrentHashMap<>();
-
 	public PDType0Font loadFont(PDDocument document, String path) {
-		byte[] fontBytes = fontByteCache.computeIfAbsent(path, this::loadAndCache);
+		byte[] fontBytes = loadFontFromS3(path);
 		return createFont(document, fontBytes, path);
 	}
 
@@ -59,7 +57,7 @@ public class PDFResourceCacheServiceImpl implements PDFResourceCacheService {
 
 	}
 
-	private byte[] loadAndCache(String path) {
+	private byte[] loadFontFromS3(String path) {
 
 		String s3Key = bucketName + "/" + path;
 		String bucket = bucketName;
