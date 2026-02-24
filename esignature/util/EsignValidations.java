@@ -7,8 +7,6 @@ import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
-import static com.skapp.enterprise.esignature.constant.EsignConstants.ALLOWED_CHARACTERS_REGEX_EXTERNAL_CONTACT_NAME;
-
 @UtilityClass
 public class EsignValidations {
 

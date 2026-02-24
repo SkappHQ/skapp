@@ -5,7 +5,6 @@ import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationStatusResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerifiedIdentityDto;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

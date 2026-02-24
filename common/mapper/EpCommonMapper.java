@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.mapper;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
-import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.enterprise.common.model.DeviceToken;
 import com.skapp.enterprise.common.model.EpOrganization;
 import com.skapp.enterprise.common.model.OrganizationCalendar;
