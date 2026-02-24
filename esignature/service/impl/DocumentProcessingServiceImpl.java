@@ -95,6 +95,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
 
+	private static final int DEFAULT_LINE_HEIGHT = 2;
+
 	public static final int DPI = 96;
 
 	public static final String PNG = "png";
@@ -836,10 +838,20 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 						color.getGreen() / COLOR_NORMALIZATION_FACTOR, color.getBlue() / COLOR_NORMALIZATION_FACTOR);
 			}
 
-			contentStream.beginText();
-			contentStream.newLineAtOffset(adjustedX, adjustedY);
-			contentStream.showText(field.getFieldValue());
-			contentStream.endText();
+			// User Inputs into a Text area, therefore user can enter text in multiple new
+			// lines. We need to handle that by splitting the text into lines and
+			// rendering each line separately with appropriate line spacing.
+			String[] lines = field.getFieldValue().split("\\n");
+			float lineHeight = fontSize + DEFAULT_LINE_HEIGHT;
+			float y = adjustedY;
+			for (String line : lines) {
+				contentStream.beginText();
+				contentStream.setFont(font, fontSize);
+				contentStream.newLineAtOffset(adjustedX, y);
+				contentStream.showText(line);
+				contentStream.endText();
+				y -= lineHeight;
+			}
 
 			if (isUnderline) {
 				Color underlineColor = fontColor != null ? Color.decode(fontColor) : TEXT_COLOR;
