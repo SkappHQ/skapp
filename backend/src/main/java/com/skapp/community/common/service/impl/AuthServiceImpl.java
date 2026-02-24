@@ -41,6 +41,7 @@ import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
@@ -161,9 +162,13 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		Cookie cookie = cookieUtil.clearRefreshTokenCookie();
-		response.addCookie(cookie);
+		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie();
+		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
+
+		Cookie tenantCookie = cookieUtil.clearTenantCookie();
+		response.addCookie(tenantCookie);
+		log.info("signOutWithCookie: Cleared tenant cookie");
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -210,9 +215,17 @@ public class AuthServiceImpl implements AuthService {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
+
+			String tenantId = TenantContext.getCurrentTenant();
+			if (tenantId != null && !tenantId.isEmpty()) {
+				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
+				response.addCookie(tenantCookie);
+				log.info("performSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
+						user.getEmail());
+			}
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
