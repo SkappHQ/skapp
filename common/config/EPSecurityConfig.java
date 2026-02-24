@@ -58,8 +58,7 @@ public class EPSecurityConfig {
 	private String allowedOrigins;
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-			throws Exception {
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
 		return authenticationConfiguration.getAuthenticationManager();
 	}
 
@@ -69,9 +68,8 @@ public class EPSecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService);
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
 		authProvider.setPasswordEncoder(passwordEncoder());
 
 		http.cors(Customizer.withDefaults());
