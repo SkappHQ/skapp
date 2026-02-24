@@ -1,7 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
@@ -19,6 +17,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;

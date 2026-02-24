@@ -95,6 +95,12 @@
             <version>3.5.11</version>
         </dependency>
 
+        <!-- Jackson Dataformat YAML -->
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+
         <!-- Database Drivers -->
         <dependency>
             <groupId>com.mysql</groupId>

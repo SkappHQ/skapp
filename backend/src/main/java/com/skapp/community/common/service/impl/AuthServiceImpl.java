@@ -1,7 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.component.ProfileActivator;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -56,7 +54,6 @@ import com.skapp.community.peopleplanner.util.Validations;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,9 +64,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -128,7 +125,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	protected final CookieUtil cookieUtil;
 
@@ -467,13 +464,10 @@ public class AuthServiceImpl implements AuthService {
 				CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {
 					bulkContextService.setContext(currentTenant);
 					try {
-						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-							@Override
-							protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-								log.info("sendReInvitation: Processing re-invitation for userId={}", id);
-								validateAndSendReInvitation(id, reInvitationSkippedCountDto, bulkRecordErrorLogs,
-										bulkStatusSummary);
-							}
+						transactionTemplate.executeWithoutResult(status -> {
+							log.info("sendReInvitation: Processing re-invitation for userId={}", id);
+							validateAndSendReInvitation(id, reInvitationSkippedCountDto, bulkRecordErrorLogs,
+									bulkStatusSummary);
 						});
 					}
 					catch (Exception e) {
