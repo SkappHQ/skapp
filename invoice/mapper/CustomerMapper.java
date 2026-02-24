@@ -9,9 +9,9 @@ import com.skapp.enterprise.invoice.payload.request.customer.CustomerContactDeta
 import com.skapp.enterprise.invoice.payload.request.customer.CustomerProjectDetailsDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerContactResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDetailedResponseDto;
+import com.skapp.enterprise.invoice.payload.response.CustomerDocumentRenameResponseDto;
 import com.skapp.enterprise.invoice.payload.response.CustomerDocumentResponseDto;
 import com.skapp.enterprise.invoice.payload.response.InternalCustomerResponseDto;
-import com.skapp.enterprise.invoice.payload.response.CustomerDocumentRenameResponseDto;
 import com.skapp.enterprise.invoice.repository.projection.CustomerSummaryData;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

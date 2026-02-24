@@ -1,7 +1,5 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
@@ -18,7 +16,6 @@ import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
-import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
@@ -31,10 +28,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -81,9 +79,9 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 			AuditTrailResponseDto auditTrailResponseDto = new AuditTrailResponseDto();
 			auditTrailResponseDto.setAuditId(auditTrail.getId());
 			auditTrailResponseDto.setAction(auditTrail.getAction());
-			auditTrailResponseDto.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(),
-					new TypeReference<List<MetadataResponseDto>>() {
-					}));
+			auditTrailResponseDto
+				.setMetadata(new ObjectMapper().convertValue(auditTrail.getMetadata(), new TypeReference<>() {
+				}));
 			auditTrailResponseDto.setIsAuthorized(auditTrail.getIsAuthorized());
 			auditTrailResponseDto.setHash(auditTrail.getHash());
 			if (auditTrail.getRecipient() == null && auditTrail.getAddressBookUser() == null) {
@@ -172,7 +170,7 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 		try {
 			ClassPathResource resource = new ClassPathResource(
 					"enterprise/templates/pdf/en/esignature/signature-certificate-v1.html");
-			String template = new String(Files.readAllBytes(Paths.get(resource.getURI())), StandardCharsets.UTF_8);
+			String template = Files.readString(Paths.get(resource.getURI()));
 
 			// Replace basic document information
 			template = template.replace("{{documentName}}", EsignUtil.escapeHtml(responseDto.getName()));

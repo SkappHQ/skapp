@@ -1,7 +1,5 @@
 package com.skapp.enterprise.ai.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.CacheService;
@@ -19,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 
@@ -35,7 +34,7 @@ public class AITokenServiceImpl implements AITokenService {
 
 	private final CacheService cacheService;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Override
 	@Transactional
@@ -138,29 +137,23 @@ public class AITokenServiceImpl implements AITokenService {
 		String cachedData = cacheService.get(cacheKey.format(userId));
 
 		if (cachedData != null) {
-			try {
-				DailyTokenUsageResponseDto cachedResponse = objectMapper.readValue(cachedData,
-						DailyTokenUsageResponseDto.class);
-				log.info("getCachedDailyTokenUsage: Returning cached data for user: {}", userId);
-				return cachedResponse;
-			}
-			catch (JsonProcessingException e) {
-				log.error("getCachedDailyTokenUsage: Failed to deserialize cached data: {}", e.getMessage());
-			}
+
+			DailyTokenUsageResponseDto cachedResponse = objectMapper.readValue(cachedData,
+					DailyTokenUsageResponseDto.class);
+			log.info("getCachedDailyTokenUsage: Returning cached data for user: {}", userId);
+			return cachedResponse;
+
 		}
 		return null;
 	}
 
 	private void setCachedDailyTokenUsage(Long userId, DailyTokenUsageResponseDto responseDto) {
 		EpCacheKeys cacheKey = EpCacheKeys.AI_TOKEN_USER_CACHE_KEY;
-		try {
-			String cacheValue = objectMapper.writeValueAsString(responseDto);
-			cacheService.put(cacheKey.format(userId), cacheValue, cacheKey.getTtl(), cacheKey.getTimeUnit());
-			log.info("setCachedDailyTokenUsage: Cache updated for user: {}", userId);
-		}
-		catch (JsonProcessingException e) {
-			log.error("setCachedDailyTokenUsage: Failed to serialize response to cache: {}", e.getMessage());
-		}
+
+		String cacheValue = objectMapper.writeValueAsString(responseDto);
+		cacheService.put(cacheKey.format(userId), cacheValue, cacheKey.getTtl(), cacheKey.getTimeUnit());
+		log.info("setCachedDailyTokenUsage: Cache updated for user: {}", userId);
+
 	}
 
 }

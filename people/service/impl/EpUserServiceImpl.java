@@ -1,7 +1,5 @@
 package com.skapp.enterprise.people.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
@@ -29,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.Set;
@@ -43,7 +42,7 @@ public class EpUserServiceImpl implements EpUserService {
 
 	private final CacheService cacheService;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	private final AmazonS3Service amazonS3Service;
 
@@ -96,14 +95,9 @@ public class EpUserServiceImpl implements EpUserService {
 
 		List<EpUserResponseDto> mappedUsers = employees.stream().map(this::mapEmployeeToUserDto).toList();
 
-		try {
-			String usersJson = objectMapper.writeValueAsString(mappedUsers);
-			EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
-			cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
-		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		String usersJson = objectMapper.writeValueAsString(mappedUsers);
+		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_CACHE_KEY;
+		cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
 
 		return mappedUsers;
 	}
@@ -135,14 +129,9 @@ public class EpUserServiceImpl implements EpUserService {
 
 		mappedUserAuthPics = employees.stream().map(mapper).toList();
 
-		try {
-			String usersJson = objectMapper.writeValueAsString(mappedUserAuthPics);
-			EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_AUTH_PICS_CACHE_KEY;
-			cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
-		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		String usersJson = objectMapper.writeValueAsString(mappedUserAuthPics);
+		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_USERS_AUTH_PICS_CACHE_KEY;
+		cacheService.put(cacheKey.getKey(), usersJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
 
 		return mappedUserAuthPics;
 	}

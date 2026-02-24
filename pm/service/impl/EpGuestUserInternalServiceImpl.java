@@ -1,13 +1,8 @@
 package com.skapp.enterprise.pm.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
 import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
@@ -22,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,26 +80,21 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		HttpHeaders headers = createHeaders();
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
 
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
 
-			if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
-				return false;
-			}
-
-			if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalAssignGuestToProjects")) {
-				return responseJsonNode.get("data").get("internalAssignGuestToProjects").asBoolean();
-			}
-
+		if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
 			return false;
+		}
 
+		if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalAssignGuestToProjects")) {
+			return responseJsonNode.get("data").get("internalAssignGuestToProjects").asBoolean();
 		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
-		}
+
+		return false;
+
 	}
 
 	@Override
@@ -141,26 +133,20 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		HttpHeaders headers = createHeaders();
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
 
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(pmServiceUrl, entity, String.class);
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
 
-			if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
-				return false;
-			}
-
-			if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalUpdateGuestUserProjects")) {
-				return responseJsonNode.get("data").get("internalUpdateGuestUserProjects").asBoolean();
-			}
-
+		if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
 			return false;
+		}
 
+		if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalUpdateGuestUserProjects")) {
+			return responseJsonNode.get("data").get("internalUpdateGuestUserProjects").asBoolean();
 		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED);
-		}
+
+		return false;
 	}
 
 	private HttpHeaders createHeaders() {

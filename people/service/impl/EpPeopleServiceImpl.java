@@ -1,6 +1,5 @@
 package com.skapp.enterprise.people.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -90,6 +89,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -158,7 +158,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
 			EmployeeManagerDao employeeManagerDao, PasswordEncoder passwordEncoder, RolesService rolesService,
 			PageTransformer pageTransformer, PlatformTransactionManager transactionManager,
-			PeopleEmailService peopleEmailService, ObjectMapper mapper,
+			PeopleEmailService peopleEmailService, JsonMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
 			UserVersionService userVersionService, EmployeeValidationService employeeValidationService,

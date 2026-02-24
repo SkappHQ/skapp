@@ -1,7 +1,7 @@
 package com.skapp.enterprise.pm.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 

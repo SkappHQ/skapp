@@ -1,13 +1,9 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.mapper.EpCommonMapper;
 import com.skapp.enterprise.common.payload.response.EpJobResponseDto;
 import com.skapp.enterprise.common.service.EpJobService;
@@ -15,6 +11,7 @@ import com.skapp.enterprise.common.type.EpCacheKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.Set;
@@ -29,7 +26,7 @@ public class EpJobServiceImpl implements EpJobService {
 
 	private final EpCommonMapper epCommonMapper;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	private final CacheService cacheService;
 
@@ -43,14 +40,9 @@ public class EpJobServiceImpl implements EpJobService {
 		List<EpJobResponseDto> jobFamilyResponseDetailDtos = epCommonMapper
 			.jobFamilyListToEpJobResponseDtoList(jobFamilies);
 
-		try {
-			String jobsJson = objectMapper.writeValueAsString(jobFamilyResponseDetailDtos);
-			EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_JOBS_CACHE_KEY;
-			cacheService.put(cacheKey.getKey(), jobsJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
-		}
-		catch (JsonProcessingException e) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		String jobsJson = objectMapper.writeValueAsString(jobFamilyResponseDetailDtos);
+		EpCacheKeys cacheKey = EpCacheKeys.TENANT_ALL_JOBS_CACHE_KEY;
+		cacheService.put(cacheKey.getKey(), jobsJson, cacheKey.getTtl(), cacheKey.getTimeUnit());
 
 		return jobFamilyResponseDetailDtos;
 	}
