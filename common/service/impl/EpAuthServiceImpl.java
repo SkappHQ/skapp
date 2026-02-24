@@ -649,9 +649,16 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performCodeChallengeValidation: Added refresh token cookie for userId={}", user.getUserId());
+
+			if (tenantId != null && !tenantId.isEmpty()) {
+				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
+				response.addCookie(tenantCookie);
+				log.info("performCodeChallengeValidation: Added tenant cookie with tenantId={} for userId={}", tenantId,
+						user.getUserId());
+			}
 		}
 
 		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
@@ -794,9 +801,17 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("buildSignInResponse: Added refresh token cookie for userId={}", user.getUserId());
+
+			String tenantId = TenantContext.getCurrentTenant();
+			if (tenantId != null && !tenantId.isEmpty()) {
+				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
+				response.addCookie(tenantCookie);
+				log.info("buildSignInResponse: Added tenant cookie with tenantId={} for userId={}", tenantId,
+						user.getUserId());
+			}
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
