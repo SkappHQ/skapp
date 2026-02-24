@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.OrganizationConfig_;
@@ -56,6 +55,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

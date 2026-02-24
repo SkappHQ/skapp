@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.security.SkappUserDetails;
@@ -12,6 +11,7 @@ import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@RequiredArgsConstructor
 @DisplayName("Leave Controller Integration Tests")
 class LeaveControllerIntegrationTest {
 
@@ -51,8 +53,7 @@ class LeaveControllerIntegrationTest {
 
 	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Autowired
 	private AuthorityService authorityService;

@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.security.SkappUserDetails;
@@ -30,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +62,7 @@ class HolidayControllerIntegrationTest {
 	private AuthorityService authorityService;
 
 	@Autowired
-	private ObjectMapper objectMapper;
+	private JsonMapper objectMapper;
 
 	@Autowired
 	private JwtService jwtService;

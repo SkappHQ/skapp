@@ -1,8 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -125,6 +123,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,7 +179,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final PeopleEmailService peopleEmailService;
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 

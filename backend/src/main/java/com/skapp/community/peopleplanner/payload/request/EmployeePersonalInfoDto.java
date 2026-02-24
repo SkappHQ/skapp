@@ -1,7 +1,5 @@
 package com.skapp.community.peopleplanner.payload.request;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.community.peopleplanner.type.BloodGroup;
 import com.skapp.community.peopleplanner.type.Ethnicity;
 import com.skapp.community.peopleplanner.type.MaritalStatus;
@@ -10,6 +8,8 @@ import com.skapp.community.peopleplanner.util.deserializer.EthnicityDeserializer
 import com.skapp.community.peopleplanner.util.deserializer.MaritalStatusDeserializer;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.LocalDate;
 

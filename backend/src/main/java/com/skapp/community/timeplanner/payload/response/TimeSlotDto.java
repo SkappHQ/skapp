@@ -1,8 +1,6 @@
 package com.skapp.community.timeplanner.payload.response;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.common.util.deserializer.Base64BooleanDeserializer;
 import com.skapp.community.timeplanner.type.SlotType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,10 +21,8 @@ public class TimeSlotDto {
 
 	private SlotType slotType;
 
-	@JsonDeserialize(using = Base64BooleanDeserializer.class)
 	private Boolean isActiveRightNow;
 
-	@JsonDeserialize(using = Base64BooleanDeserializer.class)
 	private Boolean isManualEntry;
 
 	public LocalDate getStartTime() {

@@ -1,12 +1,12 @@
 package com.skapp.community.leaveplanner.payload.response;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.leaveplanner.model.LeaveType;
 import com.skapp.community.leaveplanner.type.GainEligibilityType;
 import com.skapp.community.leaveplanner.type.LeaveRuleCategory;
 import com.skapp.community.leaveplanner.type.LoseEligibilityType;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 

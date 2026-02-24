@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.security.SkappUserDetails;
@@ -28,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ class JobControllerIntegrationTest {
 	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
 	@Autowired
-	private ObjectMapper objectMapper;
+	private JsonMapper objectMapper;
 
 	@Autowired
 	private AuthorityService authorityService;

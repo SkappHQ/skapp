@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.security.SkappUserDetails;
@@ -18,6 +17,7 @@ import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
 import com.skapp.community.timeplanner.payload.request.ManualEntryRequestDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -39,6 +38,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -54,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@RequiredArgsConstructor
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Time Controller Integration Tests")
 class TimeControllerIntegrationTest {
@@ -72,20 +73,15 @@ class TimeControllerIntegrationTest {
 
 	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
-	@Autowired
-	private AuthorityService authorityService;
+	private final AuthorityService authorityService;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
-	@Autowired
-	private JwtService jwtService;
+	private final JwtService jwtService;
 
-	@Autowired
-	private UserDetailsService userDetailsService;
+	private final UserDetailsService userDetailsService;
 
-	@Autowired
-	private MockMvc mvc;
+	private final MockMvc mvc;
 
 	private String authToken;
 

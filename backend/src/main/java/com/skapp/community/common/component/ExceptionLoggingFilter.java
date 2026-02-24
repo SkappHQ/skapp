@@ -1,6 +1,5 @@
 package com.skapp.community.common.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.payload.response.ErrorResponse;
@@ -17,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,7 +31,7 @@ public class ExceptionLoggingFilter implements Filter {
 
 	private static final String RESET_COLOR = "\u001B[0m";
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
