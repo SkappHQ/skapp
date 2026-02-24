@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -207,7 +207,7 @@ public class NotificationServiceImpl implements NotificationService {
 	}
 
 	private Map<String, Map<String, Map<String, String>>> loadEnumTranslations() {
-		ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+		YAMLMapper yamlMapper = YAMLMapper.builder().build();
 		try (InputStream inputStream = new ClassPathResource("community/templates/common/enum-translations.yml")
 			.getInputStream()) {
 			return yamlMapper.readValue(inputStream, new TypeReference<>() {

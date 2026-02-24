@@ -1,6 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import tools.jackson.core.type.TypeReference;
 import com.skapp.community.common.payload.email.EmailTemplateMetadata;
 import com.skapp.community.common.payload.request.TestEmailServerRequestDto;
 import com.skapp.community.common.service.AsyncEmailSender;
@@ -12,7 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import tools.jackson.dataformat.yaml.YAMLFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class EmailServiceImpl implements EmailService {
 
 	private final AsyncEmailSender asyncEmailSender;
 
-	private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+	private final YAMLMapper yamlMapper = YAMLMapper.builder().build();
 
 	protected Map<String, Map<String, List<EmailTemplateMetadata>>> templateDetailsMap;
 
