@@ -312,7 +312,7 @@
             <version>1.19</version>
         </dependency>
 
-        <!-- Apache Batik Codec for PNG/JPEG output -->
+        <!-- Apache Batik Codec for PNG/JPEG output (batik-transcoder depends on batik-codec for PNG encoding) -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-codec</artifactId>
