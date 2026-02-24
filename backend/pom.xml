@@ -173,7 +173,7 @@
             <version>3.20.0</version>
         </dependency>
 
-        <!-- Springdoc OpenAPI -->  
+        <!-- Springdoc OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -264,7 +264,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>2.31.56</version>
+            <version>2.41.34</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -275,14 +275,14 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudfront</artifactId>
-            <version>2.31.37</version>
+            <version>2.41.34</version>
         </dependency>
 
         <!-- Apache PDFBox -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -295,7 +295,7 @@
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.5.0</version>
+            <version>2.5.2</version>
         </dependency>
 
         <!-- OpenHTML to PDF -->
