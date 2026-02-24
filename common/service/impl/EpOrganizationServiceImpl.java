@@ -1,7 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
@@ -64,6 +62,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.Objects;
@@ -112,7 +112,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	private final AttendanceConfigService attendanceConfigService;
 
@@ -133,7 +133,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			DashboardEmailService dashboardEmailService, ModuleService moduleService,
 			EpGoogleCalenderService epGoogleCalenderService, EpMicrosoftCalendarService epMicrosoftCalendarService,
 			EsignConfigService esignConfigService, InvoiceConfigService invoiceConfigService,
-			OrganizationConfigDao organizationConfigDao, ObjectMapper objectMapper,
+			OrganizationConfigDao organizationConfigDao, JsonMapper objectMapper,
 			AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
 			LeaveCycleService leaveCycleService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,

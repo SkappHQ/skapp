@@ -1,10 +1,5 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -36,6 +31,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -60,7 +60,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final DocumentLinkService documentLinkService;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Value("${audit-trail.hash-secret-key}")
 	private String hashSecretKey;

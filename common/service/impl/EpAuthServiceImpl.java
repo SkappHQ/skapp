@@ -1,7 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.component.ProfileActivator;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
@@ -92,6 +91,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -176,7 +176,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			EncryptionDecryptionService encryptionDecryptionService, ProfileActivator profileActivator,
 			PlatformTransactionManager transactionManager, BulkContextService bulkContextService,
 			MessageUtil messageUtil, RolesService rolesService, OrganizationConfigDao organizationConfigDao,
-			ObjectMapper objectMapper, EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao,
+			JsonMapper objectMapper, EpCommonMapper epCommonMapper, SuperAdminDao superAdminDao,
 			EpCommonEmailService emailService, RestTemplate restTemplate, GoogleTokenValidator googleTokenValidator,
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,

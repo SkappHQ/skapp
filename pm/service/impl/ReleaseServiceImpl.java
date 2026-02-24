@@ -1,8 +1,5 @@
 package com.skapp.enterprise.pm.service.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -30,6 +27,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -158,34 +159,33 @@ public class ReleaseServiceImpl implements ReleaseService {
 
 	private GenerateReleasePdfRequestDto mapJsonToDto(JsonNode releaseNode) {
 		GenerateReleasePdfRequestDto dto = new GenerateReleasePdfRequestDto();
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		JsonMapper mapper = JsonMapper.builder().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
 
 		dto.setId(releaseNode.has("id") && !releaseNode.get("id").isNull() ? releaseNode.get("id").asLong() : null);
-		dto.setName(
-				releaseNode.has("name") && !releaseNode.get("name").isNull() ? releaseNode.get("name").asText() : null);
+		dto.setName(releaseNode.has("name") && !releaseNode.get("name").isNull() ? releaseNode.get("name").asString()
+				: null);
 		dto.setDescription(releaseNode.has("description") && !releaseNode.get("description").isNull()
-				? releaseNode.get("description").asText() : null);
+				? releaseNode.get("description").asString() : null);
 		dto.setEnvironment(releaseNode.has("environment") && !releaseNode.get("environment").isNull()
-				? releaseNode.get("environment").asText() : null);
+				? releaseNode.get("environment").asString() : null);
 		dto.setStatus(releaseNode.has("status") && !releaseNode.get("status").isNull()
-				? releaseNode.get("status").asText() : null);
+				? releaseNode.get("status").asString() : null);
 		dto.setProjectId(releaseNode.has("projectId") && !releaseNode.get("projectId").isNull()
 				? releaseNode.get("projectId").asLong() : null);
 
 		if (releaseNode.has("releaseDate") && !releaseNode.get("releaseDate").isNull()) {
-			String releaseDateStr = releaseNode.get("releaseDate").asText();
+			String releaseDateStr = releaseNode.get("releaseDate").asString();
 			dto.setReleaseDate(Instant.parse(releaseDateStr).atZone(ZoneId.systemDefault()).toLocalDateTime());
 		}
 
 		if (releaseNode.has("startDate") && !releaseNode.get("startDate").isNull()) {
-			String startDateStr = releaseNode.get("startDate").asText();
+			String startDateStr = releaseNode.get("startDate").asString();
 			dto.setStartDate(Instant.parse(startDateStr).atZone(ZoneId.systemDefault()).toLocalDateTime());
 		}
 
 		if (releaseNode.has("project") && !releaseNode.get("project").isNull()
 				&& releaseNode.get("project").has("name")) {
-			dto.setProjectName(releaseNode.get("project").get("name").asText());
+			dto.setProjectName(releaseNode.get("project").get("name").asString());
 		}
 
 		if (releaseNode.has("projectItems") && !releaseNode.get("projectItems").isNull()) {
@@ -195,7 +195,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 
 				if (itemNode.has("projectType") && !itemNode.get("projectType").isNull()
 						&& itemNode.get("projectType").has("icon")) {
-					itemDto.setIcon(itemNode.get("projectType").get("icon").asText());
+					itemDto.setIcon(itemNode.get("projectType").get("icon").asString());
 				}
 
 				projectItems.add(itemDto);
@@ -235,16 +235,16 @@ public class ReleaseServiceImpl implements ReleaseService {
 				}
 
 				if (approverNode.has("status") && !approverNode.get("status").isNull()) {
-					String statusStr = approverNode.get("status").asText();
+					String statusStr = approverNode.get("status").asString();
 					approverDto.setStatus(ReleaseApprovalStatusEnum.valueOf(statusStr.toUpperCase()));
 				}
 
 				if (approverNode.has("remarks") && !approverNode.get("remarks").isNull()) {
-					approverDto.setRemarks(approverNode.get("remarks").asText());
+					approverDto.setRemarks(approverNode.get("remarks").asString());
 				}
 
 				if (approverNode.has("updatedAt") && !approverNode.get("updatedAt").isNull()) {
-					String actionDateStr = approverNode.get("updatedAt").asText();
+					String actionDateStr = approverNode.get("updatedAt").asString();
 					approverDto
 						.setActionDate(Instant.parse(actionDateStr).atZone(ZoneId.systemDefault()).toLocalDateTime());
 				}
@@ -367,8 +367,8 @@ public class ReleaseServiceImpl implements ReleaseService {
 			String actionText = approver.getActionDate() != null ? approver.getActionDate().format(dateFormatter) : "";
 
 			String avatarHtml;
-			String avatarDataUrl = "";
-			String avatarInitials = "";
+			String avatarDataUrl;
+			String avatarInitials;
 
 			if (approver.getProfilePicture() != null && !approver.getProfilePicture().trim().isEmpty()) {
 				avatarDataUrl = approver.getProfilePicture();
@@ -384,7 +384,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 							initials.append(part.charAt(0));
 						}
 					}
-					avatarInitials = initials.length() > 0 ? initials.toString().toUpperCase() : "A";
+					avatarInitials = !initials.isEmpty() ? initials.toString().toUpperCase() : "A";
 				}
 				else {
 					avatarInitials = "A";

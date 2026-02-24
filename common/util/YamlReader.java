@@ -1,11 +1,11 @@
 package com.skapp.enterprise.common.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import lombok.experimental.UtilityClass;
 import org.springframework.core.io.ClassPathResource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.InputStream;
 
