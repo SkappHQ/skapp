@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.community.leaveplanner.type.EmployeeLeaveEarnMethod;
 import com.skapp.community.leaveplanner.type.RulePropertyType;
@@ -19,6 +18,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 @Entity
 @Getter

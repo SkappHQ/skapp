@@ -1,13 +1,12 @@
 package com.skapp.community.common.payload.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.skapp.community.common.constant.MessageConstant;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,8 +14,7 @@ import java.util.Objects;
 @Setter
 public class ErrorResponse {
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
-	private Date timestamp;
+	private LocalDateTime timestamp;
 
 	private int code;
 
@@ -29,7 +27,7 @@ public class ErrorResponse {
 	private List<ValidationError> errors;
 
 	public ErrorResponse() {
-		timestamp = new Date();
+		this.timestamp = LocalDateTime.now();
 	}
 
 	public ErrorResponse(HttpStatus httpStatus, String message, MessageConstant messageKey) {

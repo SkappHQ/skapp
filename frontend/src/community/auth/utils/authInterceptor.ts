@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { COMMON_ERROR_MISSING_COOKIE_IN_TOKEN } from "~community/common/constants/errorMessageKeys";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
 
 import { signOut } from "./authUtils";
@@ -13,7 +14,7 @@ const authAxios = axios.create({
 //  request interceptor
 authAxios.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (tenantID) {
+    if (isEnterpriseMode() && tenantID) {
       config.headers["X-Tenant-ID"] = tenantID;
     }
 

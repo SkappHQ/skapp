@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.community.peopleplanner.type.BloodGroup;
 import com.skapp.community.peopleplanner.type.Ethnicity;
@@ -20,6 +19,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 
