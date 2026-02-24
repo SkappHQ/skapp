@@ -119,6 +119,8 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 	private SignatureAlgorithm azureSignatureAlgorithm;
 
+	private boolean initialized = false;
+
 	/**
 	 * Initialize Azure Key Vault clients and load certificate chain at application
 	 * startup.
@@ -165,18 +167,20 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 			log.info("  - Certificate subject: {}", certificateChain[0].getSubjectX500Principal());
 			log.info("  - Certificate valid until: {}", certificateChain[0].getNotAfter());
 			log.info("  - Certificate chain length: {}", certificateChain.length);
+			initialized = true;
 		}
 		catch (CertificateException e) {
-			log.error("AzureKeyVaultSignatureProvider init failed due to CertificateException", e);
+			log.warn("AzureKeyVaultSignatureProvider skipped: certificate error - {}", e.getMessage());
 		}
 		catch (IOException e) {
-			log.error("AzureKeyVaultSignatureProvider init failed due to IOException", e);
+			log.warn("AzureKeyVaultSignatureProvider skipped: IO error - {}", e.getMessage());
 		}
 		catch (ModuleException e) {
-			log.error("AzureKeyVaultSignatureProvider init failed due to ModuleException: {}", e.getMessage());
+			log.warn("AzureKeyVaultSignatureProvider skipped: {}", e.getMessage());
 		}
 		catch (Exception e) {
-			log.error("AzureKeyVaultSignatureProvider init failed due to Unknown Exception", e);
+			log.warn("AzureKeyVaultSignatureProvider skipped: unable to connect to Key Vault '{}' - {}", keyVaultUrl,
+					e.getMessage());
 		}
 	}
 
@@ -342,6 +346,9 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 	@Override
 	public byte[] signContent(byte[] contentToSign) throws ModuleException {
+		if (!initialized) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_SIGNATURE_PROVIDER_OPERATION_FAILED);
+		}
 		try {
 			log.debug("Signing data with Azure Key Vault (algorithm: {})", azureSignatureAlgorithm);
 
@@ -367,7 +374,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 
 	@Override
 	public X509Certificate[] getCertificateChain() throws ModuleException {
-		if (certificateChain == null || certificateChain.length == 0) {
+		if (!initialized || certificateChain == null || certificateChain.length == 0) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_CERTIFICATE_CHAIN);
 		}
 		return certificateChain;
@@ -396,7 +403,7 @@ public class AzureKeyVaultSignatureProvider implements SignatureProvider {
 		}
 
 		// Test 3: Verify key is enabled
-		if (!key.getProperties().isEnabled()) {
+		if (Boolean.FALSE.equals(key.getProperties().isEnabled())) {
 			log.error("Key is disabled: {}", keyName);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AZURE_CONNECTION_FAILED);
 		}

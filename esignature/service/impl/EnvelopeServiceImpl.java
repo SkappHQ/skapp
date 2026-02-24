@@ -1171,7 +1171,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		envelope = envelopeDao.save(envelope);
 
-		// esignNotificationService.notifyOnEnvelopeVoided(envelope);
+		esignNotificationService.notifyOnEnvelopeVoided(envelope);
 
 		AddressBook addressBook = addressBookDao.findByInternalUser(currentUser)
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND));
@@ -1425,7 +1425,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		envelope.setStatus(EnvelopeStatus.DECLINED);
 		envelopeDao.save(envelope);
 
-		// esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
+		esignNotificationService.notifyOnEnvelopeDeclined(envelope, recipient);
 
 		recipientService.sendEmailWhenDocumentIsVoidedOrDeclined(envelope.getId());
 
