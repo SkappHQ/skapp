@@ -13,8 +13,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -61,7 +59,6 @@ public class Tenant {
 	private String createdByEmail;
 
 	@CreationTimestamp
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "created_date")
 	private Instant createdDate;
 
