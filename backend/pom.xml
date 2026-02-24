@@ -95,16 +95,10 @@
             <version>3.5.11</version>
         </dependency>
 
-        <!-- Jackson Databind -->
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>3.0.4</version>
-        </dependency>
+        <!-- Jackson Dataformat YAML -->
         <dependency>
             <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>3.0.4</version>
         </dependency>
 
         <!-- Database Drivers -->
