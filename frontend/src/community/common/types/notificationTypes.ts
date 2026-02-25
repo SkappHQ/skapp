@@ -34,4 +34,4 @@ export enum NotificationItemsTypes {
   ESIGN_DOCUMENT_EXPIRED = "ESIGN_DOCUMENT_EXPIRED"
 }
 
-export const notificationDefaultImage = "/logo/skapp-thumbnail_16_16.svg";
+export const notificationDefaultImage = "/logo/notification.svg";
