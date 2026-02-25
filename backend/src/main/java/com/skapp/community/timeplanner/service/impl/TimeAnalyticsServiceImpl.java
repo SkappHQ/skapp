@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
@@ -50,6 +49,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -545,8 +545,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 					throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
 				}
 
-				String timeBlock = block.get("timeBlock").asText();
-				String hours = block.get("hours").asText();
+				String timeBlock = block.get("timeBlock").asString();
+				String hours = block.get("hours").asString();
 
 				if ("MORNING_HOURS".equals(timeBlock)) {
 					timeBlockDto.setMorningTimeBlock(timeBlock);

@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.util.converter.JsonTypeConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -16,6 +15,7 @@ import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 import java.time.DayOfWeek;
 

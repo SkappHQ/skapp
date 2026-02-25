@@ -1,8 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.skapp.community.common.payload.email.EmailTemplateMetadata;
 import com.skapp.community.common.payload.request.TestEmailServerRequestDto;
 import com.skapp.community.common.service.AsyncEmailSender;
@@ -14,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,7 @@ public class EmailServiceImpl implements EmailService {
 
 	private final AsyncEmailSender asyncEmailSender;
 
-	private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+	private final YAMLMapper yamlMapper = YAMLMapper.builder().build();
 
 	protected Map<String, Map<String, List<EmailTemplateMetadata>>> templateDetailsMap;
 
@@ -135,9 +134,11 @@ public class EmailServiceImpl implements EmailService {
 
 	protected void addTemplatesFromPath(String path) {
 		try (InputStream inputStream = new ClassPathResource(path).getInputStream()) {
-			Map<String, Map<String, List<EmailTemplateMetadata>>> templates = yamlMapper.readValue(inputStream,
-					new TypeReference<>() {
-					});
+			TypeReference<Map<String, Map<String, List<EmailTemplateMetadata>>>> typeRef = new TypeReference<>() {
+			};
+
+			Map<String, Map<String, List<EmailTemplateMetadata>>> templates = yamlMapper.readerFor(typeRef)
+				.readValue(inputStream);
 
 			if (templates != null) {
 				for (Map.Entry<String, Map<String, List<EmailTemplateMetadata>>> outerEntry : templates.entrySet()) {

@@ -1,9 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -34,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 	protected final OrganizationConfigDao organizationConfigDao;
 
-	protected final ObjectMapper objectMapper;
+	protected final JsonMapper objectMapper;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
@@ -136,29 +135,23 @@ public class OrganizationServiceImpl implements OrganizationService {
 		Optional<OrganizationConfig> existingConfigOptional = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
 
-		try {
-			emailServerRequestDto.setAppPassword(
-					encryptionDecryptionService.encrypt(emailServerRequestDto.getAppPassword(), encryptSecret));
+		emailServerRequestDto
+			.setAppPassword(encryptionDecryptionService.encrypt(emailServerRequestDto.getAppPassword(), encryptSecret));
 
-			String updatedJsonEmailServiceConfigs = objectMapper.writeValueAsString(emailServerRequestDto);
-			OrganizationConfig organizationConfig = existingConfigOptional
-				.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.EMAIL_CONFIGS.name(),
-						updatedJsonEmailServiceConfigs));
+		String updatedJsonEmailServiceConfigs = objectMapper.writeValueAsString(emailServerRequestDto);
+		OrganizationConfig organizationConfig = existingConfigOptional
+			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.EMAIL_CONFIGS.name(),
+					updatedJsonEmailServiceConfigs));
 
-			organizationConfig.setOrganizationConfigValue(updatedJsonEmailServiceConfigs);
-			organizationConfigDao.save(organizationConfig);
+		organizationConfig.setOrganizationConfigValue(updatedJsonEmailServiceConfigs);
+		organizationConfigDao.save(organizationConfig);
 
-			log.info("saveEmailServerConfigs: execution ended successfully");
+		log.info("saveEmailServerConfigs: execution ended successfully");
 
-			EmailServerConfigResponseDto responseDto = objectMapper.convertValue(emailServerRequestDto,
-					EmailServerConfigResponseDto.class);
-			return new ResponseEntityDto(false, responseDto);
+		EmailServerConfigResponseDto responseDto = objectMapper.convertValue(emailServerRequestDto,
+				EmailServerConfigResponseDto.class);
+		return new ResponseEntityDto(false, responseDto);
 
-		}
-		catch (JsonProcessingException e) {
-			log.error("Error converting email server configuration to JSON: {}", e.getMessage());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
 	}
 
 	@Override
@@ -173,20 +166,16 @@ public class OrganizationServiceImpl implements OrganizationService {
 		}
 
 		String jsonEmailServiceConfigs = configOptional.get().getOrganizationConfigValue();
-		try {
-			EmailServerConfigResponseDto emailConfigDto = objectMapper.readValue(jsonEmailServiceConfigs,
-					EmailServerConfigResponseDto.class);
 
-			emailConfigDto
-				.setAppPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword(), encryptSecret));
+		EmailServerConfigResponseDto emailConfigDto = objectMapper.readValue(jsonEmailServiceConfigs,
+				EmailServerConfigResponseDto.class);
 
-			log.info("getEmailServiceConfigs: execution ended successfully");
-			return emailConfigDto;
-		}
-		catch (JsonProcessingException e) {
-			log.error("Error parsing email service configs JSON: {}", e.getMessage());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		emailConfigDto
+			.setAppPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword(), encryptSecret));
+
+		log.info("getEmailServiceConfigs: execution ended successfully");
+		return emailConfigDto;
+
 	}
 
 	@Override

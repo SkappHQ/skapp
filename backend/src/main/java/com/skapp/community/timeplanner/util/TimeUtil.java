@@ -1,7 +1,7 @@
 package com.skapp.community.timeplanner.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.timeplanner.model.TimeConfig;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,8 +26,8 @@ public class TimeUtil {
 
 		JsonNode timeBlocksNode = currentDayConfig.getTimeBlocks();
 		for (JsonNode block : timeBlocksNode) {
-			String timeBlock = block.get("timeBlock").asText();
-			float hours = block.get("hours").floatValue();
+			String timeBlock = block.get("timeBlock").asString();
+			float hours = block.get("hours").asFloat();
 
 			hoursMap.computeIfPresent(timeBlock, (key, oldValue) -> hours);
 		}

@@ -1,9 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -33,6 +29,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -176,44 +176,38 @@ public class NotificationServiceImpl implements NotificationService {
 		}
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		try {
-			JsonNode rootNode = objectMapper.readTree(file);
+		JsonNode rootNode = objectMapper.readTree(file);
 
-			JsonNode languageNode = rootNode.path(NOTIFICATION_LANGUAGE);
+		JsonNode languageNode = rootNode.path(NOTIFICATION_LANGUAGE);
 
-			if (languageNode.isMissingNode()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FAILED_TO_LOAD_NOTIFICATION_LANGUAGE,
-						new String[] { NOTIFICATION_LANGUAGE });
-			}
-
-			JsonNode category = languageNode.path(notificationCategory.getLabel());
-
-			if (category.isMissingNode() || !category.isArray()) {
-				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TEMPLATE_NOT_FOUND_FOR_LANGUAGE,
-						new String[] { NOTIFICATION_LANGUAGE });
-			}
-
-			for (JsonNode templateNode : category) {
-				if (templateNode.path("id").asText().equals(emailBodyTemplates.getTemplateId())) {
-					Map<String, String> contentMap = new HashMap<>();
-					contentMap.put("title", templateNode.path("title").asText());
-					contentMap.put("message", templateNode.path("message").asText());
-					log.info("getTemplateFromJson: execution ended");
-					return contentMap;
-				}
-			}
-
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TEMPLATE_ID_NOT_FOUND,
-					new String[] { emailBodyTemplates.getTemplateId() });
+		if (languageNode.isMissingNode()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FAILED_TO_LOAD_NOTIFICATION_LANGUAGE,
+					new String[] { NOTIFICATION_LANGUAGE });
 		}
-		catch (IOException e) {
-			log.error("Error occurred while parsing the notification templates", e);
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_NOTIFICATION_TEMPLATE_PARSING_FAILED);
+
+		JsonNode category = languageNode.path(notificationCategory.getLabel());
+
+		if (category.isMissingNode() || !category.isArray()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TEMPLATE_NOT_FOUND_FOR_LANGUAGE,
+					new String[] { NOTIFICATION_LANGUAGE });
 		}
+
+		for (JsonNode templateNode : category) {
+			if (templateNode.path("id").asString().equals(emailBodyTemplates.getTemplateId())) {
+				Map<String, String> contentMap = new HashMap<>();
+				contentMap.put("title", templateNode.path("title").asString());
+				contentMap.put("message", templateNode.path("message").asString());
+				log.info("getTemplateFromJson: execution ended");
+				return contentMap;
+			}
+		}
+
+		throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TEMPLATE_ID_NOT_FOUND,
+				new String[] { emailBodyTemplates.getTemplateId() });
 	}
 
 	private Map<String, Map<String, Map<String, String>>> loadEnumTranslations() {
-		ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+		YAMLMapper yamlMapper = YAMLMapper.builder().build();
 		try (InputStream inputStream = new ClassPathResource("community/templates/common/enum-translations.yml")
 			.getInputStream()) {
 			return yamlMapper.readValue(inputStream, new TypeReference<>() {

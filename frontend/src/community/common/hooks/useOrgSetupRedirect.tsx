@@ -1,34 +1,33 @@
 import { useRouter } from "next/router";
+import { useCallback } from "react";
+
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import ROUTES from "../constants/routes";
 import { OrgSetupStatusType } from "../types/OrganizationCreateTypes";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const useOrgSetupRedirect = () => {
   const router = useRouter();
 
   const { isAuthenticated } = useAuth();
 
-  let isSignInSessionAvailable = false;
+  const navigateByStatus = useCallback(
+    (orgSetupStatus: OrgSetupStatusType) => {
+      if (orgSetupStatus.isSignUpCompleted) {
+        let targetPath: string;
+        if (orgSetupStatus.isOrganizationSetupCompleted) {
+          targetPath = isAuthenticated ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+        } else {
+          targetPath = isAuthenticated ? ROUTES.ORGANIZATION.SETUP : ROUTES.AUTH.SIGNUP;
+        }
 
-  if (isAuthenticated) {
-    isSignInSessionAvailable = true;
-  }
-  const navigateByStatus = (orgSetupStatus: OrgSetupStatusType) => {
-    if (orgSetupStatus.isSignUpCompleted) {
-      if (orgSetupStatus.isOrganizationSetupCompleted) {
-        router.replace(
-          isSignInSessionAvailable ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNUP
-        );
-      } else {
-        router.replace(
-          isSignInSessionAvailable
-            ? ROUTES.ORGANIZATION.SETUP
-            : ROUTES.AUTH.SIGNUP
-        );
+        if (router.pathname !== targetPath) {
+          router.replace(targetPath);
+        }
       }
-    }
-  };
+    },
+    [isAuthenticated, router]
+  );
 
   return { navigateByStatus };
 };

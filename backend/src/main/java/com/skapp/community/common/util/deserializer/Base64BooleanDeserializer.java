@@ -1,17 +1,17 @@
 package com.skapp.community.common.util.deserializer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
 import java.util.Base64;
 
-public class Base64BooleanDeserializer extends JsonDeserializer<Boolean> {
+public class Base64BooleanDeserializer extends ValueDeserializer<Boolean> {
 
 	@Override
-	public Boolean deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
-		String base64Value = jsonParser.getText();
+	public Boolean deserialize(JsonParser jsonParser, DeserializationContext context) throws JacksonException {
+		String base64Value = jsonParser.getString();
 
 		if (base64Value.startsWith("base64:type16:")) {
 			base64Value = base64Value.substring("base64:type16:".length());

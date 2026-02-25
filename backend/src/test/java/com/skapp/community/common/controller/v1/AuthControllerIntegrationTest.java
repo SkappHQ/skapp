@@ -1,17 +1,17 @@
 package com.skapp.community.common.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.payload.request.SignInRequestDto;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@RequiredArgsConstructor
 @DisplayName("Auth Controller Integration Tests")
 class AuthControllerIntegrationTest {
 
@@ -29,11 +30,9 @@ class AuthControllerIntegrationTest {
 
 	private static final String STATUS_SUCCESSFUL = "successful";
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
-	@Autowired
-	private MockMvc mvc;
+	private final MockMvc mvc;
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
 		return mvc.perform(request);

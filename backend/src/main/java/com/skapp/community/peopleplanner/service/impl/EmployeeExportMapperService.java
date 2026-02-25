@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeEmergency;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -22,6 +21,7 @@ import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -234,7 +234,7 @@ public class EmployeeExportMapperService {
 			return null;
 		}
 		JsonNode fieldNode = node.get(fieldName);
-		return fieldNode != null && !fieldNode.isNull() ? fieldNode.asText() : null;
+		return fieldNode != null && !fieldNode.isNull() ? fieldNode.asString() : null;
 	}
 
 	private String formatLocalDate(LocalDate date) {

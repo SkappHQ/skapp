@@ -1,8 +1,5 @@
 package com.skapp.community.common.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -11,6 +8,8 @@ import com.skapp.community.timeplanner.model.TimeConfig;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.RandomStringGenerator;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -323,7 +322,7 @@ public class CommonModuleUtils {
 		}
 	}
 
-	public static <T> T jsonNodeToValue(JsonNode node, Class<T> valueType, ObjectMapper mapper) {
+	public static <T> T jsonNodeToValue(JsonNode node, Class<T> valueType, JsonMapper mapper) {
 		if (node == null) {
 			try {
 				return valueType.getDeclaredConstructor().newInstance();
@@ -332,18 +331,7 @@ public class CommonModuleUtils {
 				return null;
 			}
 		}
-
-		try {
-			return mapper.treeToValue(node, valueType);
-		}
-		catch (JsonProcessingException e) {
-			try {
-				return valueType.getDeclaredConstructor().newInstance();
-			}
-			catch (Exception ex) {
-				return null;
-			}
-		}
+		return mapper.treeToValue(node, valueType);
 	}
 
 }

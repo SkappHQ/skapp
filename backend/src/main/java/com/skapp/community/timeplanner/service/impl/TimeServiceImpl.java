@@ -1,10 +1,5 @@
 package com.skapp.community.timeplanner.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -116,8 +111,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -148,7 +148,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final TimeConfigDao timeConfigDao;
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 
 	private final MessageUtil messageUtil;
 
@@ -378,15 +378,9 @@ public class TimeServiceImpl implements TimeService {
 			dailyResponseRecord.setBreakHours(employeeTimeRecord.getBreakHours());
 
 			if (employeeTimeRecord.getTimeSlots() != null) {
-				try {
-					dailyResponseRecord
-						.setTimeSlots(mapper.readValue(employeeTimeRecord.getTimeSlots(), new TypeReference<>() {
-						}));
-				}
-				catch (IOException e) {
-					throw new ModuleException(
-							CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-				}
+				dailyResponseRecord
+					.setTimeSlots(mapper.readValue(employeeTimeRecord.getTimeSlots(), new TypeReference<>() {
+					}));
 			}
 			else {
 				dailyResponseRecord.setTimeSlots(new ArrayList<>());
@@ -1090,15 +1084,9 @@ public class TimeServiceImpl implements TimeService {
 			managerEmployeeDailyRecordsResponseDto.setBreakHours(employeeTimeRecord.getBreakHours());
 
 			if (employeeTimeRecord.getTimeSlots() != null) {
-				try {
-					managerEmployeeDailyRecordsResponseDto
-						.setTimeSlots(mapper.readValue(employeeTimeRecord.getTimeSlots(), new TypeReference<>() {
-						}));
-				}
-				catch (IOException e) {
-					throw new ModuleException(
-							CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-				}
+				managerEmployeeDailyRecordsResponseDto
+					.setTimeSlots(mapper.readValue(employeeTimeRecord.getTimeSlots(), new TypeReference<>() {
+					}));
 			}
 			else {
 				managerEmployeeDailyRecordsResponseDto.setTimeSlots(new ArrayList<>());
