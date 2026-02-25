@@ -1,4 +1,8 @@
-import { AdminTypes, EmployeeTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import {
+  AdminTypes,
+  EmployeeTypes,
+  ManagerTypes
+} from "~community/common/types/AuthTypes";
 import { SettingsTab } from "~community/settings/types/SettingsTabTypes";
 
 import AccountSettings from "../components/organisms/AccountSettings/AccountSettings";
@@ -31,7 +35,7 @@ export const getSettingsTabs = (
       label: translateText(["tabs", "organization"]),
       requiredRoles: [AdminTypes.SUPER_ADMIN],
       component: <OrganizationSettings />,
-      position: 4
+      position: 2
     }
   ];
 };
