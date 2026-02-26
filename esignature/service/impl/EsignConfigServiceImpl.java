@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.EsignConfig;
@@ -55,7 +56,9 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 		if (esignConfigDto.getIsMfaEnabled() != null) {
 
-			boolean isProTier = esignTierValidationService.isProTier();
+			SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
+
+			boolean isProTier = subscriptionValidationDto.isProTier();
 
 			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !isProTier) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);

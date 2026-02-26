@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
@@ -47,7 +48,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
 
-		if (!esignTierValidationService.isProTier()) {
+		SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
+
+		if (!subscriptionValidationDto.isProTier()) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 		}

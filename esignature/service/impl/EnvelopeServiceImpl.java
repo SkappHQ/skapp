@@ -200,10 +200,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
 
-		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
 
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
-			.processEnvelopeTierLimitation(esignTierValidationDto);
+			.processEnvelopeTierLimitation(subscriptionValidationDto);
 
 		if (envelopeTierLimitationResponseDto.isLimitedReached()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_LIMIT_REACHED);
@@ -245,7 +245,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope,
-				esignTierValidationDto);
+				subscriptionValidationDto);
 		envelope.setRecipients(recipients);
 		// setup envelop settings
 		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
@@ -481,9 +481,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope,
-			SubscriptionValidationDto esignTierValidationDto) {
+			SubscriptionValidationDto subscriptionValidationDto) {
 		validateSigningOrder(recipientDtos);
-		validateIsActiveProTier(recipientDtos, esignTierValidationDto);
+		validateIsActiveProTier(recipientDtos, subscriptionValidationDto);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -533,7 +533,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (recipientDto.getAdvanceFieldContainers() != null) {
 
-				if (!esignTierValidationDto.isProTier()) {
+				if (!subscriptionValidationDto.isProTier()) {
 					throw new ModuleException(
 							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 				}
@@ -562,7 +562,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void validateIsActiveProTier(List<RecipientDto> recipientDtos,
-			SubscriptionValidationDto esignTierValidationDto) {
+			SubscriptionValidationDto subscriptionValidationDto) {
 
 		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
 			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
@@ -571,7 +571,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EsignConfig esignConfig = esignConfigRepository.findFirstBy()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_CONFIG_NOT_FOUND));
 
-		boolean isActiveProTier = esignTierValidationDto.isProTierActive();
+		boolean isActiveProTier = subscriptionValidationDto.isProTierActive();
 
 		if (Boolean.TRUE.equals(esignConfig.getIsMfaEnabled()) && !smsVerificationEnabledRecipients.isEmpty()
 				&& !isActiveProTier) {
@@ -1503,10 +1503,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	public ResponseEntityDto getEnvelopeTierLimitations() {
-		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
 
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
-			.processEnvelopeTierLimitation(esignTierValidationDto);
+			.processEnvelopeTierLimitation(subscriptionValidationDto);
 		return new ResponseEntityDto(false, envelopeTierLimitationResponseDto);
 	}
 
