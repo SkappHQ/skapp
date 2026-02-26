@@ -572,8 +572,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setType(fieldDto.getType());
 			field.setStatus(fieldDto.getStatus());
 			field.setPageNumber(fieldDto.getPageNumber());
-			field.setXPosition(fieldDto.getXposition());
-			field.setYPosition(fieldDto.getYposition());
+			field.setXPosition(fieldDto.getXPosition());
+			field.setYPosition(fieldDto.getYPosition());
 			field.setWidth(fieldDto.getWidth());
 			field.setHeight(fieldDto.getHeight());
 			field.setDocument(fieldDocument);
@@ -665,8 +665,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Document fieldDocument = documentDao.findById(advanceFieldDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
-		field.setXPosition(advanceFieldDto.getXposition());
-		field.setYPosition(advanceFieldDto.getYposition());
+		field.setXPosition(advanceFieldDto.getXPosition());
+		field.setYPosition(advanceFieldDto.getYPosition());
 		field.setRecipient(recipient);
 		field.setDocument(fieldDocument);
 		field.setFieldContainer(fieldContainer);
