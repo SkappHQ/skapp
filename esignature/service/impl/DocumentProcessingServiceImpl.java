@@ -291,11 +291,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		try {
 			// Adjust baseline offset for Y position
 			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
-			float adjustedY = pageHeight - field.getYposition() - yOffset;
+			float adjustedY = pageHeight - field.getYPosition() - yOffset;
 
 			// Adjust baseline offset for x position
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getXposition() + xOffset;
+			float adjustedX = field.getYPosition() + xOffset;
 
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
@@ -325,7 +325,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
 
-		if (field.getXposition() < 0 || field.getYposition() < 0) {
+		if (field.getXPosition() < 0 || field.getYPosition() < 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
 		}
@@ -335,8 +335,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		Objects.requireNonNull(inputBytes, "Input PDF bytes cannot be null");
 
 		int pageNumber = field.getPageNumber();
-		float x = field.getXposition();
-		float y = field.getYposition();
+		float x = field.getXPosition();
+		float y = field.getYPosition();
 		float width = field.getWidth();
 		float height = field.getHeight();
 
