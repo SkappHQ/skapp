@@ -1,12 +1,12 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 
 public interface EsignTierValidationService {
 
-	EsignTierValidationDto resolveTierContext();
+	SubscriptionValidationDto resolveTierContext();
 
-	EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation(EsignTierValidationDto esignTierValidationDto);
+	EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation(SubscriptionValidationDto esignTierValidationDto);
 
 }

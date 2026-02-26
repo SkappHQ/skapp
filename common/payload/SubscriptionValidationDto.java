@@ -1,15 +1,17 @@
-package com.skapp.enterprise.esignature.payload.response;
+package com.skapp.enterprise.common.payload;
 
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Instant;
 
 @Getter
-public class EsignTierValidationDto {
+@AllArgsConstructor
+public class SubscriptionValidationDto {
 
 	private final Tier tier;
 
@@ -18,13 +20,6 @@ public class EsignTierValidationDto {
 	private final Instant createdDate;
 
 	private final StripeSubscription stripeSubscription;
-
-	public EsignTierValidationDto(Tenant tenant) {
-		this.tier = tenant.getTier();
-		this.subscriptionStatus = tenant.getSubscriptionStatus();
-		this.createdDate = tenant.getCreatedDate();
-		this.stripeSubscription = tenant.getStripeSubscription();
-	}
 
 	public boolean isProTier() {
 		return tier == Tier.PRO;

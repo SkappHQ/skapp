@@ -7,9 +7,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -30,7 +28,7 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelope
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
-import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
@@ -108,7 +106,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Transactional
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
-		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
 
 		if (!esignTierValidationDto.isProTier()) {
 			throw new ModuleException(

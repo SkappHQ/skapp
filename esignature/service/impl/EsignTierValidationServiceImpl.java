@@ -9,12 +9,11 @@ import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import lombok.RequiredArgsConstructor;
@@ -46,85 +45,72 @@ public class EsignTierValidationServiceImpl implements EsignTierValidationServic
 	private final EmployeeDao employeeDao;
 
 	@Override
-	public EsignTierValidationDto resolveTierContext() {
+	public SubscriptionValidationDto resolveTierContext() {
 		String currentTenant = TenantContext.getCurrentTenant();
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
-		try {
-			Tenant tenant = tenantDao.findByTenantName(currentTenant);
-			if (tenant == null) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
-						new String[] { currentTenant });
-			}
-			return new EsignTierValidationDto(tenant);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		if (tenant == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TENANT_NOT_FOUND,
+					new String[] { currentTenant });
 		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		return new SubscriptionValidationDto(tenant.getTier(), tenant.getSubscriptionStatus(), tenant.getCreatedDate(),
+				tenant.getStripeSubscription());
+
 	}
 
 	@Override
 	public EnvelopeTierLimitationResponseDto processEnvelopeTierLimitation(
-			EsignTierValidationDto esignTierValidationDto) {
-		String currentTenant = TenantContext.getCurrentTenant();
-		try {
-			long employeeCount = employeeDao
-				.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			SubscriptionValidationDto esignTierValidationDto) {
 
-			EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = new EnvelopeTierLimitationResponseDto();
-			Tier tier = esignTierValidationDto.getTier();
+		long employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
-			LocalDateTime startDateTime;
-			LocalDateTime endDateTime;
-			long allocatedCount;
+		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = new EnvelopeTierLimitationResponseDto();
+		Tier tier = esignTierValidationDto.getTier();
 
-			if (tier == Tier.FREE) {
-				LocalDate tierStartedDate = DateTimeUtils
-					.fromUtcInstantToLocaldate(esignTierValidationDto.getCreatedDate());
-				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+		LocalDateTime startDateTime;
+		LocalDateTime endDateTime;
+		long allocatedCount;
 
-				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
-						endDateTime);
-				allocatedCount = allocatedFreeTierEnvelopeCount;
+		if (tier == Tier.FREE) {
+			LocalDate tierStartedDate = DateTimeUtils
+				.fromUtcInstantToLocaldate(esignTierValidationDto.getCreatedDate());
+			startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+			endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
-				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
-				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
-				envelopeTierLimitationResponseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
+			long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime, endDateTime);
+			allocatedCount = allocatedFreeTierEnvelopeCount;
+
+			envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
+			envelopeTierLimitationResponseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
+			envelopeTierLimitationResponseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
+		}
+		else if (tier == Tier.PRO) {
+
+			if (esignTierValidationDto.getStripeSubscription() == null
+					|| esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate() == null) {
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
 			}
-			else if (tier == Tier.PRO) {
+			LocalDate tierStartedDate = DateTimeUtils
+				.fromUtcInstantToLocaldate(esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate());
 
-				if (esignTierValidationDto.getStripeSubscription() == null
-						|| esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate() == null) {
-					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_NOT_FOUND);
-				}
-				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(
-						esignTierValidationDto.getStripeSubscription().getSubscriptionStartDate());
+			startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+			endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
-				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
-				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
+			long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime, endDateTime);
 
-				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
-						endDateTime);
+			allocatedCount = Math.max(envelopeCount, employeeCount * allocatedPerUserEnvelopeCount);
+			long remainingCount = allocatedCount - envelopeCount;
 
-				allocatedCount = Math.max(envelopeCount, employeeCount * allocatedPerUserEnvelopeCount);
-				long remainingCount = allocatedCount - envelopeCount;
-
-				envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
-				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(remainingCount, 0));
-				envelopeTierLimitationResponseDto
-					.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
-			}
-			return envelopeTierLimitationResponseDto;
+			envelopeTierLimitationResponseDto.setAllocatedCount(allocatedCount);
+			envelopeTierLimitationResponseDto.setRemainingCount(Math.max(remainingCount, 0));
+			envelopeTierLimitationResponseDto
+				.setLimitedReached(envelopeCount >= (employeeCount * allocatedPerUserEnvelopeCount));
 		}
-		catch (Exception e) {
-			log.error("Error while fetching envelope tier limitations for tenant {}: {}", currentTenant, e.getMessage(),
-					e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FETCHING_ENVELOPE_TIER_LIMITATIONS);
-		}
-		finally {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
+		return envelopeTierLimitationResponseDto;
+
 	}
 
 }

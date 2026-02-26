@@ -55,7 +55,7 @@ import com.skapp.enterprise.esignature.payload.response.EnvelopeDetailedResponse
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInboxInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeInfoResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EnvelopeTierLimitationResponseDto;
-import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
+import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.esignature.payload.response.RecipientResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -200,7 +200,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("createNewEnvelope: execution started {}", currentUser.getUserId());
 
-		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
 
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
 			.processEnvelopeTierLimitation(esignTierValidationDto);
@@ -481,7 +481,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope,
-			EsignTierValidationDto esignTierValidationDto) {
+			SubscriptionValidationDto esignTierValidationDto) {
 		validateSigningOrder(recipientDtos);
 		validateIsActiveProTier(recipientDtos, esignTierValidationDto);
 
@@ -562,7 +562,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private void validateIsActiveProTier(List<RecipientDto> recipientDtos,
-			EsignTierValidationDto esignTierValidationDto) {
+			SubscriptionValidationDto esignTierValidationDto) {
 
 		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
 			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
@@ -1503,7 +1503,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	@Override
 	public ResponseEntityDto getEnvelopeTierLimitations() {
-		EsignTierValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
 
 		EnvelopeTierLimitationResponseDto envelopeTierLimitationResponseDto = esignTierValidationService
 			.processEnvelopeTierLimitation(esignTierValidationDto);
