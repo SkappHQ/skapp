@@ -24,4 +24,13 @@ public class TenantValidator {
 		return tenant.getTier() == Tier.PRO;
 	}
 
+	public boolean isCurrentTenantCore() {
+		String currentTenant = TenantContext.getCurrentTenant();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		Tenant tenant = tenantDao.findByTenantName(currentTenant);
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
+
+		return tenant.getTier() == Tier.CORE;
+	}
+
 }

@@ -211,7 +211,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public boolean checkEmployeesLimit() {
-		if (tenantValidator.isCurrentTenantPro()) {
+		if (tenantValidator.isCurrentTenantPro() || tenantValidator.isCurrentTenantCore() ) {
 			return false;
 		}
 
@@ -604,7 +604,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
-		if (tenantValidator.isCurrentTenantPro()) {
+		if (tenantValidator.isCurrentTenantPro() || tenantValidator.isCurrentTenantCore()) {
 			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false);
 		}
 
