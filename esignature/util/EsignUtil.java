@@ -2,7 +2,6 @@ package com.skapp.enterprise.esignature.util;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
@@ -10,10 +9,6 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.Year;
 import java.util.UUID;
 
 public class EsignUtil {
@@ -45,14 +40,6 @@ public class EsignUtil {
 	private static final String DEFAULT_PATH = "/";
 
 	private static final String E_SIGN = "eSign/";
-
-	private static final int LEAP_DAY = 29;
-
-	private static final Month FEBRUARY = Month.FEBRUARY;
-
-	private static final Month MARCH = Month.MARCH;
-
-	private static final int FIRST_DAY = 1;
 
 	private EsignUtil() {
 	}
