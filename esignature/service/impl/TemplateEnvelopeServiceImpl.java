@@ -8,11 +8,8 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
-import com.skapp.enterprise.common.model.master.Tenant;
-import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -33,8 +30,6 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelope
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
-import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeUpdateRequestDto;
-import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.response.EsignTierValidationDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
@@ -82,10 +77,6 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private static final int ENVELOPE_TEMPLATE_MAX_RECIPIENT_ROLE_LENGTH = 25;
 
 	private static final int ENVELOPE_TEMPLATE_DEFAULT_LIMIT = 4;
-
-	private final TenantContext tenantContext;
-
-	private final TenantDao tenantDao;
 
 	private final UserService userService;
 
