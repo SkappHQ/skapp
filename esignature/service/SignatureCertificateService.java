@@ -1,8 +1,8 @@
 package com.skapp.enterprise.esignature.service;
 
-import java.io.IOException;
-
 import com.skapp.enterprise.esignature.model.Envelope;
+
+import java.io.IOException;
 
 public interface SignatureCertificateService {
 

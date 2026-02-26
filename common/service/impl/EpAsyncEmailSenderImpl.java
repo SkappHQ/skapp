@@ -1,7 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
@@ -28,6 +26,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -162,7 +162,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 
 	@Override
 	public String getSendGridEmailBatchId() {
-		String batchId = null;
+		String batchId;
 		try {
 			SendGrid sendGrid = new SendGrid(sendGridApiKey);
 			Request request = new Request();
@@ -174,7 +174,7 @@ public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSen
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-			batchId = jsonNode.has("batch_id") ? jsonNode.get("batch_id").asText() : null;
+			batchId = jsonNode.has("batch_id") ? jsonNode.get("batch_id").asString() : null;
 
 		}
 		catch (IOException e) {

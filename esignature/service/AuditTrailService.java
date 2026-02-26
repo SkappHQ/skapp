@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
@@ -8,6 +7,7 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import tools.jackson.databind.JsonNode;
 
 public interface AuditTrailService {
 

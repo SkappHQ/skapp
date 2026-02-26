@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.request;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.enterprise.esignature.type.FieldStatus;
 import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.util.deserializer.DocumentFieldStatusDeserializer;
@@ -9,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 @Getter
 @Setter

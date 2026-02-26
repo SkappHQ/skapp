@@ -1,11 +1,10 @@
 package com.skapp.enterprise.pm.payload;
 
+import com.skapp.enterprise.pm.enums.ReleaseApprovalStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-
-import com.skapp.enterprise.pm.enums.ReleaseApprovalStatusEnum;
 
 @Getter
 @Setter
