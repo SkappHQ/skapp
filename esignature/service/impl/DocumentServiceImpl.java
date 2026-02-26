@@ -1366,8 +1366,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 			documentVersionField.setField(field);
 
-			documentVersionField.setXPosition(fieldSignDto.getXposition());
-			documentVersionField.setYPosition(fieldSignDto.getYposition());
+			documentVersionField.setXPosition(fieldSignDto.getXPosition());
+			documentVersionField.setYPosition(fieldSignDto.getYPosition());
 			documentVersionField.setValue(fieldSignDto.getFieldValue());
 			documentVersionField.setWidth(fieldSignDto.getWidth());
 			documentVersionField.setHeight(fieldSignDto.getHeight());
@@ -1772,8 +1772,8 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionField.setField(field);
 		}
 
-		documentVersionField.setXPosition(fieldSignDto.getXposition());
-		documentVersionField.setYPosition(fieldSignDto.getYposition());
+		documentVersionField.setXPosition(fieldSignDto.getXPosition());
+		documentVersionField.setYPosition(fieldSignDto.getYPosition());
 		documentVersionField.setValue(fieldSignDto.getFieldValue());
 		documentVersionField.setWidth(fieldSignDto.getWidth());
 		documentVersionField.setHeight(fieldSignDto.getHeight());
@@ -1785,8 +1785,8 @@ public class DocumentServiceImpl implements DocumentService {
 		FieldSignDto fieldSignDto = new FieldSignDto();
 
 		fieldSignDto.setFieldValue(documentVersionField.getValue());
-		fieldSignDto.setXposition(documentVersionField.getXPosition());
-		fieldSignDto.setYposition(documentVersionField.getYPosition());
+		fieldSignDto.setXPosition(documentVersionField.getXPosition());
+		fieldSignDto.setYPosition(documentVersionField.getYPosition());
 		fieldSignDto.setPageNumber(documentVersionField.getField().getPageNumber());
 		fieldSignDto.setWidth(documentVersionField.getWidth());
 		fieldSignDto.setHeight(documentVersionField.getHeight());
@@ -1806,8 +1806,8 @@ public class DocumentServiceImpl implements DocumentService {
 	private void populateFieldMetadata(DocumentVersionField documentVersionField, FieldSignDto dto, Field field,
 			DocumentVersion version) {
 		documentVersionField.setField(field);
-		documentVersionField.setXPosition(dto.getXposition());
-		documentVersionField.setYPosition(dto.getYposition());
+		documentVersionField.setXPosition(dto.getXPosition());
+		documentVersionField.setYPosition(dto.getYPosition());
 		documentVersionField.setWidth(dto.getWidth());
 		documentVersionField.setHeight(dto.getHeight());
 		documentVersionField.setValue(dto.getFieldValue());
