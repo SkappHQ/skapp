@@ -774,21 +774,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
 
-			String value = field.getFieldValue().trim();
-
-			if (!value.isEmpty()) {
-				float textPadding = RADIO_BUTTON_TEXT_GAP * pixelToPoint;
-				float textX = adjustedX + size + textPadding;
-				float textY = adjustedY + (size - DEFAULT_FONT_SIZE) / VERTICAL_CENTER_DIVISOR;
-
-				contentStream.beginText();
-				contentStream.setFont(loadFont(document), DEFAULT_FONT_SIZE);
-				contentStream.setNonStrokingColor(BLACK_COLOR_COMPONENT, BLACK_COLOR_COMPONENT, BLACK_COLOR_COMPONENT);
-				contentStream.newLineAtOffset(textX, textY);
-				contentStream.showText(value);
-				contentStream.endText();
-			}
-
 		}
 		catch (IOException e) {
 			log.error("Error drawRadioButton: {}", e.getMessage(), e);
