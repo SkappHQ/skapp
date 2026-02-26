@@ -109,6 +109,13 @@ const SystemPermissionFormSection = ({
   const isInputsDisabled =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
 
+  const isCurrentSuperAdmin =
+    Boolean(permissions.isSuperAdmin) ||
+    Boolean(employee?.systemPermissions?.isSuperAdmin);
+
+  const shouldDisableModuleRoles =
+    (isCurrentSuperAdmin && superAdminCount === 1) || !isCurrentSuperAdmin;
+
   const onSave = () => {
     if (
       initialEmployee.systemPermissions?.isSuperAdmin &&
@@ -268,7 +275,7 @@ const SystemPermissionFormSection = ({
                   }
                   isDisabled={
                     isProfileView ||
-                    permissions.isSuperAdmin ||
+                    shouldDisableModuleRoles ||
                     isInputsDisabled ||
                     (isReadOnly && !isPeopleAdminViewingOwnProfile)
                   }
@@ -290,7 +297,7 @@ const SystemPermissionFormSection = ({
                   }
                   isDisabled={
                     isProfileView ||
-                    permissions.isSuperAdmin ||
+                    shouldDisableModuleRoles ||
                     isInputsDisabled ||
                     isReadOnly
                   }
@@ -318,7 +325,7 @@ const SystemPermissionFormSection = ({
                   }
                   isDisabled={
                     isProfileView ||
-                    permissions.isSuperAdmin ||
+                    shouldDisableModuleRoles ||
                     isInputsDisabled ||
                     isReadOnly
                   }
@@ -340,7 +347,7 @@ const SystemPermissionFormSection = ({
                   }
                   isDisabled={
                     isProfileView ||
-                    permissions.isSuperAdmin ||
+                    shouldDisableModuleRoles ||
                     isInputsDisabled ||
                     isReadOnly
                   }
@@ -360,7 +367,7 @@ const SystemPermissionFormSection = ({
                 }
                 isDisabled={
                   isProfileView ||
-                  permissions.isSuperAdmin ||
+                  shouldDisableModuleRoles ||
                   isInputsDisabled ||
                   isReadOnly
                 }
@@ -390,7 +397,7 @@ const SystemPermissionFormSection = ({
                   }
                   isDisabled={
                     isProfileView ||
-                    permissions.isSuperAdmin ||
+                    shouldDisableModuleRoles ||
                     isInputsDisabled ||
                     isReadOnly
                   }
