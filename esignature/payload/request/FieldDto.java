@@ -28,11 +28,11 @@ public class FieldDto {
 
 	@NotNull(message = "{validation.field.xPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.xPosition.min}")
-	private Float xposition;
+	private Float xPosition;
 
 	@NotNull(message = "{validation.field.yPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
-	private Float yposition;
+	private Float yPosition;
 
 	@NotNull(message = "{validation.field.width.notnull}")
 	private Float width;
