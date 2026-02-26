@@ -23,6 +23,8 @@ import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
 import CheckCircleOutlineIcon from "~community/common/assets/Icons/CheckCircleOutlineIcon";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CheckWrapperIcon from "~community/common/assets/Icons/CheckWrapperIcon";
+import CheckboxIcon from "~community/common/assets/Icons/CheckboxIcon";
+import CheckboxSelectedIcon from "~community/common/assets/Icons/CheckboxSelectedIcon";
 import ChevronLeftIcon from "~community/common/assets/Icons/ChevronLeftIcon";
 import ChevronRightIcon from "~community/common/assets/Icons/ChevronRightIcon";
 import ClockDenyIcon from "~community/common/assets/Icons/ClockDenyIcon";
@@ -103,6 +105,7 @@ import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
 import ProjectManagementModuleIcon from "~community/common/assets/Icons/ProjectManagementModuleIcon";
 import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
+import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
 import RequestCancelCrossIcon from "~community/common/assets/Icons/RequestCancelCrossIcon";
 import RestoreIcon from "~community/common/assets/Icons/RestoreIcon";
@@ -218,6 +221,7 @@ export const IconMapping: Partial<
   [IconName.TICK_ICON]: TickIcon,
   [IconName.EMOJI_ICON]: EmojiIcon,
   [IconName.UNCHECKED_ICON]: UnCheckedIcon,
+  [IconName.RADIO_SELECTED_ICON]: RadioSelectedIcon,
   [IconName.DOWNLOAD_ICON]: DownloadIcon,
   [IconName.ASSET_ICON]: AssetIcon,
   [IconName.OBJECTIVES_ICON]: ObjectivesIcon,
@@ -227,6 +231,8 @@ export const IconMapping: Partial<
   [IconName.PAUSE_ICON]: PauseIcon,
   [IconName.UNDO_ICON]: UndoIcon,
   [IconName.CHECK_ICON]: CheckIcon,
+  [IconName.CHECKBOX_ICON]: CheckboxIcon,
+  [IconName.CHECKBOX_SELECTED_ICON]: CheckboxSelectedIcon,
   [IconName.RESTRICTIONS_ICON]: RestrictionsIcon,
   [IconName.DENIED_ICON]: DeniedIcon,
   [IconName.CALENDAR_ICON]: CalendarIcon,
