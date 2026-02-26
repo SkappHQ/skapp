@@ -90,12 +90,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float UNDERLINE_THICKNESS = 0.5f;
 
-	private static final float VERTICAL_CENTER_DIVISOR = 2f;
-
-	private static final float RADIO_BUTTON_TEXT_GAP = 4f;
-
-	private static final float BLACK_COLOR_COMPONENT = 0f;
-
 	// In PDFBox, font.getStringWidth() returns the width in "glyph units" (not points).
 	// Most fonts use 1000 glyph units per em square. Dividing by 1000 converts the width
 	// to "em" units, which can then be multiplied by the font size to get the actual
@@ -126,6 +120,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final String RADIO_BUTTON = "radio";
 
 	private static final String TFF_FILE_EXTENSION = ".ttf";
+
+	private static final String NEW_LINE_CHARACTER = "\\n";
 
 	private final MessageUtil messageUtil;
 
@@ -821,7 +817,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// User Inputs into a Text area, therefore user can enter text in multiple new
 			// lines. We need to handle that by splitting the text into lines and
 			// rendering each line separately with appropriate line spacing.
-			String[] lines = field.getFieldValue().split("\\n");
+			String[] lines = field.getFieldValue().split(NEW_LINE_CHARACTER);
 			float lineHeight = fontSize + DEFAULT_LINE_HEIGHT;
 			float y = adjustedY;
 			for (String line : lines) {
