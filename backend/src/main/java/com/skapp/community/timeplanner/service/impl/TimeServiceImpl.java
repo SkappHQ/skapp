@@ -1391,17 +1391,17 @@ public class TimeServiceImpl implements TimeService {
 		// clockout value is less than the current clockout value, the initial time
 		// request period shrink to the new time request period
 		if (recordType.equals(RecordType.CLOCK_IN)) {
-			handleShrinkClockIn(timeSlots, timeSlotsToBeDeleted, timeRequest, timeRecord);
+			handleShrinkClockIn(timeSlots, timeSlotsToBeDeleted, timeRequest);
 			timeRecord.setClockInTime(timeRequest.getRequestedStartTime());
 		}
 		else {
-			handleShrinkClockOut(timeSlots, timeSlotsToBeDeleted, timeRequest, timeRecord);
+			handleShrinkClockOut(timeSlots, timeSlotsToBeDeleted, timeRequest);
 			timeRecord.setClockOutTime(timeRequest.getRequestedEndTime());
 		}
 	}
 
 	private void handleShrinkClockIn(List<TimeSlot> timeSlots, List<TimeSlot> timeSlotsToBeDeleted,
-			TimeRequest timeRequest, TimeRecord timeRecord) {
+			TimeRequest timeRequest) {
 		// if the new clockin time is less than the current clockin time, the logic
 		// needed to be handled to reduce the time from existing time slots
 		for (TimeSlot slot : timeSlots) {
@@ -1411,23 +1411,10 @@ public class TimeServiceImpl implements TimeService {
 			if (slot.getStartTime() < timeRequest.getRequestedStartTime()
 					&& slot.getEndTime() < timeRequest.getRequestedStartTime()) {
 				timeSlotsToBeDeleted.add(slot);
-				float hours = CommonModuleUtils.calculateHoursBetweenEpochMillis(slot.getStartTime(),
-						slot.getEndTime());
-				if (slot.getSlotType().equals(SlotType.WORK))
-					timeRecord.setWorkedHours(timeRecord.getWorkedHours() - hours);
-				else if (slot.getSlotType().equals(SlotType.BREAK))
-					timeRecord.setBreakHours(timeRecord.getBreakHours() - hours);
-
 			}
 			else if (slot.getStartTime() < timeRequest.getRequestedStartTime()
 					&& slot.getEndTime() > timeRequest.getRequestedStartTime()) {
-				float hours = CommonModuleUtils.calculateHoursBetweenEpochMillis(slot.getStartTime(),
-						timeRequest.getRequestedStartTime());
 				slot.setStartTime(timeRequest.getRequestedStartTime());
-				if (slot.getSlotType().equals(SlotType.WORK))
-					timeRecord.setWorkedHours(timeRecord.getWorkedHours() - hours);
-				else if (slot.getSlotType().equals(SlotType.BREAK))
-					timeRecord.setBreakHours(timeRecord.getBreakHours() - hours);
 			}
 		}
 	}
@@ -1482,7 +1469,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private void handleShrinkClockOut(List<TimeSlot> timeSlots, List<TimeSlot> timeSlotsToBeDeleted,
-			TimeRequest timeRequest, TimeRecord timeRecord) {
+			TimeRequest timeRequest) {
 		// if the new clockout time is greater than the current clockout time, the logic
 		// needed to be handled to reduce the time from existing time slots
 		for (TimeSlot slot : timeSlots) {
@@ -1493,23 +1480,10 @@ public class TimeServiceImpl implements TimeService {
 			if (slot.getEndTime() > timeRequest.getRequestedEndTime()
 					&& slot.getStartTime() > timeRequest.getRequestedEndTime()) {
 				timeSlotsToBeDeleted.add(slot);
-				float hours = CommonModuleUtils.calculateHoursBetweenEpochMillis(slot.getStartTime(),
-						slot.getEndTime());
-				if (slot.getSlotType().equals(SlotType.WORK))
-					timeRecord.setWorkedHours(timeRecord.getWorkedHours() - hours);
-				else if (slot.getSlotType().equals(SlotType.BREAK))
-					timeRecord.setBreakHours(timeRecord.getBreakHours() - hours);
 			}
 			else if (slot.getStartTime() < timeRequest.getRequestedEndTime()
 					&& slot.getEndTime() > timeRequest.getRequestedEndTime()) {
-				Long originalEndTime = slot.getEndTime();
 				slot.setEndTime(timeRequest.getRequestedEndTime());
-				float hours = CommonModuleUtils.calculateHoursBetweenEpochMillis(timeRequest.getRequestedEndTime(),
-						originalEndTime);
-				if (slot.getSlotType().equals(SlotType.WORK))
-					timeRecord.setWorkedHours(timeRecord.getWorkedHours() - hours);
-				else if (slot.getSlotType().equals(SlotType.BREAK))
-					timeRecord.setBreakHours(timeRecord.getBreakHours() - hours);
 			}
 		}
 	}
@@ -1855,9 +1829,14 @@ public class TimeServiceImpl implements TimeService {
 				timeRecord.getTimeRecordId(), request.getRequestedStartTime(), request.getRequestedEndTime()));
 
 		Optional<TimeSlot> activeSlot = timeSlotDao.findByTimeRecordAndIsActiveRightNow(timeRecord, true);
-		if (activeSlot.isPresent() && activeSlot.get().getStartTime() < request.getRequestedEndTime()) {
-			slotsInsideNewClockInOut.add(activeSlot.get());
-			slotsInsideNewClockInOut.sort((a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
+		if (activeSlot.isPresent()) {
+			TimeSlot slot = activeSlot.get();
+			Long slotEndTime = slot.getEndTime();
+			if (slot.getStartTime() < request.getRequestedEndTime()
+					&& (slotEndTime == null || slotEndTime > request.getRequestedStartTime())) {
+				slotsInsideNewClockInOut.add(slot);
+				slotsInsideNewClockInOut.sort((a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
+			}
 		}
 
 		if (slotsInsideNewClockInOut.isEmpty())
