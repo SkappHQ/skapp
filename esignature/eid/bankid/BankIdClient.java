@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.eid.bankid;
 
+import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdAuthRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCancelRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCollectRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCollectResponse;
@@ -25,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
  * HTTP client for BankID API v6.0.
  *
  * <p>
- * Provides methods to call BankID /sign, /collect, and /cancel endpoints. Uses a
+ * Provides methods to call BankID /auth, /sign, /collect, and /cancel endpoints. Uses a
  * RestTemplate configured with mTLS for client certificate authentication.
  * </p>
  *
@@ -45,6 +46,42 @@ public class BankIdClient {
 	public BankIdClient(@Qualifier("bankIdRestTemplate") RestTemplate restTemplate, BankIdProperties bankIdProperties) {
 		this.restTemplate = restTemplate;
 		this.bankIdProperties = bankIdProperties;
+	}
+
+	/**
+	 * Initiates an identification order with BankID.
+	 *
+	 * <p>
+	 * Calls POST /auth endpoint with the user's IP. Unlike /sign, no document hash is
+	 * required — this flow verifies the user's identity only.
+	 * </p>
+	 * @param request The auth request containing endUserIp and optional userVisibleData
+	 * @return Response containing orderRef, autoStartToken, qrStartToken, qrStartSecret
+	 * @throws BankIdApiException if the API call fails
+	 */
+	public BankIdSignResponse auth(BankIdAuthRequest request) {
+		String url = bankIdProperties.getApiBaseUrl() + BankIdOperation.AUTH.getEndpoint();
+		log.debug("BankID {} request to {}", BankIdOperation.AUTH.getEndpoint(), url);
+
+		try {
+			HttpEntity<BankIdAuthRequest> entity = new HttpEntity<>(request, createHeaders());
+			ResponseEntity<BankIdSignResponse> response = restTemplate.postForEntity(url, entity,
+					BankIdSignResponse.class);
+
+			if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+				log.debug("BankID {} successful, orderRef={}", BankIdOperation.AUTH.getEndpoint(),
+						response.getBody().getOrderRef());
+				return response.getBody();
+			}
+
+			throw new BankIdApiException("Unexpected response from BankID " + BankIdOperation.AUTH.getEndpoint(),
+					BankIdOperation.AUTH, null);
+
+		}
+		catch (HttpStatusCodeException e) {
+			throw new BankIdApiException("BankID " + BankIdOperation.AUTH.getEndpoint() + " failed: " + e.getMessage(),
+					BankIdOperation.AUTH, extractErrorResponse(e));
+		}
 	}
 
 	/**

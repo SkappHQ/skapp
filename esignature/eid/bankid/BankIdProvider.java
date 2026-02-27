@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
+import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdAuthRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCancelRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCollectRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCollectResponse;
@@ -138,6 +139,59 @@ public class BankIdProvider implements EidProvider {
 		}
 		catch (BankIdApiException e) {
 			log.error("BankIdProvider: Failed to initiate signing: {}", e.getMessage());
+			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_INITIATION_FAILED);
+		}
+	}
+
+	@Override
+	public EidVerificationSession initiateIdentification(Long recipientId, Long documentId, String endUserIp,
+			String userVisibleData) {
+		log.info("BankIdProvider: Initiating identification for recipient={}, document={}", recipientId, documentId);
+
+		Recipient recipient = recipientDao.findById(recipientId)
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_VALIDATION_RECIPIENT_NOT_FOUND));
+
+		Document document = null;
+		if (documentId != null) {
+			document = documentDao.findById(documentId)
+				.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_VALIDATION_DOCUMENT_NOT_FOUND));
+		}
+
+		BankIdAuthRequest.BankIdAuthRequestBuilder requestBuilder = BankIdAuthRequest.builder().endUserIp(endUserIp);
+
+		if (userVisibleData != null && !userVisibleData.isBlank()) {
+			requestBuilder
+				.userVisibleData(Base64.getEncoder().encodeToString(userVisibleData.getBytes(StandardCharsets.UTF_8)));
+		}
+
+		try {
+			BankIdSignResponse authResponse = bankIdClient.auth(requestBuilder.build());
+
+			EidVerificationSession session = EidVerificationSession.builder()
+				.recipient(recipient)
+				.document(document)
+				.providerType(EidProviderType.SWEDISH_BANKID)
+				.status(EidVerificationStatus.PENDING)
+				.providerSessionId(authResponse.getOrderRef())
+				.endUserIp(endUserIp)
+				.userVisibleData(userVisibleData)
+				.initiatedAt(Instant.now())
+				.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+				.qrStartToken(authResponse.getQrStartToken())
+				.qrStartSecret(authResponse.getQrStartSecret())
+				.autoStartToken(authResponse.getAutoStartToken())
+				.build();
+
+			session = sessionRepository.save(session);
+
+			log.info("BankIdProvider: Created identification session uuid={}, orderRef={}", session.getSessionUuid(),
+					authResponse.getOrderRef());
+
+			return session;
+
+		}
+		catch (BankIdApiException e) {
+			log.error("BankIdProvider: Failed to initiate identification: {}", e.getMessage());
 			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_INITIATION_FAILED);
 		}
 	}

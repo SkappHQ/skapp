@@ -58,7 +58,7 @@ public class EidVerificationSession extends Auditable<String> {
 	private Recipient recipient;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "document_id", nullable = false)
+	@JoinColumn(name = "document_id", nullable = true)
 	private Document document;
 
 	@Enumerated(EnumType.STRING)
@@ -85,7 +85,7 @@ public class EidVerificationSession extends Auditable<String> {
 	 * SHA-256 hash of the document being signed. This creates cryptographic binding
 	 * between the signature and the specific document version.
 	 */
-	@Column(name = "document_hash", nullable = false, length = 64)
+	@Column(name = "document_hash", nullable = true, length = 64)
 	private String documentHash;
 
 	/**

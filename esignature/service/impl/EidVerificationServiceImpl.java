@@ -13,6 +13,7 @@ import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.RecipientEidConfig;
+import com.skapp.enterprise.esignature.payload.request.eid.InitiateIdentificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.response.eid.AvailableProviderResponseDto;
 import com.skapp.enterprise.esignature.payload.response.eid.VerificationInitiationResponseDto;
@@ -152,6 +153,36 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 	@Override
 	@Transactional
+	public ResponseEntityDto initiateIdentification(InitiateIdentificationRequestDto request,
+			HttpServletRequest httpRequest) {
+		log.info("initiateIdentification: starting for recipient={}, provider={}", request.getRecipientId(),
+				request.getProviderType());
+
+		String endUserIp = extractClientIp(httpRequest);
+
+		EidProvider provider = providerRegistry.getProvider(request.getProviderType())
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
+
+		if (!provider.isEnabled()) {
+			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_ENABLED);
+		}
+
+		EidVerificationSession session = provider.initiateIdentification(request.getRecipientId(),
+				request.getDocumentId(), endUserIp, request.getUserVisibleData());
+
+		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(session);
+		response.setAutoStartToken(session.getAutoStartToken());
+		if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+					session.getInitiatedAt()));
+		}
+
+		log.info("initiateIdentification: session created with uuid={}", session.getSessionUuid());
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional
 	public ResponseEntityDto checkVerificationStatus(String sessionId) {
 		log.debug("checkVerificationStatus: checking session={}", sessionId);
 
@@ -160,7 +191,9 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Validate that the current user has permission to check this session
 		boolean isDocAccess = isCurrentUserDocAccessRole();
-		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
+		if (session.getDocument() != null) {
+			documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
+		}
 
 		// Only poll provider if session is still active
 		if (isSessionActive(session)) {
@@ -200,7 +233,9 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Validate that the current user has permission to cancel this session
 		boolean isDocAccess = isCurrentUserDocAccessRole();
-		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
+		if (session.getDocument() != null) {
+			documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
+		}
 
 		if (!isSessionActive(session)) {
 			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_ACTIVE);

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.eid.InitiateIdentificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -16,12 +17,20 @@ public interface EidVerificationService {
 	ResponseEntityDto getAvailableProviders();
 
 	/**
-	 * Initiate a verification session.
+	 * Initiate a verification session (document signing flow).
 	 * @param request The initiation request
 	 * @param httpRequest The HTTP servlet request (used to extract client IP)
 	 * @return ResponseEntityDto containing VerificationInitiationResponseDto
 	 */
 	ResponseEntityDto initiateVerification(InitiateVerificationRequestDto request, HttpServletRequest httpRequest);
+
+	/**
+	 * Initiate an identification-only session (no document).
+	 * @param request The identification request
+	 * @param httpRequest The HTTP servlet request (used to extract client IP)
+	 * @return ResponseEntityDto containing VerificationInitiationResponseDto
+	 */
+	ResponseEntityDto initiateIdentification(InitiateIdentificationRequestDto request, HttpServletRequest httpRequest);
 
 	/**
 	 * Check the status of a verification session.
