@@ -130,7 +130,7 @@ public class StripeServiceImpl implements StripeService {
 	@Override
 	public ResponseEntityDto getPricingPlans() throws StripeException {
 		Map<SubscriptionPlan, Double> corePriceMap = getPriceValueMap(stripeCoreProductId);
-		Map<SubscriptionPlan, Double> proPriceMap = getPriceValueMap(stripeCoreProductId);
+		Map<SubscriptionPlan, Double> proPriceMap = getPriceValueMap(stripeProProductId);
 
 		Map<Tier, Map<SubscriptionPlan, Double>> priceMap = new EnumMap<>(Tier.class);
 		priceMap.put(Tier.CORE, corePriceMap);
