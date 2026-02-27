@@ -71,6 +71,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
 
+	@Value("${stripe.product.core-product-id}")
+	private String stripeCoreProductId;
+
+	@Value("${stripe.product.pro-product-id}")
+	private String stripeProProductId;
+
 	@Override
 	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
 		log.info("handleStripeEvent: Received Stripe webhook event");
@@ -133,6 +139,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			Subscription subscription = Subscription.retrieve(subscriptionId);
 
+			String productId = subscription.getItems().getData().getFirst().getPrice().getProduct();
+
 			String customerId = subscription.getCustomer();
 			Customer customer = Customer.retrieve(customerId);
 			String billingEmail = customer.getEmail();
@@ -154,7 +162,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			stripeSubscription.setSubscriptionStartDate(Instant.ofEpochSecond(subscription.getStartDate()));
 			stripeSubscription.setTenant(tenant);
 
-			tenant.setTier(Tier.PRO);
+			if (productId.equals(stripeProProductId)) {
+				tenant.setTier(Tier.PRO);
+			} else  {
+				tenant.setTier(Tier.CORE);
+			}
+
 			tenant.setSubscriptionStatus(mapStripeStatusToSubscriptionStatus(subscription));
 			if (tenant.getTenantStatus() == TenantStatus.FREE_TRAIL_ENDED
 					|| tenant.getTenantStatus() == TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED
