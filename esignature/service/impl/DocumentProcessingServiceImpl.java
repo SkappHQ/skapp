@@ -133,6 +133,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
 
+		// Add this temporarily after document processing
+		Runtime runtime1 = Runtime.getRuntime();
+		runtime1.gc(); // suggest GC (not guaranteed)
+		long usedMemory1 = (runtime1.totalMemory() - runtime1.freeMemory()) / 1024 / 1024;
+		log.info("[MemCheck] Used heap before processing: {} MB", usedMemory1);
+
 		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_INPUT_STREAM_CANNOT_BE_NULL));
@@ -157,6 +163,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			}
 
 			document.save(outputStream);
+
+			// Add this temporarily after document processing
+			Runtime runtime = Runtime.getRuntime();
+			runtime.gc(); // suggest GC (not guaranteed)
+			long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024;
+			log.info("[MemCheck] Used heap after processing: {} MB", usedMemory);
+
 			return outputStream.toByteArray();
 
 		}
@@ -345,7 +358,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			FieldType fieldType = field.getType();
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
-				addCheckbox(field, contentStream, pageHeight, document);
+
+				PDPage page = getPage(document, field.getPageNumber());
+				float pageWidth = page.getMediaBox().getHeight();
+
+				addCheckbox(field, contentStream, pageHeight,pageWidth, document);
 			}
 			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
 				addRadioButton(field, contentStream, pageHeight, document);
@@ -701,7 +718,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
 		try {
@@ -711,14 +728,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			boolean isChecked = field.isSigned();
 
-			// converts a measurement in screen pixels into PDF points.
-			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI;
-			float size = Math.min(width, height) * pixelToPoint;
 
-			// Adjust Y position: convert from top-left to bottom-left origin
+			// Convert ratio values (0–100 space) to actual PDF points
+			float widthInPoints  = (field.getWidth()  / 100f) * pageWidth;
+			float heightInPoints = (field.getHeight() / 100f) * pageHeight;
+
+			// Use the smaller dimension to ensure checkbox fits within the field's bounding box
+			float size = Math.min(width, height);
+
+			// Convert x/y from ratio space to PDF points
+			float actualX = width;
+			float actualY = height;
+
+			// Convert from top-left origin to PDFBox bottom-left origin
 			float adjustedY = pageHeight - field.getYPosition() - size;
 
-			// Adjust X position as before
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXPosition() + xOffset;
 
