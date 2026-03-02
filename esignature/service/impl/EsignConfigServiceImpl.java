@@ -2,7 +2,7 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.EsignConfig;
@@ -11,8 +11,8 @@ import com.skapp.enterprise.esignature.payload.response.EsignConfigResponseDto;
 import com.skapp.enterprise.esignature.payload.response.EsignExternalConfigResponseDto;
 import com.skapp.enterprise.esignature.repository.EsignConfigRepository;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
-import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.type.DateFormatType;
+import com.skapp.enterprise.people.service.EpUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 	private final EsignMapper esignMapper;
 
-	private final EsignTierValidationService esignTierValidationService;
+	private final EpUserService epUserService;
 
 	@Override
 	public void setDefaultEsignConfigs() {
@@ -56,11 +56,9 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 		if (esignConfigDto.getIsMfaEnabled() != null) {
 
-			SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
+			Tier tier = epUserService.getCurrentUserTier();
 
-			boolean isProTier = subscriptionValidationDto.isProTier();
-
-			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !isProTier) {
+			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !tier.equals(Tier.PRO)) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 			}
 

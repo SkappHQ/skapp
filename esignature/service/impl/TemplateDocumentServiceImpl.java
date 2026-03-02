@@ -6,9 +6,9 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.common.payload.request.AmazonS3DeleteItemRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -17,9 +17,9 @@ import com.skapp.enterprise.esignature.payload.request.DocumentDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.response.template.DocumentTemplateDetailResponseDto;
 import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
-import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.people.service.EpUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 	private final UserService userService;
 
-	private final EsignTierValidationService esignTierValidationService;
+	private final EpUserService epUserService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -48,9 +48,9 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
 
-		SubscriptionValidationDto subscriptionValidationDto = esignTierValidationService.resolveTierContext();
+		Tier tier = epUserService.getCurrentUserTier();
 
-		if (!subscriptionValidationDto.isProTier()) {
+		if (!tier.equals(Tier.PRO)) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 		}

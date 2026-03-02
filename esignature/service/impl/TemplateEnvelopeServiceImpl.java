@@ -8,6 +8,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignTemplateMapper;
@@ -28,7 +29,6 @@ import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelope
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateRecipientDto;
-import com.skapp.enterprise.common.payload.SubscriptionValidationDto;
 import com.skapp.enterprise.esignature.payload.response.template.EnvelopeTemplateDetailedResponseDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeBasicInfoDto;
 import com.skapp.enterprise.esignature.payload.response.template.TemplateEnvelopeResponseDto;
@@ -37,7 +37,6 @@ import com.skapp.enterprise.esignature.repository.TemplateDocumentDao;
 import com.skapp.enterprise.esignature.repository.TemplateEnvelopeDao;
 import com.skapp.enterprise.esignature.repository.TemplateFieldContainerDao;
 import com.skapp.enterprise.esignature.repository.TemplateRecipientDao;
-import com.skapp.enterprise.esignature.service.EsignTierValidationService;
 import com.skapp.enterprise.esignature.service.TemplateDocumentService;
 import com.skapp.enterprise.esignature.service.TemplateEnvelopeService;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -45,6 +44,7 @@ import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.people.service.EpUserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +94,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	private final TemplateDocumentService templateDocumentService;
 
-	private final EsignTierValidationService esignTierValidationService;
+	private final EpUserService epUserService;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -106,9 +106,9 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	@Transactional
 	public ResponseEntityDto createNewEnvelopeTemplate(TemplateEnvelopeDto envelopeTemplateDto) {
 
-		SubscriptionValidationDto esignTierValidationDto = esignTierValidationService.resolveTierContext();
+		Tier tier = epUserService.getCurrentUserTier();
 
-		if (!esignTierValidationDto.isProTier()) {
+		if (!tier.equals(Tier.PRO)) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 		}
