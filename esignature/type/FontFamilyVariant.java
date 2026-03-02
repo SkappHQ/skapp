@@ -1,5 +1,10 @@
 package com.skapp.enterprise.esignature.type;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum FontFamilyVariant {
 
 	DEJAVU_SANS_BOLD_ITALIC("DejaVuSans", FontVariantType.BOLD_ITALIC, "DejaVuSans-BoldOblique.ttf"),
@@ -12,16 +17,6 @@ public enum FontFamilyVariant {
 	private final FontVariantType variantType;
 
 	private final String filename;
-
-	FontFamilyVariant(String fontFamily, FontVariantType variantType, String filename) {
-		this.fontFamily = fontFamily;
-		this.variantType = variantType;
-		this.filename = filename;
-	}
-
-	public String getFilename() {
-		return filename;
-	}
 
 	public static String getFilenameFor(String fontFamily, FontVariantType variantType) {
 		for (FontFamilyVariant v : values()) {

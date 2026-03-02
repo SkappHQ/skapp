@@ -1,8 +1,10 @@
 package com.skapp.enterprise.esignature.type;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum EsignFontFamilyType {
 
 	ARIAL("ARIAL", "Arimo"), CALIBRI("CALIBRI", "Carlito"), COURIER_NEW("COURIER_NEW", "Cousine"),
@@ -13,11 +15,6 @@ public enum EsignFontFamilyType {
 	private final String familyName;
 
 	private final String folderName;
-
-	EsignFontFamilyType(String familyName, String folderName) {
-		this.familyName = familyName;
-		this.folderName = folderName;
-	}
 
 	public static String getFolderByFamily(String family) {
 		for (EsignFontFamilyType ff : values()) {

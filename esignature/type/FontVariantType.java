@@ -1,18 +1,15 @@
 package com.skapp.enterprise.esignature.type;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum FontVariantType {
 
 	BOLD_ITALIC("BoldItalic"), BOLD("Bold"), ITALIC("Italic"), REGULAR("Regular");
 
 	private final String variantName;
-
-	FontVariantType(String variantName) {
-		this.variantName = variantName;
-	}
-
-	public String getVariantName() {
-		return variantName;
-	}
 
 	public static FontVariantType fromFlags(boolean isBold, boolean isItalic) {
 		if (isBold && isItalic)
