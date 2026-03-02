@@ -132,9 +132,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	public static final String UPLOAD_DOCUMENT_URL_PATH = "/eSign/envelop/process/documents/";
 
-	private static final Set<FieldType> ADVANCE_FIELD_TYPES = Set.of(FieldType.TEXT, FieldType.DROPDOWN,
-			FieldType.RADIO_BUTTON, FieldType.CHECKBOX);
-
 	private final DocumentRepository documentRepository;
 
 	private final DocumentLinkRepository documentLinkRepository;
@@ -316,7 +313,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
-			.filter(f -> !ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.filter(f -> !FieldType.advancedFieldTypes().contains(f.getType()))
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -329,7 +326,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		List<Field> advanceFields = recipient.getFields()
 			.stream()
-			.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.filter(f -> FieldType.advancedFieldTypes().contains(f.getType()))
 			.toList();
 
 		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes, advanceFields);
@@ -588,7 +585,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		boolean hasEmptyFields = recipient.getFields()
 			.stream()
-			.filter(f -> !ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.filter(f -> !FieldType.advancedFieldTypes().contains(f.getType()))
 			.anyMatch(field -> field.getStatus().equals(FieldStatus.EMPTY));
 
 		if (hasEmptyFields) {
@@ -604,7 +601,7 @@ public class DocumentServiceImpl implements DocumentService {
 		// Isolate if there are any advance fields
 		List<Field> advanceFields = recipient.getFields()
 			.stream()
-			.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+			.filter(f -> FieldType.advancedFieldTypes().contains(f.getType()))
 			.toList();
 
 		List<DocumentVersionField> fieldVersionList = documentVersionFieldRepository.findByField_IdIn(fieldIdList);
@@ -648,7 +645,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// Isolate if there are any advance fields
 			List<Field> allRecipientsAdvanceFields = allRecipientsFields.stream()
-				.filter(f -> ADVANCE_FIELD_TYPES.contains(f.getType()))
+				.filter(f -> FieldType.advancedFieldTypes().contains(f.getType()))
 				.toList();
 
 			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes,
@@ -938,7 +935,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		Set<Long> signedAdvanceFieldIds = fieldVersionList.stream()
 			.map(DocumentVersionField::getField)
-			.filter(field -> ADVANCE_FIELD_TYPES.contains(field.getType()))
+			.filter(field -> FieldType.advancedFieldTypes().contains(field.getType()))
 			.map(Field::getId)
 			.collect(Collectors.toSet());
 

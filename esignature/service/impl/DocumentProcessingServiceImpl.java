@@ -127,8 +127,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
 		}
 
-		byte[] result;
-
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
 				PDDocument document = Loader.loadPDF(randomAccessRead);
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -143,16 +141,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			}
 
 			document.save(outputStream);
-
-			result = outputStream.toByteArray();
+			return outputStream.toByteArray();
 
 		}
 		catch (IOException e) {
 			log.error("Error processing PDF document: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
-
-		return result;
 	}
 
 	@Override
@@ -708,12 +703,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, type);
 	}
 
-	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight, // actual
-																														// PDF
-																														// page
-																														// height
-																														// in
-																														// points
+	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
 			EsignImageType imageType) {
 
 		try {
