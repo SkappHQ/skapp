@@ -1899,8 +1899,8 @@ public class DocumentServiceImpl implements DocumentService {
 		FieldSignDto fieldSignDto = new FieldSignDto();
 
 		fieldSignDto.setFieldValue(field.getFieldOption() != null ? field.getFieldOption().getOptionValue() : null);
-		fieldSignDto.setXposition(field.getXPosition());
-		fieldSignDto.setYposition(field.getYPosition());
+		fieldSignDto.setXPosition(field.getXPosition());
+		fieldSignDto.setYPosition(field.getYPosition());
 		fieldSignDto.setPageNumber(field.getPageNumber());
 		fieldSignDto.setWidth(field.getWidth());
 		fieldSignDto.setHeight(field.getHeight());
