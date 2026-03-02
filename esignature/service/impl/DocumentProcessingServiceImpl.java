@@ -25,11 +25,10 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -73,15 +72,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float X_OFFSET_VALUE = 0.8f;
 
-	// The standard DPI for points in PDF and PostScript. 1 point = 1/72 inch.
-	// never changes, PDF spec
-	private static final float PDF_POINTS_PER_INCH = 72f;
-
-	// Assumption about input coordinates
-	// Actual source pixel density can vary, but 96 DPI is a common standard for screen
-	// coordinates, which is often used as a basis for conversion to PDF points.
-	private static final float SOURCE_PIXEL_DPI = 96f;
-
 	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
 
 	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
@@ -91,12 +81,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final float UNDERLINE_THICKNESS = 0.5f;
 
 	// In PDFBox, font.getStringWidth() returns the width in "glyph units" (not points).
-	// Most fonts use 1000 glyph units per em square. Dividing by 1000 converts the width
-	// to "em" units, which can then be multiplied by the font size to get the actual
-	// width in points.
-	// Purpose:
-	// 1000 normalizes the glyph width to a scale compatible with the font size, so the
-	// result is the text width in points for rendering.
+	// This is a convention from the original font format specification — font designers
+	// work on a 1000-unit grid (called the "em square") when designing glyphs. So a
+	// character that fills the full em width would return 1000.
+	// To convert to actual points:
+	// actual width = (glyph units / 1000) × fontSize
+	// 1000f is just the scaling factor to convert from the font's internal design grid to
+	// real-world point units.
 	private static final int GLYPH_TO_EM_UNIT = 1000;
 
 	private static final String DEFAULT_LABEL = "Signed by";
@@ -115,29 +106,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String SVG_BASE_PATH = "svgs/";
 
-	private static final String CHECKBOX = "checkbox";
-
-	private static final String RADIO_BUTTON = "radio";
-
 	private static final String TFF_FILE_EXTENSION = ".ttf";
 
 	private static final String NEW_LINE_CHARACTER = "\\n";
 
 	private final MessageUtil messageUtil;
 
-	@Value("${aws.s3.bucket-name}")
-	private String bucketName;
-
 	private final PDFResourceService pdfResourceService;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
-
-		// Add this temporarily after document processing
-		Runtime runtime1 = Runtime.getRuntime();
-		runtime1.gc(); // suggest GC (not guaranteed)
-		long usedMemory1 = (runtime1.totalMemory() - runtime1.freeMemory()) / 1024 / 1024;
-		log.info("[MemCheck] Used heap before processing: {} MB", usedMemory1);
 
 		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
@@ -148,6 +126,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
 		}
+
+		byte[] result;
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
 				PDDocument document = Loader.loadPDF(randomAccessRead);
@@ -164,19 +144,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			document.save(outputStream);
 
-			// Add this temporarily after document processing
-			Runtime runtime = Runtime.getRuntime();
-			runtime.gc(); // suggest GC (not guaranteed)
-			long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024;
-			log.info("[MemCheck] Used heap after processing: {} MB", usedMemory);
-
-			return outputStream.toByteArray();
+			result = outputStream.toByteArray();
 
 		}
 		catch (IOException e) {
 			log.error("Error processing PDF document: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
+
+		return result;
 	}
 
 	@Override
@@ -359,10 +335,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
 
-				PDPage page = getPage(document, field.getPageNumber());
-				float pageWidth = page.getMediaBox().getHeight();
-
-				addCheckbox(field, contentStream, pageHeight,pageWidth, document);
+				addCheckbox(field, contentStream, pageHeight, document);
 			}
 			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
 				addRadioButton(field, contentStream, pageHeight, document);
@@ -718,27 +691,39 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
-		try {
+		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
 
+		addImage(field, contentStream, document, pageHeight, type);
+	}
+
+	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			PDDocument document) {
+
+		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
+				: EsignImageType.RADIO_BUTTON_UNCHECKED;
+
+		addImage(field, contentStream, document, pageHeight, type);
+	}
+
+	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight, // actual
+																														// PDF
+																														// page
+																														// height
+																														// in
+																														// points
+			EsignImageType imageType) {
+
+		try {
 			float width = field.getWidth();
 			float height = field.getHeight();
 
-			boolean isChecked = field.isSigned();
-
-
-			// Convert ratio values (0–100 space) to actual PDF points
-			float widthInPoints  = (field.getWidth()  / 100f) * pageWidth;
-			float heightInPoints = (field.getHeight() / 100f) * pageHeight;
-
-			// Use the smaller dimension to ensure checkbox fits within the field's bounding box
+			// Use the smaller dimension to ensure checkbox/radio-button fits within the
+			// field's
+			// bounding box
 			float size = Math.min(width, height);
-
-			// Convert x/y from ratio space to PDF points
-			float actualX = width;
-			float actualY = height;
 
 			// Convert from top-left origin to PDFBox bottom-left origin
 			float adjustedY = pageHeight - field.getYPosition() - size;
@@ -746,57 +731,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
 			float adjustedX = field.getXPosition() + xOffset;
 
-			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
-			// Load appropriate PNG based on state
-			String imagePath = isChecked ? basePath + EsignImageType.CHECKBOX_CHECKED.getFilename()
-					: basePath + EsignImageType.CHECKBOX_UNCHECKED.getFilename();
+			String imagePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + imageType.getFilename();
 
-			PDImageXObject checkboxImage = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
-					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, CHECKBOX);
+			PDImageXObject image = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
+					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, imageType.name());
 
-			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
+			contentStream.drawImage(image, adjustedX, adjustedY, size, size);
 
 		}
 		catch (IOException e) {
-			log.error("Error drawCheckbox: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
-		}
-	}
-
-	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			PDDocument document) {
-
-		try {
-
-			float width = field.getWidth();
-			float height = field.getHeight();
-
-			boolean isChecked = field.isSigned();
-
-			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI; // 1 px = 0.75 pt
-			float size = Math.min(width, height) * pixelToPoint;
-
-			// Adjust Y position: convert from top-left to bottom-left origin
-			float adjustedY = pageHeight - field.getYPosition() - size;
-
-			// Adjust X position as before
-			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getXPosition() + xOffset;
-
-			String basePath = RESOURCE_BASE_PATH + SVG_BASE_PATH;
-
-			// Load appropriate PNG based on state
-			String imagePath = isChecked ? basePath + EsignImageType.RADIO_BUTTON_CHECKED.getFilename()
-					: basePath + EsignImageType.RADIO_BUTTON_UNCHECKED.getFilename();
-
-			PDImageXObject checkboxImage = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
-					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, RADIO_BUTTON);
-
-			contentStream.drawImage(checkboxImage, adjustedX, adjustedY, size, size);
-
-		}
-		catch (IOException e) {
-			log.error("Error drawRadioButton: {}", e.getMessage(), e);
+			log.error("Failed to draw image [{}] for field [{}]: {}", imageType, field.getType(), e.getMessage(), e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
 	}
@@ -805,8 +749,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			PDDocument document) {
 
 		try {
-			float pixelToPoint = PDF_POINTS_PER_INCH / SOURCE_PIXEL_DPI;
-			float size = Math.min(field.getWidth(), field.getHeight()) * pixelToPoint;
+
+			float size = Math.min(field.getWidth(), field.getHeight());
 
 			float adjustedY = pageHeight - field.getYPosition() - size;
 			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
