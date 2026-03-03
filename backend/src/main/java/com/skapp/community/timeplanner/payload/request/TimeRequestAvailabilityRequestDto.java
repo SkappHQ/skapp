@@ -13,10 +13,8 @@ public class TimeRequestAvailabilityRequestDto {
 	@NotNull
 	private LocalDate date;
 
-	@NotNull
 	private Long startTime;
 
-	@NotNull
 	private Long endTime;
 
 }
