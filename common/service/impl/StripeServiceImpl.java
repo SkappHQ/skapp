@@ -61,8 +61,11 @@ public class StripeServiceImpl implements StripeService {
 
 	private final SystemVersionService systemVersionService;
 
-	@Value("${stripe.product.product-id}")
-	private String stripeProductId;
+	@Value("${stripe.product.core-product-id}")
+	private String stripeCoreProductId;
+
+	@Value("${stripe.product.pro-product-id}")
+	private String stripeProProductId;
 
 	@Value("${stripe.trial.days}")
 	private Long trialPeriodDays;
@@ -126,9 +129,24 @@ public class StripeServiceImpl implements StripeService {
 
 	@Override
 	public ResponseEntityDto getPricingPlans() throws StripeException {
-		Map<SubscriptionPlan, Double> priceMap = getPriceValueMap();
+		Map<SubscriptionPlan, Double> corePriceMap = getPriceValueMap(stripeCoreProductId);
+		Map<SubscriptionPlan, Double> proPriceMap = getPriceValueMap(stripeProProductId);
+
+		Map<Tier, Map<SubscriptionPlan, Double>> priceMap = new EnumMap<>(Tier.class);
+		priceMap.put(Tier.CORE, corePriceMap);
+		priceMap.put(Tier.PRO, proPriceMap);
+
 		return new ResponseEntityDto(false, priceMap);
 
+	}
+
+	@Override
+	public ResponseEntityDto getPricingPlansForTier(Tier tier) throws StripeException {
+		String productId = tier == Tier.PRO ? stripeProProductId : stripeCoreProductId;
+
+		Map<SubscriptionPlan, Double> priceMap = getPriceValueMap(productId);
+
+		return new ResponseEntityDto(false, priceMap);
 	}
 
 	@Override
@@ -179,7 +197,9 @@ public class StripeServiceImpl implements StripeService {
 			builder.setCustomer(tenant.getStripeSubscription().getCustomerId());
 		}
 
-		Map<SubscriptionPlan, String> priceMap = getPriceMap();
+		String productId = subscriptionRequestDto.getTier() == Tier.PRO ? stripeProProductId : stripeCoreProductId;
+
+		Map<SubscriptionPlan, String> priceMap = getPriceMap(productId);
 		String priceId = subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
 				? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
 
@@ -303,8 +323,8 @@ public class StripeServiceImpl implements StripeService {
 		return new ResponseEntityDto(false, "Free trial ended successfully");
 	}
 
-	private Map<SubscriptionPlan, String> getPriceMap() throws StripeException {
-		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
+	private Map<SubscriptionPlan, String> getPriceMap(String productId) throws StripeException {
+		PriceListParams params = PriceListParams.builder().setProduct(productId).setActive(true).build();
 		PriceCollection prices = Price.list(params);
 		Map<SubscriptionPlan, String> priceMap = new EnumMap<>(SubscriptionPlan.class);
 		for (Price price : prices.getData()) {
@@ -316,8 +336,8 @@ public class StripeServiceImpl implements StripeService {
 		return priceMap;
 	}
 
-	private Map<SubscriptionPlan, Double> getPriceValueMap() throws StripeException {
-		PriceListParams params = PriceListParams.builder().setProduct(stripeProductId).setActive(true).build();
+	private Map<SubscriptionPlan, Double> getPriceValueMap(String productId) throws StripeException {
+		PriceListParams params = PriceListParams.builder().setProduct(productId).setActive(true).build();
 		PriceCollection prices = Price.list(params);
 		Map<SubscriptionPlan, Double> priceMap = new EnumMap<>(SubscriptionPlan.class);
 		for (Price price : prices.getData()) {

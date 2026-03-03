@@ -1525,7 +1525,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				envelopeTierLimitationResponseDto.setRemainingCount(Math.max(allocatedCount - envelopeCount, 0));
 				envelopeTierLimitationResponseDto.setLimitedReached(envelopeCount >= allocatedFreeTierEnvelopeCount);
 			}
-			else if (tier == Tier.PRO) {
+			else if (tier == Tier.CORE || tier == Tier.PRO) {
 
 				if (tenant.getStripeSubscription() == null
 						|| tenant.getStripeSubscription().getSubscriptionStartDate() == null) {
