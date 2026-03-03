@@ -311,6 +311,20 @@
             <version>11.3.4</version>
         </dependency>
 
+        <!-- Apache Batik for SVG transcoding (converting SVG files into other formats) -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.19</version>
+        </dependency>
+
+        <!-- Apache Batik Codec for PNG/JPEG output (batik-transcoder depends on batik-codec for PNG encoding) -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-codec</artifactId>
+            <version>1.19</version>
+        </dependency>
+
         <!-- Test Packages -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
