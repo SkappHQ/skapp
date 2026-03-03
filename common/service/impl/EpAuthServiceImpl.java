@@ -62,6 +62,7 @@ import com.skapp.enterprise.common.payload.response.TenantAvailabilityResponseDt
 import com.skapp.enterprise.common.repository.PasswordResetOtpDao;
 import com.skapp.enterprise.common.service.EpAuthService;
 import com.skapp.enterprise.common.service.EpCommonEmailService;
+import com.skapp.enterprise.common.service.TenantCookieService;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.type.EpCacheKeys;
 import com.skapp.enterprise.common.type.TenantStatus;
@@ -153,6 +154,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final EpUserEmailService epUserEmailService;
 
+	private final TenantCookieService tenantCookieService;
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -181,7 +184,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
 			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
-			EpUserEmailService epUserEmailService, CookieUtil cookieUtil) {
+			EpUserEmailService epUserEmailService, CookieUtil cookieUtil, TenantCookieService tenantCookieService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -207,6 +210,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.validationService = validationService;
 		this.epGuestUserService = epGuestUserService;
 		this.epUserEmailService = epUserEmailService;
+		this.tenantCookieService = tenantCookieService;
 	}
 
 	@Override
@@ -652,6 +656,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("performCodeChallengeValidation: Added refresh token cookie for userId={}", user.getUserId());
+
+			addTenantCookie(response, cookieMaxAge, user);
 		}
 
 		CodeChallengeResponseDto codeChallengeResponseDto = new CodeChallengeResponseDto();
@@ -797,6 +803,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("buildSignInResponse: Added refresh token cookie for userId={}", user.getUserId());
+
+			addTenantCookie(response, cookieMaxAge, user);
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -856,6 +864,16 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		log.info("resetPassword: Password reset successfully for userId={}", user.getUserId());
 
 		return new ResponseEntityDto(false, "Password reset successfully");
+	}
+
+	@Override
+	protected void addTenantCookie(HttpServletResponse response, long cookieMaxAge, User user) {
+		tenantCookieService.addTenantCookie(response, cookieMaxAge);
+	}
+
+	@Override
+	protected void clearTenantCookie(HttpServletResponse response) {
+		tenantCookieService.clearTenantCookie(response);
 	}
 
 	@Override
