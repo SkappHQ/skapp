@@ -49,12 +49,12 @@ public class RecipientEidConfig extends Auditable<String> {
 	private EidVerificationStatus eidVerificationStatus = EidVerificationStatus.NOT_REQUIRED;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "eid_identification_method")
+	@Column(name = "eid_identification_method", nullable = false)
 	@Builder.Default
 	private EidProviderType eidIdentificationMethod = EidProviderType.NONE;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "eid_identification_status")
+	@Column(name = "eid_identification_status", nullable = false)
 	@Builder.Default
 	private EidVerificationStatus eidIdentificationStatus = EidVerificationStatus.NOT_REQUIRED;
 
