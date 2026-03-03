@@ -329,7 +329,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			FieldType fieldType = field.getType();
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
-
 				addCheckbox(field, contentStream, pageHeight, document);
 			}
 			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {

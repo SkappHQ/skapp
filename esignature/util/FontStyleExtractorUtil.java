@@ -8,12 +8,17 @@ public class FontStyleExtractorUtil {
 
 	private static final float DEFAULT_FONT_SIZE = 12f;
 
+	private static final String DEFAULT_FONT_COLOR = "#000000";
+
 	public static String extractFontFamily(FieldSignContainerDto container) {
 		return container != null ? container.getFontFamily() : null;
 	}
 
 	public static String extractFontColor(FieldSignContainerDto container) {
-		return container != null ? container.getFontColor() : null;
+		if (container == null || container.getFontColor() == null || container.getFontColor().isBlank()) {
+			return DEFAULT_FONT_COLOR;
+		}
+		return container.getFontColor();
 	}
 
 	public static float extractFontSize(FieldSignContainerDto container) {
