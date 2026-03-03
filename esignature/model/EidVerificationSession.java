@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.persistence.CascadeType;
@@ -68,6 +69,10 @@ public class EidVerificationSession extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 30)
 	private EidVerificationStatus status;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "flow_type", length = 10)
+	private EidFlowType flowType;
 
 	/**
 	 * Provider-specific session identifier (e.g., BankID orderRef).

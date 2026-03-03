@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
 import com.skapp.enterprise.esignature.type.BankIdErrorCode;
 import com.skapp.enterprise.esignature.type.BankIdHintCode;
 import com.skapp.enterprise.esignature.type.BankIdStatus;
+import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.annotation.PostConstruct;
@@ -117,6 +118,7 @@ public class BankIdProvider implements EidProvider {
 				.recipient(recipient)
 				.document(document)
 				.providerType(EidProviderType.SWEDISH_BANKID)
+				.flowType(EidFlowType.SIGN)
 				.status(EidVerificationStatus.PENDING)
 				.providerSessionId(signResponse.getOrderRef())
 				.endUserIp(endUserIp)
@@ -171,6 +173,7 @@ public class BankIdProvider implements EidProvider {
 				.recipient(recipient)
 				.document(document)
 				.providerType(EidProviderType.SWEDISH_BANKID)
+				.flowType(EidFlowType.AUTH)
 				.status(EidVerificationStatus.PENDING)
 				.providerSessionId(authResponse.getOrderRef())
 				.endUserIp(endUserIp)
@@ -357,14 +360,20 @@ public class BankIdProvider implements EidProvider {
 
 	private VerifiedIdentity createVerifiedIdentity(EidVerificationSession session,
 			BankIdCompletionData completionData) {
-		// Check if already exists
-		if (verifiedIdentityRepository.existsByRecipientIdAndDocumentId(session.getRecipient().getId(),
-				session.getDocument().getId())) {
-			log.debug("BankIdProvider: VerifiedIdentity already exists for recipient={}, document={}",
-					session.getRecipient().getId(), session.getDocument().getId());
-			return verifiedIdentityRepository
-				.findByRecipientIdAndDocumentId(session.getRecipient().getId(), session.getDocument().getId())
-				.orElse(null);
+		Long recipientId = session.getRecipient().getId();
+		Long documentId = session.getDocument() != null ? session.getDocument().getId() : null;
+
+		// Check if already exists (auth sessions have no document)
+		boolean alreadyExists = (documentId == null)
+				? verifiedIdentityRepository.existsByRecipientIdAndDocumentIdIsNull(recipientId)
+				: verifiedIdentityRepository.existsByRecipientIdAndDocumentId(recipientId, documentId);
+
+		if (alreadyExists) {
+			log.debug("BankIdProvider: VerifiedIdentity already exists for recipient={}, document={}", recipientId,
+					documentId);
+			return (documentId == null)
+					? verifiedIdentityRepository.findByRecipientIdAndDocumentIdIsNull(recipientId).orElse(null)
+					: verifiedIdentityRepository.findByRecipientIdAndDocumentId(recipientId, documentId).orElse(null);
 		}
 
 		BankIdUser user = completionData.getUser();

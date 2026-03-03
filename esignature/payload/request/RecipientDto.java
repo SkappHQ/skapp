@@ -48,4 +48,11 @@ public class RecipientDto {
 	 */
 	private EidProviderType eidVerificationMethod = EidProviderType.NONE;
 
+	/**
+	 * eID identification method for this recipient. When set to a value other than NONE,
+	 * the recipient must complete eID identification (e.g., BankID auth) before viewing
+	 * the document.
+	 */
+	private EidProviderType eidIdentificationMethod = EidProviderType.NONE;
+
 }

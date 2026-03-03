@@ -48,6 +48,16 @@ public class RecipientEidConfig extends Auditable<String> {
 	@Builder.Default
 	private EidVerificationStatus eidVerificationStatus = EidVerificationStatus.NOT_REQUIRED;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "eid_identification_method")
+	@Builder.Default
+	private EidProviderType eidIdentificationMethod = EidProviderType.NONE;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "eid_identification_status")
+	@Builder.Default
+	private EidVerificationStatus eidIdentificationStatus = EidVerificationStatus.NOT_REQUIRED;
+
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "verified_identity_id")
 	private VerifiedIdentity verifiedIdentity;
@@ -58,6 +68,14 @@ public class RecipientEidConfig extends Auditable<String> {
 
 	public boolean isVerificationComplete() {
 		return !requiresVerification() || eidVerificationStatus == EidVerificationStatus.VERIFIED;
+	}
+
+	public boolean requiresIdentification() {
+		return eidIdentificationMethod != null && eidIdentificationMethod.requiresVerification();
+	}
+
+	public boolean isIdentificationComplete() {
+		return !requiresIdentification() || eidIdentificationStatus == EidVerificationStatus.VERIFIED;
 	}
 
 }

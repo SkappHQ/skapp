@@ -24,6 +24,7 @@ import com.skapp.enterprise.esignature.repository.EidVerificationSessionReposito
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
+import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -167,6 +168,17 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_ENABLED);
 		}
 
+		// Check for existing active session for this recipient + document combination
+		sessionRepository
+			.findFirstByRecipientIdAndDocumentIdOrderByInitiatedAtDesc(request.getRecipientId(),
+					request.getDocumentId())
+			.filter(this::isSessionActive)
+			.ifPresent(existingSession -> {
+				log.warn("Active identification session already exists for recipient={}, document={}",
+						request.getRecipientId(), request.getDocumentId());
+				throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_ALREADY_ACTIVE);
+			});
+
 		EidVerificationSession session = provider.initiateIdentification(request.getRecipientId(),
 				request.getDocumentId(), endUserIp, request.getUserVisibleData());
 
@@ -300,16 +312,20 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 			recipient.setEidConfig(eidConfig);
 		}
 
-		eidConfig.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+		if (session.getFlowType() == EidFlowType.AUTH) {
+			eidConfig.setEidIdentificationStatus(EidVerificationStatus.VERIFIED);
+		}
+		else {
+			eidConfig.setEidVerificationStatus(EidVerificationStatus.VERIFIED);
+		}
 
 		if (session.getVerifiedIdentity() != null) {
 			eidConfig.setVerifiedIdentity(session.getVerifiedIdentity());
 		}
 
 		recipientDao.save(recipient);
-		log.info(
-				"updateRecipientVerificationStatus: Recipient eID verification status updated to VERIFIED for recipient={}",
-				recipient.getId());
+		log.info("updateRecipientVerificationStatus: Recipient eID {} status updated to VERIFIED for recipient={}",
+				session.getFlowType(), recipient.getId());
 	}
 
 	private boolean isCurrentUserDocAccessRole() {
