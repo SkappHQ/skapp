@@ -161,9 +161,11 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		Cookie cookie = cookieUtil.clearRefreshTokenCookie();
-		response.addCookie(cookie);
+		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie();
+		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
+
+		clearTenantCookie(response);
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -210,9 +212,12 @@ public class AuthServiceImpl implements AuthService {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
+
+			addTenantCookie(response, cookieMaxAge, user);
+
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -228,6 +233,14 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	protected void validateTenantStatus(User user) {
+		// This is only for Pro version
+	}
+
+	protected void addTenantCookie(HttpServletResponse response, long cookieMaxAge, User user) {
+		// This is only for Pro version
+	}
+
+	protected void clearTenantCookie(HttpServletResponse response) {
 		// This is only for Pro version
 	}
 
