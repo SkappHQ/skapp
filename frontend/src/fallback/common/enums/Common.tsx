@@ -7,6 +7,7 @@ export enum QuickSetupModalTypeEnums {
 
 export enum TierEnum {
   FREE = "",
+  PRO = "",
   CORE = ""
 }
 

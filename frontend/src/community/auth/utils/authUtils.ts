@@ -9,10 +9,15 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { getCookieValue } from "~community/common/utils/commonUtil";
+import {
+  getCookieValue,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
-  EnterpriseSignUpParams
+  EnterpriseSignUpParams,
+  enterpriseSignIn,
+  enterpriseSignUp
 } from "~enterprise/auth/utils/authUtils";
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
@@ -95,7 +100,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       const response = await authAxios.post(
         authenticationEndpoints.REFRESH_TOKEN,
         {},
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       const accessToken = response?.data?.results[0]?.accessToken;
@@ -295,13 +300,19 @@ export const communitySignUp = async (
 export const handleSignIn = async (
   params: EnterpriseSignInParams
 ): Promise<AuthResponseType> => {
-  return communitySignIn(params);
+  if (!isEnterpriseMode()) {
+    return communitySignIn(params);
+  }
+  return enterpriseSignIn(params);
 };
 
 export const handleSignUp = async (
   params: EnterpriseSignUpParams
 ): Promise<AuthResponseType> => {
-  return communitySignUp(params);
+  if (!isEnterpriseMode()) {
+    return communitySignUp(params);
+  }
+  return enterpriseSignUp(params);
 };
 
 export const checkUserAuthentication = async (): Promise<User | null> => {
@@ -321,10 +332,10 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (redirect === false) return;
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
-    const existingCallback = urlParams.get('callback');
+    const existingCallback = urlParams.get("callback");
 
     const callbackPath = existingCallback || currentPath;
     window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
