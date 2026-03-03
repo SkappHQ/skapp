@@ -496,6 +496,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Tier tier = epUserService.getCurrentUserTier();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 
+		// Actual Pro Tier Validation
 		validateIsActiveProTier(recipientDtos, tier, tenantStatus);
 
 		return recipientDtos.stream().map(recipientDto -> {
@@ -546,6 +547,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (recipientDto.getAdvanceFieldContainers() != null) {
 
+				// Actual Pro Tier Validation
 				if (!tier.equals(Tier.PRO)) {
 					throw new ModuleException(
 							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);

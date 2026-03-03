@@ -50,6 +50,7 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 
 		Tier tier = epUserService.getCurrentUserTier();
 
+		// Actual Pro Tier Validation
 		if (!tier.equals(Tier.PRO)) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
