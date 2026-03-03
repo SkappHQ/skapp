@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.SuperAdminDao;
 import com.skapp.enterprise.common.payload.request.AdditionalDetailsDto;
 import com.skapp.enterprise.common.payload.request.AuthenticationDetailsDto;
+import com.skapp.enterprise.common.type.Tier;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -33,7 +34,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -152,10 +155,14 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		String tier = jwtService.extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TIER, String.class));
+		List<?> rawTiers = jwtService.extractClaim(accessToken,
+				claims -> claims.get(EpAuthConstants.TIERS, List.class));
+
+		List<Tier> tiers = rawTiers.stream().filter(Tier.class::isInstance).map(Tier.class::cast).toList();
+
 		String tenantStatus = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));
-		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tier, tenantStatus);
+		AdditionalDetailsDto additionalDetails = new AdditionalDetailsDto(tiers, tenantStatus);
 
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		log.info("debug: EpJwtAuthFilter - Creating authentication token for user ID: {}", userId);

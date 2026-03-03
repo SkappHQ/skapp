@@ -49,26 +49,21 @@ public class EpUserServiceImpl implements EpUserService {
 	private final UserDao userDao;
 
 	@Override
-	public Tier getCurrentUserTier() {
+	public List<Tier> getCurrentUserTier() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || authentication.getDetails() == null)
-			return Tier.FREE;
+			return List.of(Tier.FREE);
 
 		if (!(authentication.getDetails() instanceof AuthenticationDetailsDto authenticationDetails))
-			return Tier.FREE;
+			return List.of(Tier.FREE);
 
 		AdditionalDetailsDto additionalDetails = authenticationDetails.getAdditionalDetails();
 
-		if (additionalDetails == null || additionalDetails.getTier() == null)
-			return Tier.FREE;
+		if (additionalDetails == null || additionalDetails.getTiers() == null || additionalDetails.getTiers().isEmpty())
+			return List.of(Tier.FREE);
 
-		try {
-			return Tier.valueOf(additionalDetails.getTier());
-		}
-		catch (IllegalArgumentException e) {
-			return Tier.FREE;
-		}
+		return additionalDetails.getTiers();
 	}
 
 	@Override

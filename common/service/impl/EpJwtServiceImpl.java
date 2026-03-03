@@ -32,6 +32,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -70,9 +71,10 @@ public class EpJwtServiceImpl extends JwtServiceImpl {
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 			Tenant tenant = tenantDao.findByTenantName(currentTenant);
 			Tier tier = Optional.ofNullable(tenant).map(Tenant::getTier).orElse(Tier.FREE);
+			List<String> tiers = tier.getTiersUpTo().stream().map(Enum::name).toList();
 			TenantStatus status = Optional.ofNullable(tenant).map(Tenant::getTenantStatus).orElse(TenantStatus.ACTIVE);
 
-			claims.put(EpAuthConstants.TIER, tier.name());
+			claims.put(EpAuthConstants.TIERS, tiers);
 			claims.put(EpAuthConstants.TENANT_STATUS, status.name());
 		}
 		finally {
