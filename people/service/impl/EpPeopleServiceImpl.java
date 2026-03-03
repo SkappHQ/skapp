@@ -596,8 +596,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
+		Tier tier = epUserService.getCurrentUserTier();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
-		if (tenantValidator.isCurrentTenantCoreOrPro() && tenantStatus == TenantStatus.ACTIVE) {
+		if ((tier == Tier.PRO || tier == Tier.CORE) && tenantStatus == TenantStatus.ACTIVE) {
 			stripeService.updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 		}
 	}
