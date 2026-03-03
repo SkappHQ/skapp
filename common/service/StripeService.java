@@ -12,9 +12,9 @@ public interface StripeService {
 
 	ResponseEntityDto getPricingPlans() throws StripeException;
 
-    ResponseEntityDto getPricingPlansForTier(Tier tier) throws StripeException;
+	ResponseEntityDto getPricingPlansForTier(Tier tier) throws StripeException;
 
-    ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto) throws StripeException;
+	ResponseEntityDto createCheckoutSession(SubscriptionRequestDto subscriptionRequestDto) throws StripeException;
 
 	ResponseEntityDto createCustomerPortalSession() throws StripeException;
 

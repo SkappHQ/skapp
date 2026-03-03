@@ -211,7 +211,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public boolean checkEmployeesLimit() {
-		if (tenantValidator.isCurrentTenantPro() || tenantValidator.isCurrentTenantCore() ) {
+		if (tenantValidator.isCurrentTenantCoreOrPro()) {
 			return false;
 		}
 
@@ -596,15 +596,14 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
-		Tier tier = epUserService.getCurrentUserTier();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
-		if (tier == Tier.PRO && tenantStatus == TenantStatus.ACTIVE) {
+		if (tenantValidator.isCurrentTenantCoreOrPro() && tenantStatus == TenantStatus.ACTIVE) {
 			stripeService.updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 		}
 	}
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
-		if (tenantValidator.isCurrentTenantPro() || tenantValidator.isCurrentTenantCore()) {
+		if (tenantValidator.isCurrentTenantCoreOrPro()) {
 			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false);
 		}
 
