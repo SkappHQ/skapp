@@ -1,3 +1,4 @@
+import { APP_FONT } from "~community/common/constants/configs";
 import { theme } from "~community/common/theme/theme";
 
 import {
@@ -71,7 +72,7 @@ export const preProcessTotalValueWithLabel = (
           show: true,
           position: "inside",
           formatter: "Total",
-          fontFamily: "Inter",
+          fontFamily: APP_FONT,
           backgroundColor: theme.palette.common.white,
           borderRadius: 64,
           padding: [4, 8],

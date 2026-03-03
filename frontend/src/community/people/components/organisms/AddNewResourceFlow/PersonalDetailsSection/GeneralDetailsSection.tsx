@@ -29,6 +29,7 @@ import DropdownList from "~community/common/components/molecules/DropdownList/Dr
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
+import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { appModes } from "~community/common/constants/configs";
 import { generalDetailsSectionTestId } from "~community/common/constants/testIds";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
@@ -300,7 +301,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
           padding: "0",
           margin: "0 auto",
           height: "auto",
-          fontFamily: "Inter, sans-serif"
+          fontFamily: APP_FONT_FAMILY
         }}
         dividerStyles={{
           mt: "0.5rem"

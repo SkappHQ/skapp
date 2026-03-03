@@ -13,6 +13,7 @@ import DropdownAutocomplete from "~community/common/components/molecules/Dropdow
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
+import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidAlphaNumericString } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -156,7 +157,7 @@ const ContactDetailsSection = forwardRef<FormMethods, props>((props, ref) => {
         padding: "0",
         margin: "0 auto",
         overflowY: "unset",
-        fontFamily: "Inter, sans-serif"
+        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

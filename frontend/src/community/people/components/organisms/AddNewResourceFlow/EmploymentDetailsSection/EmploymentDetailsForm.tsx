@@ -4,6 +4,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
+import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { employmentDetailsFormTestId } from "~community/common/constants/testIds";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -163,7 +164,7 @@ const EmploymentDetailsForm = ({
         padding: "0",
         margin: "0 auto",
         height: "auto",
-        fontFamily: "Inter, sans-serif"
+        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{ mt: "0.5rem" }}
       pageHead={translateText(["head"])}

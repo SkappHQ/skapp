@@ -1,5 +1,7 @@
 import { Theme } from "@mui/material";
 
+import { APP_FONT } from "~community/common/constants/configs";
+
 const styles = (theme: Theme) => ({
   tabsContainer: {
     width: "100%"
@@ -9,7 +11,7 @@ const styles = (theme: Theme) => ({
     width: "fit-content"
   },
   tab: {
-    fontFamily: "Inter",
+    fontFamily: APP_FONT,
     fontWeight: 400,
     fontSize: "1rem",
     color: theme.palette.text.primary,

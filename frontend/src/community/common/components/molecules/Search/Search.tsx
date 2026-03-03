@@ -30,6 +30,7 @@ import Button from "~community/common/components/atoms/Button/Button";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Popper from "~community/common/components/molecules/Popper/Popper";
+import { APP_FONT } from "~community/common/constants/configs";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -450,7 +451,7 @@ const Search: FC<Props> = ({
                           borderBottom: selectedTab === "Individual" ? 2 : 0,
                           borderColor: "black",
                           flexDirection: "row",
-                          fontFamily: "Inter",
+                          fontFamily: APP_FONT,
                           fontWeight: 700,
                           fontSize: "1rem",
                           color:
@@ -465,7 +466,7 @@ const Search: FC<Props> = ({
                           textTransform: "none",
                           borderBottom: selectedTab === "Team" ? 2 : 0,
                           borderColor: "black",
-                          fontFamily: "Inter",
+                          fontFamily: APP_FONT,
                           fontWeight: 700,
                           fontSize: "1rem",
                           color:

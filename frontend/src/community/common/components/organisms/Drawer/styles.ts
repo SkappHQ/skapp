@@ -14,7 +14,7 @@ export const styles = ({ theme }: stylesProps) => ({
     display: { xs: "flex", sm: "none", lg: "flex" },
     position: "absolute",
     top: { xs: "2.5rem", lg: "2.65rem" },
-    right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "0.25rem" },
+    right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "1.05rem" },
     height: "2.5rem",
     width: "2.5rem",
     zIndex: ZIndexEnums.MODAL,
@@ -40,19 +40,21 @@ export const styles = ({ theme }: stylesProps) => ({
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
     height: "100%",
-    padding: "2.5rem 0rem 2.5rem 2rem",
+    padding: isDrawerExpanded ? "2.5rem 0rem 2.5rem 2rem" : "2.5rem 0rem",
     boxSizing: "border-box",
-    transition: `opacity ${DRAWER_ANIMATION_DURATION} ease, visibility ${DRAWER_ANIMATION_DURATION} ease`,
-    opacity: isDrawerExpanded ? 1 : 0,
-    visibility: isDrawerExpanded ? "visible" : "hidden"
-  }),
-  imageWrapper: {
+    transition: `padding ${DRAWER_ANIMATION_DURATION} ease`,
     display: "flex",
+    flexDirection: "column",
+    alignItems: isDrawerExpanded ? "flex-start" : "center"
+  }),
+  imageWrapper: (isDrawerExpanded: boolean) => ({
+    display: isDrawerExpanded ? "flex" : "none",
     justifyContent: "flex-start",
     alignItems: "center",
     width: "8.75rem",
-    marginBottom: "0.75rem"
-  },
+    marginBottom: "0.75rem",
+    transition: `all ${DRAWER_ANIMATION_DURATION} ease`
+  }),
 
   logoImage: {
     display: "flex",
@@ -63,7 +65,7 @@ export const styles = ({ theme }: stylesProps) => ({
     objectFit: "contain" as const,
     cursor: "pointer"
   },
-  list: {
+  list: (isDrawerExpanded: boolean) => ({
     display: "flex",
     flexDirection: "column",
     height: "auto",
@@ -72,24 +74,24 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: "1.25rem",
-    transition: `all ${DRAWER_ANIMATION_DURATION} ease`
-  },
-  listItem: {
+    paddingTop: isDrawerExpanded ? "1.25rem" : "5.25rem"
+  }),
+  listItem: (isDrawerExpanded: boolean) => ({
     display: "flex",
     flexDirection: "column",
-    alignItems: "flex-start",
+    alignItems: isDrawerExpanded ? "flex-start" : "center",
     width: "100%",
     transition: `all ${DRAWER_ANIMATION_DURATION} ease-in-out`,
     transformOrigin: "top"
-  },
-  listItemButton: (isSelected: boolean) => ({
+  }),
+  listItemButton: (isSelected: boolean, isDrawerExpanded: boolean) => ({
     display: "flex",
     flexDirection: "row",
-    justifyContent: "flex-start",
-    width: "calc(100% - 2rem)",
+    justifyContent: isDrawerExpanded ? "flex-start" : "center",
+    alignItems: "center",
+    width: isDrawerExpanded ? "calc(100% - 2rem)" : "2.5rem",
     gap: "1rem",
-    padding: "0.75rem 1rem",
+    padding: isDrawerExpanded ? "0.75rem 1rem" : "0.78rem 1rem",
     transition: "none",
     borderRadius: "0.5rem",
     backgroundColor: isSelected ? theme.palette.secondary.main : "transparent",
@@ -98,7 +100,10 @@ export const styles = ({ theme }: stylesProps) => ({
     }
   }),
   listItemIcon: {
-    minWidth: "1.5rem"
+    minWidth: "1.5rem",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
   },
   listItemText: (color: string) => ({
     margin: "0rem",
@@ -109,11 +114,13 @@ export const styles = ({ theme }: stylesProps) => ({
       color: color
     }
   }),
-  listItemContent: {
-    display: "flex",
+  listItemContent: (isDrawerExpanded: boolean) => ({
+    display: isDrawerExpanded ? "flex" : "none",
     alignItems: "center",
-    gap: "1rem"
-  },
+    gap: "1rem",
+    transition: `opacity ${DRAWER_ANIMATION_DURATION} ease`,
+    opacity: isDrawerExpanded ? 1 : 0
+  }),
   collapse: {
     display: "flex",
     flexDirection: "column",
@@ -138,6 +145,8 @@ export const styles = ({ theme }: stylesProps) => ({
   subListItemButton: (isSelected: boolean) => ({
     display: "flex",
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     width: "100%",
     marginRight: "1rem",
     gap: "1rem",

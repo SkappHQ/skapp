@@ -5,6 +5,7 @@ import { forwardRef, useImperativeHandle, useMemo } from "react";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
+import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "~community/people/constants/configs";
 import useContactDetailsFormHandlers from "~community/people/hooks/useContactDetailsFormHandlers";
@@ -101,7 +102,7 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         margin: "0 auto",
         overflowY: "unset",
         height: "auto",
-        fontFamily: "Inter, sans-serif"
+        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

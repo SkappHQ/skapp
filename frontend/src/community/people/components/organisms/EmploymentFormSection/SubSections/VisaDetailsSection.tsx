@@ -1,12 +1,12 @@
 import { Grid2 as Grid } from "@mui/material";
 import { DateTime } from "luxon";
-import { JSX } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
+import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import {
   DATE_FORMAT,
   LONG_DATE_TIME_FORMAT,
@@ -80,7 +80,7 @@ const VisaDetailsSection = (props: Props): JSX.Element => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Inter, sans-serif"
+        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

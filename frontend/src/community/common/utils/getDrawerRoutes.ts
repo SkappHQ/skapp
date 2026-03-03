@@ -21,6 +21,9 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
+  pendingLeaveCount?: number;
+  pendingTimesheetCount?: number;
+  pendingSignCount?: number;
 }
 
 const getDrawerRoutes = ({
@@ -30,7 +33,10 @@ const getDrawerRoutes = ({
   globalLoginMethod,
   tenantID,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus
+  organizationCalendarMicrosoftStatus,
+  pendingLeaveCount = 0,
+  pendingTimesheetCount = 0,
+  pendingSignCount = 0
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -38,7 +44,10 @@ const getDrawerRoutes = ({
         globalLoginMethod,
         tenantID,
         organizationCalendarGoogleStatus,
-        organizationCalendarMicrosoftStatus
+        organizationCalendarMicrosoftStatus,
+        pendingLeaveCount,
+        pendingTimesheetCount,
+        pendingSignCount
       })
     : routes;
 
@@ -283,11 +292,44 @@ const getDrawerRoutes = ({
       }
 
       if (isAuthorized && route?.hasSubTree) {
-        const subRoutes = route?.subTree?.filter((subRoute) =>
-          subRoute.requiredAuthLevel?.some((requiredRole) =>
-            userRoles?.includes(requiredRole as Role)
-          )
-        );
+        const subRoutes = route?.subTree
+          ?.map((subRoute) => {
+            const isSubRouteAuthorized = subRoute.requiredAuthLevel?.some(
+              (requiredRole) => userRoles?.includes(requiredRole as Role)
+            );
+
+            if (!isSubRouteAuthorized) return null;
+
+            // Add badge to "All Requests" if there are pending requests
+            if (subRoute.id === "2B" && pendingLeaveCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingLeaveCount.toString()
+              };
+            }
+
+            // Add badge to "All Timesheets" if there are pending timesheets
+            if (subRoute.id === "1B" && pendingTimesheetCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingTimesheetCount.toString()
+              };
+            }
+
+            // Add badge to "Inbox" if there are pending documents to sign
+            if (subRoute.id === "4A" && pendingSignCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingSignCount.toString()
+              };
+            }
+
+            return subRoute;
+          })
+          .filter(
+            (subRoute): subRoute is NonNullable<typeof subRoute> =>
+              subRoute !== null
+          );
 
         if (subRoutes && subRoutes?.length > 0) {
           return {

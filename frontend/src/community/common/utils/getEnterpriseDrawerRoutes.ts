@@ -18,13 +18,19 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
+  pendingLeaveCount?: number;
+  pendingTimesheetCount?: number;
+  pendingSignCount?: number;
 }
 
 const getEnterpriseDrawerRoutes = ({
   userRoles,
   globalLoginMethod,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus
+  organizationCalendarMicrosoftStatus,
+  pendingLeaveCount,
+  pendingTimesheetCount,
+  pendingSignCount
 }: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
@@ -56,6 +62,7 @@ const getEnterpriseDrawerRoutes = ({
           url: ROUTES.SETTINGS.BASE,
           icon: IconName.INTEGRATIONS_ICON,
           hasSubTree: false,
+          badge: "New",
           requiredAuthLevel: [
             EmployeeTypes.PEOPLE_EMPLOYEE,
             EmployeeTypes.LEAVE_EMPLOYEE,
