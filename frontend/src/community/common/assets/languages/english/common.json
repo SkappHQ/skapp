@@ -226,7 +226,8 @@
       "account": "Account",
       "integrations": "Integrations",
       "modules": "Modules",
-      "organization": "Organization"
+      "organization": "Organization",
+      "billing": "Billing"
     }
   },
   "unauthorized": {
