@@ -71,6 +71,12 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
 
+	@Value("${stripe.product.core-product-id}")
+	private String stripeCoreProductId;
+
+	@Value("${stripe.product.pro-product-id}")
+	private String stripeProProductId;
+
 	@Override
 	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
 		log.info("handleStripeEvent: Received Stripe webhook event");
@@ -133,6 +139,22 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			Subscription subscription = Subscription.retrieve(subscriptionId);
 
+			if (subscription.getItems() == null || subscription.getItems().getData().isEmpty()) {
+				log.error(
+						"handleCheckoutSessionCompleted: Subscription {} has no line items; cannot determine tier for tenant: {}",
+						subscription.getId(), tenantId);
+				return;
+			}
+
+			String productId = subscription.getItems().getData().getFirst().getPrice().getProduct();
+
+			if (productId == null) {
+				log.error(
+						"handleCheckoutSessionCompleted: Product ID is null on subscription {} for tenant: {}; cannot determine tier",
+						subscription.getId(), tenantId);
+				return;
+			}
+
 			String customerId = subscription.getCustomer();
 			Customer customer = Customer.retrieve(customerId);
 			String billingEmail = customer.getEmail();
@@ -154,7 +176,19 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			stripeSubscription.setSubscriptionStartDate(Instant.ofEpochSecond(subscription.getStartDate()));
 			stripeSubscription.setTenant(tenant);
 
-			tenant.setTier(Tier.PRO);
+			if (stripeProProductId.equals(productId)) {
+				tenant.setTier(Tier.PRO);
+			}
+			else if (stripeCoreProductId.equals(productId)) {
+				tenant.setTier(Tier.CORE);
+			}
+			else {
+				log.error(
+						"handleCheckoutSessionCompleted: Unrecognized product ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
+						productId, subscription.getId(), tenantId);
+				return;
+			}
+
 			tenant.setSubscriptionStatus(mapStripeStatusToSubscriptionStatus(subscription));
 			if (tenant.getTenantStatus() == TenantStatus.FREE_TRAIL_ENDED
 					|| tenant.getTenantStatus() == TenantStatus.TRIAL_ENDED_USER_LIMIT_EXCEEDED
@@ -233,10 +267,40 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 					|| currentTenant.getTenant().getSubscriptionStatus() == SubscriptionStatus.CANCELED)
 					&& invoice.getBillingReason().equals("subscription_cycle") && invoice.getStatus().equals("paid")) {
 
+				Subscription subscription = Subscription.retrieve(currentTenant.getSubscriptionId());
+
+				if (subscription.getItems() == null || subscription.getItems().getData().isEmpty()) {
+					log.error(
+							"handleSubscriptionPaymentSucceeded: Subscription {} has no line items; cannot determine tier for tenant: {}",
+							subscription.getId(), currentTenant.getTenantName());
+					return;
+				}
+
+				String productId = subscription.getItems().getData().getFirst().getPrice().getProduct();
+
+				if (productId == null) {
+					log.error(
+							"handleSubscriptionPaymentSucceeded: Product ID is null on subscription {} for tenant: {}; cannot determine tier",
+							subscription.getId(), currentTenant.getTenantName());
+					return;
+				}
+
 				currentTenant.getTenant().setSubscriptionStatus(SubscriptionStatus.ACTIVE);
 				currentTenant.setLastModifiedByEmail(userEmail);
 				currentTenant.getTenant().setLastModifiedDate(Instant.now());
-				currentTenant.getTenant().setTier(Tier.PRO);
+
+				if (stripeProProductId.equals(productId)) {
+					currentTenant.getTenant().setTier(Tier.PRO);
+				}
+				else if (stripeCoreProductId.equals(productId)) {
+					currentTenant.getTenant().setTier(Tier.CORE);
+				}
+				else {
+					log.error(
+							"handleSubscriptionPaymentSucceeded: Unrecognized product ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
+							productId, subscription.getId(), currentTenant.getTenantName());
+					return;
+				}
 
 				tenantDao.save(currentTenant.getTenant());
 
