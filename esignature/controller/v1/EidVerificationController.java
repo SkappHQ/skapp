@@ -60,7 +60,7 @@ public class EidVerificationController {
 					+ "Unlike /initiate, no document is required — this flow verifies the user's identity only. "
 					+ "Returns autoStartToken for same-device launch and pre-computed qrCode for cross-device. "
 					+ "The qrCode is refreshed on each status poll.")
-	@PreAuthorize("hasAnyRole('ROLE_ESIGN_EMPLOYEE', 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
 	@PostMapping(value = "/identify", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> initiateIdentification(
 			@Valid @RequestBody InitiateIdentificationRequestDto request, HttpServletRequest httpRequest) {

@@ -71,7 +71,7 @@ public class EidVerificationSession extends Auditable<String> {
 	private EidVerificationStatus status;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "flow_type", length = 10)
+	@Column(name = "flow_type", nullable = false, length = 10)
 	private EidFlowType flowType;
 
 	/**

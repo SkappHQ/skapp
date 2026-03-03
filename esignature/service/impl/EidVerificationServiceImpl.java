@@ -161,6 +161,11 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		String endUserIp = extractClientIp(httpRequest);
 
+		Recipient recipient = recipientDao.findById(request.getRecipientId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		documentLinkService.validateTokenFlows(isDocAccess, recipient, request.getDocumentId());
+
 		EidProvider provider = providerRegistry.getProvider(request.getProviderType())
 			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
 
@@ -203,9 +208,8 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Validate that the current user has permission to check this session
 		boolean isDocAccess = isCurrentUserDocAccessRole();
-		if (session.getDocument() != null) {
-			documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
-		}
+		Long documentId = session.getDocument() != null ? session.getDocument().getId() : null;
+		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), documentId);
 
 		// Only poll provider if session is still active
 		if (isSessionActive(session)) {
@@ -245,9 +249,8 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		// Validate that the current user has permission to cancel this session
 		boolean isDocAccess = isCurrentUserDocAccessRole();
-		if (session.getDocument() != null) {
-			documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), session.getDocument().getId());
-		}
+		Long documentId = session.getDocument() != null ? session.getDocument().getId() : null;
+		documentLinkService.validateTokenFlows(isDocAccess, session.getRecipient(), documentId);
 
 		if (!isSessionActive(session)) {
 			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_ACTIVE);
