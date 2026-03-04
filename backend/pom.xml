@@ -325,6 +325,13 @@
             <version>1.19</version>
         </dependency>
 
+        <!-- Sentry -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-spring-boot-4-starter</artifactId>
+            <version>8.33.0</version>
+        </dependency>
+
         <!-- Test Packages -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
