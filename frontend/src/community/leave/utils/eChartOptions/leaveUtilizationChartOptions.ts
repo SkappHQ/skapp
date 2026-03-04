@@ -1,6 +1,5 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 
-import { APP_FONT } from "~community/common/constants/configs";
 import { MultipleTooltipFormatterParams } from "~community/common/types/EchartTypes";
 import { LeaveTypeBreakDownReturnTypes } from "~community/leave/types/LeaveUtilizationTypes";
 
@@ -67,7 +66,7 @@ export const useLeaveUtilizationChartOptions = ({
       axisLabel: {
         color: theme.palette.common.black,
         fontSize: 13,
-        fontFamily: APP_FONT
+        fontFamily: theme.typography.fontFamily
       }
     },
     yAxis: {
@@ -93,7 +92,7 @@ export const useLeaveUtilizationChartOptions = ({
         margin: -40,
         color: theme.palette.common.black,
         fontSize: 12,
-        fontFamily: APP_FONT
+        fontFamily: theme.typography.fontFamily
       }
     },
     series: datasets?.data

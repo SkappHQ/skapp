@@ -39,6 +39,3 @@ export enum appModes {
 }
 
 export const DOMAIN = ".skapp.com";
-
-export const APP_FONT = "Inter";
-export const APP_FONT_FAMILY = `'${APP_FONT}', sans-serif`;

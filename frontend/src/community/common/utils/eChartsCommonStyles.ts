@@ -1,7 +1,5 @@
 import { Theme } from "@mui/material/styles";
 
-import { APP_FONT } from "~community/common/constants/configs";
-
 export const getCommonEChartOptions = (theme: Theme) => ({
   grid: {
     top: "15%",
@@ -39,7 +37,7 @@ export const getCommonEChartOptions = (theme: Theme) => ({
     axisLabel: {
       color: theme.palette.common.black,
       fontSize: 13,
-      fontFamily: APP_FONT
+      fontFamily: theme.typography.fontFamily
     },
     scale: true
   },

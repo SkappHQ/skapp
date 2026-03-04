@@ -1,15 +1,13 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { type StylesConfig } from "react-select";
 
-import { APP_FONT } from "~community/common/constants/configs";
-
 export const useGetSelectStyles = (error: string | string[]) => {
   const theme: Theme = useTheme();
 
   const commonStyles = {
     fontSize: "1rem",
     fontWeight: 400,
-    fontFamily: APP_FONT,
+    fontFamily: theme.typography.fontFamily,
     fontStyle: "normal",
     margin: "0rem",
     color: error
@@ -48,7 +46,7 @@ export const useGetSelectStyles = (error: string | string[]) => {
         cursor: isDisabled ? "not-allowed" : "default",
         fontSize: "1rem",
         fontWeight: 400,
-        fontFamily: APP_FONT,
+        fontFamily: theme.typography.fontFamily,
         fontStyle: "normal",
         paddingLeft: ".9375rem",
         paddingTop: ".125rem",

@@ -1,4 +1,3 @@
-import { APP_FONT } from "~community/common/constants/configs";
 import { theme } from "~community/common/theme/theme";
 import { MultipleTooltipFormatterParams } from "~community/common/types/EchartTypes";
 
@@ -10,7 +9,7 @@ const LeaveTrendForYearTooltip = (
       (el) => `
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <div style="display: flex; align-items: center;">
-        <div style="font-family: ${APP_FONT}; font-style: normal; font-size: 24px; font-weight: 400; color: ${
+        <div style="font-family: var(--app-font); font-style: normal; font-size: 24px; font-weight: 400; color: ${
           theme.palette.common.black
         };line-height: 32px; margin-right: 8px;">${String(el.value)}</div>
         <div style="display: flex; align-items: center; height: 25px; background-color: ${
@@ -19,7 +18,7 @@ const LeaveTrendForYearTooltip = (
           <div style="height: 8px; width: 8px; background-color: ${String(
             el.color
           )}; margin-right: 8px;"></div>
-          <div style="font-family: ${APP_FONT}; font-style: normal; font-size: 12px; font-weight: 400; line-height: 16px;">${String(
+          <div style="font-family: var(--app-font); font-style: normal; font-size: 12px; font-weight: 400; line-height: 16px;">${String(
             el.seriesName
           )}</div>
         </div>

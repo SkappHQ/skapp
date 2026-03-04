@@ -1,6 +1,11 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
 @import "@rootcodelabs/skapp-ui";
 
+:root {
+  --app-font: Inter;
+  --app-font-family: "Inter", sans-serif;
+}
+
 html,
 body {
   width: 100%;
@@ -127,14 +132,14 @@ input[type="number"] {
   font-size: 16px;
   font-weight: 500;
   line-height: 140%;
-  font-family: "Inter", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: "Inter", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .full-day-border {

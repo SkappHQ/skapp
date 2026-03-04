@@ -5,7 +5,6 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import { APP_FONT } from "~community/common/constants/configs";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -180,7 +179,7 @@ const InputPhoneNumber: FC<Props> = ({
             color: theme.palette.text.secondary,
             fontSize: "1rem",
             fontWeight: 400,
-            fontFamily: APP_FONT,
+            fontFamily: theme.typography.fontFamily,
             fontStyle: "normal",
             letterSpacing: "0.0313rem",
             borderTop: error

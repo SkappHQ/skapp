@@ -120,7 +120,7 @@ function MyApp({
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
   return (
-    <div className={inter.variable} style={{ display: "contents" }}>
+    <div className={inter.variable}>
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
