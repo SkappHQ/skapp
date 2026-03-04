@@ -113,8 +113,7 @@ const SystemPermissionFormSection = ({
     Boolean(permissions.isSuperAdmin) ||
     Boolean(employee?.systemPermissions?.isSuperAdmin);
 
-  const shouldDisableModuleRoles =
-    (isCurrentSuperAdmin && superAdminCount === 1) || !isCurrentSuperAdmin;
+  const shouldDisableModuleRoles = isCurrentSuperAdmin && superAdminCount === 1;
 
   const onSave = () => {
     if (
