@@ -1,6 +1,5 @@
 import { Grid2 as Grid, SelectChangeEvent, type Theme } from "@mui/material";
 import { useTheme } from "@mui/system";
-import { rejects } from "assert";
 import { type FormikErrors, useFormik } from "formik";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
@@ -15,6 +14,7 @@ import {
   useState
 } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AvatarSearch from "~community/common/components/molecules/AvatarSearch/AvatarSearch";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
@@ -61,7 +61,6 @@ import { EmployementAllocationList } from "~community/people/utils/data/employee
 import { employeeEmploymentDetailsValidation } from "~community/people/utils/peopleValidations";
 
 import TeamModalController from "../../TeamModalController/TeamModalController";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   isManager?: boolean;
@@ -527,7 +526,6 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          fontFamily: "Poppins, sans-serif"
         }}
         dividerStyles={{
           mt: "0.5rem"

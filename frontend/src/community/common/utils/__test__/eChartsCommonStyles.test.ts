@@ -62,7 +62,7 @@ describe("getCommonEChartOptions", () => {
       axisLabel: {
         color: mockTheme.palette.common.black,
         fontSize: 13,
-        fontFamily: "Poppins"
+        fontFamily: "Inter"
       },
       scale: true
     });

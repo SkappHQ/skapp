@@ -1,6 +1,5 @@
 import { Grid2 as Grid, SelectChangeEvent } from "@mui/material";
 import { FormikErrors, FormikProps } from "formik";
-import { ChangeEvent } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -49,7 +48,6 @@ const ContactDetailsFormSection = ({
         margin: "0 auto",
         display: "block",
         overflowY: "unset",
-        fontFamily: "Poppins, sans-serif"
       }}
       dividerStyles={{
         mt: "0.5rem"

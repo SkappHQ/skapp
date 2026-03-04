@@ -14,7 +14,7 @@ interface Props {
   ariaLabel?: string;
   isReadOnly?: boolean;
   tabIndex?: number;
-   /**
+  /**
    * If true, displays a red asterisk next to the label to indicate that the field is required.
    * This prop only affects the visual presentation and does not enforce validation.
    */
@@ -83,7 +83,6 @@ const LeaveStatusPopupColumn: FC<Props> = ({
             : "none",
           outline: "none",
           padding: 12,
-          fontFamily: "Poppins",
           fontStyle: "normal",
           fontWeight: "400",
           fontSize: " 16px",

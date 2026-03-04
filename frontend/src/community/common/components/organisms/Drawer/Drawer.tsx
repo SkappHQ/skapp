@@ -20,6 +20,8 @@ import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import NotificationBadge from "~community/common/components/atoms/NotificationBadge/NotificationBadge";
+import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
@@ -36,15 +38,22 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { EmployeeTypes } from "~community/common/types/AuthTypes";
+import {
+  AdminTypes,
+  EmployeeTypes,
+  ManagerTypes
+} from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
+import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
+import { useGetPendingLeaveRequests } from "~community/leave/api/LeaveApi";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
+import { useGetPendingCounts } from "~enterprise/common/api/DashboardApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
@@ -55,7 +64,6 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -93,12 +101,14 @@ const Drawer = (): JSX.Element => {
     isDrawerExpanded,
     expandedDrawerListItem,
     setExpandedDrawerListItem,
-    setOrgData
+    setOrgData,
+    setIsDrawerExpanded
   } = useCommonStore((state: CommonStoreTypes | any) => ({
     isDrawerExpanded: state.isDrawerExpanded,
     expandedDrawerListItem: state.expandedDrawerListItem,
     setExpandedDrawerListItem: state.setExpandedDrawerListItem,
-    setOrgData: state.setOrgData
+    setOrgData: state.setOrgData,
+    setIsDrawerExpanded: state.setIsDrawerExpanded
   }));
 
   const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
@@ -111,6 +121,14 @@ const Drawer = (): JSX.Element => {
   const { setMyLeaveRequestModalType } = useLeaveStore((state) => ({
     setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
   }));
+
+  const { data: pendingLeavesData } = useGetPendingLeaveRequests("");
+  const pendingLeaveCount = pendingLeavesData?.length || 0;
+
+  const { data: pendingCountsData } = useGetPendingCounts();
+  const pendingTimesheetCount =
+    pendingCountsData?.pendingTimeEntryRequestsCount || 0;
+  const pendingSignCount = pendingCountsData?.pendingDocumentsToSignCount || 0;
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
@@ -127,9 +145,20 @@ const Drawer = (): JSX.Element => {
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
-          organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false
+          organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
+        pendingLeaveCount,
+        pendingTimesheetCount,
+        pendingSignCount
       }),
-    [user, isEnterprise, globalLoginMethod, organizationCalendarStatusData]
+    [
+      user,
+      isEnterprise,
+      globalLoginMethod,
+      organizationCalendarStatusData,
+      pendingLeaveCount,
+      pendingTimesheetCount,
+      pendingSignCount
+    ]
   );
 
   const updatedTheme = themeSelector(
@@ -163,7 +192,13 @@ const Drawer = (): JSX.Element => {
       router.push(url ?? "");
       isBelow1024 && handleDrawer();
     } else {
-      setExpandedDrawerListItem(expandedDrawerListItem === id ? "" : id);
+      // If drawer is collapsed and item has submenus, expand the drawer
+      if (!isDrawerExpanded) {
+        setIsDrawerExpanded(true);
+        // setExpandedDrawerListItem(id);
+      } else {
+        setExpandedDrawerListItem(expandedDrawerListItem === id ? "" : id);
+      }
     }
   };
 
@@ -199,7 +234,7 @@ const Drawer = (): JSX.Element => {
         id="side-bar"
         role="document"
       >
-        <Box sx={classes.imageWrapper}>
+        <Box sx={classes.imageWrapper(isDrawerExpanded)}>
           {!isLoading && (
             <img
               src={orgLogo || "/logo/logo.png"}
@@ -220,7 +255,7 @@ const Drawer = (): JSX.Element => {
             />
           )}
         </Box>
-        <List sx={classes.list} role="list">
+        <List sx={classes.list(isDrawerExpanded)} role="list">
           {drawerRoutes ? (
             drawerRoutes.map((route) => {
               const isExpanded = route?.id === expandedDrawerListItem;
@@ -234,12 +269,12 @@ const Drawer = (): JSX.Element => {
                   disablePadding
                   key={routeId}
                   role="listitem"
-                  sx={classes.listItem}
+                  sx={classes.listItem(isDrawerExpanded)}
                   data-testid={appDrawerTestId.mainRoutes + routeId}
                 >
                   <ListItemButton
                     disableRipple
-                    sx={classes.listItemButton(isActiveRoute)}
+                    sx={classes.listItemButton(isActiveRoute, isDrawerExpanded)}
                     onClick={() =>
                       handleListItemButtonClick(
                         routeId,
@@ -262,17 +297,43 @@ const Drawer = (): JSX.Element => {
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
-                        <Icon
-                          name={route.icon}
-                          fill={getSelectedDrawerItemColor(
-                            theme,
-                            router.pathname,
-                            route.url
-                          )}
-                        />
+                        <Box sx={{ position: "relative", display: "flex" }}>
+                          <Icon
+                            name={route.icon}
+                            fill={getSelectedDrawerItemColor(
+                              theme,
+                              router.pathname,
+                              route?.url ?? null
+                            )}
+                          />
+                          {/* Red dot indicator for Timesheet icon when there are pending requests and submenu is collapsed */}
+                          <NotificationDot
+                            show={
+                              route.id === "1" &&
+                              pendingTimesheetCount > 0 &&
+                              !isExpanded
+                            }
+                          />
+                          {/* Red dot indicator for Leave icon when there are pending requests and submenu is collapsed */}
+                          <NotificationDot
+                            show={
+                              route.id === "2" &&
+                              pendingLeaveCount > 0 &&
+                              !isExpanded
+                            }
+                          />
+                          {/* Red dot indicator for Sign icon when there are pending documents and submenu is collapsed */}
+                          <NotificationDot
+                            show={
+                              route.id === "4" &&
+                              pendingSignCount > 0 &&
+                              !isExpanded
+                            }
+                          />
+                        </Box>
                       )}
                     </ListItemIcon>
-                    <Box sx={classes.listItemContent}>
+                    <Box sx={classes.listItemContent(isDrawerExpanded)}>
                       <ListItemText
                         primary={route?.name}
                         sx={classes.listItemText(
@@ -316,7 +377,7 @@ const Drawer = (): JSX.Element => {
 
                   {hasSubTree && (
                     <Collapse
-                      in={isExpanded}
+                      in={isExpanded && isDrawerExpanded}
                       collapsedSize="0rem"
                       sx={classes.collapse}
                     >
@@ -325,54 +386,63 @@ const Drawer = (): JSX.Element => {
                         id={`sub-list-${routeId}`}
                         role="list"
                       >
-                        {route?.subTree?.map((subTreeRoute) => (
-                          <ListItem
-                            key={subTreeRoute.id}
-                            role="listitem"
-                            sx={classes.subListItem}
-                            onClick={() =>
-                              handleListItemButtonClick(
-                                subTreeRoute.id,
-                                subTreeRoute.hasSubTree,
-                                subTreeRoute.url
-                              )
-                            }
-                            onKeyDown={(e) => {
-                              if (shouldActivateLink(e.key)) {
-                                e.preventDefault();
+                        {route?.subTree?.map((subTreeRoute) => {
+                          if (!subTreeRoute) return null;
+                          const subRoute =
+                            subTreeRoute as typeof subTreeRoute & {
+                              badge?: string;
+                            };
+
+                          return (
+                            <ListItem
+                              key={subRoute.id}
+                              role="listitem"
+                              sx={classes.subListItem}
+                              onClick={() =>
                                 handleListItemButtonClick(
-                                  subTreeRoute.id,
-                                  subTreeRoute.hasSubTree,
-                                  subTreeRoute.url
-                                );
-                              }
-                            }}
-                            data-testid={
-                              appDrawerTestId.subRoutes + subTreeRoute.id
-                            }
-                          >
-                            <ListItemButton
-                              disableRipple
-                              sx={classes.subListItemButton(
-                                router.pathname.includes(
-                                  subTreeRoute?.url ?? ""
+                                  subRoute.id,
+                                  subRoute.hasSubTree,
+                                  subRoute.url
                                 )
-                              )}
-                              tabIndex={isExpanded ? 0 : -1}
+                              }
+                              onKeyDown={(e) => {
+                                if (shouldActivateLink(e.key)) {
+                                  e.preventDefault();
+                                  handleListItemButtonClick(
+                                    subRoute.id,
+                                    subRoute.hasSubTree,
+                                    subRoute.url
+                                  );
+                                }
+                              }}
+                              data-testid={
+                                appDrawerTestId.subRoutes + subRoute.id
+                              }
                             >
-                              <ListItemText
-                                primary={subTreeRoute.name}
-                                sx={classes.subListItemText(
-                                  getSelectedDrawerItemColor(
-                                    theme,
-                                    router.pathname,
-                                    subTreeRoute.url
-                                  )
+                              <ListItemButton
+                                disableRipple
+                                sx={classes.subListItemButton(
+                                  router.pathname.includes(subRoute?.url ?? "")
                                 )}
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        ))}
+                                tabIndex={isExpanded ? 0 : -1}
+                              >
+                                <ListItemText
+                                  primary={subRoute.name}
+                                  sx={classes.subListItemText(
+                                    getSelectedDrawerItemColor(
+                                      theme,
+                                      router.pathname,
+                                      subRoute.url
+                                    )
+                                  )}
+                                />
+                                {subRoute?.badge && (
+                                  <NotificationBadge count={subRoute.badge} />
+                                )}
+                              </ListItemButton>
+                            </ListItem>
+                          );
+                        })}
                       </List>
                     </Collapse>
                   )}
@@ -386,32 +456,15 @@ const Drawer = (): JSX.Element => {
 
         {isDrawerExpanded && (
           <Stack sx={classes.footer}>
-            {user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) && (
-              <Button
-                styles={classes.applyLeaveBtn}
-                size={ButtonSizes.MEDIUM}
-                isFullWidth={false}
-                label={translateText(["applyLeaveBtn"])}
-                buttonStyle={ButtonStyle.PRIMARY}
-                endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-                onClick={() =>
-                  setMyLeaveRequestModalType(
-                    MyRequestModalEnums.LEAVE_TYPE_SELECTION
-                  )
-                }
-                data-testid={appDrawerTestId.buttons.applyLeaveBtn}
-              />
-            )}
-            <MuiLink
+            <Button
+              styles={classes.applyLeaveBtn}
+              size={ButtonSizes.SMALL}
+              isFullWidth={false}
+              label={translateText(["getHelp"])}
+              buttonStyle={ButtonStyle.TERTIARY}
               onClick={handleOpenSubmitRequestModal}
-              variant="body1"
-              color="inherit"
-              underline="hover"
-              sx={{ ...classes.link, cursor: "pointer" }}
               data-testid={appDrawerTestId.getHelpLink}
-            >
-              {translateText(["getHelp"])}
-            </MuiLink>
+            />
             <SubmitRequestModalController />
           </Stack>
         )}

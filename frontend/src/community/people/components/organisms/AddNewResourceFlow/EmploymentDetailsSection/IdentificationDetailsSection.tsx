@@ -1,6 +1,5 @@
 import { Grid2 as Grid, type SelectChangeEvent } from "@mui/material";
 import { useFormik } from "formik";
-import { forwardRef, useImperativeHandle, useMemo } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -96,7 +95,6 @@ const IdentificationDetailsSection = forwardRef<FormMethods, props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          fontFamily: "Poppins, sans-serif"
         }}
         dividerStyles={{
           mt: "0.5rem"

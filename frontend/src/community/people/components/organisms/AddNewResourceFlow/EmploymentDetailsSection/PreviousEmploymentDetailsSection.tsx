@@ -183,7 +183,6 @@ const PreviousEmploymentDetailsSection = (props: Props): JSX.Element => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Poppins, sans-serif"
       }}
       dividerStyles={{
         mt: "0.5rem"
