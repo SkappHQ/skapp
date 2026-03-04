@@ -283,7 +283,12 @@ public class PeopleServiceImpl implements PeopleService {
 		boolean isSuperAdmin = requestDto.getSystemPermissions() != null
 				&& Boolean.TRUE.equals(requestDto.getSystemPermissions().getIsSuperAdmin());
 
-		if (!isSuperAdmin && superAdminCount == 1) {
+		// if the updating employee was previous a super admin and is being updated to not
+		// be a super admin, and there is only 1 super admin currently, then update the
+		// active super admin roles to avoid having an active super admin with no
+		// permissions
+		if (Boolean.TRUE.equals(currentEmployeeDto.getEmployeeRole().getIsSuperAdmin() && !isSuperAdmin)
+				&& superAdminCount == 1) {
 			findAndUpdateActiveSuperAdminRoles();
 		}
 
