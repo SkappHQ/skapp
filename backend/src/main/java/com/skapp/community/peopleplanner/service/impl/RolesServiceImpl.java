@@ -282,33 +282,50 @@ public class RolesServiceImpl implements RolesService {
 	public void updateActiveSuperAdminRoles() {
 		log.info("updateActiveSuperAdminRoles: execution started");
 
-		EmployeeRole currentSuperAdminRole = employeeRoleDao
+		List<EmployeeRole> currentSuperAdminRoleList = employeeRoleDao
 			.findByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
-		if (currentSuperAdminRole != null) {
-			if (currentSuperAdminRole.getPeopleRole() != Role.PEOPLE_ADMIN) {
-				currentSuperAdminRole.setPeopleRole(Role.PEOPLE_ADMIN);
+		if (currentSuperAdminRoleList.size() == 1) {
+			boolean rolesUpdated = false;
+
+			EmployeeRole currentSuperAdminRole = currentSuperAdminRoleList.getFirst();
+
+			if (currentSuperAdminRole != null) {
+				if (currentSuperAdminRole.getPeopleRole() != Role.PEOPLE_ADMIN) {
+					currentSuperAdminRole.setPeopleRole(Role.PEOPLE_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getLeaveRole() != Role.LEAVE_ADMIN) {
+					currentSuperAdminRole.setLeaveRole(Role.LEAVE_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
+					currentSuperAdminRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getInvoiceRole() != Role.INVOICE_ADMIN) {
+					currentSuperAdminRole.setInvoiceRole(Role.INVOICE_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getOkrRole() != Role.OKR_ADMIN) {
+					currentSuperAdminRole.setOkrRole(Role.OKR_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getPmRole() != Role.PM_ADMIN) {
+					currentSuperAdminRole.setPmRole(Role.PM_ADMIN);
+					rolesUpdated = true;
+				}
+				if (currentSuperAdminRole.getEsignRole() != Role.ESIGN_ADMIN) {
+					currentSuperAdminRole.setEsignRole(Role.ESIGN_ADMIN);
+					rolesUpdated = true;
+				}
+
+				if (rolesUpdated) {
+					currentSuperAdminRole.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+					employeeRoleDao.save(currentSuperAdminRole);
+				}
+
 			}
-			if (currentSuperAdminRole.getLeaveRole() != Role.LEAVE_ADMIN) {
-				currentSuperAdminRole.setLeaveRole(Role.LEAVE_ADMIN);
-			}
-			if (currentSuperAdminRole.getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
-				currentSuperAdminRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
-			}
-			if (currentSuperAdminRole.getInvoiceRole() != Role.INVOICE_ADMIN) {
-				currentSuperAdminRole.setInvoiceRole(Role.INVOICE_ADMIN);
-			}
-			if (currentSuperAdminRole.getOkrRole() != Role.OKR_ADMIN) {
-				currentSuperAdminRole.setOkrRole(Role.OKR_ADMIN);
-			}
-			if (currentSuperAdminRole.getPmRole() != Role.PM_ADMIN) {
-				currentSuperAdminRole.setPmRole(Role.PM_ADMIN);
-			}
-			if (currentSuperAdminRole.getEsignRole() != Role.ESIGN_ADMIN) {
-				currentSuperAdminRole.setEsignRole(Role.ESIGN_ADMIN);
-			}
-			currentSuperAdminRole.setChangedDate(DateTimeUtils.getCurrentUtcDate());
-			employeeRoleDao.save(currentSuperAdminRole);
 		}
 
 		log.info("updateActiveSuperAdminRoles: execution ended");
@@ -553,7 +570,9 @@ public class RolesServiceImpl implements RolesService {
 				|| (roleRequestDto.getIsSuperAdmin() == null && employeeRole.getIsSuperAdmin() != null
 						&& employeeRole.getIsSuperAdmin());
 
-		if (isSuperAdmin) {
+		Long superAdminCount = getSuperAdminCountRaw();
+
+		if (isSuperAdmin && superAdminCount == 1) {
 			employeeRole.setPeopleRole(Role.PEOPLE_ADMIN);
 			employeeRole.setLeaveRole(Role.LEAVE_ADMIN);
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
@@ -608,10 +627,7 @@ public class RolesServiceImpl implements RolesService {
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {
 		return roleRequestDto.getPeopleRole() == null || !roleRequestDto.getPeopleRole().equals(Role.PEOPLE_ADMIN)
 				|| !roleRequestDto.getAttendanceRole().equals(Role.ATTENDANCE_ADMIN)
-				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN)
-				|| !roleRequestDto.getInvoiceRole().equals(Role.INVOICE_ADMIN)
-				|| !roleRequestDto.getPmRole().equals(Role.PM_ADMIN)
-				|| !roleRequestDto.getEsignRole().equals(Role.ESIGN_ADMIN);
+				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN);
 	}
 
 }

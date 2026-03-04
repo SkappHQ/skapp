@@ -20,6 +20,6 @@ public interface EmployeeRoleDao extends JpaRepository<EmployeeRole, Long>, Empl
 
 	long countByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set<AccountStatus> accountStatuses);
 
-	EmployeeRole findByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set<AccountStatus> accountStatuses);
+	List<EmployeeRole> findByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set<AccountStatus> accountStatuses);
 
 }
