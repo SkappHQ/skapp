@@ -23,6 +23,8 @@ public interface RolesService {
 
 	ResponseEntityDto getSuperAdminCount();
 
+	Long getSuperAdminCountRaw();
+
 	void saveEmployeeRoles(Employee employee);
 
 	void validateRoles(EmployeeSystemPermissionsDto userRoles, User user);
@@ -32,5 +34,7 @@ public interface RolesService {
 	EmployeeRole setupBulkEmployeeRoles(Employee employee);
 
 	EmployeeSystemPermissionsDto getDefaultEmployeeRoles();
+
+	void updateActiveSuperAdminRoles();
 
 }

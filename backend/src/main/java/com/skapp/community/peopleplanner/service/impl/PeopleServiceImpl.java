@@ -277,9 +277,23 @@ public class PeopleServiceImpl implements PeopleService {
 		userDao.save(user);
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
+
+		long superAdminCount = rolesService.getSuperAdminCountRaw();
+
+		boolean isSuperAdmin = requestDto.getSystemPermissions() != null
+				&& Boolean.TRUE.equals(requestDto.getSystemPermissions().getIsSuperAdmin());
+
+		if (!isSuperAdmin && superAdminCount == 1) {
+			findAndUpdateActiveSuperAdminRoles();
+		}
+
 		invalidateUserCache();
 
 		return new ResponseEntityDto(false, requestDto);
+	}
+
+	private void findAndUpdateActiveSuperAdminRoles() {
+		rolesService.updateActiveSuperAdminRoles();
 	}
 
 	protected void invalidateUserCache() {
