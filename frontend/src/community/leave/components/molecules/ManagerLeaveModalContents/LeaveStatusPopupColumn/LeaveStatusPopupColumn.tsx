@@ -1,8 +1,6 @@
 import { Box, Theme, Typography, useTheme } from "@mui/material";
 import { FC } from "react";
 
-import { APP_FONT } from "~community/common/constants/configs";
-
 interface Props {
   label: string;
   text: string | undefined;
@@ -85,7 +83,6 @@ const LeaveStatusPopupColumn: FC<Props> = ({
             : "none",
           outline: "none",
           padding: 12,
-          fontFamily: APP_FONT,
           fontStyle: "normal",
           fontWeight: "400",
           fontSize: " 16px",

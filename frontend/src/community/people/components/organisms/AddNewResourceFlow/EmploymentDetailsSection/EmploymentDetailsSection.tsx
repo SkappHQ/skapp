@@ -24,7 +24,6 @@ import InteractiveInputTrigger from "~community/common/components/molecules/Inte
 import MultiSelectChipInput from "~community/common/components/molecules/MultiSelectChipInput";
 import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
@@ -527,7 +526,6 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          fontFamily: APP_FONT_FAMILY
         }}
         dividerStyles={{
           mt: "0.5rem"

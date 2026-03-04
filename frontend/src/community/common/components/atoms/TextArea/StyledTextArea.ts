@@ -1,7 +1,5 @@
 import { styled } from "@mui/material";
 
-import { APP_FONT } from "~community/common/constants/configs";
-
 interface StyledTextAreaProps {
   textColor?: string;
 }
@@ -11,7 +9,6 @@ const StyledTextArea = styled("textarea")<StyledTextAreaProps>(
     width: "100%",
     borderRadius: "0.5rem",
     border: "none",
-    fontFamily: APP_FONT,
     fontStyle: "normal",
     fontWeight: "400",
     color: textColor || theme.palette.text.secondary,

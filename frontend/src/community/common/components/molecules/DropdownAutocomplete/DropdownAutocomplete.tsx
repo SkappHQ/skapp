@@ -12,7 +12,6 @@ import { type SxProps } from "@mui/system";
 import { FC, SyntheticEvent } from "react";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import { APP_FONT } from "~community/common/constants/configs";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -204,7 +203,6 @@ const DropdownAutocomplete: FC<Props> = ({
               color: theme.palette.text.secondary,
               fontSize: "1rem",
               fontWeight: 400,
-              fontFamily: APP_FONT,
               fontStyle: "normal",
               boxShadow: "none",
               border: `.0625rem solid ${theme.palette.grey[300]}`

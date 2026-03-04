@@ -1,4 +1,3 @@
-import { APP_FONT } from "~community/common/constants/configs";
 import { StyleProps } from "~community/common/types/CommonTypes";
 
 export const styles = (): StyleProps => ({
@@ -28,7 +27,6 @@ export const styles = (): StyleProps => ({
   button: {
     px: "2.5rem",
     width: "80%",
-    fontFamily: APP_FONT,
     fontWeight: 400,
     marginTop: "2.5rem",
     maxWidth: "37.5rem"

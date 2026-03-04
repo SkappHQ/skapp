@@ -4,7 +4,6 @@ import { FormikErrors, FormikProps } from "formik";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { L3EmergencyContactType } from "~community/people/types/PeopleTypes";
 import { EmergencyContactRelationshipList } from "~community/people/utils/data/employeeSetupStaticData";
 
@@ -49,7 +48,6 @@ const ContactDetailsFormSection = ({
         margin: "0 auto",
         display: "block",
         overflowY: "unset",
-        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

@@ -5,7 +5,6 @@ import Button from "~community/common/components/atoms/Button/Button";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InteractiveInputTrigger from "~community/common/components/molecules/InteractiveInputTrigger/InteractiveInputTrigger";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import {
   ButtonSizes,
@@ -202,7 +201,6 @@ const CareerProgressDetailsSection = ({
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: APP_FONT_FAMILY,
         display:
           (isReadOnly || isProfileView) &&
           employee?.employment?.careerProgression?.length === 0

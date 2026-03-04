@@ -1,8 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 import * as React from "react";
 
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
-
 declare module "@mui/material/styles" {
   interface OpacityPalette {
     10: string;
@@ -449,7 +447,7 @@ export const theme = createTheme({
     ]
   },
   typography: {
-    fontFamily: APP_FONT_FAMILY,
+    fontFamily: "var(--font-inter), sans-serif",
     allVariants: { color: "#000000" },
     // Heading, Modal Header
     h1: {
@@ -496,7 +494,6 @@ export const theme = createTheme({
     button: undefined,
     overline: undefined,
     onboardingHeader: {
-      fontFamily: APP_FONT_FAMILY,
       fontWeight: 600,
       fontSize: "2rem", //32px
       lineHeight: "100%"
@@ -533,7 +530,6 @@ export const theme = createTheme({
     },
     //Document status title
     documentStatusTitle: {
-      fontFamily: APP_FONT_FAMILY,
       fontWeight: 600,
       fontSize: "1.5rem" // 24px
     }

@@ -18,7 +18,6 @@ import InputField from "~community/common/components/molecules/InputField/InputF
 import InteractiveInputTrigger from "~community/common/components/molecules/InteractiveInputTrigger/InteractiveInputTrigger";
 import MultiSelectChipInput from "~community/common/components/molecules/MultiSelectChipInput";
 import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import {
   LONG_DATE_TIME_FORMAT,
   REVERSE_DATE_FORMAT
@@ -213,7 +212,6 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
           padding: "0",
           margin: "0 auto",
           height: "auto",
-          fontFamily: APP_FONT_FAMILY
         }}
         dividerStyles={{
           mt: "0.5rem"

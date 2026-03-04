@@ -4,7 +4,6 @@ import { DateTime } from "luxon";
 import Button from "~community/common/components/atoms/Button/Button";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import {
   LONG_DATE_TIME_FORMAT,
   REVERSE_DATE_FORMAT
@@ -79,7 +78,6 @@ const PreviousEmploymentDetailsSection = ({
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

@@ -8,7 +8,6 @@ import CustomTable from "~community/common/components/molecules/CustomTable/Cust
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import {
   ButtonSizes,
@@ -184,7 +183,6 @@ const PreviousEmploymentDetailsSection = (props: Props): JSX.Element => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: APP_FONT_FAMILY
       }}
       dividerStyles={{
         mt: "0.5rem"

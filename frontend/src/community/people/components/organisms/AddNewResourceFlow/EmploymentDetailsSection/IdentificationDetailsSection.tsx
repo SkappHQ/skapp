@@ -4,7 +4,6 @@ import { useFormik } from "formik";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
 import { usePeopleStore } from "~community/people/store/store";
@@ -96,7 +95,6 @@ const IdentificationDetailsSection = forwardRef<FormMethods, props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          fontFamily: APP_FONT_FAMILY
         }}
         dividerStyles={{
           mt: "0.5rem"

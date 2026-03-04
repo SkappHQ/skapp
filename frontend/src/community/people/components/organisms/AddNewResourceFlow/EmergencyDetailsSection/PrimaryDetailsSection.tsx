@@ -1,7 +1,7 @@
 import { Grid2 as Grid, type SelectChangeEvent } from "@mui/material";
 import { useFormik } from "formik";
-
-import { APP_FONT_FAMILY } from "~community/common/constants/configs";
+import {
+  ChangeEvent,
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -139,8 +139,7 @@ const PrimaryDetailsSection = forwardRef<RefCallback, Props>(
           padding: "0",
           margin: "0 auto",
           display: "block",
-          overflowY: "unset",
-          fontFamily: APP_FONT_FAMILY
+          overflowY: "unset"
         }}
         dividerStyles={{
           mt: "0.5rem"

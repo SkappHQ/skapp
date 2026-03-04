@@ -23,6 +23,13 @@ body {
     sans-serif;
 }
 
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
 a {
   color: inherit;
   text-decoration: none;
