@@ -14,10 +14,10 @@ describe("JobFamilyOverviewGraphTooltip", () => {
     const result = JobFamilyOverviewGraphTooltip(value, label, jobTitles);
 
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">100</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">100</div>`
     );
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">Job Family</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">Job Family</div>`
     );
   });
 
@@ -29,13 +29,13 @@ describe("JobFamilyOverviewGraphTooltip", () => {
     const result = JobFamilyOverviewGraphTooltip(value, label, jobTitles);
 
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">200</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">200</div>`
     );
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">Empty Job Family</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">Empty Job Family</div>`
     );
     expect(result).not.toContain(
-      `<div style="font-family: Inter; font-size: 1rem; font-weight: 400; color: #000; margin-right: 0.5rem;">`
+      `<div style="font-family: var(--app-font); font-size: 1rem; font-weight: 400; color: #000; margin-right: 0.5rem;">`
     );
   });
 
@@ -51,13 +51,13 @@ describe("JobFamilyOverviewGraphTooltip", () => {
     );
 
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">300</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 1.5rem; font-weight: 400; color: #000; margin-right: 0.5rem;">300</div>`
     );
     expect(result).toContain(
-      `<div style="font-family: Inter; font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">No Job Titles</div>`
+      `<div style="font-family: var(--app-font); font-style: normal; font-size: 0.875rem; font-weight: 400; color: ${theme.palette.trendChart.tooltip.color};">No Job Titles</div>`
     );
     expect(result).not.toContain(
-      `<div style="font-family: Inter; font-size: 1rem; font-weight: 400; color: #000; margin-right: 0.5rem;">`
+      `<div style="font-family: var(--app-font); font-size: 1rem; font-weight: 400; color: #000; margin-right: 0.5rem;">`
     );
   });
 });
