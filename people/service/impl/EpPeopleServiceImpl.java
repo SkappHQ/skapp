@@ -443,8 +443,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private List<EmployeeManagerDetailsResponseDto> getPrimaryManagersWithSupervisedEmployees(
 			List<Employee> employees) {
-		List<EmployeeManager> primaryEmployeeManagers = epEmployeeManagerDao.findByManagerInAndManagerType(employees,
-				ManagerType.PRIMARY);
+		List<EmployeeManager> primaryEmployeeManagers = epEmployeeManagerDao
+			.findByManagerInAndManagerTypeAndEmployeeAccountStatusIn(employees, ManagerType.PRIMARY,
+					List.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
 		Map<Long, Employee> managerIdMap = new HashMap<>();
 		Map<Long, List<Employee>> managerToEmployees = new HashMap<>();
