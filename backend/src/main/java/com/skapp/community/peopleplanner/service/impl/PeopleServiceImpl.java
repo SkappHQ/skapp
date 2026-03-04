@@ -280,10 +280,10 @@ public class PeopleServiceImpl implements PeopleService {
 
 		long superAdminCount = rolesService.getSuperAdminCountRaw();
 
-		boolean isSuperAdmin = requestDto.getSystemPermissions() != null
+		boolean isRequestDtoUserSuperAdmin = requestDto.getSystemPermissions() != null
 				&& Boolean.TRUE.equals(requestDto.getSystemPermissions().getIsSuperAdmin());
 
-		if (!isSuperAdmin && superAdminCount == 1) {
+		if (!isRequestDtoUserSuperAdmin && superAdminCount == 1) {
 			findAndUpdateActiveSuperAdminRoles();
 		}
 
