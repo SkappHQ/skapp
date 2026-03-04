@@ -49,7 +49,7 @@ public class EpUserServiceImpl implements EpUserService {
 	private final UserDao userDao;
 
 	@Override
-	public List<Tier> getCurrentUserTier() {
+	public List<Tier> getCurrentUserTiers() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || authentication.getDetails() == null)

@@ -95,7 +95,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 		List<EpEmployeeTimelineResponseListDto> responseList = new ArrayList<>();
 
-		List<Tier> currentUserTiers = epUserService.getCurrentUserTier();
+		List<Tier> currentUserTiers = epUserService.getCurrentUserTiers();
 		if (currentUserTiers.contains(Tier.CORE) || currentUserTiers.contains(Tier.PRO)) {
 			List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployee(employee);
 
