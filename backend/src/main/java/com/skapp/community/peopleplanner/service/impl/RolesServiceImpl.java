@@ -553,9 +553,7 @@ public class RolesServiceImpl implements RolesService {
 				|| (roleRequestDto.getIsSuperAdmin() == null && employeeRole.getIsSuperAdmin() != null
 						&& employeeRole.getIsSuperAdmin());
 
-		Long superAdminCount = getSuperAdminCountRaw();
-
-		if (isSuperAdmin && superAdminCount == 1) {
+		if (isSuperAdmin) {
 			employeeRole.setPeopleRole(Role.PEOPLE_ADMIN);
 			employeeRole.setLeaveRole(Role.LEAVE_ADMIN);
 			employeeRole.setAttendanceRole(Role.ATTENDANCE_ADMIN);
