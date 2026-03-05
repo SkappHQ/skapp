@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 //     com.skapp.community.common.service.impl.AuthServiceImpl.performSignIn(AuthServiceImpl.java:191)
 //     sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 //     sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-//     ...up to 5 frames
+//     ... 42 more frames
 // =====================================================================
 //
 // Sample output (ExceptionLoggingFilter):
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 //     org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:120)
 //     org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:112)
 //     com.skapp.community.common.service.impl.AuthServiceImpl.performSignIn(AuthServiceImpl.java:178)
-//     ...up to 5 frames
+//     ... 35 more frames
 // =====================================================================
 @UtilityClass
 public class ExceptionLogFormatter {
@@ -103,6 +103,10 @@ public class ExceptionLogFormatter {
 						.limit(STACK_TRACE_LIMIT)
 						.map(StackTraceElement::toString)
 						.collect(Collectors.joining("\n    "))));
+			int remaining = stackTrace.length - STACK_TRACE_LIMIT;
+			if (remaining > 0) {
+				log.append(String.format("    ... %d more frames%n", remaining));
+			}
 		}
 	}
 
