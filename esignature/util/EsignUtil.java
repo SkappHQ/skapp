@@ -43,6 +43,8 @@ public class EsignUtil {
 
 	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "/eSign/template/";
 
+	private static final String DOCUMENT_FILE_PATH_PREFIX = "/eSign/envelop/";
+
 	private static final String TEMPLATE_FOLDER_NAME = "/template/";
 
 	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
@@ -232,7 +234,7 @@ public class EsignUtil {
 		}
 
 		String folderName = isTemplate ? TEMPLATE_FOLDER_NAME : ENVELOPE_FOLDER_NAME;
-		String prefix = isTemplate ? TEMPLATE_DOCUMENT_FILE_PATH_PREFIX : ENVELOPE_FOLDER_NAME;
+		String prefix = isTemplate ? TEMPLATE_DOCUMENT_FILE_PATH_PREFIX : DOCUMENT_FILE_PATH_PREFIX;
 
 		int pathIndex = filePath.indexOf(folderName);
 		if (pathIndex != -1) {
