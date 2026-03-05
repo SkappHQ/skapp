@@ -199,12 +199,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(IOException.class)
 	public ResponseEntity<ResponseEntityDto> handleIOException(IOException e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION.name(), status);
 
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, e.getMessage(), CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION)),
-				status);
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION)), status);
 	}
 
 	@ExceptionHandler(MissingRequestCookieException.class)
