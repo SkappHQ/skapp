@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.masterrepository.StripeSubscriptionHistoryDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
@@ -41,7 +42,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -60,6 +63,8 @@ public class StripeServiceImpl implements StripeService {
 	private final TenantContext tenantContext;
 
 	private final SystemVersionService systemVersionService;
+
+	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
 
 	@Value("${stripe.product.core-product-id}")
 	private String stripeCoreProductId;
@@ -81,6 +86,13 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setTier(tenant.getTier() != null ? tenant.getTier() : Tier.FREE);
 
 		if (tenant.getStripeSubscription() == null) {
+			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+			List<Tier> usedTrials = Arrays.stream(new Tier[] { Tier.CORE, Tier.PRO })
+				.filter(t -> stripeSubscriptionHistoryDao.existsByTenantNameAndSubscriptionStatusAndTier(
+						tenant.getTenantName(), SubscriptionStatus.FREE_TRIAL, t))
+				.toList();
+			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+			responseDto.setUsedTrials(usedTrials);
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -123,6 +135,14 @@ public class StripeServiceImpl implements StripeService {
 
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		List<Tier> usedTrials = Arrays.stream(new Tier[] { Tier.CORE, Tier.PRO })
+			.filter(t -> stripeSubscriptionHistoryDao.existsByTenantNameAndSubscriptionStatusAndTier(
+					tenant.getTenantName(), SubscriptionStatus.FREE_TRIAL, t))
+			.toList();
+		tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
+		responseDto.setUsedTrials(usedTrials);
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -215,7 +235,17 @@ public class StripeServiceImpl implements StripeService {
 		SessionCreateParams.SubscriptionData.Builder subscriptionDataBuilder = SessionCreateParams.SubscriptionData
 			.builder();
 
-		if (!hadPreviousSubscription) {
+		Tier requestedTier = subscriptionRequestDto.getTier() == Tier.PRO ? Tier.PRO : Tier.CORE;
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		boolean hadTrialForRequestedTier = stripeSubscriptionHistoryDao
+			.existsByTenantNameAndSubscriptionStatusAndTier(tenantId, SubscriptionStatus.FREE_TRIAL, requestedTier);
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+
+		log.info("createCheckoutSession: tenant={}, requestedTier={}, hadPreviousSubscription={}, hadTrialForRequestedTier={}",
+				tenantId, requestedTier, hadPreviousSubscription, hadTrialForRequestedTier);
+
+		if (!hadTrialForRequestedTier) {
 			subscriptionDataBuilder.setTrialPeriodDays(trialPeriodDays);
 		}
 

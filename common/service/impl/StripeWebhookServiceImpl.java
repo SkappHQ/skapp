@@ -13,8 +13,10 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.exception.StripeVerificationException;
 import com.skapp.enterprise.common.masterrepository.StripeSubscriptionDao;
+import com.skapp.enterprise.common.masterrepository.StripeSubscriptionHistoryDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
+import com.skapp.enterprise.common.model.master.StripeSubscriptionHistory;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.StripeEmailService;
@@ -67,6 +69,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final DashboardEmailService dashboardEmailService;
 
 	private final EpRolesService epRolesService;
+
+	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -207,6 +211,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setStripeSubscription(stripeSubscription);
 
 			tenantDao.save(tenant);
+			saveHistory(tenant, tenant.getStripeSubscription());
 
 			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
 
@@ -303,6 +308,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				}
 
 				tenantDao.save(currentTenant.getTenant());
+				saveHistory(currentTenant.getTenant(), currentTenant);
 
 				tenantContext.setTenantAndSwitchSchema(currentTenant.getTenantName());
 
@@ -385,6 +391,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				currentTenant.setLastModifiedByEmail(invoice.getCustomerEmail());
 
 				tenantDao.save(tenant);
+				saveHistory(tenant, currentTenant);
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -456,6 +463,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setLastModifiedByEmail(customer.getEmail());
 
 			tenantDao.save(tenant);
+			saveHistory(tenant, stripeSubscription);
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
@@ -497,6 +505,16 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			Tenant tenant = stripeSubscription.getTenant();
 
+			boolean changed = false;
+
+			SubscriptionStatus newStatus = mapStripeStatusToSubscriptionStatus(subscription);
+			if (newStatus != null && newStatus != tenant.getSubscriptionStatus()) {
+				log.info("handleSubscriptionUpdated: Status changed from {} to {} for tenant: {}",
+						tenant.getSubscriptionStatus(), newStatus, tenant.getTenantName());
+				tenant.setSubscriptionStatus(newStatus);
+				changed = true;
+			}
+
 			if (subscription.getItems() != null && !subscription.getItems().getData().isEmpty()) {
 				String priceId = subscription.getItems().getData().getFirst().getPrice().getId();
 				SubscriptionPlan newPlan = stripeService.getSubscriptionPlanFromPriceId(priceId);
@@ -505,10 +523,18 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 					tenant.setSubscriptionPlan(newPlan);
 					log.info("handleSubscriptionUpdated: Plan changed to {} for tenant: {}", newPlan,
 							tenant.getTenantName());
+					changed = true;
 				}
 			}
 
+			if (!changed) {
+				log.info("handleSubscriptionUpdated: No meaningful changes detected for tenant: {}, skipping history save",
+						tenant.getTenantName());
+				return;
+			}
+
 			tenantDao.save(tenant);
+			saveHistory(tenant, stripeSubscription);
 
 			Customer customer = Customer.retrieve(customerId);
 			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();
@@ -536,6 +562,24 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			throw new StripeVerificationException(EPCommonMessageConstant.EP_COMMON_ERROR_HANDLE_SUBSCRIPTION_UPDATED,
 					event, StripeWebhookEventTypes.CUSTOMER_SUBSCRIPTION_UPDATED);
 		}
+	}
+
+	private void saveHistory(Tenant tenant, StripeSubscription stripeSubscription) {
+		StripeSubscriptionHistory history = new StripeSubscriptionHistory();
+		history.setTenantName(tenant.getTenantName());
+		history.setSubscriptionStatus(tenant.getSubscriptionStatus());
+		history.setTier(tenant.getTier());
+		history.setSubscriptionPlan(tenant.getSubscriptionPlan());
+		history.setCreatedByEmail(tenant.getLastModifiedByEmail());
+		history.setLastModifiedDate(Instant.now());
+		if (stripeSubscription != null) {
+			history.setSubscriptionId(stripeSubscription.getSubscriptionId());
+			history.setCustomerId(stripeSubscription.getCustomerId());
+			history.setSubscriptionStartDate(stripeSubscription.getSubscriptionStartDate());
+		}
+		stripeSubscriptionHistoryDao.save(history);
+		log.info("saveHistory: Recorded subscription history for tenant: {}, status: {}, tier: {}",
+				tenant.getTenantName(), tenant.getSubscriptionStatus(), tenant.getTier());
 	}
 
 	private SubscriptionStatus mapStripeStatusToSubscriptionStatus(Subscription subscription) {
