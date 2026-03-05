@@ -11,6 +11,7 @@ import {
   useState
 } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import Button from "~community/common/components/atoms/Button/Button";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
@@ -61,7 +62,6 @@ import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryU
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   employeeData: AllEmployeeDataType[];
@@ -89,9 +89,7 @@ const PeopleTable: FC<Props> = ({
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManager = user?.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER
-  );
+  const isPeopleManager = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
 
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);

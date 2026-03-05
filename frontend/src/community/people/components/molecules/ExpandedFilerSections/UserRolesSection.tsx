@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { RefObject } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -111,13 +110,7 @@ const UserRolesSection = ({
   };
 
   return (
-    <Stack
-      sx={{
-        overflowY: "auto",
-        flexDirection: "column",
-        maxHeight: "20rem"
-      }}
-    >
+    <div className="overflow-y-auto flex flex-col max-h-80">
       {filterData.map((filter) => (
         <EmployeeFilterSection
           basicChipRef={basicChipRef}
@@ -130,7 +123,7 @@ const UserRolesSection = ({
           currentFilter={employeeDataFilter[filter.filterKey]}
         />
       ))}
-    </Stack>
+    </div>
   );
 };
 

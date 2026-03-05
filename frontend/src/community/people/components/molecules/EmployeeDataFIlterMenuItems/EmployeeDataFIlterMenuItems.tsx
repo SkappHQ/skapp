@@ -1,11 +1,6 @@
-import { Box, Stack } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { JSX, useRef, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import {
-  ButtonSizes,
-  ButtonStyle as PrimaryButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
@@ -51,95 +46,52 @@ const EmployeeDataFIlterMenuItems = ({
   };
 
   return (
-    <Box>
-      <Box
-        sx={{
-          backgroundColor: "common.white",
-          flexDirection: "row",
-          display: "flex",
-          paddingX: isSmallScreen ? 2 : 3,
-          paddingTop: 2,
-          maxHeight: 350
-        }}
+    <div className="bg-white">
+      <div className="px-5 py-4 border-b border-b-secondary-accent">
+        <h1 className="h2">{translateText(["filters"])}</h1>
+      </div>
+      <div
+        className={`flex flex-row max-h-[350px] ${isSmallScreen ? "px-3" : "px-5"}`}
       >
-        <Stack
-          sx={{
-            flex: 1,
-            borderRight: 2,
-            borderRightColor: "#D4D4D8"
-          }}
-        >
+        <div className="flex-1 border-r border-r-secondary-accent py-4">
           <FIlterTypeSection
             firstColumnItems={firstColumnItems}
             secondColumnItems={secondColumnItems}
             selected={selected}
             setSelected={setSelected}
           />
-        </Stack>
-        <Stack
-          sx={{
-            flex: 2,
-            borderRight: 2,
-            borderRightColor: "#D4D4D8"
-          }}
-        >
+        </div>
+        <div className="flex-2 border-r border-r-secondary-accent py-4">
           <FilterTypeDetailedSection
             basicChipRef={secondColumnItems}
             selected={selected}
             teams={teams}
             jobFamilies={jobFamilies}
           />
-        </Stack>
+        </div>
         {!isSmallScreen && (
-          <Stack
-            sx={{
-              flex: 2
-            }}
-          >
+          <div className="flex-2 py-4">
             <SelectedFiltersSection />
-          </Stack>
+          </div>
         )}
-      </Box>
-      <Box
-        sx={{
-          paddingX: 3,
-          backgroundColor: "common.white"
-        }}
-      >
-        <Box
-          sx={{
-            borderTop: 2,
-            borderTopColor: "#D4D4D8",
-            paddingX: 3,
-            paddingY: 2,
-            display: "flex",
-            alignItems: "center",
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            gap: 2
+      </div>
+      <div className="border-t border-t-secondary-accent px-5 py-4 flex flex-row items-center justify-end gap-4">
+        <Button
+          variant="tertiary"
+          size={isSmallScreen ? "sm" : "md"}
+          onClick={() => {
+            handleClose();
+            resetEmployeeDataParams();
+            setSelected(PeopleFilterHeadings.DEMOGRAPICS);
           }}
         >
-          <Button
-            isFullWidth={false}
-            label={translateText(["reset"])}
-            buttonStyle={PrimaryButtonTypes.TERTIARY}
-            size={isSmallScreen ? ButtonSizes.SMALL : ButtonSizes.MEDIUM}
-            onClick={() => {
-              handleClose();
-              resetEmployeeDataParams();
-              setSelected(PeopleFilterHeadings.DEMOGRAPICS);
-            }}
-          />
-          <Button
-            isFullWidth={false}
-            label={translateText(["apply"])}
-            buttonStyle={PrimaryButtonTypes.PRIMARY}
-            size={isSmallScreen ? ButtonSizes.SMALL : ButtonSizes.MEDIUM}
-            onClick={handleSubmit}
-          />
-        </Box>
-      </Box>
-    </Box>
+          {translateText(["reset"])}
+        </Button>
+        <Button size={isSmallScreen ? "sm" : "md"} onClick={handleSubmit}>
+          {translateText(["apply"])}
+        </Button>
+      </div>
+    </div>
   );
 };
 

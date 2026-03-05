@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { useMemo } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -34,8 +34,9 @@ const SelectedFiltersSection = () => {
   const getTranslation = (term: string) => {
     return translateText([`selectedFiltersFilterItems.${term.toLowerCase()}`]);
   };
+
   const renderIconChip = (label: string) => (
-    <Stack>
+    <div>
       <IconChip
         label={
           !getTranslation(label).includes("peopleModule")
@@ -49,35 +50,31 @@ const SelectedFiltersSection = () => {
           border: `1px solid ${theme.palette.primary.dark}`
         }}
       />
-    </Stack>
+    </div>
   );
 
   const renderSection = (title: string, items: string[]) => {
     if (!items.length) return null;
 
     return (
-      <Stack sx={{ marginBottom: 2 }}>
-        <Typography
-          sx={{ fontSize: "12px", fontWeight: "600", marginBottom: 2 }}
-        >
+      <div className="mb-4 flex flex-col gap-2">
+        <p className="subtitle4 text-secondary-text">
           {translateText([title])}
-        </Typography>
-        <Stack flexDirection="row" gap={0.5} sx={{ flexWrap: "wrap" }}>
+        </p>
+        <div className="flex flex-row space-x-1 gap-2 flex-wrap">
           {items.map(renderIconChip)}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
     );
   };
 
   return (
-    <Stack sx={{ paddingX: 3, flexDirection: "column", overflowY: "auto" }}>
+    <div className="px-6 flex flex-col overflow-y-auto">
       {getFilterCount > 0 ? (
         <>
-          <Typography
-            sx={{ fontSize: "14px", fontWeight: "600", marginBottom: 2 }}
-          >
+          <p className="mb-4 body2 text-secondary-text">
             {translateText(["selectedFilters"], { count: getFilterCount })}
-          </Typography>
+          </p>
 
           {renderSection("demographics", [
             ...(employeeDataFilter.gender ? [employeeDataFilter.gender] : []),
@@ -99,13 +96,11 @@ const SelectedFiltersSection = () => {
           )}
         </>
       ) : (
-        <Typography
-          sx={{ fontSize: "14px", fontWeight: "600", marginBottom: 2 }}
-        >
+        <p className="text-sm font-semibold mb-4">
           {translateText(["noFIlters"])}
-        </Typography>
+        </p>
       )}
-    </Stack>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -97,13 +96,7 @@ const EmploymentSection = ({
   };
 
   return (
-    <Stack
-      sx={{
-        overflowY: "auto",
-        flexDirection: "column",
-        maxHeight: "20rem"
-      }}
-    >
+    <div className="overflow-y-auto flex flex-col max-h-80">
       {filterData.map((filter) => {
         return (
           <EmployeeFilterSection
@@ -118,7 +111,7 @@ const EmploymentSection = ({
           />
         );
       })}
-    </Stack>
+    </div>
   );
 };
 

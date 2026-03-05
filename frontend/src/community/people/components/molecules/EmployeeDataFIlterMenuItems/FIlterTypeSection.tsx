@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import {
   Dispatch,
   KeyboardEvent,
@@ -84,18 +84,8 @@ const FilterTypeSection = ({
   };
 
   return (
-    <Stack sx={{ paddingRight: isSmallScreen ? 1 : 3 }}>
-      <Typography
-        variant={isSmallScreen ? "caption" : "body2"}
-        sx={{
-          fontWeight: "600",
-          marginBottom: 2
-        }}
-      >
-        {translateText(["filters"])}
-      </Typography>
-
-      <Stack flexDirection="column" gap={1}>
+    <div className={isSmallScreen ? "pr-2" : "pr-5"}>
+      <div className="flex flex-col gap-1">
         {filters.map((filter, index) => (
           <BasicChip
             ref={(el: HTMLDivElement | null) => {
@@ -125,7 +115,7 @@ const FilterTypeSection = ({
                   ? theme.palette.primary.dark
                   : "black",
               padding: "0.75rem 1rem",
-              borderRadius: 3,
+              borderRadius: 2,
               fontSize: isSmallScreen ? "0.75rem" : "0.875rem",
               "&:focus": {
                 outline: `0.0625rem solid ${theme.palette.common.black}`,
@@ -134,8 +124,8 @@ const FilterTypeSection = ({
             }}
           />
         ))}
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

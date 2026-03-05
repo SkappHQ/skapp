@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { RefObject, SyntheticEvent } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -59,27 +59,10 @@ const DemographicsSection = ({
   };
 
   return (
-    <Stack
-      sx={{
-        overflowY: "auto"
-      }}
-    >
-      <Stack>
-        <Typography
-          variant={isSmallScreen ? "caption" : "body2"}
-          sx={{
-            fontWeight: "600",
-            marginBottom: 2
-          }}
-        >
-          Gender
-        </Typography>
-        <Stack
-          flexDirection={"row"}
-          sx={{
-            gap: 0.5
-          }}
-        >
+    <div className="overflow-y-auto">
+      <div className="flex flex-col gap-2">
+        <h1 className="subtitle3">Gender</h1>
+        <div className="flex flex-row gap-3">
           {genderFilters.map((genderItem, index) => (
             <BasicChip
               ref={(el: HTMLDivElement | null) => {
@@ -108,18 +91,22 @@ const DemographicsSection = ({
                   employeeDataFilter.gender === genderItem.value
                     ? theme.palette.primary.dark
                     : "black",
-                padding: "12px 16px",
+                padding: "8px 12px",
                 borderRadius: 5,
                 marginBottom: 2,
-                fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
+                fontSize: isSmallScreen ? "0.75rem" : "0.875rem",
+                border:
+                  employeeDataFilter.gender === genderItem.value
+                    ? `1px solid ${theme.palette.secondary.dark}`
+                    : "none"
               }}
             />
           ))}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
 
-      <Stack>
-        <Stack flexDirection={"column"}>
+      <div>
+        <div className="flex flex-col">
           <DropdownAutocomplete
             itemList={NationalityList}
             inputName="nationalty"
@@ -136,19 +123,11 @@ const DemographicsSection = ({
             }}
           />
 
-          <Stack
-            flexDirection={"row"}
-            sx={{
-              marginTop: 2,
-              gap: 0.5,
-              flexWrap: "wrap",
-              maxWidth: "250px"
-            }}
-          >
+          <div className="flex flex-row mt-4 gap-1 flex-wrap max-w-[250px]">
             {employeeDataFilter?.nationality &&
               employeeDataFilter?.nationality.length > 0 &&
               employeeDataFilter?.nationality.map((nationality, index) => (
-                <Stack key={index}>
+                <div key={index}>
                   <IconChip
                     label={nationality}
                     icon={
@@ -160,7 +139,8 @@ const DemographicsSection = ({
                     chipStyles={{
                       backgroundColor: theme.palette.secondary.main,
                       color: theme.palette.primary.dark,
-                      padding: "8px 12px"
+                      padding: "8px 12px",
+                      border: `1px solid ${theme.palette.secondary.dark}`
                     }}
                     onClick={() => {
                       setEmployeeDataFilter(
@@ -171,12 +151,12 @@ const DemographicsSection = ({
                       );
                     }}
                   />
-                </Stack>
+                </div>
               ))}
-          </Stack>
-        </Stack>
-      </Stack>
-    </Stack>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

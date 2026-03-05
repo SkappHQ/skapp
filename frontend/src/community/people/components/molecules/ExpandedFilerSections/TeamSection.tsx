@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { RefObject, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -58,21 +58,15 @@ const TeamSection = ({
   };
 
   return (
-    <Stack>
-      <Stack>
-        <Typography
-          variant={isSmallScreen ? "caption" : "body2"}
-          sx={{
-            fontWeight: "600",
-            marginBottom: 2
-          }}
-        >
+    <div>
+      <div>
+        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
           {translateText(["teams"])}
-        </Typography>
+        </p>
 
-        <Stack>
+        <div>
           {teams && teams?.length > 8 ? (
-            <Stack>
+            <div>
               <FilterSearch
                 id="search-team-input"
                 setIsPopperOpen={setIsPopperOpen}
@@ -94,15 +88,9 @@ const TeamSection = ({
                   employeeDataFilter?.team as FilterSearchSuggestionsType[]
                 }
               />
-              <Stack
-                flexDirection={"row"}
-                sx={{
-                  gap: 0.5,
-                  flexWrap: "wrap"
-                }}
-              >
+              <div className="flex flex-row gap-1 flex-wrap">
                 {employeeDataFilter?.team?.map((chip, index) => (
-                  <Stack key={index}>
+                  <div key={index}>
                     <IconChip
                       ref={(el: HTMLDivElement | null) => {
                         if (el && basicChipRef.current) {
@@ -130,20 +118,14 @@ const TeamSection = ({
                         );
                       }}
                     />
-                  </Stack>
+                  </div>
                 ))}
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           ) : (
-            <Stack
-              flexDirection={"row"}
-              sx={{
-                gap: 0.5,
-                flexWrap: "wrap"
-              }}
-            >
+            <div className="flex flex-row gap-1 flex-wrap">
               {teams?.map((team, index) => (
-                <Stack key={index}>
+                <div key={index}>
                   <IconChip
                     ref={(el: HTMLDivElement | null) => {
                       if (el && basicChipRef.current) {
@@ -174,16 +156,20 @@ const TeamSection = ({
                         ? theme.palette.primary.dark
                         : "black",
                       padding: "8px 12px",
-                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
+                      border: employeeDataFilter.team.find(
+                        (teamItem) => teamItem.id === team.id
+                      )
+                        ? `1px solid ${theme.palette.secondary.dark}`
+                        : "none"
                     }}
                   />
-                </Stack>
+                </div>
               ))}
-            </Stack>
+            </div>
           )}
-        </Stack>
-      </Stack>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { RefObject, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -59,21 +59,15 @@ const JobFamiliesSection = ({
   };
 
   return (
-    <Stack>
-      <Stack>
-        <Typography
-          variant={isSmallScreen ? "caption" : "body2"}
-          sx={{
-            fontWeight: "600",
-            marginBottom: 2
-          }}
-        >
+    <div>
+      <div>
+        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
           {translateText(["jobFamilies"])}
-        </Typography>
+        </p>
 
-        <Stack>
+        <div>
           {jobFamilies && jobFamilies.length > 8 ? (
-            <Stack>
+            <div>
               <FilterSearch
                 id="search-job-families-input"
                 setIsPopperOpen={setIsPopperOpen}
@@ -95,15 +89,9 @@ const JobFamiliesSection = ({
                   employeeDataFilter?.role as FilterSearchSuggestionsType[]
                 }
               />
-              <Stack
-                flexDirection={"row"}
-                sx={{
-                  gap: 0.5,
-                  flexWrap: "wrap"
-                }}
-              >
+              <div className="flex flex-row space-x-1 gap-2 flex-wrap">
                 {employeeDataFilter?.role?.map((chip, index) => (
-                  <Stack key={index}>
+                  <div key={index}>
                     <IconChip
                       ref={(el: HTMLDivElement | null) => {
                         if (el && basicChipRef.current) {
@@ -131,20 +119,14 @@ const JobFamiliesSection = ({
                         );
                       }}
                     />
-                  </Stack>
+                  </div>
                 ))}
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           ) : (
-            <Stack
-              flexDirection={"row"}
-              sx={{
-                gap: 0.5,
-                flexWrap: "wrap"
-              }}
-            >
+            <div className="flex flex-row space-x-1 gap-2 flex-wrap">
               {jobFamilies?.map((jobFamily, index) => (
-                <Stack key={index}>
+                <div key={index}>
                   <IconChip
                     ref={(el: HTMLDivElement | null) => {
                       if (el && basicChipRef.current) {
@@ -175,16 +157,21 @@ const JobFamiliesSection = ({
                         ? theme.palette.primary.dark
                         : "black",
                       padding: "8px 12px",
-                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
+                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem",
+                      border: employeeDataFilter.role.some(
+                        (item) => item.id === jobFamily.id
+                      )
+                        ? `1px solid ${theme.palette.secondary.dark}`
+                        : "none"
                     }}
                   />
-                </Stack>
+                </div>
               ))}
-            </Stack>
+            </div>
           )}
-        </Stack>
-      </Stack>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 };
 
