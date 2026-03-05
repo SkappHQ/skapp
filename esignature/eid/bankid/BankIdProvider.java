@@ -12,8 +12,8 @@ import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCompletionData;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdSignResponse;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdUser;
-import com.skapp.enterprise.esignature.eid.bankid.exception.BankIdApiException;
 import com.skapp.enterprise.esignature.eid.config.BankIdProperties;
+import org.springframework.web.client.HttpStatusCodeException;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.model.Recipient;
@@ -23,7 +23,6 @@ import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
-import com.skapp.enterprise.esignature.type.BankIdErrorCode;
 import com.skapp.enterprise.esignature.type.BankIdHintCode;
 import com.skapp.enterprise.esignature.type.BankIdStatus;
 import com.skapp.enterprise.esignature.type.EidFlowType;
@@ -109,40 +108,33 @@ public class BankIdProvider implements EidProvider {
 			.userNonVisibleData(documentHash)
 			.build();
 
-		try {
-			// Call BankID /sign endpoint
-			BankIdSignResponse signResponse = bankIdClient.sign(signRequest);
+		// Call BankID /sign endpoint
+		BankIdSignResponse signResponse = bankIdClient.sign(signRequest);
 
-			// Create and save session with BankID transient data
-			EidVerificationSession session = EidVerificationSession.builder()
-				.recipient(recipient)
-				.document(document)
-				.providerType(EidProviderType.SWEDISH_BANKID)
-				.flowType(EidFlowType.SIGN)
-				.status(EidVerificationStatus.PENDING)
-				.providerSessionId(signResponse.getOrderRef())
-				.endUserIp(endUserIp)
-				.documentHash(documentHash)
-				.userVisibleData(userVisibleData)
-				.initiatedAt(Instant.now())
-				.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
-				.qrStartToken(signResponse.getQrStartToken())
-				.qrStartSecret(signResponse.getQrStartSecret())
-				.autoStartToken(signResponse.getAutoStartToken())
-				.build();
+		// Create and save session with BankID transient data
+		EidVerificationSession session = EidVerificationSession.builder()
+			.recipient(recipient)
+			.document(document)
+			.providerType(EidProviderType.SWEDISH_BANKID)
+			.flowType(EidFlowType.SIGN)
+			.status(EidVerificationStatus.PENDING)
+			.providerSessionId(signResponse.getOrderRef())
+			.endUserIp(endUserIp)
+			.documentHash(documentHash)
+			.userVisibleData(userVisibleData)
+			.initiatedAt(Instant.now())
+			.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.qrStartToken(signResponse.getQrStartToken())
+			.qrStartSecret(signResponse.getQrStartSecret())
+			.autoStartToken(signResponse.getAutoStartToken())
+			.build();
 
-			session = sessionRepository.save(session);
+		session = sessionRepository.save(session);
 
-			log.info("BankIdProvider: Created session uuid={}, orderRef={}", session.getSessionUuid(),
-					signResponse.getOrderRef());
+		log.info("BankIdProvider: Created session uuid={}, orderRef={}", session.getSessionUuid(),
+				signResponse.getOrderRef());
 
-			return session;
-
-		}
-		catch (BankIdApiException e) {
-			log.error("BankIdProvider: Failed to initiate signing: {}", e.getMessage());
-			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_INITIATION_FAILED);
-		}
+		return session;
 	}
 
 	@Override
@@ -166,37 +158,30 @@ public class BankIdProvider implements EidProvider {
 				.userVisibleData(Base64.getEncoder().encodeToString(userVisibleData.getBytes(StandardCharsets.UTF_8)));
 		}
 
-		try {
-			BankIdSignResponse authResponse = bankIdClient.auth(requestBuilder.build());
+		BankIdSignResponse authResponse = bankIdClient.auth(requestBuilder.build());
 
-			EidVerificationSession session = EidVerificationSession.builder()
-				.recipient(recipient)
-				.document(document)
-				.providerType(EidProviderType.SWEDISH_BANKID)
-				.flowType(EidFlowType.AUTH)
-				.status(EidVerificationStatus.PENDING)
-				.providerSessionId(authResponse.getOrderRef())
-				.endUserIp(endUserIp)
-				.userVisibleData(userVisibleData)
-				.initiatedAt(Instant.now())
-				.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
-				.qrStartToken(authResponse.getQrStartToken())
-				.qrStartSecret(authResponse.getQrStartSecret())
-				.autoStartToken(authResponse.getAutoStartToken())
-				.build();
+		EidVerificationSession session = EidVerificationSession.builder()
+			.recipient(recipient)
+			.document(document)
+			.providerType(EidProviderType.SWEDISH_BANKID)
+			.flowType(EidFlowType.AUTH)
+			.status(EidVerificationStatus.PENDING)
+			.providerSessionId(authResponse.getOrderRef())
+			.endUserIp(endUserIp)
+			.userVisibleData(userVisibleData)
+			.initiatedAt(Instant.now())
+			.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.qrStartToken(authResponse.getQrStartToken())
+			.qrStartSecret(authResponse.getQrStartSecret())
+			.autoStartToken(authResponse.getAutoStartToken())
+			.build();
 
-			session = sessionRepository.save(session);
+		session = sessionRepository.save(session);
 
-			log.info("BankIdProvider: Created identification session uuid={}, orderRef={}", session.getSessionUuid(),
-					authResponse.getOrderRef());
+		log.info("BankIdProvider: Created identification session uuid={}, orderRef={}", session.getSessionUuid(),
+				authResponse.getOrderRef());
 
-			return session;
-
-		}
-		catch (BankIdApiException e) {
-			log.error("BankIdProvider: Failed to initiate identification: {}", e.getMessage());
-			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_INITIATION_FAILED);
-		}
+		return session;
 	}
 
 	@Override
@@ -213,31 +198,12 @@ public class BankIdProvider implements EidProvider {
 			return sessionRepository.save(session);
 		}
 
-		try {
-			// Call BankID /collect endpoint
-			BankIdCollectRequest collectRequest = new BankIdCollectRequest(orderRef);
+		BankIdCollectRequest collectRequest = new BankIdCollectRequest(orderRef);
+		BankIdCollectResponse collectResponse = bankIdClient.collect(collectRequest);
 
-			BankIdCollectResponse collectResponse = bankIdClient.collect(collectRequest);
+		updateSessionFromCollectResponse(session, collectResponse);
 
-			// Update session based on response
-			updateSessionFromCollectResponse(session, collectResponse);
-
-			return sessionRepository.save(session);
-
-		}
-		catch (BankIdApiException e) {
-			log.error("BankIdProvider: Failed to collect status: {}", e.getMessage());
-
-			// If the error indicates order not found, mark as expired
-			if (BankIdErrorCode.NOT_FOUND.getValue().equals(e.getErrorCode())) {
-				session.setStatus(EidVerificationStatus.EXPIRED);
-				session.setErrorCode(BankIdErrorCode.NOT_FOUND.getValue());
-				session.setErrorMessage("Order not found or expired.");
-				return sessionRepository.save(session);
-			}
-
-			throw new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_STATUS_CHECK_FAILED);
-		}
+		return sessionRepository.save(session);
 	}
 
 	@Override
@@ -252,7 +218,7 @@ public class BankIdProvider implements EidProvider {
 			bankIdClient.cancel(cancelRequest);
 
 		}
-		catch (BankIdApiException e) {
+		catch (HttpStatusCodeException e) {
 			// Log but don't throw - cancel may fail if order already expired
 			log.warn("BankIdProvider: Cancel request failed (may already be expired): {}", e.getMessage());
 		}
