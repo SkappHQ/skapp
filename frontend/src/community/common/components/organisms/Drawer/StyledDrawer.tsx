@@ -6,7 +6,7 @@ import { DRAWER_ANIMATION_DURATION } from "./styles";
 export const StyledDrawer = styled(Drawer)(({ theme, open }) => ({
   "&.MuiDrawer-docked": {
     [theme.breakpoints.up("lg")]: {
-      width: open ? "17.75rem" : "3rem",
+      width: open ? "17.75rem" : "4.6rem",
       height: "100dvh",
       transition: `width ${DRAWER_ANIMATION_DURATION} ease`
     }
@@ -24,7 +24,7 @@ export const StyledDrawer = styled(Drawer)(({ theme, open }) => ({
       width: open ? "17.75rem" : "0rem"
     },
     [theme.breakpoints.up("lg")]: {
-      width: open ? "17.75rem" : "3rem",
+      width: open ? "17.75rem" : "4.6rem",
       "&:hover .MuiIconButton-root": {
         opacity: 1,
         visibility: "visible"

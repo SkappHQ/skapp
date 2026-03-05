@@ -1,6 +1,5 @@
 import { Grid2 as Grid } from "@mui/material";
 import { DateTime } from "luxon";
-import { JSX } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
@@ -80,7 +79,6 @@ const VisaDetailsSection = (props: Props): JSX.Element => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Poppins, sans-serif"
       }}
       dividerStyles={{
         mt: "0.5rem"

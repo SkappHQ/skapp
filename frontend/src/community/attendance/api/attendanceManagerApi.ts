@@ -8,6 +8,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { getStartAndEndOfYear } from "~community/common/utils/dateTimeUtils";
+import { dashboardQueryKeys } from "~enterprise/common/api/utils/QueryKeys";
 
 import { graphDataPreprocessor } from "../actions/attendanceDashboardPreProcessor";
 import { useAttendanceStore } from "../store/attendanceStore";
@@ -140,6 +141,11 @@ export const useApproveDenyTimeRequest = (
       queryClient
         .invalidateQueries({
           queryKey: attendanceQueryKeys.getManagerRequests()
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
         })
         .catch(rejects);
     },

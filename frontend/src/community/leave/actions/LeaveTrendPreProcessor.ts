@@ -71,7 +71,7 @@ export const preProcessTotalValueWithLabel = (
           show: true,
           position: "inside",
           formatter: "Total",
-          fontFamily: "Poppins",
+          fontFamily: theme.typography.fontFamily,
           backgroundColor: theme.palette.common.white,
           borderRadius: 64,
           padding: [4, 8],

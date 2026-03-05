@@ -2,6 +2,7 @@ import { Theme, ThemeProvider } from "@mui/material/styles";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { onValue, ref } from "firebase/database";
 import App, { AppContext } from "next/app";
+import { Inter } from "next/font/google";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -30,6 +31,13 @@ import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
+
+// Initialize the font
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter"
+});
 
 function MyApp({
   Component,
@@ -112,9 +120,27 @@ function MyApp({
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
   return (
-    <AuthProvider>
-      {shouldUseWebSocketProvider ? (
-        <WebSocketProvider>
+    <div className={inter.variable}>
+      <AuthProvider>
+        {shouldUseWebSocketProvider ? (
+          <WebSocketProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
+                  <ToastProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                  </ToastProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                </I18nextProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </WebSocketProvider>
+        ) : (
           <TanStackProvider>
             <ThemeProvider theme={newTheme}>
               <I18nextProvider i18n={i18n}>
@@ -130,25 +156,9 @@ function MyApp({
               </I18nextProvider>
             </ThemeProvider>
           </TanStackProvider>
-        </WebSocketProvider>
-      ) : (
-        <TanStackProvider>
-          <ThemeProvider theme={newTheme}>
-            <I18nextProvider i18n={i18n}>
-              <ToastProvider>
-                <ErrorBoundary FallbackComponent={Error}>
-                  <RouteChangeLoader />
-                  <BaseLayout>
-                    <Component {...pageProps} />
-                  </BaseLayout>
-                </ErrorBoundary>
-              </ToastProvider>
-              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-            </I18nextProvider>
-          </ThemeProvider>
-        </TanStackProvider>
-      )}
-    </AuthProvider>
+        )}
+      </AuthProvider>
+    </div>
   );
 }
 

@@ -1,6 +1,5 @@
 import { Grid2 as Grid } from "@mui/material";
 import { useFormik } from "formik";
-import { DateTime } from "luxon";
 import { ChangeEvent, JSX, SyntheticEvent, useEffect, useState } from "react";
 
 import Button from "~community/common/components/atoms/Button/Button";
@@ -182,7 +181,6 @@ const VisaDetailsSection = (props: Props): JSX.Element => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Poppins, sans-serif"
       }}
       dividerStyles={{
         mt: "0.5rem"

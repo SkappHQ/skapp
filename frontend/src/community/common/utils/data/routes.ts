@@ -108,7 +108,7 @@ const routes = [
       },
       {
         id: "2B",
-        name: "All Leave Requests",
+        name: "All Requests",
         url: ROUTES.LEAVE.LEAVE_REQUESTS,
         hasSubTree: false,
         requiredAuthLevel: [
@@ -340,6 +340,7 @@ const routes = [
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
     hasSubTree: false,
+    badge: "New",
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.ATTENDANCE_ADMIN,

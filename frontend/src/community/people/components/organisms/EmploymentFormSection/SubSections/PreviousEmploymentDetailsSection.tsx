@@ -78,7 +78,6 @@ const PreviousEmploymentDetailsSection = ({
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        fontFamily: "Poppins, sans-serif"
       }}
       dividerStyles={{
         mt: "0.5rem"

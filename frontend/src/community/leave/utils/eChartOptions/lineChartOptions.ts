@@ -1,5 +1,6 @@
 import type * as echarts from "echarts";
 
+import { theme } from "~community/common/theme/theme";
 import { MultipleTooltipFormatterParams } from "~community/common/types/EchartTypes";
 import {
   LeaveTrendReturnTypes,
@@ -55,7 +56,7 @@ export const LeaveTrendForYearLineChartOptions = (
       max: maxMonth,
       axisLabel: {
         margin: 15,
-        fontFamily: "Poppins",
+        fontFamily: theme.typography.fontFamily,
         fontSize: 10
       }
     },
