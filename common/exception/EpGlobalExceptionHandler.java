@@ -3,12 +3,12 @@ package com.skapp.enterprise.common.exception;
 import com.skapp.community.common.exception.GlobalExceptionHandler;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.service.TelemetryService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.StripeLogDao;
 import com.skapp.enterprise.common.model.master.StripeLog;
 import com.skapp.enterprise.common.type.StripeLogStatus;
-import com.skapp.enterprise.common.util.TwilioStatusUtil;
 import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +28,18 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 
 	private final StripeLogDao stripeLogDao;
 
-	private final MessageUtil messageUtil;
+	private final TelemetryService telemetryService;
 
-	public EpGlobalExceptionHandler(MessageUtil messageUtil, HttpServletRequest request, StripeLogDao stripeLogDao) {
+	public EpGlobalExceptionHandler(MessageUtil messageUtil, HttpServletRequest request,
+			TelemetryService telemetryService, StripeLogDao stripeLogDao) {
 		super(messageUtil, request);
 		this.stripeLogDao = stripeLogDao;
-		this.messageUtil = messageUtil;
+		this.telemetryService = telemetryService;
+	}
+
+	@Override
+	protected void reportException(Exception e) {
+		telemetryService.report(e);
 	}
 
 	@ExceptionHandler(StripeVerificationException.class)
@@ -52,7 +58,7 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 		stripeLog.setTenantName(e.getTenantName());
 
 		stripeLogDao.save(stripeLog);
-		super.logDetailedException(e, e.getMessageKey().name(), messageUtil.getMessage(e.getMessageKey()), status);
+		super.handleException(e, e.getMessageKey().name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
@@ -63,7 +69,7 @@ public class EpGlobalExceptionHandler extends GlobalExceptionHandler {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		String message = e.getMessage();
 
-		logDetailedException(e, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION.name(), message, status);
+		handleException(e, EPCommonMessageConstant.COMMON_ERROR_STRIPE_EXCEPTION.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,

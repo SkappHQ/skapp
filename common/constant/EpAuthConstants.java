@@ -27,4 +27,6 @@ public class EpAuthConstants {
 
 	public static final String DEFAULT_FRONTEND_URL = "https://app.skapp.com";
 
+	public static final int BRUTE_FORCE_LOGIN_ATTEMPT_THRESHOLD = 3;
+
 }

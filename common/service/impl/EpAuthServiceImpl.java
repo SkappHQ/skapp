@@ -25,6 +25,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.TokenType;
 import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.service.BruteForceDetectionService;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -153,6 +154,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	private final EpUserEmailService epUserEmailService;
 
+	private final BruteForceDetectionService bruteForceDetectionService;
+
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
 
@@ -181,7 +184,8 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			TenantContext tenantContext, PasswordResetOtpDao passwordResetOtpDao,
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
 			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
-			EpUserEmailService epUserEmailService, CookieUtil cookieUtil) {
+			EpUserEmailService epUserEmailService, CookieUtil cookieUtil,
+			BruteForceDetectionService bruteForceDetectionService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -207,6 +211,17 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.validationService = validationService;
 		this.epGuestUserService = epGuestUserService;
 		this.epUserEmailService = epUserEmailService;
+		this.bruteForceDetectionService = bruteForceDetectionService;
+	}
+
+	@Override
+	protected void onSignInFailed(String email) {
+		bruteForceDetectionService.handleFailedSignInAttempt(email);
+	}
+
+	@Override
+	protected void onSignInSuccess(String email) {
+		bruteForceDetectionService.resetFailedSignInAttempts(email);
 	}
 
 	@Override
