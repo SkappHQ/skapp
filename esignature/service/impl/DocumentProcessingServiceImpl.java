@@ -134,10 +134,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			validateField(field);
 			PDPage page = getPage(document, field.getPageNumber());
 			float pageHeight = page.getMediaBox().getHeight();
+			float pageWidth = page.getMediaBox().getWidth();
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
-				addTextField(field, contentStream, pageHeight, document);
+				addTextField(field, contentStream, pageHeight, pageWidth, document);
 			}
 
 			document.save(outputStream);
@@ -321,7 +322,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return document.getPage(pageNumber - 1);
 	}
 
-	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
 		try {
@@ -329,10 +330,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			FieldType fieldType = field.getType();
 
 			if (FieldType.CHECKBOX.equals(fieldType)) {
-				addCheckbox(field, contentStream, pageHeight, document);
+				addCheckbox(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-				addRadioButton(field, contentStream, pageHeight, document);
+				addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else if (FieldType.TEXT.equals(fieldType)) {
 				addInputTextField(field, contentStream, pageHeight, document);
@@ -685,40 +686,46 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, type);
+		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
 				: EsignImageType.RADIO_BUTTON_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, type);
+		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
+	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight, float pageWidth,
 			EsignImageType imageType) {
 
 		try {
-			float width = field.getWidth();
-			float height = field.getHeight();
+			float width1 = 3.13f;
+			float height1 = 2.42f;
+
+			float width = (width1 / 100f) * pageWidth;
+			float height = (height1 / 100f) * pageHeight;
 
 			// Use the smaller dimension to ensure checkbox/radio-button fits within the
 			// field's
 			// bounding box
 			float size = Math.min(width, height);
 
-			// Convert from top-left origin to PDFBox bottom-left origin
-			float adjustedY = pageHeight - field.getYPosition() - size;
+//			// Convert from top-left origin to PDFBox bottom-left origin
+//			float adjustedY = pageHeight - field.getYPosition() - size;
+//
+//			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+//			float adjustedX = field.getXPosition() + xOffset;
 
-			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getXPosition() + xOffset;
+			float adjustedY = pageHeight - field.getYPosition() - size;
+			float adjustedX = field.getXPosition();
 
 			String imagePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + imageType.getFilename();
 
