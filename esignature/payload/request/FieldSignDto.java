@@ -43,6 +43,12 @@ public class FieldSignDto {
 	@NotNull(message = "{validation.field.height.notnull}")
 	private float height;
 
+	@NotNull(message = "{validation.field.width-percentage.notnull}")
+	private float widthPercentage;
+
+	@NotNull(message = "{validation.field.height-percentage.notnull}")
+	private float heightPercentage;
+
 	@NotNull(message = "{validation.field.value.notnull}")
 	private String fieldValue;
 

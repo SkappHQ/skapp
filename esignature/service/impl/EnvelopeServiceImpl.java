@@ -576,6 +576,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setYPosition(fieldDto.getYPosition());
 			field.setWidth(fieldDto.getWidth());
 			field.setHeight(fieldDto.getHeight());
+			field.setWidthPercentage(fieldDto.getWidthPercentage());
+			field.setWidthPercentage(fieldDto.getHeightPercentage());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 

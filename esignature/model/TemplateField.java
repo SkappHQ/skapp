@@ -46,6 +46,12 @@ public class TemplateField extends Auditable<String> {
 	@Column(name = "height")
 	private Float height;
 
+	@Column(name = "width_percentage")
+	private float widthPercentage;
+
+	@Column(name = "height_percentage")
+	private float heightPercentage;
+
 	@ManyToOne
 	@JoinColumn(name = "template_document_id")
 	private TemplateDocument templateDocument;

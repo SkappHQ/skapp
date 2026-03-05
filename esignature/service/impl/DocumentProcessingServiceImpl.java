@@ -336,7 +336,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else if (FieldType.TEXT.equals(fieldType)) {
-				addInputTextField(field, contentStream, pageHeight, document);
+				addInputTextField(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else {
 				// Adjust baseline offset for Y position
@@ -694,8 +694,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
-			PDDocument document) {
+	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			float pageWidth, PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
 				: EsignImageType.RADIO_BUTTON_UNCHECKED;
@@ -703,28 +703,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight, float pageWidth,
-			EsignImageType imageType) {
+	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
+			float pageWidth, EsignImageType imageType) {
 
 		try {
-			float width1 = 3.13f;
-			float height1 = 2.42f;
+			float width = field.getWidthPercentage();
+			float height = field.getHeightPercentage();
 
-			float width = (width1 / 100f) * pageWidth;
-			float height = (height1 / 100f) * pageHeight;
+			float adjustedWidth = (width / 100f) * pageWidth;
+			float adjustedHeight = (height / 100f) * pageHeight;
 
-			// Use the smaller dimension to ensure checkbox/radio-button fits within the
-			// field's
-			// bounding box
-			float size = Math.min(width, height);
+			float size = Math.min(adjustedWidth, adjustedHeight);
 
-//			// Convert from top-left origin to PDFBox bottom-left origin
-//			float adjustedY = pageHeight - field.getYPosition() - size;
-//
-//			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-//			float adjustedX = field.getXPosition() + xOffset;
-
-			float adjustedY = pageHeight - field.getYPosition() - size;
+			// Adjust Y position to account for image height, since PDF coordinates start
+			// from the bottom-left
+			float adjustedY = pageHeight - (field.getYPosition()) - size;
 			float adjustedX = field.getXPosition();
 
 			String imagePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + imageType.getFilename();
@@ -742,15 +735,22 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void addInputTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			PDDocument document) {
+			float pageWidth, PDDocument document) {
 
 		try {
 
-			float size = Math.min(field.getWidth(), field.getHeight());
+			float width = field.getWidthPercentage();
+			float height = field.getHeightPercentage();
 
-			float adjustedY = pageHeight - field.getYPosition() - size;
-			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getXPosition() + xOffset;
+			float adjustedWidth = (width / 100f) * pageWidth;
+			float adjustedHeight = (height / 100f) * pageHeight;
+
+			float size = Math.min(adjustedWidth, adjustedHeight);
+
+			// Adjust Y position to account for image height, since PDF coordinates start
+			// from the bottom-left
+			float adjustedY = pageHeight - (field.getYPosition()) - size;
+			float adjustedX = field.getXPosition();
 
 			FieldSignContainerDto container = field.getFieldSignContainer();
 

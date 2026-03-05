@@ -622,6 +622,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateField.setYPosition(templateFieldDto.getYPosition());
 			templateField.setWidth(templateFieldDto.getWidth());
 			templateField.setHeight(templateFieldDto.getHeight());
+			templateField.setWidthPercentage(templateFieldDto.getWidthPercentage());
+			templateField.setHeightPercentage(templateFieldDto.getHeightPercentage());
 			templateField.setTemplateDocument(templateFieldDocument);
 			templateField.setTemplateRecipient(templateRecipient);
 

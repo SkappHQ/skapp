@@ -35,6 +35,12 @@ public class AdvanceFieldDto {
 	@NotNull(message = "{validation.field.height.notnull}")
 	private Float height;
 
+	@NotNull(message = "{validation.field.width-percentage.notnull}")
+	private Float widthPercentage;
+
+	@NotNull(message = "{validation.field.height-percentage.notnull}")
+	private Float heightPercentage;
+
 	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;
 

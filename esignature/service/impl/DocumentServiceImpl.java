@@ -1455,6 +1455,8 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersionField.setValue(fieldSignDto.getFieldValue());
 			documentVersionField.setWidth(fieldSignDto.getWidth());
 			documentVersionField.setHeight(fieldSignDto.getHeight());
+			documentVersionField.setWidthPercentage(fieldSignDto.getWidthPercentage());
+			documentVersionField.setHeightPercentage(fieldSignDto.getHeightPercentage());
 
 			documentVersionField.setDocumentVersion(currentVersion);
 
@@ -1874,6 +1876,8 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldSignDto.setPageNumber(documentVersionField.getField().getPageNumber());
 		fieldSignDto.setWidth(documentVersionField.getWidth());
 		fieldSignDto.setHeight(documentVersionField.getHeight());
+		fieldSignDto.setWidthPercentage(documentVersionField.getWidthPercentage());
+		fieldSignDto.setHeightPercentage(documentVersionField.getHeightPercentage());
 		fieldSignDto.setType(documentVersionField.getField().getType());
 		fieldSignDto.setSigned(true);
 
@@ -1903,6 +1907,8 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldSignDto.setHeight(field.getHeight());
 		fieldSignDto.setType(field.getType());
 		fieldSignDto.setSigned(false);
+		fieldSignDto.setWidthPercentage(field.getWidthPercentage());
+		fieldSignDto.setHeightPercentage(field.getHeightPercentage());
 
 		FieldSignContainerDto fieldSignContainerDto = eSignMapper
 			.fieldContainerToFieldSignContainerDto(field.getFieldContainer());
@@ -1927,6 +1933,8 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionField.setYPosition(dto.getYPosition());
 		documentVersionField.setWidth(dto.getWidth());
 		documentVersionField.setHeight(dto.getHeight());
+		documentVersionField.setWidthPercentage(dto.getWidthPercentage());
+		documentVersionField.setHeightPercentage(dto.getHeightPercentage());
 		documentVersionField.setValue(dto.getFieldValue());
 		documentVersionField.setDocumentVersion(version);
 	}
