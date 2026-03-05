@@ -41,6 +41,12 @@ public class EsignUtil {
 
 	private static final String E_SIGN = "eSign/";
 
+	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "/eSign/template/";
+
+	private static final String TEMPLATE_FOLDER_NAME = "/template/";
+
+	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
+
 	private EsignUtil() {
 	}
 
@@ -218,6 +224,23 @@ public class EsignUtil {
 			return documentName.substring(0, EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) + "...";
 		}
 		return documentName;
+	}
+
+	public static String normalizeDocumentFilePath(String bucketName, String filePath, boolean isTemplate) {
+		if (filePath == null) {
+			return null;
+		}
+
+		String folderName = isTemplate ? TEMPLATE_FOLDER_NAME : ENVELOPE_FOLDER_NAME;
+		String prefix = isTemplate ? TEMPLATE_DOCUMENT_FILE_PATH_PREFIX : ENVELOPE_FOLDER_NAME;
+
+		int pathIndex = filePath.indexOf(folderName);
+		if (pathIndex != -1) {
+			String relativePath = filePath.substring(pathIndex + folderName.length());
+			return bucketName + prefix + relativePath;
+		}
+
+		return bucketName + "/" + filePath;
 	}
 
 }
