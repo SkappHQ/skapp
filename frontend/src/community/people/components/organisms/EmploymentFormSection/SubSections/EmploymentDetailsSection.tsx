@@ -1,5 +1,6 @@
 import { Grid2 as Grid } from "@mui/material";
 import { Theme, useTheme } from "@mui/system";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import {
@@ -211,7 +212,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          height: "auto",
+          height: "auto"
         }}
         dividerStyles={{
           mt: "0.5rem"
