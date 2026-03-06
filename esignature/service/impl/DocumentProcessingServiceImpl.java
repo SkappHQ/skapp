@@ -13,6 +13,7 @@ import com.skapp.enterprise.esignature.type.EsignImageType;
 import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.FontFamilyVariant;
 import com.skapp.enterprise.esignature.type.FontVariantType;
+import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.FontStyleExtractorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +74,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final float X_OFFSET_VALUE = 0.8f;
 
 	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
-
-	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
 
 	private static final float UNDERLINE_OFFSET = 1.5f;
 
@@ -766,25 +765,35 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			if (fontFamily == null || fontColor == null) {
 				font = loadFont(document);
 				contentStream.setFont(font, fontSize);
-				contentStream.setNonStrokingColor(TEXT_COLOR.getRed() / COLOR_NORMALIZATION_FACTOR,
-						TEXT_COLOR.getGreen() / COLOR_NORMALIZATION_FACTOR,
-						TEXT_COLOR.getBlue() / COLOR_NORMALIZATION_FACTOR);
+				float[] rgb = EsignUtil.normalizeColor(TEXT_COLOR);
+				contentStream.setNonStrokingColor(rgb[0], rgb[1], rgb[2]);
 			}
 			else {
 				font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
 				Color color = Color.decode(fontColor);
 				contentStream.setFont(font, fontSize);
-				contentStream.setNonStrokingColor(color.getRed() / COLOR_NORMALIZATION_FACTOR,
-						color.getGreen() / COLOR_NORMALIZATION_FACTOR, color.getBlue() / COLOR_NORMALIZATION_FACTOR);
+				float[] rgb = EsignUtil.normalizeColor(color);
+				contentStream.setNonStrokingColor(rgb[0], rgb[1], rgb[2]);
 			}
 
 			// User Inputs into a Text area, therefore user can enter text in multiple new
 			// lines. We need to handle that by splitting the text into lines and
 			// rendering each line separately with appropriate line spacing.
+			// Additionally, if a line exceeds the field width it is word-wrapped
+			// automatically so no text overflows the field boundary.
 			String[] lines = field.getFieldValue().split(NEW_LINE_CHARACTER);
 			float lineHeight = fontSize + DEFAULT_LINE_HEIGHT;
 			float y = adjustedY;
+			List<String> wrappedLines = new ArrayList<>();
 			for (String line : lines) {
+				wrappedLines.addAll(wrapTextToLines(font, fontSize, line, adjustedWidth));
+			}
+			// Truncate lines that would exceed the field height
+			int maxLines = (int) Math.floor(adjustedHeight / lineHeight);
+			if (wrappedLines.size() > maxLines) {
+				wrappedLines = wrappedLines.subList(0, maxLines);
+			}
+			for (String line : wrappedLines) {
 				contentStream.beginText();
 				contentStream.setFont(font, fontSize);
 				contentStream.newLineAtOffset(adjustedX, y);
@@ -795,10 +804,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			if (isUnderline) {
 				Color underlineColor = fontColor != null ? Color.decode(fontColor) : TEXT_COLOR;
-				contentStream.setStrokingColor(underlineColor.getRed() / COLOR_NORMALIZATION_FACTOR,
-						underlineColor.getGreen() / COLOR_NORMALIZATION_FACTOR,
-						underlineColor.getBlue() / COLOR_NORMALIZATION_FACTOR);
-				float textWidth = font.getStringWidth(field.getFieldValue()) / GLYPH_TO_EM_UNIT * fontSize;
+				float[] rgb = EsignUtil.normalizeColor(underlineColor);
+				contentStream.setStrokingColor(rgb[0], rgb[1], rgb[2]);
+				// Draw underline only under the first wrapped line
+				String firstLine = wrappedLines.isEmpty() ? field.getFieldValue() : wrappedLines.getFirst();
+				float textWidth = font.getStringWidth(firstLine) / GLYPH_TO_EM_UNIT * fontSize;
 				float underlineY = adjustedY - UNDERLINE_OFFSET;
 				contentStream.moveTo(adjustedX, underlineY);
 				contentStream.lineTo(adjustedX + textWidth, underlineY);
@@ -811,6 +821,48 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			log.error("Error rendering text field to PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
+	}
+
+	/**
+	 * Wraps a single line of text into multiple lines so that no line exceeds
+	 * {@code maxWidth} points. Words are split on spaces; if a single word is wider than
+	 * {@code maxWidth} it is placed on its own line without further splitting.
+	 */
+	private List<String> wrapTextToLines(PDType0Font font, float fontSize, String text, float maxWidth) {
+		List<String> result = new ArrayList<>();
+		if (text == null || text.isEmpty()) {
+			result.add(text == null ? "" : text);
+			return result;
+		}
+
+		String[] words = text.split(" ", -1);
+		StringBuilder currentLine = new StringBuilder();
+
+		for (String word : words) {
+			String candidate = currentLine.isEmpty() ? word : currentLine + " " + word;
+			float candidateWidth;
+			try {
+				candidateWidth = font.getStringWidth(candidate) / GLYPH_TO_EM_UNIT * fontSize;
+			}
+			catch (IOException e) {
+				log.warn("Could not measure word width, skipping wrap check: {}", e.getMessage());
+				candidateWidth = 0;
+			}
+
+			if (candidateWidth <= maxWidth || currentLine.isEmpty()) {
+				currentLine = new StringBuilder(candidate);
+			}
+			else {
+				result.add(currentLine.toString());
+				currentLine = new StringBuilder(word);
+			}
+		}
+
+		if (!currentLine.isEmpty()) {
+			result.add(currentLine.toString());
+		}
+
+		return result;
 	}
 
 	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {

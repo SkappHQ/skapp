@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.awt.Color;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -40,6 +41,8 @@ public class EsignUtil {
 	private static final String DEFAULT_PATH = "/";
 
 	private static final String E_SIGN = "eSign/";
+
+	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
 
 	private EsignUtil() {
 	}
@@ -218,6 +221,17 @@ public class EsignUtil {
 			return documentName.substring(0, EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) + "...";
 		}
 		return documentName;
+	}
+
+	/**
+	 * Normalizes a {@link Color}'s RGB channels from the [0, 255] integer range into the
+	 * [0.0, 1.0] float range expected by PDFBox content-stream color setters.
+	 * <p>
+	 * Returns a {@code float[3]} array in the order {@code [red, green, blue]}.
+	 */
+	public static float[] normalizeColor(Color color) {
+		return new float[] { color.getRed() / COLOR_NORMALIZATION_FACTOR, color.getGreen() / COLOR_NORMALIZATION_FACTOR,
+				color.getBlue() / COLOR_NORMALIZATION_FACTOR };
 	}
 
 }
