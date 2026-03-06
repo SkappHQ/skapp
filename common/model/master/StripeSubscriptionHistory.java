@@ -40,6 +40,9 @@ public class StripeSubscriptionHistory {
 	@Column(name = "subscription_start_date")
 	private Instant subscriptionStartDate;
 
+	@Column(name = "subscription_end_date")
+	private Instant subscriptionEndDate;
+
 	@Column(name = "created_by_email")
 	private String createdByEmail;
 
