@@ -18,6 +18,30 @@ public class EsignUtil {
 
 	private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
 
+	public static final String CSS_FONT_WEIGHT_BOLD = "bold";
+
+	public static final String CSS_FONT_WEIGHT_NORMAL = "normal";
+
+	public static final String CSS_FONT_STYLE_ITALIC = "italic";
+
+	public static final String CSS_FONT_STYLE_NORMAL = "normal";
+
+	public static final String CSS_TEXT_DECORATION_UNDERLINE = "underline";
+
+	public static final String CSS_TEXT_DECORATION_NONE = "none";
+
+	public static String resolveFontWeight(boolean isBold) {
+		return isBold ? CSS_FONT_WEIGHT_BOLD : CSS_FONT_WEIGHT_NORMAL;
+	}
+
+	public static String resolveFontStyle(boolean isItalic) {
+		return isItalic ? CSS_FONT_STYLE_ITALIC : CSS_FONT_STYLE_NORMAL;
+	}
+
+	public static String resolveTextDecoration(boolean isUnderline) {
+		return isUnderline ? CSS_TEXT_DECORATION_UNDERLINE : CSS_TEXT_DECORATION_NONE;
+	}
+
 	private static final String HEADER_CF_CONNECTING_IP = "CF-Connecting-IP";
 
 	private static final String HEADER_CF_CONNECTING_IPV6 = "CF-Connecting-IPv6";

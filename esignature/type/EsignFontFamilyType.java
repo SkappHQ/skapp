@@ -7,8 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EsignFontFamilyType {
 
-	ARIAL("ARIAL", "Arimo"), CALIBRI("CALIBRI", "Carlito"), COURIER_NEW("COURIER_NEW", "Cousine"),
-	TIMES_NEW_ROMAN("TIMES_NEW_ROMAN", "Tinos"), VERDANA("VERDANA", "DejaVuSans"), MS_GOTHIC("MS_GOTHIC", "NotoSansJP"),
+	ARIAL("Arial", "Arimo"), CALIBRI("Calibri", "Carlito"), COURIER_NEW("Courier New", "Cousine"),
+	TIMES_NEW_ROMAN("Times New Roman", "Tinos"), VERDANA("Verdana", "DejaVuSans"), MS_GOTHIC("MS Gothic", "NotoSansJP"),
 	INTER("INTER", "Inter"), POPPINS("POPPINS", "Poppins"), DEJAVU_SANS("DejaVuSans", "DejaVuSans"),
 	NOTO_SANS_JP("Noto Sans JP", "NotoSansJP");
 
@@ -23,6 +23,18 @@ public enum EsignFontFamilyType {
 			}
 		}
 		return null;
+	}
+
+	public static String getFamilyName(String enumName) {
+		if (enumName == null) {
+			return "sans-serif";
+		}
+		for (EsignFontFamilyType type : values()) {
+			if (type.name().equals(enumName)) {
+				return type.familyName;
+			}
+		}
+		return "sans-serif";
 	}
 
 }

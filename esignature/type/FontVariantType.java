@@ -11,16 +11,6 @@ public enum FontVariantType {
 
 	private final String variantName;
 
-	public static FontVariantType fromFlags(boolean isBold, boolean isItalic) {
-		if (isBold && isItalic)
-			return BOLD_ITALIC;
-		if (isBold)
-			return BOLD;
-		if (isItalic)
-			return ITALIC;
-		return REGULAR;
-	}
-
 	public static FontVariantType fromString(String variant) {
 		for (FontVariantType v : values()) {
 			if (v.variantName.equalsIgnoreCase(variant)) {

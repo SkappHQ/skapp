@@ -29,9 +29,9 @@ public class PDFResourceServiceImpl implements PDFResourceService {
 
 	private final AmazonS3Service amazonS3Service;
 
-	public PDType0Font loadFont(PDDocument document, String path) {
-		byte[] fontBytes = loadFontFromS3(path);
-		return createFont(document, fontBytes, path);
+	@Override
+	public byte[] loadFontBytes(String path) {
+		return loadFontFromS3(path);
 	}
 
 	@Override
@@ -66,18 +66,6 @@ public class PDFResourceServiceImpl implements PDFResourceService {
 		byte[] bytes = amazonS3Service.downloadFileAsBytes(bucket, s3Key);
 		log.info("[FontCache] Cached font '{}' ({} KB)", path, bytes.length / 1024);
 		return bytes;
-	}
-
-	private PDType0Font createFont(PDDocument document, byte[] fontBytes, String path) {
-		try {
-			// ByteArrayInputStream wraps existing byte[] — no copy, no I/O
-			return PDType0Font.load(document, new ByteArrayInputStream(fontBytes));
-		}
-		catch (Exception e) {
-			log.warn("Failed to create PDType0Font from cached bytes for: " + path, e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_CREATE_PDF_FONT_FROM_CACHE);
-
-		}
 	}
 
 	private static byte[] convertSvgToPng(byte[] svgBytes, float width, float height) {

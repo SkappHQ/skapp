@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
@@ -19,13 +21,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.multipdf.LayerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -737,20 +742,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float pageWidth, PDDocument document) {
 
 		try {
-
-			float width = field.getWidthPercentage();
-			float height = field.getHeightPercentage();
-
-			float adjustedWidth = (width / 100f) * pageWidth;
-			float adjustedHeight = (height / 100f) * pageHeight;
-
-			float size = Math.min(adjustedWidth, adjustedHeight);
-
-			// Adjust Y position to account for image height, since PDF coordinates start
-			// from the bottom-left
-			float adjustedY = pageHeight - (field.getYPosition()) - size;
-			float adjustedX = field.getXPosition();
-
 			FieldSignContainerDto container = field.getFieldSignContainer();
 
 			String fontFamily = FontStyleExtractorUtil.extractFontFamily(container);
@@ -760,118 +751,73 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			boolean isItalic = FontStyleExtractorUtil.extractIsItalic(container);
 			boolean isUnderline = FontStyleExtractorUtil.extractIsUnderline(container);
 
-			PDType0Font font;
+			// Resolve display name to enum type
+			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
+			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
-			if (fontFamily == null || fontColor == null) {
-				font = loadFont(document);
-				contentStream.setFont(font, fontSize);
-				float[] rgb = EsignUtil.normalizeColor(TEXT_COLOR);
-				contentStream.setNonStrokingColor(rgb[0], rgb[1], rgb[2]);
-			}
-			else {
-				font = loadFontWithStyle(document, fontFamily, isBold, isItalic);
-				Color color = Color.decode(fontColor);
-				contentStream.setFont(font, fontSize);
-				float[] rgb = EsignUtil.normalizeColor(color);
-				contentStream.setNonStrokingColor(rgb[0], rgb[1], rgb[2]);
+			// Build S3 font path
+			String fontPath = null;
+			if (folderName != null) {
+				String variant = FontVariantType.REGULAR.getVariantName();
+				String filename = buildFilename(folderName, variant);
+				fontPath = RESOURCE_BASE_PATH + FONT_BASE_PATH + folderName + "/" + filename;
 			}
 
-			// User Inputs into a Text area, therefore user can enter text in multiple new
-			// lines. We need to handle that by splitting the text into lines and
-			// rendering each line separately with appropriate line spacing.
-			// Additionally, if a line exceeds the field width it is word-wrapped
-			// automatically so no text overflows the field boundary.
-			String[] lines = field.getFieldValue().split(NEW_LINE_CHARACTER);
-			float lineHeight = fontSize + DEFAULT_LINE_HEIGHT;
-			float y = adjustedY;
-			List<String> wrappedLines = new ArrayList<>();
-			for (String line : lines) {
-				wrappedLines.addAll(wrapTextToLines(font, fontSize, line, adjustedWidth));
-			}
-			// Truncate lines that would exceed the field height
-			int maxLines = (int) Math.floor(adjustedHeight / lineHeight);
-			if (wrappedLines.size() > maxLines) {
-				wrappedLines = wrappedLines.subList(0, maxLines);
-			}
-			for (String line : wrappedLines) {
-				contentStream.beginText();
-				contentStream.setFont(font, fontSize);
-				contentStream.newLineAtOffset(adjustedX, y);
-				contentStream.showText(line);
-				contentStream.endText();
-				y -= lineHeight;
-			}
+			float width = field.getWidthPercentage();
+			float height = field.getHeightPercentage();
 
-			if (isUnderline) {
-				Color underlineColor = fontColor != null ? Color.decode(fontColor) : TEXT_COLOR;
-				float[] rgb = EsignUtil.normalizeColor(underlineColor);
-				contentStream.setStrokingColor(rgb[0], rgb[1], rgb[2]);
-				// Draw underline only under the first wrapped line
-				String firstLine = wrappedLines.isEmpty() ? field.getFieldValue() : wrappedLines.getFirst();
-				float textWidth = font.getStringWidth(firstLine) / GLYPH_TO_EM_UNIT * fontSize;
-				float underlineY = adjustedY - UNDERLINE_OFFSET;
-				contentStream.moveTo(adjustedX, underlineY);
-				contentStream.lineTo(adjustedX + textWidth, underlineY);
-				contentStream.setLineWidth(UNDERLINE_THICKNESS);
-				contentStream.stroke();
-			}
+			float adjustedWidth = (width / 100f) * pageWidth;
+			float adjustedHeight = (height / 100f) * pageHeight;
+
+			// PDF Y-axis starts from bottom-left; convert from top-left origin
+			float adjustedX = field.getXPosition();
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+
+			// Build font-style CSS
+			String fontWeight = EsignUtil.resolveFontWeight(isBold);
+			String fontStyle = EsignUtil.resolveFontStyle(isItalic);
+			String textDecoration = EsignUtil.resolveTextDecoration(isUnderline);
+			String escapedValue = EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : "");
+
+			String html = String.format("""
+					<html>
+					<head>
+					<style>
+					  @page { margin: 0; }
+					  * { margin: 0; padding: 0; box-sizing: border-box; }
+					  body {
+					    width: %.2fpt;
+					    height: %.2fpt;
+					    overflow: hidden;
+					    font-family: %s;
+					    font-size: %.2fpt;
+					    font-weight: %s;
+					    font-style: %s;
+					    text-decoration: %s;
+					    color: %s;
+					  }
+					</style>
+					</head>
+					<body>%s</body>
+					</html>
+					""", adjustedWidth, adjustedHeight, fontFamilyCss, fontSize, fontWeight, fontStyle, textDecoration,
+					fontColor, escapedValue);
+
+			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
+			byte[] htmlPdfBytes = htmlToPdfBytes(html, adjustedWidth, adjustedHeight, fontPath, fontFamilyCss);
+
+			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
+
+			contentStream.saveGraphicsState();
+			contentStream.transform(Matrix.getTranslateInstance(adjustedX, adjustedY));
+			contentStream.drawForm(formXObject);
+			contentStream.restoreGraphicsState();
 
 		}
 		catch (Exception e) {
 			log.error("Error rendering text field to PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
-	}
-
-	/**
-	 * Wraps a single line of text into multiple lines so that no line exceeds
-	 * {@code maxWidth} points. Words are split on spaces; if a single word is wider than
-	 * {@code maxWidth} it is placed on its own line without further splitting.
-	 */
-	private List<String> wrapTextToLines(PDType0Font font, float fontSize, String text, float maxWidth) {
-		List<String> result = new ArrayList<>();
-		if (text == null || text.isEmpty()) {
-			result.add(text == null ? "" : text);
-			return result;
-		}
-
-		String[] words = text.split(" ", -1);
-		StringBuilder currentLine = new StringBuilder();
-
-		for (String word : words) {
-			String candidate = currentLine.isEmpty() ? word : currentLine + " " + word;
-			float candidateWidth;
-			try {
-				candidateWidth = font.getStringWidth(candidate) / GLYPH_TO_EM_UNIT * fontSize;
-			}
-			catch (IOException e) {
-				log.warn("Could not measure word width, skipping wrap check: {}", e.getMessage());
-				candidateWidth = 0;
-			}
-
-			if (candidateWidth <= maxWidth || currentLine.isEmpty()) {
-				currentLine = new StringBuilder(candidate);
-			}
-			else {
-				result.add(currentLine.toString());
-				currentLine = new StringBuilder(word);
-			}
-		}
-
-		if (!currentLine.isEmpty()) {
-			result.add(currentLine.toString());
-		}
-
-		return result;
-	}
-
-	private String determineVariant(String folderName, boolean isBold, boolean isItalic) {
-		// Handle Noto Sans JP (no italic variants)
-		if (EsignFontFamilyType.NOTO_SANS_JP.getFolderName().equals(folderName) && isItalic) {
-			return FontVariantType.fromFlags(isBold, false).getVariantName();
-		}
-		// Standard variant determination
-		return FontVariantType.fromFlags(isBold, isItalic).getVariantName();
 	}
 
 	private String buildFilename(String folderName, String variant) {
@@ -886,36 +832,36 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return folderName + "-" + variantType.getVariantName() + TFF_FILE_EXTENSION;
 	}
 
-	private PDType0Font loadFontWithStyle(PDDocument document, String fontFamily, boolean isBold, boolean isItalic) {
-		String normalizedFamily = fontFamily != null ? fontFamily.trim() : "";
-		String folderName = EsignFontFamilyType.getFolderByFamily(normalizedFamily);
-		return loadFontFromRelativePath(document, folderName, isBold, isItalic);
+	public byte[] htmlToPdfBytes(String html, float widthPt, float heightPt, String fontPath, String fontFamilyCss)
+			throws IOException {
+
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.useDefaultPageSize(widthPt, heightPt, BaseRendererBuilder.PageSizeUnits.INCHES);
+			if (fontPath != null) {
+				try {
+					byte[] fontBytes = pdfResourceService.loadFontBytes(fontPath);
+					if (fontBytes != null) {
+						builder.useFont(() -> new java.io.ByteArrayInputStream(fontBytes), fontFamilyCss);
+					}
+				}
+				catch (Exception e) {
+					log.warn("Could not register font '{}' for HTML rendering: {}", fontPath, e.getMessage());
+				}
+			}
+			builder.toStream(baos);
+			builder.run();
+			return baos.toByteArray();
+		}
 	}
 
-	private PDType0Font loadFontFromRelativePath(PDDocument document, String folderName, boolean isBold,
-			boolean isItalic) {
+	public static PDFormXObject toFormXObject(PDDocument targetDoc, byte[] htmlPdfBytes) throws IOException {
 
-		if (folderName == null || folderName.isEmpty()) {
-			log.warn("Font family not recognized, falling back to document font");
-			return loadFont(document);
-
+		try (PDDocument htmlDoc = Loader.loadPDF(htmlPdfBytes)) {
+			LayerUtility layerUtility = new LayerUtility(targetDoc);
+			return layerUtility.importPageAsForm(htmlDoc, 0);
 		}
-
-		String variant = determineVariant(folderName, isBold, isItalic);
-		String filename = buildFilename(folderName, variant);
-		String path = RESOURCE_BASE_PATH + FONT_BASE_PATH + folderName + "/" + filename;
-
-		PDType0Font font;
-		try {
-			font = pdfResourceService.loadFont(document, path);
-		}
-		catch (Exception e) {
-			log.warn("Font not found '{}', falling back to document font: {}", path, e.getMessage());
-			// if an error occurs when downloading font file from S3/cache fallback to
-			// document font loading
-			font = loadFont(document);
-		}
-		return font;
 	}
 
 }
