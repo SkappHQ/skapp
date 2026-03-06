@@ -157,7 +157,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 		List<?> rawTiers = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TIERS, List.class));
 
-		List<Tier> tiers = rawTiers.stream().filter(Tier.class::isInstance).map(Tier.class::cast).toList();
+		List<Tier> tiers = rawTiers != null
+				? rawTiers.stream().filter(Tier.class::isInstance).map(Tier.class::cast).toList() : List.of();
 
 		String tenantStatus = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));

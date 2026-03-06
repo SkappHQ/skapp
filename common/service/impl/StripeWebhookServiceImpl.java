@@ -465,8 +465,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setLastModifiedByEmail(customer.getEmail());
 
 			tenantDao.save(tenant);
-			saveHistory(tenant, stripeSubscription,
-					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+			saveHistory(tenant, stripeSubscription, Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
@@ -531,14 +530,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			if (!changed) {
-				log.info("handleSubscriptionUpdated: No meaningful changes detected for tenant: {}, skipping history save",
+				log.info(
+						"handleSubscriptionUpdated: No meaningful changes detected for tenant: {}, skipping history save",
 						tenant.getTenantName());
 				return;
 			}
 
 			tenantDao.save(tenant);
-			saveHistory(tenant, stripeSubscription,
-					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+			saveHistory(tenant, stripeSubscription, Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 			Customer customer = Customer.retrieve(customerId);
 			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();

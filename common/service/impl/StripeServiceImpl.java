@@ -242,7 +242,8 @@ public class StripeServiceImpl implements StripeService {
 			.existsByTenantNameAndSubscriptionStatusAndTier(tenantId, SubscriptionStatus.FREE_TRIAL, requestedTier);
 		tenantContext.setTenantAndSwitchSchema(tenantId);
 
-		log.info("createCheckoutSession: tenant={}, requestedTier={}, hadPreviousSubscription={}, hadTrialForRequestedTier={}",
+		log.info(
+				"createCheckoutSession: tenant={}, requestedTier={}, hadPreviousSubscription={}, hadTrialForRequestedTier={}",
 				tenantId, requestedTier, hadPreviousSubscription, hadTrialForRequestedTier);
 
 		if (!hadTrialForRequestedTier) {
