@@ -2,7 +2,6 @@ import {
   Box,
   Divider,
   SelectChangeEvent,
-  Stack,
   Theme,
   Typography,
   useTheme
@@ -226,14 +225,15 @@ const LeaveRequests: FC = () => {
         ariaLabel: translateAria(["myLeaveRequests", "filterSection"])
       }}
     >
-      <Box
-        role="region"
+      <p className="h2">{translateText(["myLeaveRequests", "filters"])}</p>
+      <section
         aria-label={translateAria(["myLeaveRequests", "statusFilterSection"])}
+        className="flex flex-col gap-1"
       >
-        <Typography variant="h5">
+        <p className="subtitle1">
           {translateText(["myLeaveRequests", "filterButtonStatus"])}
-        </Typography>
-        <Stack sx={classes.filterStackStyles}>
+        </p>
+        <div className="flex flex-row flex-wrap space-x-1 gap-2">
           {leaveStatusArray.map((leaveStatus) => (
             <Button
               key={leaveStatus}
@@ -252,13 +252,16 @@ const LeaveRequests: FC = () => {
                   ? ButtonStyle.SECONDARY
                   : ButtonStyle.TERTIARY
               }
-              size={ButtonSizes.MEDIUM}
+              size={ButtonSizes.SMALL}
               startIcon={
                 filter.status.includes(leaveStatus)
                   ? IconName.CHECK_CIRCLE_ICON
                   : null
               }
-              styles={classes.filterChipButtonStyles}
+              styles={{
+                paddingX: "0.5rem",
+                paddingY: "0.25rem"
+              }}
               ariaLabel={
                 filter.status.includes(leaveStatus)
                   ? translateAria(["myLeaveRequests", "filterSelected"], {
@@ -270,16 +273,16 @@ const LeaveRequests: FC = () => {
               }
             />
           ))}
-        </Stack>
-      </Box>
-      <Box
-        role="region"
+        </div>
+      </section>
+      <section
         aria-label={translateAria(["myLeaveRequests", "typeFilterSection"])}
+        className="flex flex-col gap-1"
       >
-        <Typography variant="h5">
+        <p className="subtitle1">
           {translateText(["myLeaveRequests", "filterButtonType"])}
-        </Typography>
-        <Stack sx={classes.filterStackStyles}>
+        </p>
+        <div className="flex flex-row flex-wrap space-x-1 gap-2">
           {leaveTypeOptions.map(
             ({ id, name }: { id: string; name: string }) => (
               <Button
@@ -299,11 +302,14 @@ const LeaveRequests: FC = () => {
                     ? ButtonStyle.SECONDARY
                     : ButtonStyle.TERTIARY
                 }
-                size={ButtonSizes.MEDIUM}
+                size={ButtonSizes.SMALL}
                 startIcon={
                   filter.type.includes(id) ? IconName.CHECK_CIRCLE_ICON : null
                 }
-                styles={classes.filterChipButtonStyles}
+                styles={{
+                  paddingX: "0.5rem",
+                  paddingY: "0.25rem"
+                }}
                 ariaLabel={
                   filter.type.includes(id)
                     ? translateAria(["myLeaveRequests", "filterSelected"], {
@@ -316,8 +322,8 @@ const LeaveRequests: FC = () => {
               />
             )
           )}
-        </Stack>
-      </Box>
+        </div>
+      </section>
     </FilterButton>
   );
 

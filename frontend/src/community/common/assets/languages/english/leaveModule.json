@@ -101,6 +101,7 @@
       "cancelBtn": "Cancel"
     },
     "myLeaveRequests": {
+      "filters": "Filters",
       "requestTitle": "My Leave Requests",
       "duration": "Duration",
       "type": "Type",
