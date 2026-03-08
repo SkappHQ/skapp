@@ -122,9 +122,6 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	@Value("${jwt.access-token.expiration-time}")
 	private Long jwtAccessTokenExpirationMs;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
-
 	@Value("${google.auth.client.id}")
 	private String googleClientId;
 
@@ -376,7 +373,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
 		log.debug("getIdTokenAndRedirect: Decoded state={}", decodedState);
 
-		String frontendUrl = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String frontendUrl = encryptionDecryptionService.decrypt(decodedState);
 		log.debug("getIdTokenAndRedirect: Decrypted frontendUrl={}", frontendUrl);
 
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
@@ -423,7 +420,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		log.debug("getGoogleAuthUrl: Validating frontendRedirectUri");
 		com.skapp.enterprise.common.util.Validation.validateFrontendUrl(frontendRedirectUri);
 
-		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri, encryptSecret);
+		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
 		log.debug("getGoogleAuthUrl: Encrypted and encoded state={}", encodedState);
 
@@ -456,7 +453,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_UNABLE_TO_FETCH_ORGANIZATION_URL);
 		}
 
-		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri, encryptSecret);
+		String encryptedState = encryptionDecryptionService.encrypt(frontendRedirectUri);
 		String encodedState = Base64.getUrlEncoder().encodeToString(encryptedState.getBytes(StandardCharsets.UTF_8));
 
 		String authUrl = EpCommonConstants.ENTERPRISE_MICROSOFT_LOGIN_URL + microsoftTenantId + "/oauth2/v2.0/authorize"
@@ -482,8 +479,7 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 		}
 
 		byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
-		String frontendUrl = encryptionDecryptionService.decrypt(new String(decodedBytes, StandardCharsets.UTF_8),
-				encryptSecret);
+		String frontendUrl = encryptionDecryptionService.decrypt(new String(decodedBytes, StandardCharsets.UTF_8));
 
 		if (Objects.equals(frontendUrl, "") || frontendUrl == null) {
 			log.error("ssoMicrosoftSignInRedirect: Frontend url is empty");
