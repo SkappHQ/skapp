@@ -1,4 +1,4 @@
-import { JSX, useMemo, useRef, useState } from "react";
+import { JSX, useCallback, useMemo, useRef, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
@@ -8,8 +8,8 @@ import { handleApplyFilterPrams } from "~community/people/utils/handleEmployeeDa
 
 import AdvancedFilterStructure from "../../MoveToSkappUI/AdvancedFilterStructure";
 import SelectableList from "../../MoveToSkappUI/SelectableList";
+import SelectedFiltersDisplay from "../../MoveToSkappUI/SelectedFiltersDisplay";
 import FilterTypeDetailedSection from "./FilterTypeDetailedSection";
-import SelectedFiltersSection from "./SelectedFiltersSection";
 
 interface Props {
   handleClose: () => void;
@@ -84,6 +84,65 @@ const EmployeeDataFIlterMenuItems = ({
     setSelected(PeopleFilterHeadings.DEMOGRAPICS);
   };
 
+  const getJobFamilyNames = useMemo(() => {
+    return employeeDataFilter.role.map((jobFamily) => jobFamily.text);
+  }, [employeeDataFilter.role]);
+
+  const getTeamNames = useMemo(() => {
+    return employeeDataFilter.team.map((team) => team.text);
+  }, [employeeDataFilter.team]);
+
+  const translateItems = useCallback(
+    (items: string[]) => {
+      return items.map((item) => {
+        const translated = translateText([
+          `selectedFiltersFilterItems.${item.toLowerCase()}`
+        ]);
+        return translated.includes("peopleModule") ? item : translated;
+      });
+    },
+    [translateText]
+  );
+
+  const filterSections = useMemo(
+    () => [
+      {
+        title: translateText(["demographics"]),
+        items: translateItems([
+          ...(employeeDataFilter.gender ? [employeeDataFilter.gender] : []),
+          ...employeeDataFilter.nationality
+        ])
+      },
+      {
+        title: translateText(["employements"]),
+        items: translateItems([
+          ...employeeDataFilter.employmentTypes,
+          ...employeeDataFilter.employmentAllocations,
+          ...employeeDataFilter.accountStatus
+        ])
+      },
+      {
+        title: translateText(["jobFamilies"]),
+        items: getJobFamilyNames
+      },
+      {
+        title: translateText(["teams"]),
+        items: getTeamNames
+      },
+      {
+        title: translateText(["userRoles"]),
+        items: translateItems(employeeDataFilter.permission)
+      }
+    ],
+    [
+      employeeDataFilter,
+      getJobFamilyNames,
+      getTeamNames,
+      translateText,
+      translateItems
+    ]
+  );
+
   return (
     <AdvancedFilterStructure
       title={translateText(["filters"])}
@@ -105,7 +164,18 @@ const EmployeeDataFIlterMenuItems = ({
           jobFamilies={jobFamilies}
         />
       }
-      rightColumn={<SelectedFiltersSection />}
+      rightColumn={
+        <SelectedFiltersDisplay
+          filterSections={filterSections}
+          headerText={translateText(["selectedFilters"], {
+            count: filterSections.reduce(
+              (count, section) => count + section.items.length,
+              0
+            )
+          })}
+          noFiltersText={translateText(["noFIlters"])}
+        />
+      }
       resetButtonProps={{
         onClick: handleReset,
         children: translateText(["reset"])
