@@ -71,7 +71,7 @@ public class AuditTrailController {
 	@Operation(summary = "Get a list of audit trail records",
 			description = "This endpoint fetches a list of audit trail events for a given envelope ID.")
 	@GetMapping("/sent/envelope/{envelopeId}")
-	@PreAuthorize("hasAnyRole('ESIGN_EMPLOYEE')")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or (hasRole('ROLE_PEOPLE_ADMIN') and hasAnyRole('ESIGN_ADMIN', 'ESIGN_SENDER')) or hasRole('ESIGN_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getAuditTrails(@PathVariable Long envelopeId) {
 		ResponseEntityDto response = auditTrailService.getAuditTrailsBySentEnvelope(envelopeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);

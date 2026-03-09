@@ -68,6 +68,14 @@ public class EsignUtil {
 
 	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
 
+	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "/eSign/template/";
+
+	private static final String DOCUMENT_FILE_PATH_PREFIX = "/eSign/envelop/";
+
+	private static final String TEMPLATE_FOLDER_NAME = "/template/";
+
+	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
+
 	private EsignUtil() {
 	}
 
@@ -259,6 +267,23 @@ public class EsignUtil {
 	public static float[] normalizeColor(Color color) {
 		return new float[] { color.getRed() / COLOR_NORMALIZATION_FACTOR, color.getGreen() / COLOR_NORMALIZATION_FACTOR,
 				color.getBlue() / COLOR_NORMALIZATION_FACTOR };
+	}
+
+	public static String normalizeDocumentFilePath(String bucketName, String filePath, boolean isTemplate) {
+		if (filePath == null) {
+			return null;
+		}
+
+		String folderName = isTemplate ? TEMPLATE_FOLDER_NAME : ENVELOPE_FOLDER_NAME;
+		String prefix = isTemplate ? TEMPLATE_DOCUMENT_FILE_PATH_PREFIX : DOCUMENT_FILE_PATH_PREFIX;
+
+		int pathIndex = filePath.indexOf(folderName);
+		if (pathIndex != -1) {
+			String relativePath = filePath.substring(pathIndex + folderName.length());
+			return bucketName + prefix + relativePath;
+		}
+
+		return bucketName + "/" + filePath;
 	}
 
 }

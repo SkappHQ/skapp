@@ -194,7 +194,7 @@ public class DocumentServiceImpl implements DocumentService {
 	@Override
 	public ResponseEntityDto saveDocument(DocumentDto documentDto) {
 		Document document = eSignMapper.documentDtoToDocument(documentDto);
-		document.setFilePath(bucketName + "/" + document.getFilePath());
+		document.setFilePath(EsignUtil.normalizeDocumentFilePath(bucketName, document.getFilePath(), false));
 		document = documentRepository.save(document);
 		DocumentDetailResponseDto documentResponseDto = eSignMapper.documentToDocumentDetailDto(document);
 		return new ResponseEntityDto(false, documentResponseDto);
@@ -1154,7 +1154,7 @@ public class DocumentServiceImpl implements DocumentService {
 			document.setName(editDocumentDto.getName());
 		}
 		if (editDocumentDto.getFilePath() != null) {
-			document.setFilePath(bucketName + "/" + editDocumentDto.getFilePath());
+			document.setFilePath(EsignUtil.normalizeDocumentFilePath(bucketName, editDocumentDto.getFilePath(), false));
 		}
 
 		documentRepository.save(document);
