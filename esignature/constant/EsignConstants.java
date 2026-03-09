@@ -123,7 +123,7 @@ public class EsignConstants {
 			    color: %s;
 			    white-space: pre-wrap;
 			    word-break: break-word;
-			    line-height: 1.2;
+			    line-height: normal;
 			  }
 			</style>
 			</head>
