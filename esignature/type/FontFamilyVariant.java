@@ -19,9 +19,10 @@ public enum FontFamilyVariant {
 	private final String filename;
 
 	public static String getFilenameFor(String fontFamily, FontVariantType variantType) {
-		for (FontFamilyVariant v : values()) {
-			if (v.fontFamily.equalsIgnoreCase(fontFamily) && v.variantType == variantType) {
-				return v.filename;
+		for (FontFamilyVariant fontFamilyVariant : values()) {
+			if (fontFamilyVariant.fontFamily.equalsIgnoreCase(fontFamily)
+					&& fontFamilyVariant.variantType == variantType) {
+				return fontFamilyVariant.filename;
 			}
 		}
 		return null;

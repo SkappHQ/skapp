@@ -12,9 +12,9 @@ public enum FontVariantType {
 	private final String variantName;
 
 	public static FontVariantType fromString(String variant) {
-		for (FontVariantType v : values()) {
-			if (v.variantName.equalsIgnoreCase(variant)) {
-				return v;
+		for (FontVariantType fontVariantType : values()) {
+			if (fontVariantType.variantName.equalsIgnoreCase(variant)) {
+				return fontVariantType;
 			}
 		}
 		return REGULAR;

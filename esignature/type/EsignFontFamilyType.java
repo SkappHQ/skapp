@@ -17,9 +17,9 @@ public enum EsignFontFamilyType {
 	private final String folderName;
 
 	public static String getFolderByFamily(String family) {
-		for (EsignFontFamilyType ff : values()) {
-			if (ff.familyName.equals(family)) {
-				return ff.folderName;
+		for (EsignFontFamilyType fontFamily : values()) {
+			if (fontFamily.familyName.equals(family)) {
+				return fontFamily.folderName;
 			}
 		}
 		return null;
