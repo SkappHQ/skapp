@@ -126,7 +126,7 @@ const SupervisorSelector = ({
           gutterBottom
           sx={{
             color: isInputsDisabled
-              ? theme.palette.grey[700]
+              ? theme.palette.text.secondary
               : "common.black"
           }}
         >

@@ -291,13 +291,13 @@ const ContentLayout = ({
             {!isTitleHidden && (
               <header>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  {(title || pageHead) && (
+                  {title  && (
                     <Typography
                       variant="h1"
                       component="h1"
                       id="page-title"
                     >
-                      {title || pageHead}
+                      {title}
                     </Typography>
                   )}
                   {titleAddon && (

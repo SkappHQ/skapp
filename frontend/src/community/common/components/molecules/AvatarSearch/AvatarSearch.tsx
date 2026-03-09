@@ -188,7 +188,7 @@ const AvatarSearch = ({
               (errors ?? "")
                 ? theme.palette.error.contrastText
                 : isDisabledLabel
-                  ? theme.palette.grey[700]
+                  ? theme.palette.text.secondary
                   : "common.black"
           }}
         >

@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import DirectoryEditSectionWrapper from "../../organisms/DirectoryEditSectionWrapper/DirectoryEditSectionWrapper";
-import ROUTES from "~community/common/constants/routes";
 
 const PeopleDirectoryEdit = () => {
   const router = useRouter();
