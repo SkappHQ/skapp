@@ -1,6 +1,7 @@
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmploymentAllocationTypes } from "~community/people/types/AddNewResourceTypes";
 import {
@@ -9,13 +10,9 @@ import {
   EmploymentTypes
 } from "~community/people/types/EmployeeTypes";
 
-import EmployeeFilterSection from "../EmployeeFilterSection/EmployeeFilterSection";
-
 const EmploymentSection = ({
-  selected,
   basicChipRef
 }: {
-  selected: string;
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
   const translateText = useTranslator(
@@ -96,18 +93,25 @@ const EmploymentSection = ({
   };
 
   return (
-    <div className="overflow-y-auto flex flex-col max-h-80">
+    <div className="overflow-y-auto flex flex-col gap-6">
       {filterData.map((filter) => {
+        const filterKey = filter.accessibilityKey as FilterKey;
+        const currentFilterValues = (employeeDataFilter[filterKey] ??
+          []) as string[];
         return (
-          <EmployeeFilterSection
-            basicChipRef={basicChipRef}
-            selected={selected}
+          <SelectableChipList
             key={filter.title}
             title={filter.title}
-            accessibilityKey={filter.accessibilityKey}
-            data={filter.data}
-            handleFilterChange={handleFilterChange}
-            currentFilter={employeeDataFilter[filter.accessibilityKey] ?? []}
+            items={filter.data}
+            selectedValues={currentFilterValues}
+            onChipClick={(value) =>
+              handleFilterChange(
+                value,
+                filter.accessibilityKey,
+                currentFilterValues
+              )
+            }
+            chipRefs={basicChipRef}
           />
         );
       })}

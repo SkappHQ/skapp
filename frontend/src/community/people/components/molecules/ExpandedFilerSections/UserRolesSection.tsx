@@ -3,16 +3,16 @@ import { RefObject } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
+import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import { usePeopleStore } from "~community/people/store/store";
-import { Role } from "~community/people/types/EmployeeTypes";
-
-import EmployeeFilterSection from "../EmployeeFilterSection/EmployeeFilterSection";
+import {
+  EmployeeDataFilterTypes,
+  Role
+} from "~community/people/types/EmployeeTypes";
 
 const UserRolesSection = ({
-  selected,
   basicChipRef
 }: {
-  selected: string;
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
   const translateText = useTranslator(
@@ -110,19 +110,24 @@ const UserRolesSection = ({
   };
 
   return (
-    <div className="overflow-y-auto flex flex-col max-h-80">
-      {filterData.map((filter) => (
-        <EmployeeFilterSection
-          basicChipRef={basicChipRef}
-          selected={selected}
-          accessibilityKey={filter.filterKey}
-          key={filter.title}
-          title={filter.title}
-          data={filter.roles}
-          handleFilterChange={handleFilterChange}
-          currentFilter={employeeDataFilter[filter.filterKey]}
-        />
-      ))}
+    <div className="overflow-y-auto flex flex-col gap-6">
+      {filterData.map((filter) => {
+        const currentFilterValues = (employeeDataFilter[
+          filter.filterKey as keyof EmployeeDataFilterTypes
+        ] ?? []) as string[];
+        return (
+          <SelectableChipList
+            key={filter.title}
+            title={filter.title}
+            items={filter.roles}
+            selectedValues={currentFilterValues}
+            onChipClick={(value) =>
+              handleFilterChange(value, filter.filterKey, currentFilterValues)
+            }
+            chipRefs={basicChipRef}
+          />
+        );
+      })}
     </div>
   );
 };

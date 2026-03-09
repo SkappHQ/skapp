@@ -27,7 +27,7 @@ const AdvancedFilterStructure = ({
         <div className="flex-1 border-r border-r-secondary-accent">
           {leftColumn}
         </div>
-        <div className="flex-2 border-r border-r-secondary-accent py-4">
+        <div className="flex-2 border-r border-r-secondary-accent py-4 px-5">
           {centerColumn}
         </div>
         <div className="flex-2 py-4">{rightColumn}</div>

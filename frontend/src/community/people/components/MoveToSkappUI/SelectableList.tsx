@@ -10,7 +10,7 @@ export interface SelectableListProps<T = string> {
   selected: T;
   setSelected: Dispatch<SetStateAction<T>>;
   firstColumnItems?: RefObject<{ [key: string]: HTMLDivElement | null }>;
-  secondColumnItems?: RefObject<{ [key: string]: HTMLElement | null }>;
+  secondColumnItems?: RefObject<{ [key: string]: HTMLDivElement | null }>;
   onSelectionChange?: (value: T) => void;
   getSecondColumnFirstKey?: (value: T) => string;
 }
