@@ -28,6 +28,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
 import AdvancedFilterStructure from "~community/people/components/MoveToSkappUI/AdvancedFilterStructure";
 import FilterTypeList from "~community/people/components/MoveToSkappUI/SelectableList";
+import SelectedFiltersDisplay from "~community/people/components/MoveToSkappUI/SelectedFiltersDisplay";
 
 import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
 import IconChip from "../../atoms/Chips/IconChip.tsx/IconChip";
@@ -131,6 +132,31 @@ const FilterButton = ({
     setAnchorElement(event.currentTarget);
     setIsPopperOpen((prevState) => !prevState);
   };
+
+  const filterSections = useMemo(
+    () =>
+      Object.entries(appliedFilters)
+        .filter(([, values]) => values.length > 0)
+        .map(([filterType, values]) => ({
+          title: filterType,
+          items: values.map((value) => {
+            const label = filterTypes[filterType]?.find(
+              (item) => item.value === value
+            )?.label;
+            return label || String(value);
+          })
+        })),
+    [appliedFilters, filterTypes]
+  );
+
+  const totalFilterCount = useMemo(
+    () =>
+      Object.values(appliedFilters).reduce(
+        (total, array) => total + array.length,
+        0
+      ),
+    [appliedFilters]
+  );
 
   return (
     <Stack sx={classes.wrapper}>
@@ -266,62 +292,11 @@ const FilterButton = ({
             </Box>
           }
           rightColumn={
-            <Box sx={{ px: 2 }}>
-              {Object.values(appliedFilters).every(
-                (arr) => arr.length === 0
-              ) ? (
-                <Typography
-                  variant="h4"
-                  sx={{ color: theme.palette.text.secondary }}
-                >
-                  {translateText(["noSelectedFilters"])}
-                </Typography>
-              ) : (
-                <Typography
-                  sx={{ color: theme.palette.text.secondary }}
-                  variant="h4"
-                >{`${Object.values(appliedFilters).reduce((total, array) => total + array.length, 0)} ${translateText(["selected"])} `}</Typography>
-              )}
-              {Object.entries(appliedFilters).map(([filterType, values]) =>
-                values.length > 0 ? (
-                  <Box key={filterType} mt={1}>
-                    <Typography
-                      sx={{ color: theme.palette.text.secondary }}
-                      variant="h4"
-                    >
-                      {filterType}
-                    </Typography>
-                    <Box display="flex" flexWrap="wrap" gap={1} my={1}>
-                      {values.map((value) => {
-                        const label = filterTypes[filterType]?.find(
-                          (item) => item.value === value
-                        )?.label;
-                        return (
-                          <IconChip
-                            key={value}
-                            label={label}
-                            icon={
-                              <Icon
-                                name={IconName.SELECTED_ICON}
-                                fill={theme.palette.primary.dark}
-                              />
-                            }
-                            chipStyles={{
-                              backgroundColor: theme.palette.secondary.main,
-                              padding: "8px 12px",
-                              color: theme.palette.primary.dark,
-                              border: `1px solid ${theme.palette.secondary.dark}`
-                            }}
-                            tabIndex={-1}
-                            isTruncated={false}
-                          />
-                        );
-                      })}
-                    </Box>
-                  </Box>
-                ) : null
-              )}
-            </Box>
+            <SelectedFiltersDisplay
+              filterSections={filterSections}
+              headerText={`${totalFilterCount} ${translateText(["selected"])}`}
+              noFiltersText={translateText(["noSelectedFilters"])}
+            />
           }
           resetButtonProps={{
             onClick: handleResetFilters,
