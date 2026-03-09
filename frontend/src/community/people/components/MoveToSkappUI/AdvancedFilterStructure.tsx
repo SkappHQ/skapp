@@ -19,7 +19,7 @@ const AdvancedFilterStructure = ({
   applyButtonProps
 }: Props): JSX.Element => {
   return (
-    <div className="bg-white max-h-[500px]">
+    <div className="bg-white max-h-[500px] rounded-2xl shadow-lg">
       <div className="px-5 py-4 border-b border-b-secondary-accent">
         <h1 className="h2">{title}</h1>
       </div>

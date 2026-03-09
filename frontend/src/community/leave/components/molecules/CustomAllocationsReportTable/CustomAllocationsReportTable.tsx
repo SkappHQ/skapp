@@ -7,17 +7,13 @@ import {
 } from "@mui/material";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { getRecentYearsInStrings } from "~community/common/utils/dateTimeUtils";
 import {
   useGetEmployeeCustomAllocationReport,
@@ -27,6 +23,7 @@ import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { SheetType } from "~community/leave/enums/LeaveReportEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { downloadDataAsCSV } from "~community/leave/utils/leaveReport/exportReportUtils";
+import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import {
   tableContainerStyles,
@@ -262,36 +259,22 @@ const CustomAllocationsReportTable: FC = () => {
       id={"filter-types"}
       isResetBtnDisabled={selectedLeaveTypes.length === 0}
     >
-      <Typography variant="h5">
-        {translateText(["filterPopperLeaveTypeTitle"])}
-      </Typography>
-      <Box display="flex" flexWrap="wrap" gap={1}>
-        {leaveTypeButtons.map((leaveType) => (
-          <Button
-            key={leaveType.id}
-            isFullWidth={false}
-            label={leaveType.text}
-            buttonStyle={
-              selectedLeaveTypes.includes(leaveType.text)
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            onClick={() => handleLeaveTypeFilter(leaveType)}
-            startIcon={
-              selectedLeaveTypes.includes(leaveType.text) ? (
-                <Icon name={IconName.CHECK_CIRCLE_ICON} />
-              ) : undefined
-            }
-            styles={{
-              p: "0.5rem 0.75rem",
-              textTransform: "capitalize",
-              height: "2rem",
-              ml: "0.4rem",
-              mb: "0.8rem"
-            }}
-          />
-        ))}
-      </Box>
+      <SelectableChipList
+        title={translateText(["filterPopperLeaveTypeTitle"])}
+        items={leaveTypeButtons.map((leaveType) => ({
+          label: leaveType.text,
+          value: leaveType.text
+        }))}
+        selectedValues={selectedLeaveTypes}
+        onChipClick={(leaveTypeText) => {
+          const leaveType = leaveTypeButtons.find(
+            (btn) => btn.text === leaveTypeText
+          );
+          if (leaveType) {
+            handleLeaveTypeFilter(leaveType);
+          }
+        }}
+      />
     </FilterButton>
   );
 

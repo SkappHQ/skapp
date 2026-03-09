@@ -1,4 +1,4 @@
-import { Box, Chip, Theme, Typography, useTheme } from "@mui/material";
+import { Box, Theme, useTheme } from "@mui/material";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -21,12 +21,12 @@ import {
   CustomLeaveAllocationType,
   LeaveAllocation
 } from "~community/leave/types/CustomLeaveAllocationTypes";
+import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import {
   tableContainerStyles,
   tableHeaderCellStyles,
-  tableHeaderRowStyles,
-  typographyStyles
+  tableHeaderRowStyles
 } from "./styles";
 
 interface Props {
@@ -266,45 +266,22 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
       id={"filter-types"}
       isResetBtnDisabled={tempSelectedLeaveTypes.length === 0}
     >
-      <Typography variant="h5" sx={typographyStyles(theme)}>
-        {translateText(["filterButtonTitle"])}
-      </Typography>
-      <Box display="flex" flexWrap="wrap" gap={1}>
-        {leaveTypeOptions.map((leaveType) => (
-          <Chip
-            key={leaveType.id}
-            tabIndex={0}
-            role="button"
-            label={leaveType.name}
-            aria-label={translateAria(["filterOption"], {
-              filterName: leaveType.name
-            })}
-            onClick={() =>
-              handleLeaveTypeFilter({
-                id: leaveType.id.toString(),
-                text: leaveType.name
-              })
-            }
-            sx={{
-              backgroundColor: tempSelectedLeaveTypes.includes(
-                leaveType.id.toString()
-              )
-                ? theme.palette.secondary.main
-                : theme.palette.grey[100],
-              color: tempSelectedLeaveTypes.includes(leaveType.id.toString())
-                ? theme.palette.common.black
-                : theme.palette.text.primary,
-              "&:hover": {
-                backgroundColor: tempSelectedLeaveTypes.includes(
-                  leaveType.id.toString()
-                )
-                  ? theme.palette.secondary.dark
-                  : theme.palette.grey[200]
-              }
-            }}
-          />
-        ))}
-      </Box>
+      <SelectableChipList
+        title={translateText(["filterButtonTitle"])}
+        items={leaveTypeOptions.map((leaveType) => ({
+          label: leaveType.name,
+          value: leaveType.id.toString()
+        }))}
+        selectedValues={tempSelectedLeaveTypes}
+        onChipClick={(leaveTypeId) => {
+          handleLeaveTypeFilter({
+            id: leaveTypeId,
+            text:
+              leaveTypeOptions.find((lt) => lt.id.toString() === leaveTypeId)
+                ?.name ?? ""
+          });
+        }}
+      />
     </FilterButton>
   );
 

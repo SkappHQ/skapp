@@ -358,14 +358,15 @@
       "fullDay": "Full Day"
     },
     "leaveRequestFilters": {
+      "filterTitle": "Filters",
       "leaveStatusTitle": "Leave Status",
       "typeLeaveStatus": "status",
       "leaveTypeTitle": "Leave Type",
       "typeLeaveType": "type",
       "dateTitle": "Date",
       "roleManagers": "managers",
-      "applyButtonText": "Apply",
-      "resetButtonText": "Reset Filters"
+      "applyButtonText": "Apply filters",
+      "resetButtonText": "Reset filters"
     },
     "leaveRequestSort": {
       "sortBy": "Sort by",
