@@ -1,4 +1,4 @@
-import { Box, Chip, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Chip, Stack, useTheme } from "@mui/material";
 import {
   Dispatch,
   JSX,
@@ -24,15 +24,13 @@ import {
   ButtonStyle
 } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
 import AdvancedFilterStructure from "~community/people/components/MoveToSkappUI/AdvancedFilterStructure";
+import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import FilterTypeList from "~community/people/components/MoveToSkappUI/SelectableList";
 import SelectedFiltersDisplay from "~community/people/components/MoveToSkappUI/SelectedFiltersDisplay";
 
 import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
-import IconChip from "../../atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "../../atoms/Icon/Icon";
 
 interface FilterPanelProps {
   filterTypes: {
@@ -68,9 +66,7 @@ const FilterButton = ({
   const classes = styles(theme);
 
   const firstColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const secondColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>(
-    {}
-  );
+  const secondColumnItems = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const translateText = useTranslator("commonComponents", "advanceFilter");
 
@@ -235,61 +231,21 @@ const FilterButton = ({
             />
           }
           centerColumn={
-            <Box sx={{ px: 2 }}>
-              <Typography variant="h4">{selectedFilterType}</Typography>
-              <Box
-                display="flex"
-                flexWrap="wrap"
-                gap={1}
-                sx={{ p: ".5rem 0rem" }}
-              >
-                {selectedFilterType &&
-                  filterTypes[selectedFilterType]?.map(
-                    ({ label, value }, index) => (
-                      <IconChip
-                        ref={(el: HTMLDivElement | null) => {
-                          if (el) {
-                            secondColumnItems.current[
-                              selectedFilterType + index
-                            ] = el;
-                          }
-                        }}
-                        tabIndex={0}
-                        key={value}
-                        label={label}
-                        icon={
-                          appliedFilters[selectedFilterType]?.includes(
-                            value
-                          ) ? (
-                            <Icon
-                              name={IconName.SELECTED_ICON}
-                              fill={theme.palette.primary.dark}
-                            />
-                          ) : undefined
-                        }
-                        chipStyles={{
-                          backgroundColor: appliedFilters[
-                            selectedFilterType
-                          ]?.includes(value)
-                            ? theme.palette.secondary.main
-                            : "default",
-                          padding: "8px 12px",
-                          color: appliedFilters[selectedFilterType]?.includes(
-                            value
-                          )
-                            ? theme.palette.primary.dark
-                            : "default",
-                          border: `1px solid ${appliedFilters[selectedFilterType]?.includes(value) ? theme.palette.secondary.dark : "transparent"}`
-                        }}
-                        onClick={() =>
-                          handleChipClick(selectedFilterType, value)
-                        }
-                        isTruncated={false}
-                      />
+            <SelectableChipList
+              title={selectedFilterType ?? undefined}
+              items={
+                selectedFilterType
+                  ? (filterTypes[selectedFilterType] || []).map(
+                      ({ label, value }) => ({ label, value })
                     )
-                  )}
-              </Box>
-            </Box>
+                  : []
+              }
+              selectedValues={appliedFilters[selectedFilterType ?? ""] || []}
+              onChipClick={(value) =>
+                handleChipClick(selectedFilterType ?? "", value)
+              }
+              chipRefs={secondColumnItems}
+            />
           }
           rightColumn={
             <SelectedFiltersDisplay
