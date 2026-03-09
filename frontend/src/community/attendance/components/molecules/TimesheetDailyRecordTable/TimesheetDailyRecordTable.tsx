@@ -112,7 +112,7 @@ const TimesheetDailyRecordTable = ({
           <Stack
             ref={stackRef}
             sx={classes.stackContainer}
-            tabIndex={getTabIndex(isFreeTier)}
+            tabIndex={0}
           >
             {!isDrawerToggled ? (
               <TimesheetDailyRecordTableHeader headerLabels={tableHeaders} />

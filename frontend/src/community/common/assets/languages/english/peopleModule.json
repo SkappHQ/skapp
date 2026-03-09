@@ -190,6 +190,7 @@
 
   "editAllInfo": {
     "tabTitle": "View Profile | Skapp",
+    "title": "Edit Employee",
     "personal": "Personal",
     "emergency": "Emergency",
     "employment": "Employment",

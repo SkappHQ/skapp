@@ -591,6 +591,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
               </Stack>
               <Box
                 tabIndex={0}
+                role="img"
                 aria-label={`${translateTerminationText(["status"])} : ${toPascalCase(employmentStatus)}`}
               >
                 <BasicChip
