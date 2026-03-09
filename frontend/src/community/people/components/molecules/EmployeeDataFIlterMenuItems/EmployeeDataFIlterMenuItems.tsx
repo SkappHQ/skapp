@@ -1,4 +1,4 @@
-import { JSX, useRef, useState } from "react";
+import { JSX, useMemo, useRef, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
@@ -6,8 +6,8 @@ import { usePeopleStore } from "~community/people/store/store";
 import { PeopleFilterHeadings } from "~community/people/types/CommonTypes";
 import { handleApplyFilterPrams } from "~community/people/utils/handleEmployeeDataFIlters";
 
-import AdvancedFilterStructure from "../AdvancedFilterStructure/AdvancedFilterStructure";
-import FIlterTypeSection from "./FIlterTypeSection";
+import AdvancedFilterStructure from "../../MoveToSkappUI/AdvancedFilterStructure";
+import SelectableList from "../../MoveToSkappUI/SelectableList";
 import FilterTypeDetailedSection from "./FilterTypeDetailedSection";
 import SelectedFiltersSection from "./SelectedFiltersSection";
 
@@ -37,6 +37,42 @@ const EmployeeDataFIlterMenuItems = ({
   const { employeeDataFilter, setEmployeeDataParams, resetEmployeeDataParams } =
     usePeopleStore((state) => state);
 
+  const filterOptions = useMemo(
+    () => [
+      {
+        label: translateText(["demographics"]),
+        value: PeopleFilterHeadings.DEMOGRAPICS
+      },
+      {
+        label: translateText(["employements"]),
+        value: PeopleFilterHeadings.EMPLOYMENTS
+      },
+      {
+        label: translateText(["jobFamilies"]),
+        value: PeopleFilterHeadings.JOB_FAMILIES
+      },
+      {
+        label: translateText(["teams"]),
+        value: PeopleFilterHeadings.TEAMS
+      },
+      {
+        label: translateText(["userRoles"]),
+        value: PeopleFilterHeadings.USER_ROLES
+      }
+    ],
+    [translateText]
+  );
+
+  const getSecondColumnFirstKey = (filterValue: PeopleFilterHeadings) => {
+    if (filterValue === PeopleFilterHeadings.EMPLOYMENTS) {
+      return `${filterValue}employmentTypes0`;
+    } else if (filterValue === PeopleFilterHeadings.USER_ROLES) {
+      return `${filterValue}attendance0`;
+    } else {
+      return `${filterValue}0`;
+    }
+  };
+
   const handleSubmit = () => {
     handleApplyFilterPrams(setEmployeeDataParams, employeeDataFilter);
     handleClose();
@@ -52,11 +88,13 @@ const EmployeeDataFIlterMenuItems = ({
     <AdvancedFilterStructure
       title={translateText(["filters"])}
       leftColumn={
-        <FIlterTypeSection
-          firstColumnItems={firstColumnItems}
-          secondColumnItems={secondColumnItems}
+        <SelectableList<PeopleFilterHeadings>
+          options={filterOptions}
           selected={selected}
           setSelected={setSelected}
+          firstColumnItems={firstColumnItems}
+          secondColumnItems={secondColumnItems}
+          getSecondColumnFirstKey={getSecondColumnFirstKey}
         />
       }
       centerColumn={

@@ -1,19 +1,11 @@
-import {
-  Box,
-  Chip,
-  Divider,
-  List,
-  Stack,
-  Typography,
-  useTheme
-} from "@mui/material";
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material";
 import {
   Dispatch,
   JSX,
-  KeyboardEvent,
   MouseEvent,
   SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -34,7 +26,8 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
-import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
+import AdvancedFilterStructure from "~community/people/components/MoveToSkappUI/AdvancedFilterStructure";
+import FilterTypeList from "~community/people/components/MoveToSkappUI/SelectableList";
 
 import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
 import IconChip from "../../atoms/Chips/IconChip.tsx/IconChip";
@@ -91,9 +84,15 @@ const FilterButton = ({
   }>(selectedFilters);
 
   const visibleFilterCount = 2;
-  const handleFilterTypeClick = (filterType: string) => {
-    setSelectedFilterType(filterType);
-  };
+
+  const filterTypeOptions = useMemo(
+    () =>
+      Object.keys(filterTypes).map((key) => ({
+        label: key,
+        value: key
+      })),
+    [filterTypes]
+  );
 
   useEffect(() => {
     setAppliedFilters(selectedFilters);
@@ -131,22 +130,6 @@ const FilterButton = ({
   const handleFilterBtnClick = (event: MouseEvent<HTMLElement>): void => {
     setAnchorElement(event.currentTarget);
     setIsPopperOpen((prevState) => !prevState);
-  };
-
-  const handleKeyDown = (
-    e: KeyboardEvent<HTMLDivElement>,
-    filterType: string
-  ) => {
-    if (shouldActivateButton(e.key)) {
-      handleFilterTypeClick(filterType);
-
-      requestAnimationFrame(() => {
-        const firstChildKey = `${filterType}0`;
-        if (secondColumnItems.current[firstChildKey]) {
-          secondColumnItems.current[firstChildKey]?.focus();
-        }
-      });
-    }
   };
 
   return (
@@ -213,59 +196,20 @@ const FilterButton = ({
         handleClose={() => setIsPopperOpen(false)}
         containerStyles={classes.popperContainer2}
       >
-        <Box tabIndex={0} sx={classes.firstColumn}>
-          <Box display="flex" gap={2} p={2}>
-            {/* Column 1: Filter Types */}
-            <Box
-              flex={1}
-              sx={{
-                borderRight: `1px solid ${theme.palette.grey[500]}`,
-                paddingRight: "1rem"
-              }}
-            >
-              <Typography variant="h4">
-                {translateText(["placeholder"])}
-              </Typography>
-              <List sx={classes.firstColumnList}>
-                {Object.keys(filterTypes).map((filterType, index) => (
-                  <Box
-                    ref={(el: HTMLDivElement | null) => {
-                      firstColumnItems.current[index] = el;
-                    }}
-                    tabIndex={0}
-                    key={filterType}
-                    onClick={() => handleFilterTypeClick(filterType)}
-                    onKeyDown={(e: KeyboardEvent<HTMLDivElement>) =>
-                      handleKeyDown(e, filterType)
-                    }
-                    sx={{
-                      backgroundColor:
-                        filterType === selectedFilterType
-                          ? theme.palette.secondary.main
-                          : "transparent",
-                      borderRadius: "12px",
-                      p: 1.5,
-                      color:
-                        filterType === selectedFilterType
-                          ? theme.palette.primary.dark
-                          : theme.typography.allVariants,
-                      cursor: "pointer"
-                    }}
-                  >
-                    <Typography>{filterType}</Typography>
-                  </Box>
-                ))}
-              </List>
-            </Box>
-
-            {/* Column 2: Filter Values as Chips */}
-            <Box
-              flex={2}
-              sx={{
-                borderRight: `1px solid ${theme.palette.grey[500]}`,
-                paddingRight: "1rem"
-              }}
-            >
+        <AdvancedFilterStructure
+          title={translateText(["placeholder"])}
+          leftColumn={
+            <FilterTypeList
+              options={filterTypeOptions}
+              selected={selectedFilterType ?? ""}
+              setSelected={(value) => setSelectedFilterType(value as string)}
+              firstColumnItems={firstColumnItems}
+              secondColumnItems={secondColumnItems}
+              getSecondColumnFirstKey={(filterType) => `${filterType}0`}
+            />
+          }
+          centerColumn={
+            <Box sx={{ px: 2 }}>
               <Typography variant="h4">{selectedFilterType}</Typography>
               <Box
                 display="flex"
@@ -320,9 +264,9 @@ const FilterButton = ({
                   )}
               </Box>
             </Box>
-
-            {/* Column 3: Selected Filters */}
-            <Box flex={2}>
+          }
+          rightColumn={
+            <Box sx={{ px: 2 }}>
               {Object.values(appliedFilters).every(
                 (arr) => arr.length === 0
               ) ? (
@@ -378,33 +322,16 @@ const FilterButton = ({
                 ) : null
               )}
             </Box>
-          </Box>
-
-          {/* Apply and Reset Buttons */}
-          <Divider />
-          <Box
-            display="flex"
-            flexDirection="row"
-            justifyContent="end"
-            mt={2}
-            gap={1}
-          >
-            <Button
-              buttonStyle={ButtonStyle.PRIMARY}
-              onClick={handleApplyFilters}
-              label={translateText(["applyBtn"])}
-              isFullWidth={false}
-              size={ButtonSizes.MEDIUM}
-            />
-            <Button
-              buttonStyle={ButtonStyle.SECONDARY}
-              onClick={handleResetFilters}
-              label={translateText(["resetBtn"])}
-              isFullWidth={false}
-              size={ButtonSizes.MEDIUM}
-            />
-          </Box>
-        </Box>
+          }
+          resetButtonProps={{
+            onClick: handleResetFilters,
+            children: translateText(["resetBtn"])
+          }}
+          applyButtonProps={{
+            onClick: handleApplyFilters,
+            children: translateText(["applyBtn"])
+          }}
+        />
       </Popper>
     </Stack>
   );
