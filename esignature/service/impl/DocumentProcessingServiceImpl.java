@@ -79,8 +79,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float X_OFFSET_VALUE = 0.8f;
 
-	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
-
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
@@ -100,6 +98,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private static final float PERCENTAGE_CONVERSION_FACTOR = 100f;
 
 	private static final float POINTS_PER_INCH = 72f;
+
+	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
 
 	private final MessageUtil messageUtil;
 
@@ -774,6 +774,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
+			// Calculate how much to stretch/shrink the form to fit the target field size
+			// Ensures the rendered HTML content exactly fills the intended field
+			// rectangle on the PDF
 			PDRectangle bbox = formXObject.getBBox();
 			float scaleX = adjustedWidth / bbox.getWidth();
 			float scaleY = adjustedHeight / bbox.getHeight();
