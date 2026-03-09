@@ -66,7 +66,7 @@ const FilterButton = ({
   const classes = styles(theme);
 
   const firstColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const secondColumnItems = useRef<{ [key: string]: HTMLElement | null }>({});
+  const secondColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const translateText = useTranslator("commonComponents", "advanceFilter");
 
