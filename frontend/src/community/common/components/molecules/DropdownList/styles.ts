@@ -15,7 +15,7 @@ export const styles = (theme: Theme) => ({
   labelStyle: (isDisabled: boolean, error: boolean) => ({
     fontWeight: 400,
     color: isDisabled
-      ? theme.palette.text.disabled
+      ? theme.palette.grey[700]
       : error
         ? theme.palette.error.contrastText
         : "common.black",
