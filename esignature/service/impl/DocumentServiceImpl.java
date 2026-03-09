@@ -66,6 +66,7 @@ import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
+import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.decryptor.AESDecrypt;
 import jakarta.persistence.PessimisticLockException;
@@ -1630,6 +1631,13 @@ public class DocumentServiceImpl implements DocumentService {
 	private boolean isCurrentUserAddressBook(AddressBook recipientAddressBook, AddressBook currentAddressBook) {
 		if (recipientAddressBook.getId().equals(currentAddressBook.getId())) {
 			return true;
+		}
+		boolean isMigrationPair = (recipientAddressBook.getType() == UserType.EXTERNAL
+				&& currentAddressBook.getType() == UserType.INTERNAL)
+				|| (recipientAddressBook.getType() == UserType.INTERNAL
+						&& currentAddressBook.getType() == UserType.EXTERNAL);
+		if (!isMigrationPair) {
+			return false;
 		}
 		String recipientEmail = recipientAddressBook.getEmail();
 		String currentEmail = currentAddressBook.getEmail();
