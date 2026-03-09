@@ -34,17 +34,17 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 	@Value("${twilio.message-content-sid}")
 	private String contentSid;
 
-	@Value("${twilio.alpha-sender-id:}")
+	@Value("${twilio.alpha-sender-id}")
 	private String alphaSenderId;
 
 	// Comma-separated list of allowed country codes (e.g., "+1,+44,+94")
-	// This is to be added for alphanumeric sender is since the alphanumeric id does not
+	// This is to be added for alphanumeric sender id since the alphanumeric id does not
 	// automatically get set to the message service when the country registration is
 	// required. So we need to maintain a list of allowed country codes to determine when
 	// to use the alpha sender id vs the message service sid.
 	// Therefore, for countries that require registration for alphanumeric Id, the country
 	// code should be added to this env variable.
-	@Value("${twilio.country-codes}")
+	@Value("${twilio.country-codes:}")
 	private String countryCodes;
 
 	private final JsonMapper objectMapper;
@@ -80,7 +80,8 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 		boolean isAllowedCountry = allowedCountryCodeList.stream().anyMatch(formattedTarget::startsWith);
 
 		if (isAllowedCountry && !StringUtils.hasText(alphaSenderId)) {
-			log.error("Alpha sender ID is not configured but destination {} is an allowed country", formattedTarget);
+			log.error("{} Alpha sender ID is not configured but destination for identifierId {} is an allowed country",
+					source, identifierId);
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
 		}
 
@@ -89,7 +90,7 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 			Map<String, String> contentVariables = Map.of("1", messageContent);
 			String jsonVariables = objectMapper.writeValueAsString(contentVariables);
 
-			Message message = isAllowedCountry ? createMessageFromAlphaNumber(formattedTarget, jsonVariables)
+			Message message = isAllowedCountry ? createMessageFromAlphaSenderId(formattedTarget, jsonVariables)
 					: createMessageFromMessageService(formattedTarget, jsonVariables);
 
 			if (message.getErrorCode() == null) {
@@ -112,7 +113,7 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 
 	}
 
-	private Message createMessageFromAlphaNumber(String formattedTarget, String jsonVariables) {
+	private Message createMessageFromAlphaSenderId(String formattedTarget, String jsonVariables) {
 		return Message.creator(new PhoneNumber(formattedTarget), new PhoneNumber(alphaSenderId), (String) null)
 			.setContentSid(contentSid)
 			.setContentVariables(jsonVariables)
