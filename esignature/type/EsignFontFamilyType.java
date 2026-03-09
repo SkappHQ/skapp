@@ -27,14 +27,14 @@ public enum EsignFontFamilyType {
 
 	public static String getFamilyName(String enumName) {
 		if (enumName == null) {
-			return "sans-serif";
+			return POPPINS.familyName;
 		}
 		for (EsignFontFamilyType type : values()) {
 			if (type.name().equals(enumName)) {
 				return type.familyName;
 			}
 		}
-		return "sans-serif";
+		return POPPINS.familyName;
 	}
 
 }
