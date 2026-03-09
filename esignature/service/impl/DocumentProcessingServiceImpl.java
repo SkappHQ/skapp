@@ -4,6 +4,7 @@ import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
@@ -80,25 +81,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
 
-	private static final float UNDERLINE_OFFSET = 1.5f;
-
-	private static final float UNDERLINE_THICKNESS = 0.5f;
-
-	// In PDFBox, font.getStringWidth() returns the width in "glyph units" (not points).
-	// This is a convention from the original font format specification — font designers
-	// work on a 1000-unit grid (called the "em square") when designing glyphs. So a
-	// character that fills the full em width would return 1000.
-	// To convert to actual points:
-	// actual width = (glyph units / 1000) × fontSize
-	// 1000f is just the scaling factor to convert from the font's internal design grid to
-	// real-world point units.
-	private static final int GLYPH_TO_EM_UNIT = 1000;
-
 	private static final String DEFAULT_LABEL = "Signed by";
 
 	private static final String FONT_PATH = "enterprise/fonts/Poppins/Poppins-Regular.ttf";
-
-	private static final int DEFAULT_LINE_HEIGHT = 2;
 
 	public static final int DPI = 96;
 
@@ -112,7 +97,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final String TFF_FILE_EXTENSION = ".ttf";
 
-	private static final String NEW_LINE_CHARACTER = "\\n";
+	private static final float PERCENTAGE_CONVERSION_FACTOR = 100f;
+
+	private static final float POINTS_PER_INCH = 72f;
 
 	private final MessageUtil messageUtil;
 
@@ -714,8 +701,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float width = field.getWidthPercentage();
 			float height = field.getHeightPercentage();
 
-			float adjustedWidth = (width / 100f) * pageWidth;
-			float adjustedHeight = (height / 100f) * pageHeight;
+			float adjustedWidth = (width / PERCENTAGE_CONVERSION_FACTOR) * pageWidth;
+			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
 
 			float size = Math.min(adjustedWidth, adjustedHeight);
 
@@ -766,8 +753,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float width = field.getWidthPercentage();
 			float height = field.getHeightPercentage();
 
-			float adjustedWidth = (width / 100f) * pageWidth;
-			float adjustedHeight = (height / 100f) * pageHeight;
+			float adjustedWidth = (width / PERCENTAGE_CONVERSION_FACTOR) * pageWidth;
+			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedX = field.getXPosition();
@@ -779,37 +766,22 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String textDecoration = EsignUtil.resolveTextDecoration(isUnderline);
 			String escapedValue = EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : "");
 
-			String html = String.format("""
-					<html>
-					<head>
-					<style>
-					  @page { margin: 0; }
-					  * { margin: 0; padding: 0; box-sizing: border-box; }
-					  body {
-					    width: %.2fpt;
-					    height: %.2fpt;
-					    overflow: hidden;
-					    font-family: %s;
-					    font-size: %.2fpt;
-					    font-weight: %s;
-					    font-style: %s;
-					    text-decoration: %s;
-					    color: %s;
-					  }
-					</style>
-					</head>
-					<body>%s</body>
-					</html>
-					""", adjustedWidth, adjustedHeight, fontFamilyCss, fontSize, fontWeight, fontStyle, textDecoration,
-					fontColor, escapedValue);
+			String html = String.format(EsignConstants.TEXT_FIELD_HTML_TEMPLATE, adjustedWidth, adjustedHeight,
+					fontFamilyCss, fontSize, fontWeight, fontStyle, textDecoration, fontColor, escapedValue);
 
 			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
 			byte[] htmlPdfBytes = htmlToPdfBytes(html, adjustedWidth, adjustedHeight, fontPath, fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
+			PDRectangle bbox = formXObject.getBBox();
+			float scaleX = adjustedWidth / bbox.getWidth();
+			float scaleY = adjustedHeight / bbox.getHeight();
+
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
+
 			contentStream.saveGraphicsState();
-			contentStream.transform(Matrix.getTranslateInstance(adjustedX, adjustedY));
+			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();
 
@@ -838,7 +810,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
 			builder.withHtmlContent(html, null);
-			builder.useDefaultPageSize(widthPt, heightPt, BaseRendererBuilder.PageSizeUnits.INCHES);
+
+			float widthInches = widthPt / POINTS_PER_INCH;
+			float heightInches = heightPt / POINTS_PER_INCH;
+
+			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
 			if (fontPath != null) {
 				try {
 					byte[] fontBytes = pdfResourceService.loadFontBytes(fontPath);

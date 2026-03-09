@@ -192,7 +192,10 @@ public class EsignUtil {
 			.replace("<", "&lt;")
 			.replace(">", "&gt;")
 			.replace("\"", "&quot;")
-			.replace("'", "&#39;");
+			.replace("'", "&#39;")
+			.replace("\r\n", "<br/>")
+			.replace("\r", "<br/>")
+			.replace("\\n", "<br/>");
 	}
 
 	public static String getFormattedActionText(AuditTrailResponseDto audit) {

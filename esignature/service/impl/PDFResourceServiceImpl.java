@@ -61,10 +61,10 @@ public class PDFResourceServiceImpl implements PDFResourceService {
 		String s3Key = bucketName + "/" + path;
 		String bucket = bucketName;
 
-		log.info("[FontCache] Loading font from S3: {}", path);
+		log.info("[FontLoad] Loading font from S3: {}", path);
 
 		byte[] bytes = amazonS3Service.downloadFileAsBytes(bucket, s3Key);
-		log.info("[FontCache] Cached font '{}' ({} KB)", path, bytes.length / 1024);
+		log.info("[FontLoad] Loaded font '{}' ({} KB)", path, bytes.length / 1024);
 		return bytes;
 	}
 
