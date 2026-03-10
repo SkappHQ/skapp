@@ -83,7 +83,7 @@ public class EsignUtil {
 
 	private static final String ADVANCE_INPUT_TEXT_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-input-text-field.html";
 
-	private static final String ESIGN_IMAGE_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/esign-image-field.html";
+	private static final String ESIGN_IMAGE_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-image-field.html";
 
 	private EsignUtil() {
 	}

@@ -694,6 +694,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		try {
 
+			FieldSignContainerDto container = field.getFieldSignContainer();
+
 			float height = field.getHeightPercentage();
 
 			float adjustedHeight = (height / 100f) * pageHeight;
@@ -704,11 +706,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// To vertically center the text, we calculate the center of the field and
 			// adjust by half the font size
-			float verticalCenter = adjustedY + (adjustedHeight / 2.0f) - (DEFAULT_FONT_SIZE / 2.0f);
+			float verticalCenter = adjustedY + (adjustedHeight / 2.0f) - (container.getFontSize() / 2.0f);
 
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
-			contentStream.setFont(font, DEFAULT_FONT_SIZE);
+			contentStream.setFont(font, container.getFontSize());
 
 			// Position text at adjusted coordinates
 			contentStream.newLineAtOffset(adjustedX, verticalCenter);
@@ -716,8 +718,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			contentStream.endText();
 		}
 		catch (Exception e) {
-			log.error("Error rendering text field to PDF", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+			log.error("Error rendering dropdown field to PDF", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
+					new String[] { field.getType().toString() });
 		}
 
 	}
@@ -762,7 +765,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Failed to draw image [{}] for field [{}]: {}", imageType, field.getType(), e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
+					new String[] { field.getType().toString() });
 		}
 	}
 
@@ -825,7 +829,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Error rendering advance input text field to PDF", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
+					new String[] { field.getType().toString() });
 		}
 	}
 

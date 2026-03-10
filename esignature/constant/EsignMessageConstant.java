@@ -240,7 +240,8 @@ public enum EsignMessageConstant implements MessageConstant {
 
 	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
 	ESIGN_ERROR_FAILED_TO_CREATE_PDF_FONT_FROM_CACHE("ep.esign.error.failed.create.pdf.font.from.cache"),
-	ESIGN_ERROR_FAILED_TO_CONVERT_SVG("ep.esign.error.failed.convert.svg");
+	ESIGN_ERROR_FAILED_TO_CONVERT_SVG("ep.esign.error.failed.convert.svg"),
+	ESIGN_ERROR_MERGE_ADVANCE_FIELD("ep.esign.error.merge.advance.field"),;
 
 	private final String messageKey;
 
