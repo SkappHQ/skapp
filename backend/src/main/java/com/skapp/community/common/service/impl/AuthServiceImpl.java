@@ -58,6 +58,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -173,8 +174,16 @@ public class AuthServiceImpl implements AuthService {
 
 	private SignInResponseDto performSignIn(SignInRequestDto signInRequestDto, HttpServletResponse response) {
 		log.info("performSignIn: Authenticating user with email={}", signInRequestDto.getEmail());
-		authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
+		try {
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(),
+					signInRequestDto.getPassword()));
+		}
+		catch (BadCredentialsException exception) {
+			onSignInFailed(signInRequestDto.getEmail());
+			throw exception;
+		}
+
+		onSignInSuccess(signInRequestDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
@@ -678,6 +687,14 @@ public class AuthServiceImpl implements AuthService {
 		errorLog.setStatus(BulkItemStatus.ERROR);
 		errorLog.setMessage(String.join("; ", errors));
 		return errorLog;
+	}
+
+	protected void onSignInFailed(String email) {
+		// No-op: overridden by enterprise for brute force protection
+	}
+
+	protected void onSignInSuccess(String email) {
+		// No-op: overridden by enterprise for brute force protection
 	}
 
 }
