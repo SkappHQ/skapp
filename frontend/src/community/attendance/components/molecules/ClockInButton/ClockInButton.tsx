@@ -64,14 +64,13 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
     <ButtonV2
       variant={"primary"}
       size={"sm"}
-      fullWidth={false}
       onClick={onClick}
       aria-label={
         isClockedIn ? translateText(["clockIn"]) : translateText(["clockOut"])
       }
       isLoading={isPending}
       disabled={disabled}
-      ariaDisabled={disabled}
+      aria-disabled={disabled}
       data-testid={isClockedIn ? "clock-in-button" : "clock-out-button"}
       icon={<Icon name={IconName.TIMER_ICON} />}
       iconPosition="end"
