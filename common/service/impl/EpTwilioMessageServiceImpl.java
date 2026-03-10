@@ -7,6 +7,7 @@ import com.skapp.enterprise.common.type.TwilioMessageSource;
 import com.skapp.enterprise.common.util.FormatPhoneNumberUtil;
 import com.skapp.enterprise.common.util.TwilioStatusUtil;
 import com.twilio.exception.ApiException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 
+	private static final String DEFAULT_CONFIG_VALUE = "NONE";
+
 	@Value("${twilio.message-service-sid}")
 	private String messageServiceSid;
 
@@ -39,13 +42,25 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 	// registration with Twilio (e.g., "+94,+44").
 	// For such countries the alpha sender ID is used instead of the message service SID.
 	// Add a country code here when Twilio registration is required.
-	@Value("${twilio.alpha-numeric-country-codes:}")
+	@Value("${twilio.alpha-numeric-country-codes}")
 	private String alphaNumericCountryCodes;
 
 	private final JsonMapper objectMapper;
 
-	private List<String> allowedCountryCodes() {
+	@PostConstruct
+	private void validateTwilioConfig() {
+		if (!StringUtils.hasText(alphaSenderId) || alphaSenderId.equalsIgnoreCase(DEFAULT_CONFIG_VALUE)) {
+			throw new IllegalStateException("Invalid Twilio configuration: alphaSenderId is required.");
+		}
 		if (!StringUtils.hasText(alphaNumericCountryCodes)) {
+			throw new IllegalStateException(
+					"Invalid Twilio configuration: alphaNumericCountryCodes is required or should be NONE.");
+		}
+	}
+
+	private List<String> allowedCountryCodes() {
+		if (alphaNumericCountryCodes.equalsIgnoreCase(DEFAULT_CONFIG_VALUE)
+				|| !StringUtils.hasText(alphaNumericCountryCodes)) {
 			return List.of();
 		}
 		return Arrays.stream(alphaNumericCountryCodes.split(","))
@@ -70,12 +85,6 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 		String formattedTarget = FormatPhoneNumberUtil.formatPhoneNumberToE164(phoneNumber);
 
 		boolean isAllowedCountry = allowedCountryCodes().stream().anyMatch(formattedTarget::startsWith);
-
-		if (isAllowedCountry && !StringUtils.hasText(alphaSenderId)) {
-			log.error("{} Alpha sender ID is not configured but destination for identifierId {} is an allowed country",
-					source, identifierId);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_SEND_MESSAGE_ERROR);
-		}
 
 		try {
 			// No body when using ContentSid
