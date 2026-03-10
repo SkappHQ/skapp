@@ -85,6 +85,7 @@
     "manualChipTxt": "Manual Entry",
     "dateHeaderTxt": "DATE",
     "workedHourHeaderTxt": "WORKED HOURS",
+    "filterTitle": "Filters",
     "statusFilterTitle": "Time Entry Status",
     "requestTypeFilterTitle": "Request Type",
     "applyBtnTxt": "Apply Filters",
