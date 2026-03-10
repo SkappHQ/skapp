@@ -34,4 +34,8 @@ public class RecipientResponseDto {
 
 	private EidVerificationStatus eidVerificationStatus;
 
+	private EidProviderType eidIdentificationMethod;
+
+	private EidVerificationStatus eidIdentificationStatus;
+
 }
