@@ -1,14 +1,13 @@
 import { Box, Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
-
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -176,7 +175,7 @@ const TeamsTable: FC<Props> = ({
               hoverEffect={false}
               buttonStyles={classes.deleteIconBtn}
               onClick={() => handleDeleteTeam(teamDetails)}
-              aria-label={ariaTranslateText(
+              ariaLabel={ariaTranslateText(
                 ["table", "actionColumn", "deleteButton", "label"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
@@ -191,7 +190,12 @@ const TeamsTable: FC<Props> = ({
             />
           </>
         ) : (
-          <Button variant={"tertiary"} onClick={() => handleEditTeam(teamDetails)}>{translateText(["viewBtnText"])}</Button>
+          <Button
+            variant={"tertiary"}
+            onClick={() => handleEditTeam(teamDetails)}
+          >
+            {translateText(["viewBtnText"])}
+          </Button>
         )
       }));
   };
