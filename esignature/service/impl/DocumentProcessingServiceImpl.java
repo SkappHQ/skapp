@@ -101,6 +101,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
 
+	private static final float CENTER_DIVISOR = 2.0f;
+
 	private final MessageUtil messageUtil;
 
 	private final PDFResourceService pdfResourceService;
@@ -325,6 +327,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			}
 			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
 				addRadioButton(field, contentStream, pageHeight, pageWidth, document);
+			}
+			else if (FieldType.DROPDOWN.equals(fieldType)) {
+				addDropDown(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else if (FieldType.TEXT.equals(fieldType)) {
 				addInputTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -694,6 +699,37 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
+	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+			PDDocument document) {
+
+		try {
+
+			float height = field.getHeightPercentage();
+
+			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
+
+			// PDF Y-axis starts from bottom-left; convert from top-left origin
+			float adjustedX = field.getXPosition();
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+
+			float verticalCenter = adjustedY + (adjustedHeight / CENTER_DIVISOR) - (DEFAULT_FONT_SIZE / CENTER_DIVISOR);
+
+			contentStream.beginText();
+			PDType0Font font = loadFont(document);
+			contentStream.setFont(font, DEFAULT_FONT_SIZE);
+
+			// Position text at adjusted coordinates
+			contentStream.newLineAtOffset(adjustedX, verticalCenter);
+			contentStream.showText(field.getFieldValue());
+			contentStream.endText();
+		}
+		catch (Exception e) {
+			log.error("Error rendering text field to PDF", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		}
+
+	}
+
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
 			float pageWidth, EsignImageType imageType) {
 
@@ -708,7 +744,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// Adjust Y position to account for image height, since PDF coordinates start
 			// from the bottom-left
-			float adjustedY = pageHeight - (field.getYPosition()) - size;
+			float adjustedY = pageHeight - (field.getYPosition()) - adjustedHeight;
 			float adjustedX = field.getXPosition();
 
 			String imagePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + imageType.getFilename();

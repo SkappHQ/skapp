@@ -114,7 +114,7 @@ public class EsignConstants {
 			  body {
 			    width: %.2fpt;
 			    height: %.2fpt;
-			    overflow: hidden;
+			    overflow: visible;
 			    font-family: %s;
 			    font-size: %.2fpt;
 			    font-weight: %s;
