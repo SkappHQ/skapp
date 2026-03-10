@@ -497,7 +497,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 
 		// Actual Pro Tier Validation
-		validateIsActiveProTier(recipientDtos, tier, tenantStatus);
+		validateMfaSmsConfigWithTier(recipientDtos, tier, tenantStatus);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -576,7 +576,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private void validateIsActiveProTier(List<RecipientDto> recipientDtos, Tier tier, TenantStatus tenantStatus) {
+	private void validateMfaSmsConfigWithTier(List<RecipientDto> recipientDtos, Tier tier, TenantStatus tenantStatus) {
 
 		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
 			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
