@@ -16,7 +16,8 @@ public enum EpCacheKeys implements CacheKey {
 	TENANT_ALL_JOBS_CACHE_KEY("jobs_cache:all_jobs", 5, TimeUnit.DAYS),
 	ALL_PROJECT_DETAILS_CACHE_KEY("project_details_cache:all_projects", 7, TimeUnit.DAYS),
 	AI_TOKEN_USER_CACHE_KEY("ai_token_cache:user:%s", 1, TimeUnit.DAYS),
-	ORGANIZATION_TIMEZONE_CACHE_KEY("organization_cache:timezone", 365, TimeUnit.DAYS);
+	ORGANIZATION_TIMEZONE_CACHE_KEY("organization_cache:timezone", 365, TimeUnit.DAYS),
+	FAILED_SIGN_IN_ATTEMPT_BY_USER_CACHE_KEY("failed_sign_in_attempts:%s", 5, TimeUnit.MINUTES);
 
 	private final String key;
 

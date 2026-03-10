@@ -57,7 +57,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 		}
 
 		TemplateDocument templateDocument = esignTemplateMapper.documentDtoToTemplateDocument(documentDto);
-		templateDocument.setFilePath(bucketName + "/" + templateDocument.getFilePath());
+		templateDocument
+			.setFilePath(EsignUtil.normalizeDocumentFilePath(bucketName, templateDocument.getFilePath(), true));
 
 		TemplateDocument savedTemplateDocument = templateDocumentDao.save(templateDocument);
 
@@ -89,7 +90,8 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 			templateDocument.setName(editDocumentDto.getName());
 		}
 		if (editDocumentDto.getFilePath() != null) {
-			templateDocument.setFilePath(bucketName + "/" + editDocumentDto.getFilePath());
+			templateDocument
+				.setFilePath(EsignUtil.normalizeDocumentFilePath(bucketName, editDocumentDto.getFilePath(), true));
 		}
 
 		TemplateDocument savedDocumentTemplate = templateDocumentDao.save(templateDocument);
