@@ -4,7 +4,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
@@ -107,18 +106,6 @@ public class DocumentController {
 			response = documentService.parallelSignDocument(documentSignDto, false, EsignUtil.getClientIp(request));
 		}
 
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
-	@Operation(summary = "Sign a field of a recipient ",
-			description = "This endpoint generates a digital signature of a field corresponding to a recipient, "
-					+ "ensuring integrity and authenticity")
-	@CaptureUserAgent
-	@PostMapping(value = "/sign-field", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS','ESIGN_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> signField(@Valid @RequestBody DocumentFieldSignDto documentFieldSignDto,
-			HttpServletRequest request) {
-		ResponseEntityDto response = documentService.signField(documentFieldSignDto, EsignUtil.getClientIp(request));
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
