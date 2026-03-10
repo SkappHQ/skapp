@@ -193,8 +193,9 @@ public class GlobalExceptionHandler {
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION.name(), status);
 
-		return new ResponseEntity<>(new ResponseEntityDto(true, new ErrorResponse(status, message,
-				CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION)), status);
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION)),
+				status);
 	}
 
 	@ExceptionHandler(IOException.class)
