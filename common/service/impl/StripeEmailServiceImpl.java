@@ -29,7 +29,7 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1,
-				EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_CORE_FREE_TRIAL, paymentEmailStripeDynamicFields,
+				EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL, paymentEmailStripeDynamicFields,
 				userEmail);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
