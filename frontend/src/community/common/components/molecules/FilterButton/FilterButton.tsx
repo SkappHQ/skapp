@@ -6,14 +6,13 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { BasicFilterStructure } from "@rootcodelabs/skapp-ui";
+import { BasicFilterStructure, Popper } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import Button from "~community/common/components/atoms/Button/Button";
 import styles from "~community/common/components/molecules/FilterButton/styles";
-import Popper from "~community/common/components/molecules/Popper/Popper";
 import {
   ButtonSizes,
   ButtonStyle
@@ -126,7 +125,7 @@ const FilterButton = ({
         position={position}
         id={id}
         handleClose={() => setIsPopperOpen(false)}
-        containerStyles={classes.popperContainer}
+        containerClassName="rounded-4 shadow-lg"
         ariaLabelledBy="filter-button"
       >
         <BasicFilterStructure

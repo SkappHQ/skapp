@@ -1,6 +1,7 @@
 import { Box, Chip, Stack, useTheme } from "@mui/material";
 import {
   AdvancedFilterStructure,
+  Popper,
   SelectableItemList,
   SelectableList,
   SelectedFiltersDisplay
@@ -24,7 +25,6 @@ import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import Button from "~community/common/components/atoms/Button/Button";
 import styles from "~community/common/components/molecules/FilterButton/styles";
-import Popper from "~community/common/components/molecules/Popper/Popper";
 import {
   ButtonSizes,
   ButtonStyle
@@ -220,7 +220,7 @@ const FilterButton = ({
         position={position ?? "bottom-end"}
         id={id}
         handleClose={() => setIsPopperOpen(false)}
-        containerStyles={classes.popperContainer2}
+        containerClassName="w-[800px] rounded-4 shadow-lg"
       >
         <AdvancedFilterStructure
           title={translateText(["placeholder"])}
