@@ -1,3 +1,7 @@
+import {
+  BasicFilterStructure,
+  SelectableItemList
+} from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,8 +14,6 @@ import {
   LeaveStatusTypes
 } from "~community/leave/types/LeaveRequestTypes";
 import { setLeaveRequestsParams } from "~community/leave/utils/LeaveRequestFilterActions";
-import BasicFilterStructure from "~community/people/components/MoveToSkappUI/BasicFilterStructure";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 interface Props {
   handleClose: () => void;
@@ -177,7 +179,7 @@ const RequestFilterMenuItems = ({
         children: translateText(["applyButtonText"])
       }}
     >
-      <SelectableChipList
+      <SelectableItemList
         title={menuItemsData[0].title}
         items={
           menuItemsData[0].buttons?.map((button) => ({
@@ -196,7 +198,7 @@ const RequestFilterMenuItems = ({
         }}
       />
 
-      <SelectableChipList
+      <SelectableItemList
         title={menuItemsData[1].title}
         items={leaveTypeButtons.map((button) => ({
           label: button.text,

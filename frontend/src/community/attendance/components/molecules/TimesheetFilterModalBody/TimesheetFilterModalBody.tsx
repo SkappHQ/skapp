@@ -1,10 +1,12 @@
+import {
+  BasicFilterStructure,
+  SelectableItemList
+} from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { FilterChipType } from "~community/attendance/types/timeSheetTypes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import BasicFilterStructure from "~community/people/components/MoveToSkappUI/BasicFilterStructure";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 interface Props {
   onApply: (
@@ -102,7 +104,7 @@ const TimesheetFilterModalBody = ({
         "aria-label": "Apply filters"
       }}
     >
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["statusFilterTitle"])}
         items={
           filterValues?.status?.map((status: FilterChipType) => ({

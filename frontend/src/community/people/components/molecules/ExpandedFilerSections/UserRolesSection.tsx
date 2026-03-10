@@ -1,9 +1,9 @@
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import { usePeopleStore } from "~community/people/store/store";
 import {
   EmployeeDataFilterTypes,
@@ -116,7 +116,7 @@ const UserRolesSection = ({
           filter.filterKey as keyof EmployeeDataFilterTypes
         ] ?? []) as string[];
         return (
-          <SelectableChipList
+          <SelectableItemList
             key={filter.title}
             title={filter.title}
             items={filter.roles}

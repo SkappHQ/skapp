@@ -6,6 +6,7 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
@@ -33,7 +34,6 @@ import { SheetType } from "~community/leave/enums/LeaveReportEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { ReportTableRowDataType } from "~community/leave/types/LeaveReportTypes";
 import { downloadDataAsCSV } from "~community/leave/utils/leaveReport/exportReportUtils";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import csvMockData from "~enterprise/leave/data/csvMockData.json";
 import leaveReportsMockData from "~enterprise/leave/data/leaveReportsMockData.json";
 import leaveTypesMockData from "~enterprise/leave/data/leaveTypesMockData.json";
@@ -259,7 +259,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
             id={"filter-types"}
             isResetBtnDisabled={selectedLeaveTypes.length === 0}
           >
-            <SelectableChipList
+            <SelectableItemList
               title={translateText(["filterPopperLeaveTypeTitle"])}
               items={leaveTypeButtons.map((leaveType) => ({
                 label: leaveType.text,

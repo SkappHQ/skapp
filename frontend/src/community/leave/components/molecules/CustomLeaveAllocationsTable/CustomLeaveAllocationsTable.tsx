@@ -1,4 +1,5 @@
 import { Box, Theme, useTheme } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -21,7 +22,6 @@ import {
   CustomLeaveAllocationType,
   LeaveAllocation
 } from "~community/leave/types/CustomLeaveAllocationTypes";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import {
   tableContainerStyles,
@@ -266,7 +266,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
       id={"filter-types"}
       isResetBtnDisabled={tempSelectedLeaveTypes.length === 0}
     >
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterButtonTitle"])}
         items={leaveTypeOptions.map((leaveType) => ({
           label: leaveType.name,

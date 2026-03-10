@@ -1,3 +1,8 @@
+import {
+  AdvancedFilterStructure,
+  SelectableList,
+  SelectedFiltersDisplay
+} from "@rootcodelabs/skapp-ui";
 import { JSX, useCallback, useMemo, useRef, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -6,9 +11,6 @@ import { usePeopleStore } from "~community/people/store/store";
 import { PeopleFilterHeadings } from "~community/people/types/CommonTypes";
 import { handleApplyFilterPrams } from "~community/people/utils/handleEmployeeDataFIlters";
 
-import AdvancedFilterStructure from "../../MoveToSkappUI/AdvancedFilterStructure";
-import SelectableList from "../../MoveToSkappUI/SelectableList";
-import SelectedFiltersDisplay from "../../MoveToSkappUI/SelectedFiltersDisplay";
 import FilterTypeDetailedSection from "./FilterTypeDetailedSection";
 
 interface Props {

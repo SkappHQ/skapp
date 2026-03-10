@@ -1,4 +1,5 @@
 import { Box, SelectChangeEvent, Stack, Typography } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { FC, JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -21,7 +22,6 @@ import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { SheetType } from "~community/leave/enums/LeaveReportEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { downloadDataAsCSV } from "~community/leave/utils/leaveReport/exportReportUtils";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 const LeaveRequestsReportTable: FC = () => {
   const translateText = useTranslator("leaveModule", "leaveReports");
@@ -345,7 +345,7 @@ const LeaveRequestsReportTable: FC = () => {
         selectedLeaveTypes.length === 0 && selectedStatuses.length === 0
       }
     >
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterPopperLeaveStatusTitle"])}
         items={leaveStatusButtons.map((status) => ({
           label: status.text,
@@ -360,7 +360,7 @@ const LeaveRequestsReportTable: FC = () => {
         }}
       />
 
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterPopperLeaveTypeTitle"])}
         items={leaveTypeButtons.map((leaveType) => ({
           label: leaveType.text,

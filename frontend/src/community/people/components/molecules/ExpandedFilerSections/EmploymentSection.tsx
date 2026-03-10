@@ -1,7 +1,7 @@
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmploymentAllocationTypes } from "~community/people/types/AddNewResourceTypes";
 import {
@@ -99,7 +99,7 @@ const EmploymentSection = ({
         const currentFilterValues = (employeeDataFilter[filterKey] ??
           []) as string[];
         return (
-          <SelectableChipList
+          <SelectableItemList
             key={filter.title}
             title={filter.title}
             items={filter.data}

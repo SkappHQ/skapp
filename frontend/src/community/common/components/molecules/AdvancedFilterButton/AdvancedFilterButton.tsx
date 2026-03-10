@@ -1,5 +1,11 @@
 import { Box, Chip, Stack, useTheme } from "@mui/material";
 import {
+  AdvancedFilterStructure,
+  SelectableItemList,
+  SelectableList,
+  SelectedFiltersDisplay
+} from "@rootcodelabs/skapp-ui";
+import {
   Dispatch,
   JSX,
   MouseEvent,
@@ -25,10 +31,6 @@ import {
 } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
-import AdvancedFilterStructure from "~community/people/components/MoveToSkappUI/AdvancedFilterStructure";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
-import FilterTypeList from "~community/people/components/MoveToSkappUI/SelectableList";
-import SelectedFiltersDisplay from "~community/people/components/MoveToSkappUI/SelectedFiltersDisplay";
 
 import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
 
@@ -66,7 +68,9 @@ const FilterButton = ({
   const classes = styles(theme);
 
   const firstColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const secondColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const secondColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>(
+    {}
+  );
 
   const translateText = useTranslator("commonComponents", "advanceFilter");
 
@@ -221,7 +225,7 @@ const FilterButton = ({
         <AdvancedFilterStructure
           title={translateText(["placeholder"])}
           leftColumn={
-            <FilterTypeList
+            <SelectableList
               options={filterTypeOptions}
               selected={selectedFilterType ?? ""}
               setSelected={(value) => setSelectedFilterType(value as string)}
@@ -231,7 +235,7 @@ const FilterButton = ({
             />
           }
           centerColumn={
-            <SelectableChipList
+            <SelectableItemList
               title={selectedFilterType ?? undefined}
               items={
                 selectedFilterType

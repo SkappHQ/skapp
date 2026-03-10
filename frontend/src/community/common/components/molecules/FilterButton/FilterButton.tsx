@@ -6,6 +6,7 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
+import { BasicFilterStructure } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
@@ -21,7 +22,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/FilterButtonType";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
-import BasicFilterStructure from "~community/people/components/MoveToSkappUI/BasicFilterStructure";
 
 const FilterButton = ({
   id,

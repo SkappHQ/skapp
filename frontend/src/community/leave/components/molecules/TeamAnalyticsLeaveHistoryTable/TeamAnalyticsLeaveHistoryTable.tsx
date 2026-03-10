@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -26,7 +27,6 @@ import {
 } from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { downloadDataAsCSVTeam } from "~community/leave/utils/TeamLeaveAnalyticsUtils";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import RequestDates from "../LeaveRequestRow/RequestDates";
 import MultiselectEmployeeFilter from "../MultiselectEmployeeFilter/MultiselectEmployeeFilter";
@@ -257,7 +257,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       id={"filter-types"}
       isResetBtnDisabled={!filter.type.length && !filter.status.length}
     >
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterButtonStatus"])}
         items={leaveStatusArray.map((leaveStatus) => ({
           label: pascalCaseFormatter(leaveStatus),
@@ -274,7 +274,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
         }}
       />
 
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterButtonType"])}
         items={leaveTypeOptions.map(({ id, name }) => ({
           label: name,

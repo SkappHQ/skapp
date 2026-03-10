@@ -1,3 +1,4 @@
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject, useState } from "react";
 
 import FilterSearch from "~community/common/components/molecules/FilterSearch/FilterSearch";
@@ -7,7 +8,6 @@ import {
   FilterButtonTypes,
   FilterSearchSuggestionsType
 } from "~community/common/types/CommonTypes";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 import { usePeopleStore } from "~community/people/store/store";
 
 const TeamSection = ({
@@ -84,7 +84,7 @@ const TeamSection = ({
               />
               {employeeDataFilter?.team &&
                 employeeDataFilter.team.length > 0 && (
-                  <SelectableChipList<string | number>
+                  <SelectableItemList<string | number>
                     items={employeeDataFilter.team.map((team) => ({
                       label: team.text,
                       value: team.id ?? ""
@@ -105,7 +105,7 @@ const TeamSection = ({
                 )}
             </div>
           ) : (
-            <SelectableChipList<string | number>
+            <SelectableItemList<string | number>
               items={
                 teams?.map((team) => ({
                   label: team.text,

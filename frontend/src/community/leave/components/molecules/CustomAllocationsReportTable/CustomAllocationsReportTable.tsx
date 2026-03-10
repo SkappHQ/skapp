@@ -5,6 +5,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -23,7 +24,6 @@ import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
 import { SheetType } from "~community/leave/enums/LeaveReportEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { downloadDataAsCSV } from "~community/leave/utils/leaveReport/exportReportUtils";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import {
   tableContainerStyles,
@@ -259,7 +259,7 @@ const CustomAllocationsReportTable: FC = () => {
       id={"filter-types"}
       isResetBtnDisabled={selectedLeaveTypes.length === 0}
     >
-      <SelectableChipList
+      <SelectableItemList
         title={translateText(["filterPopperLeaveTypeTitle"])}
         items={leaveTypeButtons.map((leaveType) => ({
           label: leaveType.text,

@@ -6,6 +6,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
@@ -28,7 +29,6 @@ import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveReques
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
-import SelectableChipList from "~community/people/components/MoveToSkappUI/SelectableChipList";
 
 import LeaveRequestDates from "../LeaveRequestDates/LeaveRequestDates";
 import styles from "./styles";
@@ -224,7 +224,7 @@ const LeaveRequests: FC = () => {
         <section
           aria-label={translateAria(["myLeaveRequests", "statusFilterSection"])}
         >
-          <SelectableChipList
+          <SelectableItemList
             title={translateText(["myLeaveRequests", "filterButtonStatus"])}
             items={leaveStatusArray.map((leaveStatus) => ({
               label: pascalCaseFormatter(leaveStatus),
@@ -244,7 +244,7 @@ const LeaveRequests: FC = () => {
         <section
           aria-label={translateAria(["myLeaveRequests", "typeFilterSection"])}
         >
-          <SelectableChipList
+          <SelectableItemList
             title={translateText(["myLeaveRequests", "filterButtonType"])}
             items={leaveTypeOptions.map(
               ({ id, name }: { id: string; name: string }) => ({
