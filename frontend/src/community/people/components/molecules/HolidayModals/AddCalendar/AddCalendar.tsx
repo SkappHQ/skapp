@@ -77,7 +77,7 @@ const AddCalendar: FC = () => {
         icon={<RightArrowIcon />}
         iconPosition="end"
       >
-        "Next"
+        {translateText(["nextBtn"])}
       </Button>
     </Box>
   );

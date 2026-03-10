@@ -402,6 +402,7 @@
       "employeeName": "{{employeeName}}",
       "approveLeave": "Approve Leave",
       "declineLeave": "Decline Leave",
+      "cancelBtn": "Cancel",
       "reason": "Reason",
       "reasonData": "{{reason}}",
       "approveAreaLabel": "Pressing enter on this button will approve the leave request.",

@@ -247,7 +247,7 @@ const LeaveRequests: FC = () => {
                 filter.status.includes(leaveStatus) ? "secondary" : "tertiary"
               }
               size={"md"}
-              ariaLabel={
+              aria-label={
                 filter.status.includes(leaveStatus)
                   ? translateAria(["myLeaveRequests", "filterSelected"], {
                       filterName: pascalCaseFormatter(leaveStatus)

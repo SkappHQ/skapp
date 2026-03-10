@@ -78,6 +78,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
             variant={button?.buttonStyle}
             fullWidth={false}
             onClick={button?.onClick}
+            aria-describedby={descriptionId}
             className={button?.shouldBlink ? "animate-pulse" : ""}
             icon={
               button?.endIcon ? (
