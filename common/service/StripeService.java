@@ -24,4 +24,6 @@ public interface StripeService {
 
 	ResponseEntityDto activateTenantAfterFreeTrial();
 
+	ResponseEntityDto upgradeTierSubscription(SubscriptionRequestDto subscriptionRequestDto) throws StripeException;
+
 }

@@ -196,7 +196,11 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_SERVICE_UNAVAILABLE(
 			"ep.common.error.twilio-message-send-error-service-unavailable"),
 	EP_COMMON_TWILIO_MESSAGE_SEND_ERROR_INTERNAL_SERVER_ERROR(
-			"ep.common.error.twilio-message-send-error-internal-server-error");
+			"ep.common.error.twilio-message-send-error-internal-server-error"),
+
+	EP_COMMON_ERROR_TIER_UPGRADE_NO_ACTIVE_SUBSCRIPTION("ep.common.error.tier-upgrade-no-active-subscription"),
+	EP_COMMON_ERROR_TIER_UPGRADE_ALREADY_ON_TIER("ep.common.error.tier-upgrade-already-on-tier"),
+	EP_COMMON_ERROR_TIER_UPGRADE_NOT_AN_UPGRADE("ep.common.error.tier-upgrade-not-an-upgrade");
 
 	private final String messageKey;
 

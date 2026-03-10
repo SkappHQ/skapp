@@ -25,11 +25,9 @@ import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;
-import com.stripe.model.PriceCollection;
 import com.stripe.model.Subscription;
 import com.stripe.model.SubscriptionItem;
 import com.stripe.model.checkout.Session;
-import com.stripe.param.PriceListParams;
 import com.stripe.param.SubscriptionUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
@@ -66,11 +64,17 @@ public class StripeServiceImpl implements StripeService {
 
 	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
 
-	@Value("${stripe.product.core-product-id}")
-	private String stripeCoreProductId;
+	@Value("${stripe.prices.core-monthly-price-id}")
+	private String stripeCoreMonthlyPriceId;
 
-	@Value("${stripe.product.pro-product-id}")
-	private String stripeProProductId;
+	@Value("${stripe.prices.core-yearly-price-id}")
+	private String stripeCoreYearlyPriceId;
+
+	@Value("${stripe.prices.pro-monthly-price-id}")
+	private String stripeProMonthlyPriceId;
+
+	@Value("${stripe.prices.pro-yearly-price-id}")
+	private String stripeProYearlyPriceId;
 
 	@Value("${stripe.trial.days}")
 	private Long trialPeriodDays;
@@ -149,22 +153,29 @@ public class StripeServiceImpl implements StripeService {
 
 	@Override
 	public ResponseEntityDto getPricingPlans() throws StripeException {
-		Map<SubscriptionPlan, Double> corePriceMap = getPriceValueMap(stripeCoreProductId);
-		Map<SubscriptionPlan, Double> proPriceMap = getPriceValueMap(stripeProProductId);
+		Map<SubscriptionPlan, Double> corePriceMap = new EnumMap<>(SubscriptionPlan.class);
+		corePriceMap.put(SubscriptionPlan.MONTH, Price.retrieve(stripeCoreMonthlyPriceId).getUnitAmount() / 100.0);
+		corePriceMap.put(SubscriptionPlan.YEAR, Price.retrieve(stripeCoreYearlyPriceId).getUnitAmount() / 100.0);
+
+		Map<SubscriptionPlan, Double> proPriceMap = new EnumMap<>(SubscriptionPlan.class);
+		proPriceMap.put(SubscriptionPlan.MONTH, Price.retrieve(stripeProMonthlyPriceId).getUnitAmount() / 100.0);
+		proPriceMap.put(SubscriptionPlan.YEAR, Price.retrieve(stripeProYearlyPriceId).getUnitAmount() / 100.0);
 
 		Map<Tier, Map<SubscriptionPlan, Double>> priceMap = new EnumMap<>(Tier.class);
 		priceMap.put(Tier.CORE, corePriceMap);
 		priceMap.put(Tier.PRO, proPriceMap);
 
 		return new ResponseEntityDto(false, priceMap);
-
 	}
 
 	@Override
 	public ResponseEntityDto getPricingPlansForTier(Tier tier) throws StripeException {
-		String productId = tier == Tier.PRO ? stripeProProductId : stripeCoreProductId;
+		String monthlyPriceId = tier == Tier.PRO ? stripeProMonthlyPriceId : stripeCoreMonthlyPriceId;
+		String yearlyPriceId = tier == Tier.PRO ? stripeProYearlyPriceId : stripeCoreYearlyPriceId;
 
-		Map<SubscriptionPlan, Double> priceMap = getPriceValueMap(productId);
+		Map<SubscriptionPlan, Double> priceMap = new EnumMap<>(SubscriptionPlan.class);
+		priceMap.put(SubscriptionPlan.MONTH, Price.retrieve(monthlyPriceId).getUnitAmount() / 100.0);
+		priceMap.put(SubscriptionPlan.YEAR, Price.retrieve(yearlyPriceId).getUnitAmount() / 100.0);
 
 		return new ResponseEntityDto(false, priceMap);
 	}
@@ -217,11 +228,7 @@ public class StripeServiceImpl implements StripeService {
 			builder.setCustomer(tenant.getStripeSubscription().getCustomerId());
 		}
 
-		String productId = subscriptionRequestDto.getTier() == Tier.PRO ? stripeProProductId : stripeCoreProductId;
-
-		Map<SubscriptionPlan, String> priceMap = getPriceMap(productId);
-		String priceId = subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.MONTH
-				? priceMap.get(SubscriptionPlan.MONTH) : priceMap.get(SubscriptionPlan.YEAR);
+		String priceId = getPriceId(subscriptionRequestDto.getTier(), subscriptionRequestDto.getSubscriptionPlan());
 
 		Long employeeCount = employeeDao.countByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 
@@ -354,31 +361,108 @@ public class StripeServiceImpl implements StripeService {
 		return new ResponseEntityDto(false, "Free trial ended successfully");
 	}
 
-	private Map<SubscriptionPlan, String> getPriceMap(String productId) throws StripeException {
-		PriceListParams params = PriceListParams.builder().setProduct(productId).setActive(true).build();
-		PriceCollection prices = Price.list(params);
-		Map<SubscriptionPlan, String> priceMap = new EnumMap<>(SubscriptionPlan.class);
-		for (Price price : prices.getData()) {
-			if (price.getRecurring() != null) {
-				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
-				priceMap.put(plan, price.getId());
-			}
+	@Override
+	public ResponseEntityDto upgradeTierSubscription(SubscriptionRequestDto subscriptionRequestDto)
+			throws StripeException {
+		if (subscriptionRequestDto.getTier() == null || subscriptionRequestDto.getTier() == Tier.FREE) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_REQUIRED_SUBSCRIPTION_PLAN);
 		}
-		return priceMap;
+
+		if (subscriptionRequestDto.getSubscriptionPlan() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_REQUIRED_SUBSCRIPTION_PLAN);
+		}
+
+		String tenantId = TenantContext.getCurrentTenant();
+		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
+
+		if (tenant.getStripeSubscription() == null
+				|| tenant.getStripeSubscription().getSubscriptionId() == null
+				|| tenant.getTier() == Tier.FREE
+				|| tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+			throw new ModuleException(
+					EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_NO_ACTIVE_SUBSCRIPTION);
+		}
+
+		if (tenant.getTier() == subscriptionRequestDto.getTier()
+				&& tenant.getSubscriptionPlan() == subscriptionRequestDto.getSubscriptionPlan()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_ALREADY_ON_TIER);
+		}
+
+		int currentRank = tierRank(tenant.getTier());
+		int requestedRank = tierRank(subscriptionRequestDto.getTier());
+		boolean isTierUpgrade = requestedRank > currentRank;
+		boolean isPlanUpgrade = requestedRank == currentRank
+				&& tenant.getSubscriptionPlan() == SubscriptionPlan.MONTH
+				&& subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.YEAR;
+
+		if (!isTierUpgrade && !isPlanUpgrade) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_NOT_AN_UPGRADE);
+		}
+
+		Tier requestedTier = subscriptionRequestDto.getTier();
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		boolean hadTrialForRequestedTier = stripeSubscriptionHistoryDao
+			.existsByTenantNameAndSubscriptionStatusAndTier(tenantId, SubscriptionStatus.FREE_TRIAL, requestedTier);
+		tenantContext.setTenantAndSwitchSchema(tenantId);
+
+		log.info("upgradeTierSubscription: tenant={}, requestedTier={}, hadTrialForRequestedTier={}",
+				tenantId, requestedTier, hadTrialForRequestedTier);
+
+		try {
+			String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+			Subscription subscription = Subscription.retrieve(subscriptionId);
+			SubscriptionItem currentItem = subscription.getItems().getData().getFirst();
+			String subscriptionItemId = currentItem.getId();
+			long currentQuantity = currentItem.getQuantity();
+			String newPriceId = getPriceId(requestedTier, subscriptionRequestDto.getSubscriptionPlan());
+
+			SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder()
+				.addItem(SubscriptionUpdateParams.Item.builder()
+					.setId(subscriptionItemId)
+					.setPrice(newPriceId)
+					.setQuantity(currentQuantity)
+					.build());
+
+			if (hadTrialForRequestedTier) {
+				paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.ALWAYS_INVOICE);
+			}
+			else {
+				long trialEndEpoch = java.time.Instant.now()
+					.plus(trialPeriodDays, java.time.temporal.ChronoUnit.DAYS)
+					.getEpochSecond();
+				paramsBuilder.setTrialEnd(trialEndEpoch);
+				// Credit unused time from current plan; credit applied to first invoice after trial
+				paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS);
+			}
+
+			subscription.update(paramsBuilder.build());
+
+			log.info(
+					"upgradeTierSubscription: Successfully initiated tier upgrade for tenant={} to tier={} plan={} withTrial={}",
+					tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
+		}
+		catch (StripeException e) {
+			log.error("upgradeTierSubscription: StripeException occurred for tenant={}", tenantId, e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,
+					new String[] { e.getMessage() });
+		}
+
+		return new ResponseEntityDto(false, "Tier upgrade initiated successfully");
 	}
 
-	private Map<SubscriptionPlan, Double> getPriceValueMap(String productId) throws StripeException {
-		PriceListParams params = PriceListParams.builder().setProduct(productId).setActive(true).build();
-		PriceCollection prices = Price.list(params);
-		Map<SubscriptionPlan, Double> priceMap = new EnumMap<>(SubscriptionPlan.class);
-		for (Price price : prices.getData()) {
-			if (price.getRecurring() != null) {
-				SubscriptionPlan plan = SubscriptionPlan.valueOf(price.getRecurring().getInterval().toUpperCase());
-				Double unitAmount = price.getUnitAmount() / 100.0;
-				priceMap.put(plan, unitAmount);
-			}
+	private int tierRank(Tier tier) {
+		return switch (tier) {
+			case PRO -> 2;
+			case CORE -> 1;
+			default -> 0;
+		};
+	}
+
+	private String getPriceId(Tier tier, SubscriptionPlan plan) {
+		if (tier == Tier.PRO) {
+			return plan == SubscriptionPlan.MONTH ? stripeProMonthlyPriceId : stripeProYearlyPriceId;
 		}
-		return priceMap;
+		return plan == SubscriptionPlan.MONTH ? stripeCoreMonthlyPriceId : stripeCoreYearlyPriceId;
 	}
 
 	public SubscriptionPlan getSubscriptionPlanFromPriceId(String priceId) throws StripeException {

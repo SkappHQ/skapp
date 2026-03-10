@@ -75,11 +75,17 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
 
-	@Value("${stripe.product.core-product-id}")
-	private String stripeCoreProductId;
+	@Value("${stripe.prices.core-monthly-price-id}")
+	private String stripeCoreMonthlyPriceId;
 
-	@Value("${stripe.product.pro-product-id}")
-	private String stripeProProductId;
+	@Value("${stripe.prices.core-yearly-price-id}")
+	private String stripeCoreYearlyPriceId;
+
+	@Value("${stripe.prices.pro-monthly-price-id}")
+	private String stripeProMonthlyPriceId;
+
+	@Value("${stripe.prices.pro-yearly-price-id}")
+	private String stripeProYearlyPriceId;
 
 	@Override
 	public void handleStripeEvent(String payload, String sigHeader) throws StripeException {
@@ -150,11 +156,11 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				return;
 			}
 
-			String productId = subscription.getItems().getData().getFirst().getPrice().getProduct();
+			String productId = subscription.getItems().getData().getFirst().getPrice().getId();
 
 			if (productId == null) {
 				log.error(
-						"handleCheckoutSessionCompleted: Product ID is null on subscription {} for tenant: {}; cannot determine tier",
+						"handleCheckoutSessionCompleted: Price ID is null on subscription {} for tenant: {}; cannot determine tier",
 						subscription.getId(), tenantId);
 				return;
 			}
@@ -180,18 +186,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			stripeSubscription.setSubscriptionStartDate(Instant.ofEpochSecond(subscription.getStartDate()));
 			stripeSubscription.setTenant(tenant);
 
-			if (stripeProProductId.equals(productId)) {
-				tenant.setTier(Tier.PRO);
-			}
-			else if (stripeCoreProductId.equals(productId)) {
-				tenant.setTier(Tier.CORE);
-			}
-			else {
+			Tier tier = determineTierFromPriceId(productId);
+			if (tier == null) {
 				log.error(
-						"handleCheckoutSessionCompleted: Unrecognized product ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
+						"handleCheckoutSessionCompleted: Unrecognized price ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
 						productId, subscription.getId(), tenantId);
 				return;
 			}
+			tenant.setTier(tier);
 
 			tenant.setSubscriptionStatus(mapStripeStatusToSubscriptionStatus(subscription));
 			if (tenant.getTenantStatus() == TenantStatus.FREE_TRAIL_ENDED
@@ -200,11 +202,9 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				tenant.setTenantStatus(TenantStatus.ACTIVE);
 			}
 
-			if (subscription.getItems() != null && !subscription.getItems().getData().isEmpty()) {
-				String priceId = subscription.getItems().getData().getFirst().getPrice().getId();
-				SubscriptionPlan plan = stripeService.getSubscriptionPlanFromPriceId(priceId);
-				tenant.setSubscriptionPlan(plan);
-			}
+			// productId already holds the price ID; derive plan directly without a second Stripe call
+			SubscriptionPlan plan = stripeService.getSubscriptionPlanFromPriceId(productId);
+			tenant.setSubscriptionPlan(plan);
 
 			tenant.setLastModifiedDate(Instant.now());
 			tenant.setBillingEmail(billingEmail);
@@ -282,11 +282,11 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 					return;
 				}
 
-				String productId = subscription.getItems().getData().getFirst().getPrice().getProduct();
+				String productId = subscription.getItems().getData().getFirst().getPrice().getId();
 
 				if (productId == null) {
 					log.error(
-							"handleSubscriptionPaymentSucceeded: Product ID is null on subscription {} for tenant: {}; cannot determine tier",
+							"handleSubscriptionPaymentSucceeded: Price ID is null on subscription {} for tenant: {}; cannot determine tier",
 							subscription.getId(), currentTenant.getTenantName());
 					return;
 				}
@@ -295,18 +295,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				currentTenant.setLastModifiedByEmail(userEmail);
 				currentTenant.getTenant().setLastModifiedDate(Instant.now());
 
-				if (stripeProProductId.equals(productId)) {
-					currentTenant.getTenant().setTier(Tier.PRO);
-				}
-				else if (stripeCoreProductId.equals(productId)) {
-					currentTenant.getTenant().setTier(Tier.CORE);
-				}
-				else {
+				Tier tier = determineTierFromPriceId(productId);
+				if (tier == null) {
 					log.error(
-							"handleSubscriptionPaymentSucceeded: Unrecognized product ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
+							"handleSubscriptionPaymentSucceeded: Unrecognized price ID '{}' on subscription {} for tenant: {}; rejecting event to avoid silent misclassification",
 							productId, subscription.getId(), currentTenant.getTenantName());
 					return;
 				}
+				currentTenant.getTenant().setTier(tier);
 
 				tenantDao.save(currentTenant.getTenant());
 				saveHistory(currentTenant.getTenant(), currentTenant,
@@ -517,16 +513,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				changed = true;
 			}
 
-			if (subscription.getItems() != null && !subscription.getItems().getData().isEmpty()) {
-				String priceId = subscription.getItems().getData().getFirst().getPrice().getId();
-				SubscriptionPlan newPlan = stripeService.getSubscriptionPlanFromPriceId(priceId);
-
-				if (tenant.getSubscriptionPlan() != newPlan) {
-					tenant.setSubscriptionPlan(newPlan);
-					log.info("handleSubscriptionUpdated: Plan changed to {} for tenant: {}", newPlan,
-							tenant.getTenantName());
-					changed = true;
-				}
+			if (applyPriceIdChanges(tenant, subscription)) {
+				changed = true;
 			}
 
 			if (!changed) {
@@ -584,6 +572,64 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		stripeSubscriptionHistoryDao.save(history);
 		log.info("saveHistory: Recorded subscription history for tenant: {}, status: {}, tier: {}",
 				tenant.getTenantName(), tenant.getSubscriptionStatus(), tenant.getTier());
+	}
+
+	private boolean applyPriceIdChanges(Tenant tenant, Subscription subscription) throws StripeException {
+		if (subscription.getItems() == null || subscription.getItems().getData().isEmpty()) {
+			return false;
+		}
+
+		String priceId = subscription.getItems().getData().getFirst().getPrice().getId();
+		boolean changed = false;
+
+		SubscriptionPlan newPlan = stripeService.getSubscriptionPlanFromPriceId(priceId);
+		if (tenant.getSubscriptionPlan() != newPlan) {
+			log.info("handleSubscriptionUpdated: Plan changed to {} for tenant: {}", newPlan, tenant.getTenantName());
+			tenant.setSubscriptionPlan(newPlan);
+			changed = true;
+		}
+
+		Tier newTier = determineTierFromPriceId(priceId);
+		if (newTier != null && newTier != tenant.getTier()) {
+			log.info("handleSubscriptionUpdated: Tier changed from {} to {} for tenant: {}",
+					tenant.getTier(), newTier, tenant.getTenantName());
+			Tier previousTier = tenant.getTier();
+			tenant.setTier(newTier);
+			changed = true;
+			applyTierVersionUpgrade(tenant.getTenantName(), previousTier, newTier);
+		}
+
+		return changed;
+	}
+
+	private void applyTierVersionUpgrade(String tenantName, Tier previousTier, Tier newTier) {
+		SystemVersionTypes svt = isTierUpgrade(previousTier, newTier) ? SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO
+				: SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
+		tenantContext.setTenantAndSwitchSchema(tenantName);
+		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, svt);
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+	}
+
+	private boolean isTierUpgrade(Tier from, Tier to) {
+		return tierRank(to) > tierRank(from);
+	}
+
+	private int tierRank(Tier tier) {
+		return switch (tier) {
+			case PRO -> 2;
+			case CORE -> 1;
+			default -> 0;
+		};
+	}
+
+	private Tier determineTierFromPriceId(String priceId) {
+		if (stripeProMonthlyPriceId.equals(priceId) || stripeProYearlyPriceId.equals(priceId)) {
+			return Tier.PRO;
+		}
+		if (stripeCoreMonthlyPriceId.equals(priceId) || stripeCoreYearlyPriceId.equals(priceId)) {
+			return Tier.CORE;
+		}
+		return null;
 	}
 
 	private SubscriptionStatus mapStripeStatusToSubscriptionStatus(Subscription subscription) {
