@@ -8,10 +8,10 @@ import {
 } from "@mui/material";
 import { JSX, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
@@ -277,28 +277,8 @@ const RequestFilterMenuItems = ({
         ))}
         <Divider />
         <Stack direction="row" spacing="0.75rem" sx={{ pt: "0.75rem" }}>
-          <Button
-            styles={{
-              py: "0.75rem",
-              px: "1.25rem",
-              fontSize: "1rem",
-              fontWeight: "400"
-            }}
-            label={translateText(["applyButtonText"])}
-            buttonStyle={ButtonStyle.PRIMARY}
-            onClick={handleSubmit}
-            ariaLabel="Apply filters"
-          />
-          <Button
-            styles={{
-              py: "0.75rem",
-              px: "1.25rem"
-            }}
-            label={translateText(["resetButtonText"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            onClick={handleResetFilters}
-            disabled={isResetDisabled}
-          />
+          <Button variant={"primary"} onClick={handleSubmit} aria-label="Apply filters">{translateText(["applyButtonText"])}</Button>
+          <Button variant={"tertiary"} onClick={handleResetFilters} disabled={isResetDisabled}>{translateText(["resetButtonText"])}</Button>
         </Stack>
       </Box>
     </Box>

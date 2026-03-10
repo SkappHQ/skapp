@@ -1,13 +1,10 @@
 import { Box, Stack, Typography } from "@mui/material";
 
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { IconName } from "~community/common/types/IconTypes";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import Modal from "../../organisms/Modal/Modal";
 
@@ -83,23 +80,7 @@ const VersionUpgradeModal = () => {
           <Typography variant="body2" align="center">
             {versionUpgradeInfo.popupDescription}
           </Typography>
-          <Button
-            label={versionUpgradeInfo.buttonText}
-            buttonStyle={ButtonStyle.SECONDARY}
-            size={ButtonSizes.SMALL}
-            onClick={handleButtonClick}
-            styles={{
-              backgroundColor: "#93C5FD",
-              ".MuiTypography-root": {
-                color: "#408CE4"
-              },
-              "&:hover": {
-                outline: "none",
-                border: `0.125rem solid #408CE4`
-              },
-              outline: `0.0625rem solid #408CE4`
-            }}
-          />
+          <Button variant={"secondary"} size={"sm"} onClick={handleButtonClick}>{versionUpgradeInfo.buttonText}</Button>
         </Stack>
       </>
     </Modal>

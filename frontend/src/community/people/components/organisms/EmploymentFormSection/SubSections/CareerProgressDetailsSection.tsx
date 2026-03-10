@@ -1,17 +1,13 @@
 import { Checkbox, Grid2 as Grid, Typography, useTheme } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InteractiveInputTrigger from "~community/common/components/molecules/InteractiveInputTrigger/InteractiveInputTrigger";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
@@ -376,24 +372,25 @@ const CareerProgressDetailsSection = ({
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
                 {!isInputsDisabled && (
                   <Button
-                    label={
-                      rowEdited > -1
-                        ? translateButtonText(["saveChanges"])
-                        : translateButtonText(["add"])
-                    }
                     onClick={() => handleSubmit()}
-                    endIcon={
-                      rowEdited > -1 ? IconName.TICK_ICON : IconName.ADD_ICON
-                    }
-                    isFullWidth={false}
-                    buttonStyle={ButtonStyle.SECONDARY}
-                    size={ButtonSizes.MEDIUM}
-                    styles={{
-                      mt: "2rem"
-                    }}
-                    type={ButtonTypes.SUBMIT}
+                    fullWidth={false}
+                    variant={"secondary"}
+                    size={"md"}
+                    type={"submit"}
                     disabled={isInputsDisabled}
-                  />
+                    icon={
+                      rowEdited > -1 ? (
+                        <Icon name={IconName.TICK_ICON} />
+                      ) : (
+                        <Icon name={IconName.ADD_ICON} />
+                      )
+                    }
+                    iconPosition="end"
+                  >
+                    {rowEdited > -1
+                      ? translateButtonText(["saveChanges"])
+                      : translateButtonText(["add"])}
+                  </Button>
                 )}
               </Grid>
 

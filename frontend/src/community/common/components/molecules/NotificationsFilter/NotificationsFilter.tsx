@@ -2,13 +2,13 @@ import { Stack } from "@mui/material";
 import { JSX } from "react";
 
 import { useMarkAllNotificationsAsRead } from "~community/common/api/notificationsApi";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { NotifyFilterButtonTypes } from "~community/common/types/notificationTypes";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 
 interface Props {
   filterButton: NotifyFilterButtonTypes;
@@ -42,61 +42,27 @@ const NotificationsFilter = ({
       component="div"
     >
       <Stack direction={"row"} gap={isSmallPhoneScreen ? 1 : 2} component="div">
-        <Button
-          label={translateText(["allFilterButtonText"])}
-          isFullWidth={false}
-          buttonStyle={
+        <Button fullWidth={false} variant={
             filterButton === NotifyFilterButtonTypes.ALL
-              ? ButtonStyle.SECONDARY
-              : ButtonStyle.TERTIARY
-          }
-          styles={{
-            py: isSmallPhoneScreen ? "0.625rem" : "0.75rem",
-            px: "1.25rem",
-            fontSize: isSmallPhoneScreen ? "0.75rem" : "0.875rem",
-            lineHeight: "1.3125rem"
-          }}
-          onClick={() =>
+              ? "secondary"
+              : "tertiary"
+          } onClick={() =>
             setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL })
-          }
-        />
-        <Button
-          label={translateText(["unreadFilterButtonText"])}
-          isFullWidth={false}
-          buttonStyle={
+          }>{translateText(["allFilterButtonText"])}</Button>
+        <Button fullWidth={false} variant={
             filterButton === NotifyFilterButtonTypes.UNREAD
-              ? ButtonStyle.SECONDARY
-              : ButtonStyle.TERTIARY
-          }
-          styles={{
-            py: isSmallPhoneScreen ? "0.625rem" : "0.75rem",
-            px: "1.25rem",
-            fontSize: isSmallPhoneScreen ? "0.75rem" : "0.875rem",
-            lineHeight: "1.3125rem",
-            display: notifyData.unreadCount !== 0 ? "block" : "none"
-          }}
-          onClick={() =>
+              ? "secondary"
+              : "tertiary"
+          } onClick={() =>
             setFilterButton({ filterButton: NotifyFilterButtonTypes.UNREAD })
-          }
-        />
+          }>{translateText(["unreadFilterButtonText"])}</Button>
       </Stack>
 
       {!isLoading && notifyData.unreadCount !== 0 && (
-        <Button
-          label={translateText(["markAllAsReadButton"])}
-          isFullWidth={isSmallPhoneScreen}
-          buttonStyle={ButtonStyle.TERTIARY}
-          styles={{
-            py: isSmallPhoneScreen ? "0.625rem" : "0.75rem",
-            px: "1.25rem",
-            fontSize: isSmallPhoneScreen ? "0.75rem" : "0.875rem",
-            lineHeight: "1.3125rem"
-          }}
-          onClick={() => {
+        <Button fullWidth={isSmallPhoneScreen} variant={"tertiary"} onClick={() => {
             setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL });
             handleMarkAllRead();
-          }}
-        />
+          }}>{translateText(["markAllAsReadButton"])}</Button>
       )}
     </Stack>
   );

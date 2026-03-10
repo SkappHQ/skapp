@@ -2,8 +2,8 @@ import { Box, Stack } from "@mui/material";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useHandelLeaves } from "~community/leave/api/LeaveApi";
@@ -91,18 +91,8 @@ const ManagerDeclineLeaveModal = ({
         />
       </Box>
       <Stack spacing={2}>
-        <Button
-          buttonStyle={ButtonStyle.ERROR}
-          label="Decline Leave"
-          endIcon={<CloseIcon />}
-          onClick={handelDecline}
-        />
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY}
-          label="Cancel"
-          endIcon={<CloseIcon />}
-          onClick={closeModel}
-        />
+        <Button variant={"error"} onClick={handelDecline} icon={<CloseIcon />} iconPosition="end">"Decline Leave"</Button>
+        <Button variant={"tertiary"} onClick={closeModel} icon={<CloseIcon />} iconPosition="end">"Cancel"</Button>
       </Stack>
     </Box>
   );

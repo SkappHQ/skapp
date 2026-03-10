@@ -1,13 +1,12 @@
 import { Box, Theme, useTheme } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -170,9 +169,7 @@ const JobFamilyTable: FC<Props> = ({
           </>
         ) : (
           <Button
-            label={translateText(["viewBtnText"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
+            variant={"tertiary"}
             onClick={() =>
               handleJobFamilyEditBtnClick(
                 jobFamilyData,
@@ -180,7 +177,9 @@ const JobFamilyTable: FC<Props> = ({
                 setJobFamilyModalType
               )
             }
-          />
+          >
+            {translateText(["viewBtnText"])}
+          </Button>
         )
       }));
   };

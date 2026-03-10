@@ -4,12 +4,9 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Table from "~community/common/components/molecules/Table/Table";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+
 import { TableNames } from "~community/common/enums/Table";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -213,16 +210,7 @@ const HolidayTable: FC<Props> = ({
               rightButton:
                 holidayData && holidayData?.length > 0 && isPeopleAdmin ? (
                   <Box>
-                    <Button
-                      label={
-                        selectedHolidays.length
-                          ? translateText(["deleteSelectedTitle"])
-                          : translateText(["deleteAllTitle"])
-                      }
-                      buttonStyle={ButtonStyle.SECONDARY}
-                      size={ButtonSizes.MEDIUM}
-                      startIcon={<DeleteButtonIcon />}
-                      onClick={() =>
+                    <Button variant={"secondary"} size={"md"} onClick={() =>
                         handleBulkDeleteClick(
                           selectedHolidays,
                           setSelectedDeleteIds,
@@ -231,9 +219,11 @@ const HolidayTable: FC<Props> = ({
                           setHolidayModalType,
                           translateText
                         )
-                      }
-                      disabled={deleteButtonDisabled}
-                    />
+                      } disabled={deleteButtonDisabled} icon={<DeleteButtonIcon />} iconPosition="start">{
+                        selectedHolidays.length
+                          ? translateText(["deleteSelectedTitle"])
+                          : translateText(["deleteAllTitle"])
+                      }</Button>
                   </Box>
                 ) : undefined
             }

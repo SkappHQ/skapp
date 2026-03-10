@@ -1,12 +1,13 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
@@ -186,23 +187,26 @@ const UserBulkCsvUpload: FC<Props> = ({
       )}
       <Divider sx={{ mt: "1.5rem", mb: "1.5rem" }} />
       <Button
-        label={translateText(["uploadButton"])}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mb: "1rem" }}
+        variant={"primary"}
         onClick={() => handleUploadBtn()}
         isLoading={isPending}
         disabled={bulkUserAttachment?.length === 0}
-        shouldBlink={bulkUserAttachment?.length > 0}
-        ariaLabel={translateAria(["uploadPeople"])}
-      />
+        aria-label={translateAria(["uploadPeople"])}
+        className={bulkUserAttachment?.length > 0 ? "animate-pulse" : ""}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["uploadButton"])}
+      </Button>
 
       <Button
-        startIcon={IconName.LEFT_ARROW_ICON}
-        label={translateText(["backButton"])}
-        buttonStyle={ButtonStyle.TERTIARY}
+        variant={"tertiary"}
         onClick={() => handleCancelBtn()}
-      />
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["backButton"])}
+      </Button>
 
       <ToastMessage
         open={toastMessage.open}

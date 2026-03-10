@@ -1,11 +1,7 @@
 import { Box, Stack } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { JSX, useRef, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import {
-  ButtonSizes,
-  ButtonStyle as PrimaryButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
@@ -120,23 +116,25 @@ const EmployeeDataFIlterMenuItems = ({
           }}
         >
           <Button
-            isFullWidth={false}
-            label={translateText(["reset"])}
-            buttonStyle={PrimaryButtonTypes.TERTIARY}
-            size={isSmallScreen ? ButtonSizes.SMALL : ButtonSizes.MEDIUM}
+            fullWidth={false}
+            variant="tertiary"
+            size={isSmallScreen ? "sm" : "md"}
             onClick={() => {
               handleClose();
               resetEmployeeDataParams();
               setSelected(PeopleFilterHeadings.DEMOGRAPICS);
             }}
-          />
+          >
+            {translateText(["reset"])}
+          </Button>
           <Button
-            isFullWidth={false}
-            label={translateText(["apply"])}
-            buttonStyle={PrimaryButtonTypes.PRIMARY}
-            size={isSmallScreen ? ButtonSizes.SMALL : ButtonSizes.MEDIUM}
+            fullWidth={false}
+            variant="primary"
+            size={isSmallScreen ? "sm" : "md"}
             onClick={handleSubmit}
-          />
+          >
+            {translateText(["apply"])}
+          </Button>
         </Box>
       </Box>
     </Box>

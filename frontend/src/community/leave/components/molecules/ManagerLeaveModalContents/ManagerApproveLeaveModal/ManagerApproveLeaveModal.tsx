@@ -5,13 +5,13 @@ import { useGetUploadedLeaveAttachments } from "~community/common/api/FileHandle
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useHandelLeaves } from "~community/leave/api/LeaveApi";
@@ -323,19 +323,8 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
       </Box>
 
       <Stack spacing={2} sx={{ mt: "1rem" }}>
-        <Button
-          label={translateText(["approveLeave"])}
-          endIcon={<CheckIcon />}
-          onClick={handleApprove}
-          ariaLabel={translateText(["approveAreaLabel"])}
-        />
-        <Button
-          buttonStyle={ButtonStyle.ERROR}
-          label={translateText(["declineLeave"])}
-          endIcon={<CloseIcon />}
-          onClick={handleDeclineModel}
-          ariaLabel={translateText(["cancelAreaLabel"])}
-        />
+        <Button onClick={handleApprove} aria-label={translateText(["approveAreaLabel"])} icon={<CheckIcon />} iconPosition="end">{translateText(["approveLeave"])}</Button>
+        <Button variant={"error"} onClick={handleDeclineModel} aria-label={translateText(["cancelAreaLabel"])} icon={<CloseIcon />} iconPosition="end">{translateText(["declineLeave"])}</Button>
       </Stack>
     </Box>
   );

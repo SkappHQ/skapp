@@ -7,16 +7,13 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortKeyTypes } from "~community/common/types/CommonTypes";
@@ -237,8 +234,7 @@ const LeaveRequests: FC = () => {
           {leaveStatusArray.map((leaveStatus) => (
             <Button
               key={leaveStatus}
-              label={pascalCaseFormatter(leaveStatus)}
-              isFullWidth={false}
+              fullWidth={false}
               onClick={() => {
                 setFilter((prev) => ({
                   ...prev,
@@ -247,18 +243,10 @@ const LeaveRequests: FC = () => {
                     : [...prev.status, leaveStatus]
                 }));
               }}
-              buttonStyle={
-                filter.status.includes(leaveStatus)
-                  ? ButtonStyle.SECONDARY
-                  : ButtonStyle.TERTIARY
+              variant={
+                filter.status.includes(leaveStatus) ? "secondary" : "tertiary"
               }
-              size={ButtonSizes.MEDIUM}
-              startIcon={
-                filter.status.includes(leaveStatus)
-                  ? IconName.CHECK_CIRCLE_ICON
-                  : null
-              }
-              styles={classes.filterChipButtonStyles}
+              size={"md"}
               ariaLabel={
                 filter.status.includes(leaveStatus)
                   ? translateAria(["myLeaveRequests", "filterSelected"], {
@@ -268,7 +256,15 @@ const LeaveRequests: FC = () => {
                       filterName: pascalCaseFormatter(leaveStatus)
                     })
               }
-            />
+              icon={
+                filter.status.includes(leaveStatus) ? (
+                  <Icon name={IconName.CHECK_CIRCLE_ICON} />
+                ) : undefined
+              }
+              iconPosition="start"
+            >
+              {pascalCaseFormatter(leaveStatus)}
+            </Button>
           ))}
         </Stack>
       </Box>
@@ -284,8 +280,7 @@ const LeaveRequests: FC = () => {
             ({ id, name }: { id: string; name: string }) => (
               <Button
                 key={id}
-                label={name}
-                isFullWidth={false}
+                fullWidth={false}
                 onClick={() => {
                   setFilter((prev) => ({
                     ...prev,
@@ -294,17 +289,9 @@ const LeaveRequests: FC = () => {
                       : [...prev.type, id]
                   }));
                 }}
-                buttonStyle={
-                  filter.type.includes(id)
-                    ? ButtonStyle.SECONDARY
-                    : ButtonStyle.TERTIARY
-                }
-                size={ButtonSizes.MEDIUM}
-                startIcon={
-                  filter.type.includes(id) ? IconName.CHECK_CIRCLE_ICON : null
-                }
-                styles={classes.filterChipButtonStyles}
-                ariaLabel={
+                variant={filter.type.includes(id) ? "secondary" : "tertiary"}
+                size={"md"}
+                aria-label={
                   filter.type.includes(id)
                     ? translateAria(["myLeaveRequests", "filterSelected"], {
                         filterName: pascalCaseFormatter(name)
@@ -313,7 +300,15 @@ const LeaveRequests: FC = () => {
                         filterName: pascalCaseFormatter(name)
                       })
                 }
-              />
+                icon={
+                  filter.type.includes(id) ? (
+                    <Icon name={IconName.CHECK_CIRCLE_ICON} />
+                  ) : undefined
+                }
+                iconPosition="start"
+              >
+                {name}
+              </Button>
             )
           )}
         </Stack>

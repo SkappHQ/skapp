@@ -1,17 +1,13 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import Button from "~community/common/components/atoms/Button/Button";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ManagerTeamType } from "~community/common/types/CommonTypes";
@@ -105,18 +101,18 @@ const TeamSelector = ({
     <>
       <Box sx={{ paddingLeft: "1rem" }}>
         <Button
-          label={
-            !isTeamListEmpty ? selectedOptionName : translateTexts(["allLabel"])
-          }
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          size={ButtonSizes.MEDIUM}
+          variant={"tertiary"}
+          size={"md"}
           disabled={isTeamListEmpty && !isAdmin}
-          endIcon={<DropDownArrow />}
           onClick={(event: MouseEvent<HTMLElement>) => {
             setAnchorEl(event.currentTarget);
             setShowOverlay(true);
           }}
-        />
+          icon={<DropDownArrow />}
+          iconPosition="end"
+        >
+          {!isTeamListEmpty ? selectedOptionName : translateTexts(["allLabel"])}
+        </Button>
       </Box>
       <Popper
         anchorEl={anchorEl}

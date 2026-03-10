@@ -8,11 +8,11 @@ import {
   calculateWorkedDuration,
   calculateWorkedDurationInHoursAndMinutes
 } from "~community/attendance/utils/CalculateWorkedDuration";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -94,27 +94,8 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
             {translateText(["clockOutConfirmationMessage"])}
           </Typography>
           <Stack spacing={2}>
-            <Button
-              label={translateText(["confirm"])}
-              endIcon={IconName.RIGHT_ARROW_ICON}
-              onClick={handleProceedHome}
-              ariaLabel={translateText(["confirm"])}
-              isLoading={isPending}
-              buttonStyle={ButtonStyle.PRIMARY}
-              accessibility={{
-                ariaHidden: true
-              }}
-            />
-            <Button
-              buttonStyle={ButtonStyle.TERTIARY}
-              label={translateText(["cancel"])}
-              endIcon={IconName.CLOSE_ICON}
-              onClick={handleUndoClockOut}
-              ariaLabel={translateText(["cancel"])}
-              accessibility={{
-                ariaHidden: true
-              }}
-            />
+            <Button onClick={handleProceedHome} aria-label={translateText(["confirm"])} isLoading={isPending} variant={"primary"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["confirm"])}</Button>
+            <Button variant={"tertiary"} onClick={handleUndoClockOut} aria-label={translateText(["cancel"])} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancel"])}</Button>
           </Stack>
         </Box>
       </Box>

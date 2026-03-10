@@ -2,8 +2,9 @@ import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
@@ -78,12 +79,7 @@ const EmployeeNudgeSupervisorPopup: FC<Props> = ({
           reviewer={employeeLeaveRequestData.reviewer ?? undefined}
         />
         <AttachmentRow attachments={employeeLeaveRequestData?.attachments} />
-        <Button
-          label={translateText(["myLeaveRequests", "proceedToHome"])}
-          endIcon={IconName.RIGHT_ARROW_ICON}
-          buttonStyle={ButtonStyle.PRIMARY}
-          onClick={() => handleRequestStatusPopup()}
-        />
+        <Button variant={"primary"} onClick={() => handleRequestStatusPopup()} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["myLeaveRequests", "proceedToHome"])}</Button>
       </Box>
     </>
   );

@@ -7,8 +7,9 @@ import {
   convertToUtc,
   getCurrentTimeZone
 } from "~community/attendance/utils/TimeUtils";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums"
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -60,29 +61,13 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
       <Typography variant="body1" sx={{ pt: "1rem" }}>
         {translateText(["entryExistModalDes"])}
       </Typography>
-      <Button
-        label={translateText(["confirmBtnTxt"])}
-        styles={{
-          mt: "1rem"
-        }}
-        buttonStyle={ButtonStyle.PRIMARY}
-        endIcon={IconName.CHECK_ICON}
-        onClick={handleSubmit}
-      />
-      <Button
-        label={translateText(["cancelBtnTxt"])}
-        styles={{
-          mt: "1rem"
-        }}
-        buttonStyle={ButtonStyle.TERTIARY}
-        endIcon={IconName.CLOSE_ICON}
-        onClick={() => {
+      <Button variant={"primary"} onClick={handleSubmit} icon={<Icon name={IconName.CHECK_ICON} />} iconPosition="end">{translateText(["confirmBtnTxt"])}</Button>
+      <Button variant={"tertiary"} onClick={() => {
           setIsEmployeeTimesheetModalOpen(true);
           setEmployeeTimesheetModalType(
             EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
           );
-        }}
-      />
+        }} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnTxt"])}</Button>
     </>
   );
 };

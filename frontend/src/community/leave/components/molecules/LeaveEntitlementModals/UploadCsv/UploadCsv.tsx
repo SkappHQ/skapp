@@ -1,9 +1,10 @@
 import { Divider, Stack, Typography } from "@mui/material";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
@@ -172,27 +173,8 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         customError={customError}
       />
       <Divider sx={classes.divider} aria-hidden={true} />
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["uploadButton"])}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={classes.uploadButton}
-        onClick={handleUploadBtnClick}
-        disabled={!isValid}
-        isLoading={leaveEntitlementBulkUploadPending}
-      />
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["goBackButton"])}
-        startIcon={IconName.LEFT_ARROW_ICON}
-        buttonStyle={ButtonStyle.TERTIARY}
-        onClick={handleBackBtnClick}
-      />
+      <Button variant={"primary"} onClick={handleUploadBtnClick} disabled={!isValid} isLoading={leaveEntitlementBulkUploadPending} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["uploadButton"])}</Button>
+      <Button variant={"tertiary"} onClick={handleBackBtnClick} icon={<Icon name={IconName.LEFT_ARROW_ICON} />} iconPosition="start">{translateText(["goBackButton"])}</Button>
     </Stack>
   );
 };

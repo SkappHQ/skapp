@@ -5,14 +5,11 @@ import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import { JSX, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -54,16 +51,9 @@ const AvailabilityCalendarWidget = ({
         <Typography variant="h4">
           {translateText(["resourceAvailability"])}
         </Typography>
-        <Button
-          isFullWidth={false}
-          buttonStyle={ButtonStyle.TERTIARY}
-          label={translateText(["fullCalendar"])}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          onClick={() =>
+        <Button fullWidth={false} variant={"tertiary"} onClick={() =>
             router.replace(ROUTES.DASHBOARD.LEAVE.RESOURCE_AVAILABILITY)
-          }
-          size={ButtonSizes.MEDIUM}
-        ></Button>
+          } size={"md"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["fullCalendar"])}</Button>
       </Box>
 
       <Box sx={{ width: "100%" }}>

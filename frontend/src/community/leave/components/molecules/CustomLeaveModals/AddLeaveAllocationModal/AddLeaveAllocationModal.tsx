@@ -8,9 +8,9 @@ import React, {
   useMemo
 } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -139,21 +139,8 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
         onSubmit={handleSubmit}
       />
       <Box sx={{ mt: "1rem" }}>
-        <Button
-          label={translateText(["saveBtn"])}
-          styles={{ mt: "1rem" }}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          onClick={() => onSubmit(values, onAddSuccess, onAddError)}
-          disabled={isSaveDisabled}
-        />
-        <Button
-          label={translateText(["cancelBtn"])}
-          styles={{ mt: "1rem" }}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
-          onClick={() => onCancel(values)}
-        />
+        <Button variant={"primary"} onClick={() => onSubmit(values, onAddSuccess, onAddError)} disabled={isSaveDisabled} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveBtn"])}</Button>
+        <Button variant={"tertiary"} onClick={() => onCancel(values)} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtn"])}</Button>
       </Box>
     </>
   );

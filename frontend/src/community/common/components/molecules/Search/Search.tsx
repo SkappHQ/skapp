@@ -26,11 +26,11 @@ import React, {
 import AnalyticsTeamIcon from "~community/common/assets/Icons/AnalyticsTeamIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   EmployeeSearchResultType,
@@ -212,39 +212,16 @@ const Search: FC<Props> = ({
             paddingBottom: isManagerSearch ? "1.25rem" : ""
           }}
         >
-          <Button
-            buttonStyle={
+          <Button variant={
               selectedTab === "Individual"
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            label={"Individual"}
-            isFullWidth={false}
-            styles={{
-              px: "2.125rem",
-              py: "0.625rem",
-              fontSize: "1rem",
-              fontWeight: 400
-            }}
-            onClick={() => searchButtonHandler("Individual")}
-          />
-          <Button
-            buttonStyle={
+                ? "secondary"
+                : "tertiary"
+            } fullWidth={false} onClick={() => searchButtonHandler("Individual")}>{"Individual"}</Button>
+          <Button variant={
               selectedTab === "Team"
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            label={"Team"}
-            isFullWidth={false}
-            styles={{
-              px: "2.125rem",
-              py: "0.625rem",
-              fontSize: "1rem",
-              fontWeight: 400,
-              marginLeft: "1.125rem"
-            }}
-            onClick={() => searchButtonHandler("Team")}
-          />
+                ? "secondary"
+                : "tertiary"
+            } fullWidth={false} onClick={() => searchButtonHandler("Team")}>{"Team"}</Button>
         </Stack>
       )}
       {label && (
@@ -579,24 +556,7 @@ const Search: FC<Props> = ({
               </Box>
             )}
             {isInviteMember && isCompanyEmail && (
-              <Button
-                label={"Invite to myLeave and add"}
-                endIcon={<PlusIcon />}
-                styles={{
-                  backgroundColor: "common.white",
-                  margin: "0.75rem",
-                  fontSize: "0.9375rem",
-                  lineHeight: "1.5625rem",
-                  width: "96%",
-                  height: "2.5rem",
-                  fontWeight: 400,
-                  "&:hover": {
-                    backgroundColor: "common.white",
-                    boxShadow: "none"
-                  }
-                }}
-                onClick={inviteClickHandler}
-              />
+              <Button onClick={inviteClickHandler} icon={<PlusIcon />} iconPosition="end">{"Invite to myLeave and add"}</Button>
             )}
           </Box>
         </Popper>

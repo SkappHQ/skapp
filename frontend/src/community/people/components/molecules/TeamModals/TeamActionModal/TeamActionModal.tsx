@@ -1,10 +1,10 @@
 import { Box, Stack, Typography } from "@mui/material";
 import React from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Modal from "~community/common/components/organisms/Modal/Modal";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -87,25 +87,9 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
       <Box>
         <Typography>{translateText(["teamActionModalDes"])}</Typography>
         <Stack spacing={2} mt={4}>
-          <Button
-            label={translateText(["teamActionModalBtnText"])}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            onClick={handleAddNewTeam}
-            accessibility={{
-              ariaHidden: true
-            }}
-          />
+          <Button variant={"primary"} onClick={handleAddNewTeam} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["teamActionModalBtnText"])}</Button>
 
-          <Button
-            label={translateText(["teamDeleteConfirmBtnText"])}
-            buttonStyle={ButtonStyle.ERROR}
-            endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-            onClick={handleDeleteTeam}
-            accessibility={{
-              ariaHidden: true
-            }}
-          />
+          <Button variant={"error"} onClick={handleDeleteTeam} icon={<Icon name={IconName.DELETE_BUTTON_ICON} />} iconPosition="end">{translateText(["teamDeleteConfirmBtnText"])}</Button>
         </Stack>
       </Box>
     </Modal>

@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
 import { holidayModalTypes } from "~community/people/types/HolidayTypes";
@@ -48,22 +48,8 @@ const HolidayExitConfirmationModal = () => {
         {translateText(["deletionConfirmDescription"])}
       </Typography>
       <Box>
-        <Button
-          label={translateText(["deletionConfirmResumeBtn"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.PRIMARY}
-          onClick={resumeTaskHandler}
-        />
-        <Button
-          label={translateText(["deletionConfirmLeaveAnywayBtn"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.ERROR}
-          onClick={leaveBtnOnClick}
-        />
+        <Button variant={"primary"} onClick={resumeTaskHandler}>{translateText(["deletionConfirmResumeBtn"])}</Button>
+        <Button variant={"error"} onClick={leaveBtnOnClick}>{translateText(["deletionConfirmLeaveAnywayBtn"])}</Button>
       </Box>
     </Box>
   );

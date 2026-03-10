@@ -1,14 +1,15 @@
 import { Stack, Theme, useTheme } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { ChangeEvent, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import ROUTES from "~community/common/constants/routes";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -270,12 +271,7 @@ const AddNewResourceModal = () => {
         {generalTexts(["addFullProfile"])}
       </Link>
       <Button
-        buttonStyle={ButtonStyle.PRIMARY}
-        label={generalTexts(["save"])}
-        endIcon={IconName.FORWARD_ARROW}
-        styles={{
-          marginTop: 2
-        }}
+        variant={"primary"}
         onClick={handleRefetch}
         disabled={
           values.email === "" ||
@@ -283,24 +279,29 @@ const AddNewResourceModal = () => {
           values.lastName === ""
         }
         data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
-        shouldBlink={
+        isLoading={isCheckingEmailLoading || isPending}
+        className={
           ongoingQuickSetup.INVITE_EMPLOYEES &&
           values.email !== "" &&
           values.firstName !== "" &&
           values.lastName !== ""
+            ? "animate-pulse"
+            : ""
         }
-        isLoading={isCheckingEmailLoading || isPending}
-      />
+        icon={<Icon name={IconName.FORWARD_ARROW} />}
+        iconPosition="end"
+      >
+        {generalTexts(["save"])}
+      </Button>
       <Button
-        buttonStyle={ButtonStyle.TERTIARY}
-        label={generalTexts(["cancel"])}
-        endIcon={IconName.CLOSE_ICON}
-        styles={{
-          marginTop: 2
-        }}
+        variant={"tertiary"}
         onClick={closeModal}
         data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
-      />
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {generalTexts(["cancel"])}
+      </Button>
     </Stack>
   );
 };

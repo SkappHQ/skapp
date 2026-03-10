@@ -2,8 +2,9 @@ import { Box } from "@mui/material";
 import { FC } from "react";
 
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
@@ -91,12 +92,7 @@ const EmployeeLeaveApprovedStatusPopup: FC<Props> = ({
 
         <AttachmentRow attachments={employeeLeaveRequestData?.attachments} />
 
-        <Button
-          label={translateText(["myLeaveRequests", "proceedToHome"])}
-          endIcon={IconName.RIGHT_ARROW_ICON}
-          buttonStyle={ButtonStyle.PRIMARY}
-          onClick={() => handleRequestStatusPopup()}
-        />
+        <Button variant={"primary"} onClick={() => handleRequestStatusPopup()} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["myLeaveRequests", "proceedToHome"])}</Button>
       </Box>
     </>
   );

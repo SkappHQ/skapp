@@ -557,6 +557,7 @@
     "stepLeave": "Leave",
     "stepTimeSheet": "Timesheet",
     "teamMember": "Team Member",
-    "leaveTrendForYear": "Leave trend for the year"
+    "leaveTrendForYear": "Leave trend for the year",
+    "allMembers": "ALL MEMBERS"
   }
 }

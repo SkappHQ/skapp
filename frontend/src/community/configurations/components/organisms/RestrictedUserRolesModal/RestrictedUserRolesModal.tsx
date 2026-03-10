@@ -1,12 +1,13 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { useFormik } from "formik";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { Modules } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -114,19 +115,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             onChange={() => setFieldValue("isManager", !values.isManager)}
           />
         </Stack>
-        <Button
-          label={translateText(["saveBtnText"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={IconName.RIGHT_ARROW_ICON}
-          onClick={handleSubmit}
-          disabled={!dirty}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={IconName.CLOSE_ICON}
-          onClick={handleCancelBtnClick}
-        />
+        <Button variant={"primary"} onClick={handleSubmit} disabled={!dirty} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveBtnText"])}</Button>
+        <Button variant={"tertiary"} onClick={handleCancelBtnClick} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
       </Stack>
     </Modal>
   );

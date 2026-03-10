@@ -11,17 +11,14 @@ import {
   COMMON_ERROR_OLD_PASSWORD_INCORRECT,
   COMMON_ERROR_SAME_PASSWORD
 } from "~community/common/constants/errorMessageKeys";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { changePasswordValidation } from "~community/common/utils/validation";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import Modal from "../../organisms/Modal/Modal";
 import PasswordStrengthMeter from "../PasswordStrengthMeter/PasswordStrengthMeter";
@@ -299,22 +296,8 @@ const ResetPasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
               </InputAdornment>
             }
           />
-          <Button
-            label={translateText(["saveChangesBtnText"])}
-            styles={{ mt: "1rem" }}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            disabled={!dirty || isSubmitting}
-            type={ButtonTypes.SUBMIT}
-          />
-          <Button
-            label={translateText(["cancelBtnText"])}
-            styles={{ mt: "1rem" }}
-            buttonStyle={ButtonStyle.TERTIARY}
-            endIcon={<Icon name={IconName.CLOSE_ICON} />}
-            disabled={false}
-            onClick={handleCancel}
-          />
+          <Button variant={"primary"} disabled={!dirty || isSubmitting} type={"submit"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveChangesBtnText"])}</Button>
+          <Button variant={"tertiary"} disabled={false} onClick={handleCancel} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
         </Stack>
       </Form>
     </Modal>

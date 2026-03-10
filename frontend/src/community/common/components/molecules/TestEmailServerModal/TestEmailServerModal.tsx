@@ -6,13 +6,13 @@ import { useTestEmailServer } from "~community/common/api/settingsApi";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { characterLengths } from "~community/common/constants/stringConstants";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { testEmailValidation } from "~community/common/utils/validation";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import Modal from "../../organisms/Modal/Modal";
 
@@ -117,20 +117,8 @@ const TestEmailServerModal: React.FC<Props> = ({ isOpen, onClose }) => {
             isDisabled={formik.isSubmitting}
           />
 
-          <Button
-            label={translateText(["sendEmailButtonText"])}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            disabled={formik.isSubmitting}
-            onClick={formik.submitForm}
-          />
-          <Button
-            label={translateText(["cancelBtnText"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            endIcon={<Icon name={IconName.CLOSE_ICON} />}
-            disabled={formik.isSubmitting}
-            onClick={handleClose}
-          />
+          <Button variant={"primary"} disabled={formik.isSubmitting} onClick={formik.submitForm} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["sendEmailButtonText"])}</Button>
+          <Button variant={"tertiary"} disabled={formik.isSubmitting} onClick={handleClose} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
         </Stack>
       </Form>
     </Modal>

@@ -8,10 +8,10 @@ import {
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CustomLeaveAllocationsTable from "~community/leave/components/molecules/CustomLeaveAllocationsTable/CustomLeaveAllocationsTable";
@@ -100,17 +100,7 @@ const CustomLeaveAllocationContent: FC = () => {
           sx={{ flex: 1, justifyContent: "flex-end" }}
         >
           {!showAddButton && (
-            <Button
-              buttonStyle={ButtonStyle.PRIMARY}
-              label={translateText(["addLeaveAllocationBtn"])}
-              endIcon={<Icon name={IconName.ADD_ICON} />}
-              styles={{
-                ...classes.primaryButtonStyles,
-                minWidth: "auto",
-                padding: "0.5rem 1rem"
-              }}
-              onClick={handleAddAllocation}
-            />
+            <Button variant={"primary"} onClick={handleAddAllocation} icon={<Icon name={IconName.ADD_ICON} />} iconPosition="end">{translateText(["addLeaveAllocationBtn"])}</Button>
           )}
         </Stack>
       </Stack>

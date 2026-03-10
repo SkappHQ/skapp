@@ -1,17 +1,14 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import Table from "~community/common/components/molecules/Table/Table";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -271,8 +268,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
         {leaveStatusArray.map((leaveStatus) => (
           <Button
             key={leaveStatus}
-            label={pascalCaseFormatter(leaveStatus)}
-            isFullWidth={false}
+            fullWidth={false}
             onClick={() => {
               setFilter((prev) => ({
                 ...prev,
@@ -281,19 +277,19 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
                   : [...prev.status, leaveStatus]
               }));
             }}
-            buttonStyle={
-              filter.status.includes(leaveStatus)
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
+            variant={
+              filter.status.includes(leaveStatus) ? "secondary" : "tertiary"
             }
-            size={ButtonSizes.MEDIUM}
-            startIcon={
-              filter.status.includes(leaveStatus)
-                ? IconName.CHECK_CIRCLE_ICON
-                : null
+            size={"md"}
+            icon={
+              filter.status.includes(leaveStatus) ? (
+                <Icon name={IconName.CHECK_CIRCLE_ICON} />
+              ) : undefined
             }
-            styles={classes.filterChipButtonStyles}
-          />
+            iconPosition="start"
+          >
+            {pascalCaseFormatter(leaveStatus)}
+          </Button>
         ))}
       </Stack>
       <Typography variant="h5">
@@ -303,8 +299,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
         {leaveTypeOptions.map(({ id, name }: { id: string; name: string }) => (
           <Button
             key={id}
-            label={name}
-            isFullWidth={false}
+            fullWidth={false}
             onClick={() => {
               setFilter((prev) => ({
                 ...prev,
@@ -313,17 +308,17 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
                   : [...prev.type, id]
               }));
             }}
-            buttonStyle={
-              filter.type.includes(id)
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
+            variant={filter.type.includes(id) ? "secondary" : "tertiary"}
+            size={"md"}
+            icon={
+              filter.type.includes(id) ? (
+                <Icon name={IconName.CHECK_CIRCLE_ICON} />
+              ) : undefined
             }
-            size={ButtonSizes.MEDIUM}
-            startIcon={
-              filter.type.includes(id) ? IconName.CHECK_CIRCLE_ICON : null
-            }
-            styles={classes.filterChipButtonStyles}
-          />
+            iconPosition="start"
+          >
+            {name}
+          </Button>
         ))}
       </Stack>
     </FilterButton>

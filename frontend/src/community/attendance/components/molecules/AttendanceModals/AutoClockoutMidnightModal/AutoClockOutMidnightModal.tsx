@@ -8,11 +8,11 @@ import {
   calculateWorkedDuration,
   calculateWorkedDurationInHoursAndMinutes
 } from "~community/attendance/utils/CalculateWorkedDuration";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -87,20 +87,8 @@ const AutoClockOutMidnightModal: FC<Props> = ({ closeModal }) => {
             </Stack>
           </Box>
           <Stack spacing={2}>
-            <Button
-              label={translateText(["clockInAgain"])}
-              endIcon={IconName.RIGHT_ARROW_ICON}
-              onClick={handleClockinAgain}
-              ariaLabel={translateText(["clockInAgain"])}
-              isLoading={isPending}
-            />
-            <Button
-              buttonStyle={ButtonStyle.TERTIARY}
-              label={translateText(["cancel"])}
-              endIcon={IconName.CLOSE_ICON}
-              onClick={handleCancel}
-              ariaLabel={translateText(["cancel"])}
-            />
+            <Button onClick={handleClockinAgain} aria-label={translateText(["clockInAgain"])} isLoading={isPending} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["clockInAgain"])}</Button>
+            <Button variant={"tertiary"} onClick={handleCancel} aria-label={translateText(["cancel"])} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancel"])}</Button>
           </Stack>
         </Box>
       </Box>

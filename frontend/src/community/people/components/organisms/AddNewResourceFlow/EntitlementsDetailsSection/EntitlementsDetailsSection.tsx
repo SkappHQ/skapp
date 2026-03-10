@@ -5,21 +5,17 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes,
-  ToastType
-} from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -492,18 +488,23 @@ const EntitlementsDetailsSection = (): JSX.Element => {
 
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           <Button
-            label={
-              rowEdited > -1
-                ? translateText(["saveChanges"])
-                : translateText(["add"])
-            }
             onClick={() => handleSubmit()}
-            endIcon={rowEdited > -1 ? IconName.SAVE_ICON : IconName.ADD_ICON}
-            buttonStyle={ButtonStyle.SECONDARY}
-            size={ButtonSizes.MEDIUM}
-            styles={classes.buttonStyles}
-            type={ButtonTypes.SUBMIT}
-          />
+            variant={"secondary"}
+            size={"md"}
+            type={"submit"}
+            icon={
+              rowEdited > -1 ? (
+                <Icon name={IconName.SAVE_ICON} />
+              ) : (
+                <Icon name={IconName.ADD_ICON} />
+              )
+            }
+            iconPosition="end"
+          >
+            {rowEdited > -1
+              ? translateText(["saveChanges"])
+              : translateText(["add"])}
+          </Button>
         </Grid>
       </Grid>
 

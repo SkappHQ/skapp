@@ -9,9 +9,10 @@ import {
   useState
 } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { personalDetailsSectionTestId } from "~community/common/constants/testIds";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
@@ -198,33 +199,17 @@ const PersonalDetailsForm = ({
           sx={{ padding: "1rem 0" }}
         >
           {isUpdate && (
-            <Button
-              label={translateText(["cancel"])}
-              buttonStyle={ButtonStyle.TERTIARY}
-              endIcon={IconName.CLOSE_ICON}
-              isFullWidth={false}
-              onClick={onBack}
-              disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-            />
+            <Button variant={"tertiary"} fullWidth={false} onClick={onBack} disabled={isSubmitDisabled || isLoading || isInputsDisabled} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancel"])}</Button>
           )}
-          <Button
-            label={
-              isUpdate
-                ? translateText(["saveDetails"])
-                : translateText(["next"])
-            }
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON}
-            isFullWidth={false}
-            onClick={handleNext}
-            disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-            isLoading={isLoading}
-            dataTestId={
+          <Button variant={"primary"} fullWidth={false} onClick={handleNext} disabled={isSubmitDisabled || isLoading || isInputsDisabled} isLoading={isLoading} data-testid={
               isUpdate
                 ? personalDetailsSectionTestId.buttons.saveDetailsBtn
                 : personalDetailsSectionTestId.buttons.nextBtn
-            }
-          />
+            } icon={<Icon name={isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{
+              isUpdate
+                ? translateText(["saveDetails"])
+                : translateText(["next"])
+            }</Button>
         </Stack>
       )}
     </>

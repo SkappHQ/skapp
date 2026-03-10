@@ -2,13 +2,13 @@ import { Box, Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -151,7 +151,7 @@ const TeamsTable: FC<Props> = ({
               hoverEffect={false}
               buttonStyles={classes.editIconBtn}
               onClick={() => handleEditTeam(teamDetails)}
-              ariaLabel={ariaTranslateText(
+              aria-label={ariaTranslateText(
                 ["table", "actionColumn", "editButton", "label"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
@@ -176,7 +176,7 @@ const TeamsTable: FC<Props> = ({
               hoverEffect={false}
               buttonStyles={classes.deleteIconBtn}
               onClick={() => handleDeleteTeam(teamDetails)}
-              ariaLabel={ariaTranslateText(
+              aria-label={ariaTranslateText(
                 ["table", "actionColumn", "deleteButton", "label"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
@@ -191,12 +191,7 @@ const TeamsTable: FC<Props> = ({
             />
           </>
         ) : (
-          <Button
-            label={translateText(["viewBtnText"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            styles={{ width: "61px", height: "42px", padding: "12px 16px" }}
-            onClick={() => handleEditTeam(teamDetails)}
-          />
+          <Button variant={"tertiary"} onClick={() => handleEditTeam(teamDetails)}>{translateText(["viewBtnText"])}</Button>
         )
       }));
   };

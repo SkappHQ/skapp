@@ -2,9 +2,9 @@ import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import { JSX } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonTypes } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -34,17 +34,9 @@ const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
         ]) ?? ""}
       </Typography>
       <Box>
-        <Button
-          label={translateTexts(["leaveCarryForwardUnEligibleModalButton"])}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          type={ButtonTypes.SUBMIT}
-          onClick={() => {
+        <Button type={"submit"} onClick={() => {
             handleClose();
-          }}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
+          }} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateTexts(["leaveCarryForwardUnEligibleModalButton"])}</Button>
       </Box>
     </Stack>
   );

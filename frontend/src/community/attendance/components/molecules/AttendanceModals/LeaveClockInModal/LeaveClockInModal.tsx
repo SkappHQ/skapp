@@ -4,7 +4,8 @@ import { JSX } from "react";
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -73,13 +74,7 @@ const LeaveClockInModal = ({ closeModal }: Props): JSX.Element => {
             </Stack>
           </Box>
           <Stack spacing={2}>
-            <Button
-              label={translateText(["clockInAnyway"])}
-              endIcon={IconName.CHECK_ICON}
-              onClick={handleClockInAnyway}
-              ariaLabel={translateText(["clockInAnyway"])}
-              isLoading={isPending}
-            />
+            <Button onClick={handleClockInAnyway} aria-label={translateText(["clockInAnyway"])} isLoading={isPending} icon={<Icon name={IconName.CHECK_ICON} />} iconPosition="end">{translateText(["clockInAnyway"])}</Button>
           </Stack>
         </Box>
       </Box>

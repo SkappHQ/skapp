@@ -1,15 +1,15 @@
 import { Stack, Typography } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { LeaveStates } from "~community/common/types/CommonTypes";
@@ -472,20 +472,24 @@ const ApplyLeaveModal = () => {
       </Stack>
       <Stack sx={classes.btnWrapper}>
         <Button
-          label={translateText(["submitBtn"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={IconName.TICK_ICON}
+          variant={"primary"}
           onClick={onSubmit}
           isLoading={isLeaveApplyPending}
           disabled={isApplyLeaveModalBtnDisabled}
-          ariaLabel={translateAria(["confirmApplyLeave"])}
-        />
+          aria-label={translateAria(["confirmApplyLeave"])}
+          icon={<Icon name={IconName.TICK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["submitBtn"])}
+        </Button>
         <Button
-          label={translateText(["cancelBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={IconName.CLOSE_ICON}
+          variant={"tertiary"}
           onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
-        />
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </Button>
       </Stack>
     </Stack>
   );

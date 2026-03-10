@@ -1,14 +1,10 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { FilterChipType } from "~community/attendance/types/timeSheetTypes";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -108,43 +104,43 @@ const TimesheetFilterModalBody = ({
           {filterValues?.status?.map((status: FilterChipType) => (
             <Button
               key={status?.value}
-              isFullWidth={false}
-              dataAttr={{ [dataAttributeKey]: status?.value }}
-              label={status?.label}
-              ariaLabel={`${status.label} filter`}
-              buttonStyle={
+              fullWidth={false}
+              aria-label={`${status.label} filter`}
+              variant={
                 selectedFilterLabels.includes(status?.label)
-                  ? ButtonStyle.SECONDARY
-                  : ButtonStyle.TERTIARY
+                  ? "secondary"
+                  : "tertiary"
               }
-              size={ButtonSizes.MEDIUM}
+              size={"md"}
               onClick={() => onClickFilter("status", status)}
-              startIcon={
+              icon={
                 selectedFilterLabels.includes(status?.label) ? (
                   <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                ) : null
+                ) : undefined
               }
-              styles={classes.filterChipButtonStyles}
-            />
+              iconPosition="start"
+            >
+              {status?.label}
+            </Button>
           ))}
         </Box>
       </Box>
       <Divider aria-hidden={true} />
       <Stack direction="row" spacing="0.75rem" sx={classes.stackStyles}>
         <Button
-          styles={classes.buttonStyles}
-          label={translateText(["applyBtnTxt"])}
-          buttonStyle={ButtonStyle.PRIMARY}
+          variant={"primary"}
           onClick={() => onApply(selectedFilters, selectedFilterLabels)}
-          ariaLabel="Apply filters"
-        />
+          aria-label="Apply filters"
+        >
+          {translateText(["applyBtnTxt"])}
+        </Button>
         <Button
-          styles={classes.buttonStyles}
-          label={translateText(["resetBtnTxt"])}
-          buttonStyle={ButtonStyle.TERTIARY}
+          variant={"tertiary"}
           onClick={onReset}
           disabled={selectedFilterLabels?.length === 0}
-        />
+        >
+          {translateText(["resetBtnTxt"])}
+        </Button>
       </Stack>
     </Box>
   );

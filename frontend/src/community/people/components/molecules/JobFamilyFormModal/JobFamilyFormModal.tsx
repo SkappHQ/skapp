@@ -1,15 +1,12 @@
 import { Box } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useEffect, useMemo } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { characterLengths } from "~community/common/constants/stringConstants";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -123,10 +120,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
         <JobTitleField formik={formik} />
         {!isPeopleAdmin ? (
           <Button
-            label={translateText(["goBackBtnText"])}
-            styles={{ mt: "1rem" }}
-            buttonStyle={ButtonStyle.TERTIARY}
-            startIcon={IconName.LEFT_ARROW_ICON}
+            variant={"tertiary"}
             onClick={() =>
               handleJobFamilyCloseModal({
                 hasDataChanged,
@@ -135,27 +129,33 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
                 stopAllOngoingQuickSetup
               })
             }
-          />
+            icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+            iconPosition="start"
+          >
+            {translateText(["goBackBtnText"])}
+          </Button>
         ) : (
           <>
             <Button
-              type={ButtonTypes.SUBMIT}
-              label={translateText(["saveBtnText"])}
-              styles={{ mt: "1rem" }}
+              type={"submit"}
               disabled={isSaveBtnDisabled}
-              buttonStyle={ButtonStyle.PRIMARY}
-              endIcon={IconName.RIGHT_ARROW_ICON}
-              shouldBlink={
-                values.name && values.jobTitles?.length > 0
-                  ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
-                  : false
+              variant={"primary"}
+              className={
+                (
+                  values.name && values.jobTitles?.length > 0
+                    ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
+                    : false
+                )
+                  ? "animate-pulse"
+                  : ""
               }
-            />
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["saveBtnText"])}
+            </Button>
             <Button
-              label={translateText(["cancelBtnText"])}
-              styles={{ mt: "1rem" }}
-              buttonStyle={ButtonStyle.TERTIARY}
-              endIcon={IconName.CLOSE_ICON}
+              variant={"tertiary"}
               onClick={() =>
                 handleJobFamilyCloseModal({
                   hasDataChanged,
@@ -164,7 +164,11 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
                   stopAllOngoingQuickSetup
                 })
               }
-            />
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancelBtnText"])}
+            </Button>
           </>
         )}
       </Box>

@@ -1,13 +1,11 @@
 import { Theme, useTheme } from "@mui/material";
 import { CSSProperties, ChangeEvent, FC, JSX } from "react";
 
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+
 import { IconName } from "~community/common/types/IconTypes";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "../../atoms/Pagination/Pagination";
 import { CommonTableProps } from "./Table";
 import TableDataCell from "./TableDataCell";
@@ -114,17 +112,7 @@ const TableFoot: FC<TableFootProps & CommonTableProps> = ({
         >
           {customElements?.right && customElements.right}
           {exportBtn.isVisible && exportBtn.label && (
-            <Button
-              buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-              size={ButtonSizes.SMALL}
-              label={exportBtn.label}
-              isFullWidth={false}
-              isLoading={exportBtn.isLoading}
-              disabled={exportBtn.disabled}
-              styles={exportBtn.styles?.button}
-              endIcon={IconName.DOWNLOAD_ICON}
-              onClick={exportBtn.onClick}
-            />
+            <Button variant={"tertiary"} size={"sm"} fullWidth={false} isLoading={exportBtn.isLoading} disabled={exportBtn.disabled} onClick={exportBtn.onClick} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{exportBtn.label}</Button>
           )}
         </div>
       </div>

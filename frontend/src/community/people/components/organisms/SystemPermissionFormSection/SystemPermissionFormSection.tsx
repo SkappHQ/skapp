@@ -1,12 +1,13 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { appModes } from "~community/common/constants/configs";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -423,12 +424,13 @@ const SystemPermissionFormSection = ({
             <Stack sx={classes.modalContainer}>
               <Typography>{modalDescription}</Typography>
               <Button
-                buttonStyle={ButtonStyle.PRIMARY}
-                label={commonText(["okay"])}
+                variant={"primary"}
                 onClick={() => {
                   setOpenModal(false);
                 }}
-              />
+              >
+                {commonText(["okay"])}
+              </Button>
             </Stack>
           </Modal>
         </>

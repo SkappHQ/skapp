@@ -12,18 +12,14 @@ import {
 } from "react";
 
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ToastType
-} from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums"
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -643,17 +639,9 @@ const PeopleTable: FC<Props> = ({
                 ) : undefined,
               rightButton:
                 isPendingInvitationListOpen && isPeopleAdmin ? (
-                  <Button
-                    label={translateText(["reinviteButtonTitle"])}
-                    buttonStyle={ButtonStyle.SECONDARY}
-                    size={ButtonSizes.MEDIUM}
-                    endIcon={<InviteIcon />}
-                    onClick={() => {
+                  <Button variant={"secondary"} size={"md"} onClick={() => {
                       setIsReinviteConfirmationModalOpen(true);
-                    }}
-                    isStrokeAvailable={true}
-                    disabled={selectedPeople.length === 0}
-                  />
+                    }} disabled={selectedPeople.length === 0} icon={<InviteIcon />} iconPosition="end">{translateText(["reinviteButtonTitle"])}</Button>
                 ) : isPeopleManager && !isRemovePeople ? (
                   <PeopleTableFilterBy
                     filterEl={filterEl}

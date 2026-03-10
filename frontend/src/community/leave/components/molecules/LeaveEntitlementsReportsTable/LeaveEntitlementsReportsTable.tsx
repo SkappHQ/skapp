@@ -10,13 +10,13 @@ import {
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -264,23 +264,15 @@ const LeaveEntitlementsReportsTable: FC = () => {
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={1}>
               {leaveTypeButtons.map((leaveType) => (
-                <Button
-                  key={leaveType.id}
-                  isFullWidth={false}
-                  label={leaveType.text}
-                  buttonStyle={
+                <Button key={leaveType.id} fullWidth={false} variant={
                     selectedLeaveTypes.includes(leaveType.text)
-                      ? ButtonStyle.SECONDARY
-                      : ButtonStyle.TERTIARY
-                  }
-                  onClick={() => handleLeaveTypeFilter(leaveType)}
-                  startIcon={
+                      ? "secondary"
+                      : "tertiary"
+                  } onClick={() => handleLeaveTypeFilter(leaveType)} icon={
                     selectedLeaveTypes.includes(leaveType.text) ? (
                       <Icon name={IconName.CHECK_CIRCLE_ICON} />
                     ) : undefined
-                  }
-                  styles={classes.filterButton}
-                />
+                  } iconPosition="start">{leaveType.text}</Button>
               ))}
             </Box>
           </FilterButton>
@@ -360,14 +352,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
               setReportsPagination(value - 1)
             }
           />
-          <Button
-            buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-            label={translateText(["exportBtnTxt"])}
-            endIcon={<Icon name={IconName.DOWNLOAD_ICON} />}
-            isFullWidth={false}
-            styles={classes.buttonStyles}
-            onClick={() => downloadCSV(SheetType.LeaveAllocation)}
-          />
+          <Button variant={"tertiary"} fullWidth={false} onClick={() => downloadCSV(SheetType.LeaveAllocation)} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{translateText(["exportBtnTxt"])}</Button>
         </Stack>
       </Stack>
     </>

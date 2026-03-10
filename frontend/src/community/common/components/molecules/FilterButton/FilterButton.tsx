@@ -11,14 +11,10 @@ import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import styles from "~community/common/components/molecules/FilterButton/styles";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/FilterButtonType";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
@@ -109,17 +105,9 @@ const FilterButton = ({
         {overflowFilters.length > 0 && (
           <Chip label={`+${overflowFilters.length}`} sx={classes.filterItem} />
         )}
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          label={translateText(["placeholder"])}
-          ariaLabel={translateAria(["label"])}
-          endIcon={<FilterIcon />}
-          onClick={(event: MouseEvent<HTMLElement>) =>
+        <Button variant={"tertiary"} aria-label={translateAria(["label"])} onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
-          }
-          size={ButtonSizes.MEDIUM}
-          id="filter-button"
-        />
+          } size={"md"} id="filter-button" icon={<FilterIcon />} iconPosition="end">{translateText(["placeholder"])}</Button>
       </Stack>
       <Popper
         anchorEl={anchorEl}
@@ -133,23 +121,8 @@ const FilterButton = ({
         <Stack sx={classes.popperBody}>{children}</Stack>
         <Divider />
         <Stack sx={classes.popperFooter}>
-          <Button
-            type={ButtonTypes.RESET}
-            buttonStyle={ButtonStyle.TERTIARY}
-            disabled={isResetBtnDisabled}
-            label={translateText(["resetBtn"])}
-            styles={classes.popperButtons}
-            onClick={onResetBtnClick}
-            size={ButtonSizes.MEDIUM}
-          />
-          <Button
-            type={ButtonTypes.BUTTON}
-            buttonStyle={ButtonStyle.PRIMARY}
-            label={translateText(["applyBtn"])}
-            styles={classes.popperButtons}
-            onClick={onApplyBtnClick}
-            size={ButtonSizes.MEDIUM}
-          />
+          <Button type={"reset"} variant={"tertiary"} disabled={isResetBtnDisabled} onClick={onResetBtnClick} size={"md"}>{translateText(["resetBtn"])}</Button>
+          <Button type={"button"} variant={"primary"} onClick={onApplyBtnClick} size={"md"}>{translateText(["applyBtn"])}</Button>
         </Stack>
       </Popper>
     </Stack>

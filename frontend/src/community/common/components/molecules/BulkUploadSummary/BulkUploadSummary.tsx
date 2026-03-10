@@ -1,8 +1,9 @@
 import { Stack, Typography } from "@mui/material";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { Button } from "@rootcodelabs/skapp-ui";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -35,16 +36,7 @@ const BulkUploadSummary: FC<Props> = ({
           failedCount: failedCount
         })}
       </Typography>
-      <Button
-        label={translateText(["btn"])}
-        endIcon={IconName.DOWNLOAD_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "1rem" }}
-        onClick={onClick}
-        accessibility={{
-          ariaHidden: true
-        }}
-      />
+      <Button variant={"primary"} onClick={onClick} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{translateText(["btn"])}</Button>
     </Stack>
   );
 };

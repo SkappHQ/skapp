@@ -4,13 +4,13 @@ import Image from "next/image";
 import React, { CSSProperties } from "react";
 
 import { buttonTestId } from "~community/common/constants/testIds";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import logo from "~public/logo/logo.png";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import { styles } from "./styles";
 
@@ -75,18 +75,7 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
         )}
       </Box>
       {children}
-      <Button
-        label={submitButtonText}
-        buttonStyle={ButtonStyle.PRIMARY}
-        endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        isFullWidth={false}
-        styles={classes.button}
-        onClick={onClick}
-        disabled={disabled}
-        isLoading={isLoading}
-        data-testid={buttonTestId.onboardingLayoutSubmitBtn}
-        title={submitButtonText}
-      />
+      <Button variant={"primary"} fullWidth={false} onClick={onClick} disabled={disabled} isLoading={isLoading} data-testid={buttonTestId.onboardingLayoutSubmitBtn} title={submitButtonText} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{submitButtonText}</Button>
     </Box>
   );
 };

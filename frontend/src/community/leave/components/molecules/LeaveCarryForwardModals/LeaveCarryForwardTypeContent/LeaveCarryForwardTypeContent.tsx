@@ -4,14 +4,11 @@ import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
@@ -212,35 +209,14 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
       </Box>
 
       <Box sx={{ mt: "1rem" }}>
-        <Button
-          label={translateTexts(["leaveCarryForwardModalConfirmBtn"])}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          type={ButtonTypes.SUBMIT}
-          onClick={() => formik.handleSubmit()}
-          isLoading={loading}
-          disabled={checkedList.length === 0}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
-        <Button
-          accessibility={{
-            ariaHidden: true
-          }}
-          label={translateTexts(["leaveCarryForwardModalCancelBtn"])}
-          endIcon={<CloseIcon />}
-          buttonStyle={ButtonStyle.TERTIARY}
-          styles={{ mt: "1rem" }}
-          disabled={loading}
-          type={ButtonTypes.BUTTON}
-          onClick={() => {
+        <Button type={"submit"} onClick={() => formik.handleSubmit()} isLoading={loading} disabled={checkedList.length === 0} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateTexts(["leaveCarryForwardModalConfirmBtn"])}</Button>
+        <Button variant={"tertiary"} disabled={loading} type={"button"} onClick={() => {
             setCheckedList([]);
             setCarryForwardLeaveTypes([]);
             setLeaveCarryForwardId([]);
             setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
             handleClose && handleClose();
-          }}
-        />
+          }} icon={<CloseIcon />} iconPosition="end">{translateTexts(["leaveCarryForwardModalCancelBtn"])}</Button>
       </Box>
     </Stack>
   );

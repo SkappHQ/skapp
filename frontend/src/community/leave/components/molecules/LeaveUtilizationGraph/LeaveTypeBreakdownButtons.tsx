@@ -1,16 +1,12 @@
 import { Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Box, type SxProps } from "@mui/system";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
 
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import Button from "~community/common/components/atoms/Button/Button";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
@@ -82,22 +78,19 @@ const LeaveTypeBreakdownButtons = ({
           <Button
             disabled={isFreeTier}
             key={filterType}
-            isFullWidth={false}
-            startIcon={!isGraph ? null : colorIndicator(colors[filterType])}
-            label={filterType}
+            fullWidth={false}
             onClick={() => onClick(filterType)}
-            buttonStyle={
-              toggle[filterType] ? ButtonStyle.SECONDARY : ButtonStyle.TERTIARY
+            variant={toggle[filterType] ? "secondary" : "tertiary"}
+            size={"sm"}
+            icon={
+              !isGraph
+                ? undefined
+                : (colorIndicator(colors[filterType]) ?? undefined)
             }
-            size={ButtonSizes.SMALL}
-            styles={{
-              ...buttonStyles,
-              backgroundColor: toggle[filterType]
-                ? null
-                : theme.palette.grey[100],
-              color: theme.palette.grey[900]
-            }}
-          />
+            iconPosition="start"
+          >
+            {filterType}
+          </Button>
         );
       });
     },

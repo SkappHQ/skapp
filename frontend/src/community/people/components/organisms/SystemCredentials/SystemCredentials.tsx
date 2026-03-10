@@ -2,11 +2,11 @@ import { Box, Divider, Stack, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { AccountSignIn } from "~community/common/constants/stringConstants";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -144,23 +144,9 @@ const SystemCredentials: React.FC = () => {
         <Divider />
       </Stack>
       {isFirstPasswordChange ? (
-        <Button
-          label={translateText(["resetPasswordBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          onClick={handleResetPassword}
-          isLoading={isLoading}
-          isFullWidth={false}
-          startIcon={<Icon name={IconName.LOCK_ICON} />}
-        />
+        <Button variant={"tertiary"} onClick={handleResetPassword} isLoading={isLoading} fullWidth={false} icon={<Icon name={IconName.LOCK_ICON} />} iconPosition="start">{translateText(["resetPasswordBtn"])}</Button>
       ) : (
-        <Button
-          label={translateText(["shareCredentialsBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          onClick={handleShareCredentials}
-          isLoading={isLoading}
-          isFullWidth={false}
-          startIcon={<Icon name={IconName.SHARE_ICON} />}
-        />
+        <Button variant={"tertiary"} onClick={handleShareCredentials} isLoading={isLoading} fullWidth={false} icon={<Icon name={IconName.SHARE_ICON} />} iconPosition="start">{translateText(["shareCredentialsBtn"])}</Button>
       )}
 
       {modalData && (

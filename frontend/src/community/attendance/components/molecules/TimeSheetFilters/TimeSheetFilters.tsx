@@ -5,11 +5,11 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { TimesheetAnalyticsTabTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import Button from "~community/common/components/atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import TeamSelect from "~community/common/components/molecules/TeamSelect/TeamSelect";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
@@ -113,35 +113,16 @@ const TimeSheetFilters = ({
       }}
     >
       <Box sx={{ display: "flex", gap: "0.5rem" }}>
-        <Button
-          buttonStyle={
+        <Button variant={
             selectedTab === TimesheetAnalyticsTabTypes.WEEK
-              ? ButtonStyle.SECONDARY
-              : ButtonStyle.TERTIARY
-          }
-          label={translateText(["weekTabTxt"])}
-          isFullWidth={false}
-          styles={{
-            px: "1.25rem",
-            py: "0.75rem"
-          }}
-          onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.WEEK)}
-        />
-        <Button
-          buttonStyle={
+              ? "secondary"
+              : "tertiary"
+          } fullWidth={false} onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.WEEK)}>{translateText(["weekTabTxt"])}</Button>
+        <Button variant={
             selectedTab === TimesheetAnalyticsTabTypes.MONTH
-              ? ButtonStyle.SECONDARY
-              : ButtonStyle.TERTIARY
-          }
-          label={translateText(["monthTabTxt"])}
-          isFullWidth={false}
-          styles={{
-            px: "1.25rem",
-            py: "0.75rem",
-            marginLeft: "0.5rem"
-          }}
-          onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.MONTH)}
-        />
+              ? "secondary"
+              : "tertiary"
+          } fullWidth={false} onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.MONTH)}>{translateText(["monthTabTxt"])}</Button>
       </Box>
       <Stack
         display={"flex"}

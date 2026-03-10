@@ -14,16 +14,13 @@ import {
   EmailProvider,
   characterLengths
 } from "~community/common/constants/stringConstants";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { emailServerSetupValidation } from "~community/common/utils/validation";
 
-import Button from "../../atoms/Button/Button";
+import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import SwitchRow from "../../atoms/SwitchRow/SwitchRow";
 import Modal from "../../organisms/Modal/Modal";
@@ -240,19 +237,8 @@ const SetupEmailServerModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 : ""
             }
           />
-          <Button
-            label={translateText(["saveChangesBtnText"])}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            disabled={isSubmitDisabled}
-            type={ButtonTypes.SUBMIT}
-          />
-          <Button
-            label={translateText(["cancelBtnText"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            endIcon={<Icon name={IconName.CLOSE_ICON} />}
-            onClick={handleCancel}
-          />
+          <Button variant={"primary"} disabled={isSubmitDisabled} type={"submit"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveChangesBtnText"])}</Button>
+          <Button variant={"tertiary"} onClick={handleCancel} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
         </Stack>
       </Form>
     </Modal>

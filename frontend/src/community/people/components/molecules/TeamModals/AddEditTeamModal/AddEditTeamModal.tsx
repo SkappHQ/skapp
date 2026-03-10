@@ -1,14 +1,13 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { Button } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import TeamMemberAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/TeamMemberAutocompleteSearch";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -449,40 +448,41 @@ const AddEditTeamModal = ({
       {!isSelectingMembers && isPeopleAdmin && (
         <Box>
           <Button
-            label={translateText(["saveBtnText"])}
-            styles={{
-              mt: "1rem"
-            }}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            variant={"primary"}
             onClick={() => handleSubmit()}
-            shouldBlink={
-              values.teamName && values.teamSupervisors?.length > 0
-                ? ongoingQuickSetup.DEFINE_TEAMS
-                : false
+            className={
+              (
+                values.teamName && values.teamSupervisors?.length > 0
+                  ? ongoingQuickSetup.DEFINE_TEAMS
+                  : false
+              )
+                ? "animate-pulse"
+                : ""
             }
-          />
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveBtnText"])}
+          </Button>
           <Button
-            label={translateText(["cancelBtnText"])}
-            styles={{
-              mt: "1rem"
-            }}
-            buttonStyle={ButtonStyle.TERTIARY}
-            endIcon={<Icon name={IconName.CLOSE_ICON} />}
+            variant={"tertiary"}
             onClick={handleCancel}
-          />
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </Button>
         </Box>
       )}
       {!isPeopleAdmin && (
         <Button
-          label={translateText(["goBackBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.TERTIARY}
-          startIcon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          variant={"tertiary"}
           onClick={handleCancel}
-        />
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
+        >
+          {translateText(["goBackBtnText"])}
+        </Button>
       )}
     </Box>
   );
