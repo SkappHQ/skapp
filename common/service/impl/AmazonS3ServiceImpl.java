@@ -231,6 +231,21 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	}
 
 	@Override
+	public byte[] downloadSvgImageAsBytes(String fileName) {
+
+		String filePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + fileName;
+
+		String s3Key = bucketName + "/" + filePath;
+		String bucket = bucketName;
+
+		log.info("[ImageLoad] Loading svg from S3: {}", filePath);
+
+		byte[] bytes = downloadFileAsBytes(bucket, s3Key);
+		log.info("[ImageLoad] Loaded svg '{}' ({} KB)", filePath, bytes.length / 1024);
+		return bytes;
+	}
+
+	@Override
 	public byte[] downloadFileAsBytes(String bucketName, String objectKey) {
 		try {
 			log.info("Downloading file from S3... : downloadFileAsBytes");

@@ -2,20 +2,19 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.enterprise.esignature.constant.EsignConstants;
+import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
-import com.skapp.enterprise.esignature.service.PDFResourceService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.EsignImageType;
 import com.skapp.enterprise.esignature.type.FieldType;
-import com.skapp.enterprise.esignature.type.FontFamilyVariant;
-import com.skapp.enterprise.esignature.type.FontVariantType;
+
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.FontStyleExtractorUtil;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,7 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,25 +87,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	public static final String PNG = "png";
 
-	private static final String RESOURCE_BASE_PATH = "common/";
-
-	private static final String FONT_BASE_PATH = "fonts/";
-
-	private static final String SVG_BASE_PATH = "svgs/";
-
-	private static final String TFF_FILE_EXTENSION = ".ttf";
-
-	private static final float PERCENTAGE_CONVERSION_FACTOR = 100f;
-
 	private static final float POINTS_PER_INCH = 72f;
 
-	private static final float HIGH_RESOLUTION_IMAGE_SIZE = 64f;
-
-	private static final float CENTER_DIVISOR = 2.0f;
+	private static final String REGULAR_FONT_VARIANT = "-Regular";
 
 	private final MessageUtil messageUtil;
 
-	private final PDFResourceService pdfResourceService;
+	private final AmazonS3Service amazonS3Service;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
@@ -318,23 +306,23 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
-		try {
+		FieldType fieldType = field.getType();
 
-			FieldType fieldType = field.getType();
+		if (FieldType.CHECKBOX.equals(fieldType)) {
+			addCheckbox(field, contentStream, pageHeight, pageWidth, document);
+		}
+		else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
+			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
+		}
+		else if (FieldType.DROPDOWN.equals(fieldType)) {
+			addDropDown(field, contentStream, pageHeight, document);
+		}
+		else if (FieldType.TEXT.equals(fieldType)) {
+			addInputTextField(field, contentStream, pageHeight, pageWidth, document);
+		}
+		else {
 
-			if (FieldType.CHECKBOX.equals(fieldType)) {
-				addCheckbox(field, contentStream, pageHeight, pageWidth, document);
-			}
-			else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-				addRadioButton(field, contentStream, pageHeight, pageWidth, document);
-			}
-			else if (FieldType.DROPDOWN.equals(fieldType)) {
-				addDropDown(field, contentStream, pageHeight, document);
-			}
-			else if (FieldType.TEXT.equals(fieldType)) {
-				addInputTextField(field, contentStream, pageHeight, pageWidth, document);
-			}
-			else {
+			try {
 				// Adjust baseline offset for Y position
 				float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
 				float adjustedY = pageHeight - field.getYPosition() - yOffset;
@@ -351,11 +339,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				contentStream.newLineAtOffset(adjustedX, adjustedY);
 				contentStream.showText(field.getFieldValue());
 				contentStream.endText();
+
+			}
+			catch (Exception e) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 			}
 		}
-		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
-		}
+
 	}
 
 	private void validateField(FieldSignDto field) {
@@ -706,7 +696,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			float height = field.getHeightPercentage();
 
-			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
+			float adjustedHeight = (height / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedX = field.getXPosition();
@@ -714,7 +704,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// To vertically center the text, we calculate the center of the field and
 			// adjust by half the font size
-			float verticalCenter = adjustedY + (adjustedHeight / CENTER_DIVISOR) - (DEFAULT_FONT_SIZE / CENTER_DIVISOR);
+			float verticalCenter = adjustedY + (adjustedHeight / 2.0f) - (DEFAULT_FONT_SIZE / 2.0f);
 
 			contentStream.beginText();
 			PDType0Font font = loadFont(document);
@@ -739,22 +729,35 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float width = field.getWidthPercentage();
 			float height = field.getHeightPercentage();
 
-			float adjustedWidth = (width / PERCENTAGE_CONVERSION_FACTOR) * pageWidth;
-			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
+			float adjustedWidth = (width / 100f) * pageWidth;
+			float adjustedHeight = (height / 100f) * pageHeight;
 
-			float size = Math.min(adjustedWidth, adjustedHeight);
-
-			// Adjust Y position to account for image height, since PDF coordinates start
-			// from the bottom-left
-			float adjustedY = pageHeight - (field.getYPosition()) - adjustedHeight;
+			// PDF Y-axis starts from bottom-left; convert from top-left origin
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
 			float adjustedX = field.getXPosition();
 
-			String imagePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + imageType.getFilename();
+			// Load SVG bytes from S3
+			byte[] svgBytes = amazonS3Service.downloadSvgImageAsBytes(imageType.getFilename());
 
-			PDImageXObject image = pdfResourceService.loadSvgImageAndConvertToPng(document, imagePath,
-					HIGH_RESOLUTION_IMAGE_SIZE, HIGH_RESOLUTION_IMAGE_SIZE, imageType.name());
+			// Build HTML that embeds the SVG as a base64 data URI image
+			String html = EsignUtil.buildSvgImageHtml(adjustedWidth, adjustedHeight, svgBytes);
 
-			contentStream.drawImage(image, adjustedX, adjustedY, size, size);
+			// Render HTML → PDF bytes
+			byte[] htmlPdfBytes = htmlToPdfBytesImageField(html, adjustedWidth, adjustedHeight);
+
+			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
+
+			// Scale the form to exactly fit the target field rectangle
+			PDRectangle bbox = formXObject.getBBox();
+			float scaleX = adjustedWidth / bbox.getWidth();
+			float scaleY = adjustedHeight / bbox.getHeight();
+
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
+
+			contentStream.saveGraphicsState();
+			contentStream.transform(matrix);
+			contentStream.drawForm(formXObject);
+			contentStream.restoreGraphicsState();
 
 		}
 		catch (IOException e) {
@@ -780,19 +783,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
-			// Build S3 font path
-			String fontPath = null;
-			if (folderName != null) {
-				String variant = FontVariantType.REGULAR.getVariantName();
-				String filename = buildFilename(folderName, variant);
-				fontPath = RESOURCE_BASE_PATH + FONT_BASE_PATH + folderName + "/" + filename;
-			}
-
 			float width = field.getWidthPercentage();
 			float height = field.getHeightPercentage();
 
-			float adjustedWidth = (width / PERCENTAGE_CONVERSION_FACTOR) * pageWidth;
-			float adjustedHeight = (height / PERCENTAGE_CONVERSION_FACTOR) * pageHeight;
+			float adjustedWidth = (width / 100f) * pageWidth;
+			float adjustedHeight = (height / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedX = field.getXPosition();
@@ -804,11 +799,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String textDecoration = EsignUtil.resolveTextDecoration(isUnderline);
 			String escapedValue = EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : "");
 
-			String html = String.format(EsignConstants.TEXT_FIELD_HTML_TEMPLATE, adjustedWidth, adjustedHeight,
-					fontFamilyCss, fontSize, fontWeight, fontStyle, textDecoration, fontColor, escapedValue);
+			String html = EsignUtil.buildTextFieldHtml(adjustedWidth, adjustedHeight, fontFamilyCss, fontSize,
+					fontWeight, fontStyle, textDecoration, fontColor, escapedValue);
 
 			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
-			byte[] htmlPdfBytes = htmlToPdfBytes(html, adjustedWidth, adjustedHeight, fontPath, fontFamilyCss);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
+					fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
@@ -827,26 +823,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			contentStream.restoreGraphicsState();
 
 		}
-		catch (Exception e) {
-			log.error("Error rendering text field to PDF", e);
+		catch (IOException e) {
+			log.error("Error rendering advance input text field to PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
 		}
 	}
 
-	private String buildFilename(String folderName, String variant) {
-		FontVariantType variantType = FontVariantType.fromString(variant);
-
-		// DejaVu Sans uses "Oblique" instead of "Italic"
-		if (EsignFontFamilyType.DEJAVU_SANS.getFolderName().equals(folderName)) {
-			return FontFamilyVariant.getFilenameFor(EsignFontFamilyType.DEJAVU_SANS.getFolderName(), variantType);
-		}
-
-		// Standard naming: FolderName-Variant.ttf
-		return folderName + "-" + variantType.getVariantName() + TFF_FILE_EXTENSION;
-	}
-
-	public byte[] htmlToPdfBytes(String html, float widthPt, float heightPt, String fontPath, String fontFamilyCss)
-			throws IOException {
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, String folderName,
+			String fontFamilyCss) throws IOException {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -856,17 +840,34 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float heightInches = heightPt / POINTS_PER_INCH;
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
-			if (fontPath != null) {
+			if (folderName != null) {
 				try {
-					byte[] fontBytes = pdfResourceService.loadFontBytes(fontPath);
+					byte[] fontBytes = amazonS3Service.downloadFontAsBytes(folderName, REGULAR_FONT_VARIANT);
 					if (fontBytes != null) {
-						builder.useFont(() -> new java.io.ByteArrayInputStream(fontBytes), fontFamilyCss);
+						builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss);
 					}
 				}
 				catch (Exception e) {
-					log.warn("Could not register font '{}' for HTML rendering: {}", fontPath, e.getMessage());
+					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
 				}
 			}
+			builder.toStream(baos);
+			builder.run();
+			return baos.toByteArray();
+		}
+	}
+
+	public byte[] htmlToPdfBytesImageField(String html, float widthPt, float heightPt) throws IOException {
+
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.useSVGDrawer(new BatikSVGDrawer());
+			builder.withHtmlContent(html, null);
+
+			float widthInches = widthPt / POINTS_PER_INCH;
+			float heightInches = heightPt / POINTS_PER_INCH;
+
+			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
 			builder.toStream(baos);
 			builder.run();
 			return baos.toByteArray();

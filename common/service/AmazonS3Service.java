@@ -31,4 +31,6 @@ public interface AmazonS3Service {
 
 	byte[] downloadFontAsBytes(String folderName, String fontVariant);
 
+	byte[] downloadSvgImageAsBytes(String fileName);
+
 }

@@ -11,6 +11,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -81,6 +82,8 @@ public class EsignUtil {
 	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
 
 	private static final String ADVANCE_INPUT_TEXT_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-input-text-field.html";
+
+	private static final String ESIGN_IMAGE_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/esign-image-field.html";
 
 	private EsignUtil() {
 	}
@@ -299,44 +302,72 @@ public class EsignUtil {
 	 * <p>
 	 * Placeholder-to-parameter mapping:
 	 * <ul>
-	 *   <li>{@code {{width}}}          → {@code adjustedWidth} (converted via {@link String#valueOf(float)})</li>
-	 *   <li>{@code {{height}}}         → {@code adjustedHeight} (converted via {@link String#valueOf(float)})</li>
-	 *   <li>{@code {{fontFamily}}}     → {@code fontFamilyCss}</li>
-	 *   <li>{@code {{fontSize}}}       → {@code fontSize} (converted via {@link String#valueOf(float)})</li>
-	 *   <li>{@code {{fontWeight}}}     → {@code fontWeight}</li>
-	 *   <li>{@code {{fontStyle}}}      → {@code fontStyle}</li>
-	 *   <li>{@code {{textDecoration}}} → {@code textDecoration}</li>
-	 *   <li>{@code {{fontColor}}}      → {@code fontColor}</li>
-	 *   <li>{@code {{content}}}        → {@code escapedValue}</li>
+	 * <li>{@code {{width}}} → {@code adjustedWidth} (converted via
+	 * {@link String#valueOf(float)})</li>
+	 * <li>{@code {{height}}} → {@code adjustedHeight} (converted via
+	 * {@link String#valueOf(float)})</li>
+	 * <li>{@code {{fontFamily}}} → {@code fontFamilyCss}</li>
+	 * <li>{@code {{fontSize}}} → {@code fontSize} (converted via
+	 * {@link String#valueOf(float)})</li>
+	 * <li>{@code {{fontWeight}}} → {@code fontWeight}</li>
+	 * <li>{@code {{fontStyle}}} → {@code fontStyle}</li>
+	 * <li>{@code {{textDecoration}}} → {@code textDecoration}</li>
+	 * <li>{@code {{fontColor}}} → {@code fontColor}</li>
+	 * <li>{@code {{content}}} → {@code escapedValue}</li>
 	 * </ul>
-	 * @param adjustedWidth  body width in points — written as {@code width: <value>pt}
+	 * @param adjustedWidth body width in points — written as {@code width: <value>pt}
 	 * @param adjustedHeight body height in points — written as {@code height: <value>pt}
-	 * @param fontFamilyCss  CSS {@code font-family} string
-	 * @param fontSize       CSS {@code font-size} in points
-	 * @param fontWeight     CSS {@code font-weight} string (e.g. {@code "bold"}, {@code "normal"})
-	 * @param fontStyle      CSS {@code font-style} string (e.g. {@code "italic"}, {@code "normal"})
-	 * @param textDecoration CSS {@code text-decoration} string (e.g. {@code "underline"}, {@code "none"})
-	 * @param fontColor      CSS {@code color} string (e.g. {@code "#3f3f46"})
-	 * @param escapedValue   HTML-escaped text inserted as the {@code <body>} content
+	 * @param fontFamilyCss CSS {@code font-family} string
+	 * @param fontSize CSS {@code font-size} in points
+	 * @param fontWeight CSS {@code font-weight} string (e.g. {@code "bold"},
+	 * {@code "normal"})
+	 * @param fontStyle CSS {@code font-style} string (e.g. {@code "italic"},
+	 * {@code "normal"})
+	 * @param textDecoration CSS {@code text-decoration} string (e.g. {@code "underline"},
+	 * {@code "none"})
+	 * @param fontColor CSS {@code color} string (e.g. {@code "#3f3f46"})
+	 * @param escapedValue HTML-escaped text inserted as the {@code <body>} content
 	 * @return the template string with all placeholders replaced
-	 * @throws IOException if {@code advance-input-text-field.html} cannot be read from the classpath
+	 * @throws IOException if {@code advance-input-text-field.html} cannot be read from
+	 * the classpath
 	 */
 	public static String buildTextFieldHtml(float adjustedWidth, float adjustedHeight, String fontFamilyCss,
-											float fontSize, String fontWeight, String fontStyle, String textDecoration, String fontColor,
-											String escapedValue) throws IOException {
+			float fontSize, String fontWeight, String fontStyle, String textDecoration, String fontColor,
+			String escapedValue) throws IOException {
+
 		ClassPathResource resource = new ClassPathResource(ADVANCE_INPUT_TEXT_FIELD_TEMPLATE);
 		String template = Files.readString(Paths.get(resource.getURI()));
 
-		return template
-				.replace("{{width}}", String.valueOf(adjustedWidth))
-				.replace("{{height}}", String.valueOf(adjustedHeight))
-				.replace("{{fontFamily}}", fontFamilyCss)
-				.replace("{{fontSize}}", String.valueOf(fontSize))
-				.replace("{{fontWeight}}", fontWeight)
-				.replace("{{fontStyle}}", fontStyle)
-				.replace("{{textDecoration}}", textDecoration)
-				.replace("{{fontColor}}", fontColor)
-				.replace("{{content}}", escapedValue);
+		return template.replace("{{width}}", String.valueOf(adjustedWidth))
+			.replace("{{height}}", String.valueOf(adjustedHeight))
+			.replace("{{fontFamily}}", fontFamilyCss)
+			.replace("{{fontSize}}", String.valueOf(fontSize))
+			.replace("{{fontWeight}}", fontWeight)
+			.replace("{{fontStyle}}", fontStyle)
+			.replace("{{textDecoration}}", textDecoration)
+			.replace("{{fontColor}}", fontColor)
+			.replace("{{content}}", escapedValue);
+	}
+
+	/**
+	 * Reads {@code esign-image-field.html} from the classpath and substitutes the
+	 * {@code {{width}}}, {@code {{height}}}, and {@code {{svgContent}}} placeholders to
+	 * produce a self-contained HTML document that renders the given SVG inline.
+	 * @param adjustedWidth body width in points
+	 * @param adjustedHeight body height in points
+	 * @param svgBytes raw bytes of the SVG file to embed as inline markup
+	 * @return the template string with all placeholders replaced
+	 * @throws IOException if the template cannot be read from the classpath
+	 */
+	public static String buildSvgImageHtml(float adjustedWidth, float adjustedHeight, byte[] svgBytes)
+			throws IOException {
+		ClassPathResource resource = new ClassPathResource(ESIGN_IMAGE_FIELD_TEMPLATE);
+		String template = Files.readString(Paths.get(resource.getURI()));
+		String svgContent = new String(svgBytes, StandardCharsets.UTF_8);
+
+		return template.replace("{{width}}", String.valueOf(adjustedWidth))
+			.replace("{{height}}", String.valueOf(adjustedHeight))
+			.replace("{{svgContent}}", svgContent);
 	}
 
 }
