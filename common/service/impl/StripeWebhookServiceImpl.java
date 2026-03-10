@@ -202,7 +202,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				tenant.setTenantStatus(TenantStatus.ACTIVE);
 			}
 
-			// productId already holds the price ID; derive plan directly without a second Stripe call
+			// productId already holds the price ID; derive plan directly without a second
+			// Stripe call
 			SubscriptionPlan plan = stripeService.getSubscriptionPlanFromPriceId(productId);
 			tenant.setSubscriptionPlan(plan);
 
@@ -211,7 +212,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setStripeSubscription(stripeSubscription);
 
 			tenantDao.save(tenant);
-			saveHistory(tenant, tenant.getStripeSubscription(),
+			addToSubscriptionHistory(tenant, tenant.getStripeSubscription(),
 					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
@@ -305,7 +306,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				currentTenant.getTenant().setTier(tier);
 
 				tenantDao.save(currentTenant.getTenant());
-				saveHistory(currentTenant.getTenant(), currentTenant,
+				addToSubscriptionHistory(currentTenant.getTenant(), currentTenant,
 						Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 				tenantContext.setTenantAndSwitchSchema(currentTenant.getTenantName());
@@ -389,7 +390,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				currentTenant.setLastModifiedByEmail(invoice.getCustomerEmail());
 
 				tenantDao.save(tenant);
-				saveHistory(tenant, currentTenant, Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+				addToSubscriptionHistory(tenant, currentTenant,
+						Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -461,7 +463,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenant.setLastModifiedByEmail(customer.getEmail());
 
 			tenantDao.save(tenant);
-			saveHistory(tenant, stripeSubscription, Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+			addToSubscriptionHistory(tenant, stripeSubscription,
+					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
@@ -525,7 +528,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			}
 
 			tenantDao.save(tenant);
-			saveHistory(tenant, stripeSubscription, Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+			addToSubscriptionHistory(tenant, stripeSubscription,
+					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
 
 			Customer customer = Customer.retrieve(customerId);
 			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();
@@ -555,7 +559,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		}
 	}
 
-	private void saveHistory(Tenant tenant, StripeSubscription stripeSubscription, Instant subscriptionEndDate) {
+	private void addToSubscriptionHistory(Tenant tenant, StripeSubscription stripeSubscription,
+			Instant subscriptionEndDate) {
 		StripeSubscriptionHistory history = new StripeSubscriptionHistory();
 		history.setTenantName(tenant.getTenantName());
 		history.setSubscriptionStatus(tenant.getSubscriptionStatus());
@@ -570,7 +575,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			history.setSubscriptionStartDate(stripeSubscription.getSubscriptionStartDate());
 		}
 		stripeSubscriptionHistoryDao.save(history);
-		log.info("saveHistory: Recorded subscription history for tenant: {}, status: {}, tier: {}",
+		log.info("addToSubscriptionHistory: Recorded subscription history for tenant: {}, status: {}, tier: {}",
 				tenant.getTenantName(), tenant.getSubscriptionStatus(), tenant.getTier());
 	}
 
@@ -591,8 +596,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 		Tier newTier = determineTierFromPriceId(priceId);
 		if (newTier != null && newTier != tenant.getTier()) {
-			log.info("handleSubscriptionUpdated: Tier changed from {} to {} for tenant: {}",
-					tenant.getTier(), newTier, tenant.getTenantName());
+			log.info("handleSubscriptionUpdated: Tier changed from {} to {} for tenant: {}", tenant.getTier(), newTier,
+					tenant.getTenantName());
 			Tier previousTier = tenant.getTier();
 			tenant.setTier(newTier);
 			changed = true;
@@ -611,15 +616,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	}
 
 	private boolean isTierUpgrade(Tier from, Tier to) {
-		return tierRank(to) > tierRank(from);
-	}
-
-	private int tierRank(Tier tier) {
-		return switch (tier) {
-			case PRO -> 2;
-			case CORE -> 1;
-			default -> 0;
-		};
+		return from == Tier.CORE && to == Tier.PRO;
 	}
 
 	private Tier determineTierFromPriceId(String priceId) {

@@ -242,16 +242,14 @@ public class StripeServiceImpl implements StripeService {
 		SessionCreateParams.SubscriptionData.Builder subscriptionDataBuilder = SessionCreateParams.SubscriptionData
 			.builder();
 
-		Tier requestedTier = subscriptionRequestDto.getTier() == Tier.PRO ? Tier.PRO : Tier.CORE;
-
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		boolean hadTrialForRequestedTier = stripeSubscriptionHistoryDao
-			.existsByTenantNameAndSubscriptionStatusAndTier(tenantId, SubscriptionStatus.FREE_TRIAL, requestedTier);
+		boolean hadTrialForRequestedTier = stripeSubscriptionHistoryDao.existsByTenantNameAndSubscriptionStatusAndTier(
+				tenantId, SubscriptionStatus.FREE_TRIAL, subscriptionRequestDto.getTier());
 		tenantContext.setTenantAndSwitchSchema(tenantId);
 
 		log.info(
 				"createCheckoutSession: tenant={}, requestedTier={}, hadPreviousSubscription={}, hadTrialForRequestedTier={}",
-				tenantId, requestedTier, hadPreviousSubscription, hadTrialForRequestedTier);
+				tenantId, subscriptionRequestDto.getTier(), hadPreviousSubscription, hadTrialForRequestedTier);
 
 		if (!hadTrialForRequestedTier) {
 			subscriptionDataBuilder.setTrialPeriodDays(trialPeriodDays);
@@ -375,12 +373,9 @@ public class StripeServiceImpl implements StripeService {
 		String tenantId = TenantContext.getCurrentTenant();
 		Tenant tenant = tenantService.getCurrentTenantFromSwitchingSchemas();
 
-		if (tenant.getStripeSubscription() == null
-				|| tenant.getStripeSubscription().getSubscriptionId() == null
-				|| tenant.getTier() == Tier.FREE
-				|| tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
-			throw new ModuleException(
-					EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_NO_ACTIVE_SUBSCRIPTION);
+		if (tenant.getStripeSubscription() == null || tenant.getStripeSubscription().getSubscriptionId() == null
+				|| tenant.getTier() == Tier.FREE || tenant.getSubscriptionStatus() == SubscriptionStatus.CANCELED) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_NO_ACTIVE_SUBSCRIPTION);
 		}
 
 		if (tenant.getTier() == subscriptionRequestDto.getTier()
@@ -388,14 +383,7 @@ public class StripeServiceImpl implements StripeService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_ALREADY_ON_TIER);
 		}
 
-		int currentRank = tierRank(tenant.getTier());
-		int requestedRank = tierRank(subscriptionRequestDto.getTier());
-		boolean isTierUpgrade = requestedRank > currentRank;
-		boolean isPlanUpgrade = requestedRank == currentRank
-				&& tenant.getSubscriptionPlan() == SubscriptionPlan.MONTH
-				&& subscriptionRequestDto.getSubscriptionPlan() == SubscriptionPlan.YEAR;
-
-		if (!isTierUpgrade && !isPlanUpgrade) {
+		if (tenant.getTier() != Tier.CORE || subscriptionRequestDto.getTier() != Tier.PRO) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_TIER_UPGRADE_NOT_AN_UPGRADE);
 		}
 
@@ -405,57 +393,43 @@ public class StripeServiceImpl implements StripeService {
 			.existsByTenantNameAndSubscriptionStatusAndTier(tenantId, SubscriptionStatus.FREE_TRIAL, requestedTier);
 		tenantContext.setTenantAndSwitchSchema(tenantId);
 
-		log.info("upgradeTierSubscription: tenant={}, requestedTier={}, hadTrialForRequestedTier={}",
-				tenantId, requestedTier, hadTrialForRequestedTier);
+		log.info("upgradeTierSubscription: tenant={}, requestedTier={}, hadTrialForRequestedTier={}", tenantId,
+				requestedTier, hadTrialForRequestedTier);
 
-		try {
-			String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
-			Subscription subscription = Subscription.retrieve(subscriptionId);
-			SubscriptionItem currentItem = subscription.getItems().getData().getFirst();
-			String subscriptionItemId = currentItem.getId();
-			long currentQuantity = currentItem.getQuantity();
-			String newPriceId = getPriceId(requestedTier, subscriptionRequestDto.getSubscriptionPlan());
+		String subscriptionId = tenant.getStripeSubscription().getSubscriptionId();
+		Subscription subscription = Subscription.retrieve(subscriptionId);
+		SubscriptionItem currentItem = subscription.getItems().getData().getFirst();
+		String subscriptionItemId = currentItem.getId();
+		long currentQuantity = currentItem.getQuantity();
+		String newPriceId = getPriceId(requestedTier, subscriptionRequestDto.getSubscriptionPlan());
 
-			SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder()
-				.addItem(SubscriptionUpdateParams.Item.builder()
-					.setId(subscriptionItemId)
-					.setPrice(newPriceId)
-					.setQuantity(currentQuantity)
-					.build());
+		SubscriptionUpdateParams.Builder paramsBuilder = SubscriptionUpdateParams.builder()
+			.addItem(SubscriptionUpdateParams.Item.builder()
+				.setId(subscriptionItemId)
+				.setPrice(newPriceId)
+				.setQuantity(currentQuantity)
+				.build());
 
-			if (hadTrialForRequestedTier) {
-				paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.ALWAYS_INVOICE);
-			}
-			else {
-				long trialEndEpoch = java.time.Instant.now()
-					.plus(trialPeriodDays, java.time.temporal.ChronoUnit.DAYS)
-					.getEpochSecond();
-				paramsBuilder.setTrialEnd(trialEndEpoch);
-				// Credit unused time from current plan; credit applied to first invoice after trial
-				paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS);
-			}
-
-			subscription.update(paramsBuilder.build());
-
-			log.info(
-					"upgradeTierSubscription: Successfully initiated tier upgrade for tenant={} to tier={} plan={} withTrial={}",
-					tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
+		if (hadTrialForRequestedTier) {
+			paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.ALWAYS_INVOICE);
 		}
-		catch (StripeException e) {
-			log.error("upgradeTierSubscription: StripeException occurred for tenant={}", tenantId, e);
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_SUBSCRIPTION_UPDATE,
-					new String[] { e.getMessage() });
+		else {
+			long trialEndEpoch = java.time.Instant.now()
+				.plus(trialPeriodDays, java.time.temporal.ChronoUnit.DAYS)
+				.getEpochSecond();
+			paramsBuilder.setTrialEnd(trialEndEpoch);
+			// Credit unused time from current plan; credit applied to first invoice
+			// after trial
+			paramsBuilder.setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS);
 		}
+
+		subscription.update(paramsBuilder.build());
+
+		log.info(
+				"upgradeTierSubscription: Successfully initiated tier upgrade for tenant={} to tier={} plan={} withTrial={}",
+				tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
 
 		return new ResponseEntityDto(false, "Tier upgrade initiated successfully");
-	}
-
-	private int tierRank(Tier tier) {
-		return switch (tier) {
-			case PRO -> 2;
-			case CORE -> 1;
-			default -> 0;
-		};
 	}
 
 	private String getPriceId(Tier tier, SubscriptionPlan plan) {

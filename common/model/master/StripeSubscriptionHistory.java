@@ -54,15 +54,15 @@ public class StripeSubscriptionHistory {
 	private Instant createdDate;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "tier", columnDefinition = "varchar(255)")
+	@Column(name = "tier")
 	private Tier tier;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "subscription_status", columnDefinition = "varchar(255)")
+	@Column(name = "subscription_status")
 	private SubscriptionStatus subscriptionStatus;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "subscription_plan", columnDefinition = "varchar(255)")
+	@Column(name = "subscription_plan")
 	private SubscriptionPlan subscriptionPlan;
 
 }

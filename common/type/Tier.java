@@ -7,7 +7,7 @@ public enum Tier {
 
 	FREE, CORE, PRO;
 
-	public List<Tier> getTiersUpTo() {
+	public List<Tier> getTiersHirachy() {
 		return Arrays.stream(Tier.values()).filter(t -> t.ordinal() <= this.ordinal()).toList();
 	}
 
