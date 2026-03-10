@@ -121,7 +121,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
 
           {/* Action Button */}
           {button && (
-            <Button
+            <ButtonV2
               variant="contained"
               fullWidth
               onClick={button.onClick}
@@ -132,7 +132,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
               }}
             >
               {button.children}
-            </Button>
+            </ButtonV2>
           )}
         </Box>
       </Box>

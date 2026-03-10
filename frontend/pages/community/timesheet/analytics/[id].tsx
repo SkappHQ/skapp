@@ -206,7 +206,7 @@ const TeamTimeSheetAnalytics: NextPage = () => {
       isDividerVisible={false}
       customRightContent={
         activeStep === AnalyticsTypes.LEAVE ? (
-          <Button
+          <ButtonV2
             buttonStyle={ButtonStyle.TERTIARY}
             label={translateText(["viewFullReport"])}
             endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}

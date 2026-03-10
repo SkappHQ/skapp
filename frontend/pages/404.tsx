@@ -20,7 +20,7 @@ export const Custom404: NextPage = () => {
     >
       <Typography variant="h1">404 - {translateText(["title"])}</Typography>
       <Typography variant="body1">{translateText(["description"])}</Typography>
-      <Button
+      <ButtonV2
         id="back-to-home-btn"
         dataTestId="back-to-home-btn"
         isFullWidth={false}

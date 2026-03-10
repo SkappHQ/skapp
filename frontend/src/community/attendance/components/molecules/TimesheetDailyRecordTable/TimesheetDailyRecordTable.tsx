@@ -1,5 +1,6 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useRef, useState } from "react";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
@@ -8,11 +9,7 @@ import {
   generateTimeSlots,
   timeStringToDecimalHours
 } from "~community/attendance/utils/TimeUtils";
-import Button from "~community/common/components/atoms/Button/Button";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -146,16 +143,17 @@ const TimesheetDailyRecordTable = ({
           <Stack sx={classes.tableFooterStackStyle}>
             <Divider sx={classes.dividerStyle} />
             <Stack direction="row" justifyContent="end" alignItems="center">
-              <Button
-                buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-                size={ButtonSizes.MEDIUM}
-                label={translateText(["exportToCsvBtnTxt"])}
-                endIcon={IconName.DOWNLOAD_ICON}
-                isFullWidth={false}
-                styles={classes.buttonStyle}
+              <ButtonV2
+                variant={"tertiary"}
+                size={"md"}
+                fullWidth={false}
                 disabled={isFreeTier}
                 onClick={downloadEmployeeDailyLogCsv}
-              />
+                icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+                iconPosition="end"
+              >
+                {translateText(["exportToCsvBtnTxt"])}
+              </ButtonV2>
             </Stack>
           </Stack>
         </>

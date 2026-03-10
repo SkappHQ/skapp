@@ -1,8 +1,8 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 
 import { AppVersionNotificationType } from "~community/common/enums/CommonEnums";
-import { ButtonSizes } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { theme } from "~community/common/theme/theme";
@@ -12,7 +12,6 @@ import {
   NINETY_PERCENT
 } from "~community/common/utils/getConstants";
 
-import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
 
 interface Props {
@@ -138,26 +137,9 @@ const VersionUpgradeBanner = ({
         }}
       >
         {!isStorageBanner && versionUpgradeInfo?.buttonText && (
-          <Button
-            label={versionUpgradeInfo?.buttonText}
-            styles={{
-              padding: { xs: "0.325rem 0.625rem", sm: "0.625rem 1rem" },
-              backgroundColor: "#FFFFFF",
-              ".MuiTypography-root": {
-                color:
-                  versionUpgradeInfo?.type ===
-                  AppVersionNotificationType.CRITICAL
-                    ? "#7F1D1D"
-                    : "#396996"
-              },
-              "&:hover": {
-                outline: "none",
-                border: `0.125rem solid transparent`
-              }
-            }}
-            size={ButtonSizes.SMALL}
-            onClick={handleButtonClick}
-          />
+          <ButtonV2 size={"sm"} onClick={handleButtonClick}>
+            {versionUpgradeInfo?.buttonText}
+          </ButtonV2>
         )}
 
         {!isStorageBanner && (

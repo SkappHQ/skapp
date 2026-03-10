@@ -12,13 +12,13 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import NotificationBadge from "~community/common/components/atoms/NotificationBadge/NotificationBadge";
 import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
@@ -26,10 +26,6 @@ import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
@@ -456,15 +452,15 @@ const Drawer = (): JSX.Element => {
 
         {isDrawerExpanded && (
           <Stack sx={classes.footer}>
-            <Button
-              styles={classes.applyLeaveBtn}
-              size={ButtonSizes.SMALL}
-              isFullWidth={false}
-              label={translateText(["getHelp"])}
-              buttonStyle={ButtonStyle.TERTIARY}
+            <ButtonV2
+              size={"sm"}
+              fullWidth={false}
+              variant={"tertiary"}
               onClick={handleOpenSubmitRequestModal}
               data-testid={appDrawerTestId.getHelpLink}
-            />
+            >
+              {translateText(["getHelp"])}
+            </ButtonV2>
             <SubmitRequestModalController />
           </Stack>
         )}

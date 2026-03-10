@@ -179,7 +179,7 @@ const CarryForwardBalances: NextPage = () => {
               justifyContent: "flex-end"
             }}
           >
-            <Button
+            <ButtonV2
               styles={{
                 width: "fit-content",
                 paddingY: "1.25rem",

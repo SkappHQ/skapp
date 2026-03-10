@@ -1,11 +1,11 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { type FileUploadType } from "~community/common/types/CommonTypes";
@@ -193,25 +193,29 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
         }}
       />
 
-      <Button
+      <ButtonV2
         disabled={!isNewCalendarDetailsValid}
-        shouldBlink={
+        variant={"primary"}
+        onClick={() => handleSaveCalendarBtn()}
+        className={
           isNewCalendarDetailsValid &&
           newCalenderDetails.acceptedFile?.length > 0
+            ? "animate-pulse"
+            : ""
         }
-        label={translateText(["UploadHolidays"])}
-        endIcon={<RightArrowIcon />}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "1rem" }}
-        onClick={() => handleSaveCalendarBtn()}
-      />
-      <Button
-        label={translateText(["cancelBtnText"])}
-        endIcon={<CloseIcon />}
-        buttonStyle={ButtonStyle.TERTIARY}
-        styles={{ mt: "1rem" }}
+        icon={<RightArrowIcon />}
+        iconPosition="end"
+      >
+        {translateText(["UploadHolidays"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
         onClick={onCloseClick}
-      />
+        icon={<CloseIcon />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtnText"])}
+      </ButtonV2>
     </Box>
   );
 };

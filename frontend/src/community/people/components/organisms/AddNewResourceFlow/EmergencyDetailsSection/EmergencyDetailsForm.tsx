@@ -1,4 +1,5 @@
 import { Stack } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
@@ -8,9 +9,8 @@ import {
   useState
 } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { emergencyDetailsSectionTestId } from "~community/common/constants/testIds";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -138,14 +138,9 @@ const EmergencyDetailsForm = ({
           spacing={2}
           sx={{ padding: "1rem 0" }}
         >
-          <Button
-            label={
-              isUpdate ? translateText(["cancel"]) : translateText(["back"])
-            }
-            buttonStyle={ButtonStyle.TERTIARY}
-            startIcon={isUpdate ? <></> : IconName.LEFT_ARROW_ICON}
-            endIcon={isUpdate ? IconName.CLOSE_ICON : <></>}
-            isFullWidth={false}
+          <ButtonV2
+            variant={"tertiary"}
+            fullWidth={false}
             onClick={onBack}
             disabled={isSubmitDisabled || isLoading || isInputsDisabled}
             data-testid={
@@ -153,16 +148,20 @@ const EmergencyDetailsForm = ({
                 ? emergencyDetailsSectionTestId.buttons.cancelBtn
                 : emergencyDetailsSectionTestId.buttons.backBtn
             }
-          />
-          <Button
-            label={
-              isUpdate
-                ? translateText(["saveDetails"])
-                : translateText(["next"])
+            icon={
+              isUpdate ? (
+                <Icon name={IconName.CLOSE_ICON} />
+              ) : (
+                <Icon name={IconName.LEFT_ARROW_ICON} />
+              )
             }
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON}
-            isFullWidth={false}
+            iconPosition={isUpdate ? "end" : "start"}
+          >
+            {isUpdate ? translateText(["cancel"]) : translateText(["back"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"primary"}
+            fullWidth={false}
             onClick={handleNext}
             disabled={isSubmitDisabled || isLoading || isInputsDisabled}
             isLoading={isLoading}
@@ -171,7 +170,19 @@ const EmergencyDetailsForm = ({
                 ? emergencyDetailsSectionTestId.buttons.saveDetailsBtn
                 : emergencyDetailsSectionTestId.buttons.nextBtn
             }
-          />
+            icon={
+              isUpdate ? (
+                <Icon name={IconName.SAVE_ICON} />
+              ) : (
+                <Icon name={IconName.RIGHT_ARROW_ICON} />
+              )
+            }
+            iconPosition="end"
+          >
+            {isUpdate
+              ? translateText(["saveDetails"])
+              : translateText(["next"])}
+          </ButtonV2>
         </Stack>
       )}
     </>

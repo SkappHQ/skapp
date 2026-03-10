@@ -1,13 +1,12 @@
 import { Box, Checkbox, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
@@ -153,25 +152,27 @@ const AddTeamSelectMembers: FC<Props> = ({
         )}
       </Box>
       <Box sx={{ mr: "1.25rem" }}>
-        <Button
-          label={translateText(["removeFromTeam"])}
-          buttonStyle={ButtonStyle.ERROR}
-          isFullWidth={true}
-          styles={{ mt: "1.2rem" }}
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+        <ButtonV2
+          variant={"error"}
+          fullWidth={true}
           disabled={!(usersChecked?.length > 0)}
           onClick={handleRemove}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          isFullWidth={true}
-          styles={{ mt: "1.2rem" }}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["removeFromTeam"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          fullWidth={true}
           onClick={() => {
             setIsSelectMembersOpen(false);
           }}
-        />
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Box>
     </>
   );

@@ -7,6 +7,7 @@ import {
   StaticDatePicker
 } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import {
   Dispatch,
@@ -23,15 +24,10 @@ import {
   MONTH_YEAR_FORMAT
 } from "~community/attendance/constants/constants";
 import { DailyLogFilterTabTypes } from "~community/attendance/enums/timesheetEnums";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import SortRow from "~community/common/components/atoms/SortRow/SortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
@@ -292,17 +288,19 @@ const TimesheetDailyLogFilter = ({
             />
           )}
       </Stack>
-      <Button
-        isFullWidth={false}
-        label={selectedOptionName}
-        buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-        size={ButtonSizes.SMALL}
-        endIcon={IconName.DROPDOWN_ARROW_ICON}
+      <ButtonV2
+        fullWidth={false}
+        variant={"tertiary"}
+        size={"sm"}
         onClick={(event: MouseEvent<HTMLElement>) => {
           setAnchorElDropdown(event.currentTarget);
           setShowOverlayDropdown(!showOverlayDateRange);
         }}
-      />
+        icon={<Icon name={IconName.DROPDOWN_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {selectedOptionName}
+      </ButtonV2>
       <Popper
         anchorEl={anchorElDropdown}
         open={Boolean(showOverlayDropdown)}

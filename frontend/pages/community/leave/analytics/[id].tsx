@@ -207,7 +207,7 @@ const TeamTimeSheetAnalytics: NextPage = () => {
       customRightContent={
         data?.user.roles?.includes(AdminTypes.LEAVE_ADMIN) &&
         activeStep === AnalyticsTypes.LEAVE ? (
-          <Button
+          <ButtonV2
             buttonStyle={ButtonStyle.TERTIARY}
             label={translateText(["viewFullReport"])}
             endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}

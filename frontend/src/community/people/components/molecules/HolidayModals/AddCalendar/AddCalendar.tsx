@@ -1,10 +1,9 @@
 import { Box, Divider, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import DownSideArrow from "~community/common/assets/Icons/DownSideArrow";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
 import { holidayModalTypes } from "~community/people/types/HolidayTypes";
@@ -58,26 +57,28 @@ const AddCalendar: FC = () => {
         >
           {translateText(["downloadCsvDes"])}
         </Typography>
-        <Button
-          label={translateText(["downloadCsvTitle"])}
-          buttonStyle={ButtonStyle.SECONDARY}
-          styles={{ my: "0.75rem" }}
-          endIcon={<DownSideArrow />}
+        <ButtonV2
+          variant={"secondary"}
           onClick={downloadTemplateHandler}
-          shouldBlink={isButtonBlinking.download}
-        />
+          className={isButtonBlinking.download ? "animate-pulse" : ""}
+          icon={<DownSideArrow />}
+          iconPosition="end"
+        >
+          {translateText(["downloadCsvTitle"])}
+        </ButtonV2>
       </Box>
       <Divider aria-hidden={true} />
-      <Button
-        label="Next"
-        endIcon={<RightArrowIcon />}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "0.75rem" }}
+      <ButtonV2
+        variant={"primary"}
         onClick={() =>
           setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
         }
-        shouldBlink={isButtonBlinking.next}
-      />
+        className={isButtonBlinking.next ? "animate-pulse" : ""}
+        icon={<RightArrowIcon />}
+        iconPosition="end"
+      >
+        "Next"
+      </ButtonV2>
     </Box>
   );
 };

@@ -1,5 +1,6 @@
 import { Stack } from "@mui/material";
 import { Box, type Theme, useTheme } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
@@ -9,11 +10,10 @@ import {
   useState
 } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { Employee } from "~community/leave/types/TeamLeaveAnalyticsTypes";
 
@@ -37,6 +37,7 @@ const MultiselectEmployeeSearch = ({
   setTeamMembers
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
+  const translateText = useTranslator("leaveModule", "analytics");
   const [teamMemberSearchTerm, setTeamMemberSearchTerm] = useState<string>("");
   const [searchedMembers, setSearchedMembers] = useState<Employee[]>([]);
 
@@ -133,20 +134,16 @@ const MultiselectEmployeeSearch = ({
               setSelectedMembers([]);
             }}
           >
-            <Button
-              isFullWidth={false}
-              dataAttr={{ "data-id": "All" }}
-              label={"All members"}
-              buttonStyle={ButtonStyle.SECONDARY}
+            <ButtonV2
+              fullWidth={false}
+              variant={"secondary"}
               onClick={() => {
                 setIsAll(true);
                 setSelectedMembers([]);
               }}
-              styles={{
-                textTransform: "capitalize",
-                height: "2rem"
-              }}
-            />
+            >
+              {translateText(["allMembers"])}
+            </ButtonV2>
             {isAll && (
               <Icon
                 name={IconName.CHECK_CIRCLE_ICON}

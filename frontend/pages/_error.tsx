@@ -21,7 +21,7 @@ const Error = () => {
     >
       <Typography variant="h1">{translateText(["title"])}</Typography>
       <Typography variant="body1">{translateText(["description"])}</Typography>
-      <Button
+      <ButtonV2
         id="back-to-home-btn"
         dataTestId="back-to-home-btn"
         isFullWidth={false}
