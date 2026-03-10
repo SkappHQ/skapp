@@ -7,7 +7,6 @@ import com.skapp.enterprise.common.type.TwilioMessageSource;
 import com.skapp.enterprise.common.util.FormatPhoneNumberUtil;
 import com.skapp.enterprise.common.util.TwilioStatusUtil;
 import com.twilio.exception.ApiException;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +17,6 @@ import com.twilio.type.PhoneNumber;
 import org.springframework.util.StringUtils;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,29 +35,23 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 	@Value("${twilio.alpha-sender-id}")
 	private String alphaSenderId;
 
-	// Comma-separated list of allowed country codes (e.g., "+1,+44,+94")
-	// This is to be added for alphanumeric sender id since the alphanumeric id does not
-	// automatically get set to the message service when the country registration is
-	// required. So we need to maintain a list of allowed country codes to determine when
-	// to use the alpha sender id vs the message service sid.
-	// Therefore, for countries that require registration for alphanumeric Id, the country
-	// code should be added to this env variable.
-	@Value("${twilio.country-codes:}")
-	private String countryCodes;
+	// Comma-separated list of country codes that require alphanumeric sender ID
+	// registration with Twilio (e.g., "+94,+44").
+	// For such countries the alpha sender ID is used instead of the message service SID.
+	// Add a country code here when Twilio registration is required.
+	@Value("${twilio.alpha-numeric-country-codes:}")
+	private String alphaNumericCountryCodes;
 
 	private final JsonMapper objectMapper;
 
-	private List<String> allowedCountryCodeList = new ArrayList<>();
-
-	@PostConstruct
-	private void initializeCountryCodes() {
-		if (StringUtils.hasText(countryCodes)) {
-			allowedCountryCodeList = Arrays.stream(countryCodes.split(","))
-				.map(String::trim)
-				.filter(StringUtils::hasText)
-				.toList();
+	private List<String> allowedCountryCodes() {
+		if (!StringUtils.hasText(alphaNumericCountryCodes)) {
+			return List.of();
 		}
-		log.info("Twilio alpha sender enabled for country codes: {}", allowedCountryCodeList);
+		return Arrays.stream(alphaNumericCountryCodes.split(","))
+			.map(String::trim)
+			.filter(StringUtils::hasText)
+			.toList();
 	}
 
 	@Override
@@ -77,7 +69,7 @@ public class EpTwilioMessageServiceImpl implements EpTwilioMessageService {
 
 		String formattedTarget = FormatPhoneNumberUtil.formatPhoneNumberToE164(phoneNumber);
 
-		boolean isAllowedCountry = allowedCountryCodeList.stream().anyMatch(formattedTarget::startsWith);
+		boolean isAllowedCountry = allowedCountryCodes().stream().anyMatch(formattedTarget::startsWith);
 
 		if (isAllowedCountry && !StringUtils.hasText(alphaSenderId)) {
 			log.error("{} Alpha sender ID is not configured but destination for identifierId {} is an allowed country",
