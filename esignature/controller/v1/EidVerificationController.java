@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.esignature.payload.request.eid.InitiateIdentificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.VerificationSessionRequestDto;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
@@ -51,6 +52,19 @@ public class EidVerificationController {
 	public ResponseEntity<ResponseEntityDto> initiateVerification(
 			@Valid @RequestBody InitiateVerificationRequestDto request, HttpServletRequest httpRequest) {
 		ResponseEntityDto response = eidVerificationService.initiateVerification(request, httpRequest);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Initiate eID identification",
+			description = "Starts a new identification-only session with the specified provider. "
+					+ "Unlike /initiate, no document is required — this flow verifies the user's identity only. "
+					+ "Returns autoStartToken for same-device launch and pre-computed qrCode for cross-device. "
+					+ "The qrCode is refreshed on each status poll.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
+	@PostMapping(value = "/identify", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> initiateIdentification(
+			@Valid @RequestBody InitiateIdentificationRequestDto request, HttpServletRequest httpRequest) {
+		ResponseEntityDto response = eidVerificationService.initiateIdentification(request, httpRequest);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

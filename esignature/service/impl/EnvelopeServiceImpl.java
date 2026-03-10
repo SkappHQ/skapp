@@ -529,11 +529,19 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			if (eidMethod == null) {
 				eidMethod = EidProviderType.NONE;
 			}
-			if (eidMethod.requiresVerification()) {
+			EidProviderType identMethod = recipientDto.getEidIdentificationMethod();
+			if (identMethod == null) {
+				identMethod = EidProviderType.NONE;
+			}
+			if (eidMethod.requiresVerification() || identMethod.requiresVerification()) {
 				RecipientEidConfig eidConfig = RecipientEidConfig.builder()
 					.recipient(recipient)
 					.eidVerificationMethod(eidMethod)
-					.eidVerificationStatus(EidVerificationStatus.NOT_STARTED)
+					.eidVerificationStatus(eidMethod.requiresVerification() ? EidVerificationStatus.NOT_STARTED
+							: EidVerificationStatus.NOT_REQUIRED)
+					.eidIdentificationMethod(identMethod)
+					.eidIdentificationStatus(identMethod.requiresVerification() ? EidVerificationStatus.NOT_STARTED
+							: EidVerificationStatus.NOT_REQUIRED)
 					.build();
 				recipient.setEidConfig(eidConfig);
 			}
