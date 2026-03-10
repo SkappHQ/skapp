@@ -329,7 +329,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 			}
 			else if (FieldType.DROPDOWN.equals(fieldType)) {
-				addDropDown(field, contentStream, pageHeight, pageWidth, document);
+				addDropDown(field, contentStream, pageHeight, document);
 			}
 			else if (FieldType.TEXT.equals(fieldType)) {
 				addInputTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -699,7 +699,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		try {
@@ -712,6 +712,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedX = field.getXPosition();
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
 
+			// To vertically center the text, we calculate the center of the field and
+			// adjust by half the font size
 			float verticalCenter = adjustedY + (adjustedHeight / CENTER_DIVISOR) - (DEFAULT_FONT_SIZE / CENTER_DIVISOR);
 
 			contentStream.beginText();
