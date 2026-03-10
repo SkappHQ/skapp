@@ -175,7 +175,7 @@ const TeamsTable: FC<Props> = ({
               hoverEffect={false}
               buttonStyles={classes.deleteIconBtn}
               onClick={() => handleDeleteTeam(teamDetails)}
-              aria-label={ariaTranslateText(
+              ariaLabel={ariaTranslateText(
                 ["table", "actionColumn", "deleteButton", "label"],
                 {
                   teamName: teamDetails?.teamName?.toLowerCase() ?? ""
