@@ -7,8 +7,12 @@ import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.ClassPathResource;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -75,6 +79,8 @@ public class EsignUtil {
 	private static final String TEMPLATE_FOLDER_NAME = "/template/";
 
 	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
+
+	private static final String ADVANCE_INPUT_TEXT_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-input-text-field.html";
 
 	private EsignUtil() {
 	}
@@ -284,6 +290,53 @@ public class EsignUtil {
 		}
 
 		return bucketName + "/" + filePath;
+	}
+
+	/**
+	 * Reads {@code advance-input-text-field.html} from the classpath and substitutes the
+	 * nine {@code {{token}}} placeholders with the supplied values to produce a
+	 * self-contained HTML document.
+	 * <p>
+	 * Placeholder-to-parameter mapping:
+	 * <ul>
+	 *   <li>{@code {{width}}}          → {@code adjustedWidth} (converted via {@link String#valueOf(float)})</li>
+	 *   <li>{@code {{height}}}         → {@code adjustedHeight} (converted via {@link String#valueOf(float)})</li>
+	 *   <li>{@code {{fontFamily}}}     → {@code fontFamilyCss}</li>
+	 *   <li>{@code {{fontSize}}}       → {@code fontSize} (converted via {@link String#valueOf(float)})</li>
+	 *   <li>{@code {{fontWeight}}}     → {@code fontWeight}</li>
+	 *   <li>{@code {{fontStyle}}}      → {@code fontStyle}</li>
+	 *   <li>{@code {{textDecoration}}} → {@code textDecoration}</li>
+	 *   <li>{@code {{fontColor}}}      → {@code fontColor}</li>
+	 *   <li>{@code {{content}}}        → {@code escapedValue}</li>
+	 * </ul>
+	 * @param adjustedWidth  body width in points — written as {@code width: <value>pt}
+	 * @param adjustedHeight body height in points — written as {@code height: <value>pt}
+	 * @param fontFamilyCss  CSS {@code font-family} string
+	 * @param fontSize       CSS {@code font-size} in points
+	 * @param fontWeight     CSS {@code font-weight} string (e.g. {@code "bold"}, {@code "normal"})
+	 * @param fontStyle      CSS {@code font-style} string (e.g. {@code "italic"}, {@code "normal"})
+	 * @param textDecoration CSS {@code text-decoration} string (e.g. {@code "underline"}, {@code "none"})
+	 * @param fontColor      CSS {@code color} string (e.g. {@code "#3f3f46"})
+	 * @param escapedValue   HTML-escaped text inserted as the {@code <body>} content
+	 * @return the template string with all placeholders replaced
+	 * @throws IOException if {@code advance-input-text-field.html} cannot be read from the classpath
+	 */
+	public static String buildTextFieldHtml(float adjustedWidth, float adjustedHeight, String fontFamilyCss,
+											float fontSize, String fontWeight, String fontStyle, String textDecoration, String fontColor,
+											String escapedValue) throws IOException {
+		ClassPathResource resource = new ClassPathResource(ADVANCE_INPUT_TEXT_FIELD_TEMPLATE);
+		String template = Files.readString(Paths.get(resource.getURI()));
+
+		return template
+				.replace("{{width}}", String.valueOf(adjustedWidth))
+				.replace("{{height}}", String.valueOf(adjustedHeight))
+				.replace("{{fontFamily}}", fontFamilyCss)
+				.replace("{{fontSize}}", String.valueOf(fontSize))
+				.replace("{{fontWeight}}", fontWeight)
+				.replace("{{fontStyle}}", fontStyle)
+				.replace("{{textDecoration}}", textDecoration)
+				.replace("{{fontColor}}", fontColor)
+				.replace("{{content}}", escapedValue);
 	}
 
 }

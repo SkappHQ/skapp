@@ -105,30 +105,4 @@ public class EsignConstants {
 
 	public static final int MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH = 100;
 
-	public static final String TEXT_FIELD_HTML_TEMPLATE = """
-			<html>
-			<head>
-			<style>
-			  @page { margin: 0; }
-			  * { margin: 0; padding: 0; box-sizing: border-box; }
-			  body {
-			    width: %.2fpt;
-			    height: %.2fpt;
-			    overflow: visible;
-			    font-family: %s;
-			    font-size: %.2fpt;
-			    font-weight: %s;
-			    font-style: %s;
-			    text-decoration: %s;
-			    color: %s;
-			    white-space: pre-wrap;
-			    word-break: break-word;
-			    line-height: normal;
-			  }
-			</style>
-			</head>
-			<body>%s</body>
-			</html>
-			""";
-
 }
