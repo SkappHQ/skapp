@@ -68,16 +68,16 @@ public class StripeServiceImpl implements StripeService {
 
 	private final MessageUtil messageUtil;
 
-	@Value("${stripe.prices.core-monthly-price-id}")
+	@Value("${stripe.prices.core.monthly.price-id}")
 	private String stripeCoreMonthlyPriceId;
 
-	@Value("${stripe.prices.core-yearly-price-id}")
+	@Value("${stripe.prices.core.yearly.price-id}")
 	private String stripeCoreYearlyPriceId;
 
-	@Value("${stripe.prices.pro-monthly-price-id}")
+	@Value("${stripe.prices.pro.monthly.price-id}")
 	private String stripeProMonthlyPriceId;
 
-	@Value("${stripe.prices.pro-yearly-price-id}")
+	@Value("${stripe.prices.pro.yearly.price-id}")
 	private String stripeProYearlyPriceId;
 
 	@Value("${stripe.trial.days}")
