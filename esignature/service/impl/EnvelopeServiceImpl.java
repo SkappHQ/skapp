@@ -113,6 +113,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -577,6 +578,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
+			validateFieldDtoConfigurationValues(fieldDto);
+
 			Field field = new Field();
 			field.setType(fieldDto.getType());
 			field.setStatus(fieldDto.getStatus());
@@ -594,14 +597,44 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}).toList();
 	}
 
+	private void validateFieldDtoConfigurationValues(FieldDto fieldDto) {
+
+		if (fieldDto.getWidthPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
+		}
+
+		if (fieldDto.getHeightPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
+		}
+
+		if (fieldDto.getWidthPercentage() <= 0 || fieldDto.getWidthPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		if (fieldDto.getHeightPercentage() <= 0 || fieldDto.getHeightPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		// Validate max 2 decimal places
+		BigDecimal widthBD = BigDecimal.valueOf(fieldDto.getWidthPercentage()).stripTrailingZeros();
+		if (widthBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+		}
+
+		BigDecimal heightBD = BigDecimal.valueOf(fieldDto.getHeightPercentage()).stripTrailingZeros();
+		if (heightBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+		}
+	}
+
 	private List<Field> buildAdvanceFieldsForRecipient(List<FieldContainerDto> fieldContainerDtos,
 			Recipient recipient) {
 		List<Field> fieldList = new ArrayList<>();
 		for (FieldContainerDto fieldContainerDto : fieldContainerDtos) {
 
-			if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
-			}
+			validateAdvanceFieldContainerValues(fieldContainerDto);
 
 			Set<FieldType> fieldTypes = fieldContainerDto.getFields()
 				.stream()
@@ -662,6 +695,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 
 			for (AdvanceFieldDto advanceFieldDto : fieldContainerDto.getFields()) {
+
+				validateAdvanceFieldDtoConfigurationValues(advanceFieldDto);
+
 				fieldList.add(createAdvanceField(advanceFieldDto, recipient, fieldContainer, existingOptionValue,
 						existingDisplayOrder));
 			}
@@ -675,6 +711,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			FieldContainer fieldContainer, Set<String> existingOptionValue, Set<Integer> existingDisplayOrder) {
 		Document fieldDocument = documentDao.findById(advanceFieldDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+
 		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
 		field.setXPosition(advanceFieldDto.getXPosition());
 		field.setYPosition(advanceFieldDto.getYPosition());
@@ -719,6 +756,58 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
+		}
+	}
+
+	private void validateAdvanceFieldContainerValues(FieldContainerDto fieldContainerDto) {
+
+		if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontFamily() == null || fieldContainerDto.getFontFamily().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontColor() == null || fieldContainerDto.getFontColor().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontSize() == null || fieldContainerDto.getFontSize() <= 0) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER);
+		}
+
+	}
+
+	private void validateAdvanceFieldDtoConfigurationValues(AdvanceFieldDto advanceFieldDto) {
+
+		if (advanceFieldDto.getWidthPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
+		}
+
+		if (advanceFieldDto.getHeightPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
+		}
+
+		if (advanceFieldDto.getWidthPercentage() <= 0 || advanceFieldDto.getWidthPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		if (advanceFieldDto.getHeightPercentage() <= 0 || advanceFieldDto.getHeightPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		// Validate max 2 decimal places
+		BigDecimal widthBD = BigDecimal.valueOf(advanceFieldDto.getWidthPercentage()).stripTrailingZeros();
+		if (widthBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+		}
+
+		BigDecimal heightBD = BigDecimal.valueOf(advanceFieldDto.getHeightPercentage()).stripTrailingZeros();
+		if (heightBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 	}
 
