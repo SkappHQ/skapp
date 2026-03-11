@@ -304,7 +304,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
-			PDDocument document) {
+					PDDocument document) {
 
 		FieldType fieldType = field.getType();
 
