@@ -22,8 +22,7 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	private final TenantContext tenantContext;
 
 	@Override
-	public void sendWelcomeToSkappFreeTrialEmail(String userEmail, String trialEndDate, String tenantName,
-			Tier tier) {
+	public void sendWelcomeToSkappFreeTrialEmail(String userEmail, String trialEndDate, String tenantName, Tier tier) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
 		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
@@ -34,8 +33,8 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 
-		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1, template,
-				paymentEmailStripeDynamicFields, userEmail);
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1, template, paymentEmailStripeDynamicFields,
+				userEmail);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}

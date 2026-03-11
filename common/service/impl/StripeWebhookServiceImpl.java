@@ -183,7 +183,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			stripeSubscription.setSubscriptionId(subscription.getId());
 			stripeSubscription.setCustomerId(subscription.getCustomer());
-			stripeSubscription.setSubscriptionStartDate(DateTimeUtils.epochSecondToInstant(subscription.getStartDate()));
+			stripeSubscription
+				.setSubscriptionStartDate(DateTimeUtils.epochSecondToInstant(subscription.getStartDate()));
 			stripeSubscription.setTenant(tenant);
 
 			Tier tier = determineTierFromPriceId(productId);

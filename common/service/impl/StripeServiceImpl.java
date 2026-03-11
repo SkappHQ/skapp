@@ -118,9 +118,9 @@ public class StripeServiceImpl implements StripeService {
 			Long trialEnd = subscription.getTrialEnd();
 			if (trialEnd != null) {
 				long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
-							DateTimeUtils.epochSecondToUtcLocalDate(trialEnd));
-					responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
-					responseDto.setTrialEndDate(DateTimeUtils.epochSecondToInstant(trialEnd));
+						DateTimeUtils.epochSecondToUtcLocalDate(trialEnd));
+				responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
+				responseDto.setTrialEndDate(DateTimeUtils.epochSecondToInstant(trialEnd));
 			}
 
 			Long subscriptionQuantity = subscription.getItems()
@@ -409,14 +409,15 @@ public class StripeServiceImpl implements StripeService {
 				"upgradeTierSubscription: Successfully initiated tier upgrade for tenant={} to tier={} plan={} withTrial={}",
 				tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
 
-		return new ResponseEntityDto(false, messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_TIER_UPGRADE_INITIATED));
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_TIER_UPGRADE_INITIATED));
 	}
 
 	private List<Tier> getUsedTrials(String tenantName) {
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 		List<Tier> usedTrials = stripeSubscriptionHistoryDao
-			.findByTenantNameAndSubscriptionStatusAndTierIn(tenantName,
-					SubscriptionStatus.FREE_TRIAL, List.of(Tier.CORE, Tier.PRO))
+			.findByTenantNameAndSubscriptionStatusAndTierIn(tenantName, SubscriptionStatus.FREE_TRIAL,
+					List.of(Tier.CORE, Tier.PRO))
 			.stream()
 			.map(StripeSubscriptionHistory::getTier)
 			.distinct()
