@@ -488,8 +488,8 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	@Override
 	protected List<EmployeeBulkDto> getValidEmployeeBulkDtoList(List<EmployeeBulkDto> employeeBulkDtoList) {
 
-		Tier currentUserTier = epUserService.getCurrentUserTier();
-		if (currentUserTier == Tier.FREE) {
+		List<Tier> currentUserTiers = epUserService.getCurrentUserTiers();
+		if (!currentUserTiers.contains(Tier.CORE)) {
 			long employeeCount = countActiveAndPendingEmployees();
 			long maxAllowedCount = EpCommonConstants.ENTERPRISE_FREE_MAX_EMPLOYEE_COUNT - employeeCount;
 
@@ -596,9 +596,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	protected void updateSubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk) {
-		Tier tier = epUserService.getCurrentUserTier();
+		List<Tier> tiers = epUserService.getCurrentUserTiers();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
-		if ((tier == Tier.PRO || tier == Tier.CORE) && tenantStatus == TenantStatus.ACTIVE) {
+		if (tiers.contains(Tier.CORE) && tenantStatus == TenantStatus.ACTIVE) {
 			stripeService.updateSubscriptionQuantity(quantity, isIncrement, isFromEmployeeBulk);
 		}
 	}

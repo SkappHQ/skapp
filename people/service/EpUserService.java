@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface EpUserService {
 
-	Tier getCurrentUserTier();
+	List<Tier> getCurrentUserTiers();
 
 	TenantStatus getCurrentUserTenantStatus();
 

@@ -68,4 +68,12 @@ public class StripeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/upgrade-tier")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> upgradeTierSubscription(
+			@RequestBody SubscriptionRequestDto subscriptionRequestDto) throws StripeException {
+		ResponseEntityDto response = stripeService.upgradeTierSubscription(subscriptionRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
