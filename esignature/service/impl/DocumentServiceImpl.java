@@ -249,12 +249,6 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
-		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
-
-		if (currentAddressBookUser == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
-		}
-
 		Document document = documentRepository.findById(documentSignDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
 
@@ -274,11 +268,15 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_DOCUMENT_SIGN_COMPLETED);
 		}
 
-		if (!isCurrentUserAddressBook(recipient.getAddressBook(), currentAddressBookUser)) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username, recipient.getAddressBook().getType());
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 		}
 
-		AddressBook signingAddressBook = resolveSigningAddressBook(recipient, currentAddressBookUser);
+		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		}
 
 		if (document.getCurrentSignOderNumber() != recipient.getSigningOrder()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_SIGN_ORDER_RECIPIENT);
@@ -293,9 +291,8 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Load and validate keys-load previous user keys
 		KeyPair keyPairVerify = loadKeyPair(currentVersion.getAddressBook().getId());
-		// Sign using recipient identity to preserve key continuity for migrated
-		// external->internal users with the same email.
-		KeyPair keyPairSign = loadKeyPair(signingAddressBook.getId());
+		// current user key pair for sign document
+		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
 		byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
 
@@ -328,7 +325,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Create new version with signature
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
-				keyPairSign.getPrivate(), signingAddressBook, updatedDocumentBytes);
+				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
 
 		newVersion = documentVersionDao.save(newVersion);
 
@@ -518,12 +515,6 @@ public class DocumentServiceImpl implements DocumentService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
-		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username);
-
-		if (currentAddressBookUser == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
-		}
-
 		Recipient recipient = getRecipientById(documentSignDto.getRecipientId());
 
 		documentLinkService.validateTokenFlows(isDocAccess, recipient, documentSignDto.getDocumentId());
@@ -541,11 +532,15 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 		}
 
-		if (!isCurrentUserAddressBook(recipient.getAddressBook(), currentAddressBookUser)) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		AddressBook currentAddressBookUser = getCurrentAddressBookUser(username, recipient.getAddressBook().getType());
+
+		if (currentAddressBookUser == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_NOT_FOUND);
 		}
 
-		AddressBook signingAddressBook = resolveSigningAddressBook(recipient, currentAddressBookUser);
+		if (!recipient.getAddressBook().getId().equals(currentAddressBookUser.getId())) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		}
 
 		Document document = documentRepository.findById(documentSignDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_DOCUMENT_NOT_FOUND));
@@ -568,7 +563,7 @@ public class DocumentServiceImpl implements DocumentService {
 		KeyPair keyPairVerify = loadKeyPair(usedVersion.getAddressBook().getId());
 		verifyDocumentSignature(documentBytes, usedVersion, keyPairVerify.getPublic());
 
-		KeyPair keyPairSign = loadKeyPair(signingAddressBook.getId());
+		KeyPair keyPairSign = loadKeyPair(currentAddressBookUser.getId());
 
 		if (!CollectionUtils.isEmpty(documentSignDto.getFieldSignDtoList())) {
 			DocumentVersionFieldBulk result = processFieldLevelSign(documentSignDto, keyPairSign.getPrivate(),
@@ -600,7 +595,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Create new version with signature
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
-				keyPairSign.getPrivate(), signingAddressBook, updatedDocumentBytes);
+				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
 
 		documentVersionDao.save(newVersion);
 
@@ -1452,40 +1447,11 @@ public class DocumentServiceImpl implements DocumentService {
 			.orElseGet(() -> addressBookDao.findByExternalUserEmail(userName).orElse(null));
 	}
 
-	/**
-	 * Returns true if the given AddressBook belongs to the current user identified by
-	 * currentAddressBook. Handles the case where an external recipient was later
-	 * onboarded as an internal user: both address books represent the same person (same
-	 * email), so access is granted even though the IDs differ.
-	 */
-	private boolean isCurrentUserAddressBook(AddressBook recipientAddressBook, AddressBook currentAddressBook) {
-		if (recipientAddressBook.getId().equals(currentAddressBook.getId())) {
-			return true;
+	private AddressBook getCurrentAddressBookUser(@NotNull String userName, UserType type) {
+		if (type == UserType.INTERNAL) {
+			return addressBookDao.findByInternalUserEmail(userName).orElse(null);
 		}
-		boolean isMigrationPair = (recipientAddressBook.getType() == UserType.EXTERNAL
-				&& currentAddressBook.getType() == UserType.INTERNAL)
-				|| (recipientAddressBook.getType() == UserType.INTERNAL
-						&& currentAddressBook.getType() == UserType.EXTERNAL);
-		if (!isMigrationPair) {
-			return false;
-		}
-		String recipientEmail = recipientAddressBook.getEmail();
-		String currentEmail = currentAddressBook.getEmail();
-		return recipientEmail != null && recipientEmail.equalsIgnoreCase(currentEmail);
-	}
-
-	private AddressBook resolveSigningAddressBook(Recipient recipient, AddressBook currentAddressBook) {
-		AddressBook recipientAddressBook = recipient.getAddressBook();
-
-		if (recipientAddressBook.getId().equals(currentAddressBook.getId())) {
-			return currentAddressBook;
-		}
-
-		if (isCurrentUserAddressBook(recipientAddressBook, currentAddressBook)) {
-			return recipientAddressBook;
-		}
-
-		throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
+		return addressBookDao.findByExternalUserEmail(userName).orElse(null);
 	}
 
 	private Recipient getRecipientById(@NotNull Long id) {
@@ -1555,10 +1521,10 @@ public class DocumentServiceImpl implements DocumentService {
 		boolean isRecipient = document.getEnvelope()
 			.getRecipients()
 			.stream()
-			.anyMatch(recipient -> isCurrentUserAddressBook(recipient.getAddressBook(), currentAddressBookUser));
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
 
 		if (!isRecipient) {
-			boolean isOwner = isCurrentUserAddressBook(document.getEnvelope().getOwner(), currentAddressBookUser);
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
 			if (!isOwner) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
 			}
@@ -1671,10 +1637,10 @@ public class DocumentServiceImpl implements DocumentService {
 		boolean isRecipient = document.getEnvelope()
 			.getRecipients()
 			.stream()
-			.anyMatch(recipient -> isCurrentUserAddressBook(recipient.getAddressBook(), currentAddressBookUser));
+			.anyMatch(recipient -> recipient.getAddressBook().getId().equals(currentAddressBookUser.getId()));
 
 		if (!isRecipient) {
-			boolean isOwner = isCurrentUserAddressBook(document.getEnvelope().getOwner(), currentAddressBookUser);
+			boolean isOwner = document.getEnvelope().getOwner().getId().equals(currentAddressBookUser.getId());
 			if (!isOwner) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_CURRENT_USER_NOT_MATCH);
 			}
