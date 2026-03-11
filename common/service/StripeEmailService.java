@@ -1,8 +1,10 @@
 package com.skapp.enterprise.common.service;
 
+import com.skapp.enterprise.common.type.Tier;
+
 public interface StripeEmailService {
 
-	void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate, String tenantName);
+	void sendWelcomeToSkappFreeTrialEmail(String userEmail, String trialEndDate, String tenantName, Tier tier);
 
 	void sendCongratulationsOnUpgradingToSkappProMail(String userEmail, String billingDate, String tenantName);
 

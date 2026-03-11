@@ -183,7 +183,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			stripeSubscription.setSubscriptionId(subscription.getId());
 			stripeSubscription.setCustomerId(subscription.getCustomer());
-			stripeSubscription.setSubscriptionStartDate(Instant.ofEpochSecond(subscription.getStartDate()));
+			stripeSubscription.setSubscriptionStartDate(DateTimeUtils.epochSecondToInstant(subscription.getStartDate()));
 			stripeSubscription.setTenant(tenant);
 
 			Tier tier = determineTierFromPriceId(productId);
@@ -213,7 +213,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			tenantDao.save(tenant);
 			addToSubscriptionHistory(tenant, tenant.getStripeSubscription(),
-					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+					DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 
 			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
 
@@ -226,7 +226,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
 
-			stripeEmailService.sendWelcomeToSkappProFreeTrialEmail(billingEmail, trialEndDate, tenant.getTenantName());
+			stripeEmailService.sendWelcomeToSkappFreeTrialEmail(billingEmail, trialEndDate, tenant.getTenantName(),
+					tier);
 
 			log.info("handleCheckoutSessionCompleted: Successfully saved subscription details for tenant: {}",
 					tenantId);
@@ -307,7 +308,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 				tenantDao.save(currentTenant.getTenant());
 				addToSubscriptionHistory(currentTenant.getTenant(), currentTenant,
-						Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+						DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 
 				tenantContext.setTenantAndSwitchSchema(currentTenant.getTenantName());
 
@@ -391,7 +392,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 				tenantDao.save(tenant);
 				addToSubscriptionHistory(tenant, currentTenant,
-						Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+						DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
@@ -464,7 +465,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			tenantDao.save(tenant);
 			addToSubscriptionHistory(tenant, stripeSubscription,
-					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+					DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
@@ -529,7 +530,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			tenantDao.save(tenant);
 			addToSubscriptionHistory(tenant, stripeSubscription,
-					Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()));
+					DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 
 			Customer customer = Customer.retrieve(customerId);
 			String endDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getCurrentPeriodEnd()).toString();
@@ -566,7 +567,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 		history.setSubscriptionStatus(tenant.getSubscriptionStatus());
 		history.setTier(tenant.getTier());
 		history.setSubscriptionPlan(tenant.getSubscriptionPlan());
-		history.setCreatedByEmail(tenant.getLastModifiedByEmail());
+		history.setCreatedBy(tenant.getLastModifiedByEmail());
+		history.setLastModifiedBy(tenant.getLastModifiedByEmail());
 		history.setLastModifiedDate(Instant.now());
 		history.setSubscriptionEndDate(subscriptionEndDate);
 		if (stripeSubscription != null) {

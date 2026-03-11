@@ -7,20 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface StripeSubscriptionHistoryDao extends JpaRepository<StripeSubscriptionHistory, Long> {
 
-	List<StripeSubscriptionHistory> findByTenantName(String tenantName);
-
-	List<StripeSubscriptionHistory> findBySubscriptionId(String subscriptionId);
-
-	List<StripeSubscriptionHistory> findByCustomerId(String customerId);
-
-	Optional<StripeSubscriptionHistory> findTopByTenantNameOrderByCreatedDateDesc(String tenantName);
-
 	boolean existsByTenantNameAndSubscriptionStatusAndTier(String tenantName, SubscriptionStatus subscriptionStatus,
 			Tier tier);
+
+	List<StripeSubscriptionHistory> findByTenantNameAndSubscriptionStatusAndTierIn(String tenantName,
+			SubscriptionStatus subscriptionStatus, List<Tier> tiers);
 
 }

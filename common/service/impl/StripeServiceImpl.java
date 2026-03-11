@@ -5,6 +5,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SystemVersionService;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -13,6 +14,7 @@ import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.masterrepository.StripeSubscriptionHistoryDao;
 import com.skapp.enterprise.common.masterrepository.TenantDao;
+import com.skapp.enterprise.common.model.master.StripeSubscriptionHistory;
 import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.payload.request.SubscriptionDetailsResponseDto;
 import com.skapp.enterprise.common.payload.request.SubscriptionRequestDto;
@@ -40,7 +42,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -90,13 +91,7 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setTier(tenant.getTier() != null ? tenant.getTier() : Tier.FREE);
 
 		if (tenant.getStripeSubscription() == null) {
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-			List<Tier> usedTrials = Arrays.stream(new Tier[] { Tier.CORE, Tier.PRO })
-				.filter(t -> stripeSubscriptionHistoryDao.existsByTenantNameAndSubscriptionStatusAndTier(
-						tenant.getTenantName(), SubscriptionStatus.FREE_TRIAL, t))
-				.toList();
-			tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
-			responseDto.setUsedTrials(usedTrials);
+			responseDto.setUsedTrials(getUsedTrials(tenant.getTenantName()));
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -104,11 +99,11 @@ public class StripeServiceImpl implements StripeService {
 			Subscription subscription = Subscription.retrieve(tenant.getStripeSubscription().getSubscriptionId());
 			responseDto.setSubscriptionId(subscription.getId());
 			if (subscription.getCancelAt() != null) {
-				responseDto.setCancellationDate(Instant.ofEpochSecond(subscription.getCancelAt()));
+				responseDto.setCancellationDate(DateTimeUtils.epochSecondToInstant(subscription.getCancelAt()));
 			}
 
 			responseDto.setNextBillingDate(subscription.getCurrentPeriodEnd() != null
-					? Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()) : null);
+					? DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()) : null);
 
 			responseDto.setTotalCost(subscription.getItems()
 				.getData()
@@ -120,9 +115,9 @@ public class StripeServiceImpl implements StripeService {
 			Long trialEnd = subscription.getTrialEnd();
 			if (trialEnd != null) {
 				long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(),
-						Instant.ofEpochSecond(trialEnd).atOffset(ZoneOffset.UTC).toLocalDate());
-				responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
-				responseDto.setTrialEndDate(Instant.ofEpochSecond(trialEnd));
+							DateTimeUtils.epochSecondToUtcLocalDate(trialEnd));
+					responseDto.setTrialExpiredRemainingDays(Math.max(remainingDays, 0));
+					responseDto.setTrialEndDate(DateTimeUtils.epochSecondToInstant(trialEnd));
 			}
 
 			Long subscriptionQuantity = subscription.getItems()
@@ -140,13 +135,7 @@ public class StripeServiceImpl implements StripeService {
 		responseDto.setSubscriptionPlan(tenant.getSubscriptionPlan());
 		responseDto.setSubscriptionStatus(tenant.getSubscriptionStatus());
 
-		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		List<Tier> usedTrials = Arrays.stream(new Tier[] { Tier.CORE, Tier.PRO })
-			.filter(t -> stripeSubscriptionHistoryDao.existsByTenantNameAndSubscriptionStatusAndTier(
-					tenant.getTenantName(), SubscriptionStatus.FREE_TRIAL, t))
-			.toList();
-		tenantContext.setTenantAndSwitchSchema(tenant.getTenantName());
-		responseDto.setUsedTrials(usedTrials);
+		responseDto.setUsedTrials(getUsedTrials(tenant.getTenantName()));
 
 		return new ResponseEntityDto(false, responseDto);
 	}
@@ -164,18 +153,6 @@ public class StripeServiceImpl implements StripeService {
 		Map<Tier, Map<SubscriptionPlan, Double>> priceMap = new EnumMap<>(Tier.class);
 		priceMap.put(Tier.CORE, corePriceMap);
 		priceMap.put(Tier.PRO, proPriceMap);
-
-		return new ResponseEntityDto(false, priceMap);
-	}
-
-	@Override
-	public ResponseEntityDto getPricingPlansForTier(Tier tier) throws StripeException {
-		String monthlyPriceId = tier == Tier.PRO ? stripeProMonthlyPriceId : stripeCoreMonthlyPriceId;
-		String yearlyPriceId = tier == Tier.PRO ? stripeProYearlyPriceId : stripeCoreYearlyPriceId;
-
-		Map<SubscriptionPlan, Double> priceMap = new EnumMap<>(SubscriptionPlan.class);
-		priceMap.put(SubscriptionPlan.MONTH, Price.retrieve(monthlyPriceId).getUnitAmount() / 100.0);
-		priceMap.put(SubscriptionPlan.YEAR, Price.retrieve(yearlyPriceId).getUnitAmount() / 100.0);
 
 		return new ResponseEntityDto(false, priceMap);
 	}
@@ -430,6 +407,19 @@ public class StripeServiceImpl implements StripeService {
 				tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
 
 		return new ResponseEntityDto(false, "Tier upgrade initiated successfully");
+	}
+
+	private List<Tier> getUsedTrials(String tenantName) {
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		List<Tier> usedTrials = stripeSubscriptionHistoryDao
+			.findByTenantNameAndSubscriptionStatusAndTierIn(tenantName,
+					SubscriptionStatus.FREE_TRIAL, List.of(Tier.CORE, Tier.PRO))
+			.stream()
+			.map(StripeSubscriptionHistory::getTier)
+			.distinct()
+			.toList();
+		tenantContext.setTenantAndSwitchSchema(tenantName);
+		return usedTrials;
 	}
 
 	private String getPriceId(Tier tier, SubscriptionPlan plan) {

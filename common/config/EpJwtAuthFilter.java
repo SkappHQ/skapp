@@ -154,7 +154,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		List<?> rawTiers = jwtService.extractClaim(accessToken,
+		List<String> rawTiers = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TIERS, List.class));
 
 		List<Tier> tiers = rawTiers != null

@@ -7,6 +7,7 @@ import com.skapp.enterprise.common.payload.email.PaymentEmailStripeDynamicFields
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
+import com.skapp.enterprise.common.type.Tier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,16 +22,20 @@ public class StripeEmailServiceImpl implements StripeEmailService {
 	private final TenantContext tenantContext;
 
 	@Override
-	public void sendWelcomeToSkappProFreeTrialEmail(String userEmail, String trialEndDate, String tenantName) {
+	public void sendWelcomeToSkappFreeTrialEmail(String userEmail, String trialEndDate, String tenantName,
+			Tier tier) {
 
 		PaymentEmailStripeDynamicFields paymentEmailStripeDynamicFields = new PaymentEmailStripeDynamicFields();
 		paymentEmailStripeDynamicFields.setTrialEndDate(trialEndDate);
 
+		EpEmailBodyTemplates template = (tier == Tier.CORE)
+				? EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_CORE_FREE_TRIAL
+				: EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL;
+
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 
-		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1,
-				EpEmailBodyTemplates.PAYMENT_STRIPE_WELCOME_TO_SKAPP_PRO_FREE_TRIAL, paymentEmailStripeDynamicFields,
-				userEmail);
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_PAYMENT_V1, template,
+				paymentEmailStripeDynamicFields, userEmail);
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 	}

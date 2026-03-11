@@ -43,8 +43,11 @@ public class StripeSubscriptionHistory {
 	@Column(name = "subscription_end_date")
 	private Instant subscriptionEndDate;
 
-	@Column(name = "created_by_email")
-	private String createdByEmail;
+	@Column(name = "created_by")
+	private String createdBy;
+
+	@Column(name = "last_modified_by")
+	private String lastModifiedBy;
 
 	@Column(name = "last_modified_date")
 	private Instant lastModifiedDate;
