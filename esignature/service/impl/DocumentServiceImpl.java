@@ -1881,7 +1881,8 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldSignDto.setType(documentVersionField.getField().getType());
 		fieldSignDto.setSigned(true);
 
-		if (documentVersionField.getField().getType().equals(FieldType.TEXT)) {
+		if (documentVersionField.getField().getType().equals(FieldType.TEXT)
+				|| documentVersionField.getField().getType().equals(FieldType.DROPDOWN)) {
 			FieldSignContainerDto fieldSignContainerDto = eSignMapper
 				.fieldContainerToFieldSignContainerDto(documentVersionField.getField().getFieldContainer());
 			fieldSignDto.setFieldSignContainer(fieldSignContainerDto);

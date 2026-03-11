@@ -315,7 +315,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 		}
 		else if (FieldType.DROPDOWN.equals(fieldType)) {
-			addDropDown(field, contentStream, pageHeight, document);
+			addDropDown(field, contentStream, pageHeight, pageWidth, document);
 		}
 		else if (FieldType.TEXT.equals(fieldType)) {
 			addInputTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -689,16 +689,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
 
 		try {
 
 			FieldSignContainerDto container = field.getFieldSignContainer();
 
-			float height = field.getHeightPercentage();
-
-			float adjustedHeight = (height / 100f) * pageHeight;
+			float adjustedHeight = field.getHeight();
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedX = field.getXPosition();
@@ -729,11 +727,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float pageWidth, EsignImageType imageType) {
 
 		try {
-			float width = field.getWidthPercentage();
-			float height = field.getHeightPercentage();
-
-			float adjustedWidth = (width / 100f) * pageWidth;
-			float adjustedHeight = (height / 100f) * pageHeight;
+			float adjustedWidth = field.getWidth();
+			float adjustedHeight = field.getHeight();
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
@@ -787,11 +782,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
-			float width = field.getWidthPercentage();
-			float height = field.getHeightPercentage();
-
-			float adjustedWidth = (width / 100f) * pageWidth;
-			float adjustedHeight = (height / 100f) * pageHeight;
+			float adjustedWidth = field.getWidth();
+			float adjustedHeight = field.getHeight();
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedX = field.getXPosition();
