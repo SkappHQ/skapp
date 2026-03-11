@@ -657,13 +657,13 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		}
 
 		// Validate max 2 decimal places
-		BigDecimal widthBD = BigDecimal.valueOf(templateFieldDto.getWidthPercentage()).stripTrailingZeros();
+		BigDecimal widthBD = new BigDecimal(String.valueOf(templateFieldDto.getWidthPercentage()));
 		if (widthBD.scale() > 2) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 
-		BigDecimal heightBD = BigDecimal.valueOf(templateFieldDto.getHeightPercentage()).stripTrailingZeros();
+		BigDecimal heightBD = new BigDecimal(String.valueOf(templateFieldDto.getHeightPercentage()));
 		if (heightBD.scale() > 2) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);

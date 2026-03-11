@@ -618,12 +618,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		// Validate max 2 decimal places
-		BigDecimal widthBD = BigDecimal.valueOf(fieldDto.getWidthPercentage()).stripTrailingZeros();
+		BigDecimal widthBD = new BigDecimal(String.valueOf(fieldDto.getWidthPercentage()));
 		if (widthBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 
-		BigDecimal heightBD = BigDecimal.valueOf(fieldDto.getHeightPercentage()).stripTrailingZeros();
+		BigDecimal heightBD = new BigDecimal(String.valueOf(fieldDto.getHeightPercentage()));
 		if (heightBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
@@ -800,12 +800,12 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		// Validate max 2 decimal places
-		BigDecimal widthBD = BigDecimal.valueOf(advanceFieldDto.getWidthPercentage()).stripTrailingZeros();
+		BigDecimal widthBD = new BigDecimal(String.valueOf(advanceFieldDto.getWidthPercentage()));
 		if (widthBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 
-		BigDecimal heightBD = BigDecimal.valueOf(advanceFieldDto.getHeightPercentage()).stripTrailingZeros();
+		BigDecimal heightBD = new BigDecimal(String.valueOf(advanceFieldDto.getHeightPercentage()));
 		if (heightBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
