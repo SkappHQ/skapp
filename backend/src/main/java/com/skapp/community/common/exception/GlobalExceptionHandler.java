@@ -3,6 +3,7 @@ package com.skapp.community.common.exception;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.ExceptionLogFormatter;
 import com.skapp.community.common.util.MessageUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,8 +47,7 @@ public class GlobalExceptionHandler {
 			log.debug("Validation error on field '{}': {}", fieldError.getField(), fieldError.getDefaultMessage());
 		}
 
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true, errorResponse), status);
 	}
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleAccessDeniedException(AccessDeniedException e) {
 		HttpStatus status = HttpStatus.FORBIDDEN;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true,
 				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED)), status);
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
 			InsufficientAuthenticationException e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
 			InternalAuthenticationServiceException e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true,
 				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)), status);
@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleBadCredentialsException(BadCredentialsException e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ModuleException.class)
 	public ResponseEntity<ResponseEntityDto> handleModuleExceptions(ModuleException e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
-		logDetailedException(e, e.getMessageKey().name(), messageUtil.getMessage(e.getMessageKey()), status);
+		handleException(e, e.getMessageKey().name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
@@ -110,7 +110,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleEntityNotFoundExceptions(EntityNotFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
-		logDetailedException(e, e.getMessageKey().name(), messageUtil.getMessage(e.getMessageKey()), status);
+		handleException(e, e.getMessageKey().name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
@@ -127,7 +127,7 @@ public class GlobalExceptionHandler {
 			}
 		}
 
-		logDetailedException(e, e.getMessageKey().name(), messageUtil.getMessage(e.getMessageKey()), status);
+		handleException(e, e.getMessageKey().name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true, errorResponse), status);
 	}
@@ -136,7 +136,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleNoHandlerFoundException(NoHandlerFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_NO_HANDLER_FOUND);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_NO_HANDLER_FOUND.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_NO_HANDLER_FOUND.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -147,8 +147,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(SQLException.class)
 	public ResponseEntity<ResponseEntityDto> handleSQLException(SQLException e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -159,8 +158,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(DataAccessException.class)
 	public ResponseEntity<ResponseEntityDto> handleDataAccessException(DataAccessException e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -171,8 +169,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ResponseEntityDto> handleExceptions(Exception e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_MODULE_EXCEPTION);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_MODULE_EXCEPTION.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_MODULE_EXCEPTION.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -183,12 +180,10 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ServletException.class)
 	public ResponseEntity<ResponseEntityDto> handleServletException(ServletException e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		String message = e.getMessage();
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_SERVLET_EXCEPTION.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_SERVLET_EXCEPTION.name(), status);
 
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_SERVLET_EXCEPTION)),
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, e.getMessage(), CommonMessageConstant.COMMON_ERROR_SERVLET_EXCEPTION)),
 				status);
 	}
 
@@ -196,7 +191,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleTooManyRequestException(ServletException e) {
 		HttpStatus status = HttpStatus.TOO_MANY_REQUESTS;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true,
 				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION)),
@@ -207,7 +202,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleIOException(IOException e) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION);
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true,
 				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_IO_EXCEPTION)), status);
@@ -218,7 +213,7 @@ public class GlobalExceptionHandler {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN,
 				new Object[] { e.getCookieName() });
-		logDetailedException(e, CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN.name(), message, status);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_MISSING_COOKIE_IN_TOKEN.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
@@ -226,39 +221,21 @@ public class GlobalExceptionHandler {
 				status);
 	}
 
-	protected void logDetailedException(Exception e, String messageKey, String message, HttpStatus status) {
-		String apiPath = request.getRequestURI();
-		String method = request.getMethod();
-		String redColor = "\u001B[31m";
-		String resetColor = "\u001B[0m";
+	protected void handleException(Exception e, String messageKey, HttpStatus status) {
 
-		StringBuilder errorMessage = new StringBuilder();
-		errorMessage.append(e.getMessage());
+		logException(e, messageKey, status);
 
-		if (e.getCause() != null) {
-			errorMessage.append(" - ").append(e.getCause().getMessage());
-		}
-		if (e.getSuppressed().length > 0) {
-			errorMessage.append(" - ").append(e.getSuppressed()[0].getMessage());
-		}
-		if (e.getStackTrace().length > 0) {
-			errorMessage.append(" - ")
-				.append(e.getStackTrace()[0].getClassName())
-				.append(" - ")
-				.append(e.getStackTrace()[0].getMethodName());
-		}
+		reportException(e);
+	}
 
-		String errorLog = "\n" + redColor + "==================== Database Exception Occurred ====================\n"
-				+ String.format("Method:              %s%n", method)
-				+ String.format("API Path:            %s%n", apiPath)
-				+ String.format("Exception Type:      %s%n", e.getClass().getSimpleName())
-				+ String.format("Status Code:         %d%n", status.value())
-				+ String.format("Key:                 %s%n", messageKey)
-				+ String.format("Message:             %s%n", message)
-				+ String.format("Exception Message:   %s%n", errorMessage)
-				+ "=====================================================================" + resetColor;
-
+	private void logException(Exception e, String messageKey, HttpStatus status) {
+		String errorLog = ExceptionLogFormatter.format("Global Exception", request.getMethod(), request.getRequestURI(),
+				e, messageKey, status.value());
 		log.error(errorLog);
+	}
+
+	protected void reportException(Exception e) {
+		// No-op: overridden by enterprise to report to external services
 	}
 
 }

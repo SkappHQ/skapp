@@ -67,7 +67,7 @@ export const handleNotifyRow = ({
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED
   ) {
     if (resourceId && !isNaN(Number(resourceId))) {
-      router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
+      router.push(ROUTES.SIGN.SENT_INFO.ID(Number(resourceId)));
     }
   }
   mutate(id);
