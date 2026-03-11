@@ -43,9 +43,9 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	String RESOURCE_BASE_PATH = "common/";
 
-	String FONT_BASE_PATH = "fonts/";
+	String FONT_BASE_PATH = RESOURCE_BASE_PATH + "fonts/";
 
-	String SVG_BASE_PATH = "svgs/";
+	String SVG_BASE_PATH = RESOURCE_BASE_PATH + "svgs/";
 
 	String TTF_FILE_EXTENSION = ".ttf";
 
@@ -218,7 +218,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	public byte[] downloadFontAsBytes(String folderName, String fontVariant) {
 
 		String filename = folderName + fontVariant + TTF_FILE_EXTENSION;
-		String filePath = RESOURCE_BASE_PATH + FONT_BASE_PATH + folderName + "/" + filename;
+		String filePath = FONT_BASE_PATH + folderName + "/" + filename;
 
 		String s3Key = bucketName + "/" + filePath;
 		String bucket = bucketName;
@@ -233,7 +233,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	@Override
 	public byte[] downloadSvgImageAsBytes(String fileName) {
 
-		String filePath = RESOURCE_BASE_PATH + SVG_BASE_PATH + fileName;
+		String filePath = SVG_BASE_PATH + fileName;
 
 		String s3Key = bucketName + "/" + filePath;
 		String bucket = bucketName;

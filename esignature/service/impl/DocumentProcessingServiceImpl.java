@@ -304,7 +304,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	}
 
 	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
-					PDDocument document) {
+			PDDocument document) {
 
 		FieldType fieldType = field.getType();
 
@@ -315,10 +315,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 		}
 		else if (FieldType.DROPDOWN.equals(fieldType)) {
-			addDropDown(field, contentStream, pageHeight, pageWidth, document);
+			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
 		}
 		else if (FieldType.TEXT.equals(fieldType)) {
-			addInputTextField(field, contentStream, pageHeight, pageWidth, document);
+			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
 		}
 		else {
 
@@ -689,46 +689,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		addImage(field, contentStream, document, pageHeight, pageWidth, type);
 	}
 
-	private void addDropDown(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
-			PDDocument document) {
-
-		try {
-
-			FieldSignContainerDto container = field.getFieldSignContainer();
-
-			float adjustedHeight = field.getHeight();
-
-			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedX = field.getXPosition();
-			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-
-			// To vertically center the text, we calculate the center of the field and
-			// adjust by half the font size
-			float verticalCenter = adjustedY + (adjustedHeight / 2.0f) - (container.getFontSize() / 2.0f);
-
-			contentStream.beginText();
-			PDType0Font font = loadFont(document);
-			contentStream.setFont(font, container.getFontSize());
-
-			// Position text at adjusted coordinates
-			contentStream.newLineAtOffset(adjustedX, verticalCenter);
-			contentStream.showText(field.getFieldValue());
-			contentStream.endText();
-		}
-		catch (Exception e) {
-			log.error("Error rendering dropdown field to PDF", e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
-					new String[] { field.getType().toString() });
-		}
-
-	}
-
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
 			float pageWidth, EsignImageType imageType) {
 
 		try {
-			float adjustedWidth = field.getWidth();
-			float adjustedHeight = field.getHeight();
+			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
+			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
@@ -765,7 +731,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addInputTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addAdvanceTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			float pageWidth, PDDocument document) {
 
 		try {
@@ -782,12 +748,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
-			float adjustedWidth = field.getWidth();
-			float adjustedHeight = field.getHeight();
+			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
+			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedX = field.getXPosition();
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+			float adjustedX = field.getXPosition();
 
 			// Build font-style CSS
 			String fontWeight = EsignUtil.resolveFontWeight(isBold);
