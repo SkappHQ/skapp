@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SystemVersionService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.type.SystemVersionTypes;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -64,6 +65,8 @@ public class StripeServiceImpl implements StripeService {
 	private final SystemVersionService systemVersionService;
 
 	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
+
+	private final MessageUtil messageUtil;
 
 	@Value("${stripe.prices.core-monthly-price-id}")
 	private String stripeCoreMonthlyPriceId;
@@ -406,7 +409,7 @@ public class StripeServiceImpl implements StripeService {
 				"upgradeTierSubscription: Successfully initiated tier upgrade for tenant={} to tier={} plan={} withTrial={}",
 				tenantId, requestedTier, subscriptionRequestDto.getSubscriptionPlan(), !hadTrialForRequestedTier);
 
-		return new ResponseEntityDto(false, "Tier upgrade initiated successfully");
+		return new ResponseEntityDto(false, messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_TIER_UPGRADE_INITIATED));
 	}
 
 	private List<Tier> getUsedTrials(String tenantName) {
