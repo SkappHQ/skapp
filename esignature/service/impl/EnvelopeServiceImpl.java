@@ -1288,9 +1288,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		currentOwnerNode.put("value", newOwner.getName());
 		metadata.add(currentOwnerNode);
 
-		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-				AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
-		auditTrailDao.save(auditTrail);
+		if (envelope.getStatus() != EnvelopeStatus.COMPLETED) {
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+					AuditAction.ENVELOPE_CUSTODY_TRANSFERRED, addressBook, ipAddress, metadata);
+			auditTrailDao.save(auditTrail);
+		}
 
 		log.info("transferEnvelopeCustody: execution ended for envelope ID: {}", envelopeId);
 		return new ResponseEntityDto(false, "Envelope custody transferred successfully.");
@@ -1463,10 +1465,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			envelopeDao.save(envelope);
 
-			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-					AuditAction.ENVELOPE_EXPIRED, null, null, null);
+			if (envelope.getStatus() != EnvelopeStatus.COMPLETED) {
 
-			auditTrailDao.save(auditTrail);
+				AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+						AuditAction.ENVELOPE_EXPIRED, null, null, null);
+
+				auditTrailDao.save(auditTrail);
+			}
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
