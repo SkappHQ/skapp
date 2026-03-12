@@ -239,8 +239,7 @@ public enum EsignMessageConstant implements MessageConstant {
 
 	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
 
-	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required");
-	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
+	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required"),
 	ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER("ep.esign.error.mfa.feature.not.available.for.current.tier"),
 	ESIGN_ERROR_SMS_MFA_FEATURE_AVAILABLE_ONLY_FOR_ACTIVE_PRO_TIER(
 			"ep.esign.error.sms.mfa.feature.available.only.for.active.pro.tier"),

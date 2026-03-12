@@ -494,11 +494,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		validateSigningOrder(recipientDtos);
 
-		Tier tier = epUserService.getCurrentUserTier();
+		List<Tier> tierList = epUserService.getCurrentUserTiers();
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 
 		// Actual Pro Tier Validation
-		validateMfaSmsConfigWithTier(recipientDtos, tier, tenantStatus);
+		validateMfaSmsConfigWithTier(recipientDtos, tierList, tenantStatus);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -557,7 +557,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			if (recipientDto.getAdvanceFieldContainers() != null) {
 
 				// Actual Pro Tier Validation
-				if (!tier.equals(Tier.PRO)) {
+				if (!tierList.contains(Tier.PRO)) {
 					throw new ModuleException(
 							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 				}
@@ -585,7 +585,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 	}
 
-	private void validateMfaSmsConfigWithTier(List<RecipientDto> recipientDtos, Tier tier, TenantStatus tenantStatus) {
+	private void validateMfaSmsConfigWithTier(List<RecipientDto> recipientDtos, List<Tier> tierList,
+			TenantStatus tenantStatus) {
 
 		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
 			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
@@ -594,7 +595,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		EsignConfig esignConfig = esignConfigRepository.findFirstBy()
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_CONFIG_NOT_FOUND));
 
-		boolean isActiveProTier = tier.equals(Tier.PRO) && tenantStatus.equals(TenantStatus.ACTIVE);
+		boolean isActiveProTier = tierList.contains(Tier.PRO) && tenantStatus.equals(TenantStatus.ACTIVE);
 
 		if (Boolean.TRUE.equals(esignConfig.getIsMfaEnabled()) && !smsVerificationEnabledRecipients.isEmpty()
 				&& !isActiveProTier) {

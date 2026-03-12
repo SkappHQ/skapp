@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TemplateDocumentServiceImpl implements TemplateDocumentService {
@@ -48,10 +50,10 @@ public class TemplateDocumentServiceImpl implements TemplateDocumentService {
 	@Override
 	public ResponseEntityDto saveDocumentTemplate(DocumentDto documentDto) {
 
-		Tier tier = epUserService.getCurrentUserTier();
+		List<Tier> tierList = epUserService.getCurrentUserTiers();
 
 		// Actual Pro Tier Validation
-		if (!tier.equals(Tier.PRO)) {
+		if (!tierList.contains(Tier.PRO)) {
 			throw new ModuleException(
 					EsignMessageConstant.ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 		}
