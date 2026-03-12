@@ -79,7 +79,7 @@ public class EPSecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions",
 						"/internal/v1/ep/jobs", "/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
-						"/internal/v1/ep/organization/timezone")
+						"/internal/v1/ep/organization/timezone", "internal/v1/ep/esign/migration")
 				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
@@ -107,7 +107,7 @@ public class EPSecurityConfig {
 						"/v2/ep/auth/session/signin/sso/google", "/v2/ep/auth/session/signin/sso/microsoft",
 						"/v1/ep/auth/session/code-challenge/verify", "/v1/ep/auth/session/signin/guest/verify-otp",
 						"/v1/ep/esign/document-link/send-otp", "/v1/ep/esign/document-link/resend-otp",
-						"/v1/ep/esign/document-link/verify-otp")
+						"/v1/ep/esign/document-link/verify-otp", "internal/v1/ep/esign/migration")
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
