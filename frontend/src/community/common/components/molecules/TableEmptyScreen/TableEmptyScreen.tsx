@@ -14,13 +14,6 @@ export interface TableEmptyScreenProps {
   button?: {
     id?: string;
     shouldBlink?: boolean;
-    buttonStyle?:
-      | "primary"
-      | "secondary"
-      | "tertiary"
-      | "error"
-      | "tertiary"
-      | "transparent";
     label?: string;
     startIcon?: IconName;
     endIcon?: IconName;
@@ -38,9 +31,7 @@ export interface TableEmptyScreenProps {
 const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
   title,
   description,
-  button = {
-    buttonStyle: "primary"
-  },
+  button = {},
   customStyles
 }) => {
   const theme: Theme = useTheme();
@@ -75,7 +66,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         {button?.label && (
           <ButtonV2
             id={button?.id}
-            variant={button?.buttonStyle}
+            variant="primary"
             fullWidth={false}
             onClick={button?.onClick}
             aria-describedby={descriptionId}

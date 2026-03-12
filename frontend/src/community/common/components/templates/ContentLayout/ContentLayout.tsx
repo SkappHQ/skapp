@@ -60,13 +60,6 @@ interface Props {
   secondaryBtnIconName?: IconName;
   isBackButtonVisible?: boolean;
   isDividerVisible?: boolean;
-  primaryButtonType?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "error"
-    | "tertiary"
-    | "transparent";
   onPrimaryButtonClick?: () => void;
   onSecondaryButtonClick?: () => void;
   subtitleNextToTitle?: string;
@@ -104,7 +97,6 @@ const ContentLayout = ({
   children,
   primaryButtonText,
   secondaryBtnText,
-  primaryButtonType,
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
   isBackButtonVisible = false,
@@ -340,7 +332,7 @@ const ContentLayout = ({
             {primaryButtonText && (
               <ButtonV2
                 fullWidth={isBelow600}
-                variant={primaryButtonType ?? "primary"}
+                variant="primary"
                 size={"md"}
                 isLoading={isPrimaryBtnLoading}
                 onClick={onPrimaryButtonClick}

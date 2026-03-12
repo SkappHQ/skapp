@@ -18,20 +18,6 @@ interface ConfirmationModalProps {
   cancelLabel?: string;
   confirmIcon?: IconName;
   cancelIcon?: IconName;
-  confirmButtonStyle?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "error"
-    | "tertiary"
-    | "transparent";
-  cancelButtonStyle?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "error"
-    | "tertiary"
-    | "transparent";
   isClosable?: boolean;
   isIconVisible?: boolean;
 }
@@ -47,8 +33,6 @@ const ConfirmationModal: FC<ConfirmationModalProps> = ({
   cancelLabel,
   confirmIcon = IconName.RIGHT_ARROW_ICON,
   cancelIcon = IconName.CLOSE_ICON,
-  confirmButtonStyle = "primary",
-  cancelButtonStyle = "tertiary",
   isClosable = false,
   isIconVisible = false
 }) => {
@@ -71,7 +55,7 @@ const ConfirmationModal: FC<ConfirmationModalProps> = ({
 
         <Stack direction="column" spacing={2}>
           <ButtonV2
-            variant={confirmButtonStyle}
+            variant="primary"
             onClick={onConfirm}
             isLoading={isLoading}
             disabled={isLoading}
@@ -82,7 +66,7 @@ const ConfirmationModal: FC<ConfirmationModalProps> = ({
           </ButtonV2>
 
           <ButtonV2
-            variant={cancelButtonStyle}
+            variant="tertiary"
             onClick={onClose}
             disabled={isLoading}
             icon={<Icon name={cancelIcon} />}
