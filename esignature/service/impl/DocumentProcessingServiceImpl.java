@@ -309,10 +309,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		FieldType fieldType = field.getType();
 
 		if (FieldType.CHECKBOX.equals(fieldType)) {
-			addCheckbox(field, contentStream, pageHeight, pageWidth, document);
+			addCheckbox(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
+			addRadioButton(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.DROPDOWN.equals(fieldType)) {
 			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -672,29 +672,30 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			float pageWidth, PDDocument document) {
+			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
 				: EsignImageType.RADIO_BUTTON_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
-			float pageWidth, EsignImageType imageType) {
+			EsignImageType imageType) {
 
 		try {
-			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
-			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
+
+			float adjustedWidth = field.getWidth();
+			float adjustedHeight = field.getHeight();
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
