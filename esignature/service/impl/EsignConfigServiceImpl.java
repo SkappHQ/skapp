@@ -16,6 +16,8 @@ import com.skapp.enterprise.people.service.EpUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class EsignConfigServiceImpl implements EsignConfigService {
@@ -56,9 +58,9 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 		if (esignConfigDto.getIsMfaEnabled() != null) {
 
-			Tier tier = epUserService.getCurrentUserTier();
+			List<Tier> tierList = epUserService.getCurrentUserTiers();
 
-			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !tier.equals(Tier.PRO)) {
+			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !tierList.contains(Tier.PRO)) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
 			}
 
