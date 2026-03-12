@@ -239,6 +239,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED("ep.esign.error.field.option.valid.display.order.required"),
 
 	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
+	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required"),
 	ESIGN_ERROR_MERGE_ADVANCE_FIELD("ep.esign.error.merge.advance.field"),
 	ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED("ep.esign.error.field.width.percentage.required"),
 	ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED("ep.esign.error.field.height.percentage.required"),
