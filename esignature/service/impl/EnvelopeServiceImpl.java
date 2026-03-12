@@ -1449,7 +1449,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		Envelope envelope = envelopeOptional.get();
-		if (!EnvelopeStatus.EXPIRED.equals(envelope.getStatus())) {
+		if (!EnvelopeStatus.EXPIRED.equals(envelope.getStatus())
+				&& !EnvelopeStatus.COMPLETED.equals(envelope.getStatus())) {
 			envelope.setStatus(EnvelopeStatus.EXPIRED);
 
 			envelope.getRecipients().forEach(recipient -> {
@@ -1465,13 +1466,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			envelopeDao.save(envelope);
 
-			if (envelope.getStatus() != EnvelopeStatus.COMPLETED) {
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
+					AuditAction.ENVELOPE_EXPIRED, null, null, null);
 
-				AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(envelope, null,
-						AuditAction.ENVELOPE_EXPIRED, null, null, null);
-
-				auditTrailDao.save(auditTrail);
-			}
+			auditTrailDao.save(auditTrail);
 
 			log.info("Envelope ID: {} marked as EXPIRED in tenant: {}", envelopeId, TenantContext.getCurrentTenant());
 		}
