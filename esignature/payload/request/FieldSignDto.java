@@ -56,4 +56,6 @@ public class FieldSignDto {
 
 	private FieldSignContainerDto fieldSignContainer;
 
+	private FieldStyleDto fieldStyle;
+
 }

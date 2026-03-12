@@ -94,6 +94,7 @@ import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -113,7 +114,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -578,7 +578,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
-			validateFieldDtoConfigurationValues(fieldDto);
+			EsignValidations.validateEnvelopeFieldMetaData(fieldDto.getWidthPercentage(),
+					fieldDto.getHeightPercentage());
 
 			Field field = new Field();
 			field.setType(fieldDto.getType());
@@ -595,38 +596,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			return field;
 		}).toList();
-	}
-
-	private void validateFieldDtoConfigurationValues(FieldDto fieldDto) {
-
-		if (fieldDto.getWidthPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
-		}
-
-		if (fieldDto.getHeightPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
-		}
-
-		if (fieldDto.getWidthPercentage() <= 0 || fieldDto.getWidthPercentage() >= 100) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
-		}
-
-		if (fieldDto.getHeightPercentage() <= 0 || fieldDto.getHeightPercentage() >= 100) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
-		}
-
-		// Validate max 2 decimal places
-		BigDecimal widthBD = new BigDecimal(String.valueOf(fieldDto.getWidthPercentage()));
-		if (widthBD.scale() > 2) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
-		}
-
-		BigDecimal heightBD = new BigDecimal(String.valueOf(fieldDto.getHeightPercentage()));
-		if (heightBD.scale() > 2) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
-		}
 	}
 
 	private List<Field> buildAdvanceFieldsForRecipient(List<FieldContainerDto> fieldContainerDtos,
@@ -696,7 +665,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			for (AdvanceFieldDto advanceFieldDto : fieldContainerDto.getFields()) {
 
-				validateAdvanceFieldDtoConfigurationValues(advanceFieldDto);
+				EsignValidations.validateEnvelopeFieldMetaData(advanceFieldDto.getWidthPercentage(),
+						advanceFieldDto.getHeightPercentage());
 
 				fieldList.add(createAdvanceField(advanceFieldDto, recipient, fieldContainer, existingOptionValue,
 						existingDisplayOrder));
@@ -780,38 +750,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER);
 		}
 
-	}
-
-	private void validateAdvanceFieldDtoConfigurationValues(AdvanceFieldDto advanceFieldDto) {
-
-		if (advanceFieldDto.getWidthPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
-		}
-
-		if (advanceFieldDto.getHeightPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
-		}
-
-		if (advanceFieldDto.getWidthPercentage() <= 0 || advanceFieldDto.getWidthPercentage() >= 100) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
-		}
-
-		if (advanceFieldDto.getHeightPercentage() <= 0 || advanceFieldDto.getHeightPercentage() >= 100) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
-		}
-
-		// Validate max 2 decimal places
-		BigDecimal widthBD = new BigDecimal(String.valueOf(advanceFieldDto.getWidthPercentage()));
-		if (widthBD.scale() > 2) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
-		}
-
-		BigDecimal heightBD = new BigDecimal(String.valueOf(advanceFieldDto.getHeightPercentage()));
-		if (heightBD.scale() > 2) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
-		}
 	}
 
 	private void processVoidRequest(Envelope envelope) {

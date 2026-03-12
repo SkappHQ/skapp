@@ -33,6 +33,7 @@ import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
+import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
@@ -1881,15 +1882,16 @@ public class DocumentServiceImpl implements DocumentService {
 		fieldSignDto.setType(documentVersionField.getField().getType());
 		fieldSignDto.setSigned(true);
 
+		Field field = documentVersionField.getField();
+		FieldStyleDto fieldStyleDto = eSignMapper.fieldToFieldStyleDto(documentVersionField.getField());
+
+		fieldSignDto.setFieldStyle(fieldStyleDto);
+
 		if (documentVersionField.getField().getType().equals(FieldType.TEXT)
 				|| documentVersionField.getField().getType().equals(FieldType.DROPDOWN)) {
 			FieldSignContainerDto fieldSignContainerDto = eSignMapper
-				.fieldContainerToFieldSignContainerDto(documentVersionField.getField().getFieldContainer());
-			fieldSignContainerDto.setHorizontalPadding(documentVersionField.getField().getHorizontalPadding());
-			fieldSignContainerDto.setVerticalPadding(documentVersionField.getField().getVerticalPadding());
-			fieldSignContainerDto.setTextLineHeight(documentVersionField.getField().getTextLineHeight());
+				.fieldContainerToFieldSignContainerDto(field.getFieldContainer());
 			fieldSignDto.setFieldSignContainer(fieldSignContainerDto);
-
 		}
 
 		return fieldSignDto;

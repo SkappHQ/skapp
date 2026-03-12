@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.util;
 
 import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
+import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -30,16 +31,16 @@ public class FontStyleExtractorUtil {
 		return container != null && Boolean.TRUE.equals(container.getIsUnderline());
 	}
 
-	public static float extractHorizontalPadding(FieldSignContainerDto container) {
-		return container.getHorizontalPadding();
+	public static float extractHorizontalPadding(FieldStyleDto fieldStyle) {
+		return fieldStyle.getHorizontalPadding();
 	}
 
-	public static float extractVerticalPadding(FieldSignContainerDto container) {
-		return container.getVerticalPadding();
+	public static float extractVerticalPadding(FieldStyleDto fieldStyle) {
+		return fieldStyle.getVerticalPadding();
 	}
 
-	public static float extractLineHeight(FieldSignContainerDto container) {
-		return container.getTextLineHeight();
+	public static float extractLineHeight(FieldStyleDto fieldStyle) {
+		return fieldStyle.getTextLineHeight();
 	}
 
 }
