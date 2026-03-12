@@ -340,7 +340,6 @@ const routes = [
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
     hasSubTree: false,
-    badge: "New",
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.ATTENDANCE_ADMIN,
