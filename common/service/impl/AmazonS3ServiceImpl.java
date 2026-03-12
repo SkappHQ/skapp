@@ -215,7 +215,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 	}
 
 	@Override
-	public byte[] downloadFontAsBytes(String folderName, String fontVariant) {
+	public InputStream downloadFontAsStream(String folderName, String fontVariant) {
 
 		String filename = folderName + fontVariant + TTF_FILE_EXTENSION;
 		String filePath = FONT_BASE_PATH + folderName + "/" + filename;
@@ -225,13 +225,11 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 		log.info("[FontLoad] Loading font from S3: {}", filePath);
 
-		byte[] bytes = downloadFileAsBytes(bucket, s3Key);
-		log.info("[FontLoad] Loaded font '{}' ({} KB)", filePath, bytes.length / 1024);
-		return bytes;
+		return downloadFile(bucket, s3Key);
 	}
 
 	@Override
-	public byte[] downloadSvgImageAsBytes(String fileName) {
+	public InputStream downloadSvgImageAsStream(String fileName) {
 
 		String filePath = SVG_BASE_PATH + fileName;
 
@@ -240,9 +238,7 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 		log.info("[ImageLoad] Loading svg from S3: {}", filePath);
 
-		byte[] bytes = downloadFileAsBytes(bucket, s3Key);
-		log.info("[ImageLoad] Loaded svg '{}' ({} KB)", filePath, bytes.length / 1024);
-		return bytes;
+		return downloadFile(bucket, s3Key);
 	}
 
 	@Override

@@ -29,8 +29,8 @@ public interface AmazonS3Service {
 
 	ResponseEntityDto getSignedUrlForEnvelopeTemplate(AmazonS3SignedUrlRequestDto amazonS3SignedUrlRequestDto);
 
-	byte[] downloadFontAsBytes(String folderName, String fontVariant);
+	InputStream downloadFontAsStream(String folderName, String fontVariant);
 
-	byte[] downloadSvgImageAsBytes(String fileName);
+	InputStream downloadSvgImageAsStream(String fileName);
 
 }

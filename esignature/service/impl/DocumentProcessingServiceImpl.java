@@ -694,16 +694,20 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
 			float pageWidth, EsignImageType imageType) {
 
-		try {
-			float adjustedWidth = field.getWidth();
-			float adjustedHeight = field.getHeight();
+		float adjustedWidth = field.getWidth();
+		float adjustedHeight = field.getHeight();
 
-			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-			float adjustedX = field.getXPosition();
+		// PDF Y-axis starts from bottom-left; convert from top-left origin
+		float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+		float adjustedX = field.getXPosition();
 
-			// Load SVG bytes from S3
-			byte[] svgBytes = amazonS3Service.downloadSvgImageAsBytes(imageType.getFilename());
+		// Load SVG bytes from S3
+		try (InputStream svgStream = amazonS3Service.downloadSvgImageAsStream(imageType.getFilename());
+				ByteArrayOutputStream svgBuffer = new ByteArrayOutputStream()) {
+
+			svgStream.transferTo(svgBuffer);
+
+			byte[] svgBytes = svgBuffer.toByteArray();
 
 			// Build HTML that embeds the SVG as a base64 data URI image
 			String html = EsignUtil.buildSvgImageHtml(adjustedWidth, adjustedHeight, svgBytes);
@@ -830,11 +834,15 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
 			if (folderName != null) {
-				try {
-					byte[] fontBytes = amazonS3Service.downloadFontAsBytes(folderName, REGULAR_FONT_VARIANT);
-					if (fontBytes != null) {
-						builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss);
-					}
+				// Load Font bytes from S3
+				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, REGULAR_FONT_VARIANT);
+						ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream()) {
+
+					fontStream.transferTo(fontBuffer);
+
+					byte[] fontBytes = fontBuffer.toByteArray();
+
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss);
 				}
 				catch (Exception e) {
 					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
