@@ -16,6 +16,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import { TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -254,7 +255,9 @@ export function middleware(request: NextRequest) {
 
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-      isCoreOrProTier(claims?.tier)
+      isCoreOrProTier(
+        (claims?.tiers ?? (claims?.tier ? [claims.tier] : [])) as TierEnum[]
+      )
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)

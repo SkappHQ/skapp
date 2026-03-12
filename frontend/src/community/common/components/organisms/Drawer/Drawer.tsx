@@ -40,6 +40,7 @@ import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
+import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
@@ -55,7 +56,6 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -120,7 +120,7 @@ const Drawer = (): JSX.Element => {
     () =>
       getDrawerRoutes({
         userRoles: user?.roles,
-        tier: user?.tier ?? "",
+        tiers: user?.tiers ?? [],
         isEnterprise,
         globalLoginMethod,
         tenantID: tenantID as string,
