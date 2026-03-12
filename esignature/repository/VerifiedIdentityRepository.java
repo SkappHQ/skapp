@@ -19,4 +19,15 @@ public interface VerifiedIdentityRepository extends JpaRepository<VerifiedIdenti
 	 */
 	Optional<VerifiedIdentity> findByRecipientIdAndDocumentId(Long recipientId, Long documentId);
 
+	/**
+	 * Check if a verified identity exists for a recipient with no document (auth-only
+	 * sessions).
+	 */
+	boolean existsByRecipientIdAndDocumentIdIsNull(Long recipientId);
+
+	/**
+	 * Find verified identity for a recipient with no document (auth-only sessions).
+	 */
+	Optional<VerifiedIdentity> findByRecipientIdAndDocumentIdIsNull(Long recipientId);
+
 }

@@ -361,6 +361,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
+		if (recipient.requiresEidIdentification() && !recipient.isEidIdentificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED);
+		}
+
 		validateTokenFlows(isDocAccess, recipient, documentId);
 
 		RecipientResponseDto recipientResponseDto = eSignMapper.recipientToRecipientResponseDto(recipient);

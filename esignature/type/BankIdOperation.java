@@ -10,6 +10,8 @@ package com.skapp.enterprise.esignature.type;
  */
 public enum BankIdOperation {
 
+	AUTH("auth"),
+
 	SIGN("sign"),
 
 	COLLECT("collect"),

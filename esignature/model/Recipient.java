@@ -126,4 +126,20 @@ public class Recipient {
 		return eidConfig != null ? eidConfig.getVerifiedIdentity() : null;
 	}
 
+	public boolean requiresEidIdentification() {
+		return eidConfig != null && eidConfig.requiresIdentification();
+	}
+
+	public boolean isEidIdentificationComplete() {
+		return eidConfig == null || eidConfig.isIdentificationComplete();
+	}
+
+	public EidProviderType getEidIdentificationMethod() {
+		return eidConfig != null ? eidConfig.getEidIdentificationMethod() : EidProviderType.NONE;
+	}
+
+	public EidVerificationStatus getEidIdentificationStatus() {
+		return eidConfig != null ? eidConfig.getEidIdentificationStatus() : EidVerificationStatus.NOT_REQUIRED;
+	}
+
 }

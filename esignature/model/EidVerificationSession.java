@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import jakarta.persistence.CascadeType;
@@ -58,7 +59,7 @@ public class EidVerificationSession extends Auditable<String> {
 	private Recipient recipient;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "document_id", nullable = false)
+	@JoinColumn(name = "document_id", nullable = true)
 	private Document document;
 
 	@Enumerated(EnumType.STRING)
@@ -68,6 +69,10 @@ public class EidVerificationSession extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 30)
 	private EidVerificationStatus status;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "flow_type", nullable = false, length = 10)
+	private EidFlowType flowType;
 
 	/**
 	 * Provider-specific session identifier (e.g., BankID orderRef).
@@ -85,7 +90,7 @@ public class EidVerificationSession extends Auditable<String> {
 	 * SHA-256 hash of the document being signed. This creates cryptographic binding
 	 * between the signature and the specific document version.
 	 */
-	@Column(name = "document_hash", nullable = false, length = 64)
+	@Column(name = "document_hash", nullable = true, length = 64)
 	private String documentHash;
 
 	/**

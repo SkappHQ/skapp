@@ -64,6 +64,23 @@ public interface EidProvider {
 	void cancelVerification(EidVerificationSession session);
 
 	/**
+	 * Initiate an identification-only session (auth flow, no document hash).
+	 *
+	 * <p>
+	 * For BankID, this calls the /auth endpoint which creates an identification order
+	 * that verifies the user's identity without binding to a specific document hash.
+	 * </p>
+	 * @param recipientId ID of the recipient being identified
+	 * @param documentId Optional ID of the document this identification is for
+	 * @param endUserIp IP address of the end user (required by BankID)
+	 * @param userVisibleData Optional text shown to the user in the eID app (plain text,
+	 * will be Base64 encoded)
+	 * @return Session with provider-specific data (autoStartToken, qrStartToken, etc.)
+	 */
+	EidVerificationSession initiateIdentification(Long recipientId, Long documentId, String endUserIp,
+			String userVisibleData);
+
+	/**
 	 * Get frontend configuration for this provider.
 	 *
 	 * <p>

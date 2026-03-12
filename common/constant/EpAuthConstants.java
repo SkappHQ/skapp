@@ -11,7 +11,7 @@ public class EpAuthConstants {
 
 	public static final String TENANT_STATUS = "tenantStatus";
 
-	public static final String TIER = "tier";
+	public static final String TIERS = "tiers";
 
 	public static final String ROLE_INTERNAL_API = "ROLE_INTERNAL_API";
 
