@@ -71,4 +71,13 @@ public class Field {
 	@JoinColumn(name = "field_option_id")
 	private FieldOption fieldOption;
 
+	@Column(name = "horizontal_padding")
+	private float horizontalPadding;
+
+	@Column(name = "vertical_padding")
+	private float verticalPadding;
+
+	@Column(name = "line_height")
+	private float textLineHeight;
+
 }

@@ -1885,7 +1885,11 @@ public class DocumentServiceImpl implements DocumentService {
 				|| documentVersionField.getField().getType().equals(FieldType.DROPDOWN)) {
 			FieldSignContainerDto fieldSignContainerDto = eSignMapper
 				.fieldContainerToFieldSignContainerDto(documentVersionField.getField().getFieldContainer());
+			fieldSignContainerDto.setHorizontalPadding(documentVersionField.getField().getHorizontalPadding());
+			fieldSignContainerDto.setVerticalPadding(documentVersionField.getField().getVerticalPadding());
+			fieldSignContainerDto.setTextLineHeight(documentVersionField.getField().getTextLineHeight());
 			fieldSignDto.setFieldSignContainer(fieldSignContainerDto);
+
 		}
 
 		return fieldSignDto;

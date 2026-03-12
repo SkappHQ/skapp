@@ -19,4 +19,10 @@ public class FieldSignContainerDto {
 
 	private Boolean isUnderline;
 
+	private float horizontalPadding;
+
+	private float verticalPadding;
+
+	private float textLineHeight;
+
 }

@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
@@ -693,8 +694,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float pageWidth, EsignImageType imageType) {
 
 		try {
-			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
-			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
+			float adjustedWidth = field.getWidth();
+			float adjustedHeight = field.getHeight();
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
@@ -743,6 +744,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			boolean isBold = FontStyleExtractorUtil.extractIsBold(container);
 			boolean isItalic = FontStyleExtractorUtil.extractIsItalic(container);
 			boolean isUnderline = FontStyleExtractorUtil.extractIsUnderline(container);
+			float horizontalPadding = FontStyleExtractorUtil.extractHorizontalPadding(container);
+			float verticalPadding = FontStyleExtractorUtil.extractVerticalPadding(container);
+			float lineHeight = FontStyleExtractorUtil.extractLineHeight(container);
 
 			// Resolve display name to enum type
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
@@ -756,13 +760,21 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedX = field.getXPosition();
 
 			// Build font-style CSS
-			String fontWeight = EsignUtil.resolveFontWeight(isBold);
-			String fontStyle = EsignUtil.resolveFontStyle(isItalic);
-			String textDecoration = EsignUtil.resolveTextDecoration(isUnderline);
-			String escapedValue = EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : "");
+			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
+			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
+			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
+			cssDto.setFontFamilyCss(fontFamily);
+			cssDto.setFontSize(String.valueOf(fontSize));
+			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
+			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
+			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
+			cssDto.setFontColor(fontColor);
+			cssDto.setHorizontalPadding(String.valueOf(horizontalPadding));
+			cssDto.setVerticalPadding(String.valueOf(verticalPadding));
+			cssDto.setLineHeight(String.valueOf(lineHeight));
+			cssDto.setEscapedValue(EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : ""));
 
-			String html = EsignUtil.buildTextFieldHtml(adjustedWidth, adjustedHeight, fontFamilyCss, fontSize,
-					fontWeight, fontStyle, textDecoration, fontColor, escapedValue);
+			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
 			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
