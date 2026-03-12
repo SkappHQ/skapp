@@ -144,6 +144,7 @@ const Search: FC<Props> = ({
   selectedIndex = -1
 }) => {
   const translateAria = useTranslator("commonAria", "components", "search");
+  const translateText = useTranslator("commonComponents", "search");
   const theme: Theme = useTheme();
   const ref = useRef<HTMLHeadingElement | null>(null);
   const [tabValue, setTabValue] = useState(0);
@@ -216,14 +217,14 @@ const Search: FC<Props> = ({
             fullWidth={false}
             onClick={() => searchButtonHandler("Individual")}
           >
-            {"Individual"}
+            {translateText(["individual"])}
           </ButtonV2>
           <ButtonV2
             variant={selectedTab === "Team" ? "secondary" : "tertiary"}
             fullWidth={false}
             onClick={() => searchButtonHandler("Team")}
           >
-            {"Team"}
+            {translateText(["team"])}
           </ButtonV2>
         </Stack>
       )}
