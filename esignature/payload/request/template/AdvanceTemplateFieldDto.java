@@ -46,4 +46,10 @@ public class AdvanceTemplateFieldDto {
 
 	private FieldOptionDto fieldOption;
 
+	private Float horizontalPadding;
+
+	private Float verticalPadding;
+
+	private Float textLineHeight;
+
 }

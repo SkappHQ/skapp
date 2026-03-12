@@ -24,6 +24,12 @@ public class AdvanceFieldTemplateDetailResponseDto {
 
 	private Float height;
 
+	private Float horizontalPadding;
+
+	private Float verticalPadding;
+
+	private Float textLineHeight;
+
 	private TemplateFieldOptionResponseDto templateFieldOption;
 
 }

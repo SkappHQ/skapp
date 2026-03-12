@@ -41,15 +41,16 @@ public class EsignValidations {
 		}
 
 		// Validate max 2 decimal places
-		BigDecimal widthBD = BigDecimal.valueOf(widthPercentage).stripTrailingZeros();
+		BigDecimal widthBD = new BigDecimal(String.valueOf(widthPercentage));
 		if (widthBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 
-		BigDecimal heightBD = BigDecimal.valueOf(heightPercentage).stripTrailingZeros();
+		BigDecimal heightBD = new BigDecimal(String.valueOf(heightPercentage));
 		if (heightBD.scale() > 2) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
+
 	}
 
 }

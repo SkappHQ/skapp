@@ -685,9 +685,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
 		field.setXPosition(advanceFieldDto.getXPosition());
 		field.setYPosition(advanceFieldDto.getYPosition());
-		field.setHorizontalPadding(advanceFieldDto.getHorizontalPadding());
-		field.setVerticalPadding(advanceFieldDto.getVerticalPadding());
-		field.setTextLineHeight(advanceFieldDto.getTextLineHeight());
+		field.setHorizontalPadding(
+				advanceFieldDto.getHorizontalPadding() != null ? advanceFieldDto.getHorizontalPadding() : 0);
+		field.setVerticalPadding(
+				advanceFieldDto.getVerticalPadding() != null ? advanceFieldDto.getVerticalPadding() : 0);
+		field.setTextLineHeight(advanceFieldDto.getTextLineHeight() != null ? advanceFieldDto.getTextLineHeight() : 0);
 		field.setRecipient(recipient);
 		field.setDocument(fieldDocument);
 		field.setFieldContainer(fieldContainer);

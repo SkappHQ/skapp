@@ -640,34 +640,32 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	private void validateFieldDtoConfigurationValues(TemplateFieldDto templateFieldDto) {
 
 		if (templateFieldDto.getWidthPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_REQUIRED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
 		}
 
 		if (templateFieldDto.getHeightPercentage() == null) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
 		}
 
 		if (templateFieldDto.getWidthPercentage() <= 0 || templateFieldDto.getWidthPercentage() >= 100) {
 			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
 		}
 
 		if (templateFieldDto.getHeightPercentage() <= 0 || templateFieldDto.getHeightPercentage() >= 100) {
 			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
 		}
 
 		// Validate max 2 decimal places
 		BigDecimal widthBD = new BigDecimal(String.valueOf(templateFieldDto.getWidthPercentage()));
 		if (widthBD.scale() > 2) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 
 		BigDecimal heightBD = new BigDecimal(String.valueOf(templateFieldDto.getHeightPercentage()));
 		if (heightBD.scale() > 2) {
-			throw new ModuleException(
-					EsignMessageConstant.ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
 		}
 	}
 
@@ -770,6 +768,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		TemplateDocument templateFieldDocument = templateDocumentDao.findById(advanceFieldDto.getTemplateDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND));
 		TemplateField templateField = esignTemplateMapper.advanceTemplateFieldDtoToTemplateField(advanceFieldDto);
+		templateField.setHorizontalPadding(
+				advanceFieldDto.getHorizontalPadding() != null ? advanceFieldDto.getHorizontalPadding() : 0);
+		templateField.setVerticalPadding(
+				advanceFieldDto.getVerticalPadding() != null ? advanceFieldDto.getVerticalPadding() : 0);
+		templateField
+			.setTextLineHeight(advanceFieldDto.getTextLineHeight() != null ? advanceFieldDto.getTextLineHeight() : 0);
 		templateField.setTemplateRecipient(templateRecipient);
 		templateField.setTemplateDocument(templateFieldDocument);
 		templateField.setTemplateFieldContainer(templateFieldContainer);

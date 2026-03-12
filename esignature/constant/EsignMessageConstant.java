@@ -253,17 +253,7 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.field.height.percentage.max.two.decimal.places"),
 	ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER("ep.esign.error.font.family.required.for.container"),
 	ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER("ep.esign.error.font.color.required.for.container"),
-	ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER("ep.esign.error.font.size.required.for.container"),
-	ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_REQUIRED("ep.esign.error.template.field.width.percentage.required"),
-	ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_REQUIRED("ep.esign.error.template.field.height.percentage.required"),
-	ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100(
-			"ep.esign.error.template.field.width.percentage.must.be.between.0.and.100"),
-	ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100(
-			"ep.esign.error.template.field.height.percentage.must.be.between.0.and.100"),
-	ESIGN_ERROR_TEMPLATE_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES(
-			"ep.esign.error.template.field.width.percentage.max.two.decimal.places"),
-	ESIGN_ERROR_TEMPLATE_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES(
-			"ep.esign.error.template.field.height.percentage.max.two.decimal.places");
+	ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER("ep.esign.error.font.size.required.for.container");
 
 	private final String messageKey;
 
