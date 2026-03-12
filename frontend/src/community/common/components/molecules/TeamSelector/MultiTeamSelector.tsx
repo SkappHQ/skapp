@@ -1,6 +1,6 @@
 import { Box, Chip } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -155,7 +155,7 @@ const MultiTeamSelector = ({
             })}
         </Box>
 
-        <Button
+        <ButtonV2
           variant={!isTeamListEmpty ? "tertiary" : "tertiary"}
           disabled={isTeamListEmpty}
           onClick={(event: MouseEvent<HTMLElement>) => {
@@ -173,7 +173,7 @@ const MultiTeamSelector = ({
                 (moduleAdminType && user?.roles?.includes(moduleAdminType))
               ? translateTexts(["allLabel"])
               : translateTexts(["noTeamTxt"])}
-        </Button>
+        </ButtonV2>
       </Box>
       <Popper
         anchorEl={anchorEl}

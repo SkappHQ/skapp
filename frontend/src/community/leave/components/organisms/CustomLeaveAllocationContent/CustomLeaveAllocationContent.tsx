@@ -6,12 +6,11 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CustomLeaveAllocationsTable from "~community/leave/components/molecules/CustomLeaveAllocationsTable/CustomLeaveAllocationsTable";
@@ -100,7 +99,14 @@ const CustomLeaveAllocationContent: FC = () => {
           sx={{ flex: 1, justifyContent: "flex-end" }}
         >
           {!showAddButton && (
-            <Button variant={"primary"} onClick={handleAddAllocation} icon={<Icon name={IconName.ADD_ICON} />} iconPosition="end">{translateText(["addLeaveAllocationBtn"])}</Button>
+            <ButtonV2
+              variant={"primary"}
+              onClick={handleAddAllocation}
+              icon={<Icon name={IconName.ADD_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["addLeaveAllocationBtn"])}
+            </ButtonV2>
           )}
         </Stack>
       </Stack>

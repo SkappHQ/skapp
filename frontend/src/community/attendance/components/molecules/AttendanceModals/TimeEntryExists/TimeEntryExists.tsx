@@ -1,4 +1,5 @@
 import { Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import { useAddManualTimeEntry } from "~community/attendance/api/AttendanceEmployeeApi";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
@@ -7,9 +8,8 @@ import {
   convertToUtc,
   getCurrentTimeZone
 } from "~community/attendance/utils/TimeUtils";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ToastType } from "~community/common/enums/ComponentEnums"
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -61,13 +61,27 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
       <Typography variant="body1" sx={{ pt: "1rem" }}>
         {translateText(["entryExistModalDes"])}
       </Typography>
-      <Button variant={"primary"} onClick={handleSubmit} icon={<Icon name={IconName.CHECK_ICON} />} iconPosition="end">{translateText(["confirmBtnTxt"])}</Button>
-      <Button variant={"tertiary"} onClick={() => {
+      <ButtonV2
+        variant={"primary"}
+        onClick={handleSubmit}
+        icon={<Icon name={IconName.CHECK_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["confirmBtnTxt"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() => {
           setIsEmployeeTimesheetModalOpen(true);
           setEmployeeTimesheetModalType(
             EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
           );
-        }} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnTxt"])}</Button>
+        }}
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtnTxt"])}
+      </ButtonV2>
     </>
   );
 };

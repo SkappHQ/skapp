@@ -6,12 +6,11 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
@@ -277,8 +276,20 @@ const RequestFilterMenuItems = ({
         ))}
         <Divider />
         <Stack direction="row" spacing="0.75rem" sx={{ pt: "0.75rem" }}>
-          <Button variant={"primary"} onClick={handleSubmit} aria-label="Apply filters">{translateText(["applyButtonText"])}</Button>
-          <Button variant={"tertiary"} onClick={handleResetFilters} disabled={isResetDisabled}>{translateText(["resetButtonText"])}</Button>
+          <ButtonV2
+            variant={"primary"}
+            onClick={handleSubmit}
+            aria-label="Apply filters"
+          >
+            {translateText(["applyButtonText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={handleResetFilters}
+            disabled={isResetDisabled}
+          >
+            {translateText(["resetButtonText"])}
+          </ButtonV2>
         </Stack>
       </Box>
     </Box>

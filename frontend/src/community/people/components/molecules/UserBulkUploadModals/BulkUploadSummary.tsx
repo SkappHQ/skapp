@@ -1,10 +1,9 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   BulkRecordErrorLogType,
@@ -77,7 +76,14 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
             : ""}
         {translateText(["commonUploadSummary"])}
       </Typography>
-      <Button variant={"primary"} onClick={handleDownloadErrorLogCSV} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{translateText(["addBulkUploadSummaryButton"])}</Button>
+      <ButtonV2
+        variant={"primary"}
+        onClick={handleDownloadErrorLogCSV}
+        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["addBulkUploadSummaryButton"])}
+      </ButtonV2>
     </Box>
   );
 };

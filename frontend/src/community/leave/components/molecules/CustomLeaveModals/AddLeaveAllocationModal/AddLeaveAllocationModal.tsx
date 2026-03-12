@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, {
   Dispatch,
@@ -8,9 +9,7 @@ import React, {
   useMemo
 } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -139,8 +138,23 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
         onSubmit={handleSubmit}
       />
       <Box sx={{ mt: "1rem" }}>
-        <Button variant={"primary"} onClick={() => onSubmit(values, onAddSuccess, onAddError)} disabled={isSaveDisabled} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveBtn"])}</Button>
-        <Button variant={"tertiary"} onClick={() => onCancel(values)} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtn"])}</Button>
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => onSubmit(values, onAddSuccess, onAddError)}
+          disabled={isSaveDisabled}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["saveBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => onCancel(values)}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
       </Box>
     </>
   );

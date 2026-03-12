@@ -1,10 +1,9 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -77,8 +76,23 @@ const LeaveCarryForwardSyncConfirmation = ({
         {translateTexts(["leaveCarryForwardModalDescription"]) ?? ""}
       </Typography>
       <Box>
-        <Button type={"submit"} onClick={() => mutate(leaveCarryForwardId)} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}</Button>
-        <Button variant={"tertiary"} type={"button"} onClick={handleClose} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateTexts(["leaveCarryForwardModalCancelBtn"])}</Button>
+        <ButtonV2
+          type={"submit"}
+          onClick={() => mutate(leaveCarryForwardId)}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          type={"button"}
+          onClick={handleClose}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardModalCancelBtn"])}
+        </ButtonV2>
       </Box>
     </Stack>
   );

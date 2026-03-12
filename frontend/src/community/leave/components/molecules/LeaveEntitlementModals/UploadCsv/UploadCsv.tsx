@@ -1,10 +1,9 @@
 import { Divider, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
@@ -173,8 +172,24 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         customError={customError}
       />
       <Divider sx={classes.divider} aria-hidden={true} />
-      <Button variant={"primary"} onClick={handleUploadBtnClick} disabled={!isValid} isLoading={leaveEntitlementBulkUploadPending} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["uploadButton"])}</Button>
-      <Button variant={"tertiary"} onClick={handleBackBtnClick} icon={<Icon name={IconName.LEFT_ARROW_ICON} />} iconPosition="start">{translateText(["goBackButton"])}</Button>
+      <ButtonV2
+        variant={"primary"}
+        onClick={handleUploadBtnClick}
+        disabled={!isValid}
+        isLoading={leaveEntitlementBulkUploadPending}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["uploadButton"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={handleBackBtnClick}
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["goBackButton"])}
+      </ButtonV2>
     </Stack>
   );
 };

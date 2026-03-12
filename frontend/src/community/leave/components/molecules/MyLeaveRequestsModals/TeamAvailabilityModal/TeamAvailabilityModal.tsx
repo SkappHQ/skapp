@@ -1,9 +1,8 @@
 import { Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { removeLetters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
@@ -79,16 +78,23 @@ const TeamAvailabilityModal = () => {
                 <AvatarGroup
                   avatars={data.employees}
                   componentStyles={classes.componentStyles}
-                  isHoverModal = {true}
+                  isHoverModal={true}
                 />
               )}
             </Stack>
           </Stack>
         ))}
       </Stack>
-      <Button variant={"tertiary"} onClick={() =>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() =>
           setMyLeaveRequestModalType(MyRequestModalEnums.APPLY_LEAVE)
-        } icon={<Icon name={IconName.LEFT_ARROW_ICON} />} iconPosition="start">{translateText(["goBackBtn"])}</Button>
+        }
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["goBackBtn"])}
+      </ButtonV2>
     </Stack>
   );
 };

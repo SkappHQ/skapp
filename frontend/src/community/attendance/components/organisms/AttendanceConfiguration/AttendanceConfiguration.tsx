@@ -1,5 +1,6 @@
 import { Close } from "@mui/icons-material";
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import {
@@ -7,11 +8,10 @@ import {
   useUpdateAttendanceConfiguration
 } from "~community/attendance/api/AttendanceAdminApi";
 import { AttendanceConfigurationType } from "~community/attendance/types/attendanceTypes";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
-import { ToastType } from "~community/common/enums/ComponentEnums"
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -153,9 +153,27 @@ const AttendanceConfiguration = (): JSX.Element => {
         </Box>
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>
-          <Button id="reset-button" variant={"tertiary"} onClick={handleCancelBtnClick} disabled={!isFormChanged()} icon={<Close />} iconPosition="end">{attendanceConfigurations(["cancelButtonText"]) ?? ""}</Button>
+          <ButtonV2
+            id="reset-button"
+            variant={"tertiary"}
+            onClick={handleCancelBtnClick}
+            disabled={!isFormChanged()}
+            icon={<Close />}
+            iconPosition="end"
+          >
+            {attendanceConfigurations(["cancelButtonText"]) ?? ""}
+          </ButtonV2>
 
-          <Button id="save-changes-button" variant={"primary"} onClick={handleSaveBtnClick} disabled={isSaving || !isFormChanged()} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{attendanceConfigurations(["saveButtonText"]) ?? ""}</Button>
+          <ButtonV2
+            id="save-changes-button"
+            variant={"primary"}
+            onClick={handleSaveBtnClick}
+            disabled={isSaving || !isFormChanged()}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {attendanceConfigurations(["saveButtonText"]) ?? ""}
+          </ButtonV2>
         </Stack>
         <ToastMessage
           {...toastMessage}

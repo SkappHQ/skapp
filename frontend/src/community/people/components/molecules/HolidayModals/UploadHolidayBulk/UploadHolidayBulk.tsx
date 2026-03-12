@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
@@ -193,7 +193,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
         }}
       />
 
-      <Button
+      <ButtonV2
         disabled={!isNewCalendarDetailsValid}
         variant={"primary"}
         onClick={() => handleSaveCalendarBtn()}
@@ -207,15 +207,15 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
         iconPosition="end"
       >
         {translateText(["UploadHolidays"])}
-      </Button>
-      <Button
+      </ButtonV2>
+      <ButtonV2
         variant={"tertiary"}
         onClick={onCloseClick}
         icon={<CloseIcon />}
         iconPosition="end"
       >
         {translateText(["cancelBtnText"])}
-      </Button>
+      </ButtonV2>
     </Box>
   );
 };

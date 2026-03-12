@@ -1,5 +1,5 @@
 import { Stack, SxProps, Theme, Typography, useTheme } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -73,7 +73,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         </Typography>
 
         {button?.label && (
-          <Button
+          <ButtonV2
             id={button?.id}
             variant={button?.buttonStyle}
             fullWidth={false}
@@ -90,7 +90,7 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
             iconPosition={button?.endIcon ? "end" : "start"}
           >
             {button?.label}
-          </Button>
+          </ButtonV2>
         )}
       </Stack>
     </Stack>

@@ -1,10 +1,9 @@
 import { Divider, Stack, Theme, Typography, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   FileRejectionType,
@@ -63,10 +62,25 @@ const AddAttachmentModal = () => {
         supportedFiles={".jpg, .pdf, .png, .jpeg"}
       />
       <Divider />
-      <Button variant={"primary"} onClick={() =>
+      <ButtonV2
+        variant={"primary"}
+        onClick={() =>
           setMyLeaveRequestModalType(MyRequestModalEnums.APPLY_LEAVE)
-        } disabled={attachmentError} icon={<Icon name={IconName.TICK_ICON} />} iconPosition="end">{translateText(["uploadBtn"])}</Button>
-      <Button variant={"tertiary"} onClick={onCancelBtnClick} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtn"])}</Button>
+        }
+        disabled={attachmentError}
+        icon={<Icon name={IconName.TICK_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["uploadBtn"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={onCancelBtnClick}
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtn"])}
+      </ButtonV2>
     </Stack>
   );
 };

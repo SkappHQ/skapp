@@ -1,13 +1,12 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import { Button } from "@rootcodelabs/skapp-ui";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 
 interface Props {
@@ -38,10 +37,18 @@ const YearSelector = ({ setYear }: Props): JSX.Element => {
   return (
     <>
       <Box>
-        <Button variant={"tertiary"} fullWidth={false} onClick={(event: MouseEvent<HTMLElement>) => {
+        <ButtonV2
+          variant={"tertiary"}
+          fullWidth={false}
+          onClick={(event: MouseEvent<HTMLElement>) => {
             setAnchorEl(event.currentTarget);
             setShowOverlay(true);
-          }} icon={<DropDownArrow />} iconPosition="end">{selectedYear.toString()}</Button>
+          }}
+          icon={<DropDownArrow />}
+          iconPosition="end"
+        >
+          {selectedYear.toString()}
+        </ButtonV2>
       </Box>
       <Popper
         anchorEl={anchorEl}

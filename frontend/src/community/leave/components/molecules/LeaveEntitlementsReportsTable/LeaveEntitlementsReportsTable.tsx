@@ -7,16 +7,15 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
-
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -264,15 +263,24 @@ const LeaveEntitlementsReportsTable: FC = () => {
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={1}>
               {leaveTypeButtons.map((leaveType) => (
-                <Button key={leaveType.id} fullWidth={false} variant={
+                <ButtonV2
+                  key={leaveType.id}
+                  fullWidth={false}
+                  variant={
                     selectedLeaveTypes.includes(leaveType.text)
                       ? "secondary"
                       : "tertiary"
-                  } onClick={() => handleLeaveTypeFilter(leaveType)} icon={
+                  }
+                  onClick={() => handleLeaveTypeFilter(leaveType)}
+                  icon={
                     selectedLeaveTypes.includes(leaveType.text) ? (
                       <Icon name={IconName.CHECK_CIRCLE_ICON} />
                     ) : undefined
-                  } iconPosition="start">{leaveType.text}</Button>
+                  }
+                  iconPosition="start"
+                >
+                  {leaveType.text}
+                </ButtonV2>
               ))}
             </Box>
           </FilterButton>
@@ -352,7 +360,15 @@ const LeaveEntitlementsReportsTable: FC = () => {
               setReportsPagination(value - 1)
             }
           />
-          <Button variant={"tertiary"} fullWidth={false} onClick={() => downloadCSV(SheetType.LeaveAllocation)} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{translateText(["exportBtnTxt"])}</Button>
+          <ButtonV2
+            variant={"tertiary"}
+            fullWidth={false}
+            onClick={() => downloadCSV(SheetType.LeaveAllocation)}
+            icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["exportBtnTxt"])}
+          </ButtonV2>
         </Stack>
       </Stack>
     </>

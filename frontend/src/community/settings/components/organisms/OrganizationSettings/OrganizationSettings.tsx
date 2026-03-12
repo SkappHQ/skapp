@@ -1,16 +1,15 @@
 import { Box, Divider, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { JSX, useEffect, useState } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useUpdateOrganizationDetails } from "~community/common/api/settingsApi";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Form from "~community/common/components/molecules/Form/Form";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
@@ -212,10 +211,29 @@ const OrganizationSettings = (): JSX.Element => {
           />
 
           <Stack sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-            <Button variant={"tertiary"} fullWidth={false} onClick={handleCancel} disabled={isLoading} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
-            <Button variant={"primary"} disabled={
+            <ButtonV2
+              variant={"tertiary"}
+              fullWidth={false}
+              onClick={handleCancel}
+              disabled={isLoading}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancelBtnText"])}
+            </ButtonV2>
+            <ButtonV2
+              variant={"primary"}
+              disabled={
                 !isInitialLoadComplete || !OrganisationForm.dirty || isLoading
-              } isLoading={isLoading} onClick={() => handleSubmit()} fullWidth={false} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveChangesBtnText"])}</Button>
+              }
+              isLoading={isLoading}
+              onClick={() => handleSubmit()}
+              fullWidth={false}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["saveChangesBtnText"])}
+            </ButtonV2>
           </Stack>
         </Box>
       </Form>

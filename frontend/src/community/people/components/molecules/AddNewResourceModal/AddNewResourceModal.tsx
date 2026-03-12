@@ -1,5 +1,5 @@
 import { Stack, Theme, useTheme } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { ChangeEvent, useEffect } from "react";
@@ -270,7 +270,7 @@ const AddNewResourceModal = () => {
       >
         {generalTexts(["addFullProfile"])}
       </Link>
-      <Button
+      <ButtonV2
         variant={"primary"}
         onClick={handleRefetch}
         disabled={
@@ -292,8 +292,8 @@ const AddNewResourceModal = () => {
         iconPosition="end"
       >
         {generalTexts(["save"])}
-      </Button>
-      <Button
+      </ButtonV2>
+      <ButtonV2
         variant={"tertiary"}
         onClick={closeModal}
         data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
@@ -301,7 +301,7 @@ const AddNewResourceModal = () => {
         iconPosition="end"
       >
         {generalTexts(["cancel"])}
-      </Button>
+      </ButtonV2>
     </Stack>
   );
 };

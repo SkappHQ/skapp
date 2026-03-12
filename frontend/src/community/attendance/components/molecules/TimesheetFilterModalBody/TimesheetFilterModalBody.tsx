@@ -1,5 +1,5 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
@@ -102,7 +102,7 @@ const TimesheetFilterModalBody = ({
         </Typography>
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
           {filterValues?.status?.map((status: FilterChipType) => (
-            <Button
+            <ButtonV2
               key={status?.value}
               fullWidth={false}
               aria-label={`${status.label} filter`}
@@ -121,26 +121,26 @@ const TimesheetFilterModalBody = ({
               iconPosition="start"
             >
               {status?.label}
-            </Button>
+            </ButtonV2>
           ))}
         </Box>
       </Box>
       <Divider aria-hidden={true} />
       <Stack direction="row" spacing="0.75rem" sx={classes.stackStyles}>
-        <Button
+        <ButtonV2
           variant={"primary"}
           onClick={() => onApply(selectedFilters, selectedFilterLabels)}
           aria-label="Apply filters"
         >
           {translateText(["applyBtnTxt"])}
-        </Button>
-        <Button
+        </ButtonV2>
+        <ButtonV2
           variant={"tertiary"}
           onClick={onReset}
           disabled={selectedFilterLabels?.length === 0}
         >
           {translateText(["resetBtnTxt"])}
-        </Button>
+        </ButtonV2>
       </Stack>
     </Box>
   );

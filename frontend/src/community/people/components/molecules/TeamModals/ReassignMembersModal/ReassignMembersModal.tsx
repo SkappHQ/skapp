@@ -1,9 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -103,8 +102,22 @@ const ReassignMembersModal = () => {
         ))}
       </Stack>
       <Box>
-        <Button variant={"error"} onClick={reassignAndDeleteClick} icon={<Icon name={IconName.DELETE_BUTTON_ICON} />} iconPosition="end">{translateText(["reassignAndDeleteBtnText"])}</Button>
-        <Button variant={"tertiary"} onClick={cancelClick} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
+        <ButtonV2
+          variant={"error"}
+          onClick={reassignAndDeleteClick}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["reassignAndDeleteBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={cancelClick}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Box>
     </Box>
   );

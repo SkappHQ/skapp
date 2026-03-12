@@ -1,8 +1,7 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -67,8 +66,22 @@ const DeleteConfirmModal = () => {
         {translateText(["confirmDeleteModalDes"])}
       </Typography>
       <Box>
-        <Button variant={"primary"} onClick={handleReassignClick} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["reassignBtnText"])}</Button>
-        <Button variant={"error"} onClick={handleDeleteClick} icon={<Icon name={IconName.DELETE_BUTTON_ICON} />} iconPosition="end">{translateText(["teamDeleteConfirmBtnText"])}</Button>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleReassignClick}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["reassignBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"error"}
+          onClick={handleDeleteClick}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["teamDeleteConfirmBtnText"])}
+        </ButtonV2>
       </Box>
     </Box>
   );

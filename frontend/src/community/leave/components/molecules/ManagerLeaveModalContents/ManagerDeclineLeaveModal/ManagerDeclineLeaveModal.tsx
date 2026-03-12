@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
@@ -90,22 +90,22 @@ const ManagerDeclineLeaveModal = ({
         />
       </Box>
       <Stack spacing={2}>
-        <Button
+        <ButtonV2
           variant={"error"}
           onClick={handelDecline}
           icon={<CloseIcon />}
           iconPosition="end"
         >
           {translateText(["declineLeave"])}
-        </Button>
-        <Button
+        </ButtonV2>
+        <ButtonV2
           variant={"tertiary"}
           onClick={closeModel}
           icon={<CloseIcon />}
           iconPosition="end"
         >
           {translateText(["cancelBtn"])}
-        </Button>
+        </ButtonV2>
       </Stack>
     </Box>
   );

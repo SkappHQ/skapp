@@ -1,4 +1,5 @@
 import { Stack, type Theme, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import {
   Dispatch,
@@ -9,10 +10,8 @@ import {
   useState
 } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { personalDetailsSectionTestId } from "~community/common/constants/testIds";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
@@ -199,17 +198,39 @@ const PersonalDetailsForm = ({
           sx={{ padding: "1rem 0" }}
         >
           {isUpdate && (
-            <Button variant={"tertiary"} fullWidth={false} onClick={onBack} disabled={isSubmitDisabled || isLoading || isInputsDisabled} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancel"])}</Button>
+            <ButtonV2
+              variant={"tertiary"}
+              fullWidth={false}
+              onClick={onBack}
+              disabled={isSubmitDisabled || isLoading || isInputsDisabled}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancel"])}
+            </ButtonV2>
           )}
-          <Button variant={"primary"} fullWidth={false} onClick={handleNext} disabled={isSubmitDisabled || isLoading || isInputsDisabled} isLoading={isLoading} data-testid={
+          <ButtonV2
+            variant={"primary"}
+            fullWidth={false}
+            onClick={handleNext}
+            disabled={isSubmitDisabled || isLoading || isInputsDisabled}
+            isLoading={isLoading}
+            data-testid={
               isUpdate
                 ? personalDetailsSectionTestId.buttons.saveDetailsBtn
                 : personalDetailsSectionTestId.buttons.nextBtn
-            } icon={<Icon name={isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{
-              isUpdate
-                ? translateText(["saveDetails"])
-                : translateText(["next"])
-            }</Button>
+            }
+            icon={
+              <Icon
+                name={isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON}
+              />
+            }
+            iconPosition="end"
+          >
+            {isUpdate
+              ? translateText(["saveDetails"])
+              : translateText(["next"])}
+          </ButtonV2>
         </Stack>
       )}
     </>

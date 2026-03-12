@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -266,7 +266,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       </Typography>
       <Stack sx={classes.filterStackStyles}>
         {leaveStatusArray.map((leaveStatus) => (
-          <Button
+          <ButtonV2
             key={leaveStatus}
             fullWidth={false}
             onClick={() => {
@@ -289,7 +289,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
             iconPosition="start"
           >
             {pascalCaseFormatter(leaveStatus)}
-          </Button>
+          </ButtonV2>
         ))}
       </Stack>
       <Typography variant="h5">
@@ -297,7 +297,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       </Typography>
       <Stack sx={classes.filterStackStyles}>
         {leaveTypeOptions.map(({ id, name }: { id: string; name: string }) => (
-          <Button
+          <ButtonV2
             key={id}
             fullWidth={false}
             onClick={() => {
@@ -318,7 +318,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
             iconPosition="start"
           >
             {name}
-          </Button>
+          </ButtonV2>
         ))}
       </Stack>
     </FilterButton>

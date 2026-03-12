@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { Box, type Theme, useTheme } from "@mui/system";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
@@ -134,7 +134,7 @@ const MultiselectEmployeeSearch = ({
               setSelectedMembers([]);
             }}
           >
-            <Button
+            <ButtonV2
               fullWidth={false}
               variant={"secondary"}
               onClick={() => {
@@ -143,7 +143,7 @@ const MultiselectEmployeeSearch = ({
               }}
             >
               {translateText(["allMembers"])}
-            </Button>
+            </ButtonV2>
             {isAll && (
               <Icon
                 name={IconName.CHECK_CIRCLE_ICON}

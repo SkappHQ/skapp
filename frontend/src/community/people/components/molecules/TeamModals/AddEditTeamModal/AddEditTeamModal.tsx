@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
@@ -447,7 +447,7 @@ const AddEditTeamModal = ({
       )}
       {!isSelectingMembers && isPeopleAdmin && (
         <Box>
-          <Button
+          <ButtonV2
             variant={"primary"}
             onClick={() => handleSubmit()}
             className={
@@ -463,26 +463,26 @@ const AddEditTeamModal = ({
             iconPosition="end"
           >
             {translateText(["saveBtnText"])}
-          </Button>
-          <Button
+          </ButtonV2>
+          <ButtonV2
             variant={"tertiary"}
             onClick={handleCancel}
             icon={<Icon name={IconName.CLOSE_ICON} />}
             iconPosition="end"
           >
             {translateText(["cancelBtnText"])}
-          </Button>
+          </ButtonV2>
         </Box>
       )}
       {!isPeopleAdmin && (
-        <Button
+        <ButtonV2
           variant={"tertiary"}
           onClick={handleCancel}
           icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
           iconPosition="start"
         >
           {translateText(["goBackBtnText"])}
-        </Button>
+        </ButtonV2>
       )}
     </Box>
   );

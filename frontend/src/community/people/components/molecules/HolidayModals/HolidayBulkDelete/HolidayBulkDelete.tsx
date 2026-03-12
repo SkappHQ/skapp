@@ -1,9 +1,8 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -177,12 +176,24 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
             {translateText(["singleHolidayDeleteModalDes"])}
           </Typography>
         )}
-        <Button variant={"error"} onClick={() => handleBulkDelete()} icon={<Icon name={IconName.DELETE_BUTTON_ICON} />} iconPosition="end">{
-            type !== HolidayDeleteType.INDIVIDUAL
-              ? translateText(["deleteHolidays"])
-              : translateText(["deleteHoliday"])
-          }</Button>
-        <Button variant={"tertiary"} onClick={() => setIsPopupOpen(false)} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
+        <ButtonV2
+          variant={"error"}
+          onClick={() => handleBulkDelete()}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {type !== HolidayDeleteType.INDIVIDUAL
+            ? translateText(["deleteHolidays"])
+            : translateText(["deleteHoliday"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => setIsPopupOpen(false)}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Box>
     </>
   );

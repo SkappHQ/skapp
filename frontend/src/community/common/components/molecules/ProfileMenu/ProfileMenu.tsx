@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
@@ -100,7 +100,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
             </Typography>
           </Stack>
         </Stack>
-        <Button
+        <ButtonV2
           variant={"tertiary"}
           onClick={handelViewAccount}
           fullWidth={false}
@@ -109,9 +109,9 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
           iconPosition="end"
         >
           {translateText(["viewAccount"])}
-        </Button>
+        </ButtonV2>
       </Stack>
-      <Button
+      <ButtonV2
         variant={"tertiary"}
         onClick={handleSignOut}
         fullWidth
@@ -120,7 +120,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
         className="mt-3"
       >
         {translateText(["logout"])}
-      </Button>
+      </ButtonV2>
     </Box>
   );
 };

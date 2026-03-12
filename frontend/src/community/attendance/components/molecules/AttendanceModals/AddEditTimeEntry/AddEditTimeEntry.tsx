@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { rejects } from "assert";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
@@ -28,15 +29,13 @@ import {
   getTotalSlotTypeHours
 } from "~community/attendance/utils/TimeUtils";
 import { timeEntryValidation } from "~community/attendance/utils/validations";
-import { Button } from "@rootcodelabs/skapp-ui";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import TimeInput from "~community/common/components/atoms/TimeInput/TimeInput";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { datePatternReverse } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
@@ -493,14 +492,30 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           isDisabled
         />
       )}
-      <Button variant={"primary"} type={"submit"} disabled={
+      <ButtonV2
+        variant={"primary"}
+        type={"submit"}
+        disabled={
           isSubmitDisabled(
             values,
             isGetTimeAvailabilityLoading &&
               getAvailabilityFetchStatus !== "idle"
           ) || isInvalidTimeForDisableButton()
-        } icon={<Icon name={IconName.CHECK_ICON} />} iconPosition="end">{translateText(["submitRequestBtnTxt"])}</Button>
-      <Button variant={"tertiary"} onClick={() => setIsEmployeeTimesheetModalOpen(false)} type={"reset"} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnTxt"])}</Button>
+        }
+        icon={<Icon name={IconName.CHECK_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["submitRequestBtnTxt"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() => setIsEmployeeTimesheetModalOpen(false)}
+        type={"reset"}
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtnTxt"])}
+      </ButtonV2>
     </Form>
   );
 };

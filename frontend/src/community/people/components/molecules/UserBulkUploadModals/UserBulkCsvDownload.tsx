@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -73,18 +73,18 @@ const UserBulkCsvDownload = () => {
             onClick={handleDownloadClick}
             tabIndex={-1}
           >
-            <Button
+            <ButtonV2
               variant={"secondary"}
               className={isDownloadBlinking ? "animate-pulse" : ""}
               icon={<Icon name={IconName.DOWNLOAD_ICON} />}
               iconPosition="end"
             >
               {translateText(["downloadCsvButton"])}
-            </Button>
+            </ButtonV2>
           </a>
         </Box>
       </Box>
-      <Button
+      <ButtonV2
         variant={"primary"}
         onClick={() => handleNextBtn()}
         className={isNextBlinking ? "animate-pulse" : ""}
@@ -92,7 +92,7 @@ const UserBulkCsvDownload = () => {
         iconPosition="end"
       >
         {translateText(["nextButton"])}
-      </Button>
+      </ButtonV2>
     </Box>
   );
 };

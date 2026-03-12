@@ -1,6 +1,6 @@
 import { Box, Stack, SxProps } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -78,7 +78,7 @@ const LeaveTypeBreakdownButtons = ({
     (filterTypesArray: SelectedFiltersTypes) => {
       return Object.keys(filterTypesArray).map((filterType) => {
         return (
-          <Button
+          <ButtonV2
             key={filterType}
             fullWidth={false}
             onClick={() => onClick(filterType)}
@@ -92,7 +92,7 @@ const LeaveTypeBreakdownButtons = ({
             iconPosition="start"
           >
             {filterType}
-          </Button>
+          </ButtonV2>
         );
       });
     },

@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -423,14 +423,14 @@ const SystemPermissionFormSection = ({
           >
             <Stack sx={classes.modalContainer}>
               <Typography>{modalDescription}</Typography>
-              <Button
+              <ButtonV2
                 variant={"primary"}
                 onClick={() => {
                   setOpenModal(false);
                 }}
               >
                 {commonText(["okay"])}
-              </Button>
+              </ButtonV2>
             </Stack>
           </Modal>
         </>

@@ -10,6 +10,7 @@ import {
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -26,11 +27,9 @@ import React, {
 import AnalyticsTeamIcon from "~community/common/assets/Icons/AnalyticsTeamIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   EmployeeSearchResultType,
@@ -212,16 +211,20 @@ const Search: FC<Props> = ({
             paddingBottom: isManagerSearch ? "1.25rem" : ""
           }}
         >
-          <Button variant={
-              selectedTab === "Individual"
-                ? "secondary"
-                : "tertiary"
-            } fullWidth={false} onClick={() => searchButtonHandler("Individual")}>{"Individual"}</Button>
-          <Button variant={
-              selectedTab === "Team"
-                ? "secondary"
-                : "tertiary"
-            } fullWidth={false} onClick={() => searchButtonHandler("Team")}>{"Team"}</Button>
+          <ButtonV2
+            variant={selectedTab === "Individual" ? "secondary" : "tertiary"}
+            fullWidth={false}
+            onClick={() => searchButtonHandler("Individual")}
+          >
+            {"Individual"}
+          </ButtonV2>
+          <ButtonV2
+            variant={selectedTab === "Team" ? "secondary" : "tertiary"}
+            fullWidth={false}
+            onClick={() => searchButtonHandler("Team")}
+          >
+            {"Team"}
+          </ButtonV2>
         </Stack>
       )}
       {label && (
@@ -556,7 +559,13 @@ const Search: FC<Props> = ({
               </Box>
             )}
             {isInviteMember && isCompanyEmail && (
-              <Button onClick={inviteClickHandler} icon={<PlusIcon />} iconPosition="end">{"Invite to myLeave and add"}</Button>
+              <ButtonV2
+                onClick={inviteClickHandler}
+                icon={<PlusIcon />}
+                iconPosition="end"
+              >
+                {"Invite to myLeave and add"}
+              </ButtonV2>
             )}
           </Box>
         </Popper>

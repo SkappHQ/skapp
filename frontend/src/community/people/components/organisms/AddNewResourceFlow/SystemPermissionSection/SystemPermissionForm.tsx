@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
@@ -352,7 +352,7 @@ const SystemPermissionForm = ({
 
         {!isInputsDisabled && (
           <Stack sx={classes.btnWrapper}>
-            <Button
+            <ButtonV2
               fullWidth={false}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
               variant={"tertiary"}
@@ -373,8 +373,8 @@ const SystemPermissionForm = ({
               iconPosition={isUpdate ? "end" : "start"}
             >
               {isUpdate ? commonText(["cancel"]) : commonText(["back"])}
-            </Button>
-            <Button
+            </ButtonV2>
+            <ButtonV2
               isLoading={isLoading}
               fullWidth={false}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
@@ -398,7 +398,7 @@ const SystemPermissionForm = ({
               {!isLeaveModuleEnabled || isUpdate
                 ? commonText(["saveDetails"])
                 : commonText(["next"])}
-            </Button>
+            </ButtonV2>
           </Stack>
         )}
 
@@ -412,7 +412,7 @@ const SystemPermissionForm = ({
         >
           <Stack sx={classes.modalContainer}>
             <Typography>{modalDescription}</Typography>
-            <Button
+            <ButtonV2
               variant={"primary"}
               onClick={() =>
                 handleModalClose({
@@ -425,7 +425,7 @@ const SystemPermissionForm = ({
               }
             >
               {commonText(["okay"])}
-            </Button>
+            </ButtonV2>
           </Stack>
         </Modal>
       </>

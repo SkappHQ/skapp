@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -471,7 +471,7 @@ const ApplyLeaveModal = () => {
         </Stack>
       </Stack>
       <Stack sx={classes.btnWrapper}>
-        <Button
+        <ButtonV2
           variant={"primary"}
           onClick={onSubmit}
           isLoading={isLeaveApplyPending}
@@ -481,15 +481,15 @@ const ApplyLeaveModal = () => {
           iconPosition="end"
         >
           {translateText(["submitBtn"])}
-        </Button>
-        <Button
+        </ButtonV2>
+        <ButtonV2
           variant={"tertiary"}
           onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
           icon={<Icon name={IconName.CLOSE_ICON} />}
           iconPosition="end"
         >
           {translateText(["cancelBtn"])}
-        </Button>
+        </ButtonV2>
       </Stack>
     </Stack>
   );

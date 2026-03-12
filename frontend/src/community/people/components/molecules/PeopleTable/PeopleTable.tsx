@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import {
   FC,
@@ -11,15 +12,15 @@ import {
   useState
 } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
-import { ToastType } from "~community/common/enums/ComponentEnums"
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -57,7 +58,6 @@ import { exportEmployeeDirectoryToCSV } from "~community/people/utils/directoryU
 
 import PeopleTableSortBy from "../PeopleTableHeaders/PeopleTableSortBy";
 import ReinviteConfirmationModal from "../ReinviteConfirmationModal/ReinviteConfirmationModal";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   employeeData: AllEmployeeDataType[];
@@ -85,9 +85,7 @@ const PeopleTable: FC<Props> = ({
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
-  const isPeopleManager = user?.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER
-  );
+  const isPeopleManager = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
 
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
@@ -639,9 +637,18 @@ const PeopleTable: FC<Props> = ({
                 ) : undefined,
               rightButton:
                 isPendingInvitationListOpen && isPeopleAdmin ? (
-                  <Button variant={"secondary"} size={"md"} onClick={() => {
+                  <ButtonV2
+                    variant={"secondary"}
+                    size={"md"}
+                    onClick={() => {
                       setIsReinviteConfirmationModalOpen(true);
-                    }} disabled={selectedPeople.length === 0} icon={<InviteIcon />} iconPosition="end">{translateText(["reinviteButtonTitle"])}</Button>
+                    }}
+                    disabled={selectedPeople.length === 0}
+                    icon={<InviteIcon />}
+                    iconPosition="end"
+                  >
+                    {translateText(["reinviteButtonTitle"])}
+                  </ButtonV2>
                 ) : isPeopleManager && !isRemovePeople ? (
                   <PeopleTableFilterBy
                     filterEl={filterEl}

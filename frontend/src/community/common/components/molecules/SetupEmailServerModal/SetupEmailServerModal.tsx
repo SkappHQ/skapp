@@ -1,4 +1,5 @@
 import { SelectChangeEvent, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { useEffect, useRef } from "react";
 
@@ -14,13 +15,11 @@ import {
   EmailProvider,
   characterLengths
 } from "~community/common/constants/stringConstants";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { emailServerSetupValidation } from "~community/common/utils/validation";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 import SwitchRow from "../../atoms/SwitchRow/SwitchRow";
 import Modal from "../../organisms/Modal/Modal";
@@ -237,8 +236,23 @@ const SetupEmailServerModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 : ""
             }
           />
-          <Button variant={"primary"} disabled={isSubmitDisabled} type={"submit"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveChangesBtnText"])}</Button>
-          <Button variant={"tertiary"} onClick={handleCancel} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
+          <ButtonV2
+            variant={"primary"}
+            disabled={isSubmitDisabled}
+            type={"submit"}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveChangesBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={handleCancel}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
         </Stack>
       </Form>
     </Modal>

@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useRef, useState } from "react";
 
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
@@ -115,7 +115,7 @@ const EmployeeDataFIlterMenuItems = ({
             gap: 2
           }}
         >
-          <Button
+          <ButtonV2
             fullWidth={false}
             variant="tertiary"
             size={isSmallScreen ? "sm" : "md"}
@@ -126,15 +126,15 @@ const EmployeeDataFIlterMenuItems = ({
             }}
           >
             {translateText(["reset"])}
-          </Button>
-          <Button
+          </ButtonV2>
+          <ButtonV2
             fullWidth={false}
             variant="primary"
             size={isSmallScreen ? "sm" : "md"}
             onClick={handleSubmit}
           >
             {translateText(["apply"])}
-          </Button>
+          </ButtonV2>
         </Box>
       </Box>
     </Box>

@@ -1,9 +1,8 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
@@ -64,7 +63,14 @@ const EmployeeLeaveDeniedStatusPopup = ({
         isRecipient={true}
         reviewer={employeeLeaveRequestData?.reviewer ?? undefined}
       />
-      <Button variant={"primary"} onClick={() => handleRequestStatusPopup()} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["myLeaveRequests", "proceedToHome"])}</Button>
+      <ButtonV2
+        variant={"primary"}
+        onClick={() => handleRequestStatusPopup()}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["myLeaveRequests", "proceedToHome"])}
+      </ButtonV2>
     </Box>
   );
 };

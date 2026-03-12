@@ -1,8 +1,8 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 
 import { AppVersionNotificationType } from "~community/common/enums/CommonEnums";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { theme } from "~community/common/theme/theme";
@@ -12,7 +12,6 @@ import {
   NINETY_PERCENT
 } from "~community/common/utils/getConstants";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "../../atoms/Icon/Icon";
 
 interface Props {
@@ -138,7 +137,9 @@ const VersionUpgradeBanner = ({
         }}
       >
         {!isStorageBanner && versionUpgradeInfo?.buttonText && (
-          <Button size={"sm"} onClick={handleButtonClick}>{versionUpgradeInfo?.buttonText}</Button>
+          <ButtonV2 size={"sm"} onClick={handleButtonClick}>
+            {versionUpgradeInfo?.buttonText}
+          </ButtonV2>
         )}
 
         {!isStorageBanner && (

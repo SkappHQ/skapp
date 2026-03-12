@@ -1,9 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { flatListValues } from "~community/common/utils/commonUtil";
@@ -56,11 +55,18 @@ const TableFilterButton: FC<Props> = ({
           filterOptions={flatListValues(employeeDataFilter)}
           onDeleteIcon={removeFilters}
         />
-        <Button variant={"tertiary"} onClick={handleFilterClick} disabled={disabled} aria-describedby={filterId} icon={<Icon name={IconName.FILTER_ICON} />} iconPosition="end">{
-            flatListValues(employeeDataFilter).length === 0
-              ? translateText(["filter"])
-              : ""
-          }</Button>
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={handleFilterClick}
+          disabled={disabled}
+          aria-describedby={filterId}
+          icon={<Icon name={IconName.FILTER_ICON} />}
+          iconPosition="end"
+        >
+          {flatListValues(employeeDataFilter).length === 0
+            ? translateText(["filter"])
+            : ""}
+        </ButtonV2>
       </Stack>
     </Stack>
   );

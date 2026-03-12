@@ -1,6 +1,6 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
@@ -186,7 +186,7 @@ const UserBulkCsvUpload: FC<Props> = ({
         </Box>
       )}
       <Divider sx={{ mt: "1.5rem", mb: "1.5rem" }} />
-      <Button
+      <ButtonV2
         variant={"primary"}
         onClick={() => handleUploadBtn()}
         isLoading={isPending}
@@ -197,16 +197,16 @@ const UserBulkCsvUpload: FC<Props> = ({
         iconPosition="end"
       >
         {translateText(["uploadButton"])}
-      </Button>
+      </ButtonV2>
 
-      <Button
+      <ButtonV2
         variant={"tertiary"}
         onClick={() => handleCancelBtn()}
         icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
         iconPosition="start"
       >
         {translateText(["backButton"])}
-      </Button>
+      </ButtonV2>
 
       <ToastMessage
         open={toastMessage.open}

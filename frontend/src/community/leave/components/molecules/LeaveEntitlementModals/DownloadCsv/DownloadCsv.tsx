@@ -1,10 +1,9 @@
 import { Box, Divider, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useMemo } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { AccountSignIn } from "~community/common/constants/stringConstants";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
@@ -58,11 +57,25 @@ const DownloadCsv = () => {
       >
         {translateText(["downloadCsvModalDes"])}
       </Typography>
-      <Button variant={"secondary"} onClick={handleDownloadBtnClick} icon={<Icon name={IconName.DOWNLOAD_ICON} />} iconPosition="end">{translateText(["downloadCsvButton"])}</Button>
+      <ButtonV2
+        variant={"secondary"}
+        onClick={handleDownloadBtnClick}
+        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["downloadCsvButton"])}
+      </ButtonV2>
       <Divider sx={classes.divider} aria-hidden={true} />
-      <Button variant={"primary"} onClick={() =>
+      <ButtonV2
+        variant={"primary"}
+        onClick={() =>
           setLeaveEntitlementModalType(LeaveEntitlementModelTypes.UPLOAD_CSV)
-        } icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["nextButton"])}</Button>
+        }
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["nextButton"])}
+      </ButtonV2>
     </Box>
   );
 };

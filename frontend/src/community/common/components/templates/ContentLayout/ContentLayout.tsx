@@ -7,7 +7,7 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { JSX, memo, useEffect, useMemo } from "react";
@@ -319,7 +319,7 @@ const ContentLayout = ({
           </Stack>
           <Stack sx={classes.rightContent} id={id?.btnWrapper}>
             {secondaryBtnText && (
-              <Button
+              <ButtonV2
                 fullWidth={isBelow600}
                 variant={"secondary"}
                 size={"md"}
@@ -335,10 +335,10 @@ const ContentLayout = ({
                 iconPosition="end"
               >
                 {secondaryBtnText}
-              </Button>
+              </ButtonV2>
             )}
             {primaryButtonText && (
-              <Button
+              <ButtonV2
                 fullWidth={isBelow600}
                 variant={primaryButtonType ?? "primary"}
                 size={"md"}
@@ -356,7 +356,7 @@ const ContentLayout = ({
                 iconPosition="end"
               >
                 {primaryButtonText as string}
-              </Button>
+              </ButtonV2>
             )}
             {customRightContent}
           </Stack>

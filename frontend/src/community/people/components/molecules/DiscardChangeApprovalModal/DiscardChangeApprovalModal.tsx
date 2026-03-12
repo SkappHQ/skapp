@@ -1,10 +1,9 @@
 import { Box, Divider, type Theme, Typography, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { DiscardTypeEnums } from "~community/people/enums/DirectoryEnums";
@@ -222,24 +221,38 @@ const DiscardChangeApprovalModal = ({
               ? translateText(["cancelFormDescription"])
               : translateText(["discardFormDescription"])}
         </Typography>
-        <Button variant={"primary"} fullWidth={true} onClick={handleSaveChanges} isLoading={
+        <ButtonV2
+          variant={"primary"}
+          fullWidth={true}
+          onClick={handleSaveChanges}
+          isLoading={
             typeof updateEmployeeStatus !== "undefined" &&
             updateEmployeeStatus !== EditAllInformationFormStatus.PENDING
-          } disabled={
+          }
+          disabled={
             typeof updateEmployeeStatus !== "undefined" &&
             updateEmployeeStatus !== EditAllInformationFormStatus.PENDING
-          } icon={<Icon name={IconName.RIGHT_MARK} />} iconPosition="end">{
-            isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_TAB ||
-            isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_FORM
-              ? translateText(["saveChanges"])
-              : translateText(["confirm"])
-          }</Button>
-        <Button variant={"tertiary"} fullWidth={true} onClick={handleDiscard} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{
-            isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_TAB ||
-            isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_FORM
-              ? translateText(["discard"])
-              : translateText(["cancel"])
-          }</Button>
+          }
+          icon={<Icon name={IconName.RIGHT_MARK} />}
+          iconPosition="end"
+        >
+          {isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_TAB ||
+          isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_FORM
+            ? translateText(["saveChanges"])
+            : translateText(["confirm"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          fullWidth={true}
+          onClick={handleDiscard}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_TAB ||
+          isDiscardChangesModal.modalType === DiscardTypeEnums.LEAVE_FORM
+            ? translateText(["discard"])
+            : translateText(["cancel"])}
+        </ButtonV2>
       </Box>
     </Box>
   );

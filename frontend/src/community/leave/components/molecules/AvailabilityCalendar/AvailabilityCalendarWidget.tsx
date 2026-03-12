@@ -1,15 +1,14 @@
 import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import { JSX, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -51,9 +50,18 @@ const AvailabilityCalendarWidget = ({
         <Typography variant="h4">
           {translateText(["resourceAvailability"])}
         </Typography>
-        <Button fullWidth={false} variant={"tertiary"} onClick={() =>
+        <ButtonV2
+          fullWidth={false}
+          variant={"tertiary"}
+          onClick={() =>
             router.replace(ROUTES.DASHBOARD.LEAVE.RESOURCE_AVAILABILITY)
-          } size={"md"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["fullCalendar"])}</Button>
+          }
+          size={"md"}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["fullCalendar"])}
+        </ButtonV2>
       </Box>
 
       <Box sx={{ width: "100%" }}>

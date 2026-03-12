@@ -1,15 +1,14 @@
 import { Box, Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { TimesheetAnalyticsTabTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import { Button } from "@rootcodelabs/skapp-ui";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import TeamSelect from "~community/common/components/molecules/TeamSelect/TeamSelect";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
@@ -113,16 +112,28 @@ const TimeSheetFilters = ({
       }}
     >
       <Box sx={{ display: "flex", gap: "0.5rem" }}>
-        <Button variant={
+        <ButtonV2
+          variant={
             selectedTab === TimesheetAnalyticsTabTypes.WEEK
               ? "secondary"
               : "tertiary"
-          } fullWidth={false} onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.WEEK)}>{translateText(["weekTabTxt"])}</Button>
-        <Button variant={
+          }
+          fullWidth={false}
+          onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.WEEK)}
+        >
+          {translateText(["weekTabTxt"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={
             selectedTab === TimesheetAnalyticsTabTypes.MONTH
               ? "secondary"
               : "tertiary"
-          } fullWidth={false} onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.MONTH)}>{translateText(["monthTabTxt"])}</Button>
+          }
+          fullWidth={false}
+          onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.MONTH)}
+        >
+          {translateText(["monthTabTxt"])}
+        </ButtonV2>
       </Box>
       <Stack
         display={"flex"}

@@ -7,7 +7,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { rejects } from "assert";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
@@ -616,7 +616,7 @@ const CareerProgressionDetailsSection = ({
 
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
                 {!isInputsDisabled && (
-                  <Button
+                  <ButtonV2
                     onClick={() => handleSubmit()}
                     fullWidth={false}
                     variant={"secondary"}
@@ -635,7 +635,7 @@ const CareerProgressionDetailsSection = ({
                     {rowEdited > -1
                       ? translateButtonText(["saveChanges"])
                       : translateButtonText(["add"])}
-                  </Button>
+                  </ButtonV2>
                 )}
               </Grid>
 

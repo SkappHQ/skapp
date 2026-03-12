@@ -1,11 +1,10 @@
 import { Box, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect } from "react";
 
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -129,10 +128,23 @@ const LeaveManagerSuccessModal = ({
         />
       </Box>
       <Stack spacing={2}>
-        <Button onClick={closeModel} icon={<RightArrowIcon />} iconPosition="end">{translateText(["proceedToDashboard"])}</Button>
+        <ButtonV2
+          onClick={closeModel}
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["proceedToDashboard"])}
+        </ButtonV2>
         {(popupType === LeaveStatusTypes.APPROVED ||
           LeaveExtraPopupTypes.APPROVED_STATUS === popupType) && (
-          <Button variant={"tertiary"} onClick={handelUndo} icon={<UndoIcon />} iconPosition="start">{translateText(["revokeLeave"])}</Button>
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={handelUndo}
+            icon={<UndoIcon />}
+            iconPosition="start"
+          >
+            {translateText(["revokeLeave"])}
+          </ButtonV2>
         )}
       </Stack>
     </Box>

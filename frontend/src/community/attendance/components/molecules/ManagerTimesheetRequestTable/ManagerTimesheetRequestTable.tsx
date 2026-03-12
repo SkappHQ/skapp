@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FC, JSX } from "react";
 
@@ -364,7 +364,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         isLoading={isRequestLoading}
       />
       {!hasFullList && (
-        <Button
+        <ButtonV2
           variant={"tertiary"}
           onClick={async () => {
             resetTimesheetRequestParams();
@@ -374,7 +374,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           iconPosition="end"
         >
           {translateText(["viewFullBtnTxt"])}
-        </Button>
+        </ButtonV2>
       )}
     </>
   );

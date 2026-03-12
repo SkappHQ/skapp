@@ -7,7 +7,7 @@ import {
   StaticDatePicker
 } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import {
   Dispatch,
@@ -288,7 +288,7 @@ const TimesheetDailyLogFilter = ({
             />
           )}
       </Stack>
-      <Button
+      <ButtonV2
         fullWidth={false}
         variant={"tertiary"}
         size={"sm"}
@@ -300,7 +300,7 @@ const TimesheetDailyLogFilter = ({
         iconPosition="end"
       >
         {selectedOptionName}
-      </Button>
+      </ButtonV2>
       <Popper
         anchorEl={anchorElDropdown}
         open={Boolean(showOverlayDropdown)}

@@ -7,7 +7,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -232,7 +232,7 @@ const LeaveRequests: FC = () => {
         </Typography>
         <Stack sx={classes.filterStackStyles}>
           {leaveStatusArray.map((leaveStatus) => (
-            <Button
+            <ButtonV2
               key={leaveStatus}
               fullWidth={false}
               onClick={() => {
@@ -264,7 +264,7 @@ const LeaveRequests: FC = () => {
               iconPosition="start"
             >
               {pascalCaseFormatter(leaveStatus)}
-            </Button>
+            </ButtonV2>
           ))}
         </Stack>
       </Box>
@@ -278,7 +278,7 @@ const LeaveRequests: FC = () => {
         <Stack sx={classes.filterStackStyles}>
           {leaveTypeOptions.map(
             ({ id, name }: { id: string; name: string }) => (
-              <Button
+              <ButtonV2
                 key={id}
                 fullWidth={false}
                 onClick={() => {
@@ -308,7 +308,7 @@ const LeaveRequests: FC = () => {
                 iconPosition="start"
               >
                 {name}
-              </Button>
+              </ButtonV2>
             )
           )}
         </Stack>

@@ -1,4 +1,4 @@
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useMemo } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
@@ -61,7 +61,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
   }, [isBelow600, isClockedIn, translateText]);
 
   return (
-    <Button
+    <ButtonV2
       variant={"primary"}
       size={"sm"}
       fullWidth={false}
@@ -75,7 +75,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
       iconPosition="end"
     >
       {label}
-    </Button>
+    </ButtonV2>
   );
 };
 

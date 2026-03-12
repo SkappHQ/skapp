@@ -1,5 +1,5 @@
 import { Box, Divider, Typography } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import DownSideArrow from "~community/common/assets/Icons/DownSideArrow";
@@ -57,7 +57,7 @@ const AddCalendar: FC = () => {
         >
           {translateText(["downloadCsvDes"])}
         </Typography>
-        <Button
+        <ButtonV2
           variant={"secondary"}
           onClick={downloadTemplateHandler}
           className={isButtonBlinking.download ? "animate-pulse" : ""}
@@ -65,10 +65,10 @@ const AddCalendar: FC = () => {
           iconPosition="end"
         >
           {translateText(["downloadCsvTitle"])}
-        </Button>
+        </ButtonV2>
       </Box>
       <Divider aria-hidden={true} />
-      <Button
+      <ButtonV2
         variant={"primary"}
         onClick={() =>
           setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
@@ -78,7 +78,7 @@ const AddCalendar: FC = () => {
         iconPosition="end"
       >
         {translateText(["nextBtn"])}
-      </Button>
+      </ButtonV2>
     </Box>
   );
 };

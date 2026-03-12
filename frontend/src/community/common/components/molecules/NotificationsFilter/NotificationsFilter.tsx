@@ -1,14 +1,12 @@
 import { Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import { useMarkAllNotificationsAsRead } from "~community/common/api/notificationsApi";
-
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { NotifyFilterButtonTypes } from "~community/common/types/notificationTypes";
-
-import { Button } from "@rootcodelabs/skapp-ui";
 
 interface Props {
   filterButton: NotifyFilterButtonTypes;
@@ -42,27 +40,45 @@ const NotificationsFilter = ({
       component="div"
     >
       <Stack direction={"row"} gap={isSmallPhoneScreen ? 1 : 2} component="div">
-        <Button fullWidth={false} variant={
+        <ButtonV2
+          fullWidth={false}
+          variant={
             filterButton === NotifyFilterButtonTypes.ALL
               ? "secondary"
               : "tertiary"
-          } onClick={() =>
+          }
+          onClick={() =>
             setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL })
-          }>{translateText(["allFilterButtonText"])}</Button>
-        <Button fullWidth={false} variant={
+          }
+        >
+          {translateText(["allFilterButtonText"])}
+        </ButtonV2>
+        <ButtonV2
+          fullWidth={false}
+          variant={
             filterButton === NotifyFilterButtonTypes.UNREAD
               ? "secondary"
               : "tertiary"
-          } onClick={() =>
+          }
+          onClick={() =>
             setFilterButton({ filterButton: NotifyFilterButtonTypes.UNREAD })
-          }>{translateText(["unreadFilterButtonText"])}</Button>
+          }
+        >
+          {translateText(["unreadFilterButtonText"])}
+        </ButtonV2>
       </Stack>
 
       {!isLoading && notifyData.unreadCount !== 0 && (
-        <Button fullWidth={isSmallPhoneScreen} variant={"tertiary"} onClick={() => {
+        <ButtonV2
+          fullWidth={isSmallPhoneScreen}
+          variant={"tertiary"}
+          onClick={() => {
             setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL });
             handleMarkAllRead();
-          }}>{translateText(["markAllAsReadButton"])}</Button>
+          }}
+        >
+          {translateText(["markAllAsReadButton"])}
+        </ButtonV2>
       )}
     </Stack>
   );

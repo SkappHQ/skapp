@@ -7,14 +7,13 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import styles from "~community/common/components/molecules/FilterButton/styles";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/FilterButtonType";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
@@ -105,9 +104,19 @@ const FilterButton = ({
         {overflowFilters.length > 0 && (
           <Chip label={`+${overflowFilters.length}`} sx={classes.filterItem} />
         )}
-        <Button variant={"tertiary"} aria-label={translateAria(["label"])} onClick={(event: MouseEvent<HTMLElement>) =>
+        <ButtonV2
+          variant={"tertiary"}
+          aria-label={translateAria(["label"])}
+          onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
-          } size={"md"} id="filter-button" icon={<FilterIcon />} iconPosition="end">{translateText(["placeholder"])}</Button>
+          }
+          size={"md"}
+          id="filter-button"
+          icon={<FilterIcon />}
+          iconPosition="end"
+        >
+          {translateText(["placeholder"])}
+        </ButtonV2>
       </Stack>
       <Popper
         anchorEl={anchorEl}
@@ -121,8 +130,23 @@ const FilterButton = ({
         <Stack sx={classes.popperBody}>{children}</Stack>
         <Divider />
         <Stack sx={classes.popperFooter}>
-          <Button type={"reset"} variant={"tertiary"} disabled={isResetBtnDisabled} onClick={onResetBtnClick} size={"md"}>{translateText(["resetBtn"])}</Button>
-          <Button type={"button"} variant={"primary"} onClick={onApplyBtnClick} size={"md"}>{translateText(["applyBtn"])}</Button>
+          <ButtonV2
+            type={"reset"}
+            variant={"tertiary"}
+            disabled={isResetBtnDisabled}
+            onClick={onResetBtnClick}
+            size={"md"}
+          >
+            {translateText(["resetBtn"])}
+          </ButtonV2>
+          <ButtonV2
+            type={"button"}
+            variant={"primary"}
+            onClick={onApplyBtnClick}
+            size={"md"}
+          >
+            {translateText(["applyBtn"])}
+          </ButtonV2>
         </Stack>
       </Popper>
     </Stack>

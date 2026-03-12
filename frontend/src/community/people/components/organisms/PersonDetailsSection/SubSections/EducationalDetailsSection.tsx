@@ -1,5 +1,5 @@
 import { Grid2 as Grid } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { JSX } from "react";
 
@@ -204,7 +204,7 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
 
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           {!isInputsDisabled && (
-            <Button
+            <ButtonV2
               onClick={() => handleSubmit()}
               fullWidth={false}
               variant={"secondary"}
@@ -223,7 +223,7 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
               {rowEdited > -1
                 ? translateButtonText(["saveChanges"])
                 : translateButtonText(["add"])}
-            </Button>
+            </ButtonV2>
           )}
         </Grid>
 

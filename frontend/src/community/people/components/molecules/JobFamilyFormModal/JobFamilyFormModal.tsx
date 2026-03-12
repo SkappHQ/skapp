@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useEffect, useMemo } from "react";
 
@@ -119,7 +119,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
         />
         <JobTitleField formik={formik} />
         {!isPeopleAdmin ? (
-          <Button
+          <ButtonV2
             variant={"tertiary"}
             onClick={() =>
               handleJobFamilyCloseModal({
@@ -133,10 +133,10 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
             iconPosition="start"
           >
             {translateText(["goBackBtnText"])}
-          </Button>
+          </ButtonV2>
         ) : (
           <>
-            <Button
+            <ButtonV2
               type={"submit"}
               disabled={isSaveBtnDisabled}
               variant={"primary"}
@@ -153,8 +153,8 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
               iconPosition="end"
             >
               {translateText(["saveBtnText"])}
-            </Button>
-            <Button
+            </ButtonV2>
+            <ButtonV2
               variant={"tertiary"}
               onClick={() =>
                 handleJobFamilyCloseModal({
@@ -168,7 +168,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
               iconPosition="end"
             >
               {translateText(["cancelBtnText"])}
-            </Button>
+            </ButtonV2>
           </>
         )}
       </Box>

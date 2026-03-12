@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Box, type SxProps } from "@mui/system";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
 
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
@@ -75,7 +75,7 @@ const LeaveTypeBreakdownButtons = ({
     (filterTypesArray: SelectedFiltersTypes) => {
       return Object.keys(filterTypesArray).map((filterType) => {
         return (
-          <Button
+          <ButtonV2
             disabled={isFreeTier}
             key={filterType}
             fullWidth={false}
@@ -90,7 +90,7 @@ const LeaveTypeBreakdownButtons = ({
             iconPosition="start"
           >
             {filterType}
-          </Button>
+          </ButtonV2>
         );
       });
     },

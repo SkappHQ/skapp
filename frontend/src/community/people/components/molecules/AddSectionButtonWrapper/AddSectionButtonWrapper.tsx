@@ -1,11 +1,11 @@
 import { Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
-import { ToastType } from "~community/common/enums/ComponentEnums"
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -102,23 +102,49 @@ const AddSectionButtonWrapper = ({
       sx={{ padding: "1rem 0" }}
     >
       {activeStep > 0 && (
-        <Button variant={"tertiary"} fullWidth={false} onClick={handleBack} icon={<Icon name={IconName.LEFT_ARROW_ICON} />} iconPosition="start">{translateText(["back"])}</Button>
+        <ButtonV2
+          variant={"tertiary"}
+          fullWidth={false}
+          onClick={handleBack}
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
+        >
+          {translateText(["back"])}
+        </ButtonV2>
       )}
 
       {activeStep === 4 ? (
-        <Button variant={"primary"} fullWidth={false} onClick={handleSave} disabled={isSaveDisabled} icon={<Icon name={IconName.SAVE_ICON} />} iconPosition="end">{translateText(["saveDetails"])}</Button>
+        <ButtonV2
+          variant={"primary"}
+          fullWidth={false}
+          onClick={handleSave}
+          disabled={isSaveDisabled}
+          icon={<Icon name={IconName.SAVE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["saveDetails"])}
+        </ButtonV2>
       ) : (
-        <Button variant={"primary"} fullWidth={false} onClick={() => {
+        <ButtonV2
+          variant={"primary"}
+          fullWidth={false}
+          onClick={() => {
             if (onNextClick) {
               onNextClick();
             }
-          }} disabled={isSaveDisabled} icon={
+          }}
+          disabled={isSaveDisabled}
+          icon={
             <Icon
               name={IconName.RIGHT_ARROW_ICON}
               width="1.25rem"
               height="1.25rem"
             />
-          } iconPosition="end">{translateText(["next"])}</Button>
+          }
+          iconPosition="end"
+        >
+          {translateText(["next"])}
+        </ButtonV2>
       )}
     </Stack>
   );

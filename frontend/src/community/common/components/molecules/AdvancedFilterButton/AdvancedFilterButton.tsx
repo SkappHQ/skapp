@@ -7,6 +7,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
@@ -24,10 +25,8 @@ import {
 } from "~community/attendance/enums/dashboardEnums";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import styles from "~community/common/components/molecules/FilterButton/styles";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
@@ -191,9 +190,17 @@ const FilterButton = ({
             }}
           />
         )}
-        <Button variant={"tertiary"} size={"md"} onClick={(event: MouseEvent<HTMLElement>) =>
+        <ButtonV2
+          variant={"tertiary"}
+          size={"md"}
+          onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
-          } icon={<FilterIcon />} iconPosition="end">{translateText(["placeholder"])}</Button>
+          }
+          icon={<FilterIcon />}
+          iconPosition="end"
+        >
+          {translateText(["placeholder"])}
+        </ButtonV2>
       </Stack>
 
       <Popper
@@ -380,8 +387,22 @@ const FilterButton = ({
             mt={2}
             gap={1}
           >
-            <Button variant={"primary"} onClick={handleApplyFilters} fullWidth={false} size={"md"}>{translateText(["applyBtn"])}</Button>
-            <Button variant={"secondary"} onClick={handleResetFilters} fullWidth={false} size={"md"}>{translateText(["resetBtn"])}</Button>
+            <ButtonV2
+              variant={"primary"}
+              onClick={handleApplyFilters}
+              fullWidth={false}
+              size={"md"}
+            >
+              {translateText(["applyBtn"])}
+            </ButtonV2>
+            <ButtonV2
+              variant={"secondary"}
+              onClick={handleResetFilters}
+              fullWidth={false}
+              size={"md"}
+            >
+              {translateText(["resetBtn"])}
+            </ButtonV2>
           </Box>
         </Box>
       </Popper>

@@ -1,6 +1,6 @@
 import { Divider, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
@@ -527,7 +527,7 @@ const LeaveTypeForm = () => {
           </Stack>
 
           <Stack sx={classes.buttonWrapper}>
-            <Button
+            <ButtonV2
               fullWidth={false}
               variant={"tertiary"}
               onClick={handleCancelBtnClick}
@@ -535,8 +535,8 @@ const LeaveTypeForm = () => {
               iconPosition="end"
             >
               {translateText(["cancelBtn"])}
-            </Button>
-            <Button
+            </ButtonV2>
+            <ButtonV2
               type={"submit"}
               fullWidth={false}
               disabled={!isSaveBtnActive}
@@ -548,7 +548,7 @@ const LeaveTypeForm = () => {
               iconPosition="end"
             >
               {translateText(["saveBtn"])}
-            </Button>
+            </ButtonV2>
           </Stack>
         </Stack>
       </Form>

@@ -1,5 +1,5 @@
 import { Box, Theme, useTheme } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -168,7 +168,7 @@ const JobFamilyTable: FC<Props> = ({
             />
           </>
         ) : (
-          <Button
+          <ButtonV2
             variant={"tertiary"}
             onClick={() =>
               handleJobFamilyEditBtnClick(
@@ -179,7 +179,7 @@ const JobFamilyTable: FC<Props> = ({
             }
           >
             {translateText(["viewBtnText"])}
-          </Button>
+          </ButtonV2>
         )
       }));
   };

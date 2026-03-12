@@ -50,7 +50,7 @@ const UserPromptModal = ({
       <Typography id={ids?.description ?? "user-prompt-modal-description"}>
         {description}
       </Typography>
-      <Button
+      <ButtonV2
         accessibility={{
           ariaHidden: true
         }}
@@ -63,7 +63,7 @@ const UserPromptModal = ({
         onClick={primaryBtn.onClick}
       />
       {secondaryBtn && (
-        <Button
+        <ButtonV2
           accessibility={{
             ariaHidden: true
           }}

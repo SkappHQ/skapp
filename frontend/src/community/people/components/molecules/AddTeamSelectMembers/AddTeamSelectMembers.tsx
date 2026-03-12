@@ -1,13 +1,12 @@
 import { Box, Checkbox, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
@@ -153,10 +152,27 @@ const AddTeamSelectMembers: FC<Props> = ({
         )}
       </Box>
       <Box sx={{ mr: "1.25rem" }}>
-        <Button variant={"error"} fullWidth={true} disabled={!(usersChecked?.length > 0)} onClick={handleRemove} icon={<Icon name={IconName.DELETE_BUTTON_ICON} />} iconPosition="end">{translateText(["removeFromTeam"])}</Button>
-        <Button variant={"tertiary"} fullWidth={true} onClick={() => {
+        <ButtonV2
+          variant={"error"}
+          fullWidth={true}
+          disabled={!(usersChecked?.length > 0)}
+          onClick={handleRemove}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["removeFromTeam"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          fullWidth={true}
+          onClick={() => {
             setIsSelectMembersOpen(false);
-          }} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
+          }}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Box>
     </>
   );

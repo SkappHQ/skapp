@@ -1,8 +1,7 @@
 import { Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import LeaveAllocation from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocation";
@@ -21,7 +20,14 @@ const LeaveTypeSelectionModal = () => {
   return (
     <Stack sx={{ gap: "1rem" }}>
       <LeaveAllocation />
-      <Button variant={"tertiary"} onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["cancelBtn"])}</Button>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtn"])}
+      </ButtonV2>
     </Stack>
   );
 };

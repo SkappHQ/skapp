@@ -6,15 +6,14 @@ import {
   SxProps,
   Typography
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import RoundedSelect, {
   SelectOption
 } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -243,8 +242,23 @@ const TransferMembersModal: FC<Props> = ({
           </Stack>
         </Stack>
       </Stack>
-      <Button type={"submit"} variant={"error"} onClick={() => handleSubmit(values)} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{primaryBtnText}</Button>
-      <Button variant={"tertiary"} onClick={handleCancel} icon={<Icon name={IconName.LEFT_ARROW_ICON} />} iconPosition="start">{translateText(["backBtnText"])}</Button>
+      <ButtonV2
+        type={"submit"}
+        variant={"error"}
+        onClick={() => handleSubmit(values)}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {primaryBtnText}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={handleCancel}
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["backBtnText"])}
+      </ButtonV2>
     </Stack>
   );
 };

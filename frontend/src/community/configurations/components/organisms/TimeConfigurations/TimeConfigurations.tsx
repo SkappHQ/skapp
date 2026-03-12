@@ -7,7 +7,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { JSX, useCallback, useEffect, useState } from "react";
@@ -449,7 +449,7 @@ const TimeConfigurations = (): JSX.Element => {
         </Stack>
 
         <Stack sx={classes.buttonContainer}>
-          <Button
+          <ButtonV2
             id="resetButton"
             variant={"tertiary"}
             fullWidth={false}
@@ -459,8 +459,8 @@ const TimeConfigurations = (): JSX.Element => {
             iconPosition="end"
           >
             {translateText(["resetButtonText"]) ?? ""}
-          </Button>
-          <Button
+          </ButtonV2>
+          <ButtonV2
             id="saveChangesButton"
             variant={"primary"}
             fullWidth={false}
@@ -470,7 +470,7 @@ const TimeConfigurations = (): JSX.Element => {
             iconPosition="end"
           >
             {translateText(["saveButtonText"]) ?? ""}
-          </Button>
+          </ButtonV2>
         </Stack>
 
         <ToastMessage

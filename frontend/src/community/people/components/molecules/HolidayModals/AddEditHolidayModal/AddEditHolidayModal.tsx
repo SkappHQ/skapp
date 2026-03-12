@@ -1,15 +1,15 @@
 import { Stack, debounce } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
-import { ToastType } from "~community/common/enums/ComponentEnums"
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { theme } from "~community/common/theme/theme";
@@ -365,8 +365,23 @@ const AddEditHolidayModal = ({
           isRequired={true}
         />
 
-        <Button variant={"primary"} type={"submit"} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["saveBtnText"])}</Button>
-        <Button variant={"tertiary"} type={"button"} onClick={onCloseClick} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnText"])}</Button>
+        <ButtonV2
+          variant={"primary"}
+          type={"submit"}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["saveBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          type={"button"}
+          onClick={onCloseClick}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Stack>
     </form>
   );

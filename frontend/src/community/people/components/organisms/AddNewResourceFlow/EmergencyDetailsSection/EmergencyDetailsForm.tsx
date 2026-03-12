@@ -1,5 +1,5 @@
 import { Stack } from "@mui/system";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
@@ -138,7 +138,7 @@ const EmergencyDetailsForm = ({
           spacing={2}
           sx={{ padding: "1rem 0" }}
         >
-          <Button
+          <ButtonV2
             variant={"tertiary"}
             fullWidth={false}
             onClick={onBack}
@@ -158,8 +158,8 @@ const EmergencyDetailsForm = ({
             iconPosition={isUpdate ? "end" : "start"}
           >
             {isUpdate ? translateText(["cancel"]) : translateText(["back"])}
-          </Button>
-          <Button
+          </ButtonV2>
+          <ButtonV2
             variant={"primary"}
             fullWidth={false}
             onClick={handleNext}
@@ -182,7 +182,7 @@ const EmergencyDetailsForm = ({
             {isUpdate
               ? translateText(["saveDetails"])
               : translateText(["next"])}
-          </Button>
+          </ButtonV2>
         </Stack>
       )}
     </>

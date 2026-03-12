@@ -1,8 +1,7 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { LeaveEntitlementModelTypes } from "~community/leave/enums/LeaveEntitlementEnums";
@@ -31,12 +30,27 @@ const OverrideConfirmation = () => {
           {translateText(["overrideConfirmationTxt"])}
         </Typography>
       </Box>
-      <Button variant={"primary"} onClick={() =>
+      <ButtonV2
+        variant={"primary"}
+        onClick={() =>
           setLeaveEntitlementModalType(LeaveEntitlementModelTypes.DOWNLOAD_CSV)
-        } isLoading={false} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["proceedBtnTxt"])}</Button>
-      <Button variant={"tertiary"} onClick={() =>
+        }
+        isLoading={false}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["proceedBtnTxt"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() =>
           setLeaveEntitlementModalType(LeaveEntitlementModelTypes.NONE)
-        } icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtnTxt"])}</Button>
+        }
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtnTxt"])}
+      </ButtonV2>
     </Box>
   );
 };

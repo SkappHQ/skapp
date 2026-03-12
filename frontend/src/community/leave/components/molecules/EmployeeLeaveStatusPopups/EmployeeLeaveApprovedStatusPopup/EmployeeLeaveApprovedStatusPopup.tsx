@@ -1,10 +1,9 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
@@ -92,7 +91,14 @@ const EmployeeLeaveApprovedStatusPopup: FC<Props> = ({
 
         <AttachmentRow attachments={employeeLeaveRequestData?.attachments} />
 
-        <Button variant={"primary"} onClick={() => handleRequestStatusPopup()} icon={<Icon name={IconName.RIGHT_ARROW_ICON} />} iconPosition="end">{translateText(["myLeaveRequests", "proceedToHome"])}</Button>
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => handleRequestStatusPopup()}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["myLeaveRequests", "proceedToHome"])}
+        </ButtonV2>
       </Box>
     </>
   );

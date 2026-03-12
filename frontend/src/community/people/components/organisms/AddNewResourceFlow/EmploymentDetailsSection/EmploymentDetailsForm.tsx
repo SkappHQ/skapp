@@ -1,5 +1,5 @@
 import { Stack, type Theme, useTheme } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
@@ -192,7 +192,7 @@ const EmploymentDetailsForm = ({
             spacing={2}
             sx={{ padding: "1rem 0" }}
           >
-            <Button
+            <ButtonV2
               variant={"tertiary"}
               fullWidth={false}
               onClick={onBack}
@@ -212,8 +212,8 @@ const EmploymentDetailsForm = ({
               iconPosition={isUpdate ? "end" : "start"}
             >
               {isUpdate ? translateText(["cancel"]) : translateText(["back"])}
-            </Button>
-            <Button
+            </ButtonV2>
+            <ButtonV2
               variant={"primary"}
               fullWidth={false}
               onClick={handleNext}
@@ -236,7 +236,7 @@ const EmploymentDetailsForm = ({
               {isUpdate
                 ? translateText(["saveDetails"])
                 : translateText(["next"])}
-            </Button>
+            </ButtonV2>
           </Stack>
         )}
       </>

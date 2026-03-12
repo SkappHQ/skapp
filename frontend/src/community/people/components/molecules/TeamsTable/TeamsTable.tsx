@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -190,12 +190,12 @@ const TeamsTable: FC<Props> = ({
             />
           </>
         ) : (
-          <Button
+          <ButtonV2
             variant={"tertiary"}
             onClick={() => handleEditTeam(teamDetails)}
           >
             {translateText(["viewBtnText"])}
-          </Button>
+          </ButtonV2>
         )
       }));
   };

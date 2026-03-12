@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { MouseEvent, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -64,7 +64,7 @@ const Dropdown = <T extends string | { [key: string]: any }>({
 
   return (
     <Box sx={mergeSx([{ width: "100%" }, wrapperStyles])}>
-      <Button
+      <ButtonV2
         variant={"tertiary"}
         size={buttonSize}
         onClick={handleOpenClick}
@@ -76,7 +76,7 @@ const Dropdown = <T extends string | { [key: string]: any }>({
         iconPosition="end"
       >
         {title}
-      </Button>
+      </ButtonV2>
       <Popper
         anchorEl={anchorEl}
         open={popperOpen}

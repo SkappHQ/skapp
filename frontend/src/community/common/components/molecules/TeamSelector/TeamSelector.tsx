@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -100,7 +100,7 @@ const TeamSelector = ({
   return (
     <>
       <Box sx={{ paddingLeft: "1rem" }}>
-        <Button
+        <ButtonV2
           variant={"tertiary"}
           size={"md"}
           disabled={isTeamListEmpty && !isAdmin}
@@ -112,7 +112,7 @@ const TeamSelector = ({
           iconPosition="end"
         >
           {!isTeamListEmpty ? selectedOptionName : translateTexts(["allLabel"])}
-        </Button>
+        </ButtonV2>
       </Box>
       <Popper
         anchorEl={anchorEl}

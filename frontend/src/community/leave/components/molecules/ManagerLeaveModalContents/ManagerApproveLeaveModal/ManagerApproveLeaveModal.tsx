@@ -1,17 +1,16 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
 import { useGetUploadedLeaveAttachments } from "~community/common/api/FileHandleApi";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
-import { Button } from "@rootcodelabs/skapp-ui";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useHandelLeaves } from "~community/leave/api/LeaveApi";
@@ -323,8 +322,23 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
       </Box>
 
       <Stack spacing={2} sx={{ mt: "1rem" }}>
-        <Button onClick={handleApprove} aria-label={translateText(["approveAreaLabel"])} icon={<CheckIcon />} iconPosition="end">{translateText(["approveLeave"])}</Button>
-        <Button variant={"error"} onClick={handleDeclineModel} aria-label={translateText(["cancelAreaLabel"])} icon={<CloseIcon />} iconPosition="end">{translateText(["declineLeave"])}</Button>
+        <ButtonV2
+          onClick={handleApprove}
+          aria-label={translateText(["approveAreaLabel"])}
+          icon={<CheckIcon />}
+          iconPosition="end"
+        >
+          {translateText(["approveLeave"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"error"}
+          onClick={handleDeclineModel}
+          aria-label={translateText(["cancelAreaLabel"])}
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["declineLeave"])}
+        </ButtonV2>
       </Stack>
     </Box>
   );

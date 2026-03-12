@@ -1,10 +1,9 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { Button } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { CalendarType } from "~community/common/enums/CommonEnums";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -43,8 +42,21 @@ const CalendarDisconnectModal = ({
             mt: 2
           }}
         >
-          <Button onClick={onConfirmDisconnect} icon={<Icon name={IconName.TICK_ICON} />} iconPosition="end">{translateText(["confirmBtn"])}</Button>
-          <Button onClick={onCloseModal} variant={"tertiary"} icon={<Icon name={IconName.CLOSE_ICON} />} iconPosition="end">{translateText(["cancelBtn"])}</Button>
+          <ButtonV2
+            onClick={onConfirmDisconnect}
+            icon={<Icon name={IconName.TICK_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["confirmBtn"])}
+          </ButtonV2>
+          <ButtonV2
+            onClick={onCloseModal}
+            variant={"tertiary"}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtn"])}
+          </ButtonV2>
         </Box>
       </Box>
     </Modal>

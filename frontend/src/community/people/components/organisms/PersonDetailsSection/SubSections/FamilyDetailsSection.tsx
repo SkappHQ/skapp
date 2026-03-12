@@ -1,5 +1,5 @@
 import { Grid2 as Grid } from "@mui/material";
-import { Button } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -273,7 +273,7 @@ const FamilyDetailsSection = ({
 
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           {!isInputsDisabled && (
-            <Button
+            <ButtonV2
               fullWidth={false}
               onClick={() => handleSubmit()}
               variant={"secondary"}
@@ -292,7 +292,7 @@ const FamilyDetailsSection = ({
               {rowEdited > -1
                 ? translateButtonText(["saveChanges"])
                 : translateButtonText(["add"])}
-            </Button>
+            </ButtonV2>
           )}
         </Grid>
 
