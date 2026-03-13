@@ -15,7 +15,7 @@ type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
 interface Props {
   userRoles: Role[] | undefined;
-  tier: string;
+  tiers: TierEnum[];
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
   tenantID?: string;
@@ -28,7 +28,7 @@ interface Props {
 
 const getDrawerRoutes = ({
   userRoles,
-  tier,
+  tiers,
   isEnterprise,
   globalLoginMethod,
   tenantID,
@@ -236,7 +236,7 @@ const getDrawerRoutes = ({
         if (isSuperAdmin) {
           const subRoutes = route?.subTree?.filter((subRoute) => {
             if (subRoute.name === "Integrations") {
-              return tier === TierEnum.PRO;
+              return tiers.includes(TierEnum.PRO);
             }
 
             return subRoute.requiredAuthLevel?.some((requiredRole) =>
