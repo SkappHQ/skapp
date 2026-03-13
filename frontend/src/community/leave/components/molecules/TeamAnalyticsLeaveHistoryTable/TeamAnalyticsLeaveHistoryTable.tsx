@@ -1,20 +1,15 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import Table from "~community/common/components/molecules/Table/Table";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
@@ -35,7 +30,6 @@ import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/Lea
 
 import RequestDates from "../LeaveRequestRow/RequestDates";
 import MultiselectEmployeeFilter from "../MultiselectEmployeeFilter/MultiselectEmployeeFilter";
-import styles from "./styles";
 
 interface Props {
   leaveHistory: LeaveHistoryDataTypes;
@@ -60,7 +54,6 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
     type: []
   });
   const { data: leaveTypesData } = useGetLeaveTypes();
-  const classes = styles();
 
   const {
     resetTeamLeaveAnalyticsParams,
@@ -264,68 +257,39 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       id={"filter-types"}
       isResetBtnDisabled={!filter.type.length && !filter.status.length}
     >
-      <Typography variant="h5">
-        {translateText(["filterButtonStatus"])}
-      </Typography>
-      <Stack sx={classes.filterStackStyles}>
-        {leaveStatusArray.map((leaveStatus) => (
-          <Button
-            key={leaveStatus}
-            label={pascalCaseFormatter(leaveStatus)}
-            isFullWidth={false}
-            onClick={() => {
-              setFilter((prev) => ({
-                ...prev,
-                status: prev.status.includes(leaveStatus)
-                  ? prev.status.filter((item) => item !== leaveStatus)
-                  : [...prev.status, leaveStatus]
-              }));
-            }}
-            buttonStyle={
-              filter.status.includes(leaveStatus)
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            size={ButtonSizes.MEDIUM}
-            startIcon={
-              filter.status.includes(leaveStatus)
-                ? IconName.CHECK_CIRCLE_ICON
-                : null
-            }
-            styles={classes.filterChipButtonStyles}
-          />
-        ))}
-      </Stack>
-      <Typography variant="h5">
-        {translateText(["filterButtonType"])}
-      </Typography>
-      <Stack sx={classes.filterStackStyles}>
-        {leaveTypeOptions.map(({ id, name }: { id: string; name: string }) => (
-          <Button
-            key={id}
-            label={name}
-            isFullWidth={false}
-            onClick={() => {
-              setFilter((prev) => ({
-                ...prev,
-                type: prev.type.includes(id)
-                  ? prev.type.filter((item) => item !== id)
-                  : [...prev.type, id]
-              }));
-            }}
-            buttonStyle={
-              filter.type.includes(id)
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            size={ButtonSizes.MEDIUM}
-            startIcon={
-              filter.type.includes(id) ? IconName.CHECK_CIRCLE_ICON : null
-            }
-            styles={classes.filterChipButtonStyles}
-          />
-        ))}
-      </Stack>
+      <SelectableItemList
+        title={translateText(["filterButtonStatus"])}
+        items={leaveStatusArray.map((leaveStatus) => ({
+          label: pascalCaseFormatter(leaveStatus),
+          value: leaveStatus
+        }))}
+        selectedValues={filter.status}
+        onChipClick={(statusValue) => {
+          setFilter((prev) => ({
+            ...prev,
+            status: prev.status.includes(statusValue)
+              ? prev.status.filter((item) => item !== statusValue)
+              : [...prev.status, statusValue]
+          }));
+        }}
+      />
+
+      <SelectableItemList
+        title={translateText(["filterButtonType"])}
+        items={leaveTypeOptions.map(({ id, name }) => ({
+          label: name,
+          value: id
+        }))}
+        selectedValues={filter.type}
+        onChipClick={(typeId) => {
+          setFilter((prev) => ({
+            ...prev,
+            type: prev.type.includes(typeId)
+              ? prev.type.filter((item) => item !== typeId)
+              : [...prev.type, typeId]
+          }));
+        }}
+      />
     </FilterButton>
   );
 

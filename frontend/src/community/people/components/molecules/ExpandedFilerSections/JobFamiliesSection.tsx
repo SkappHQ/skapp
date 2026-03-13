@@ -1,8 +1,6 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject, useState } from "react";
 
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import FilterSearch from "~community/common/components/molecules/FilterSearch/FilterSearch";
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,20 +8,15 @@ import {
   FilterButtonTypes,
   FilterSearchSuggestionsType
 } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
-import { PeopleFilterHeadings } from "~community/people/types/CommonTypes";
 
 const JobFamiliesSection = ({
   jobFamilies,
-  basicChipRef,
-  selected
+  basicChipRef
 }: {
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
-  selected: PeopleFilterHeadings;
-  jobFamilies?: FilterButtonTypes[] | undefined;
+  jobFamilies?: FilterButtonTypes[];
 }) => {
-  const theme = useTheme();
   const queryMatches = useMediaQuery();
   const isSmallScreen = queryMatches(`(max-width: 1150px)`);
   const translateText = useTranslator("peopleModule", "peoples.filters");
@@ -59,21 +52,15 @@ const JobFamiliesSection = ({
   };
 
   return (
-    <Stack>
-      <Stack>
-        <Typography
-          variant={isSmallScreen ? "caption" : "body2"}
-          sx={{
-            fontWeight: "600",
-            marginBottom: 2
-          }}
-        >
+    <div>
+      <div>
+        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
           {translateText(["jobFamilies"])}
-        </Typography>
+        </p>
 
-        <Stack>
+        <div>
           {jobFamilies && jobFamilies.length > 8 ? (
-            <Stack>
+            <div>
               <FilterSearch
                 id="search-job-families-input"
                 setIsPopperOpen={setIsPopperOpen}
@@ -95,96 +82,53 @@ const JobFamiliesSection = ({
                   employeeDataFilter?.role as FilterSearchSuggestionsType[]
                 }
               />
-              <Stack
-                flexDirection={"row"}
-                sx={{
-                  gap: 0.5,
-                  flexWrap: "wrap"
-                }}
-              >
-                {employeeDataFilter?.role?.map((chip, index) => (
-                  <Stack key={index}>
-                    <IconChip
-                      ref={(el: HTMLDivElement | null) => {
-                        if (el && basicChipRef.current) {
-                          basicChipRef.current[selected + index] = el;
-                        }
-                      }}
-                      label={chip.text}
-                      icon={
-                        <Icon
-                          name={IconName.SELECTED_ICON}
-                          fill={theme.palette.primary.dark}
-                        />
-                      }
-                      chipStyles={{
-                        backgroundColor: theme.palette.secondary.main,
-                        color: theme.palette.primary.dark,
-                        padding: "8px 12px"
-                      }}
-                      onClick={() => {
-                        setEmployeeDataFilter(
-                          "role",
-                          employeeDataFilter.role.filter(
-                            (currentFilter) => currentFilter !== chip
-                          )
-                        );
-                      }}
-                    />
-                  </Stack>
-                ))}
-              </Stack>
-            </Stack>
-          ) : (
-            <Stack
-              flexDirection={"row"}
-              sx={{
-                gap: 0.5,
-                flexWrap: "wrap"
-              }}
-            >
-              {jobFamilies?.map((jobFamily, index) => (
-                <Stack key={index}>
-                  <IconChip
-                    ref={(el: HTMLDivElement | null) => {
-                      if (el && basicChipRef.current) {
-                        basicChipRef.current[selected + index] = el;
+              {employeeDataFilter?.role &&
+                employeeDataFilter.role.length > 0 && (
+                  <SelectableItemList<string | number>
+                    items={employeeDataFilter.role.map((role) => ({
+                      label: role.text,
+                      value: role.id ?? ""
+                    }))}
+                    selectedValues={employeeDataFilter.role.map(
+                      (role) => role.id ?? ""
+                    )}
+                    onChipClick={(id) => {
+                      const roleToRemove = employeeDataFilter.role.find(
+                        (r) => (r.id ?? "") === id
+                      );
+                      if (roleToRemove) {
+                        handleJobFamilySelect(roleToRemove);
                       }
                     }}
-                    label={jobFamily.text}
-                    onClick={() => handleJobFamilySelect(jobFamily)}
-                    icon={
-                      employeeDataFilter.role.some(
-                        (item) => item.id === jobFamily.id
-                      ) ? (
-                        <Icon
-                          name={IconName.SELECTED_ICON}
-                          fill={theme.palette.primary.dark}
-                        />
-                      ) : undefined
-                    }
-                    chipStyles={{
-                      backgroundColor: employeeDataFilter.role.some(
-                        (item) => item.id === jobFamily.id
-                      )
-                        ? theme.palette.secondary.main
-                        : theme.palette.grey[100],
-                      color: employeeDataFilter.role.some(
-                        (item) => item.id === jobFamily.id
-                      )
-                        ? theme.palette.primary.dark
-                        : "black",
-                      padding: "8px 12px",
-                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
-                    }}
+                    chipRefs={basicChipRef}
                   />
-                </Stack>
-              ))}
-            </Stack>
+                )}
+            </div>
+          ) : (
+            <SelectableItemList<string | number>
+              items={
+                jobFamilies?.map((jobFamily) => ({
+                  label: jobFamily.text,
+                  value: jobFamily.id ?? ""
+                })) ?? []
+              }
+              selectedValues={employeeDataFilter.role.map(
+                (role) => role.id ?? ""
+              )}
+              onChipClick={(id) => {
+                const jobFamily = jobFamilies?.find(
+                  (jf) => (jf.id ?? "") === id
+                );
+                if (jobFamily) {
+                  handleJobFamilySelect(jobFamily);
+                }
+              }}
+              chipRefs={basicChipRef}
+            />
           )}
-        </Stack>
-      </Stack>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 };
 
