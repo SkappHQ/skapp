@@ -1762,10 +1762,6 @@ public class TimeServiceImpl implements TimeService {
 		if (timeRecord.getClockInTime() == null) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_CLOCK_IN_NOT_FOUND);
 		}
-
-		if (timeRecord.getClockOutTime() == null) {
-			throw new ModuleException(TimeMessageConstant.TIME_ERROR_CLOCK_OUT_NOT_FOUND);
-		}
 	}
 
 	private TimeRequest timeRequestBuilder(TimeRequestDto timeRequestDto, Employee employee, TimeRecord timeRecord) {
