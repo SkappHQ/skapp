@@ -33,6 +33,10 @@ public class FieldResponseDto {
 
 	private String height;
 
+	private float widthPercentage;
+
+	private float heightPercentage;
+
 	private FieldValueResponseDto fieldValueResponseDto;
 
 }

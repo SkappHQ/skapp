@@ -38,6 +38,18 @@ public class AdvanceTemplateFieldDto {
 	@DecimalMin(value = "0.0", message = "{validation.template.field.height.min}")
 	private Float height;
 
+	@NotNull(message = "{validation.template.field.width-percentage.notnull}")
+	private Float widthPercentage;
+
+	@NotNull(message = "{validation.template.field.height-percentage.notnull}")
+	private Float heightPercentage;
+
 	private FieldOptionDto fieldOption;
+
+	private Float horizontalPadding;
+
+	private Float verticalPadding;
+
+	private Float textLineHeight;
 
 }

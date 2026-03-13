@@ -94,6 +94,7 @@ import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -577,6 +578,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			Document fieldDocument = documentDao.findById(fieldDto.getDocumentId())
 				.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
 
+			EsignValidations.validateEnvelopeFieldMetaData(fieldDto.getWidthPercentage(),
+					fieldDto.getHeightPercentage());
+
 			Field field = new Field();
 			field.setType(fieldDto.getType());
 			field.setStatus(fieldDto.getStatus());
@@ -585,6 +589,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			field.setYPosition(fieldDto.getYPosition());
 			field.setWidth(fieldDto.getWidth());
 			field.setHeight(fieldDto.getHeight());
+			field.setWidthPercentage(fieldDto.getWidthPercentage());
+			field.setWidthPercentage(fieldDto.getHeightPercentage());
 			field.setDocument(fieldDocument);
 			field.setRecipient(recipient);
 
@@ -597,9 +603,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		List<Field> fieldList = new ArrayList<>();
 		for (FieldContainerDto fieldContainerDto : fieldContainerDtos) {
 
-			if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
-				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
-			}
+			validateAdvanceFieldContainerValues(fieldContainerDto);
 
 			Set<FieldType> fieldTypes = fieldContainerDto.getFields()
 				.stream()
@@ -660,6 +664,10 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 
 			for (AdvanceFieldDto advanceFieldDto : fieldContainerDto.getFields()) {
+
+				EsignValidations.validateEnvelopeFieldMetaData(advanceFieldDto.getWidthPercentage(),
+						advanceFieldDto.getHeightPercentage());
+
 				fieldList.add(createAdvanceField(advanceFieldDto, recipient, fieldContainer, existingOptionValue,
 						existingDisplayOrder));
 			}
@@ -673,9 +681,15 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			FieldContainer fieldContainer, Set<String> existingOptionValue, Set<Integer> existingDisplayOrder) {
 		Document fieldDocument = documentDao.findById(advanceFieldDto.getDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_DOCUMENT_ID_NOT_FOUND));
+
 		Field field = eSignMapper.advanceFieldDtoToField(advanceFieldDto);
 		field.setXPosition(advanceFieldDto.getXPosition());
 		field.setYPosition(advanceFieldDto.getYPosition());
+		field.setHorizontalPadding(
+				advanceFieldDto.getHorizontalPadding() != null ? advanceFieldDto.getHorizontalPadding() : 0);
+		field.setVerticalPadding(
+				advanceFieldDto.getVerticalPadding() != null ? advanceFieldDto.getVerticalPadding() : 0);
+		field.setTextLineHeight(advanceFieldDto.getTextLineHeight() != null ? advanceFieldDto.getTextLineHeight() : 0);
 		field.setRecipient(recipient);
 		field.setDocument(fieldDocument);
 		field.setFieldContainer(fieldContainer);
@@ -718,6 +732,26 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
 		}
+	}
+
+	private void validateAdvanceFieldContainerValues(FieldContainerDto fieldContainerDto) {
+
+		if (fieldContainerDto.getFields() == null || fieldContainerDto.getFields().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontFamily() == null || fieldContainerDto.getFontFamily().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontColor() == null || fieldContainerDto.getFontColor().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (fieldContainerDto.getFontSize() == null || fieldContainerDto.getFontSize() <= 0) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER);
+		}
+
 	}
 
 	private void processVoidRequest(Envelope envelope) {
