@@ -428,13 +428,18 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Sign the processed PDF (if signing is enabled via feature flag)
 		// This will sign the document WITH the appended certificate
-		String finalDocumentPath = signAndUploadDocument(documentVersion, processedDocumentBytes);
+		UploadedDocument uploadedDocument = signAndUploadDocument(documentVersion, processedDocumentBytes);
+		String finalDocumentPath = uploadedDocument.path();
 
 		// Update document version with final file path
-		if (finalDocumentPath != null) {
+		{
+			KeyPair keyPairOwner = loadKeyPair(document.getEnvelope().getOwner().getId());
+			String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(uploadedDocument.uploadedBytes()));
+			String signatureWithAuditTrail = signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
+					keyPairOwner.getPrivate());
 
-			DocumentVersion auditTrailAppendedVersion = verifyDocumentVersionsRelatedToDocument(document,
-					documentVersion, processedDocumentBytes);
+			DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(documentVersion, finalDocumentPath,
+					newHashWithAuditTrail, signatureWithAuditTrail, document.getEnvelope().getOwner());
 			documentVersionDao.save(auditTrailAppendedVersion);
 
 			document.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
@@ -653,19 +658,21 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// Sign the processed PDF (if signing is enabled via feature flag)
 			// This will sign the document WITH the appended certificate
-			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
+			UploadedDocument uploadedFinalDocument = signAndUploadDocument(finalVersion, processedDocumentBytes);
 
 			// Create a new document version for the final signed PDF (after signing with
 			// the sender's key) with certificate along with the audit trail (if signing
 			// is enabled)
-			if (finalDocumentPath != null) {
-				String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
+			if (uploadedFinalDocument.path() != null) {
+				String newHashWithAuditTrail = hashDocument(
+						new ByteArrayInputStream(uploadedFinalDocument.uploadedBytes()));
 
 				String signatureWithAuditTrail = signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
 						keyPairSender.getPrivate());
 
-				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
-						newHashWithAuditTrail, signatureWithAuditTrail, envelope.getOwner());
+				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion,
+						uploadedFinalDocument.path(), newHashWithAuditTrail, signatureWithAuditTrail,
+						envelope.getOwner());
 
 				DocumentVersion auditTrailAppendedDocumentVersion = documentVersionDao.save(auditTrailAppendedVersion);
 
@@ -730,12 +737,17 @@ public class DocumentServiceImpl implements DocumentService {
 	/**
 	 * Signs the document bytes (if signing is enabled) and uploads to S3. This method is
 	 * designed to work with certificate-appended bytes when that feature is merged.
+	 *
 	 * @param documentVersion The document version to update with signature metadata
 	 * @param documentBytes The document bytes to sign (can be original or with appended
 	 * certificate)
 	 * @return The S3 path of the uploaded document, or null if upload failed
 	 */
-	private String signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
+	private record UploadedDocument(String path, byte[] uploadedBytes) {
+
+	}
+
+	private UploadedDocument signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
 		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
 
 		return signedResult.map(result -> {
@@ -749,12 +761,12 @@ public class DocumentServiceImpl implements DocumentService {
 			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
 
 			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return path;
+			return new UploadedDocument(path, result.getSignedPdfBytes());
 		}).orElseGet(() -> {
 			// Signing disabled or failed - upload unsigned document
 			String path = uploadProcessedDocumentVersion(documentBytes);
 			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
-			return path;
+			return new UploadedDocument(path, documentBytes);
 		});
 	}
 
