@@ -907,28 +907,26 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		dto.setEmail(employee.getUser().getEmail());
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
-			.filter(entitlement -> entitlement.isActive()
+			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual()
 					&& isDateInRange(entitlement.getValidFrom(), entitlement.getValidTo(), validFrom, validTo))
-			.collect(Collectors.groupingBy(entitlement -> entitlement.getLeaveType().getTypeId()))
-			.entrySet()
+			.collect(Collectors.toMap(entitlement -> entitlement.getLeaveType().getTypeId(), entitlement -> {
+				CustomEntitlementDto customEntitlementDto = new CustomEntitlementDto();
+				customEntitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
+				customEntitlementDto.setName(entitlement.getLeaveType().getName());
+				customEntitlementDto.setValidFrom(entitlement.getValidFrom());
+				customEntitlementDto.setValidTo(entitlement.getValidTo());
+				customEntitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated() != null
+						? String.valueOf(entitlement.getTotalDaysAllocated()) : "0.0");
+				return customEntitlementDto;
+			}, (existing, incoming) -> {
+				// Merge duplicate leave types by summing allocated days
+				float merged = Float.parseFloat(existing.getTotalDaysAllocated())
+						+ Float.parseFloat(incoming.getTotalDaysAllocated());
+				existing.setTotalDaysAllocated(String.valueOf(merged));
+				return existing;
+			}))
+			.values()
 			.stream()
-			.map(entry -> {
-				List<LeaveEntitlement> groupEntitlementsByLeaveType = entry.getValue();
-				LeaveEntitlement leaveTypeValue = groupEntitlementsByLeaveType.getFirst();
-
-				float totalDaysAllocated = groupEntitlementsByLeaveType.stream()
-					.map(LeaveEntitlement::getTotalDaysAllocated)
-					.filter(Objects::nonNull)
-					.reduce(0f, Float::sum);
-
-				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
-				entitlementDto.setLeaveTypeId(leaveTypeValue.getLeaveType().getTypeId());
-				entitlementDto.setTotalDaysAllocated(String.valueOf(totalDaysAllocated));
-				entitlementDto.setName(leaveTypeValue.getLeaveType().getName());
-				entitlementDto.setValidFrom(leaveTypeValue.getValidFrom());
-				entitlementDto.setValidTo(leaveTypeValue.getValidTo());
-				return entitlementDto;
-			})
 			.toList();
 
 		dto.setEntitlements(entitlementDtos);
