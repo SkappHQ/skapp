@@ -89,6 +89,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -714,6 +715,14 @@ public class DocumentServiceImpl implements DocumentService {
 		String signature = signDocument(Base64.getDecoder().decode(newHash), signerPrivateKey);
 		DocumentVersion auditTrailVersion = buildNewDocumentVersion(baseVersion, uploadedDocument.path(), newHash,
 				signature, document.getEnvelope().getOwner());
+
+		if (uploadedDocument.isPdfSigned()) {
+			auditTrailVersion.setIsPdfSigned(true);
+			auditTrailVersion.setPdfSignedAt(uploadedDocument.pdfSignedAt());
+			auditTrailVersion.setCertificateSerialNumber(uploadedDocument.certificateSerialNumber());
+			auditTrailVersion.setSignatureAlgorithm(uploadedDocument.signatureAlgorithm());
+		}
+
 		DocumentVersion saved = documentVersionDao.save(auditTrailVersion);
 		document.setCurrentVersion(saved.getVersionNumber());
 		documentRepository.save(document);
@@ -723,22 +732,14 @@ public class DocumentServiceImpl implements DocumentService {
 		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
 
 		return signedResult.map(result -> {
-			// Upload signed PDF to S3
 			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
-
-			// Update document version with signature metadata
-			documentVersion.setIsPdfSigned(true);
-			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
-			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
-			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
-
 			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return new UploadedDocument(path, result.getSignedPdfBytes());
+			return UploadedDocument.signed(path, result.getSignedPdfBytes(), result.getCertificateSerialNumber(),
+					result.getSignatureAlgorithm());
 		}).orElseGet(() -> {
-			// Signing disabled or failed - upload unsigned document
 			String path = uploadProcessedDocumentVersion(documentBytes);
 			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
-			return new UploadedDocument(path, documentBytes);
+			return UploadedDocument.unsigned(path, documentBytes);
 		});
 	}
 
@@ -1601,7 +1602,16 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionField.setDocumentVersion(version);
 	}
 
-	private record UploadedDocument(String path, byte[] uploadedBytes) {
+	private record UploadedDocument(String path, byte[] uploadedBytes, boolean isPdfSigned, LocalDateTime pdfSignedAt,
+			String certificateSerialNumber, String signatureAlgorithm) {
+
+		static UploadedDocument signed(String path, byte[] bytes, String certSerial, String sigAlgorithm) {
+			return new UploadedDocument(path, bytes, true, getCurrentUtcDateTime(), certSerial, sigAlgorithm);
+		}
+
+		static UploadedDocument unsigned(String path, byte[] bytes) {
+			return new UploadedDocument(path, bytes, false, null, null, null);
+		}
 	}
 
 	private record DocumentVersionFieldBulk(List<DocumentVersionField> documentVersionFields, List<Field> fields) {
