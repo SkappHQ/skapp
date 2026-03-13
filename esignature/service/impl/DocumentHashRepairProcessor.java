@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyPair;
 import java.util.Base64;
 
@@ -123,13 +125,10 @@ public class DocumentHashRepairProcessor {
 		catch (Exception e) {
 			log.error("{} Failed to repair {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
 			response.addDetail(DETAIL_FAILED + " | " + docLabel + " | " + e.getMessage());
+			response.addFailedDocumentId(document.getId());
 			response.setFailed(response.getFailed() + 1);
 		}
 	}
-
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
 
 	/**
 	 * Use {@link DocumentService#verifyDocumentSignature} to check hash + signature.
@@ -185,15 +184,29 @@ public class DocumentHashRepairProcessor {
 	}
 
 	private byte[] downloadFile(DocumentVersion version, String docLabel, DocumentHashRepairResponseDto response) {
-		byte[] fileBytes = amazonS3Service.downloadFileAsBytes(bucketName, version.getFilePath());
+		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, version.getFilePath())) {
+			if (inputStream == null) {
+				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
+				response.addDetail(DETAIL_SKIP + " | " + docLabel + " | empty S3 file");
+				response.setSkipped(response.getSkipped() + 1);
+				return null;
+			}
 
-		if (fileBytes == null || fileBytes.length == 0) {
-			log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
-			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | empty S3 file");
+			byte[] fileBytes = inputStream.readAllBytes();
+			if (fileBytes.length == 0) {
+				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
+				response.addDetail(DETAIL_SKIP + " | " + docLabel + " | empty S3 file");
+				response.setSkipped(response.getSkipped() + 1);
+				return null;
+			}
+			return fileBytes;
+		}
+		catch (IOException e) {
+			log.error("{} Failed to download S3 file for {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
+			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | S3 download error: " + e.getMessage());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
-		return fileBytes;
 	}
 
 	private KeyPair loadKeyPairForEnvelope(Envelope envelope, String docLabel, DocumentHashRepairResponseDto response) {

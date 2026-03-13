@@ -35,7 +35,7 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 	private final DocumentHashRepairProcessor repairProcessor;
 
 	// -------------------------------------------------------------------------
-	// Public API
+	// Internal Use Only API
 	// -------------------------------------------------------------------------
 
 	@Override

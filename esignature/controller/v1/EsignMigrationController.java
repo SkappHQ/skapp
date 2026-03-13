@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("internal/v1/ep/esign/migration")
+@RequestMapping("/internal/v1/ep/esign/migration")
 @Tag(name = "ESign Migration", description = "Maintenance endpoints for eSign data repair (requires Client API Key)")
 public class EsignMigrationController {
 
@@ -30,7 +30,7 @@ public class EsignMigrationController {
 					+ "and updates any mismatches in the database. Authenticate with 'x-api-key' header.",
 			security = @SecurityRequirement(name = "ClientApiKey"))
 	@PostMapping(value = "/repair-document-hashes", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAuthority('MIGRATION_TOOL_API_KEY')")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<DocumentHashRepairResponseDto> repairDocumentHashes(@Parameter(
 			description = "Tenant ID (schema name) to repair", required = true) @RequestParam String tenantId) {
 
