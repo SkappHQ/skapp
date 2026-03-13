@@ -147,7 +147,6 @@ const SystemCredentials: React.FC = () => {
           variant={"tertiary"}
           onClick={handleResetPassword}
           isLoading={isLoading}
-          fullWidth={false}
           icon={<Icon name={IconName.LOCK_ICON} />}
           iconPosition="start"
         >
@@ -158,7 +157,6 @@ const SystemCredentials: React.FC = () => {
           variant={"tertiary"}
           onClick={handleShareCredentials}
           isLoading={isLoading}
-          fullWidth={false}
           icon={<Icon name={IconName.SHARE_ICON} />}
           iconPosition="start"
         >

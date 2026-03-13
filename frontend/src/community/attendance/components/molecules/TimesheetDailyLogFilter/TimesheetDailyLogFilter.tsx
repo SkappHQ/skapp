@@ -289,7 +289,7 @@ const TimesheetDailyLogFilter = ({
           )}
       </Stack>
       <ButtonV2
-        fullWidth={false}
+        isFullWidth={false}
         variant={"tertiary"}
         size={"sm"}
         onClick={(event: MouseEvent<HTMLElement>) => {

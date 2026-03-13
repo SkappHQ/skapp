@@ -528,7 +528,6 @@ const LeaveTypeForm = () => {
 
           <Stack sx={classes.buttonWrapper}>
             <ButtonV2
-              fullWidth={false}
               variant={"tertiary"}
               onClick={handleCancelBtnClick}
               icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -538,7 +537,6 @@ const LeaveTypeForm = () => {
             </ButtonV2>
             <ButtonV2
               type={"submit"}
-              fullWidth={false}
               disabled={!isSaveBtnActive}
               isLoading={isAddingLeaveTypePending || isEditingLeaveTypePending}
               className={

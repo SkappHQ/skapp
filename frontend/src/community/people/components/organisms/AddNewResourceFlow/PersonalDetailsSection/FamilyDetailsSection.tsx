@@ -331,7 +331,6 @@ const FamilyDetailsSection = (props: Props): JSX.Element => {
           <Grid size={{ xs: 12, md: 6, xl: 4 }}>
             {!isInputsDisabled && (
               <ButtonV2
-                fullWidth={false}
                 onClick={() => handleSubmit()}
                 variant={"secondary"}
                 size={"md"}

@@ -213,7 +213,6 @@ const OrganizationSettings = (): JSX.Element => {
           <Stack sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
             <ButtonV2
               variant={"tertiary"}
-              fullWidth={false}
               onClick={handleCancel}
               disabled={isLoading}
               icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -228,7 +227,6 @@ const OrganizationSettings = (): JSX.Element => {
               }
               isLoading={isLoading}
               onClick={() => handleSubmit()}
-              fullWidth={false}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >

@@ -454,7 +454,6 @@ const Drawer = (): JSX.Element => {
           <Stack sx={classes.footer}>
             <ButtonV2
               size={"sm"}
-              fullWidth={false}
               variant={"tertiary"}
               onClick={handleOpenSubmitRequestModal}
               data-testid={appDrawerTestId.getHelpLink}

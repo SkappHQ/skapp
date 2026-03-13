@@ -86,7 +86,6 @@ const TableFoot: FC<TableProps & TableFootProps> = ({
           <ButtonV2
             variant={"tertiary"}
             size={"md"}
-            fullWidth={false}
             isLoading={exportBtn.isLoading}
             disabled={exportBtn.disabled}
             onClick={exportBtn.onClick}

@@ -78,7 +78,6 @@ const LeaveTypeBreakdownButtons = ({
           <ButtonV2
             disabled={isFreeTier}
             key={filterType}
-            fullWidth={false}
             onClick={() => onClick(filterType)}
             variant={toggle[filterType] ? "secondary" : "tertiary"}
             size={"sm"}

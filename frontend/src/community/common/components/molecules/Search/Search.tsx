@@ -214,14 +214,14 @@ const Search: FC<Props> = ({
         >
           <ButtonV2
             variant={selectedTab === "Individual" ? "secondary" : "tertiary"}
-            fullWidth={false}
+            isFullWidth={false}
             onClick={() => searchButtonHandler("Individual")}
           >
             {translateText(["individual"])}
           </ButtonV2>
           <ButtonV2
             variant={selectedTab === "Team" ? "secondary" : "tertiary"}
-            fullWidth={false}
+            isFullWidth={false}
             onClick={() => searchButtonHandler("Team")}
           >
             {translateText(["team"])}

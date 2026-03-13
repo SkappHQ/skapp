@@ -618,7 +618,6 @@ const CareerProgressionDetailsSection = ({
                 {!isInputsDisabled && (
                   <ButtonV2
                     onClick={() => handleSubmit()}
-                    fullWidth={false}
                     variant={"secondary"}
                     size={"md"}
                     type={"submit"}

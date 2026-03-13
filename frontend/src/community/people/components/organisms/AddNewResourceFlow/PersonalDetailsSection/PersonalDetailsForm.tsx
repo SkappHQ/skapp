@@ -200,7 +200,6 @@ const PersonalDetailsForm = ({
           {isUpdate && (
             <ButtonV2
               variant={"tertiary"}
-              fullWidth={false}
               onClick={onBack}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
               icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -211,7 +210,6 @@ const PersonalDetailsForm = ({
           )}
           <ButtonV2
             variant={"primary"}
-            fullWidth={false}
             onClick={handleNext}
             disabled={isSubmitDisabled || isLoading || isInputsDisabled}
             isLoading={isLoading}

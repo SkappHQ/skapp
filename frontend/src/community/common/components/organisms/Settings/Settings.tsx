@@ -8,12 +8,10 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";

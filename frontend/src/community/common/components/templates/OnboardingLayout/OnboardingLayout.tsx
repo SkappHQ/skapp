@@ -76,7 +76,6 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
       {children}
       <ButtonV2
         variant={"primary"}
-        fullWidth={false}
         onClick={onClick}
         disabled={disabled}
         isLoading={isLoading}

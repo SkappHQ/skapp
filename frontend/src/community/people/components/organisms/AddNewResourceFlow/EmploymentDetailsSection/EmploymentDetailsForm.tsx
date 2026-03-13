@@ -194,7 +194,6 @@ const EmploymentDetailsForm = ({
           >
             <ButtonV2
               variant={"tertiary"}
-              fullWidth={false}
               onClick={onBack}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
               data-testid={
@@ -215,7 +214,6 @@ const EmploymentDetailsForm = ({
             </ButtonV2>
             <ButtonV2
               variant={"primary"}
-              fullWidth={false}
               onClick={handleNext}
               isLoading={isLoading}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}

@@ -32,7 +32,6 @@ const EditSectionButtonWrapper = ({ onCancelClick, onSaveClick }: Props) => {
     >
       <ButtonV2
         variant={"tertiary"}
-        fullWidth={false}
         onClick={onCancelClick}
         disabled={!hasChanged}
         icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -42,7 +41,6 @@ const EditSectionButtonWrapper = ({ onCancelClick, onSaveClick }: Props) => {
       </ButtonV2>
       <ButtonV2
         variant={"primary"}
-        fullWidth={false}
         onClick={onSaveClick}
         disabled={!hasChanged && profilePic === null}
         icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}

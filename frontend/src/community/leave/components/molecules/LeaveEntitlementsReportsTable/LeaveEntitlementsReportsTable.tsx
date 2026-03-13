@@ -353,7 +353,6 @@ const LeaveEntitlementsReportsTable: FC = () => {
           />
           <ButtonV2
             variant={"tertiary"}
-            fullWidth={false}
             onClick={() => downloadCSV(SheetType.LeaveAllocation)}
             icon={<Icon name={IconName.DOWNLOAD_ICON} />}
             iconPosition="end"

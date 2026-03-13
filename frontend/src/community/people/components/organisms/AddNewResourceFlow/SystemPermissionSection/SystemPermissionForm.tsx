@@ -353,7 +353,6 @@ const SystemPermissionForm = ({
         {!isInputsDisabled && (
           <Stack sx={classes.btnWrapper}>
             <ButtonV2
-              fullWidth={false}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
               variant={"tertiary"}
               size={"lg"}
@@ -376,7 +375,6 @@ const SystemPermissionForm = ({
             </ButtonV2>
             <ButtonV2
               isLoading={isLoading}
-              fullWidth={false}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
               variant={"primary"}
               size={"lg"}

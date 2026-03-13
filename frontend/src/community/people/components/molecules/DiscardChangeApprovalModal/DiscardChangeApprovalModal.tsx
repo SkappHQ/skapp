@@ -223,7 +223,7 @@ const DiscardChangeApprovalModal = ({
         </Typography>
         <ButtonV2
           variant={"primary"}
-          fullWidth={true}
+          isFullWidth={true}
           onClick={handleSaveChanges}
           isLoading={
             typeof updateEmployeeStatus !== "undefined" &&
@@ -243,7 +243,7 @@ const DiscardChangeApprovalModal = ({
         </ButtonV2>
         <ButtonV2
           variant={"tertiary"}
-          fullWidth={true}
+          isFullWidth={true}
           onClick={handleDiscard}
           icon={<Icon name={IconName.CLOSE_ICON} />}
           iconPosition="end"

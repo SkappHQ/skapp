@@ -170,7 +170,6 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
         <>
           <Stack direction="row" gap={1} justifyContent="flex-start">
             <ButtonV2
-              fullWidth={false}
               variant={
                 employeeDataParams?.accountStatus?.includes(
                   EmploymentStatusTypes.ACTIVE
@@ -192,7 +191,6 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
               ])}
             </ButtonV2>
             <ButtonV2
-              fullWidth={false}
               variant={
                 employeeDataParams?.accountStatus?.includes(
                   EmploymentStatusTypes.PENDING
