@@ -918,12 +918,12 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 				customEntitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated() != null
 						? String.valueOf(entitlement.getTotalDaysAllocated()) : "0.0");
 				return customEntitlementDto;
-			}, (existing, incoming) -> {
+			}, (existingEntitlement, incomingEntitlement) -> {
 				// Merge duplicate leave types by summing allocated days
-				float merged = Float.parseFloat(existing.getTotalDaysAllocated())
-						+ Float.parseFloat(incoming.getTotalDaysAllocated());
-				existing.setTotalDaysAllocated(String.valueOf(merged));
-				return existing;
+				float merged = Float.parseFloat(existingEntitlement.getTotalDaysAllocated())
+						+ Float.parseFloat(incomingEntitlement.getTotalDaysAllocated());
+				existingEntitlement.setTotalDaysAllocated(String.valueOf(merged));
+				return existingEntitlement;
 			}))
 			.values()
 			.stream()
