@@ -1,8 +1,7 @@
 import { Box } from "@mui/material";
+import { Popper } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
-import Popper from "~community/common/components/molecules/Popper/Popper";
-import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import {
   MenuTypes,
   PopperAndTooltipPositionTypes
@@ -38,23 +37,14 @@ const EmployeeDataMenu = ({
   teams,
   jobFamilies
 }: Props): JSX.Element => {
-  const queryMatches = useMediaQuery();
-  const isSmallScreen = queryMatches(`(max-width: 1150px)`);
   return (
     <Popper
       anchorEl={anchorEl}
       open={open}
       position={position}
-      menuType={menuType}
       id={id}
       handleClose={handleClose}
-      containerStyles={{
-        width: isSmallScreen
-          ? "23.75rem"
-          : menuType === MenuTypes.SORT
-            ? "22.0625rem"
-            : "53.125rem"
-      }}
+      containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : "w-[800px]"}`}
     >
       <Box>
         {menuType === MenuTypes.SORT ? (

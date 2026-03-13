@@ -18,6 +18,7 @@
       "attachmentTypeError": "Please upload files in one of the following formats: {{supportedFiles}}"
     },
     "filterButton": {
+      "title": "Filters",
       "placeholder": "Filter",
       "allChip": "All",
       "applyBtn": "Apply filters",

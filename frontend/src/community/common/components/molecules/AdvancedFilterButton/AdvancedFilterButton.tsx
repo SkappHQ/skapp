@@ -1,19 +1,18 @@
+import { Box, Chip, Stack, useTheme } from "@mui/material";
 import {
-  Box,
-  Chip,
-  Divider,
-  List,
-  Stack,
-  Typography,
-  useTheme
-} from "@mui/material";
+  AdvancedFilterStructure,
+  Popper,
+  SelectableItemList,
+  SelectableList,
+  SelectedFiltersDisplay
+} from "@rootcodelabs/skapp-ui";
 import {
   Dispatch,
   JSX,
-  KeyboardEvent,
   MouseEvent,
   SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -26,19 +25,14 @@ import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import Button from "~community/common/components/atoms/Button/Button";
 import styles from "~community/common/components/molecules/FilterButton/styles";
-import Popper from "~community/common/components/molecules/Popper/Popper";
 import {
   ButtonSizes,
   ButtonStyle
 } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
-import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 
 import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
-import IconChip from "../../atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "../../atoms/Icon/Icon";
 
 interface FilterPanelProps {
   filterTypes: {
@@ -91,9 +85,15 @@ const FilterButton = ({
   }>(selectedFilters);
 
   const visibleFilterCount = 2;
-  const handleFilterTypeClick = (filterType: string) => {
-    setSelectedFilterType(filterType);
-  };
+
+  const filterTypeOptions = useMemo(
+    () =>
+      Object.keys(filterTypes).map((key) => ({
+        label: key,
+        value: key
+      })),
+    [filterTypes]
+  );
 
   useEffect(() => {
     setAppliedFilters(selectedFilters);
@@ -133,21 +133,30 @@ const FilterButton = ({
     setIsPopperOpen((prevState) => !prevState);
   };
 
-  const handleKeyDown = (
-    e: KeyboardEvent<HTMLDivElement>,
-    filterType: string
-  ) => {
-    if (shouldActivateButton(e.key)) {
-      handleFilterTypeClick(filterType);
+  const filterSections = useMemo(
+    () =>
+      Object.entries(appliedFilters)
+        .filter(([, values]) => values.length > 0)
+        .map(([filterType, values]) => ({
+          title: filterType,
+          items: values.map((value) => {
+            const label = filterTypes[filterType]?.find(
+              (item) => item.value === value
+            )?.label;
+            return label || String(value);
+          })
+        })),
+    [appliedFilters, filterTypes]
+  );
 
-      requestAnimationFrame(() => {
-        const firstChildKey = `${filterType}0`;
-        if (secondColumnItems.current[firstChildKey]) {
-          secondColumnItems.current[firstChildKey]?.focus();
-        }
-      });
-    }
-  };
+  const totalFilterCount = useMemo(
+    () =>
+      Object.values(appliedFilters).reduce(
+        (total, array) => total + array.length,
+        0
+      ),
+    [appliedFilters]
+  );
 
   return (
     <Stack sx={classes.wrapper}>
@@ -211,200 +220,53 @@ const FilterButton = ({
         position={position ?? "bottom-end"}
         id={id}
         handleClose={() => setIsPopperOpen(false)}
-        containerStyles={classes.popperContainer2}
+        containerClassName="w-[800px] rounded-4 shadow-lg"
       >
-        <Box tabIndex={0} sx={classes.firstColumn}>
-          <Box display="flex" gap={2} p={2}>
-            {/* Column 1: Filter Types */}
-            <Box
-              flex={1}
-              sx={{
-                borderRight: `1px solid ${theme.palette.grey[500]}`,
-                paddingRight: "1rem"
-              }}
-            >
-              <Typography variant="h4">
-                {translateText(["placeholder"])}
-              </Typography>
-              <List sx={classes.firstColumnList}>
-                {Object.keys(filterTypes).map((filterType, index) => (
-                  <Box
-                    ref={(el: HTMLDivElement | null) => {
-                      firstColumnItems.current[index] = el;
-                    }}
-                    tabIndex={0}
-                    key={filterType}
-                    onClick={() => handleFilterTypeClick(filterType)}
-                    onKeyDown={(e: KeyboardEvent<HTMLDivElement>) =>
-                      handleKeyDown(e, filterType)
-                    }
-                    sx={{
-                      backgroundColor:
-                        filterType === selectedFilterType
-                          ? theme.palette.secondary.main
-                          : "transparent",
-                      borderRadius: "12px",
-                      p: 1.5,
-                      color:
-                        filterType === selectedFilterType
-                          ? theme.palette.primary.dark
-                          : theme.typography.allVariants,
-                      cursor: "pointer"
-                    }}
-                  >
-                    <Typography>{filterType}</Typography>
-                  </Box>
-                ))}
-              </List>
-            </Box>
-
-            {/* Column 2: Filter Values as Chips */}
-            <Box
-              flex={2}
-              sx={{
-                borderRight: `1px solid ${theme.palette.grey[500]}`,
-                paddingRight: "1rem"
-              }}
-            >
-              <Typography variant="h4">{selectedFilterType}</Typography>
-              <Box
-                display="flex"
-                flexWrap="wrap"
-                gap={1}
-                sx={{ p: ".5rem 0rem" }}
-              >
-                {selectedFilterType &&
-                  filterTypes[selectedFilterType]?.map(
-                    ({ label, value }, index) => (
-                      <IconChip
-                        ref={(el: HTMLDivElement | null) => {
-                          if (el) {
-                            secondColumnItems.current[
-                              selectedFilterType + index
-                            ] = el;
-                          }
-                        }}
-                        tabIndex={0}
-                        key={value}
-                        label={label}
-                        icon={
-                          appliedFilters[selectedFilterType]?.includes(
-                            value
-                          ) ? (
-                            <Icon
-                              name={IconName.SELECTED_ICON}
-                              fill={theme.palette.primary.dark}
-                            />
-                          ) : undefined
-                        }
-                        chipStyles={{
-                          backgroundColor: appliedFilters[
-                            selectedFilterType
-                          ]?.includes(value)
-                            ? theme.palette.secondary.main
-                            : "default",
-                          padding: "8px 12px",
-                          color: appliedFilters[selectedFilterType]?.includes(
-                            value
-                          )
-                            ? theme.palette.primary.dark
-                            : "default",
-                          border: `1px solid ${appliedFilters[selectedFilterType]?.includes(value) ? theme.palette.secondary.dark : "transparent"}`
-                        }}
-                        onClick={() =>
-                          handleChipClick(selectedFilterType, value)
-                        }
-                        isTruncated={false}
-                      />
+        <AdvancedFilterStructure
+          title={translateText(["placeholder"])}
+          leftColumn={
+            <SelectableList
+              options={filterTypeOptions}
+              selected={selectedFilterType ?? ""}
+              setSelected={(value) => setSelectedFilterType(value as string)}
+              firstColumnItems={firstColumnItems}
+              secondColumnItems={secondColumnItems}
+              getSecondColumnFirstKey={(filterType) => `${filterType}0`}
+            />
+          }
+          centerColumn={
+            <SelectableItemList
+              title={selectedFilterType ?? undefined}
+              items={
+                selectedFilterType
+                  ? (filterTypes[selectedFilterType] || []).map(
+                      ({ label, value }) => ({ label, value })
                     )
-                  )}
-              </Box>
-            </Box>
-
-            {/* Column 3: Selected Filters */}
-            <Box flex={2}>
-              {Object.values(appliedFilters).every(
-                (arr) => arr.length === 0
-              ) ? (
-                <Typography
-                  variant="h4"
-                  sx={{ color: theme.palette.text.secondary }}
-                >
-                  {translateText(["noSelectedFilters"])}
-                </Typography>
-              ) : (
-                <Typography
-                  sx={{ color: theme.palette.text.secondary }}
-                  variant="h4"
-                >{`${Object.values(appliedFilters).reduce((total, array) => total + array.length, 0)} ${translateText(["selected"])} `}</Typography>
-              )}
-              {Object.entries(appliedFilters).map(([filterType, values]) =>
-                values.length > 0 ? (
-                  <Box key={filterType} mt={1}>
-                    <Typography
-                      sx={{ color: theme.palette.text.secondary }}
-                      variant="h4"
-                    >
-                      {filterType}
-                    </Typography>
-                    <Box display="flex" flexWrap="wrap" gap={1} my={1}>
-                      {values.map((value) => {
-                        const label = filterTypes[filterType]?.find(
-                          (item) => item.value === value
-                        )?.label;
-                        return (
-                          <IconChip
-                            key={value}
-                            label={label}
-                            icon={
-                              <Icon
-                                name={IconName.SELECTED_ICON}
-                                fill={theme.palette.primary.dark}
-                              />
-                            }
-                            chipStyles={{
-                              backgroundColor: theme.palette.secondary.main,
-                              padding: "8px 12px",
-                              color: theme.palette.primary.dark,
-                              border: `1px solid ${theme.palette.secondary.dark}`
-                            }}
-                            tabIndex={-1}
-                            isTruncated={false}
-                          />
-                        );
-                      })}
-                    </Box>
-                  </Box>
-                ) : null
-              )}
-            </Box>
-          </Box>
-
-          {/* Apply and Reset Buttons */}
-          <Divider />
-          <Box
-            display="flex"
-            flexDirection="row"
-            justifyContent="end"
-            mt={2}
-            gap={1}
-          >
-            <Button
-              buttonStyle={ButtonStyle.PRIMARY}
-              onClick={handleApplyFilters}
-              label={translateText(["applyBtn"])}
-              isFullWidth={false}
-              size={ButtonSizes.MEDIUM}
+                  : []
+              }
+              selectedValues={appliedFilters[selectedFilterType ?? ""] || []}
+              onChipClick={(value) =>
+                handleChipClick(selectedFilterType ?? "", value)
+              }
+              chipRefs={secondColumnItems}
             />
-            <Button
-              buttonStyle={ButtonStyle.SECONDARY}
-              onClick={handleResetFilters}
-              label={translateText(["resetBtn"])}
-              isFullWidth={false}
-              size={ButtonSizes.MEDIUM}
+          }
+          rightColumn={
+            <SelectedFiltersDisplay
+              filterSections={filterSections}
+              headerText={`${totalFilterCount} ${translateText(["selected"])}`}
+              noFiltersText={translateText(["noSelectedFilters"])}
             />
-          </Box>
-        </Box>
+          }
+          resetButtonProps={{
+            onClick: handleResetFilters,
+            children: translateText(["resetBtn"])
+          }}
+          applyButtonProps={{
+            onClick: handleApplyFilters,
+            children: translateText(["applyBtn"])
+          }}
+        />
       </Popper>
     </Stack>
   );

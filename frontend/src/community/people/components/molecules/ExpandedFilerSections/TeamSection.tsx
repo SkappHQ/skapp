@@ -1,8 +1,6 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject, useState } from "react";
 
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import FilterSearch from "~community/common/components/molecules/FilterSearch/FilterSearch";
 import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,22 +8,17 @@ import {
   FilterButtonTypes,
   FilterSearchSuggestionsType
 } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
 
 const TeamSection = ({
   teams,
-  selected,
   basicChipRef
 }: {
-  teams?: FilterButtonTypes[] | undefined;
-  selected: string;
+  teams?: FilterButtonTypes[];
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
-  const theme = useTheme();
   const queryMatches = useMediaQuery();
   const isSmallScreen = queryMatches(`(max-width: 1150px)`);
-
   const translateText = useTranslator("peopleModule", "peoples.filters");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,8 +27,9 @@ const TeamSection = ({
   const [searchErrors, _setSearchErrors] = useState<string | undefined>(
     undefined
   );
-  const { employeeDataFilter, setEmployeeDataFilter, removeEmployeeFilter } =
-    usePeopleStore((state) => state);
+  const { employeeDataFilter, setEmployeeDataFilter } = usePeopleStore(
+    (state) => state
+  );
 
   const handleTeamSelect = (team: FilterButtonTypes) => {
     if (!employeeDataFilter.team.some((item) => item.id === team.id)) {
@@ -58,21 +52,15 @@ const TeamSection = ({
   };
 
   return (
-    <Stack>
-      <Stack>
-        <Typography
-          variant={isSmallScreen ? "caption" : "body2"}
-          sx={{
-            fontWeight: "600",
-            marginBottom: 2
-          }}
-        >
+    <div>
+      <div>
+        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
           {translateText(["teams"])}
-        </Typography>
+        </p>
 
-        <Stack>
+        <div>
           {teams && teams?.length > 8 ? (
-            <Stack>
+            <div>
               <FilterSearch
                 id="search-team-input"
                 setIsPopperOpen={setIsPopperOpen}
@@ -94,96 +82,51 @@ const TeamSection = ({
                   employeeDataFilter?.team as FilterSearchSuggestionsType[]
                 }
               />
-              <Stack
-                flexDirection={"row"}
-                sx={{
-                  gap: 0.5,
-                  flexWrap: "wrap"
-                }}
-              >
-                {employeeDataFilter?.team?.map((chip, index) => (
-                  <Stack key={index}>
-                    <IconChip
-                      ref={(el: HTMLDivElement | null) => {
-                        if (el && basicChipRef.current) {
-                          basicChipRef.current[selected + index] = el;
-                        }
-                      }}
-                      label={chip.text}
-                      icon={
-                        <Icon
-                          name={IconName.SELECTED_ICON}
-                          fill={theme.palette.primary.dark}
-                        />
-                      }
-                      chipStyles={{
-                        backgroundColor: theme.palette.secondary.main,
-                        color: theme.palette.primary.dark,
-                        padding: "8px 12px"
-                      }}
-                      onClick={() => {
-                        setEmployeeDataFilter(
-                          "team",
-                          employeeDataFilter.role.filter(
-                            (currentFilter) => currentFilter !== chip
-                          )
-                        );
-                      }}
-                    />
-                  </Stack>
-                ))}
-              </Stack>
-            </Stack>
-          ) : (
-            <Stack
-              flexDirection={"row"}
-              sx={{
-                gap: 0.5,
-                flexWrap: "wrap"
-              }}
-            >
-              {teams?.map((team, index) => (
-                <Stack key={index}>
-                  <IconChip
-                    ref={(el: HTMLDivElement | null) => {
-                      if (el && basicChipRef.current) {
-                        basicChipRef.current[selected + index] = el;
+              {employeeDataFilter?.team &&
+                employeeDataFilter.team.length > 0 && (
+                  <SelectableItemList<string | number>
+                    items={employeeDataFilter.team.map((team) => ({
+                      label: team.text,
+                      value: team.id ?? ""
+                    }))}
+                    selectedValues={employeeDataFilter.team.map(
+                      (team) => team.id ?? ""
+                    )}
+                    onChipClick={(id) => {
+                      const teamToRemove = employeeDataFilter.team.find(
+                        (t) => (t.id ?? "") === id
+                      );
+                      if (teamToRemove) {
+                        handleTeamSelect(teamToRemove);
                       }
                     }}
-                    label={team.text}
-                    onClick={() => handleTeamSelect(team as FilterButtonTypes)}
-                    icon={
-                      employeeDataFilter.team.find(
-                        (teamItem) => teamItem.id === team.id
-                      ) ? (
-                        <Icon
-                          name={IconName.SELECTED_ICON}
-                          fill={theme.palette.primary.dark}
-                        />
-                      ) : undefined
-                    }
-                    chipStyles={{
-                      backgroundColor: employeeDataFilter.team.find(
-                        (teamItem) => teamItem.id === team.id
-                      )
-                        ? theme.palette.secondary.main
-                        : theme.palette.grey[100],
-                      color: employeeDataFilter.team.find(
-                        (teamItem) => teamItem.id === team.id
-                      )
-                        ? theme.palette.primary.dark
-                        : "black",
-                      padding: "8px 12px",
-                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
-                    }}
+                    chipRefs={basicChipRef}
                   />
-                </Stack>
-              ))}
-            </Stack>
+                )}
+            </div>
+          ) : (
+            <SelectableItemList<string | number>
+              items={
+                teams?.map((team) => ({
+                  label: team.text,
+                  value: team.id ?? ""
+                })) ?? []
+              }
+              selectedValues={employeeDataFilter.team.map(
+                (team) => team.id ?? ""
+              )}
+              onChipClick={(id) => {
+                const team = teams?.find((t) => (t.id ?? "") === id);
+                if (team) {
+                  handleTeamSelect(team);
+                }
+              }}
+              chipRefs={basicChipRef}
+            />
           )}
-        </Stack>
-      </Stack>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 };
 
