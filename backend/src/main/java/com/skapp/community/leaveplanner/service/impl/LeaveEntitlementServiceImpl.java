@@ -75,6 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -927,6 +928,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 			}))
 			.values()
 			.stream()
+			.sorted(Comparator.comparing(CustomEntitlementDto::getName))
 			.toList();
 
 		dto.setEntitlements(entitlementDtos);
