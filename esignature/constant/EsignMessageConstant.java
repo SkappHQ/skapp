@@ -35,6 +35,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_FIELD_CANNOT_BE_NULL("validation.field.null"),
 	ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE("validation.page-number.positive"),
 	ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY("validation.field-value.empty"),
+	ESIGN_VALIDATION_FIELD_TYPE_CANNOT_BE_NULL("validation.field-type.empty"),
 	ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE("validation.co-ordinates.must.not-negative"),
 	ESIGN_VALIDATION_PAGE_NUMBER_EXCEED_DOCUMENT_PAGE_NUMBER_COUNT(
 			"validation.page-number.exceed.document.page.number.count"),
@@ -238,8 +239,21 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED("ep.esign.error.field.option.valid.display.order.required"),
 
 	ESIGN_ERROR_EID_VERIFICATION_REQUIRED("ep.esign.error.eid.verification.required"),
-
-	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required");
+	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required"),
+	ESIGN_ERROR_MERGE_ADVANCE_FIELD("ep.esign.error.merge.advance.field"),
+	ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED("ep.esign.error.field.width.percentage.required"),
+	ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED("ep.esign.error.field.height.percentage.required"),
+	ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100(
+			"ep.esign.error.field.width.percentage.must.be.between.0.and.100"),
+	ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100(
+			"ep.esign.error.field.height.percentage.must.be.between.0.and.100"),
+	ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES(
+			"ep.esign.error.field.width.percentage.max.two.decimal.places"),
+	ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES(
+			"ep.esign.error.field.height.percentage.max.two.decimal.places"),
+	ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER("ep.esign.error.font.family.required.for.container"),
+	ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER("ep.esign.error.font.color.required.for.container"),
+	ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER("ep.esign.error.font.size.required.for.container");
 
 	private final String messageKey;
 

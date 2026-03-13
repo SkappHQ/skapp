@@ -51,4 +51,10 @@ public class DocumentVersionField {
 	@Column(name = "height")
 	private float height;
 
+	@Column(name = "width_percentage")
+	private float widthPercentage;
+
+	@Column(name = "height_percentage")
+	private float heightPercentage;
+
 }

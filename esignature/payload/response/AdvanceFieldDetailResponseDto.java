@@ -29,6 +29,16 @@ public class AdvanceFieldDetailResponseDto {
 
 	private String height;
 
+	private float widthPercentage;
+
+	private float heightPercentage;
+
+	private float horizontalPadding;
+
+	private float verticalPadding;
+
+	private float textLineHeight;
+
 	private FieldOptionResponseDto fieldOption;
 
 }

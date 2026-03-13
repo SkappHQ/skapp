@@ -3,11 +3,18 @@ package com.skapp.enterprise.esignature.util;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
+import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.ClassPathResource;
 
+import java.awt.Color;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,6 +23,30 @@ public class EsignUtil {
 	private static final String FILE_PREFIX = "processed_";
 
 	private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+
+	public static final String CSS_FONT_WEIGHT_BOLD = "bold";
+
+	public static final String CSS_FONT_WEIGHT_NORMAL = "normal";
+
+	public static final String CSS_FONT_STYLE_ITALIC = "italic";
+
+	public static final String CSS_FONT_STYLE_NORMAL = "normal";
+
+	public static final String CSS_TEXT_DECORATION_UNDERLINE = "underline";
+
+	public static final String CSS_TEXT_DECORATION_NONE = "none";
+
+	public static String resolveFontWeight(boolean isBold) {
+		return isBold ? CSS_FONT_WEIGHT_BOLD : CSS_FONT_WEIGHT_NORMAL;
+	}
+
+	public static String resolveFontStyle(boolean isItalic) {
+		return isItalic ? CSS_FONT_STYLE_ITALIC : CSS_FONT_STYLE_NORMAL;
+	}
+
+	public static String resolveTextDecoration(boolean isUnderline) {
+		return isUnderline ? CSS_TEXT_DECORATION_UNDERLINE : CSS_TEXT_DECORATION_NONE;
+	}
 
 	private static final String HEADER_CF_CONNECTING_IP = "CF-Connecting-IP";
 
@@ -41,6 +72,8 @@ public class EsignUtil {
 
 	private static final String E_SIGN = "eSign/";
 
+	public static final float COLOR_NORMALIZATION_FACTOR = 255f;
+
 	private static final String TEMPLATE_DOCUMENT_FILE_PATH_PREFIX = "/eSign/template/";
 
 	private static final String DOCUMENT_FILE_PATH_PREFIX = "/eSign/envelop/";
@@ -48,6 +81,10 @@ public class EsignUtil {
 	private static final String TEMPLATE_FOLDER_NAME = "/template/";
 
 	private static final String ENVELOPE_FOLDER_NAME = "/envelope/";
+
+	private static final String ADVANCE_INPUT_TEXT_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-text-field.html";
+
+	private static final String ESIGN_IMAGE_FIELD_TEMPLATE = "enterprise/templates/pdf/en/esignature/advance-image-field.html";
 
 	private EsignUtil() {
 	}
@@ -173,7 +210,10 @@ public class EsignUtil {
 			.replace("<", "&lt;")
 			.replace(">", "&gt;")
 			.replace("\"", "&quot;")
-			.replace("'", "&#39;");
+			.replace("'", "&#39;")
+			.replace("\r\n", "<br/>")
+			.replace("\r", "<br/>")
+			.replace("\n", "<br/>");
 	}
 
 	public static String getFormattedActionText(AuditTrailResponseDto audit) {
@@ -228,6 +268,17 @@ public class EsignUtil {
 		return documentName;
 	}
 
+	/**
+	 * Normalizes a {@link Color}'s RGB channels from the [0, 255] integer range into the
+	 * [0.0, 1.0] float range expected by PDFBox content-stream color setters.
+	 * <p>
+	 * Returns a {@code float[3]} array in the order {@code [red, green, blue]}.
+	 */
+	public static float[] normalizeColor(Color color) {
+		return new float[] { color.getRed() / COLOR_NORMALIZATION_FACTOR, color.getGreen() / COLOR_NORMALIZATION_FACTOR,
+				color.getBlue() / COLOR_NORMALIZATION_FACTOR };
+	}
+
 	public static String normalizeDocumentFilePath(String bucketName, String filePath, boolean isTemplate) {
 		if (filePath == null) {
 			return null;
@@ -243,6 +294,47 @@ public class EsignUtil {
 		}
 
 		return bucketName + "/" + filePath;
+	}
+
+	public static String buildTextFieldHtml(EsignPdfRenderCssDto cssDto) throws IOException {
+
+		ClassPathResource resource = new ClassPathResource(ADVANCE_INPUT_TEXT_FIELD_TEMPLATE);
+		String template = Files.readString(Paths.get(resource.getURI()));
+
+		return template.replace("{{width}}", cssDto.getAdjustedWidth())
+			.replace("{{height}}", cssDto.getAdjustedHeight())
+			.replace("{{fontFamily}}", cssDto.getFontFamilyCss())
+			.replace("{{fontSize}}", cssDto.getFontSize())
+			.replace("{{fontWeight}}", cssDto.getFontWeight())
+			.replace("{{fontStyle}}", cssDto.getFontStyle())
+			.replace("{{textDecoration}}", cssDto.getTextDecoration())
+			.replace("{{fontColor}}", cssDto.getFontColor())
+			.replace("{{horizontalPadding}}", cssDto.getHorizontalPadding())
+			.replace("{{verticalPadding}}", cssDto.getVerticalPadding())
+			.replace("{{lineHeight}}", cssDto.getLineHeight())
+			.replace("{{content}}", cssDto.getEscapedValue());
+
+	}
+
+	/**
+	 * Reads {@code esign-image-field.html} from the classpath and substitutes the
+	 * {@code {{width}}}, {@code {{height}}}, and {@code {{svgContent}}} placeholders to
+	 * produce a self-contained HTML document that renders the given SVG inline.
+	 * @param adjustedWidth body width in points
+	 * @param adjustedHeight body height in points
+	 * @param svgBytes raw bytes of the SVG file to embed as inline markup
+	 * @return the template string with all placeholders replaced
+	 * @throws IOException if the template cannot be read from the classpath
+	 */
+	public static String buildSvgImageHtml(float adjustedWidth, float adjustedHeight, byte[] svgBytes)
+			throws IOException {
+		ClassPathResource resource = new ClassPathResource(ESIGN_IMAGE_FIELD_TEMPLATE);
+		String template = Files.readString(Paths.get(resource.getURI()));
+		String svgContent = new String(svgBytes, StandardCharsets.UTF_8);
+
+		return template.replace("{{width}}", String.valueOf(adjustedWidth))
+			.replace("{{height}}", String.valueOf(adjustedHeight))
+			.replace("{{svgContent}}", svgContent);
 	}
 
 }

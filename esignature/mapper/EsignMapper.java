@@ -21,6 +21,8 @@ import com.skapp.enterprise.esignature.payload.request.ExternalUserDto;
 import com.skapp.enterprise.esignature.payload.request.FieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
+import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
 import com.skapp.enterprise.esignature.payload.request.RecipientDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookBasicResponseDto;
 import com.skapp.enterprise.esignature.payload.response.AddressBookResponseDto;
@@ -217,5 +219,9 @@ public interface EsignMapper {
 			.map(this::fieldToFieldDetailDto)
 			.collect(Collectors.toList());
 	}
+
+	FieldSignContainerDto fieldContainerToFieldSignContainerDto(FieldContainer fieldContainer);
+
+	FieldStyleDto fieldToFieldStyleDto(Field field);
 
 }
