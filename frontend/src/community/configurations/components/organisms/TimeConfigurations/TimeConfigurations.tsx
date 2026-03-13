@@ -452,7 +452,6 @@ const TimeConfigurations = (): JSX.Element => {
           <ButtonV2
             id="resetButton"
             variant={"tertiary"}
-            fullWidth={false}
             onClick={handleReset}
             disabled={!formChanged}
             icon={<Close />}
@@ -463,7 +462,6 @@ const TimeConfigurations = (): JSX.Element => {
           <ButtonV2
             id="saveChangesButton"
             variant={"primary"}
-            fullWidth={false}
             onClick={handleSave}
             disabled={!formChanged}
             icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}

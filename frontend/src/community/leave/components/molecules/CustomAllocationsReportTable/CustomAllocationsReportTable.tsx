@@ -268,7 +268,6 @@ const CustomAllocationsReportTable: FC = () => {
         {leaveTypeButtons.map((leaveType) => (
           <ButtonV2
             key={leaveType.id}
-            fullWidth={false}
             variant={
               selectedLeaveTypes.includes(leaveType.text)
                 ? "secondary"

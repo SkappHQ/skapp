@@ -51,7 +51,6 @@ const AvailabilityCalendarWidget = ({
           {translateText(["resourceAvailability"])}
         </Typography>
         <ButtonV2
-          fullWidth={false}
           variant={"tertiary"}
           onClick={() =>
             router.replace(ROUTES.DASHBOARD.LEAVE.RESOURCE_AVAILABILITY)

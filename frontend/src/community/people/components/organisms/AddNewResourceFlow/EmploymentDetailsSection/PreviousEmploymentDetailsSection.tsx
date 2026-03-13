@@ -289,7 +289,6 @@ const PreviousEmploymentDetailsSection = (props: Props): JSX.Element => {
           {!isInputsDisabled && (
             <ButtonV2
               onClick={() => handleSubmit()}
-              fullWidth={false}
               variant={"secondary"}
               size={"md"}
               type={"submit"}

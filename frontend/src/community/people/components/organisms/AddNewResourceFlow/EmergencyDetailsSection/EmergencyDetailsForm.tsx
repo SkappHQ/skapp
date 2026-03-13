@@ -140,7 +140,6 @@ const EmergencyDetailsForm = ({
         >
           <ButtonV2
             variant={"tertiary"}
-            fullWidth={false}
             onClick={onBack}
             disabled={isSubmitDisabled || isLoading || isInputsDisabled}
             data-testid={
@@ -161,7 +160,6 @@ const EmergencyDetailsForm = ({
           </ButtonV2>
           <ButtonV2
             variant={"primary"}
-            fullWidth={false}
             onClick={handleNext}
             disabled={isSubmitDisabled || isLoading || isInputsDisabled}
             isLoading={isLoading}

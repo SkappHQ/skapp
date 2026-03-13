@@ -268,7 +268,6 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
         {leaveStatusArray.map((leaveStatus) => (
           <ButtonV2
             key={leaveStatus}
-            fullWidth={false}
             onClick={() => {
               setFilter((prev) => ({
                 ...prev,
@@ -299,7 +298,6 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
         {leaveTypeOptions.map(({ id, name }: { id: string; name: string }) => (
           <ButtonV2
             key={id}
-            fullWidth={false}
             onClick={() => {
               setFilter((prev) => ({
                 ...prev,

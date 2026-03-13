@@ -390,7 +390,7 @@ const FilterButton = ({
             <ButtonV2
               variant={"primary"}
               onClick={handleApplyFilters}
-              fullWidth={false}
+              isFullWidth={false}
               size={"md"}
             >
               {translateText(["applyBtn"])}
@@ -398,7 +398,7 @@ const FilterButton = ({
             <ButtonV2
               variant={"secondary"}
               onClick={handleResetFilters}
-              fullWidth={false}
+              isFullWidth={false}
               size={"md"}
             >
               {translateText(["resetBtn"])}

@@ -234,7 +234,6 @@ const LeaveRequests: FC = () => {
           {leaveStatusArray.map((leaveStatus) => (
             <ButtonV2
               key={leaveStatus}
-              fullWidth={false}
               onClick={() => {
                 setFilter((prev) => ({
                   ...prev,
@@ -280,7 +279,6 @@ const LeaveRequests: FC = () => {
             ({ id, name }: { id: string; name: string }) => (
               <ButtonV2
                 key={id}
-                fullWidth={false}
                 onClick={() => {
                   setFilter((prev) => ({
                     ...prev,

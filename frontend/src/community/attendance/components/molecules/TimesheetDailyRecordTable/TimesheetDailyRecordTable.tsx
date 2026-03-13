@@ -146,7 +146,7 @@ const TimesheetDailyRecordTable = ({
               <ButtonV2
                 variant={"tertiary"}
                 size={"md"}
-                fullWidth={false}
+                isFullWidth={false}
                 disabled={isFreeTier}
                 onClick={downloadEmployeeDailyLogCsv}
                 icon={<Icon name={IconName.DOWNLOAD_ICON} />}

@@ -67,7 +67,7 @@ const LeaveCarryForward = () => {
       >
         <ButtonV2
           variant={"secondary"}
-          fullWidth={false}
+          isFullWidth={false}
           onClick={handleLeaveSync}
           icon={<SyncIcon />}
           iconPosition="end"

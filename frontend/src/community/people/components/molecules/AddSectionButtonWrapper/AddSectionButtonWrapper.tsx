@@ -104,7 +104,6 @@ const AddSectionButtonWrapper = ({
       {activeStep > 0 && (
         <ButtonV2
           variant={"tertiary"}
-          fullWidth={false}
           onClick={handleBack}
           icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
           iconPosition="start"
@@ -116,7 +115,6 @@ const AddSectionButtonWrapper = ({
       {activeStep === 4 ? (
         <ButtonV2
           variant={"primary"}
-          fullWidth={false}
           onClick={handleSave}
           disabled={isSaveDisabled}
           icon={<Icon name={IconName.SAVE_ICON} />}
@@ -127,7 +125,6 @@ const AddSectionButtonWrapper = ({
       ) : (
         <ButtonV2
           variant={"primary"}
-          fullWidth={false}
           onClick={() => {
             if (onNextClick) {
               onNextClick();

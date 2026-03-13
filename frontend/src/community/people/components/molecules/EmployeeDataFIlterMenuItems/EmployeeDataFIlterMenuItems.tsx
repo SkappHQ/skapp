@@ -116,7 +116,6 @@ const EmployeeDataFIlterMenuItems = ({
           }}
         >
           <ButtonV2
-            fullWidth={false}
             variant="tertiary"
             size={isSmallScreen ? "sm" : "md"}
             onClick={() => {
@@ -128,7 +127,6 @@ const EmployeeDataFIlterMenuItems = ({
             {translateText(["reset"])}
           </ButtonV2>
           <ButtonV2
-            fullWidth={false}
             variant="primary"
             size={isSmallScreen ? "sm" : "md"}
             onClick={handleSubmit}

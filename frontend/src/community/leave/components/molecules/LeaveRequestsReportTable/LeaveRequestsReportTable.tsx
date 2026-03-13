@@ -352,7 +352,6 @@ const LeaveRequestsReportTable: FC = () => {
         {leaveStatusButtons.map((status) => (
           <ButtonV2
             key={status.id}
-            fullWidth={false}
             variant={
               selectedStatuses.includes(status.text) ? "secondary" : "tertiary"
             }
@@ -376,7 +375,6 @@ const LeaveRequestsReportTable: FC = () => {
         {leaveTypeButtons.map((leaveType) => (
           <ButtonV2
             key={leaveType.id}
-            fullWidth={false}
             variant={
               selectedLeaveTypes.includes(leaveType.text)
                 ? "secondary"

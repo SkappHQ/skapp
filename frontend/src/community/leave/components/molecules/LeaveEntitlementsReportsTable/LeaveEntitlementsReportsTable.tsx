@@ -265,7 +265,6 @@ const LeaveEntitlementsReportsTable: FC = () => {
               {leaveTypeButtons.map((leaveType) => (
                 <ButtonV2
                   key={leaveType.id}
-                  fullWidth={false}
                   variant={
                     selectedLeaveTypes.includes(leaveType.text)
                       ? "secondary"
@@ -362,7 +361,6 @@ const LeaveEntitlementsReportsTable: FC = () => {
           />
           <ButtonV2
             variant={"tertiary"}
-            fullWidth={false}
             onClick={() => downloadCSV(SheetType.LeaveAllocation)}
             icon={<Icon name={IconName.DOWNLOAD_ICON} />}
             iconPosition="end"

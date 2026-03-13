@@ -312,7 +312,7 @@ const ContentLayout = ({
           <Stack sx={classes.rightContent} id={id?.btnWrapper}>
             {secondaryBtnText && (
               <ButtonV2
-                fullWidth={isBelow600}
+                isFullWidth={isBelow600}
                 variant={"secondary"}
                 size={"md"}
                 onClick={onSecondaryButtonClick}
@@ -331,7 +331,7 @@ const ContentLayout = ({
             )}
             {primaryButtonText && (
               <ButtonV2
-                fullWidth={isBelow600}
+                isFullWidth={isBelow600}
                 variant="primary"
                 size={"md"}
                 isLoading={isPrimaryBtnLoading}

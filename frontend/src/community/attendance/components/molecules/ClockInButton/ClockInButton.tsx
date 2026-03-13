@@ -64,7 +64,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
     <ButtonV2
       variant={"primary"}
       size={"sm"}
-      fullWidth={false}
+      isFullWidth={false}
       onClick={onClick}
       aria-label={
         isClockedIn ? translateText(["clockIn"]) : translateText(["clockOut"])

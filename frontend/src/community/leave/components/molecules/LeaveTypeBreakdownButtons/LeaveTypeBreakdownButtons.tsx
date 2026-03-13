@@ -80,7 +80,6 @@ const LeaveTypeBreakdownButtons = ({
         return (
           <ButtonV2
             key={filterType}
-            fullWidth={false}
             onClick={() => onClick(filterType)}
             variant={toggle[filterType] ? "secondary" : "tertiary"}
             size={"md"}

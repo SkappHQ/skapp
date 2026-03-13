@@ -154,7 +154,7 @@ const AddTeamSelectMembers: FC<Props> = ({
       <Box sx={{ mr: "1.25rem" }}>
         <ButtonV2
           variant={"error"}
-          fullWidth={true}
+          isFullWidth={true}
           disabled={!(usersChecked?.length > 0)}
           onClick={handleRemove}
           icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
@@ -164,7 +164,7 @@ const AddTeamSelectMembers: FC<Props> = ({
         </ButtonV2>
         <ButtonV2
           variant={"tertiary"}
-          fullWidth={true}
+          isFullWidth={true}
           onClick={() => {
             setIsSelectMembersOpen(false);
           }}

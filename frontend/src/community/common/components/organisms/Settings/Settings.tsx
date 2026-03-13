@@ -94,7 +94,6 @@ const SettingsSection: FC<SettingsSectionProps> = ({
                   }}
                 >
                   <ButtonV2
-                    fullWidth={false}
                     variant={"tertiary"}
                     onClick={() => {
                       setModalType(SettingsModalTypes.SETUP_EMAIL_SERVER);
@@ -107,7 +106,6 @@ const SettingsSection: FC<SettingsSectionProps> = ({
                   </ButtonV2>
                   {config?.emailServiceProvider !== null && (
                     <ButtonV2
-                      fullWidth={false}
                       variant={"tertiary"}
                       onClick={() => {
                         setModalType(SettingsModalTypes.TEST_EMAIL_SERVER);
@@ -142,7 +140,6 @@ const SettingsSection: FC<SettingsSectionProps> = ({
             </Typography>
 
             <ButtonV2
-              fullWidth={false}
               variant={"tertiary"}
               onClick={() => {
                 setModalType(SettingsModalTypes.RESET_PASSWORD);

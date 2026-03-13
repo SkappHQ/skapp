@@ -135,7 +135,6 @@ const MultiselectEmployeeSearch = ({
             }}
           >
             <ButtonV2
-              fullWidth={false}
               variant={"secondary"}
               onClick={() => {
                 setIsAll(true);

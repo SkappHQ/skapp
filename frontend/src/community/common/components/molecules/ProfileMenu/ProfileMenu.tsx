@@ -103,7 +103,6 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
         <ButtonV2
           variant={"tertiary"}
           onClick={handelViewAccount}
-          fullWidth={false}
           data-testid={appBarTestId.appBar.viewAccountBtn}
           icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           iconPosition="end"
@@ -114,7 +113,6 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
       <ButtonV2
         variant={"tertiary"}
         onClick={handleSignOut}
-        fullWidth
         icon={<Icon name={IconName.SIGNOUT_ICON} />}
         iconPosition="start"
         className="mt-3"

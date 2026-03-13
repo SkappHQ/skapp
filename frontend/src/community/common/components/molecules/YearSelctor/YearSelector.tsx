@@ -39,7 +39,6 @@ const YearSelector = ({ setYear }: Props): JSX.Element => {
       <Box>
         <ButtonV2
           variant={"tertiary"}
-          fullWidth={false}
           onClick={(event: MouseEvent<HTMLElement>) => {
             setAnchorEl(event.currentTarget);
             setShowOverlay(true);

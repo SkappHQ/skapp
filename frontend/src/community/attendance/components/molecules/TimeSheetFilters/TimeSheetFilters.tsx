@@ -118,7 +118,7 @@ const TimeSheetFilters = ({
               ? "secondary"
               : "tertiary"
           }
-          fullWidth={false}
+          isFullWidth={false}
           onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.WEEK)}
         >
           {translateText(["weekTabTxt"])}
@@ -129,7 +129,7 @@ const TimeSheetFilters = ({
               ? "secondary"
               : "tertiary"
           }
-          fullWidth={false}
+          isFullWidth={false}
           onClick={() => setSelectedTab(TimesheetAnalyticsTabTypes.MONTH)}
         >
           {translateText(["monthTabTxt"])}

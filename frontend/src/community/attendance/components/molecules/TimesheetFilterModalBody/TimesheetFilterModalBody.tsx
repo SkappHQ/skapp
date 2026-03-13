@@ -104,7 +104,7 @@ const TimesheetFilterModalBody = ({
           {filterValues?.status?.map((status: FilterChipType) => (
             <ButtonV2
               key={status?.value}
-              fullWidth={false}
+              isFullWidth={false}
               aria-label={`${status.label} filter`}
               variant={
                 selectedFilterLabels.includes(status?.label)

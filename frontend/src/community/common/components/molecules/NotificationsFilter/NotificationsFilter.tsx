@@ -41,7 +41,7 @@ const NotificationsFilter = ({
     >
       <Stack direction={"row"} gap={isSmallPhoneScreen ? 1 : 2} component="div">
         <ButtonV2
-          fullWidth={false}
+          isFullWidth={false}
           variant={
             filterButton === NotifyFilterButtonTypes.ALL
               ? "secondary"
@@ -54,7 +54,7 @@ const NotificationsFilter = ({
           {translateText(["allFilterButtonText"])}
         </ButtonV2>
         <ButtonV2
-          fullWidth={false}
+          isFullWidth={false}
           variant={
             filterButton === NotifyFilterButtonTypes.UNREAD
               ? "secondary"
@@ -70,7 +70,7 @@ const NotificationsFilter = ({
 
       {!isLoading && notifyData.unreadCount !== 0 && (
         <ButtonV2
-          fullWidth={isSmallPhoneScreen}
+          isFullWidth={isSmallPhoneScreen}
           variant={"tertiary"}
           onClick={() => {
             setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL });
