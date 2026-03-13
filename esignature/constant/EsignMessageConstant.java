@@ -253,9 +253,8 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.field.height.percentage.max.two.decimal.places"),
 	ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER("ep.esign.error.font.family.required.for.container"),
 	ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER("ep.esign.error.font.color.required.for.container"),
-	ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER("ep.esign.error.font.size.required.for.container");
+	ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER("ep.esign.error.font.size.required.for.container"),
 
-	ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED("ep.esign.error.eid.identification.required"),
 	ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER("ep.esign.error.mfa.feature.not.available.for.current.tier"),
 	ESIGN_ERROR_SMS_MFA_FEATURE_AVAILABLE_ONLY_FOR_ACTIVE_PRO_TIER(
 			"ep.esign.error.sms.mfa.feature.available.only.for.active.pro.tier"),
