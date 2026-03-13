@@ -43,4 +43,10 @@ public class FieldDto {
 	@NotNull(message = "{validation.field.documentId.notnull}")
 	private Long documentId;
 
+	@NotNull(message = "{validation.field.width-percentage.notnull}")
+	private Float widthPercentage;
+
+	@NotNull(message = "{validation.field.height-percentage.notnull}")
+	private Float heightPercentage;
+
 }

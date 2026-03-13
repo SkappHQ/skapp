@@ -41,6 +41,14 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 
 	private static final String CONTENT_TYPE = "application/pdf";
 
+	String RESOURCE_BASE_PATH = "common/";
+
+	String FONT_BASE_PATH = RESOURCE_BASE_PATH + "fonts/";
+
+	String SVG_BASE_PATH = RESOURCE_BASE_PATH + "svgs/";
+
+	String TTF_FILE_EXTENSION = ".ttf";
+
 	private final S3Client s3Client;
 
 	private final S3Presigner s3Presigner;
@@ -204,6 +212,33 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
 						amazonS3SignedUrlRequestDto.getFileType(), EpCommonConstants.S3_SIGNED_URL_DURATION));
 
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public InputStream downloadFontAsStream(String folderName, String fontVariant) {
+
+		String filename = folderName + fontVariant + TTF_FILE_EXTENSION;
+		String filePath = FONT_BASE_PATH + folderName + "/" + filename;
+
+		String s3Key = bucketName + "/" + filePath;
+		String bucket = bucketName;
+
+		log.info("[FontLoad] Loading font from S3: {}", filePath);
+
+		return downloadFile(bucket, s3Key);
+	}
+
+	@Override
+	public InputStream downloadSvgImageAsStream(String fileName) {
+
+		String filePath = SVG_BASE_PATH + fileName;
+
+		String s3Key = bucketName + "/" + filePath;
+		String bucket = bucketName;
+
+		log.info("[ImageLoad] Loading svg from S3: {}", filePath);
+
+		return downloadFile(bucket, s3Key);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.type;
 
 import java.util.List;
+import java.util.Set;
 
 public enum FieldType {
 
@@ -8,6 +9,10 @@ public enum FieldType {
 
 	public static List<FieldType> imageFieldTypes() {
 		return List.of(SIGNATURE, STAMP, INITIAL);
+	}
+
+	public static Set<FieldType> advancedFieldTypes() {
+		return Set.of(TEXT, DROPDOWN, RADIO_BUTTON, CHECKBOX);
 	}
 
 }

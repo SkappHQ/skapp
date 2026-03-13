@@ -6,7 +6,6 @@ import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.request.DocumentDto;
-import com.skapp.enterprise.esignature.payload.request.DocumentFieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentPdfConvertFilterRequestDto;
 import com.skapp.enterprise.esignature.payload.request.DocumentSignDto;
 import com.skapp.enterprise.esignature.payload.request.EditDocumentDto;
@@ -29,8 +28,6 @@ public interface DocumentService {
 	ResponseEntityDto sequentialSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess, String ipAddress);
 
 	ResponseEntityDto parallelSignDocument(DocumentSignDto documentSignDto, boolean isDocAccess, String ipAddress);
-
-	ResponseEntityDto signField(DocumentFieldSignDto documentFieldSignDto, String ipAddress);
 
 	ResponseEntityDto editDocument(Long id, EditDocumentDto editDocumentDto);
 

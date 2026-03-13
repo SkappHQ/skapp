@@ -29,4 +29,8 @@ public class FieldDetailResponseDto {
 
 	private String height;
 
+	private float widthPercentage;
+
+	private float heightPercentage;
+
 }
