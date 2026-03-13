@@ -52,13 +52,11 @@ const superAdminRoutes = {
     ROUTES.SETTINGS.MODULES,
     ROUTES.SETTINGS.PAYMENT,
     ROUTES.REMOVE_PEOPLE,
-    ROUTES.SUBSCRIPTION,
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.SUBSCRIPTION
+    ROUTES.INVOICE.CUSTOMERS.BASE
   ]
 };
 
@@ -329,7 +327,6 @@ export const config = {
     "/timesheet/:path*",
     "/remove-people",
     "/integrations",
-    "/subscription",
     "/user-account",
     // Sign routes
     "/sign",

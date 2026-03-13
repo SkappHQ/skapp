@@ -1,7 +1,8 @@
 import { Box, Divider } from "@mui/material";
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -21,6 +22,7 @@ import { getEnterpriseSettingsTabs } from "~enterprise/settings/utils/settingsTa
 
 const Settings: NextPage = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const translateText = useTranslator("settings");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
@@ -60,6 +62,20 @@ const Settings: NextPage = () => {
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 
+  useEffect(() => {
+    if (!router.isReady) return;
+    const tabParam = router.query.tab as string | undefined;
+    if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [router.isReady]);
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id);
+    const basePath = router.asPath.split("?")[0];
+    globalThis.history.replaceState(null, "", `${basePath}?tab=${id}`);
+  };
+
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
@@ -73,7 +89,7 @@ const Settings: NextPage = () => {
           <Tabs
             tabs={visibleTabs}
             activeTabId={activeTab}
-            onTabChange={(id) => setActiveTab(id)}
+            onTabChange={handleTabChange}
             size="lg"
           />
         )}
