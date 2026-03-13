@@ -459,7 +459,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalDocumentPath));
 
 		Long completedEnvelopeId = envelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -679,7 +679,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
-					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, uploadedFinalDocument.path()));
 
 			Long parallelEnvelopeId = envelope.getId();
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
