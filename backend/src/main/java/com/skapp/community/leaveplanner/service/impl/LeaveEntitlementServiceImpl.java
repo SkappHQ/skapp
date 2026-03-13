@@ -913,7 +913,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 			.stream()
 			.map(entry -> {
 				List<LeaveEntitlement> groupEntitlementsByLeaveType = entry.getValue();
-				LeaveEntitlement first = groupEntitlementsByLeaveType.getFirst();
+				LeaveEntitlement leaveTypeValue = groupEntitlementsByLeaveType.getFirst();
 
 				float totalDaysAllocated = groupEntitlementsByLeaveType.stream()
 					.map(LeaveEntitlement::getTotalDaysAllocated)
@@ -921,11 +921,11 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 					.reduce(0f, Float::sum);
 
 				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
-				entitlementDto.setLeaveTypeId(first.getLeaveType().getTypeId());
+				entitlementDto.setLeaveTypeId(leaveTypeValue.getLeaveType().getTypeId());
 				entitlementDto.setTotalDaysAllocated(String.valueOf(totalDaysAllocated));
-				entitlementDto.setName(first.getLeaveType().getName());
-				entitlementDto.setValidFrom(first.getValidFrom());
-				entitlementDto.setValidTo(first.getValidTo());
+				entitlementDto.setName(leaveTypeValue.getLeaveType().getName());
+				entitlementDto.setValidFrom(leaveTypeValue.getValidFrom());
+				entitlementDto.setValidTo(leaveTypeValue.getValidTo());
 				return entitlementDto;
 			})
 			.toList();
