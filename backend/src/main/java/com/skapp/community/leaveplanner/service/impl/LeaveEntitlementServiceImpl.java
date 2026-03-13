@@ -85,6 +85,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -908,7 +909,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
 			.filter(entitlement -> entitlement.isActive()
 					&& isDateInRange(entitlement.getValidFrom(), entitlement.getValidTo(), validFrom, validTo))
-			.collect(java.util.stream.Collectors.groupingBy(entitlement -> entitlement.getLeaveType().getTypeId()))
+			.collect(Collectors.groupingBy(entitlement -> entitlement.getLeaveType().getTypeId()))
 			.entrySet()
 			.stream()
 			.map(entry -> {
