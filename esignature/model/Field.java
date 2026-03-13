@@ -49,6 +49,12 @@ public class Field {
 	@Column(name = "height")
 	private float height;
 
+	@Column(name = "width_percentage")
+	private float widthPercentage;
+
+	@Column(name = "height_percentage")
+	private float heightPercentage;
+
 	@ManyToOne
 	@JoinColumn(name = "document_id")
 	private Document document;
@@ -64,5 +70,14 @@ public class Field {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "field_option_id")
 	private FieldOption fieldOption;
+
+	@Column(name = "horizontal_padding")
+	private float horizontalPadding;
+
+	@Column(name = "vertical_padding")
+	private float verticalPadding;
+
+	@Column(name = "line_height")
+	private float textLineHeight;
 
 }

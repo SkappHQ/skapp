@@ -1,28 +1,44 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
+import com.skapp.enterprise.esignature.payload.request.FieldSignContainerDto;
 import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
+import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
+import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
+import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
+import com.skapp.enterprise.esignature.type.EsignImageType;
+import com.skapp.enterprise.esignature.type.FieldType;
+
+import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.FontStyleExtractorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.multipdf.LayerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,10 +89,13 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	public static final String PNG = "png";
 
+	private static final float POINTS_PER_INCH = 72f;
+
+	private static final String REGULAR_FONT_VARIANT = "-Regular";
+
 	private final MessageUtil messageUtil;
 
-	@Value("${aws.s3.bucket-name}")
-	private String bucketName;
+	private final AmazonS3Service amazonS3Service;
 
 	@Override
 	public byte[] mergeTextFieldToDocument(FieldSignDto field, byte[] inputBytes) {
@@ -98,10 +117,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			validateField(field);
 			PDPage page = getPage(document, field.getPageNumber());
 			float pageHeight = page.getMediaBox().getHeight();
+			float pageWidth = page.getMediaBox().getWidth();
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 					PDPageContentStream.AppendMode.APPEND, true, true)) {
-				addTextField(field, contentStream, pageHeight, document);
+				addTextField(field, contentStream, pageHeight, pageWidth, document);
 			}
 
 			document.save(outputStream);
@@ -285,30 +305,49 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		return document.getPage(pageNumber - 1);
 	}
 
-	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+	private void addTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
 			PDDocument document) {
-		// Relative to the co-ordinates taken from UI -top left
-		try {
-			// Adjust baseline offset for Y position
-			float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
-			float adjustedY = pageHeight - field.getYPosition() - yOffset;
 
-			// Adjust baseline offset for x position
-			float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-			float adjustedX = field.getYPosition() + xOffset;
+		FieldType fieldType = field.getType();
 
-			contentStream.beginText();
-			PDType0Font font = loadFont(document);
-			contentStream.setFont(font, DEFAULT_FONT_SIZE);
-
-			// Position text at adjusted coordinates
-			contentStream.newLineAtOffset(adjustedX, adjustedY);
-			contentStream.showText(field.getFieldValue());
-			contentStream.endText();
+		if (FieldType.CHECKBOX.equals(fieldType)) {
+			addCheckbox(field, contentStream, pageHeight, pageWidth, document);
 		}
-		catch (Exception e) {
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+		else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
+			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
 		}
+		else if (FieldType.DROPDOWN.equals(fieldType)) {
+			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
+		}
+		else if (FieldType.TEXT.equals(fieldType)) {
+			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
+		}
+		else {
+
+			try {
+				// Adjust baseline offset for Y position
+				float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
+				float adjustedY = pageHeight - field.getYPosition() - yOffset;
+
+				// Adjust baseline offset for x position
+				float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
+				float adjustedX = field.getXPosition() + xOffset;
+
+				contentStream.beginText();
+				PDType0Font font = loadFont(document);
+				contentStream.setFont(font, DEFAULT_FONT_SIZE);
+
+				// Position text at adjusted coordinates
+				contentStream.newLineAtOffset(adjustedX, adjustedY);
+				contentStream.showText(field.getFieldValue());
+				contentStream.endText();
+
+			}
+			catch (Exception e) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_TEXT_FILED);
+			}
+		}
+
 	}
 
 	private void validateField(FieldSignDto field) {
@@ -320,7 +359,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_PAGE_NUMBER_MUST_BE_POSITIVE));
 		}
-		if (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty()) {
+
+		if (field.getType() == null) {
+			throw new IllegalArgumentException(
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_TYPE_CANNOT_BE_NULL));
+		}
+
+		if (field.getType() != FieldType.CHECKBOX
+				&& (field.getFieldValue() == null || field.getFieldValue().trim().isEmpty())) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
@@ -625,6 +671,211 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			log.info("appendCertificateToPdf: execution ended successfully");
 			return mergedPdfBytes;
+		}
+	}
+
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+			PDDocument document) {
+
+		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
+
+		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+	}
+
+	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			float pageWidth, PDDocument document) {
+
+		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
+				: EsignImageType.RADIO_BUTTON_UNCHECKED;
+
+		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+	}
+
+	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
+			float pageWidth, EsignImageType imageType) {
+
+		float adjustedWidth = field.getWidth();
+		float adjustedHeight = field.getHeight();
+
+		// PDF Y-axis starts from bottom-left; convert from top-left origin
+		float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+		float adjustedX = field.getXPosition();
+
+		// Load SVG bytes from S3
+		try (InputStream svgStream = amazonS3Service.downloadSvgImageAsStream(imageType.getFilename());
+				ByteArrayOutputStream svgBuffer = new ByteArrayOutputStream()) {
+
+			svgStream.transferTo(svgBuffer);
+
+			byte[] svgBytes = svgBuffer.toByteArray();
+
+			// Build HTML that embeds the SVG as a base64 data URI image
+			String html = EsignUtil.buildSvgImageHtml(adjustedWidth, adjustedHeight, svgBytes);
+
+			// Render HTML → PDF bytes
+			byte[] htmlPdfBytes = htmlToPdfBytesImageField(html, adjustedWidth, adjustedHeight);
+
+			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
+
+			// Scale the form to exactly fit the target field rectangle
+			PDRectangle bbox = formXObject.getBBox();
+			float scaleX = adjustedWidth / bbox.getWidth();
+			float scaleY = adjustedHeight / bbox.getHeight();
+
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
+
+			contentStream.saveGraphicsState();
+			contentStream.transform(matrix);
+			contentStream.drawForm(formXObject);
+			contentStream.restoreGraphicsState();
+
+		}
+		catch (IOException e) {
+			log.error("Failed to draw image [{}] for field [{}]: {}", imageType, field.getType(), e.getMessage(), e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
+					new String[] { field.getType().toString() });
+		}
+	}
+
+	private void addAdvanceTextField(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
+			float pageWidth, PDDocument document) {
+
+		try {
+			FieldSignContainerDto container = field.getFieldSignContainer();
+			FieldStyleDto fieldStyle = field.getFieldStyle();
+
+			String fontFamily = FontStyleExtractorUtil.extractFontFamily(container);
+			String fontColor = FontStyleExtractorUtil.extractFontColor(container);
+			float fontSize = FontStyleExtractorUtil.extractFontSize(container);
+			boolean isBold = FontStyleExtractorUtil.extractIsBold(container);
+			boolean isItalic = FontStyleExtractorUtil.extractIsItalic(container);
+			boolean isUnderline = FontStyleExtractorUtil.extractIsUnderline(container);
+			float horizontalPadding = FontStyleExtractorUtil.extractHorizontalPadding(fieldStyle);
+			float verticalPadding = FontStyleExtractorUtil.extractVerticalPadding(fieldStyle);
+			float lineHeight = FontStyleExtractorUtil.extractLineHeight(fieldStyle);
+
+			// Resolve display name to enum type
+			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
+			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
+
+			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
+			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
+
+			// PDF Y-axis starts from bottom-left; convert from top-left origin
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+			float adjustedX = field.getXPosition();
+
+			// Calculate original page dimensions in pixels based on field's percentage
+			// and actual PDF page size
+			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
+			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
+
+			float adjustedFontSize = (float) (Math.ceil((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
+					/ 100f);
+			float adjustedHorizontalPadding = (float) (Math
+				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
+			float adjustedVerticalPadding = (float) (Math
+				.ceil((verticalPadding / originalPageHeightInPixels) * pageHeight * 100f) / 100f);
+
+			// Build font-style CSS
+			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
+			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
+			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
+			cssDto.setFontFamilyCss(fontFamily);
+			cssDto.setFontSize(String.valueOf(adjustedFontSize));
+			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
+			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
+			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
+			cssDto.setFontColor(fontColor);
+			cssDto.setHorizontalPadding(String.valueOf(adjustedHorizontalPadding));
+			cssDto.setVerticalPadding(String.valueOf(adjustedVerticalPadding));
+			cssDto.setLineHeight(String.valueOf(lineHeight));
+			cssDto.setEscapedValue(EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : ""));
+
+			String html = EsignUtil.buildTextFieldHtml(cssDto);
+
+			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
+					fontFamilyCss);
+
+			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
+
+			// Calculate how much to stretch/shrink the form to fit the target field size
+			// Ensures the rendered HTML content exactly fills the intended field
+			// rectangle on the PDF
+			PDRectangle bbox = formXObject.getBBox();
+			float scaleX = adjustedWidth / bbox.getWidth();
+			float scaleY = adjustedHeight / bbox.getHeight();
+
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
+
+			contentStream.saveGraphicsState();
+			contentStream.transform(matrix);
+			contentStream.drawForm(formXObject);
+			contentStream.restoreGraphicsState();
+
+		}
+		catch (IOException e) {
+			log.error("Error rendering advance input text field to PDF", e);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
+					new String[] { field.getType().toString() });
+		}
+	}
+
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, String folderName,
+			String fontFamilyCss) throws IOException {
+
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+
+			float widthInches = widthPt / POINTS_PER_INCH;
+			float heightInches = heightPt / POINTS_PER_INCH;
+
+			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
+			if (folderName != null) {
+				// Load Font bytes from S3
+				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, REGULAR_FONT_VARIANT);
+						ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream()) {
+
+					fontStream.transferTo(fontBuffer);
+
+					byte[] fontBytes = fontBuffer.toByteArray();
+
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss);
+				}
+				catch (Exception e) {
+					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
+				}
+			}
+			builder.toStream(baos);
+			builder.run();
+			return baos.toByteArray();
+		}
+	}
+
+	public byte[] htmlToPdfBytesImageField(String html, float widthPt, float heightPt) throws IOException {
+
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.useSVGDrawer(new BatikSVGDrawer());
+			builder.withHtmlContent(html, null);
+
+			float widthInches = widthPt / POINTS_PER_INCH;
+			float heightInches = heightPt / POINTS_PER_INCH;
+
+			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
+			builder.toStream(baos);
+			builder.run();
+			return baos.toByteArray();
+		}
+	}
+
+	public static PDFormXObject toFormXObject(PDDocument targetDoc, byte[] htmlPdfBytes) throws IOException {
+
+		try (PDDocument htmlDoc = Loader.loadPDF(htmlPdfBytes)) {
+			LayerUtility layerUtility = new LayerUtility(targetDoc);
+			return layerUtility.importPageAsForm(htmlDoc, 0);
 		}
 	}
 

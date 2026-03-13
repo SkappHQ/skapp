@@ -20,6 +20,7 @@ import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
 import com.skapp.enterprise.esignature.model.TemplateFieldOption;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
+import com.skapp.enterprise.esignature.payload.request.FieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.AdvanceTemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
@@ -44,6 +45,7 @@ import com.skapp.enterprise.esignature.type.FieldType;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
+import com.skapp.enterprise.esignature.util.EsignValidations;
 import com.skapp.enterprise.people.service.EpUserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +57,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -589,6 +592,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 		return templateFields.stream().map(templateFieldDto -> {
 
+			validateFieldDtoConfigurationValues(templateFieldDto);
+
 			TemplateDocument templateFieldDocument = templateDocumentDao
 				.findById(templateFieldDto.getTemplateDocumentId())
 				.orElseThrow(
@@ -601,6 +606,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			templateField.setYPosition(templateFieldDto.getYPosition());
 			templateField.setWidth(templateFieldDto.getWidth());
 			templateField.setHeight(templateFieldDto.getHeight());
+			templateField.setWidthPercentage(templateFieldDto.getWidthPercentage());
+			templateField.setHeightPercentage(templateFieldDto.getHeightPercentage());
 			templateField.setTemplateDocument(templateFieldDocument);
 			templateField.setTemplateRecipient(templateRecipient);
 
@@ -609,11 +616,45 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 
 	}
 
+	private void validateFieldDtoConfigurationValues(TemplateFieldDto templateFieldDto) {
+
+		if (templateFieldDto.getWidthPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_REQUIRED);
+		}
+
+		if (templateFieldDto.getHeightPercentage() == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_REQUIRED);
+		}
+
+		if (templateFieldDto.getWidthPercentage() <= 0 || templateFieldDto.getWidthPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		if (templateFieldDto.getHeightPercentage() <= 0 || templateFieldDto.getHeightPercentage() >= 100) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MUST_BE_BETWEEN_0_AND_100);
+		}
+
+		// Validate max 2 decimal places
+		BigDecimal widthBD = new BigDecimal(String.valueOf(templateFieldDto.getWidthPercentage()));
+		if (widthBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_WIDTH_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+		}
+
+		BigDecimal heightBD = new BigDecimal(String.valueOf(templateFieldDto.getHeightPercentage()));
+		if (heightBD.scale() > 2) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_HEIGHT_PERCENTAGE_MAX_TWO_DECIMAL_PLACES);
+		}
+	}
+
 	private List<TemplateField> buildTemplateAdvanceFieldsForRecipient(
 			List<TemplateFieldContainerDto> templateFieldContainerDtos, TemplateRecipient templateRecipient) {
 
 		List<TemplateField> fieldList = new ArrayList<>();
 		for (TemplateFieldContainerDto templateFieldContainerDto : templateFieldContainerDtos) {
+
+			validateAdvanceFieldContainerValues(templateFieldContainerDto);
 
 			if (templateFieldContainerDto.getTemplateFields() == null
 					|| templateFieldContainerDto.getTemplateFields().isEmpty()) {
@@ -686,6 +727,10 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			}
 
 			for (AdvanceTemplateFieldDto advanceFieldDto : templateFieldContainerDto.getTemplateFields()) {
+
+				EsignValidations.validateEnvelopeFieldMetaData(advanceFieldDto.getWidthPercentage(),
+						advanceFieldDto.getHeightPercentage());
+
 				fieldList.add(createAdvanceField(advanceFieldDto, templateRecipient, templateFieldContainer,
 						existingOptionValue, existingDisplayOrder));
 			}
@@ -702,6 +747,12 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		TemplateDocument templateFieldDocument = templateDocumentDao.findById(advanceFieldDto.getTemplateDocumentId())
 			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEMPLATE_DOCUMENT_ID_NOT_FOUND));
 		TemplateField templateField = esignTemplateMapper.advanceTemplateFieldDtoToTemplateField(advanceFieldDto);
+		templateField.setHorizontalPadding(
+				advanceFieldDto.getHorizontalPadding() != null ? advanceFieldDto.getHorizontalPadding() : 0);
+		templateField.setVerticalPadding(
+				advanceFieldDto.getVerticalPadding() != null ? advanceFieldDto.getVerticalPadding() : 0);
+		templateField
+			.setTextLineHeight(advanceFieldDto.getTextLineHeight() != null ? advanceFieldDto.getTextLineHeight() : 0);
 		templateField.setTemplateRecipient(templateRecipient);
 		templateField.setTemplateDocument(templateFieldDocument);
 		templateField.setTemplateFieldContainer(templateFieldContainer);
@@ -744,6 +795,27 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		if (displayOrder != null && !existingDisplayOrder.add(displayOrder)) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE);
 		}
+	}
+
+	private void validateAdvanceFieldContainerValues(TemplateFieldContainerDto templateFieldContainerDto) {
+
+		if (templateFieldContainerDto.getTemplateFields() == null
+				|| templateFieldContainerDto.getTemplateFields().isEmpty()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (templateFieldContainerDto.getFontFamily() == null || templateFieldContainerDto.getFontFamily().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_FAMILY_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (templateFieldContainerDto.getFontColor() == null || templateFieldContainerDto.getFontColor().isBlank()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_COLOR_REQUIRED_FOR_CONTAINER);
+		}
+
+		if (templateFieldContainerDto.getFontSize() == null || templateFieldContainerDto.getFontSize() <= 0) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FONT_SIZE_REQUIRED_FOR_CONTAINER);
+		}
+
 	}
 
 	private TemplateEnvelopeSetting buildTemplateEnvelopeSetting(TemplateEnvelopeSettingDto templateEnvelopeSettingDto,
