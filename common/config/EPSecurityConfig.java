@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.config;
 
+import com.skapp.enterprise.common.component.AnnouncementApiKeyFilter;
 import com.skapp.community.common.component.AuthEntryPoint;
 import com.skapp.community.common.component.ExceptionLoggingFilter;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
@@ -53,6 +54,8 @@ public class EPSecurityConfig {
 	private final RequestMethodFilter requestMethodFilter;
 
 	private final ApiKeyAuthFilter apiKeyAuthFilter;
+
+	private final AnnouncementApiKeyFilter announcementApiKeyFilter;
 
 	@Value("${cors.allowed-origins}")
 	private String allowedOrigins;
@@ -111,6 +114,8 @@ public class EPSecurityConfig {
 				.permitAll()
 				.requestMatchers("/v1/reset-database")
 				.permitAll()
+				.requestMatchers("/v1/announcement", "/v1/announcement/**")
+				.permitAll()
 				.anyRequest()
 				.authenticated());
 
@@ -125,6 +130,7 @@ public class EPSecurityConfig {
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(requestMethodFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(announcementApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(documentLinkAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(epJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -142,7 +148,7 @@ public class EPSecurityConfig {
 		configuration.setAllowedOriginPatterns(Arrays.asList(origins));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Tenant-ID", "Referer",
-				"Origin", "Stripe-Signature", "X-Api-Key"));
+				"Origin", "Stripe-Signature", "X-Api-Key", "X-Admin-Api-Key"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration credentialedConfig = getCorsConfigurationCookies(origins);
 		source.registerCorsConfiguration("/v1/auth/session/sign-in", credentialedConfig);

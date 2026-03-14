@@ -45,7 +45,8 @@ public class TenantFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
-		return EXCLUDED_PATHS.stream().anyMatch(requestURI::equals);
+		return EXCLUDED_PATHS.stream().anyMatch(requestURI::equals)
+				|| Boolean.TRUE.equals(request.getAttribute("ANNOUNCEMENT_API_KEY_AUTHENTICATED"));
 	}
 
 	@Override

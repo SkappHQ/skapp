@@ -75,8 +75,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/auth/session/code-challenge/verify", "/v1/ep/esign/audit-trail/create",
 			"/v1/ep/auth/session/signin/guest/verify-otp", "/v1/ep/esign/document-link/send-otp",
 			"/v1/ep/esign/document-link/resend-otp", "/v1/ep/esign/document-link/verify-otp",
-			"/internal/v1/ep/organization/timezone");
-
+		"/internal/v1/ep/organization/timezone", "/v1/announcement", "/v1/announcement/list");
 	private final JwtService jwtService;
 
 	private final UserDetailsService userDetailsService;
@@ -86,7 +85,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String path = request.getRequestURI();
-		return PUBLIC_URLS.stream().anyMatch(path::equals);
+		return PUBLIC_URLS.stream().anyMatch(path::equals)
+				|| Boolean.TRUE.equals(request.getAttribute("ANNOUNCEMENT_API_KEY_AUTHENTICATED"));
 	}
 
 	@Override

@@ -1,0 +1,78 @@
+package com.skapp.enterprise.common.model.master;
+
+import com.skapp.enterprise.common.model.FeatureAnnouncementRecipient;
+import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
+import com.skapp.enterprise.common.type.AnnouncementStatus;
+import com.skapp.enterprise.common.type.AnnouncementTargetPage;
+import com.skapp.enterprise.common.type.AnnouncementTriggerType;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "feature_announcement")
+@Getter
+@Setter
+@NoArgsConstructor
+public class FeatureAnnouncement {
+
+	@Id
+	@Column(name = "announcement_id", length = 36, nullable = false, updatable = false)
+	private String announcementId = UUID.randomUUID().toString();
+
+	@Column(name = "title", length = 100, nullable = false)
+	private String title;
+
+	@Column(name = "description", columnDefinition = "TEXT", nullable = false)
+	private String description;
+
+	@Column(name = "cta_label", length = 50)
+	private String ctaLabel;
+
+	@Column(name = "cta_link", length = 2048)
+	private String ctaLink;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "target_page", nullable = false)
+	private AnnouncementTargetPage targetPage;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "trigger_type", nullable = false)
+	private AnnouncementTriggerType triggerType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "frequency_type", nullable = false)
+	private AnnouncementFrequencyType frequencyType;
+
+	@Column(name = "custom_frequency_days")
+	private Integer customFrequencyDays;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private AnnouncementStatus status = AnnouncementStatus.ACTIVE;
+
+	@Column(name = "image_path", length = 2048)
+	private String imagePath;
+
+	@CreationTimestamp
+	@Column(name = "created_date", nullable = false, updatable = false)
+	private Instant createdDate;
+
+	@OneToMany(mappedBy = "featureAnnouncement", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<FeatureAnnouncementRecipient> recipients = new ArrayList<>();
+
+}
