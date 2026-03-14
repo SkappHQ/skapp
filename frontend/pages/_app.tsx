@@ -13,6 +13,7 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import { AnnouncementProvider } from "~community/common/providers/AnnouncementProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -31,6 +32,7 @@ import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 
 // Initialize the font
 const inter = Inter({
@@ -126,6 +128,27 @@ function MyApp({
           <WebSocketProvider>
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
+                <AnnouncementProvider>
+                  <I18nextProvider i18n={i18n}>
+                    <ToastProvider>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <RouteChangeLoader />
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                        <AnnouncementWrapper />
+                      </ErrorBoundary>
+                    </ToastProvider>
+                    <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                  </I18nextProvider>
+                </AnnouncementProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </WebSocketProvider>
+        ) : (
+          <TanStackProvider>
+            <ThemeProvider theme={newTheme}>
+              <AnnouncementProvider>
                 <I18nextProvider i18n={i18n}>
                   <ToastProvider>
                     <ErrorBoundary FallbackComponent={Error}>
@@ -133,27 +156,12 @@ function MyApp({
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
+                      <AnnouncementWrapper />
                     </ErrorBoundary>
                   </ToastProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
-              </ThemeProvider>
-            </TanStackProvider>
-          </WebSocketProvider>
-        ) : (
-          <TanStackProvider>
-            <ThemeProvider theme={newTheme}>
-              <I18nextProvider i18n={i18n}>
-                <ToastProvider>
-                  <ErrorBoundary FallbackComponent={Error}>
-                    <RouteChangeLoader />
-                    <BaseLayout>
-                      <Component {...pageProps} />
-                    </BaseLayout>
-                  </ErrorBoundary>
-                </ToastProvider>
-                <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-              </I18nextProvider>
+              </AnnouncementProvider>
             </ThemeProvider>
           </TanStackProvider>
         )}
