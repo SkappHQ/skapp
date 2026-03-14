@@ -28,6 +28,8 @@ public class EncryptionDecryptionServiceImpl implements EncryptionDecryptionServ
 
 	private static final String TRANSFORMATION = "AES/GCM/NoPadding";
 
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
 	private static final String SHA_VERSION = "SHA-256";
 
 	@Value("${encryptDecryptAlgorithm.secret}")
@@ -42,8 +44,7 @@ public class EncryptionDecryptionServiceImpl implements EncryptionDecryptionServ
 			// A unique IV per encryption ensures identical plaintexts produce
 			// different ciphertexts, which is critical for AES-GCM security.
 			byte[] initializationVector = new byte[12];
-			SecureRandom secureRandom = new SecureRandom();
-			secureRandom.nextBytes(initializationVector);
+			SECURE_RANDOM.nextBytes(initializationVector);
 
 			// 2. Initialize AES-GCM cipher in ENCRYPT mode using the secret key
 			// and the IV. Internally, the secret key string is hashed with SHA-256
