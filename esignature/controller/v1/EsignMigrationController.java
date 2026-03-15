@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,10 +38,11 @@ public class EsignMigrationController {
 			security = @SecurityRequirement(name = "ClientApiKey"))
 	@PostMapping(value = "/repair-document-hashes", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<DocumentHashRepairResponseDto> repairDocumentHashes(@Parameter(
-			description = "Tenant ID (schema name) to repair", required = true) @RequestParam String tenantId) {
+	public ResponseEntity<DocumentHashRepairResponseDto> repairDocumentHashes(
+			@Parameter(description = "Only process envelopes completed on or after this date (ISO format: yyyy-MM-dd)")
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
 
-		DocumentHashRepairResponseDto response = esMigrationService.repairDocumentHashes(tenantId);
+		DocumentHashRepairResponseDto response = esMigrationService.repairDocumentHashes(startDate);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

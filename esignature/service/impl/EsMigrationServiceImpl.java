@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,11 +19,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class EsMigrationServiceImpl implements EsMigrationService {
-
-	/**
-	 * Only process envelopes completed on or after this date.
-	 */
-	private static final LocalDateTime CUTOFF_DATE = LocalDateTime.of(2026, 1, 1, 0, 0, 0);
 
 	private final EnvelopeDao envelopeDao;
 
@@ -37,14 +33,18 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public DocumentHashRepairResponseDto repairDocumentHashes(String tenantId) {
-		log.info("[EsMigration] Starting document hash repair for tenant: {}", tenantId);
+	public DocumentHashRepairResponseDto repairDocumentHashes(LocalDate startDate) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+		LocalDateTime cutoffDate = startDate.atStartOfDay();
+
+		log.info("[EsMigration] Starting document hash repair for tenant: {} from {}", tenantId, cutoffDate);
 
 		DocumentHashRepairResponseDto response = new DocumentHashRepairResponseDto();
 		response.setTenant(tenantId);
 
 		List<Envelope> envelopes = envelopeDao.findByStatusAndCompletedAtGreaterThanEqual(EnvelopeStatus.COMPLETED,
-				CUTOFF_DATE);
+				cutoffDate);
 
 		response.setTotalEnvelopes(envelopes.size());
 		log.info("[EsMigration] Found {} completed envelopes for tenant: {}", envelopes.size(), tenantId);
