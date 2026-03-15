@@ -100,14 +100,24 @@ const SystemPermissionFormSection = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isSuperAdmin,
-    isInvoiceModuleEnabled,
-    tenantID
+    isInvoiceModuleEnabled
   } = useSessionData();
+
+  const isSuperAdminWithMultiple = isSuperAdmin && superAdminCount > 1;
 
   const { handleNext } = useStepper();
 
   const isInputsDisabled =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
+
+  const isDropdownDisabled =
+    isProfileView ||
+    (permissions.isSuperAdmin && !isSuperAdminWithMultiple) ||
+    isInputsDisabled ||
+    (isReadOnly && !isSuperAdminWithMultiple);
+
+  const isPeopleDropdownDisabled =
+    isDropdownDisabled && !isPeopleAdminViewingOwnProfile;
 
   const onSave = () => {
     if (
@@ -266,12 +276,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("peopleRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    (isReadOnly && !isPeopleAdminViewingOwnProfile)
-                  }
+                  isDisabled={isPeopleDropdownDisabled}
                 />
               )}
 
@@ -288,12 +293,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("leaveRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -316,12 +316,7 @@ const SystemPermissionFormSection = ({
                       event.target.value as Role
                     )
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -338,12 +333,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("esignRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -358,12 +348,7 @@ const SystemPermissionFormSection = ({
                 onChange={(event) =>
                   handleRoleDropdown("pmRole", event.target.value as Role)
                 }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
+                isDisabled={isDropdownDisabled}
               />
             )}
 
@@ -388,12 +373,7 @@ const SystemPermissionFormSection = ({
                       event.target.value as Role
                     )
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
           </Stack>

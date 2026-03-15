@@ -147,8 +147,18 @@ const useSystemPermissionFormHandlers = () => {
         return;
       }
     }
-    setPermissions((prev) => ({ ...prev, [name]: value }));
-    setSystemPermissions({ [name]: value });
+    setPermissions((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (prev.isSuperAdmin) {
+        updated.isSuperAdmin = false;
+      }
+      return updated;
+    });
+    setSystemPermissions(
+      permissions.isSuperAdmin
+        ? { [name]: value, isSuperAdmin: false }
+        : { [name]: value }
+    );
   };
 
   const handleSuperAdminToggle = useCallback(
@@ -157,10 +167,8 @@ const useSystemPermissionFormHandlers = () => {
 
       if (checked) {
         newSuperAdminCount++;
-      } else {
-        if (newSuperAdminCount > 0) {
-          newSuperAdminCount--;
-        }
+      } else if (newSuperAdminCount > 0) {
+        newSuperAdminCount--;
       }
 
       if (!checked && newSuperAdminCount === 0) {
