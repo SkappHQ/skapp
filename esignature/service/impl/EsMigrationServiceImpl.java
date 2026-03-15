@@ -26,8 +26,6 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 
 	private final EnvelopeDao envelopeDao;
 
-	private final TenantContext tenantContext;
-
 	/**
 	 * Separate Spring bean so that @Transactional(REQUIRES_NEW) is honoured per document
 	 * without self-invocation issues.
@@ -41,8 +39,6 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 	@Override
 	public DocumentHashRepairResponseDto repairDocumentHashes(String tenantId) {
 		log.info("[EsMigration] Starting document hash repair for tenant: {}", tenantId);
-
-		tenantContext.setTenantAndSwitchSchema(tenantId);
 
 		DocumentHashRepairResponseDto response = new DocumentHashRepairResponseDto();
 		response.setTenant(tenantId);

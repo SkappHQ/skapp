@@ -40,14 +40,6 @@ public class DocumentHashRepairProcessor {
 
 	private static final String LOG_PREFIX = "[EsMigration]";
 
-	private static final String DETAIL_SKIP = "SKIP";
-
-	private static final String DETAIL_REPAIRED = "REPAIRED";
-
-	private static final String DETAIL_OK = "OK";
-
-	private static final String DETAIL_FAILED = "FAILED";
-
 	private final DocumentVersionDao documentVersionDao;
 
 	private final AmazonS3Service amazonS3Service;
@@ -77,13 +69,13 @@ public class DocumentHashRepairProcessor {
 			}
 
 			// 2. Download file from S3
-			byte[] fileBytes = downloadFile(version, docLabel, response);
+			byte[] fileBytes = downloadFile(document, version, docLabel, response);
 			if (fileBytes == null) {
 				return;
 			}
 
 			// 3. Load the envelope owner's key pair (needed for both verify and re-sign)
-			KeyPair keyPair = loadKeyPairForEnvelope(envelope, docLabel, response);
+			KeyPair keyPair = loadKeyPairForEnvelope(envelope, document, docLabel, response);
 			if (keyPair == null) {
 				return;
 			}
@@ -94,7 +86,7 @@ public class DocumentHashRepairProcessor {
 			boolean integrityOk = checkIntegrity(fileBytes, version, keyPair, docLabel);
 
 			if (integrityOk) {
-				recordOk(docLabel, response);
+				recordOk(docLabel, response, document);
 				return;
 			}
 
@@ -118,13 +110,12 @@ public class DocumentHashRepairProcessor {
 			documentVersionDao.save(version);
 
 			log.info("{} Repaired {}", LOG_PREFIX, docLabel);
-			response.addDetail(DETAIL_REPAIRED + " | " + docLabel);
+			response.addRepairedDocumentId(document.getId());
 			response.setRepaired(response.getRepaired() + 1);
 
 		}
 		catch (Exception e) {
 			log.error("{} Failed to repair {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addDetail(DETAIL_FAILED + " | " + docLabel + " | " + e.getMessage());
 			response.addFailedDocumentId(document.getId());
 			response.setFailed(response.getFailed() + 1);
 		}
@@ -168,14 +159,14 @@ public class DocumentHashRepairProcessor {
 
 		if (version == null) {
 			log.warn("{} No current version found for {}", LOG_PREFIX, docLabel);
-			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | no current version");
+			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
 
 		if (version.getFilePath() == null || version.getFilePath().isBlank()) {
 			log.warn("{} Blank file path for {}", LOG_PREFIX, docLabel);
-			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | blank file path");
+			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
@@ -183,11 +174,12 @@ public class DocumentHashRepairProcessor {
 		return version;
 	}
 
-	private byte[] downloadFile(DocumentVersion version, String docLabel, DocumentHashRepairResponseDto response) {
+	private byte[] downloadFile(Document document, DocumentVersion version, String docLabel,
+			DocumentHashRepairResponseDto response) {
 		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, version.getFilePath())) {
 			if (inputStream == null) {
 				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
-				response.addDetail(DETAIL_SKIP + " | " + docLabel + " | empty S3 file");
+				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -195,7 +187,7 @@ public class DocumentHashRepairProcessor {
 			byte[] fileBytes = inputStream.readAllBytes();
 			if (fileBytes.length == 0) {
 				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
-				response.addDetail(DETAIL_SKIP + " | " + docLabel + " | empty S3 file");
+				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -203,17 +195,18 @@ public class DocumentHashRepairProcessor {
 		}
 		catch (IOException e) {
 			log.error("{} Failed to download S3 file for {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | S3 download error: " + e.getMessage());
+			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
 	}
 
-	private KeyPair loadKeyPairForEnvelope(Envelope envelope, String docLabel, DocumentHashRepairResponseDto response) {
+	private KeyPair loadKeyPairForEnvelope(Envelope envelope, Document document, String docLabel,
+			DocumentHashRepairResponseDto response) {
 		try {
 			if (envelope.getOwner() == null) {
 				log.warn("{} Envelope owner is null for {}", LOG_PREFIX, docLabel);
-				response.addDetail(DETAIL_SKIP + " | " + docLabel + " | envelope owner is null");
+				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -222,15 +215,15 @@ public class DocumentHashRepairProcessor {
 		}
 		catch (Exception e) {
 			log.error("{} Failed to load key pair for {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addDetail(DETAIL_SKIP + " | " + docLabel + " | cannot load key pair: " + e.getMessage());
+			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
 	}
 
-	private void recordOk(String docLabel, DocumentHashRepairResponseDto response) {
+	private void recordOk(String docLabel, DocumentHashRepairResponseDto response, Document document) {
 		log.debug("{} Integrity OK for {}", LOG_PREFIX, docLabel);
-		response.addDetail(DETAIL_OK + " | " + docLabel);
+		response.addSkippedDocumentId(document.getId());
 		response.setSkipped(response.getSkipped() + 1);
 	}
 

@@ -24,6 +24,10 @@ public class EsignMigrationController {
 
 	private final EsMigrationService esMigrationService;
 
+	// -------------------------------------------------------------------------
+	// Internal Use Only API
+	// -------------------------------------------------------------------------
+
 	@Operation(summary = "Repair document hashes and signatures",
 			description = "Scans completed envelopes since 2026-01-01 for the given tenant, downloads each "
 					+ "document's current version from S3, recomputes the SHA3-256 hash and ECDSA signature, "
