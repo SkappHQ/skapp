@@ -10,6 +10,7 @@ import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 	// -------------------------------------------------------------------------
 
 	@Override
+	@Transactional(readOnly = true)
 	public DocumentHashRepairResponseDto repairDocumentHashes(LocalDate startDate) {
 
 		String tenantId = TenantContext.getCurrentTenant();

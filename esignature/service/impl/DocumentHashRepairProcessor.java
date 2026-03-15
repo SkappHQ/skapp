@@ -126,20 +126,31 @@ public class DocumentHashRepairProcessor {
 	 * Returns {@code true} if integrity is confirmed, {@code false} if a mismatch is
 	 * detected (i.e., the method throws).
 	 * <p>
-	 * If the version has no signature stored yet, falls back to a plain hash comparison
-	 * via {@link DocumentService#hashDocument}.
+	 * If the version has no signature stored, falls back to a plain hash comparison via
+	 * {@link DocumentService#hashDocument}.
 	 */
 	private boolean checkIntegrity(byte[] fileBytes, DocumentVersion version, KeyPair keyPair, String docLabel) {
 		if (version.getSignatures() != null && version.getSignatures().getSignature() != null) {
 			try {
-				// Reuse the existing integrity check: computes hash + verifies ECDSA sig
+				// Reuse the existing integrity check: computes hash + verifies ECDSA sig.
+				// verifyDocumentSignature internally computes a fresh hash and checks
+				// it against the stored signature, but does NOT compare it against
+				// version.getDocumentHash(). We therefore perform that check explicitly
+				// so a stale/corrupted stored hash is also caught and repaired.
 				documentService.verifyDocumentSignature(fileBytes, version, keyPair.getPublic());
-				return true;
 			}
 			catch (Exception e) {
 				log.debug("{} verifyDocumentSignature failed for {}: {}", LOG_PREFIX, docLabel, e.getMessage());
 				return false;
 			}
+
+			// Signature verified — now also confirm the persisted hash matches
+			String freshHash = documentService.hashDocument(new ByteArrayInputStream(fileBytes));
+			boolean hashOk = freshHash.equals(version.getDocumentHash());
+			if (!hashOk) {
+				log.debug("{} Signature OK but stored hash is stale for {}", LOG_PREFIX, docLabel);
+			}
+			return hashOk;
 		}
 
 		// No signature on record — just compare the stored hash against a fresh one
