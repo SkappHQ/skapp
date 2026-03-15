@@ -107,7 +107,7 @@ public class DocumentHashRepairProcessor {
 			}
 			sig.setSignature(freshSignature);
 
-			documentVersionDao.save(version);
+			documentVersionDao.saveAndFlush(version);
 
 			log.info("{} Repaired {}", LOG_PREFIX, docLabel);
 			response.addRepairedDocumentId(document.getId());
