@@ -294,6 +294,13 @@ public class RolesServiceImpl implements RolesService {
 			if (!(isCurrentUserSuperAdmin && superAdminCount > 1) && !isCurrentUserPeopleAdmin) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
 			}
+
+			// Prevent non-super-admin users (including People Admins) from granting
+			// themselves super admin
+			if (!isCurrentUserSuperAdmin && userRoles.getIsSuperAdmin() != null
+					&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
+			}
 		}
 
 		if (userRoles != null && user.getEmployee() != null
