@@ -117,7 +117,12 @@ const SystemPermissionFormSection = ({
     (isReadOnly && !isSuperAdminWithMultiple);
 
   const isPeopleDropdownDisabled =
-    isDropdownDisabled && !isPeopleAdminViewingOwnProfile;
+    isProfileView ||
+    (permissions.isSuperAdmin && !isSuperAdminWithMultiple) ||
+    isInputsDisabled ||
+    (isReadOnly &&
+      !isPeopleAdminViewingOwnProfile &&
+      !isSuperAdminWithMultiple);
 
   const onSave = () => {
     if (

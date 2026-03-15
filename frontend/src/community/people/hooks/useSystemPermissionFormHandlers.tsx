@@ -147,6 +147,8 @@ const useSystemPermissionFormHandlers = () => {
         return;
       }
     }
+    const wasSuperAdmin = permissions.isSuperAdmin;
+
     setPermissions((prev) => {
       const updated = { ...prev, [name]: value };
       if (prev.isSuperAdmin) {
@@ -155,9 +157,7 @@ const useSystemPermissionFormHandlers = () => {
       return updated;
     });
     setSystemPermissions(
-      permissions.isSuperAdmin
-        ? { [name]: value, isSuperAdmin: false }
-        : { [name]: value }
+      wasSuperAdmin ? { [name]: value, isSuperAdmin: false } : { [name]: value }
     );
   };
 
