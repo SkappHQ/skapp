@@ -76,7 +76,9 @@
     "googleAuthErrorTitle": "Google Authentication Error",
     "googleAuthErrorDescription": "Failed to authenticate with Google. Please try again.",
     "microsoftAuthErrorTitle": "Microsoft Authentication Error",
-    "microsoftAuthErrorDescription": "Failed to authenticate with Microsoft. Please try again."
+    "microsoftAuthErrorDescription": "Failed to authenticate with Microsoft. Please try again.",
+    "recaptchaValidationError": "Validation failed. Please try again.",
+    "recaptchaErrorMessage": "ReCAPTCHA error. Please refresh the page and try again."
   },
   "signIn": {
     "pageHeading": "Log in",
