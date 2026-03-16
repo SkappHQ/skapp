@@ -165,9 +165,6 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	@Value("${app.protocol}")
 	private String protocol;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
-
 	@Value("${aws.cloudfront.s3-default.domain-name}")
 	private String cloudFrontDomain;
 
@@ -317,7 +314,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		String tokenUuid = generateAndEnsureUniqueUuidWithRetry();
 
-		String encryptedUuid = encryptionDecryptionService.encrypt(tokenUuid, encryptSecret);
+		String encryptedUuid = encryptionDecryptionService.encrypt(tokenUuid);
 		documentLink.setUuid(encryptedUuid);
 
 		String accessUrl = generateAccessUrl(tenantId, recipient.getId(), envelope.getUuid(), encryptedUuid);
@@ -757,7 +754,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		String state = recipientId + EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + envelopeUuid
 				+ EsignConstants.DOCUMENT_ACCESS_EMAIL_LINK_STATE_PATTERN + tenantId;
 
-		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
+		String encryptedState = encryptionDecryptionService.encrypt(state);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
 
 		String encodedEncryptedUUID = URLEncoder.encode(uuid, StandardCharsets.UTF_8);
@@ -1190,8 +1187,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		String decodedUuid = URLDecoder.decode(uuid, StandardCharsets.UTF_8);
 		String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
 
-		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid, encryptSecret);
-		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String decryptedUuid = encryptionDecryptionService.decrypt(decodedUuid);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState);
 
 		if (decryptedUuid == null || decryptedUuid.trim().isEmpty() || decryptedState == null
 				|| decryptedState.trim().isEmpty()) {
