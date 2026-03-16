@@ -28,6 +28,7 @@ import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +81,11 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			log.error("Envelope not found for ID: {}", auditTrailDto.getEnvelopeId());
 			return new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_NOT_FOUND);
 		});
+
+		if (envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
+			log.error("Envelope already completed: {}", auditTrailDto.getEnvelopeId());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_ALREADY_COMPLETED);
+		}
 
 		Recipient recipient = null;
 		if (auditTrailDto.getRecipientId() != null) {
