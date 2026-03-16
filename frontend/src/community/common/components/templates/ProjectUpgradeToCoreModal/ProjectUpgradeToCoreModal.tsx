@@ -54,7 +54,7 @@ const ProjectUpgradeToCoreModal: React.FC<ProjectUpgradeToCoreModalProps> = ({
               children: "Upgrade Now",
               onClick: () => {
                 onClose();
-                router.push(ROUTES.SUBSCRIPTION);
+                router.push(`${ROUTES.SETTINGS.BASE}?tab=billing`);
               }
             }
           : undefined

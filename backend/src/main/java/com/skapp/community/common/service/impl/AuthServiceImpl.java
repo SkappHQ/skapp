@@ -56,7 +56,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -129,9 +128,6 @@ public class AuthServiceImpl implements AuthService {
 	private final JsonMapper objectMapper;
 
 	protected final CookieUtil cookieUtil;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	@Transactional
@@ -402,7 +398,7 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("sharePassword: User found for sharePassword: userEmail={}", user.getEmail());
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user,
-				encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
+				encryptionDecryptionService.decrypt(user.getTempPassword()));
 
 		log.info("sharePassword: execution ended for  ={}", user.getEmail());
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
@@ -421,7 +417,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
@@ -608,8 +604,7 @@ public class AuthServiceImpl implements AuthService {
 	protected void createNewPassword(String newPassword, User user) {
 		log.info("createNewPassword: execution started={}", user.getEmail());
 		String tempPassword = user.getTempPassword();
-		if (tempPassword != null
-				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+		if (tempPassword != null && Objects.equals(encryptionDecryptionService.decrypt(tempPassword), newPassword)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
@@ -665,7 +660,7 @@ public class AuthServiceImpl implements AuthService {
 
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
 				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
 			}
 
