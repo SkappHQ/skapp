@@ -50,10 +50,10 @@ public class Field {
 	private float height;
 
 	@Column(name = "width_percentage")
-	private float widthPercentage;
+	private Float widthPercentage;
 
 	@Column(name = "height_percentage")
-	private float heightPercentage;
+	private Float heightPercentage;
 
 	@ManyToOne
 	@JoinColumn(name = "document_id")
@@ -72,12 +72,12 @@ public class Field {
 	private FieldOption fieldOption;
 
 	@Column(name = "horizontal_padding")
-	private float horizontalPadding;
+	private Float horizontalPadding;
 
 	@Column(name = "vertical_padding")
-	private float verticalPadding;
+	private Float verticalPadding;
 
 	@Column(name = "line_height")
-	private float textLineHeight;
+	private Float textLineHeight;
 
 }
