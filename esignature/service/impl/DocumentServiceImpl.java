@@ -37,6 +37,7 @@ import com.skapp.enterprise.esignature.payload.response.DocumentCompleteResponse
 import com.skapp.enterprise.esignature.payload.response.DocumentDetailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.DocumentPdfConvertMetaResponseDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
+import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.payload.response.SignedDocumentResponse;
 import com.skapp.enterprise.esignature.payload.response.SignedPdfResult;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
@@ -219,20 +220,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 			DocumentVersion currentVersion = getDocumentVersionObj(document);
 
-			byte[] documentBytes = amazonS3Service.downloadFileAsBytes(bucketName, currentVersion.getFilePath());
-
-			int numberOfPages = documentProcessingService.getNumberOfPages(documentBytes);
-
 			String value = SKAPP_SIGN_ENVELOPE_TEXT + uuid;
 
-			byte[] updatedDoc = updateEnvelopeUuidInDocument(value, documentBytes, numberOfPages);
+			ProcessedDocumentResult result = documentProcessingService.downloadAndUpdateEnvelopeUuid(value, bucketName,
+					currentVersion.getFilePath());
 
-			String fileUrl = uploadProcessedDocumentVersion(updatedDoc);
+			String fileUrl = uploadProcessedDocumentVersion(result.getDocumentBytes());
 
 			DocumentVersion newDocumentVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
-					keyPair.getPrivate(), envelope.getOwner(), updatedDoc);
+					keyPair.getPrivate(), envelope.getOwner(), result.getDocumentBytes());
 
-			return new SignedDocumentResponse(newDocumentVersion, numberOfPages);
+			return new SignedDocumentResponse(newDocumentVersion, result.getNumberOfPages());
 		}
 		catch (Exception e) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_SIGN_DOCUMENT,
@@ -1185,11 +1183,6 @@ public class DocumentServiceImpl implements DocumentService {
 				yield documentBytes;
 			}
 		};
-	}
-
-	private byte[] updateEnvelopeUuidInDocument(String value, byte[] documentBytes, int numOfPages) {
-
-		return documentProcessingService.updateEnvelopeUuidToEachPage(value, documentBytes, numOfPages);
 	}
 
 	private DocumentVersionFieldBulk processFieldLevelSign(DocumentSignDto documentSignDto, PrivateKey privateKey,
