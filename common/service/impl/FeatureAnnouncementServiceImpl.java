@@ -87,8 +87,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getAnnouncementById(String announcementId) {
-		log.debug("Fetching announcement by id: {}", announcementId);
+	public ResponseEntityDto getAnnouncementById(Long announcementId) {
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
@@ -97,10 +96,8 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateAnnouncement(String announcementId,
+	public ResponseEntityDto updateAnnouncement(Long announcementId,
 			FeatureAnnouncementUpdateRequestDto requestDto) {
-		log.debug("Updating announcement id: {}", announcementId);
-
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
@@ -128,9 +125,8 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateAnnouncementStatus(String announcementId,
+	public ResponseEntityDto updateAnnouncementStatus(Long announcementId,
 			AnnouncementStatusUpdateRequestDto requestDto) {
-		log.debug("Updating status for announcement id: {} to {}", announcementId, requestDto.getStatus());
 
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(

@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class FeatureAnnouncementResponseDto {
 
-	private String announcementId;
+	private Long announcementId;
 
 	private String title;
 

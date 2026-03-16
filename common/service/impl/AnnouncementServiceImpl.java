@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.mapper.AnnouncementMapper;
 import com.skapp.enterprise.common.model.AnnouncementUserInteraction;
+import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
 import com.skapp.enterprise.common.repository.AnnouncementUserInteractionDao;
 import com.skapp.enterprise.common.repository.FeatureAnnouncementDao;
@@ -52,7 +53,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEligibleAnnouncements(AnnouncementTriggerType trigger, String targetPage) {
-		log.debug("getEligibleAnnouncements: trigger={}, targetPage={}", trigger, targetPage);
 
 		List<FeatureAnnouncementResponseDto> active = fetchActiveAnnouncements();
 		if (active.isEmpty()) {
@@ -73,13 +73,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			return new ResponseEntityDto(false, Collections.emptyList());
 		}
 
-		List<String> announcementIds = filtered.stream()
+		List<Long> announcementIds = filtered.stream()
 			.map(FeatureAnnouncementResponseDto::getAnnouncementId)
 			.toList();
-		Map<String, AnnouncementUserInteraction> interactionMap = interactionDao
-			.findAllByEmployee_EmployeeIdAndAnnouncementIdIn(employeeId, announcementIds)
-			.stream()
-			.collect(Collectors.toMap(AnnouncementUserInteraction::getAnnouncementId, i -> i));
+		Map<Long, AnnouncementUserInteraction> interactionMap = interactionDao
+				.findAllByEmployee_EmployeeIdAndAnnouncement_AnnouncementIdIn(employeeId, announcementIds)
+				.stream()
+				.collect(Collectors.toMap(i -> i.getAnnouncement().getAnnouncementId(), i -> i));
 
 		List<FeatureAnnouncementResponseDto> eligible = filtered.stream()
 			.filter(a -> isFrequencyEligible(a, interactionMap.get(a.getAnnouncementId())))
@@ -90,30 +90,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto recordInteraction(String announcementId, AnnouncementInteractionType type) {
-		log.debug("recordInteraction: announcementId={}, type={}", announcementId, type);
+	public ResponseEntityDto recordInteraction(Long announcementId, AnnouncementInteractionType type) {
 
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
 		Employee employee = currentUser.getEmployee();
 
+		FeatureAnnouncement featureAnnouncement = featureAnnouncementDao.getReferenceById(announcementId);
+
 		AnnouncementUserInteraction interaction = interactionDao
-			.findByEmployee_EmployeeIdAndAnnouncementId(employeeId, announcementId)
-			.orElse(null);
+				.findByEmployee_EmployeeIdAndAnnouncement_AnnouncementId(employeeId, announcementId)
+				.orElse(null);
 
 		if (interaction == null) {
 			interaction = new AnnouncementUserInteraction();
-			interaction.setAnnouncementId(announcementId);
+			interaction.setAnnouncement(featureAnnouncement);
 			interaction.setEmployee(employee);
 			interaction.setInteractionType(type);
-			interaction.setFirstSeenAt(LocalDateTime.now());
 			interaction.setLastSeenAt(LocalDateTime.now());
-			interaction.setSeenCount(1);
 		}
 		else {
 			interaction.setInteractionType(type);
 			interaction.setLastSeenAt(LocalDateTime.now());
-			interaction.setSeenCount(interaction.getSeenCount() + 1);
 		}
 
 		interactionDao.save(interaction);

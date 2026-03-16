@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface FeatureAnnouncementDao extends JpaRepository<FeatureAnnouncement, String> {
+public interface FeatureAnnouncementDao extends JpaRepository<FeatureAnnouncement, Long> {
 
 	List<FeatureAnnouncement> findAllByStatusOrderByCreatedDateDesc(AnnouncementStatus status);
 

@@ -48,20 +48,20 @@ public class FeatureAnnouncementController {
 	}
 
 	@GetMapping("/{announcementId}")
-	public ResponseEntity<ResponseEntityDto> getAnnouncementById(@PathVariable String announcementId) {
+	public ResponseEntity<ResponseEntityDto> getAnnouncementById(@PathVariable Long announcementId) {
 		ResponseEntityDto response = featureAnnouncementService.getAnnouncementById(announcementId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PutMapping("/{announcementId}")
-	public ResponseEntity<ResponseEntityDto> updateAnnouncement(@PathVariable String announcementId,
+	public ResponseEntity<ResponseEntityDto> updateAnnouncement(@PathVariable Long announcementId,
 			@Valid @RequestBody FeatureAnnouncementUpdateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.updateAnnouncement(announcementId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PatchMapping("/{announcementId}/status")
-	public ResponseEntity<ResponseEntityDto> updateAnnouncementStatus(@PathVariable String announcementId,
+	public ResponseEntity<ResponseEntityDto> updateAnnouncementStatus(@PathVariable Long announcementId,
 			@Valid @RequestBody AnnouncementStatusUpdateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.updateAnnouncementStatus(announcementId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);

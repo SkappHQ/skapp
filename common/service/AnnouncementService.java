@@ -8,6 +8,6 @@ public interface AnnouncementService {
 
 	ResponseEntityDto getEligibleAnnouncements(AnnouncementTriggerType trigger, String targetPage);
 
-	ResponseEntityDto recordInteraction(String announcementId, AnnouncementInteractionType type);
+	ResponseEntityDto recordInteraction(Long announcementId, AnnouncementInteractionType type);
 
 }

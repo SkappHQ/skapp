@@ -10,6 +10,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -21,7 +23,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "feature_announcement")
@@ -31,8 +32,9 @@ import java.util.UUID;
 public class FeatureAnnouncement {
 
 	@Id
-	@Column(name = "announcement_id", length = 36, nullable = false, updatable = false)
-	private String announcementId = UUID.randomUUID().toString();
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "announcement_id", nullable = false, updatable = false)
+	private Long announcementId;
 
 	@Column(name = "title", length = 100, nullable = false)
 	private String title;

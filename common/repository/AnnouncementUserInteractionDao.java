@@ -10,10 +10,11 @@ import java.util.Optional;
 @Repository
 public interface AnnouncementUserInteractionDao extends JpaRepository<AnnouncementUserInteraction, Long> {
 
-	Optional<AnnouncementUserInteraction> findByEmployee_EmployeeIdAndAnnouncementId(Long employeeId,
-			String announcementId);
+	Optional<AnnouncementUserInteraction> findByEmployee_EmployeeIdAndAnnouncement_AnnouncementId(Long employeeId,
+																								  Long announcementId);
 
-	List<AnnouncementUserInteraction> findAllByEmployee_EmployeeIdAndAnnouncementIdIn(Long employeeId,
-			List<String> announcementIds);
+	List<AnnouncementUserInteraction> findAllByEmployee_EmployeeIdAndAnnouncement_AnnouncementIdIn(Long employeeId,
+																								   List<Long> announcementIds);
 
 }
+

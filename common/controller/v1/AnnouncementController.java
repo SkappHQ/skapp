@@ -31,7 +31,7 @@ public class AnnouncementController {
 	}
 
 	@PostMapping("/{announcementId}/interact")
-	public ResponseEntity<ResponseEntityDto> recordInteraction(@PathVariable String announcementId,
+	public ResponseEntity<ResponseEntityDto> recordInteraction(@PathVariable Long announcementId,
 			@RequestBody AnnouncementInteractRequestDto requestDto) {
 		ResponseEntityDto response = announcementService.recordInteraction(announcementId, requestDto.getType());
 		return new ResponseEntity<>(response, HttpStatus.OK);

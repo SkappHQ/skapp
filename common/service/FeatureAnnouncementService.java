@@ -12,10 +12,10 @@ public interface FeatureAnnouncementService {
 
 	ResponseEntityDto getAnnouncements(AnnouncementListRequestFilterDto filterDto);
 
-	ResponseEntityDto getAnnouncementById(String announcementId);
+	ResponseEntityDto getAnnouncementById(Long announcementId);
 
-	ResponseEntityDto updateAnnouncement(String announcementId, FeatureAnnouncementUpdateRequestDto requestDto);
+	ResponseEntityDto updateAnnouncement(Long announcementId, FeatureAnnouncementUpdateRequestDto requestDto);
 
-	ResponseEntityDto updateAnnouncementStatus(String announcementId, AnnouncementStatusUpdateRequestDto requestDto);
+	ResponseEntityDto updateAnnouncementStatus(Long announcementId, AnnouncementStatusUpdateRequestDto requestDto);
 
 }
