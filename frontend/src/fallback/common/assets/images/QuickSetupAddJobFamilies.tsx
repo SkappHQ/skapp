@@ -1,7 +1,5 @@
-import React from "react";
-
 const QuickSetupAddJobFamilies = () => {
-  return <div>QuickSetupAddJobFamilies</div>;
+  return <></>;
 };
 
 export default QuickSetupAddJobFamilies;

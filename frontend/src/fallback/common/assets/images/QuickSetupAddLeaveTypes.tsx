@@ -1,7 +1,5 @@
-import React from "react";
-
 const QuickSetupAddLeaveTypes = () => {
-  return <div>QuickSetupAddLeaveTypes</div>;
+  return <></>;
 };
 
 export default QuickSetupAddLeaveTypes;

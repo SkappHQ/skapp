@@ -1,7 +1,5 @@
-import React from "react";
-
 const QuickSetupImage = () => {
-  return <div>QuickSetupImage</div>;
+  return <></>;
 };
 
 export default QuickSetupImage;

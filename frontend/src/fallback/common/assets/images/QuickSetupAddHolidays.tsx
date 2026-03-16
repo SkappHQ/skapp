@@ -1,9 +1,5 @@
-import React from 'react'
-
 const QuickSetupAddHolidays = () => {
-  return (
-    <div>QuickSetupAddHolidays</div>
-  )
-}
+  return <></>;
+};
 
-export default QuickSetupAddHolidays
+export default QuickSetupAddHolidays;

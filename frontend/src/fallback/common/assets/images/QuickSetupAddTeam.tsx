@@ -1,7 +1,5 @@
-import React from "react";
-
 const QuickSetupAddTeam = () => {
-  return <div>QuickSetupAddTeam</div>;
+  return <></>;
 };
 
 export default QuickSetupAddTeam;
