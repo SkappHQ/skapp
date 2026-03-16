@@ -107,9 +107,6 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 
 	private final OrganizationDao organizationDao;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
-
 	@Value("${google.calendar.client.id}")
 	private String clientId;
 
@@ -175,7 +172,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		}
 
 		String decodedState = URLDecoder.decode(encodedState, StandardCharsets.UTF_8);
-		String decryptedState = encryptionDecryptionService.decrypt(decodedState, encryptSecret);
+		String decryptedState = encryptionDecryptionService.decrypt(decodedState);
 		String[] state = decryptedState.split(EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE);
 
 		if (state.length != 3) {
@@ -217,7 +214,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 			}
 			if (response.getRefreshToken() != null) {
 				tokenGenerated = response.getRefreshToken();
-				String encryptedToken = encryptionDecryptionService.encrypt(tokenGenerated, encryptSecret);
+				String encryptedToken = encryptionDecryptionService.encrypt(tokenGenerated);
 				if (encryptedToken == null) {
 					throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
 				}
@@ -345,7 +342,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 				+ frontendRedirectUri + EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE
 				+ TenantContext.getCurrentTenant();
 
-		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
+		String encryptedState = encryptionDecryptionService.encrypt(state);
 		String encodedState = URLEncoder.encode(encryptedState, StandardCharsets.UTF_8);
 
 		try {
@@ -402,7 +399,7 @@ public class EpGoogleCalenderServiceImpl implements EpGoogleCalenderService {
 		JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
 		try {
-			String decryptedAccessToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
+			String decryptedAccessToken = encryptionDecryptionService.decrypt(refreshToken);
 			TokenResponse response = new GoogleRefreshTokenRequest(new NetHttpTransport(), jsonFactory,
 					decryptedAccessToken, clientId, clientSecret)
 				.execute();
