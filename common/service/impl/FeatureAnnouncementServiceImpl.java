@@ -12,7 +12,7 @@ import com.skapp.enterprise.common.payload.request.FeatureAnnouncementCreateRequ
 import com.skapp.enterprise.common.payload.request.FeatureAnnouncementUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.AnnouncementPageResponseDto;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
-import com.skapp.enterprise.common.repository.FeatureAnnouncementDao;
+import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.service.FeatureAnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -72,8 +75,17 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
 		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAll(pageable);
 
+		List<Long> ids = page.getContent().stream()
+				.map(FeatureAnnouncement::getAnnouncementId)
+				.toList();
+		Map<Long, FeatureAnnouncement> byId = ids.isEmpty()
+				? Collections.emptyMap()
+				: featureAnnouncementDao.findAllWithRecipientsByIdIn(ids).stream()
+						.collect(Collectors.toMap(FeatureAnnouncement::getAnnouncementId, fa -> fa));
+
 		List<FeatureAnnouncementResponseDto> items = page.getContent().stream()
-				.map(announcementMapper::featureAnnouncementToResponseDto)
+				.map(fa -> announcementMapper.featureAnnouncementToResponseDto(
+						byId.getOrDefault(fa.getAnnouncementId(), fa)))
 				.toList();
 
 		AnnouncementPageResponseDto pageDto = new AnnouncementPageResponseDto();

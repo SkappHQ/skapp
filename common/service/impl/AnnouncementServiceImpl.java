@@ -14,7 +14,7 @@ import com.skapp.enterprise.common.model.AnnouncementUserInteraction;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
 import com.skapp.enterprise.common.repository.AnnouncementUserInteractionDao;
-import com.skapp.enterprise.common.repository.FeatureAnnouncementDao;
+import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.service.AnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementInteractionType;

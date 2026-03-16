@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class AnnouncementController {
 
 	@PostMapping("/{announcementId}/interact")
 	public ResponseEntity<ResponseEntityDto> recordInteraction(@PathVariable Long announcementId,
-			@RequestBody AnnouncementInteractRequestDto requestDto) {
+			@Valid @RequestBody AnnouncementInteractRequestDto requestDto) {
 		ResponseEntityDto response = announcementService.recordInteraction(announcementId, requestDto.getType());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

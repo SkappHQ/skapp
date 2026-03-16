@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 public class AnnouncementInteractRequestDto {
 
+	@NotNull
 	private AnnouncementInteractionType type;
 
 }

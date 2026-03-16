@@ -10,7 +10,6 @@ import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +29,7 @@ public class FeatureAnnouncementController {
 
 	private final FeatureAnnouncementService featureAnnouncementService;
 
-	@Autowired(required = false)
-	private AmazonS3Service amazonS3Service;
+ 	private final AmazonS3Service amazonS3Service;
 
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> createAnnouncement(
