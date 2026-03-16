@@ -147,17 +147,19 @@ const useSystemPermissionFormHandlers = () => {
         return;
       }
     }
-    const wasSuperAdmin = permissions.isSuperAdmin;
+    const hadSuperAdminPermissionBefore = permissions.isSuperAdmin;
 
     setPermissions((prev) => {
       const updated = { ...prev, [name]: value };
       if (prev.isSuperAdmin) {
-        updated.isSuperAdmin = false;
+        updated.isSuperAdmin = !prev.isSuperAdmin;
       }
       return updated;
     });
     setSystemPermissions(
-      wasSuperAdmin ? { [name]: value, isSuperAdmin: false } : { [name]: value }
+      hadSuperAdminPermissionBefore
+        ? { [name]: value, isSuperAdmin: !hadSuperAdminPermissionBefore }
+        : { [name]: value }
     );
   };
 
