@@ -128,7 +128,6 @@ function MyApp({
           <WebSocketProvider>
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
-                <AnnouncementProvider>
                   <I18nextProvider i18n={i18n}>
                     <ToastProvider>
                       <ErrorBoundary FallbackComponent={Error}>
@@ -136,20 +135,18 @@ function MyApp({
                         <BaseLayout>
                           <Component {...pageProps} />
                         </BaseLayout>
-                        <AnnouncementWrapper />
                       </ErrorBoundary>
                     </ToastProvider>
                     <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                   </I18nextProvider>
-                </AnnouncementProvider>
               </ThemeProvider>
             </TanStackProvider>
           </WebSocketProvider>
         ) : (
           <TanStackProvider>
             <ThemeProvider theme={newTheme}>
-              <AnnouncementProvider>
                 <I18nextProvider i18n={i18n}>
+                  <AnnouncementProvider>
                   <ToastProvider>
                     <ErrorBoundary FallbackComponent={Error}>
                       <RouteChangeLoader />
@@ -160,8 +157,8 @@ function MyApp({
                     </ErrorBoundary>
                   </ToastProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                  </AnnouncementProvider>
                 </I18nextProvider>
-              </AnnouncementProvider>
             </ThemeProvider>
           </TanStackProvider>
         )}
