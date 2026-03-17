@@ -98,9 +98,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	@Transactional
 	public ResponseEntityDto updateAnnouncement(Long announcementId,
 			FeatureAnnouncementCreateRequestDto requestDto) {
-		if (announcementId == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
-		}
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
