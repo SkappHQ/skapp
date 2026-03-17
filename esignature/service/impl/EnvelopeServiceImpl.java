@@ -26,7 +26,9 @@ import com.skapp.enterprise.common.model.master.Tenant;
 import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
+import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.common.util.TierStartEndDateExtractor;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
@@ -37,6 +39,7 @@ import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.EnvelopeSetting;
+import com.skapp.enterprise.esignature.model.EsignConfig;
 import com.skapp.enterprise.esignature.model.Field;
 import com.skapp.enterprise.esignature.model.FieldContainer;
 import com.skapp.enterprise.esignature.model.FieldOption;
@@ -69,6 +72,7 @@ import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.DocumentLinkRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
+import com.skapp.enterprise.esignature.repository.EsignConfigRepository;
 import com.skapp.enterprise.esignature.repository.FieldContainerDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.projection.EnvelopeInboxData;
@@ -96,6 +100,7 @@ import com.skapp.enterprise.esignature.type.UserType;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import com.skapp.enterprise.esignature.util.EsignValidations;
 import com.skapp.enterprise.people.repository.EpEmployeeRoleDao;
+import com.skapp.enterprise.people.service.EpUserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -118,8 +123,6 @@ import java.security.KeyPair;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -202,13 +205,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 	private final EsignNotificationService esignNotificationService;
 
-	private static final int LEAP_DAY = 29;
+	private final EsignConfigRepository esignConfigRepository;
 
-	private static final Month FEBRUARY = Month.FEBRUARY;
-
-	private static final Month MARCH = Month.MARCH;
-
-	private static final int FIRST_DAY = 1;
+	private final EpUserService epUserService;
 
 	@Override
 	@Transactional
@@ -493,7 +492,14 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 	}
 
 	private List<Recipient> buildRecipientsForEnvelope(List<RecipientDto> recipientDtos, Envelope envelope) {
+
 		validateSigningOrder(recipientDtos);
+
+		List<Tier> tierList = epUserService.getCurrentUserTiers();
+		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
+
+		// Actual Pro Tier Validation
+		validateMfaSmsConfigWithTier(recipientDtos, tierList, tenantStatus);
 
 		return recipientDtos.stream().map(recipientDto -> {
 			AddressBook addressBook = addressBookDao.findById(recipientDto.getAddressBookId())
@@ -550,6 +556,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			List<Field> fields = new ArrayList<>(buildFieldsForRecipient(recipientDto.getFields(), recipient));
 
 			if (recipientDto.getAdvanceFieldContainers() != null) {
+
+				// Actual Pro Tier Validation
+				if (!tierList.contains(Tier.PRO)) {
+					throw new ModuleException(
+							EsignMessageConstant.ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+				}
+
 				fields.addAll(buildAdvanceFieldsForRecipient(recipientDto.getAdvanceFieldContainers(), recipient));
 			}
 
@@ -571,6 +584,26 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				throw new ValidationException(EsignMessageConstant.ESIGN_ERROR_DUPLICATE_SIGNING_ORDER);
 			}
 		}
+	}
+
+	private void validateMfaSmsConfigWithTier(List<RecipientDto> recipientDtos, List<Tier> tierList,
+			TenantStatus tenantStatus) {
+
+		List<RecipientDto> smsVerificationEnabledRecipients = recipientDtos.stream()
+			.filter(r -> r.getVerificationType() == EsignVerificationType.SMS)
+			.toList();
+
+		EsignConfig esignConfig = esignConfigRepository.findFirstBy()
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_CONFIG_NOT_FOUND));
+
+		boolean isActiveProTier = tierList.contains(Tier.PRO) && tenantStatus.equals(TenantStatus.ACTIVE);
+
+		if (Boolean.TRUE.equals(esignConfig.getIsMfaEnabled()) && !smsVerificationEnabledRecipients.isEmpty()
+				&& !isActiveProTier) {
+			throw new ModuleException(
+					EsignMessageConstant.ESIGN_ERROR_SMS_MFA_FEATURE_AVAILABLE_ONLY_FOR_ACTIVE_PRO_TIER);
+		}
+
 	}
 
 	private List<Field> buildFieldsForRecipient(List<FieldDto> fieldDtos, Recipient recipient) {
@@ -1562,8 +1595,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 			if (tier == Tier.FREE) {
 				LocalDate tierStartedDate = DateTimeUtils.fromUtcInstantToLocaldate(tenant.getCreatedDate());
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1582,8 +1615,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 				LocalDate tierStartedDate = DateTimeUtils
 					.fromUtcInstantToLocaldate(tenant.getStripeSubscription().getSubscriptionStartDate());
 
-				startDateTime = getYearlyTierStartDate(tierStartedDate);
-				endDateTime = getYearlyTierEndDate(startDateTime, tierStartedDate);
+				startDateTime = TierStartEndDateExtractor.getYearlyTierStartDate(tierStartedDate);
+				endDateTime = TierStartEndDateExtractor.getYearlyTierEndDate(startDateTime, tierStartedDate);
 
 				long envelopeCount = envelopeDao.countBySentAtGreaterThanEqualAndSentAtLessThan(startDateTime,
 						endDateTime);
@@ -1605,42 +1638,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 		finally {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
-	}
-
-	private LocalDateTime getYearlyTierStartDate(LocalDate tierStartedDate) {
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-		int year = today.getYear();
-		LocalDate thisYearStart = getCurrentYearStartDate(tierStartedDate, year);
-		if (today.isBefore(thisYearStart)) {
-			thisYearStart = getCurrentYearStartDate(tierStartedDate, year - 1);
-		}
-		return thisYearStart.atStartOfDay();
-	}
-
-	private LocalDate getCurrentYearStartDate(LocalDate tierStartedDate, int year) {
-		int month = tierStartedDate.getMonthValue();
-		int day = tierStartedDate.getDayOfMonth();
-		if (month == FEBRUARY.getValue() && day == LEAP_DAY) {
-			return Year.isLeap(year) ? LocalDate.of(year, FEBRUARY, LEAP_DAY) : LocalDate.of(year, MARCH, FIRST_DAY);
-		}
-		else {
-			return LocalDate.of(year, month, day);
-		}
-	}
-
-	private LocalDateTime getYearlyTierEndDate(LocalDateTime startDateTime, LocalDate tierStartedDate) {
-		int year = startDateTime.getYear() + 1;
-		if (tierStartedDate.getMonthValue() == FEBRUARY.getValue() && tierStartedDate.getDayOfMonth() == LEAP_DAY) {
-			if (Year.isLeap(year)) {
-				return LocalDate.of(year, FEBRUARY, LEAP_DAY).atStartOfDay();
-			}
-			else {
-				return LocalDate.of(year, MARCH, FIRST_DAY).atStartOfDay();
-			}
-		}
-		else {
-			return startDateTime.plusYears(1);
 		}
 	}
 
