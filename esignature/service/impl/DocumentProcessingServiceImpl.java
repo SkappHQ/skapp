@@ -758,21 +758,18 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
+			// Scale field dimensions from pixel space to PDF point space
+			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
+			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
+
 			// Calculate original page dimensions in pixels based on field's percentage
 			// and actual PDF page size
 			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
 			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
 
-			// Scale field dimensions from pixel space to PDF point space
-			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
-			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
-
-			// Scale x/y positions from pixel space to PDF point space
-			float adjustedX = (field.getXPosition() / originalPageWidthInPixels) * pageWidth;
-			float scaledY = (field.getYPosition() / originalPageHeightInPixels) * pageHeight;
-
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedY = pageHeight - scaledY - adjustedHeight;
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+			float adjustedX = field.getXPosition();
 
 			float adjustedFontSize = (float) (Math.floor((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
 					/ 100f);
