@@ -22,7 +22,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { getBlinkClass, getEmoji } from "~community/common/utils/commonUtil";
 import {
   currentYear,
   getLocalDate
@@ -539,9 +539,7 @@ const LeaveTypeForm = () => {
               type={"submit"}
               disabled={!isSaveBtnActive}
               isLoading={isAddingLeaveTypePending || isEditingLeaveTypePending}
-              className={
-                ongoingQuickSetup.SETUP_LEAVE_TYPES ? "animate-pulse" : ""
-              }
+              className={getBlinkClass(ongoingQuickSetup.SETUP_LEAVE_TYPES)}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >

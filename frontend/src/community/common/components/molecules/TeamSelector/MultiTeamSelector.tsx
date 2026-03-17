@@ -156,7 +156,7 @@ const MultiTeamSelector = ({
         </Box>
 
         <ButtonV2
-          variant={!isTeamListEmpty ? "tertiary" : "tertiary"}
+          variant={"tertiary"}
           disabled={isTeamListEmpty}
           onClick={(event: MouseEvent<HTMLElement>) => {
             setAnchorEl(event.currentTarget);

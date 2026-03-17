@@ -9,6 +9,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { type FileUploadType } from "~community/common/types/CommonTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { useAddBulkHolidays } from "~community/people/api/HolidayApi";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -197,12 +198,10 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
         disabled={!isNewCalendarDetailsValid}
         variant={"primary"}
         onClick={() => handleSaveCalendarBtn()}
-        className={
+        className={getBlinkClass(
           isNewCalendarDetailsValid &&
-          newCalenderDetails.acceptedFile?.length > 0
-            ? "animate-pulse"
-            : ""
-        }
+            newCalenderDetails.acceptedFile?.length > 0
+        )}
         icon={<RightArrowIcon />}
         iconPosition="end"
       >

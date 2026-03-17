@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { userBulkTemplate } from "~community/people/utils/getConstants";
@@ -75,7 +76,7 @@ const UserBulkCsvDownload = () => {
           >
             <ButtonV2
               variant={"secondary"}
-              className={isDownloadBlinking ? "animate-pulse" : ""}
+              className={getBlinkClass(isDownloadBlinking)}
               icon={<Icon name={IconName.DOWNLOAD_ICON} />}
               iconPosition="end"
             >
@@ -87,7 +88,7 @@ const UserBulkCsvDownload = () => {
       <ButtonV2
         variant={"primary"}
         onClick={() => handleNextBtn()}
-        className={isNextBlinking ? "animate-pulse" : ""}
+        className={getBlinkClass(isNextBlinking)}
         icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
         iconPosition="end"
       >

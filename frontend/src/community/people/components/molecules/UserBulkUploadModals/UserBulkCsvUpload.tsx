@@ -16,6 +16,7 @@ import {
   FileUploadType
 } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { useAddBulkUsers } from "~community/people/api/PeopleApi";
 import useUserBulkConvert from "~community/people/hooks/useUserBulkConvert";
 import useUserBulkValidation from "~community/people/hooks/useUserBulkValidation";
@@ -192,7 +193,7 @@ const UserBulkCsvUpload: FC<Props> = ({
         isLoading={isPending}
         disabled={bulkUserAttachment?.length === 0}
         aria-label={translateAria(["uploadPeople"])}
-        className={bulkUserAttachment?.length > 0 ? "animate-pulse" : ""}
+        className={getBlinkClass(bulkUserAttachment?.length > 0)}
         icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
         iconPosition="end"
       >

@@ -10,6 +10,7 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import JobTitleField from "~community/people/components/molecules/JobTitleField/JobTitleField";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
 import { usePeopleStore } from "~community/people/store/store";
@@ -140,15 +141,11 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
               type={"submit"}
               disabled={isSaveBtnDisabled}
               variant={"primary"}
-              className={
-                (
-                  values.name && values.jobTitles?.length > 0
-                    ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
-                    : false
-                )
-                  ? "animate-pulse"
-                  : ""
-              }
+              className={getBlinkClass(
+                values.name && values.jobTitles?.length > 0
+                  ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
+                  : false
+              )}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >

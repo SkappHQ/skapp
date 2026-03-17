@@ -14,6 +14,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import {
   useCheckEmailAndIdentificationNoForQuickAdd,
   useQuickAddEmployeeMutation
@@ -280,14 +281,12 @@ const AddNewResourceModal = () => {
         }
         data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
         isLoading={isCheckingEmailLoading || isPending}
-        className={
+        className={getBlinkClass(
           ongoingQuickSetup.INVITE_EMPLOYEES &&
-          values.email !== "" &&
-          values.firstName !== "" &&
-          values.lastName !== ""
-            ? "animate-pulse"
-            : ""
-        }
+            values.email !== "" &&
+            values.firstName !== "" &&
+            values.lastName !== ""
+        )}
         icon={<Icon name={IconName.FORWARD_ARROW} />}
         iconPosition="end"
       >

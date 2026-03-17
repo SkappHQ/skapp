@@ -5,6 +5,7 @@ import { FC, useEffect, useState } from "react";
 import DownSideArrow from "~community/common/assets/Icons/DownSideArrow";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { usePeopleStore } from "~community/people/store/store";
 import { holidayModalTypes } from "~community/people/types/HolidayTypes";
 import { downloadBulkCsvTemplate } from "~community/people/utils/directoryUtils/holidayBulkUploadUtils/downloadHolidayBulkTemplateModalUtils";
@@ -60,7 +61,7 @@ const AddCalendar: FC = () => {
         <ButtonV2
           variant={"secondary"}
           onClick={downloadTemplateHandler}
-          className={isButtonBlinking.download ? "animate-pulse" : ""}
+          className={getBlinkClass(isButtonBlinking.download)}
           icon={<DownSideArrow />}
           iconPosition="end"
         >
@@ -73,7 +74,7 @@ const AddCalendar: FC = () => {
         onClick={() =>
           setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
         }
-        className={isButtonBlinking.next ? "animate-pulse" : ""}
+        className={getBlinkClass(isButtonBlinking.next)}
         icon={<RightArrowIcon />}
         iconPosition="end"
       >

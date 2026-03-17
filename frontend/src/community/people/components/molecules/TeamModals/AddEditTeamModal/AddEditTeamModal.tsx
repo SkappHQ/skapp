@@ -13,6 +13,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { hasSpecialCharacter } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { useGetSearchedEmployees } from "~community/people/api/PeopleApi";
 import { useCreateTeam, useUpdateTeam } from "~community/people/api/TeamApi";
 import AddTeamMemberRow from "~community/people/components/molecules/AddTeamMemberRow/AddTeamMemberRow";
@@ -450,15 +451,11 @@ const AddEditTeamModal = ({
           <ButtonV2
             variant={"primary"}
             onClick={() => handleSubmit()}
-            className={
-              (
-                values.teamName && values.teamSupervisors?.length > 0
-                  ? ongoingQuickSetup.DEFINE_TEAMS
-                  : false
-              )
-                ? "animate-pulse"
-                : ""
-            }
+            className={getBlinkClass(
+              values.teamName && values.teamSupervisors?.length > 0
+                ? ongoingQuickSetup.DEFINE_TEAMS
+                : false
+            )}
             icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
             iconPosition="end"
           >

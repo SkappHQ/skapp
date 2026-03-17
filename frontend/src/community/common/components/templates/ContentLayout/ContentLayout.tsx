@@ -31,7 +31,7 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
-import { mergeSx } from "~community/common/utils/commonUtil";
+import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
 import QuickSetupContainer from "~enterprise/common/components/molecules/QuickSetupContainer/QuickSetupContainer";
 import SubscriptionEndedModalController from "~enterprise/common/components/molecules/SubscriptionEndedModalController/SubscriptionEndedModalController";
@@ -318,7 +318,7 @@ const ContentLayout = ({
                 onClick={onSecondaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.secondaryButton}
                 id={id?.secondaryBtn}
-                className={shouldBlink?.secondaryBtn ? "animate-pulse" : ""}
+                className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
                 icon={
                   secondaryBtnIconName ? (
                     <Icon name={secondaryBtnIconName} />
@@ -339,7 +339,7 @@ const ContentLayout = ({
                 data-testid={contentLayoutTestId.buttons.primaryButton}
                 id={id?.primaryBtn}
                 disabled={isPrimaryBtnDisabled}
-                className={shouldBlink?.primaryBtn ? "animate-pulse" : ""}
+                className={getBlinkClass(shouldBlink?.primaryBtn ?? false)}
                 icon={
                   primaryBtnIconName ? (
                     <Icon name={primaryBtnIconName} />

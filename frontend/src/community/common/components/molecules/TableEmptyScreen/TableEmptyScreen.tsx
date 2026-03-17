@@ -4,7 +4,7 @@ import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
-import { mergeSx } from "~community/common/utils/commonUtil";
+import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
 
 import styles from "./styles";
 
@@ -19,6 +19,7 @@ export interface TableEmptyScreenProps {
     endIcon?: IconName;
     onClick?: () => void;
     styles?: SxProps<Theme>;
+    variant?: "primary" | "secondary" | "tertiary" | "error" | "line";
   };
   customStyles?: {
     wrapper?: SxProps<Theme>;
@@ -31,7 +32,7 @@ export interface TableEmptyScreenProps {
 const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
   title,
   description,
-  button = {},
+  button = { variant: "primary" },
   customStyles
 }) => {
   const theme: Theme = useTheme();
@@ -66,10 +67,10 @@ const TableEmptyScreen: FC<TableEmptyScreenProps> = ({
         {button?.label && (
           <ButtonV2
             id={button?.id}
-            variant="primary"
+            variant={button?.variant ?? "primary"}
             onClick={button?.onClick}
             aria-describedby={descriptionId}
-            className={button?.shouldBlink ? "animate-pulse" : ""}
+            className={getBlinkClass(button?.shouldBlink ?? false)}
             icon={
               button?.endIcon ? (
                 <Icon name={button?.endIcon} />
