@@ -45,20 +45,17 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	public ResponseEntityDto createAnnouncement(FeatureAnnouncementCreateRequestDto requestDto) {
 		log.debug("Creating feature announcement with title: {}", requestDto.getTitle());
 
-		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(),
-				requestDto.getFrequencyType(), requestDto.getCustomFrequencyDays());
+		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(), requestDto.getFrequencyType(),
+				requestDto.getCustomFrequencyDays());
 		sanitizeAnnouncementRequest(requestDto);
 
 		FeatureAnnouncement saved = featureAnnouncementDao.save(buildAnnouncementEntity(requestDto));
-		List<FeatureAnnouncementRecipient> recipients = requestDto.getRecipientRoles().stream()
-				.distinct()
-				.map(role -> {
-					FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
-					recipient.setRecipientRole(role);
-					recipient.setFeatureAnnouncement(saved);
-					return recipient;
-				})
-				.toList();
+		List<FeatureAnnouncementRecipient> recipients = requestDto.getRecipientRoles().stream().distinct().map(role -> {
+			FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
+			recipient.setRecipientRole(role);
+			recipient.setFeatureAnnouncement(saved);
+			return recipient;
+		}).toList();
 		featureAnnouncementRecipientDao.saveAll(recipients);
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
@@ -72,9 +69,10 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
 		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAll(pageable);
 
-		List<FeatureAnnouncementResponseDto> items = page.getContent().stream()
-				.map(this::buildAnnouncementResponseDto)
-				.toList();
+		List<FeatureAnnouncementResponseDto> items = page.getContent()
+			.stream()
+			.map(this::buildAnnouncementResponseDto)
+			.toList();
 
 		AnnouncementPageResponseDto pageDto = new AnnouncementPageResponseDto();
 		pageDto.setItems(items);
@@ -89,36 +87,34 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getAnnouncementById(Long announcementId) {
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
-				.orElseThrow(() -> new ModuleException(
-						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(entity));
 	}
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateAnnouncement(Long announcementId,
-			FeatureAnnouncementCreateRequestDto requestDto) {
+	public ResponseEntityDto updateAnnouncement(Long announcementId, FeatureAnnouncementCreateRequestDto requestDto) {
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
-				.orElseThrow(() -> new ModuleException(
-						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 
-		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(),
-				requestDto.getFrequencyType(), requestDto.getCustomFrequencyDays());
+		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(), requestDto.getFrequencyType(),
+				requestDto.getCustomFrequencyDays());
 		sanitizeAnnouncementRequest(requestDto);
 
 		populateAnnouncementEntityFromRequest(requestDto, entity);
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
 
 		featureAnnouncementRecipientDao.deleteByFeatureAnnouncementAnnouncementId(saved.getAnnouncementId());
-		List<FeatureAnnouncementRecipient> newRecipients = requestDto.getRecipientRoles().stream()
-				.distinct()
-				.map(role -> {
-					FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
-					recipient.setRecipientRole(role);
-					recipient.setFeatureAnnouncement(saved);
-					return recipient;
-				})
-				.toList();
+		List<FeatureAnnouncementRecipient> newRecipients = requestDto.getRecipientRoles()
+			.stream()
+			.distinct()
+			.map(role -> {
+				FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
+				recipient.setRecipientRole(role);
+				recipient.setFeatureAnnouncement(saved);
+				return recipient;
+			})
+			.toList();
 		featureAnnouncementRecipientDao.saveAll(newRecipients);
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
@@ -129,8 +125,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 			AnnouncementStatusUpdateRequestDto requestDto) {
 
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
-				.orElseThrow(() -> new ModuleException(
-						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 
 		entity.setStatus(requestDto.getStatus());
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
@@ -139,8 +134,10 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	private void sanitizeAnnouncementRequest(FeatureAnnouncementCreateRequestDto createRequest) {
 		createRequest.setTitle(createRequest.getTitle().trim());
-		createRequest.setCtaLabel(StringUtils.hasText(createRequest.getCtaLabel()) ? createRequest.getCtaLabel().trim() : null);
-		createRequest.setCtaLink(StringUtils.hasText(createRequest.getCtaLink()) ? createRequest.getCtaLink().trim() : null);
+		createRequest
+			.setCtaLabel(StringUtils.hasText(createRequest.getCtaLabel()) ? createRequest.getCtaLabel().trim() : null);
+		createRequest
+			.setCtaLink(StringUtils.hasText(createRequest.getCtaLink()) ? createRequest.getCtaLink().trim() : null);
 		if (createRequest.getStatus() == null) {
 			createRequest.setStatus(AnnouncementStatus.ACTIVE);
 		}
@@ -149,8 +146,8 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		}
 	}
 
-	private void validateCrossFieldRules(String ctaLabel, String ctaLink,
-			AnnouncementFrequencyType frequencyType, Integer customFrequencyDays) {
+	private void validateCrossFieldRules(String ctaLabel, String ctaLink, AnnouncementFrequencyType frequencyType,
+			Integer customFrequencyDays) {
 		if (StringUtils.hasText(ctaLabel) && !StringUtils.hasText(ctaLink)) {
 			throw new ModuleException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_REQUIRED_WHEN_LABEL_SET);
@@ -175,13 +172,13 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
-		response.setCreatedDate(announcement.getCreatedDate() == null ? null
-				: announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
+		response.setCreatedDate(
+				announcement.getCreatedDate() == null ? null : announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
 		List<Role> recipientRoles = featureAnnouncementRecipientDao
-				.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
-				.stream()
-				.map(FeatureAnnouncementRecipient::getRecipientRole)
-				.toList();
+			.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
+			.stream()
+			.map(FeatureAnnouncementRecipient::getRecipientRole)
+			.toList();
 		response.setRecipientRoles(recipientRoles);
 		return response;
 	}

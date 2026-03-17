@@ -13,7 +13,6 @@ public interface AnnouncementUserInteractionDao extends JpaRepository<Announceme
 	Optional<AnnouncementUserInteraction> findByEmployeeIdAndAnnouncementId(Long employeeId, Long announcementId);
 
 	List<AnnouncementUserInteraction> findAllByEmployeeIdAndAnnouncementIdIn(Long employeeId,
-																		   List<Long> announcementIds);
+			List<Long> announcementIds);
 
 }
-

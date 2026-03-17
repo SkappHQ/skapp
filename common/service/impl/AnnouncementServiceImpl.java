@@ -76,13 +76,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			return new ResponseEntityDto(false, Collections.emptyList());
 		}
 
-		List<Long> announcementIds = filtered.stream()
-			.map(FeatureAnnouncementResponseDto::getAnnouncementId)
-			.toList();
+		List<Long> announcementIds = filtered.stream().map(FeatureAnnouncementResponseDto::getAnnouncementId).toList();
 		Map<Long, AnnouncementUserInteraction> interactionMap = interactionDao
-				.findAllByEmployeeIdAndAnnouncementIdIn(employeeId, announcementIds)
-				.stream()
-				.collect(Collectors.toMap(i -> i.getAnnouncementId(), i -> i));
+			.findAllByEmployeeIdAndAnnouncementIdIn(employeeId, announcementIds)
+			.stream()
+			.collect(Collectors.toMap(i -> i.getAnnouncementId(), i -> i));
 
 		List<FeatureAnnouncementResponseDto> eligible = filtered.stream()
 			.filter(a -> isFrequencyEligible(a, interactionMap.get(a.getAnnouncementId())))
@@ -99,8 +97,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
 
 		AnnouncementUserInteraction interaction = interactionDao
-				.findByEmployeeIdAndAnnouncementId(employeeId, announcementId)
-				.orElse(null);
+			.findByEmployeeIdAndAnnouncementId(employeeId, announcementId)
+			.orElse(null);
 
 		if (interaction == null) {
 			interaction = new AnnouncementUserInteraction();
@@ -124,10 +122,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 		List<FeatureAnnouncementResponseDto> announcements = featureAnnouncementDao
-				.findAllByStatusOrderByCreatedDateDesc(AnnouncementStatus.ACTIVE)
-				.stream()
-				.map(this::buildAnnouncementResponseDto)
-				.toList();
+			.findAllByStatusOrderByCreatedDateDesc(AnnouncementStatus.ACTIVE)
+			.stream()
+			.map(this::buildAnnouncementResponseDto)
+			.toList();
 
 		if (currentTenant != null) {
 			tenantContext.setTenantAndSwitchSchema(currentTenant);
@@ -153,19 +151,19 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			return false;
 		}
 		return switch (role) {
-			case SUPER_ADMIN                                        -> Boolean.TRUE.equals(employeeRole.getIsSuperAdmin());
-			case PEOPLE_ADMIN, PEOPLE_MANAGER, PEOPLE_EMPLOYEE     -> employeeRole.getPeopleRole() == role;
-			case LEAVE_ADMIN, LEAVE_MANAGER, LEAVE_EMPLOYEE        -> employeeRole.getLeaveRole() == role;
-			case ATTENDANCE_ADMIN, ATTENDANCE_MANAGER,
-					ATTENDANCE_EMPLOYEE                             -> employeeRole.getAttendanceRole() == role;
-			case ESIGN_ADMIN, ESIGN_SENDER, ESIGN_EMPLOYEE         -> employeeRole.getEsignRole() == role;
-			case INVOICE_ADMIN, INVOICE_MANAGER, INVOICE_NONE      -> employeeRole.getInvoiceRole() == role;
-			case PM_ADMIN, PM_EMPLOYEE, PM_GUEST_EMPLOYEE          -> employeeRole.getPmRole() == role;
-			case OKR_ADMIN, OKR_MANAGER, OKR_EMPLOYEE              -> employeeRole.getOkrRole() == role;
+			case SUPER_ADMIN -> Boolean.TRUE.equals(employeeRole.getIsSuperAdmin());
+			case PEOPLE_ADMIN, PEOPLE_MANAGER, PEOPLE_EMPLOYEE -> employeeRole.getPeopleRole() == role;
+			case LEAVE_ADMIN, LEAVE_MANAGER, LEAVE_EMPLOYEE -> employeeRole.getLeaveRole() == role;
+			case ATTENDANCE_ADMIN, ATTENDANCE_MANAGER, ATTENDANCE_EMPLOYEE -> employeeRole.getAttendanceRole() == role;
+			case ESIGN_ADMIN, ESIGN_SENDER, ESIGN_EMPLOYEE -> employeeRole.getEsignRole() == role;
+			case INVOICE_ADMIN, INVOICE_MANAGER, INVOICE_NONE -> employeeRole.getInvoiceRole() == role;
+			case PM_ADMIN, PM_EMPLOYEE, PM_GUEST_EMPLOYEE -> employeeRole.getPmRole() == role;
+			case OKR_ADMIN, OKR_MANAGER, OKR_EMPLOYEE -> employeeRole.getOkrRole() == role;
 		};
 	}
 
-	private boolean isFrequencyEligible(FeatureAnnouncementResponseDto announcement, AnnouncementUserInteraction interaction) {
+	private boolean isFrequencyEligible(FeatureAnnouncementResponseDto announcement,
+			AnnouncementUserInteraction interaction) {
 		AnnouncementFrequencyType frequency = announcement.getFrequencyType();
 		if (frequency == null) {
 			return true;
@@ -207,13 +205,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
-		response.setCreatedDate(announcement.getCreatedDate() == null ? null
-				: announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
+		response.setCreatedDate(
+				announcement.getCreatedDate() == null ? null : announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
 		List<Role> recipientRoles = featureAnnouncementRecipientDao
-				.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
-				.stream()
-				.map(FeatureAnnouncementRecipient::getRecipientRole)
-				.toList();
+			.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
+			.stream()
+			.map(FeatureAnnouncementRecipient::getRecipientRole)
+			.toList();
 		response.setRecipientRoles(recipientRoles);
 		return response;
 	}

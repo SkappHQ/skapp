@@ -2,9 +2,6 @@ package com.skapp.enterprise.common.type;
 
 public enum AnnouncementFrequencyType {
 
-	ONE_TIME,
-	DAILY,
-	WEEKLY,
-	CUSTOM
+	ONE_TIME, DAILY, WEEKLY, CUSTOM
 
 }

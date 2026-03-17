@@ -30,7 +30,7 @@ public class FeatureAnnouncementController {
 
 	private final FeatureAnnouncementService featureAnnouncementService;
 
- 	private final AmazonS3Service amazonS3Service;
+	private final AmazonS3Service amazonS3Service;
 
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
