@@ -11,6 +11,7 @@ import AttachmentIcon from "~community/common/assets/Icons/AttachmentIcon";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
 import BackArrowIcon from "~community/common/assets/Icons/BackArrowIcon";
 import BackIcon from "~community/common/assets/Icons/BackIcon";
+import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
@@ -321,7 +322,8 @@ export const IconMapping: Partial<
   [IconName.OUTLOOK_ICON]: OutlookIcon,
   [IconName.PERCENTAGE_ICON]: PercentageIcon,
   [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
-  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon
+  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
+  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon
   // Add more icons here as needed
 };
 

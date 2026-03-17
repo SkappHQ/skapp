@@ -1,20 +1,11 @@
 import {
-  Box,
-  Divider,
-  Stack,
-  Theme,
-  Typography,
-  useTheme
-} from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+  BasicFilterStructure,
+  SelectableItemList
+} from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import { MenuitemsDataTypes } from "~community/common/types/filterTypes";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
@@ -42,10 +33,6 @@ const RequestFilterMenuItems = ({
     "leaveRequests",
     "leaveRequestFilters"
   );
-  const theme: Theme = useTheme();
-  const translateAria = useTranslator("leaveAria", "myRequests");
-  const queryMatches = useMediaQuery();
-  const isSmallScreen = queryMatches(`(max-width: 1150px)`);
 
   const {
     resetLeaveRequestParams,
@@ -180,119 +167,54 @@ const RequestFilterMenuItems = ({
   }, [leaveRequestsFilter]);
 
   return (
-    <Box sx={{ p: "0.75rem", backgroundColor: "common.white" }}>
-      <Box>
-        {menuItemsData.map((item: MenuitemsDataTypes, index: number) => (
-          <Box
-            key={index}
-            component="div"
-            role="region"
-            aria-label={
-              item.type === "type"
-                ? translateAria(["myLeaveRequests", "typeFilterSection"])
-                : translateAria(["myLeaveRequests", "statusFilterSection"])
-            }
-          >
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {item.title}
-            </Typography>
-            <Stack
-              direction="row"
-              columnGap={0.5}
-              rowGap={2.5}
-              flexWrap="wrap"
-              sx={{
-                py: "1.25rem",
-                [theme.breakpoints.between("lg", "xl")]: {
-                  maxWidth: "35.625rem"
-                },
-                pointerEvents: "auto"
-              }}
-            >
-              {item.buttons?.map((button, index) => {
-                return (
-                  <IconChip
-                    key={index}
-                    label={
-                      item.type !== "type"
-                        ? button.text.toLowerCase()
-                        : button.text
-                    }
-                    onClick={() => handleFilters(button, item.type)}
-                    icon={
-                      filter?.status?.includes(button.text) ||
-                      filter?.type.includes(
-                        button.id ? button.id.toString() : ""
-                      ) ? (
-                        <Icon
-                          name={IconName.SELECTED_ICON}
-                          fill={theme.palette.primary.dark}
-                        />
-                      ) : undefined
-                    }
-                    chipStyles={{
-                      backgroundColor:
-                        filter?.[item.type as "status" | "date"].includes(
-                          button.text
-                        ) ||
-                        filter?.type.includes(
-                          button.id ? button.id.toString() : ""
-                        )
-                          ? theme.palette.secondary.main
-                          : theme.palette.grey[100],
-                      color:
-                        filter?.[item.type as "status" | "date"].includes(
-                          button.text
-                        ) ||
-                        filter?.type.includes(
-                          button.id ? button.id.toString() : ""
-                        )
-                          ? theme.palette.primary.dark
-                          : "black",
-                      padding: "8px 12px",
-                      fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
-                    }}
-                    accessibility={{
-                      ariaLabel:
-                        filter?.status?.includes(button.text) ||
-                        filter?.type.includes(
-                          button.id ? button.id.toString() : ""
-                        )
-                          ? translateAria(
-                              ["myLeaveRequests", "filterSelected"],
-                              {
-                                filterName: button.text
-                              }
-                            )
-                          : translateAria(["myLeaveRequests", "filterOption"], {
-                              filterName: button.text
-                            })
-                    }}
-                  />
-                );
-              })}
-            </Stack>
-          </Box>
-        ))}
-        <Divider />
-        <Stack direction="row" spacing="0.75rem" sx={{ pt: "0.75rem" }}>
-          <ButtonV2
-            variant={"primary"}
-            onClick={handleSubmit}
-            aria-label="Apply filters"
-          >
-            {translateText(["applyButtonText"])}
-          </ButtonV2>
-          <ButtonV2
-            variant={"tertiary"}
-            onClick={handleResetFilters}
-            disabled={isResetDisabled}
-          >
-            {translateText(["resetButtonText"])}
-          </ButtonV2>
-        </Stack>
-      </Box>
-    </Box>
+    <BasicFilterStructure
+      title={translateText(["filterTitle"])}
+      resetButtonProps={{
+        onClick: handleResetFilters,
+        disabled: isResetDisabled,
+        children: translateText(["resetButtonText"])
+      }}
+      applyButtonProps={{
+        onClick: handleSubmit,
+        children: translateText(["applyButtonText"])
+      }}
+    >
+      <SelectableItemList
+        title={menuItemsData[0].title}
+        items={
+          menuItemsData[0].buttons?.map((button) => ({
+            label: button.text.toLowerCase(),
+            value: button.text
+          })) || []
+        }
+        selectedValues={filter.status}
+        onChipClick={(statusText) => {
+          const button = menuItemsData[0].buttons?.find(
+            (b) => b.text === statusText
+          );
+          if (button) {
+            handleFilters(button, menuItemsData[0].type);
+          }
+        }}
+      />
+
+      <SelectableItemList
+        title={menuItemsData[1].title}
+        items={leaveTypeButtons.map((button) => ({
+          label: button.text,
+          value: button.id?.toString() ?? ""
+        }))}
+        selectedValues={filter.type}
+        onChipClick={(typeId) => {
+          const button = leaveTypeButtons.find(
+            (b) => b.id?.toString() === typeId
+          );
+          if (button) {
+            handleFilters(button, menuItemsData[1].type);
+          }
+        }}
+      />
+    </BasicFilterStructure>
   );
 };
 

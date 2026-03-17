@@ -5,18 +5,16 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { getRecentYearsInStrings } from "~community/common/utils/dateTimeUtils";
 import {
   useGetEmployeeCustomAllocationReport,
@@ -261,30 +259,22 @@ const CustomAllocationsReportTable: FC = () => {
       id={"filter-types"}
       isResetBtnDisabled={selectedLeaveTypes.length === 0}
     >
-      <Typography variant="h5">
-        {translateText(["filterPopperLeaveTypeTitle"])}
-      </Typography>
-      <Box display="flex" flexWrap="wrap" gap={1}>
-        {leaveTypeButtons.map((leaveType) => (
-          <ButtonV2
-            key={leaveType.id}
-            variant={
-              selectedLeaveTypes.includes(leaveType.text)
-                ? "secondary"
-                : "tertiary"
-            }
-            onClick={() => handleLeaveTypeFilter(leaveType)}
-            icon={
-              selectedLeaveTypes.includes(leaveType.text) ? (
-                <Icon name={IconName.CHECK_CIRCLE_ICON} />
-              ) : undefined
-            }
-            iconPosition="start"
-          >
-            {leaveType.text}
-          </ButtonV2>
-        ))}
-      </Box>
+      <SelectableItemList
+        title={translateText(["filterPopperLeaveTypeTitle"])}
+        items={leaveTypeButtons.map((leaveType) => ({
+          label: leaveType.text,
+          value: leaveType.text
+        }))}
+        selectedValues={selectedLeaveTypes}
+        onChipClick={(leaveTypeText) => {
+          const leaveType = leaveTypeButtons.find(
+            (btn) => btn.text === leaveTypeText
+          );
+          if (leaveType) {
+            handleLeaveTypeFilter(leaveType);
+          }
+        }}
+      />
     </FilterButton>
   );
 

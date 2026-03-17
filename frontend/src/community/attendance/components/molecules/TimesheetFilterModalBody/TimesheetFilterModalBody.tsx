@@ -1,14 +1,12 @@
-import { Box, Divider, Stack, Typography } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import {
+  BasicFilterStructure,
+  SelectableItemList
+} from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { FilterChipType } from "~community/attendance/types/timeSheetTypes";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
-
-import styles from "./styles";
 
 interface Props {
   onApply: (
@@ -25,7 +23,6 @@ const TimesheetFilterModalBody = ({
   isManager = false
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const classes = styles();
   const {
     employeeTimesheetRequestsFilterValues,
     employeeSelectedTimesheetFilterLabels,
@@ -45,7 +42,6 @@ const TimesheetFilterModalBody = ({
     ? timesheetRequestsFilters
     : employeeTimesheetRequestsFilters;
 
-  const dataAttributeKey: string = "data-value";
   const [selectedFilterLabels, setSelectedFilterLabels] = useState<string[]>(
     []
   );
@@ -95,54 +91,38 @@ const TimesheetFilterModalBody = ({
   }, [filters]);
 
   return (
-    <Box>
-      <Box>
-        <Typography variant="h5" mb={"1.25rem"}>
-          {translateText(["statusFilterTitle"])}
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-          {filterValues?.status?.map((status: FilterChipType) => (
-            <ButtonV2
-              key={status?.value}
-              isFullWidth={false}
-              aria-label={`${status.label} filter`}
-              variant={
-                selectedFilterLabels.includes(status?.label)
-                  ? "secondary"
-                  : "tertiary"
-              }
-              size={"md"}
-              onClick={() => onClickFilter("status", status)}
-              icon={
-                selectedFilterLabels.includes(status?.label) ? (
-                  <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                ) : undefined
-              }
-              iconPosition="start"
-            >
-              {status?.label}
-            </ButtonV2>
-          ))}
-        </Box>
-      </Box>
-      <Divider aria-hidden={true} />
-      <Stack direction="row" spacing="0.75rem" sx={classes.stackStyles}>
-        <ButtonV2
-          variant={"primary"}
-          onClick={() => onApply(selectedFilters, selectedFilterLabels)}
-          aria-label="Apply filters"
-        >
-          {translateText(["applyBtnTxt"])}
-        </ButtonV2>
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={onReset}
-          disabled={selectedFilterLabels?.length === 0}
-        >
-          {translateText(["resetBtnTxt"])}
-        </ButtonV2>
-      </Stack>
-    </Box>
+    <BasicFilterStructure
+      title={translateText(["filterTitle"])}
+      resetButtonProps={{
+        onClick: onReset,
+        disabled: selectedFilterLabels?.length === 0,
+        children: translateText(["resetBtnTxt"])
+      }}
+      applyButtonProps={{
+        onClick: () => onApply(selectedFilters, selectedFilterLabels),
+        children: translateText(["applyBtnTxt"]),
+        "aria-label": "Apply filters"
+      }}
+    >
+      <SelectableItemList
+        title={translateText(["statusFilterTitle"])}
+        items={
+          filterValues?.status?.map((status: FilterChipType) => ({
+            label: status?.label ?? "",
+            value: status?.label ?? ""
+          })) ?? []
+        }
+        selectedValues={selectedFilterLabels}
+        onChipClick={(statusLabel) => {
+          const status = filterValues?.status?.find(
+            (s: FilterChipType) => s?.label === statusLabel
+          );
+          if (status) {
+            onClickFilter("status", status);
+          }
+        }}
+      />
+    </BasicFilterStructure>
   );
 };
 

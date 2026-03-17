@@ -1,19 +1,21 @@
 import {
   Box,
   Chip,
-  Divider,
   Stack,
   type Theme,
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { BasicFilterStructure, Popper } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import styles from "~community/common/components/molecules/FilterButton/styles";
-import Popper from "~community/common/components/molecules/Popper/Popper";
+import {
+  ButtonSizes,
+  ButtonStyle
+} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/FilterButtonType";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
@@ -124,30 +126,23 @@ const FilterButton = ({
         position={position}
         id={id}
         handleClose={() => setIsPopperOpen(false)}
-        containerStyles={classes.popperContainer}
+        containerClassName="rounded-4 shadow-lg"
         ariaLabelledBy="filter-button"
       >
-        <Stack sx={classes.popperBody}>{children}</Stack>
-        <Divider />
-        <Stack sx={classes.popperFooter}>
-          <ButtonV2
-            type={"reset"}
-            variant={"tertiary"}
-            disabled={isResetBtnDisabled}
-            onClick={onResetBtnClick}
-            size={"md"}
-          >
-            {translateText(["resetBtn"])}
-          </ButtonV2>
-          <ButtonV2
-            type={"button"}
-            variant={"primary"}
-            onClick={onApplyBtnClick}
-            size={"md"}
-          >
-            {translateText(["applyBtn"])}
-          </ButtonV2>
-        </Stack>
+        <BasicFilterStructure
+          title={translateText(["title"])}
+          resetButtonProps={{
+            children: translateText(["resetBtn"]),
+            onClick: onResetBtnClick,
+            disabled: isResetBtnDisabled
+          }}
+          applyButtonProps={{
+            children: translateText(["applyBtn"]),
+            onClick: onApplyBtnClick
+          }}
+        >
+          {children}
+        </BasicFilterStructure>
       </Popper>
     </Stack>
   );

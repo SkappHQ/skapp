@@ -18,7 +18,6 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,9 +43,6 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String secretKey;
-
 	@Override
 	public void sendUserInvitationEmail(User user) {
 		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
@@ -54,7 +50,7 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 			.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
 		emailDynamicFields.setOrganizationName(getOrganizationName());
 		emailDynamicFields.setWorkEmail(user.getEmail());
-		emailDynamicFields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword(), secretKey));
+		emailDynamicFields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
 
 		if (user.getLoginMethod() == LoginMethod.GOOGLE) {
 			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_GOOGLE_SSO, emailDynamicFields,

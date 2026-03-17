@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -11,7 +11,6 @@ import FilterButton from "~community/common/components/molecules/FilterButton/Fi
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
@@ -32,7 +31,6 @@ import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/Lea
 
 import RequestDates from "../LeaveRequestRow/RequestDates";
 import MultiselectEmployeeFilter from "../MultiselectEmployeeFilter/MultiselectEmployeeFilter";
-import styles from "./styles";
 
 interface Props {
   leaveHistory: LeaveHistoryDataTypes;
@@ -57,7 +55,6 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
     type: []
   });
   const { data: leaveTypesData } = useGetLeaveTypes();
-  const classes = styles();
 
   const {
     resetTeamLeaveAnalyticsParams,
@@ -261,64 +258,39 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       id={"filter-types"}
       isResetBtnDisabled={!filter.type.length && !filter.status.length}
     >
-      <Typography variant="h5">
-        {translateText(["filterButtonStatus"])}
-      </Typography>
-      <Stack sx={classes.filterStackStyles}>
-        {leaveStatusArray.map((leaveStatus) => (
-          <ButtonV2
-            key={leaveStatus}
-            onClick={() => {
-              setFilter((prev) => ({
-                ...prev,
-                status: prev.status.includes(leaveStatus)
-                  ? prev.status.filter((item) => item !== leaveStatus)
-                  : [...prev.status, leaveStatus]
-              }));
-            }}
-            variant={
-              filter.status.includes(leaveStatus) ? "secondary" : "tertiary"
-            }
-            size={"md"}
-            icon={
-              filter.status.includes(leaveStatus) ? (
-                <Icon name={IconName.CHECK_CIRCLE_ICON} />
-              ) : undefined
-            }
-            iconPosition="start"
-          >
-            {pascalCaseFormatter(leaveStatus)}
-          </ButtonV2>
-        ))}
-      </Stack>
-      <Typography variant="h5">
-        {translateText(["filterButtonType"])}
-      </Typography>
-      <Stack sx={classes.filterStackStyles}>
-        {leaveTypeOptions.map(({ id, name }: { id: string; name: string }) => (
-          <ButtonV2
-            key={id}
-            onClick={() => {
-              setFilter((prev) => ({
-                ...prev,
-                type: prev.type.includes(id)
-                  ? prev.type.filter((item) => item !== id)
-                  : [...prev.type, id]
-              }));
-            }}
-            variant={filter.type.includes(id) ? "secondary" : "tertiary"}
-            size={"md"}
-            icon={
-              filter.type.includes(id) ? (
-                <Icon name={IconName.CHECK_CIRCLE_ICON} />
-              ) : undefined
-            }
-            iconPosition="start"
-          >
-            {name}
-          </ButtonV2>
-        ))}
-      </Stack>
+      <SelectableItemList
+        title={translateText(["filterButtonStatus"])}
+        items={leaveStatusArray.map((leaveStatus) => ({
+          label: pascalCaseFormatter(leaveStatus),
+          value: leaveStatus
+        }))}
+        selectedValues={filter.status}
+        onChipClick={(statusValue) => {
+          setFilter((prev) => ({
+            ...prev,
+            status: prev.status.includes(statusValue)
+              ? prev.status.filter((item) => item !== statusValue)
+              : [...prev.status, statusValue]
+          }));
+        }}
+      />
+
+      <SelectableItemList
+        title={translateText(["filterButtonType"])}
+        items={leaveTypeOptions.map(({ id, name }) => ({
+          label: name,
+          value: id
+        }))}
+        selectedValues={filter.type}
+        onChipClick={(typeId) => {
+          setFilter((prev) => ({
+            ...prev,
+            type: prev.type.includes(typeId)
+              ? prev.type.filter((item) => item !== typeId)
+              : [...prev.type, typeId]
+          }));
+        }}
+      />
     </FilterButton>
   );
 

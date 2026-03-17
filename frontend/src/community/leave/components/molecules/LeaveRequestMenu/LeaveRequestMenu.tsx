@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
+import { Popper } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
-import Popper from "~community/common/components/molecules/Popper/Popper";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import {
   MenuTypes,
@@ -38,12 +38,9 @@ const LeaveRequestMenu = ({
       anchorEl={anchorEl}
       open={open}
       position={position}
-      menuType={menuType}
       id={id}
       handleClose={handleClose}
-      containerStyles={{
-        width: menuType === MenuTypes.SORT ? "15.5rem" : "22rem"
-      }}
+      containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : ""}`}
     >
       <Box>
         {menuType === MenuTypes.SORT ? (

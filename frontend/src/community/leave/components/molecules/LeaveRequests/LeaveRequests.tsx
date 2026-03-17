@@ -2,22 +2,19 @@ import {
   Box,
   Divider,
   SelectChangeEvent,
-  Stack,
   Theme,
   Typography,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortKeyTypes } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import {
   getEmoji,
   pascalCaseFormatter
@@ -223,94 +220,50 @@ const LeaveRequests: FC = () => {
         ariaLabel: translateAria(["myLeaveRequests", "filterSection"])
       }}
     >
-      <Box
-        role="region"
-        aria-label={translateAria(["myLeaveRequests", "statusFilterSection"])}
-      >
-        <Typography variant="h5">
-          {translateText(["myLeaveRequests", "filterButtonStatus"])}
-        </Typography>
-        <Stack sx={classes.filterStackStyles}>
-          {leaveStatusArray.map((leaveStatus) => (
-            <ButtonV2
-              key={leaveStatus}
-              onClick={() => {
-                setFilter((prev) => ({
-                  ...prev,
-                  status: prev.status.includes(leaveStatus)
-                    ? prev.status.filter((item) => item !== leaveStatus)
-                    : [...prev.status, leaveStatus]
-                }));
-              }}
-              variant={
-                filter.status.includes(leaveStatus) ? "secondary" : "tertiary"
-              }
-              size={"md"}
-              aria-label={
-                filter.status.includes(leaveStatus)
-                  ? translateAria(["myLeaveRequests", "filterSelected"], {
-                      filterName: pascalCaseFormatter(leaveStatus)
-                    })
-                  : translateAria(["myLeaveRequests", "filterOption"], {
-                      filterName: pascalCaseFormatter(leaveStatus)
-                    })
-              }
-              icon={
-                filter.status.includes(leaveStatus) ? (
-                  <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                ) : undefined
-              }
-              iconPosition="start"
-            >
-              {pascalCaseFormatter(leaveStatus)}
-            </ButtonV2>
-          ))}
-        </Stack>
-      </Box>
-      <Box
-        role="region"
-        aria-label={translateAria(["myLeaveRequests", "typeFilterSection"])}
-      >
-        <Typography variant="h5">
-          {translateText(["myLeaveRequests", "filterButtonType"])}
-        </Typography>
-        <Stack sx={classes.filterStackStyles}>
-          {leaveTypeOptions.map(
-            ({ id, name }: { id: string; name: string }) => (
-              <ButtonV2
-                key={id}
-                onClick={() => {
-                  setFilter((prev) => ({
-                    ...prev,
-                    type: prev.type.includes(id)
-                      ? prev.type.filter((item) => item !== id)
-                      : [...prev.type, id]
-                  }));
-                }}
-                variant={filter.type.includes(id) ? "secondary" : "tertiary"}
-                size={"md"}
-                aria-label={
-                  filter.type.includes(id)
-                    ? translateAria(["myLeaveRequests", "filterSelected"], {
-                        filterName: pascalCaseFormatter(name)
-                      })
-                    : translateAria(["myLeaveRequests", "filterOption"], {
-                        filterName: pascalCaseFormatter(name)
-                      })
-                }
-                icon={
-                  filter.type.includes(id) ? (
-                    <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                  ) : undefined
-                }
-                iconPosition="start"
-              >
-                {name}
-              </ButtonV2>
-            )
-          )}
-        </Stack>
-      </Box>
+      <div className="flex flex-col gap-4">
+        <section
+          aria-label={translateAria(["myLeaveRequests", "statusFilterSection"])}
+        >
+          <SelectableItemList
+            title={translateText(["myLeaveRequests", "filterButtonStatus"])}
+            items={leaveStatusArray.map((leaveStatus) => ({
+              label: pascalCaseFormatter(leaveStatus),
+              value: leaveStatus
+            }))}
+            selectedValues={filter.status}
+            onChipClick={(leaveStatus) => {
+              setFilter((prev) => ({
+                ...prev,
+                status: prev.status.includes(leaveStatus)
+                  ? prev.status.filter((item) => item !== leaveStatus)
+                  : [...prev.status, leaveStatus]
+              }));
+            }}
+          />
+        </section>
+        <section
+          aria-label={translateAria(["myLeaveRequests", "typeFilterSection"])}
+        >
+          <SelectableItemList
+            title={translateText(["myLeaveRequests", "filterButtonType"])}
+            items={leaveTypeOptions.map(
+              ({ id, name }: { id: string; name: string }) => ({
+                label: name,
+                value: id
+              })
+            )}
+            selectedValues={filter.type}
+            onChipClick={(id) => {
+              setFilter((prev) => ({
+                ...prev,
+                type: prev.type.includes(id)
+                  ? prev.type.filter((item) => item !== id)
+                  : [...prev.type, id]
+              }));
+            }}
+          />
+        </section>
+      </div>
     </FilterButton>
   );
 

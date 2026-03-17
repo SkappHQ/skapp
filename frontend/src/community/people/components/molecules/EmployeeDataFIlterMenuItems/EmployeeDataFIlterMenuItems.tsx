@@ -1,17 +1,17 @@
-import { Box, Stack } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, useRef, useState } from "react";
+import {
+  AdvancedFilterStructure,
+  SelectableList,
+  SelectedFiltersDisplay
+} from "@rootcodelabs/skapp-ui";
+import { JSX, useCallback, useMemo, useRef, useState } from "react";
 
-import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import { PeopleFilterHeadings } from "~community/people/types/CommonTypes";
 import { handleApplyFilterPrams } from "~community/people/utils/handleEmployeeDataFIlters";
 
-import FIlterTypeSection from "./FIlterTypeSection";
 import FilterTypeDetailedSection from "./FilterTypeDetailedSection";
-import SelectedFiltersSection from "./SelectedFiltersSection";
 
 interface Props {
   handleClose: () => void;
@@ -34,108 +34,159 @@ const EmployeeDataFIlterMenuItems = ({
     PeopleFilterHeadings.DEMOGRAPICS
   );
 
-  const queryMatches = useMediaQuery();
-  const isSmallScreen = queryMatches(`(max-width: 1150px)`);
   const translateText = useTranslator("peopleModule", "peoples.filters");
 
   const { employeeDataFilter, setEmployeeDataParams, resetEmployeeDataParams } =
     usePeopleStore((state) => state);
+
+  const filterOptions = useMemo(
+    () => [
+      {
+        label: translateText(["demographics"]),
+        value: PeopleFilterHeadings.DEMOGRAPICS
+      },
+      {
+        label: translateText(["employements"]),
+        value: PeopleFilterHeadings.EMPLOYMENTS
+      },
+      {
+        label: translateText(["jobFamilies"]),
+        value: PeopleFilterHeadings.JOB_FAMILIES
+      },
+      {
+        label: translateText(["teams"]),
+        value: PeopleFilterHeadings.TEAMS
+      },
+      {
+        label: translateText(["userRoles"]),
+        value: PeopleFilterHeadings.USER_ROLES
+      }
+    ],
+    [translateText]
+  );
+
+  const getSecondColumnFirstKey = (filterValue: PeopleFilterHeadings) => {
+    if (filterValue === PeopleFilterHeadings.EMPLOYMENTS) {
+      return `${filterValue}employmentTypes0`;
+    } else if (filterValue === PeopleFilterHeadings.USER_ROLES) {
+      return `${filterValue}attendance0`;
+    } else {
+      return `${filterValue}0`;
+    }
+  };
 
   const handleSubmit = () => {
     handleApplyFilterPrams(setEmployeeDataParams, employeeDataFilter);
     handleClose();
   };
 
+  const handleReset = () => {
+    handleClose();
+    resetEmployeeDataParams();
+    setSelected(PeopleFilterHeadings.DEMOGRAPICS);
+  };
+
+  const getJobFamilyNames = useMemo(() => {
+    return employeeDataFilter.role.map((jobFamily) => jobFamily.text);
+  }, [employeeDataFilter.role]);
+
+  const getTeamNames = useMemo(() => {
+    return employeeDataFilter.team.map((team) => team.text);
+  }, [employeeDataFilter.team]);
+
+  const translateItems = useCallback(
+    (items: string[]) => {
+      return items.map((item) => {
+        const translated = translateText([
+          `selectedFiltersFilterItems.${item.toLowerCase()}`
+        ]);
+        return translated.includes("peopleModule") ? item : translated;
+      });
+    },
+    [translateText]
+  );
+
+  const filterSections = useMemo(
+    () => [
+      {
+        title: translateText(["demographics"]),
+        items: translateItems([
+          ...(employeeDataFilter.gender ? [employeeDataFilter.gender] : []),
+          ...employeeDataFilter.nationality
+        ])
+      },
+      {
+        title: translateText(["employements"]),
+        items: translateItems([
+          ...employeeDataFilter.employmentTypes,
+          ...employeeDataFilter.employmentAllocations,
+          ...employeeDataFilter.accountStatus
+        ])
+      },
+      {
+        title: translateText(["jobFamilies"]),
+        items: getJobFamilyNames
+      },
+      {
+        title: translateText(["teams"]),
+        items: getTeamNames
+      },
+      {
+        title: translateText(["userRoles"]),
+        items: translateItems(employeeDataFilter.permission)
+      }
+    ],
+    [
+      employeeDataFilter,
+      getJobFamilyNames,
+      getTeamNames,
+      translateText,
+      translateItems
+    ]
+  );
+
   return (
-    <Box>
-      <Box
-        sx={{
-          backgroundColor: "common.white",
-          flexDirection: "row",
-          display: "flex",
-          paddingX: isSmallScreen ? 2 : 3,
-          paddingTop: 2,
-          maxHeight: 350
-        }}
-      >
-        <Stack
-          sx={{
-            flex: 1,
-            borderRight: 2,
-            borderRightColor: "#D4D4D8"
-          }}
-        >
-          <FIlterTypeSection
-            firstColumnItems={firstColumnItems}
-            secondColumnItems={secondColumnItems}
-            selected={selected}
-            setSelected={setSelected}
-          />
-        </Stack>
-        <Stack
-          sx={{
-            flex: 2,
-            borderRight: 2,
-            borderRightColor: "#D4D4D8"
-          }}
-        >
-          <FilterTypeDetailedSection
-            basicChipRef={secondColumnItems}
-            selected={selected}
-            teams={teams}
-            jobFamilies={jobFamilies}
-          />
-        </Stack>
-        {!isSmallScreen && (
-          <Stack
-            sx={{
-              flex: 2
-            }}
-          >
-            <SelectedFiltersSection />
-          </Stack>
-        )}
-      </Box>
-      <Box
-        sx={{
-          paddingX: 3,
-          backgroundColor: "common.white"
-        }}
-      >
-        <Box
-          sx={{
-            borderTop: 2,
-            borderTopColor: "#D4D4D8",
-            paddingX: 3,
-            paddingY: 2,
-            display: "flex",
-            alignItems: "center",
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            gap: 2
-          }}
-        >
-          <ButtonV2
-            variant="tertiary"
-            size={isSmallScreen ? "sm" : "md"}
-            onClick={() => {
-              handleClose();
-              resetEmployeeDataParams();
-              setSelected(PeopleFilterHeadings.DEMOGRAPICS);
-            }}
-          >
-            {translateText(["reset"])}
-          </ButtonV2>
-          <ButtonV2
-            variant="primary"
-            size={isSmallScreen ? "sm" : "md"}
-            onClick={handleSubmit}
-          >
-            {translateText(["apply"])}
-          </ButtonV2>
-        </Box>
-      </Box>
-    </Box>
+    <AdvancedFilterStructure
+      title={translateText(["filters"])}
+      leftColumn={
+        <SelectableList<PeopleFilterHeadings>
+          options={filterOptions}
+          selected={selected}
+          setSelected={setSelected}
+          firstColumnItems={firstColumnItems}
+          secondColumnItems={secondColumnItems}
+          getSecondColumnFirstKey={getSecondColumnFirstKey}
+        />
+      }
+      centerColumn={
+        <FilterTypeDetailedSection
+          basicChipRef={secondColumnItems}
+          selected={selected}
+          teams={teams}
+          jobFamilies={jobFamilies}
+        />
+      }
+      rightColumn={
+        <SelectedFiltersDisplay
+          filterSections={filterSections}
+          headerText={translateText(["selectedFilters"], {
+            count: filterSections.reduce(
+              (count, section) => count + section.items.length,
+              0
+            )
+          })}
+          noFiltersText={translateText(["noFIlters"])}
+        />
+      }
+      resetButtonProps={{
+        onClick: handleReset,
+        children: translateText(["reset"])
+      }}
+      applyButtonProps={{
+        onClick: handleSubmit,
+        children: translateText(["apply"])
+      }}
+    />
   );
 };
 

@@ -26,7 +26,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import { SettingsModalTypes } from "~community/common/types/SettingsTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
-import ManageSubscriptionSettingsSection from "~enterprise/settings/components/molecules/ManageSubscriptionSettingsSection/ManageSubscriptionSettingsSection";
 
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
 
@@ -129,35 +128,27 @@ const SettingsSection: FC<SettingsSectionProps> = ({
       )}
 
       {globalLoginMethod === GlobalLoginMethod.CREDENTIALS && (
-        <>
-          <Box sx={{ py: "0.5rem" }}>
-            <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-              {translatedText(["securitySettingsTitle"])}
-            </Typography>
+        <Box sx={{ py: "0.5rem" }}>
+          <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+            {translatedText(["securitySettingsTitle"])}
+          </Typography>
 
-            <Typography variant="body1">
-              {translatedText(["securitySettingsDescription"])}
-            </Typography>
+          <Typography variant="body1">
+            {translatedText(["securitySettingsDescription"])}
+          </Typography>
 
-            <ButtonV2
-              variant={"tertiary"}
-              onClick={() => {
-                setModalType(SettingsModalTypes.RESET_PASSWORD);
-                setModalOpen(true);
-              }}
-              icon={<Icon name={IconName.LOCK_ICON} />}
-              iconPosition="start"
-            >
-              {translatedText(["resetPasswordButtonText"])}
-            </ButtonV2>
-          </Box>
-
-          <Divider />
-        </>
-      )}
-
-      {isEnterpriseMode && user?.roles?.includes(ROLE_SUPER_ADMIN) && (
-        <ManageSubscriptionSettingsSection />
+          <Button
+            label={translatedText(["resetPasswordButtonText"])}
+            startIcon={IconName.LOCK_ICON}
+            isFullWidth={false}
+            styles={{ mt: "1.25rem", px: "1.75rem" }}
+            buttonStyle={ButtonStyle.TERTIARY}
+            onClick={() => {
+              setModalType(SettingsModalTypes.RESET_PASSWORD);
+              setModalOpen(true);
+            }}
+          />
+        </Box>
       )}
     </>
   );

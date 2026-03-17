@@ -4,10 +4,9 @@ import {
   SelectChangeEvent,
   Stack,
   Theme,
-  Typography,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
@@ -258,30 +257,22 @@ const LeaveEntitlementsReportsTable: FC = () => {
             id={"filter-types"}
             isResetBtnDisabled={selectedLeaveTypes.length === 0}
           >
-            <Typography variant="h5">
-              {translateText(["filterPopperLeaveTypeTitle"])}
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              {leaveTypeButtons.map((leaveType) => (
-                <ButtonV2
-                  key={leaveType.id}
-                  variant={
-                    selectedLeaveTypes.includes(leaveType.text)
-                      ? "secondary"
-                      : "tertiary"
-                  }
-                  onClick={() => handleLeaveTypeFilter(leaveType)}
-                  icon={
-                    selectedLeaveTypes.includes(leaveType.text) ? (
-                      <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                    ) : undefined
-                  }
-                  iconPosition="start"
-                >
-                  {leaveType.text}
-                </ButtonV2>
-              ))}
-            </Box>
+            <SelectableItemList
+              title={translateText(["filterPopperLeaveTypeTitle"])}
+              items={leaveTypeButtons.map((leaveType) => ({
+                label: leaveType.text,
+                value: leaveType.text
+              }))}
+              selectedValues={selectedLeaveTypes}
+              onChipClick={(leaveTypeText) => {
+                const leaveType = leaveTypeButtons.find(
+                  (btn) => btn.text === leaveTypeText
+                );
+                if (leaveType) {
+                  handleLeaveTypeFilter(leaveType);
+                }
+              }}
+            />
           </FilterButton>
         </Box>
       </Stack>
