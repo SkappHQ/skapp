@@ -44,7 +44,7 @@ const EmployeeDataMenu = ({
       position={position}
       id={id}
       handleClose={handleClose}
-      containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : "w-[800px]"}`}
+      containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : "w-[832px]"}`}
     >
       <Box>
         {menuType === MenuTypes.SORT ? (

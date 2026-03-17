@@ -220,7 +220,7 @@ const FilterButton = ({
         position={position ?? "bottom-end"}
         id={id}
         handleClose={() => setIsPopperOpen(false)}
-        containerClassName="w-[800px] rounded-4 shadow-lg"
+        containerClassName="w-[832px] rounded-4 shadow-lg"
       >
         <AdvancedFilterStructure
           title={translateText(["placeholder"])}
