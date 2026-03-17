@@ -758,52 +758,49 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
-			// Scale field dimensions from pixel space to PDF point space
+			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
-
-			// Calculate original page dimensions in pixels based on field's percentage
-			// and actual PDF page size
-			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
-			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
 			float adjustedX = field.getXPosition();
 
-			float adjustedFontSize = (float) (Math.floor((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
-					/ 100f);
-			float adjustedHorizontalPadding = (float) (Math
-				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
-			float adjustedVerticalPadding = (float) (Math
-				.ceil((verticalPadding / originalPageHeightInPixels) * pageHeight * 100f) / 100f);
+			// Use the original pixel width from the frontend for HTML rendering.
+			float renderWidth = field.getWidth();
 
-			// Build font-style CSS
+			// The renderer's useDefaultPageSize overrides the @page CSS 'auto' height,
+			// so we must ensure the render page is tall enough to contain the text.
+			// Without this, font sizes like 16/18pt with line-height and padding
+			// overflow the tiny page height (e.g. 27/30pt) and get clipped invisible.
+			// The scaleY matrix will map the rendered content back to the target height.
+			float minContentHeight = fontSize * lineHeight + verticalPadding;
+			float renderHeight = Math.max(field.getHeight(), minContentHeight);
+
+			// Build font-style CSS using original pixel values
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
-			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
-			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
+			cssDto.setAdjustedWidth(String.valueOf(renderWidth));
+			cssDto.setAdjustedHeight(String.valueOf(renderHeight));
 			cssDto.setFontFamilyCss(fontFamilyCss);
-			cssDto.setFontSize(String.valueOf(adjustedFontSize));
+			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
 			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
 			cssDto.setFontColor(fontColor);
-			cssDto.setHorizontalPadding(String.valueOf(adjustedHorizontalPadding));
-			cssDto.setVerticalPadding(String.valueOf(adjustedVerticalPadding));
+			cssDto.setHorizontalPadding(String.valueOf(horizontalPadding));
+			cssDto.setVerticalPadding(String.valueOf(verticalPadding));
 			cssDto.setLineHeight(String.valueOf(lineHeight));
 			cssDto.setEscapedValue(EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : ""));
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
+			// Render HTML → PDF bytes at original pixel dimensions
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, renderWidth, renderHeight, folderName,
 					fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
-			// Calculate how much to stretch/shrink the form to fit the target field size
-			// Ensures the rendered HTML content exactly fills the intended field
-			// rectangle on the PDF
+			// Scale the rendered form from pixel space to the target PDF point rectangle
 			PDRectangle bbox = formXObject.getBBox();
 			float scaleX = adjustedWidth / bbox.getWidth();
 			float scaleY = adjustedHeight / bbox.getHeight();
