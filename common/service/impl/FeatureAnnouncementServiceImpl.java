@@ -67,7 +67,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	public ResponseEntityDto getAnnouncements(AnnouncementListRequestFilterDto filterDto) {
 		log.debug("Fetching announcements page={} size={}", filterDto.getPageNumber(), filterDto.getPageSize());
 
-		Sort sort = Sort.by(Sort.Direction.fromString(filterDto.getSortDirection()), filterDto.getSortBy());
+		Sort sort = Sort.by(filterDto.getSortDirection(), filterDto.getSortBy().getSortField());
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
 		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAll(pageable);
 
