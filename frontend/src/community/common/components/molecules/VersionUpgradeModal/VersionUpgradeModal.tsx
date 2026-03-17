@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { IconName } from "~community/common/types/IconTypes";
@@ -80,7 +79,11 @@ const VersionUpgradeModal = () => {
           <Typography variant="body2" align="center">
             {versionUpgradeInfo.popupDescription}
           </Typography>
-          <ButtonV2 variant={"secondary"} size={"sm"} onClick={handleButtonClick}>
+          <ButtonV2
+            variant={"secondary"}
+            size={"sm"}
+            onClick={handleButtonClick}
+          >
             {versionUpgradeInfo.buttonText}
           </ButtonV2>
         </Stack>

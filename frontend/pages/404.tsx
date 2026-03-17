@@ -1,8 +1,8 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { NextRouter, useRouter } from "next/router";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
@@ -22,13 +22,13 @@ export const Custom404: NextPage = () => {
       <Typography variant="body1">{translateText(["description"])}</Typography>
       <ButtonV2
         id="back-to-home-btn"
-        dataTestId="back-to-home-btn"
         isFullWidth={false}
-        label={translateText(["buttonText"])}
+        aria-label={translateText(["buttonText"])}
         onClick={() => router.push(ROUTES.DASHBOARD.BASE)}
-        ariaLabel={translateText(["buttonText"])}
-        styles={{ px: 6 }}
-      />
+        style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
+      >
+        {translateText(["buttonText"])}
+      </ButtonV2>
     </Stack>
   );
 };
