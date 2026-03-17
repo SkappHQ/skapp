@@ -261,7 +261,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER(
 			"ep.esign.error.advance.fields.feature.not.available.for.current.tier"),
 	ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER(
-			"ep.esign.error.templates.feature.not.available.for.current.tier");
+			"ep.esign.error.templates.feature.not.available.for.current.tier"),
+	ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH("ep.esign.error.text.field.value.exceeds.max.length");
 
 	private final String messageKey;
 

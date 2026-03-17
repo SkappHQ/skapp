@@ -11,6 +11,7 @@ import com.skapp.enterprise.common.service.AmazonS3Service;
 import com.skapp.enterprise.common.service.ScheduleService;
 import com.skapp.enterprise.common.type.QuartzEntityType;
 import com.skapp.enterprise.common.util.HashUtil;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.AddressBook;
@@ -1195,6 +1196,11 @@ public class DocumentServiceImpl implements DocumentService {
 			validateInputField(documentSignDto.getRecipientId(), documentSignDto.getDocumentId(), field);
 
 			FieldType fieldType = fieldSignDto.getType();
+
+			if (fieldType == FieldType.TEXT && fieldSignDto.getFieldValue() != null
+					&& fieldSignDto.getFieldValue().length() > EsignConstants.ADVANCE_TEXT_FIELD_MAX_LENGTH) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH);
+			}
 
 			if (fieldType.equals(FieldType.DECLINE)) {
 				markField(field, fields, FieldStatus.SKIP);
