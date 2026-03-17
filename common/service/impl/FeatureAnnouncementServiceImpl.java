@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
+import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementRecipientDao;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncementRecipient;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.request.AnnouncementListRequestFilterDto;
@@ -36,6 +37,8 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	private final FeatureAnnouncementDao featureAnnouncementDao;
 
+	private final FeatureAnnouncementRecipientDao featureAnnouncementRecipientDao;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createAnnouncement(FeatureAnnouncementCreateRequestDto requestDto) {
@@ -45,19 +48,17 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 				requestDto.getFrequencyType(), requestDto.getCustomFrequencyDays());
 		sanitizeAnnouncementRequest(requestDto);
 
-		FeatureAnnouncement announcement = buildAnnouncementEntity(requestDto);
+		FeatureAnnouncement saved = featureAnnouncementDao.save(buildAnnouncementEntity(requestDto));
 		List<FeatureAnnouncementRecipient> recipients = requestDto.getRecipientRoles().stream()
 				.distinct()
 				.map(role -> {
 					FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
 					recipient.setRecipientRole(role);
-					recipient.setFeatureAnnouncement(announcement);
+					recipient.setFeatureAnnouncement(saved);
 					return recipient;
 				})
 				.toList();
-		announcement.getRecipients().addAll(recipients);
-
-		FeatureAnnouncement saved = featureAnnouncementDao.save(announcement);
+		featureAnnouncementRecipientDao.saveAll(recipients);
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
@@ -68,7 +69,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 		Sort sort = Sort.by(Sort.Direction.fromString(filterDto.getSortDirection()), filterDto.getSortBy());
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
-		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAllWithRecipients(pageable);
+		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAll(pageable);
 
 		List<FeatureAnnouncementResponseDto> items = page.getContent().stream()
 				.map(this::buildAnnouncementResponseDto)
@@ -105,20 +106,19 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		sanitizeAnnouncementRequest(requestDto);
 
 		populateAnnouncementEntityFromRequest(requestDto, entity);
+		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
 
-		entity.getRecipients().clear();
+		featureAnnouncementRecipientDao.deleteByFeatureAnnouncementAnnouncementId(saved.getAnnouncementId());
 		List<FeatureAnnouncementRecipient> newRecipients = requestDto.getRecipientRoles().stream()
 				.distinct()
 				.map(role -> {
 					FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
 					recipient.setRecipientRole(role);
-					recipient.setFeatureAnnouncement(entity);
+					recipient.setFeatureAnnouncement(saved);
 					return recipient;
 				})
 				.toList();
-		entity.getRecipients().addAll(newRecipients);
-
-		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
+		featureAnnouncementRecipientDao.saveAll(newRecipients);
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
@@ -176,8 +176,10 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		response.setImagePath(announcement.getImagePath());
 		response.setCreatedDate(announcement.getCreatedDate() == null ? null
 				: announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
-		List<Role> recipientRoles = announcement.getRecipients().stream()
-				.map(r -> r.getRecipientRole())
+		List<Role> recipientRoles = featureAnnouncementRecipientDao
+				.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
+				.stream()
+				.map(FeatureAnnouncementRecipient::getRecipientRole)
 				.toList();
 		response.setRecipientRoles(recipientRoles);
 		return response;
