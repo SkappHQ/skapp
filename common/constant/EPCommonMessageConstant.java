@@ -207,7 +207,8 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_REQUIRED_WHEN_LABEL_SET(
 			"ep.common.error.announcement-cta-link-required-when-label-set"),
 	EP_COMMON_ERROR_ANNOUNCEMENT_CUSTOM_FREQUENCY_DAYS_REQUIRED(
-			"ep.common.error.announcement-custom-frequency-days-required");
+			"ep.common.error.announcement-custom-frequency-days-required"),
+	EP_COMMON_SUCCESS_ANNOUNCEMENT_INTERACTION_RECORDED("ep.common.success.announcement-interaction-recorded");
 
 	private final String messageKey;
 

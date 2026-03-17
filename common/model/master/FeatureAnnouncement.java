@@ -62,7 +62,7 @@ public class FeatureAnnouncement extends Auditable<String> {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
-	private AnnouncementStatus status = AnnouncementStatus.ACTIVE;
+	private AnnouncementStatus status;
 
 	@Column(name = "image_path", columnDefinition = "TEXT")
 	private String imagePath;
