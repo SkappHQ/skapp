@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.payload.request;
 
-import com.skapp.enterprise.common.type.AnnouncementSortBy;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
@@ -13,7 +12,7 @@ public class AnnouncementListRequestFilterDto {
 
 	private int pageSize = 25;
 
-	private AnnouncementSortBy sortBy = AnnouncementSortBy.CREATED_DATE;
+	private String sortBy = "createdDate";
 
 	private Sort.Direction sortDirection = Sort.Direction.DESC;
 
