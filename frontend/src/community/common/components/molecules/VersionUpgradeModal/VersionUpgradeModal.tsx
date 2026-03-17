@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { IconName } from "~community/common/types/IconTypes";

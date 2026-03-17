@@ -23,7 +23,6 @@ import {
 } from "~community/attendance/enums/dashboardEnums";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import styles from "~community/common/components/molecules/FilterButton/styles";
 import {
   ButtonSizes,
@@ -203,15 +202,17 @@ const FilterButton = ({
             }}
           />
         )}
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          label={translateText(["placeholder"])}
-          endIcon={<FilterIcon />}
-          size={ButtonSizes.MEDIUM}
+        <ButtonV2
+          variant={"tertiary"}
+          size={"md"}
           onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
           }
-        />
+          icon={<FilterIcon />}
+          iconPosition="end"
+        >
+          {translateText(["placeholder"])}
+        </ButtonV2>
       </Stack>
 
       <Popper

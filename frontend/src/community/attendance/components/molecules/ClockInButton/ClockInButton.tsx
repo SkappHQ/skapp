@@ -71,8 +71,6 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
       }
       isLoading={isPending}
       disabled={disabled}
-      aria-disabled={disabled}
-      data-testid={isClockedIn ? "clock-in-button" : "clock-out-button"}
       icon={<Icon name={IconName.TIMER_ICON} />}
       iconPosition="end"
     >
