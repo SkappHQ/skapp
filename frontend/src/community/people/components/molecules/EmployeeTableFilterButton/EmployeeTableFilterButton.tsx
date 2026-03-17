@@ -49,7 +49,7 @@ const EmployeeTableFilterButton: FC<Props> = ({
           <Typography variant={"body1"}>{translateText(["filter"])}</Typography>
         )}
       </Box>
-      <Stack direction="row" spacing={"0.25rem"}>
+      <Stack direction="row" spacing={"0.25rem"} alignItems="center">
         <ShowSelectedFilters
           filterOptions={flatListValues(appliedEmployeeDataFilter)}
           onDeleteIcon={removeFilters}
