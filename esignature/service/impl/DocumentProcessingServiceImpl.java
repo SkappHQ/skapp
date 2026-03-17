@@ -751,7 +751,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			boolean isItalic = FontStyleExtractorUtil.extractIsItalic(container);
 			boolean isUnderline = FontStyleExtractorUtil.extractIsUnderline(container);
 			float horizontalPadding = FontStyleExtractorUtil.extractHorizontalPadding(fieldStyle);
-			float verticalPadding = FontStyleExtractorUtil.extractVerticalPadding(fieldStyle);
 			float lineHeight = FontStyleExtractorUtil.extractLineHeight(fieldStyle);
 
 			// Resolve display name to enum type
@@ -768,20 +767,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// Calculate original page dimensions in pixels based on field's percentage
 			// and actual PDF page size
 			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
-			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
 
-			float adjustedFontSize = (float) (Math.ceil((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
+			float adjustedFontSize = (float) (Math.floor((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
 					/ 100f);
 			float adjustedHorizontalPadding = (float) (Math
 				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
-			float adjustedVerticalPadding = (float) (Math
-				.ceil((verticalPadding / originalPageHeightInPixels) * pageHeight * 100f) / 100f);
+
+			// Compute vertical padding for centering: (containerHeight - textLineHeight)
+			// / 2
+			// This replaces the previous display:table-cell vertical-align:middle
+			// approach
+			// which caused OpenHTMLtoPDF to paginate content to a second page for larger
+			// fonts
+			float textLineUsedHeight = adjustedFontSize * lineHeight;
+			float adjustedVerticalPadding = Math.max(0, (adjustedHeight - textLineUsedHeight) / 2f);
 
 			// Build font-style CSS
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
-			cssDto.setFontFamilyCss(fontFamily);
+			cssDto.setFontFamilyCss(fontFamilyCss);
 			cssDto.setFontSize(String.valueOf(adjustedFontSize));
 			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
