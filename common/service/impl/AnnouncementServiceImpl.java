@@ -12,6 +12,8 @@ import com.skapp.enterprise.common.model.AnnouncementUserInteraction;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
 import com.skapp.enterprise.common.repository.AnnouncementUserInteractionDao;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.service.AnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
@@ -46,6 +48,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	private final FeatureAnnouncementDao featureAnnouncementDao;
 
 	private final TenantContext tenantContext;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -107,7 +111,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		}
 
 		interactionDao.save(interaction);
-		return new ResponseEntityDto(false, "Interaction recorded");
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_ANNOUNCEMENT_INTERACTION_RECORDED));
 	}
 
 	protected List<FeatureAnnouncementResponseDto> fetchActiveAnnouncements() {
