@@ -288,8 +288,8 @@ public class RolesServiceImpl implements RolesService {
 			boolean isCurrentUserPeopleAdmin = user.getEmployee().getEmployeeRole() != null
 					&& Role.PEOPLE_ADMIN.equals(user.getEmployee().getEmployeeRole().getPeopleRole());
 
-			long superAdminCount = employeeRoleDao.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(
-					Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			long superAdminCount = employeeRoleDao
+				.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE));
 
 			if (!(isCurrentUserSuperAdmin && superAdminCount > 1) && !isCurrentUserPeopleAdmin) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
