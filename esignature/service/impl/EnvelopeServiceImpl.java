@@ -500,8 +500,8 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 
 		validateSigningOrder(recipientDtos);
 
-		List<Tier> tierList = new ArrayList<>();
-		tierList.add(Tier.PRO);
+		List<Tier> tierList = epUserService.getCurrentUserTiers();
+
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 
 		// Actual Pro Tier Validation

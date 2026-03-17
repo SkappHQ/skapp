@@ -1198,7 +1198,7 @@ public class DocumentServiceImpl implements DocumentService {
 			FieldType fieldType = fieldSignDto.getType();
 
 			if (fieldType == FieldType.TEXT && fieldSignDto.getFieldValue() != null
-					&& fieldSignDto.getFieldValue().length() > EsignConstants.ADVANCE_TEXT_FIELD_MAX_LENGTH) {
+					&& fieldSignDto.getFieldValue().length() > EsignConstants.ADVANCED_FIELD_TEXT_VALUE_MAX_LENGTH) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH);
 			}
 
