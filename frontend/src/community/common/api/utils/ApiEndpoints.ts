@@ -61,8 +61,3 @@ export const applicationVersionEndpoints = {
 export const storageAvailabilityEndpoints = {
   GET_STORAGE_AVAILABILITY: `/file/storage/availability`
 };
-
-export const announcementEndpoints = {
-  ELIGIBLE: `/announcement/eligible`,
-  INTERACT: (id: string) => `/announcement/${id}/interact`
-};

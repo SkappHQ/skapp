@@ -68,5 +68,3 @@ jwt:
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
 
-admin-portal:
-  api-key: ${ADMIN_PORTAL_API_KEY}

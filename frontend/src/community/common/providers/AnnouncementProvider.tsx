@@ -9,14 +9,14 @@ import React, {
   useState
 } from "react";
 
-import { fetchEligibleAnnouncements } from "~community/common/api/announcementApi";
+import { fetchEligibleAnnouncements } from "~enterprise/common/api/announcementApi";
 import {
   getDataFromLocalStorage,
   removeDataFromLocalStorage,
   setDataToLocalStorage
 } from "~community/common/utils/accessLocalStorage";
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import { ActiveAnnouncementType, AnnouncementCacheType } from "../types/AnnouncementTypes";
+import { ActiveAnnouncementType, AnnouncementCacheType } from "../../../enterprise/common/types/AnnouncementTypes";
 
 const CACHE_KEY = "announcementsCache";
 
