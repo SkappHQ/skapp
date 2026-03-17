@@ -67,4 +67,3 @@ jwt:
 
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
-
