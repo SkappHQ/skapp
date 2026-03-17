@@ -75,7 +75,8 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/ep/auth/session/code-challenge/verify", "/v1/ep/esign/audit-trail/create",
 			"/v1/ep/auth/session/signin/guest/verify-otp", "/v1/ep/esign/document-link/send-otp",
 			"/v1/ep/esign/document-link/resend-otp", "/v1/ep/esign/document-link/verify-otp",
-		"/internal/v1/ep/organization/timezone", "/v1/announcement", "/v1/announcement/list");
+		"/internal/v1/ep/organization/timezone", "/v1/announcement", "/v1/announcement/list",
+		"/v1/announcement/image/signed-url");
 	private final JwtService jwtService;
 
 	private final UserDetailsService userDetailsService;

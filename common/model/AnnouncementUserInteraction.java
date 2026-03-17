@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.common.type.AnnouncementInteractionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

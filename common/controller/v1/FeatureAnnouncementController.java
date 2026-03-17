@@ -33,6 +33,7 @@ public class FeatureAnnouncementController {
  	private final AmazonS3Service amazonS3Service;
 
 	@PostMapping
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> createAnnouncement(
 			@Valid @RequestBody FeatureAnnouncementCreateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.createAnnouncement(requestDto);
@@ -40,6 +41,7 @@ public class FeatureAnnouncementController {
 	}
 
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> getAnnouncements(
 			@ModelAttribute AnnouncementListRequestFilterDto filterDto) {
 		ResponseEntityDto response = featureAnnouncementService.getAnnouncements(filterDto);
@@ -47,12 +49,14 @@ public class FeatureAnnouncementController {
 	}
 
 	@GetMapping("/{announcementId}")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> getAnnouncementById(@PathVariable Long announcementId) {
 		ResponseEntityDto response = featureAnnouncementService.getAnnouncementById(announcementId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PutMapping("/{announcementId}")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> updateAnnouncement(@PathVariable Long announcementId,
 			@Valid @RequestBody FeatureAnnouncementCreateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.updateAnnouncement(announcementId, requestDto);
@@ -60,6 +64,7 @@ public class FeatureAnnouncementController {
 	}
 
 	@PatchMapping("/{announcementId}/status")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> updateAnnouncementStatus(@PathVariable Long announcementId,
 			@Valid @RequestBody AnnouncementStatusUpdateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.updateAnnouncementStatus(announcementId, requestDto);
@@ -67,6 +72,7 @@ public class FeatureAnnouncementController {
 	}
 
 	@PostMapping("/image/signed-url")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> getAnnouncementImageSignedUrl(
 			@Valid @RequestBody AmazonS3SignedUrlRequestDto requestDto) {
 		ResponseEntityDto response = amazonS3Service.getSignedUrl(requestDto);

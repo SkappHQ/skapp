@@ -4,12 +4,10 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.mapper.AnnouncementMapper;
 import com.skapp.enterprise.common.model.AnnouncementUserInteraction;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
@@ -19,15 +17,16 @@ import com.skapp.enterprise.common.service.AnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementInteractionType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
-import com.skapp.enterprise.common.type.AnnouncementTriggerType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +47,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	private final TenantContext tenantContext;
 
-	private final AnnouncementMapper announcementMapper;
-
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getEligibleAnnouncements(AnnouncementTriggerType trigger, String targetPage) {
+	public ResponseEntityDto getEligibleAnnouncements() {
 
 		List<FeatureAnnouncementResponseDto> active = fetchActiveAnnouncements();
 		if (active.isEmpty()) {
@@ -64,8 +61,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		EmployeeRole employeeRole = employeeRoleDao.findById(employeeId).orElse(null);
 
 		List<FeatureAnnouncementResponseDto> filtered = active.stream()
-			.filter(a -> matchesTrigger(a, trigger))
-			.filter(a -> matchesTargetPage(a, targetPage))
 			.filter(a -> isUserEligibleByRole(employeeRole, a.getRecipientRoles()))
 			.toList();
 
@@ -77,9 +72,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			.map(FeatureAnnouncementResponseDto::getAnnouncementId)
 			.toList();
 		Map<Long, AnnouncementUserInteraction> interactionMap = interactionDao
-				.findAllByEmployee_EmployeeIdAndAnnouncement_AnnouncementIdIn(employeeId, announcementIds)
+				.findAllByEmployeeIdAndAnnouncementIdIn(employeeId, announcementIds)
 				.stream()
-				.collect(Collectors.toMap(i -> i.getAnnouncement().getAnnouncementId(), i -> i));
+				.collect(Collectors.toMap(i -> i.getAnnouncementId(), i -> i));
 
 		List<FeatureAnnouncementResponseDto> eligible = filtered.stream()
 			.filter(a -> isFrequencyEligible(a, interactionMap.get(a.getAnnouncementId())))
@@ -94,18 +89,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
-		Employee employee = currentUser.getEmployee();
-
-		FeatureAnnouncement featureAnnouncement = featureAnnouncementDao.getReferenceById(announcementId);
 
 		AnnouncementUserInteraction interaction = interactionDao
-				.findByEmployee_EmployeeIdAndAnnouncement_AnnouncementId(employeeId, announcementId)
+				.findByEmployeeIdAndAnnouncementId(employeeId, announcementId)
 				.orElse(null);
 
 		if (interaction == null) {
 			interaction = new AnnouncementUserInteraction();
-			interaction.setAnnouncement(featureAnnouncement);
-			interaction.setEmployee(employee);
+			interaction.setAnnouncementId(announcementId);
+			interaction.setEmployeeId(employeeId);
 			interaction.setInteractionType(type);
 			interaction.setLastSeenAt(LocalDateTime.now());
 		}
@@ -120,41 +112,19 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	protected List<FeatureAnnouncementResponseDto> fetchActiveAnnouncements() {
 		String currentTenant = TenantContext.getCurrentTenant();
-		if (currentTenant != null) {
-			log.debug("fetchActiveAnnouncements: switching from tenant '{}' to master", currentTenant);
-			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
-		}
-		try {
-			return featureAnnouncementDao.findAllByStatusOrderByCreatedDateDesc(AnnouncementStatus.ACTIVE)
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+
+		List<FeatureAnnouncementResponseDto> announcements = featureAnnouncementDao
+				.findAllByStatusOrderByCreatedDateDesc(AnnouncementStatus.ACTIVE)
 				.stream()
-				.map(announcementMapper::featureAnnouncementToResponseDto)
+				.map(this::buildAnnouncementResponseDto)
 				.toList();
-		}
-		finally {
-			if (currentTenant != null) {
-				tenantContext.setTenantAndSwitchSchema(currentTenant);
-				log.debug("fetchActiveAnnouncements: restored schema to tenant '{}'", currentTenant);
-			}
-		}
-	}
 
-	private boolean matchesTrigger(FeatureAnnouncementResponseDto announcement, AnnouncementTriggerType trigger) {
-		if (trigger == null) {
-			return true;
+		if (currentTenant != null) {
+			tenantContext.setTenantAndSwitchSchema(currentTenant);
 		}
-		return trigger == announcement.getTriggerType();
-	}
 
-	private boolean matchesTargetPage(FeatureAnnouncementResponseDto announcement, String targetPage) {
-		AnnouncementTriggerType trigger = announcement.getTriggerType();
-		if (trigger != AnnouncementTriggerType.ON_FIRST_VISIT && trigger != AnnouncementTriggerType.ON_EVERY_VISIT) {
-			return true;
-		}
-		if (targetPage == null || targetPage.isBlank()) {
-			return true;
-		}
-		return announcement.getTargetPage() != null
-				&& announcement.getTargetPage().name().equalsIgnoreCase(targetPage);
+		return announcements;
 	}
 
 	private boolean isUserEligibleByRole(EmployeeRole employeeRole, List<Role> recipientRoles) {
@@ -213,6 +183,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		}
 		LocalDate threshold = LocalDate.now().minusDays(customDays);
 		return lastSeenAt.toLocalDate().isBefore(threshold) || lastSeenAt.toLocalDate().isEqual(threshold);
+	}
+
+	private FeatureAnnouncementResponseDto buildAnnouncementResponseDto(FeatureAnnouncement announcement) {
+		FeatureAnnouncementResponseDto response = new FeatureAnnouncementResponseDto();
+		response.setAnnouncementId(announcement.getAnnouncementId());
+		response.setTitle(announcement.getTitle());
+		response.setDescription(announcement.getDescription());
+		response.setCtaLabel(announcement.getCtaLabel());
+		response.setCtaLink(announcement.getCtaLink());
+		response.setTargetPage(announcement.getTargetPage());
+		response.setTriggerType(announcement.getTriggerType());
+		response.setFrequencyType(announcement.getFrequencyType());
+		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
+		response.setStatus(announcement.getStatus());
+		response.setImagePath(announcement.getImagePath());
+		response.setCreatedDate(announcement.getCreatedDate() == null ? null
+				: announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
+		List<Role> recipientRoles = announcement.getRecipients().stream()
+				.map(r -> r.getRecipientRole())
+				.toList();
+		response.setRecipientRoles(recipientRoles);
+		return response;
 	}
 
 }
