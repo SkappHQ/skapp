@@ -42,43 +42,35 @@ export const AnnouncementProvider: React.FC<{ children: ReactNode }> = ({
   const [announcements, setAnnouncements] = useState<ActiveAnnouncementType[]>(
     []
   );
-  // shownIds tracks which announcements have been seen this session (in-memory only)
   const [shownIds, setShownIds] = useState<Set<string>>(new Set());
 
-  // Prevent double-fetching during StrictMode double-invocations
   const isFetching = useRef(false);
 
   const loadFromCacheOrFetch = useCallback(async () => {
     if (isFetching.current) return;
     isFetching.current = true;
 
-    try {
-      const cached: AnnouncementCacheType | null =
-        getDataFromLocalStorage(CACHE_KEY);
+    const announcementCache: AnnouncementCacheType | null =
+      getDataFromLocalStorage(CACHE_KEY);
 
-      if (cached && Array.isArray(cached.announcements)) {
-        setAnnouncements(cached.announcements);
-      } else {
-        const fetched = await fetchEligibleAnnouncements();
-        const cacheEntry: AnnouncementCacheType = {
-          announcements: fetched,
-          fetchedAt: new Date().toISOString()
-        };
-        await setDataToLocalStorage(CACHE_KEY, cacheEntry);
-        setAnnouncements(fetched);
-      }
-    } catch {
-      // If the fetch fails, silently continue — announcements are non-critical
-    } finally {
-      isFetching.current = false;
+    if (announcementCache && Array.isArray(announcementCache.announcements)) {
+      setAnnouncements(announcementCache.announcements);
+    } else {
+      const eligibleAnnouncements = await fetchEligibleAnnouncements();
+      const cacheEntry: AnnouncementCacheType = {
+        announcements: eligibleAnnouncements
+      };
+      setDataToLocalStorage(CACHE_KEY, cacheEntry);
+      setAnnouncements(eligibleAnnouncements);
     }
+
+    isFetching.current = false;
   }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadFromCacheOrFetch();
     } else {
-      // Clear cache and in-memory state on logout
       removeDataFromLocalStorage(CACHE_KEY);
       setAnnouncements([]);
       setShownIds(new Set());
