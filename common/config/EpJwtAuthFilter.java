@@ -86,7 +86,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String path = request.getRequestURI();
 		return PUBLIC_URLS.stream().anyMatch(path::equals)
-				|| Boolean.TRUE.equals(request.getAttribute("ANNOUNCEMENT_API_KEY_AUTHENTICATED"));
+				|| path.startsWith("/v1/announcement");
 	}
 
 	@Override
