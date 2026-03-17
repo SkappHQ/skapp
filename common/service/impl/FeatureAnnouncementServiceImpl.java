@@ -2,19 +2,19 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.mapper.AnnouncementMapper;
-import com.skapp.enterprise.common.model.FeatureAnnouncementRecipient;
+import com.skapp.enterprise.common.model.master.FeatureAnnouncementRecipient;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.request.AnnouncementListRequestFilterDto;
 import com.skapp.enterprise.common.payload.request.AnnouncementStatusUpdateRequestDto;
 import com.skapp.enterprise.common.payload.request.FeatureAnnouncementCreateRequestDto;
-import com.skapp.enterprise.common.payload.request.FeatureAnnouncementUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.AnnouncementPageResponseDto;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
 import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.service.FeatureAnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
+import com.skapp.enterprise.common.type.AnnouncementStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,10 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,8 +36,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	private final FeatureAnnouncementDao featureAnnouncementDao;
 
-	private final AnnouncementMapper announcementMapper;
-
 	@Override
 	@Transactional
 	public ResponseEntityDto createAnnouncement(FeatureAnnouncementCreateRequestDto requestDto) {
@@ -46,8 +43,9 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(),
 				requestDto.getFrequencyType(), requestDto.getCustomFrequencyDays());
+		sanitizeAnnouncementRequest(requestDto);
 
-		FeatureAnnouncement announcement = announcementMapper.createRequestDtoToFeatureAnnouncement(requestDto);
+		FeatureAnnouncement announcement = buildAnnouncementEntity(requestDto);
 		List<FeatureAnnouncementRecipient> recipients = requestDto.getRecipientRoles().stream()
 				.distinct()
 				.map(role -> {
@@ -60,7 +58,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		announcement.getRecipients().addAll(recipients);
 
 		FeatureAnnouncement saved = featureAnnouncementDao.save(announcement);
-		return new ResponseEntityDto(false, announcementMapper.featureAnnouncementToResponseDto(saved));
+		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
 	@Override
@@ -68,24 +66,12 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	public ResponseEntityDto getAnnouncements(AnnouncementListRequestFilterDto filterDto) {
 		log.debug("Fetching announcements page={} size={}", filterDto.getPageNumber(), filterDto.getPageSize());
 
-		Sort sort = "ASC".equalsIgnoreCase(filterDto.getSortDirection())
-				? Sort.by(filterDto.getSortBy()).ascending()
-				: Sort.by(filterDto.getSortBy()).descending();
-
+		Sort sort = Sort.by(Sort.Direction.fromString(filterDto.getSortDirection()), filterDto.getSortBy());
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
-		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAll(pageable);
-
-		List<Long> ids = page.getContent().stream()
-				.map(FeatureAnnouncement::getAnnouncementId)
-				.toList();
-		Map<Long, FeatureAnnouncement> byId = ids.isEmpty()
-				? Collections.emptyMap()
-				: featureAnnouncementDao.findAllWithRecipientsByIdIn(ids).stream()
-						.collect(Collectors.toMap(FeatureAnnouncement::getAnnouncementId, fa -> fa));
+		Page<FeatureAnnouncement> page = featureAnnouncementDao.findAllWithRecipients(pageable);
 
 		List<FeatureAnnouncementResponseDto> items = page.getContent().stream()
-				.map(fa -> announcementMapper.featureAnnouncementToResponseDto(
-						byId.getOrDefault(fa.getAnnouncementId(), fa)))
+				.map(this::buildAnnouncementResponseDto)
 				.toList();
 
 		AnnouncementPageResponseDto pageDto = new AnnouncementPageResponseDto();
@@ -103,21 +89,22 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
-		return new ResponseEntityDto(false, announcementMapper.featureAnnouncementToResponseDto(entity));
+		return new ResponseEntityDto(false, buildAnnouncementResponseDto(entity));
 	}
 
 	@Override
 	@Transactional
 	public ResponseEntityDto updateAnnouncement(Long announcementId,
-			FeatureAnnouncementUpdateRequestDto requestDto) {
+			FeatureAnnouncementCreateRequestDto requestDto) {
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 
 		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(),
 				requestDto.getFrequencyType(), requestDto.getCustomFrequencyDays());
+		sanitizeAnnouncementRequest(requestDto);
 
-		announcementMapper.updateFeatureAnnouncementFromDto(requestDto, entity);
+		populateAnnouncementEntityFromRequest(requestDto, entity);
 
 		entity.getRecipients().clear();
 		List<FeatureAnnouncementRecipient> newRecipients = requestDto.getRecipientRoles().stream()
@@ -132,7 +119,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		entity.getRecipients().addAll(newRecipients);
 
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
-		return new ResponseEntityDto(false, announcementMapper.featureAnnouncementToResponseDto(saved));
+		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
 	@Override
@@ -146,7 +133,19 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 		entity.setStatus(requestDto.getStatus());
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
-		return new ResponseEntityDto(false, announcementMapper.featureAnnouncementToResponseDto(saved));
+		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
+	}
+
+	private void sanitizeAnnouncementRequest(FeatureAnnouncementCreateRequestDto createRequest) {
+		createRequest.setTitle(createRequest.getTitle().trim());
+		createRequest.setCtaLabel(StringUtils.hasText(createRequest.getCtaLabel()) ? createRequest.getCtaLabel().trim() : null);
+		createRequest.setCtaLink(StringUtils.hasText(createRequest.getCtaLink()) ? createRequest.getCtaLink().trim() : null);
+		if (createRequest.getStatus() == null) {
+			createRequest.setStatus(AnnouncementStatus.ACTIVE);
+		}
+		if (!AnnouncementFrequencyType.CUSTOM.equals(createRequest.getFrequencyType())) {
+			createRequest.setCustomFrequencyDays(null);
+		}
 	}
 
 	private void validateCrossFieldRules(String ctaLabel, String ctaLink,
@@ -160,6 +159,57 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 			throw new ModuleException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_CUSTOM_FREQUENCY_DAYS_REQUIRED);
 		}
+	}
+
+	private FeatureAnnouncementResponseDto buildAnnouncementResponseDto(FeatureAnnouncement announcement) {
+		FeatureAnnouncementResponseDto response = new FeatureAnnouncementResponseDto();
+		response.setAnnouncementId(announcement.getAnnouncementId());
+		response.setTitle(announcement.getTitle());
+		response.setDescription(announcement.getDescription());
+		response.setCtaLabel(announcement.getCtaLabel());
+		response.setCtaLink(announcement.getCtaLink());
+		response.setTargetPage(announcement.getTargetPage());
+		response.setTriggerType(announcement.getTriggerType());
+		response.setFrequencyType(announcement.getFrequencyType());
+		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
+		response.setStatus(announcement.getStatus());
+		response.setImagePath(announcement.getImagePath());
+		response.setCreatedDate(announcement.getCreatedDate() == null ? null
+				: announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
+		List<Role> recipientRoles = announcement.getRecipients().stream()
+				.map(r -> r.getRecipientRole())
+				.toList();
+		response.setRecipientRoles(recipientRoles);
+		return response;
+	}
+
+	private FeatureAnnouncement buildAnnouncementEntity(FeatureAnnouncementCreateRequestDto createRequest) {
+		FeatureAnnouncement announcement = new FeatureAnnouncement();
+		announcement.setTitle(createRequest.getTitle());
+		announcement.setDescription(createRequest.getDescription());
+		announcement.setCtaLabel(createRequest.getCtaLabel());
+		announcement.setCtaLink(createRequest.getCtaLink());
+		announcement.setTargetPage(createRequest.getTargetPage());
+		announcement.setTriggerType(createRequest.getTriggerType());
+		announcement.setFrequencyType(createRequest.getFrequencyType());
+		announcement.setCustomFrequencyDays(createRequest.getCustomFrequencyDays());
+		announcement.setStatus(createRequest.getStatus());
+		announcement.setImagePath(createRequest.getImagePath());
+		return announcement;
+	}
+
+	private void populateAnnouncementEntityFromRequest(FeatureAnnouncementCreateRequestDto createRequest,
+			FeatureAnnouncement announcementEntity) {
+		announcementEntity.setTitle(createRequest.getTitle());
+		announcementEntity.setDescription(createRequest.getDescription());
+		announcementEntity.setCtaLabel(createRequest.getCtaLabel());
+		announcementEntity.setCtaLink(createRequest.getCtaLink());
+		announcementEntity.setTargetPage(createRequest.getTargetPage());
+		announcementEntity.setTriggerType(createRequest.getTriggerType());
+		announcementEntity.setFrequencyType(createRequest.getFrequencyType());
+		announcementEntity.setCustomFrequencyDays(createRequest.getCustomFrequencyDays());
+		announcementEntity.setStatus(createRequest.getStatus());
+		announcementEntity.setImagePath(createRequest.getImagePath());
 	}
 
 }

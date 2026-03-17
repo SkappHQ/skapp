@@ -1,6 +1,6 @@
-package com.skapp.enterprise.common.model;
+package com.skapp.enterprise.common.model.master;
 
-import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.common.type.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FeatureAnnouncementRecipient {
+public class FeatureAnnouncementRecipient extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

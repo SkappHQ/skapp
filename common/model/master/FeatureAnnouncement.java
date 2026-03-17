@@ -1,6 +1,6 @@
 package com.skapp.enterprise.common.model.master;
 
-import com.skapp.enterprise.common.model.FeatureAnnouncementRecipient;
+import com.skapp.community.common.model.Auditable;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
 import com.skapp.enterprise.common.type.AnnouncementTargetPage;
@@ -18,9 +18,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +26,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FeatureAnnouncement {
+public class FeatureAnnouncement extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +42,7 @@ public class FeatureAnnouncement {
 	@Column(name = "cta_label", length = 50)
 	private String ctaLabel;
 
-	@Column(name = "cta_link", length = 2048)
+	@Column(name = "cta_link", columnDefinition = "TEXT")
 	private String ctaLink;
 
 	@Enumerated(EnumType.STRING)
@@ -67,12 +64,8 @@ public class FeatureAnnouncement {
 	@Column(name = "status", nullable = false)
 	private AnnouncementStatus status = AnnouncementStatus.ACTIVE;
 
-	@Column(name = "image_path", length = 2048)
+	@Column(name = "image_path", columnDefinition = "TEXT")
 	private String imagePath;
-
-	@CreationTimestamp
-	@Column(name = "created_date", nullable = false, updatable = false)
-	private Instant createdDate;
 
 	@OneToMany(mappedBy = "featureAnnouncement", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<FeatureAnnouncementRecipient> recipients = new ArrayList<>();

@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.enterprise.common.payload.request.AnnouncementListRequestFilterDto;
 import com.skapp.enterprise.common.payload.request.AnnouncementStatusUpdateRequestDto;
 import com.skapp.enterprise.common.payload.request.FeatureAnnouncementCreateRequestDto;
-import com.skapp.enterprise.common.payload.request.FeatureAnnouncementUpdateRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.service.FeatureAnnouncementService;
 import com.skapp.enterprise.common.payload.request.AmazonS3SignedUrlRequestDto;
@@ -12,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/announcement")
+@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 public class FeatureAnnouncementController {
 
 	private final FeatureAnnouncementService featureAnnouncementService;
@@ -53,7 +54,7 @@ public class FeatureAnnouncementController {
 
 	@PutMapping("/{announcementId}")
 	public ResponseEntity<ResponseEntityDto> updateAnnouncement(@PathVariable Long announcementId,
-			@Valid @RequestBody FeatureAnnouncementUpdateRequestDto requestDto) {
+			@Valid @RequestBody FeatureAnnouncementCreateRequestDto requestDto) {
 		ResponseEntityDto response = featureAnnouncementService.updateAnnouncement(announcementId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

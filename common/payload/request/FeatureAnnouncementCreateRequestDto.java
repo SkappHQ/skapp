@@ -28,7 +28,6 @@ public class FeatureAnnouncementCreateRequestDto {
 	@Size(max = 50)
 	private String ctaLabel;
 
-	@Size(max = 2048)
 	private String ctaLink;
 
 	@NotNull
@@ -48,7 +47,6 @@ public class FeatureAnnouncementCreateRequestDto {
 	private List<Role> recipientRoles;
 
 	@NotBlank
-	@Size(max = 2048)
 	private String imagePath;
 
 }
