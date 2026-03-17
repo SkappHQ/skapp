@@ -26,7 +26,7 @@ const EmployeeTableFilterButton: FC<Props> = ({
   disabled
 }) => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const { employeeDataFilter, removeEmployeeFilter } = usePeopleStore(
+  const { appliedEmployeeDataFilter, removeEmployeeFilter } = usePeopleStore(
     (state) => state
   );
 
@@ -45,18 +45,18 @@ const EmployeeTableFilterButton: FC<Props> = ({
           height: "2.3125rem"
         }}
       >
-        {flatListValues(employeeDataFilter).length !== 0 && (
+        {flatListValues(appliedEmployeeDataFilter).length !== 0 && (
           <Typography variant={"body1"}>{translateText(["filter"])}</Typography>
         )}
       </Box>
       <Stack direction="row" spacing={"0.25rem"}>
         <ShowSelectedFilters
-          filterOptions={flatListValues(employeeDataFilter)}
+          filterOptions={flatListValues(appliedEmployeeDataFilter)}
           onDeleteIcon={removeFilters}
         />
         <Button
           label={
-            flatListValues(employeeDataFilter).length === 0
+            flatListValues(appliedEmployeeDataFilter).length === 0
               ? translateText(["filter"])
               : ""
           }
