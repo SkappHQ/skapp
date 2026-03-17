@@ -18,6 +18,8 @@ import java.util.List;
 @Setter
 public class FeatureAnnouncementCreateRequestDto {
 
+	private Long announcementId;
+
 	@NotBlank
 	@Size(max = 100)
 	private String title;

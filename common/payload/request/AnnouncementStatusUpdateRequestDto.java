@@ -10,6 +10,9 @@ import lombok.Setter;
 public class AnnouncementStatusUpdateRequestDto {
 
 	@NotNull
+	private Long announcementId;
+
+	@NotNull
 	private AnnouncementStatus status;
 
 }

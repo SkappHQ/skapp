@@ -1,5 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.type.Role;
@@ -97,6 +98,9 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	@Transactional
 	public ResponseEntityDto updateAnnouncement(Long announcementId,
 			FeatureAnnouncementCreateRequestDto requestDto) {
+		if (announcementId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		}
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 				.orElseThrow(() -> new ModuleException(
 						EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
