@@ -70,7 +70,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
       case TeamModelTypes.REASSIGN_MEMBERS:
         return translateText(["reassignModalTitle"]);
       case TeamModelTypes.TEAM_ACTIONS:
-        return translateText(["teamActionsTitle"]);
+        return translateText(["teamActionModalTitle"]);
       default:
         return "";
     }
@@ -179,7 +179,6 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
         )}
         {teamModalType === TeamModelTypes.TEAM_ACTIONS && (
           <TeamActionModal
-            isOpen={isTeamModalOpen}
             onClose={() => {
               setIsTeamModalOpen(false);
               setTeamModalType(TeamModelTypes.NONE);
