@@ -8,13 +8,14 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
@@ -26,7 +27,6 @@ import { SettingsModalTypes } from "~community/common/types/SettingsTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
-import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
 
 interface SettingsSectionProps {
@@ -92,37 +92,29 @@ const SettingsSection: FC<SettingsSectionProps> = ({
                     mt: "1.25rem"
                   }}
                 >
-                  <Button
-                    label={translatedText(["setupEmailServerButtonText"])}
-                    startIcon={<MailOutlineIcon />}
-                    isFullWidth={false}
-                    styles={{
-                      mt: "1.25rem",
-                      px: "1.75rem",
-                      width: "max-content"
-                    }}
-                    buttonStyle={ButtonStyle.TERTIARY}
+                  <ButtonV2
+                    variant={"tertiary"}
                     onClick={() => {
                       setModalType(SettingsModalTypes.SETUP_EMAIL_SERVER);
                       setModalOpen(true);
                     }}
-                  />
+                    icon={<MailOutlineIcon />}
+                    iconPosition="start"
+                  >
+                    {translatedText(["setupEmailServerButtonText"])}
+                  </ButtonV2>
                   {config?.emailServiceProvider !== null && (
-                    <Button
-                      label={translatedText(["testEmailServerButtonText"])}
-                      startIcon={<DraftsOutlinedIcon />}
-                      isFullWidth={false}
-                      styles={{
-                        mt: "1.25rem",
-                        px: "1.75rem",
-                        width: "max-content"
-                      }}
-                      buttonStyle={ButtonStyle.TERTIARY}
+                    <ButtonV2
+                      variant={"tertiary"}
                       onClick={() => {
                         setModalType(SettingsModalTypes.TEST_EMAIL_SERVER);
                         setModalOpen(true);
                       }}
-                    />
+                      icon={<DraftsOutlinedIcon />}
+                      iconPosition="start"
+                    >
+                      {translatedText(["testEmailServerButtonText"])}
+                    </ButtonV2>
                   )}
                 </Box>
               </Box>

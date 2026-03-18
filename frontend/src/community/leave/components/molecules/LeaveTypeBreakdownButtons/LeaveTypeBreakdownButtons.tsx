@@ -1,15 +1,11 @@
 import { Box, Stack, SxProps } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import {
   MediaQueries,
   useMediaQuery
@@ -82,24 +78,20 @@ const LeaveTypeBreakdownButtons = ({
     (filterTypesArray: SelectedFiltersTypes) => {
       return Object.keys(filterTypesArray).map((filterType) => {
         return (
-          <Button
+          <ButtonV2
             key={filterType}
-            isFullWidth={false}
-            startIcon={!isGraph ? null : colorIndicator(colors[filterType])}
-            label={filterType}
             onClick={() => onClick(filterType)}
-            buttonStyle={
-              toggle[filterType] ? ButtonStyle.SECONDARY : ButtonStyle.TERTIARY
+            variant={toggle[filterType] ? "secondary" : "tertiary"}
+            size={"md"}
+            icon={
+              !isGraph
+                ? undefined
+                : (colorIndicator(colors[filterType]) ?? undefined)
             }
-            size={ButtonSizes.MEDIUM}
-            styles={{
-              ...buttonStyles,
-              backgroundColor: toggle[filterType]
-                ? null
-                : theme.palette.grey[100],
-              color: theme.palette.grey[900]
-            }}
-          />
+            iconPosition="start"
+          >
+            {filterType}
+          </ButtonV2>
         );
       });
     },

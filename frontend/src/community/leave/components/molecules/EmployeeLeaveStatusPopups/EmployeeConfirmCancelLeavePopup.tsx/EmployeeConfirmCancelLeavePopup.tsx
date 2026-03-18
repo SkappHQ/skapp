@@ -1,9 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -83,16 +84,15 @@ const EmployeeConfirmCancelLeavePopup: FC<Props> = ({ setPopupType }) => {
           marginTop: "1.25rem"
         }}
       >
-        <Button
-          label={translateText([
-            "myLeaveRequests",
-            "confirmAndCancelRequestBtn"
-          ])}
-          endIcon={IconName.REQUEST_CANCEL_CROSS_ICON}
-          buttonStyle={ButtonStyle.ERROR}
+        <ButtonV2
+          variant={"error"}
           onClick={handleCancelLeave}
           isLoading={isCancellationPending}
-        />
+          icon={<Icon name={IconName.REQUEST_CANCEL_CROSS_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["myLeaveRequests", "confirmAndCancelRequestBtn"])}
+        </ButtonV2>
       </Box>
     </>
   );

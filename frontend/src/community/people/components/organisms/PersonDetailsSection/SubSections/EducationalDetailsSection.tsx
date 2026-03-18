@@ -1,8 +1,9 @@
 import { Grid2 as Grid } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { JSX } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
@@ -10,11 +11,6 @@ import {
   LONG_DATE_TIME_FORMAT,
   REVERSE_DATE_FORMAT
 } from "~community/common/constants/timeConstants";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
@@ -208,23 +204,25 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
 
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           {!isInputsDisabled && (
-            <Button
-              label={
-                rowEdited > -1
-                  ? translateButtonText(["saveChanges"])
-                  : translateButtonText(["add"])
-              }
+            <ButtonV2
               onClick={() => handleSubmit()}
-              endIcon={rowEdited > -1 ? IconName.SAVE_ICON : IconName.ADD_ICON}
-              isFullWidth={false}
-              buttonStyle={ButtonStyle.SECONDARY}
-              size={ButtonSizes.MEDIUM}
-              styles={{
-                mt: "2rem"
-              }}
+              variant={"secondary"}
+              size={"md"}
               disabled={isInputsDisabled || isReadOnly}
-              type={ButtonTypes.SUBMIT}
-            />
+              type={"submit"}
+              icon={
+                rowEdited > -1 ? (
+                  <Icon name={IconName.SAVE_ICON} />
+                ) : (
+                  <Icon name={IconName.ADD_ICON} />
+                )
+              }
+              iconPosition="end"
+            >
+              {rowEdited > -1
+                ? translateButtonText(["saveChanges"])
+                : translateButtonText(["add"])}
+            </ButtonV2>
           )}
         </Grid>
 

@@ -1,10 +1,10 @@
 import { Box, MenuItem } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { JSX, Key } from "react";
 
 import { useMarkNotificationAsRead } from "~community/common/api/notificationsApi";
 import ROUTES from "~community/common/constants/routes";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -16,7 +16,6 @@ import {
 } from "~community/common/types/notificationTypes";
 import { handleNotifyRow } from "~community/common/utils/notificationUtils";
 
-import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
 import NotificationContent from "../NotificationContent/NotificationContent";
 import TableEmptyScreen from "../TableEmptyScreen/TableEmptyScreen";
@@ -121,14 +120,15 @@ const NotificationsPopup = ({
           </>
         )}
       </Box>
-      <Button
-        buttonStyle={ButtonStyle.TERTIARY}
-        label={translateText(["viewAllNotificationsButtonText"])}
-        endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        styles={{ mt: "1rem" }}
+      <ButtonV2
+        variant={"tertiary"}
         onClick={handelAllNotification}
         disabled={notifications?.length === 0}
-      />
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["viewAllNotificationsButtonText"])}
+      </ButtonV2>
     </>
   );
 };

@@ -7,23 +7,20 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { JSX, memo, useEffect, useMemo } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { signOut } from "~community/auth/utils/authUtils";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import {
   MediaQueries,
   useMediaQuery
@@ -34,7 +31,7 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
-import { mergeSx } from "~community/common/utils/commonUtil";
+import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
 import QuickSetupContainer from "~enterprise/common/components/molecules/QuickSetupContainer/QuickSetupContainer";
 import SubscriptionEndedModalController from "~enterprise/common/components/molecules/SubscriptionEndedModalController/SubscriptionEndedModalController";
@@ -49,7 +46,6 @@ import UserLimitBanner from "~enterprise/people/components/molecules/UserLimitBa
 import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
 
 import styles from "./styles";
-import { signOut } from "~community/auth/utils/authUtils";
 
 interface Props {
   pageHead: string;
@@ -64,7 +60,6 @@ interface Props {
   secondaryBtnIconName?: IconName;
   isBackButtonVisible?: boolean;
   isDividerVisible?: boolean;
-  primaryButtonType?: ButtonStyle;
   onPrimaryButtonClick?: () => void;
   onSecondaryButtonClick?: () => void;
   subtitleNextToTitle?: string;
@@ -102,7 +97,6 @@ const ContentLayout = ({
   children,
   primaryButtonText,
   secondaryBtnText,
-  primaryButtonType,
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
   isBackButtonVisible = false,
@@ -317,38 +311,44 @@ const ContentLayout = ({
           </Stack>
           <Stack sx={classes.rightContent} id={id?.btnWrapper}>
             {secondaryBtnText && (
-              <Button
+              <ButtonV2
                 isFullWidth={isBelow600}
-                buttonStyle={ButtonStyle.SECONDARY}
-                size={ButtonSizes.MEDIUM}
-                label={secondaryBtnText}
-                endIcon={secondaryBtnIconName}
+                variant={"secondary"}
+                size={"md"}
                 onClick={onSecondaryButtonClick}
-                dataTestId={contentLayoutTestId.buttons.secondaryButton}
-                shouldBlink={shouldBlink?.secondaryBtn}
+                data-testid={contentLayoutTestId.buttons.secondaryButton}
                 id={id?.secondaryBtn}
-                accessibility={{
-                  ariaDescribedBy: ariaDescribedBy?.secondaryButton
-                }}
-              />
+                className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
+                icon={
+                  secondaryBtnIconName ? (
+                    <Icon name={secondaryBtnIconName} />
+                  ) : undefined
+                }
+                iconPosition="end"
+              >
+                {secondaryBtnText}
+              </ButtonV2>
             )}
             {primaryButtonText && (
-              <Button
+              <ButtonV2
                 isFullWidth={isBelow600}
-                buttonStyle={primaryButtonType ?? ButtonStyle.PRIMARY}
-                label={primaryButtonText as string}
-                size={ButtonSizes.MEDIUM}
-                endIcon={primaryBtnIconName}
+                variant="primary"
+                size={"md"}
                 isLoading={isPrimaryBtnLoading}
                 onClick={onPrimaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.primaryButton}
-                shouldBlink={shouldBlink?.primaryBtn}
                 id={id?.primaryBtn}
                 disabled={isPrimaryBtnDisabled}
-                accessibility={{
-                  ariaDescribedBy: ariaDescribedBy?.primaryButton
-                }}
-              />
+                className={getBlinkClass(shouldBlink?.primaryBtn ?? false)}
+                icon={
+                  primaryBtnIconName ? (
+                    <Icon name={primaryBtnIconName} />
+                  ) : undefined
+                }
+                iconPosition="end"
+              >
+                {primaryButtonText as string}
+              </ButtonV2>
             )}
             {customRightContent}
           </Stack>

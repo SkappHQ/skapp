@@ -1,15 +1,14 @@
 import { Box, Chip } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useEffect, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import Button from "~community/common/components/atoms/Button/Button";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ManagerTeamType } from "~community/common/types/CommonTypes";
@@ -156,39 +155,25 @@ const MultiTeamSelector = ({
             })}
         </Box>
 
-        <Button
-          label={
-            !isTeamListEmpty
-              ? selectedOptionNames.length > 1
-                ? `${selectedOptionNames.length} ${translateTexts(["selected"])}`
-                : selectedOptionNames[0]
-              : user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-                  (moduleAdminType &&
-                    user?.roles?.includes(moduleAdminType))
-                ? translateTexts(["allLabel"])
-                : translateTexts(["noTeamTxt"])
-          }
-          buttonStyle={
-            !isTeamListEmpty
-              ? ButtonStyle.TERTIARY
-              : ButtonStyle.TERTIARY_OUTLINED
-          }
+        <ButtonV2
+          variant={"tertiary"}
           disabled={isTeamListEmpty}
-          styles={{
-            border: ".0625rem solid",
-            borderColor: "grey.500",
-            fontWeight: "400",
-            fontSize: ".875rem",
-            py: ".5rem",
-            px: "1rem",
-            color: isTeamListEmpty ? "text.darkText" : ""
-          }}
-          endIcon={<DropDownArrow />}
           onClick={(event: MouseEvent<HTMLElement>) => {
             setAnchorEl(event.currentTarget);
             setShowOverlay(true);
           }}
-        />
+          icon={<DropDownArrow />}
+          iconPosition="end"
+        >
+          {!isTeamListEmpty
+            ? selectedOptionNames.length > 1
+              ? `${selectedOptionNames.length} ${translateTexts(["selected"])}`
+              : selectedOptionNames[0]
+            : user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+                (moduleAdminType && user?.roles?.includes(moduleAdminType))
+              ? translateTexts(["allLabel"])
+              : translateTexts(["noTeamTxt"])}
+        </ButtonV2>
       </Box>
       <Popper
         anchorEl={anchorEl}

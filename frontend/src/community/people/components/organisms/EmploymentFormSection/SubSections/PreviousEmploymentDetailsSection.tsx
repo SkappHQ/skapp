@@ -1,18 +1,14 @@
 import { Grid2 as Grid } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import {
   LONG_DATE_TIME_FORMAT,
   REVERSE_DATE_FORMAT
 } from "~community/common/constants/timeConstants";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
@@ -77,7 +73,7 @@ const PreviousEmploymentDetailsSection = ({
       title={translateText(["title"])}
       containerStyles={{
         padding: "0",
-        margin: "0 auto",
+        margin: "0 auto"
       }}
       dividerStyles={{
         mt: "0.5rem"
@@ -190,23 +186,25 @@ const PreviousEmploymentDetailsSection = ({
 
         <Grid size={{ xs: 12, md: 6, xl: 4 }}>
           {!isInputsDisabled && (
-            <Button
-              label={
-                rowEdited > -1
-                  ? translateButtonText(["saveChanges"])
-                  : translateButtonText(["add"])
-              }
+            <ButtonV2
               onClick={() => handleSubmit()}
-              endIcon={rowEdited > -1 ? IconName.TICK_ICON : IconName.ADD_ICON}
-              isFullWidth={false}
-              buttonStyle={ButtonStyle.SECONDARY}
-              size={ButtonSizes.MEDIUM}
-              styles={{
-                mt: "2rem"
-              }}
-              type={ButtonTypes.SUBMIT}
+              variant={"secondary"}
+              size={"md"}
+              type={"submit"}
               disabled={isInputsDisabled || isReadOnly}
-            />
+              icon={
+                rowEdited > -1 ? (
+                  <Icon name={IconName.TICK_ICON} />
+                ) : (
+                  <Icon name={IconName.ADD_ICON} />
+                )
+              }
+              iconPosition="end"
+            >
+              {rowEdited > -1
+                ? translateButtonText(["saveChanges"])
+                : translateButtonText(["add"])}
+            </ButtonV2>
           )}
         </Grid>
         {employee?.employment?.previousEmployment?.length === 0 ||
