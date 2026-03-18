@@ -766,6 +766,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
 			float adjustedX = field.getXPosition();
 
+			// Calculate original page dimensions in pixels based on field's percentage
+			// and actual PDF page size
+			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
+			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
+
+			float adjustedHorizontalPadding = (float) (Math
+				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
+			float adjustedVerticalPadding = (float) (Math
+				.ceil((verticalPadding / originalPageHeightInPixels) * pageHeight * 100f) / 100f);
+
 			// Build font-style CSS using original pixel values
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
@@ -776,8 +786,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
 			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
 			cssDto.setFontColor(fontColor);
-			cssDto.setHorizontalPadding(String.valueOf(horizontalPadding));
-			cssDto.setVerticalPadding(String.valueOf(verticalPadding));
+			cssDto.setHorizontalPadding(String.valueOf(adjustedHorizontalPadding));
+			cssDto.setVerticalPadding(String.valueOf(adjustedVerticalPadding));
 			cssDto.setLineHeight(String.valueOf(lineHeight));
 			cssDto.setEscapedValue(EsignUtil.escapeHtml(field.getFieldValue() != null ? field.getFieldValue() : ""));
 
