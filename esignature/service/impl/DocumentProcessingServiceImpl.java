@@ -776,7 +776,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedVerticalPadding = (float) (Math
 				.ceil((verticalPadding / originalPageHeightInPixels) * pageHeight * 100f) / 100f);
 
-			// Build font-style CSS using original pixel values
+			// Build font-style CSS
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
