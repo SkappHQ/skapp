@@ -61,7 +61,7 @@ const EmployeeTableFilterButton: FC<Props> = ({
           icon={<Icon name={IconName.FILTER_ICON} />}
           iconPosition="end"
         >
-          {flatListValues(employeeDataFilter).length === 0
+          {flatListValues(appliedEmployeeDataFilter).length === 0
             ? translateText(["filter"])
             : ""}
         </ButtonV2>
