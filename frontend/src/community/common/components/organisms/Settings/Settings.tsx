@@ -137,17 +137,18 @@ const SettingsSection: FC<SettingsSectionProps> = ({
             {translatedText(["securitySettingsDescription"])}
           </Typography>
 
-          <Button
-            label={translatedText(["resetPasswordButtonText"])}
-            startIcon={IconName.LOCK_ICON}
-            isFullWidth={false}
-            styles={{ mt: "1.25rem", px: "1.75rem" }}
-            buttonStyle={ButtonStyle.TERTIARY}
+          <ButtonV2
+            variant="tertiary"
+            icon={<Icon name={IconName.LOCK_ICON} />}
+            iconPosition="start"
+            className="mt-5"
             onClick={() => {
               setModalType(SettingsModalTypes.RESET_PASSWORD);
               setModalOpen(true);
             }}
-          />
+          >
+            {translatedText(["resetPasswordButtonText"])}
+          </ButtonV2>
         </Box>
       )}
     </>
