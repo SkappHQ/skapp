@@ -92,6 +92,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -436,18 +437,12 @@ public class DocumentServiceImpl implements DocumentService {
 
 		// Sign the processed PDF (if signing is enabled via feature flag)
 		// This will sign the document WITH the appended certificate
-		String finalDocumentPath = signAndUploadDocument(documentVersion, processedDocumentBytes);
+		UploadedDocument uploadedDocument = signAndUploadDocument(documentVersion, processedDocumentBytes);
+		String finalDocumentPath = uploadedDocument.path();
 
 		// Update document version with final file path
-		if (finalDocumentPath != null) {
-
-			DocumentVersion auditTrailAppendedVersion = verifyDocumentVersionsRelatedToDocument(document,
-					documentVersion, processedDocumentBytes);
-			documentVersionDao.save(auditTrailAppendedVersion);
-
-			document.setCurrentVersion(auditTrailAppendedVersion.getVersionNumber());
-			documentRepository.save(document);
-		}
+		KeyPair keyPairOwner = loadKeyPair(document.getEnvelope().getOwner().getId());
+		saveAuditTrailAppendedVersion(document, documentVersion, uploadedDocument, keyPairOwner.getPrivate());
 
 		recipientDao.saveAll(envelope.getRecipients());
 
@@ -473,7 +468,7 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentCompleteResponseDto documentCompleteResponseDto = new DocumentCompleteResponseDto();
 		documentCompleteResponseDto.setStatus(document.getEnvelope().getStatus());
 		documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
-				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, documentVersion.getFilePath()));
+				+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalDocumentPath));
 
 		Long completedEnvelopeId = envelope.getId();
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -631,9 +626,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 			byte[] initialDocumentBytes = amazonS3Service.downloadFileAsBytes(bucketName,
 					firstDocumentVersion.getFilePath());
-			KeyPair keyPairSender = loadKeyPair(document.getEnvelope().getOwner().getId());
+			KeyPair keyPairOwner = loadKeyPair(document.getEnvelope().getOwner().getId());
 
-			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairSender.getPublic());
+			verifyDocumentSignature(initialDocumentBytes, firstDocumentVersion, keyPairOwner.getPublic());
 
 			List<Field> allRecipientsFields = recipient.getEnvelope()
 				.getRecipients()
@@ -653,7 +648,7 @@ public class DocumentServiceImpl implements DocumentService {
 			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
 
 			DocumentVersion finalVersion = signFinalDocumentVersionBySender(document, fullDocumentBytes,
-					completeFileUrl, keyPairSender);
+					completeFileUrl, keyPairOwner);
 
 			documentVersionDao.save(finalVersion);
 
@@ -681,25 +676,12 @@ public class DocumentServiceImpl implements DocumentService {
 
 			// Sign the processed PDF (if signing is enabled via feature flag)
 			// This will sign the document WITH the appended certificate
-			String finalDocumentPath = signAndUploadDocument(finalVersion, processedDocumentBytes);
+			UploadedDocument uploadedFinalDocument = signAndUploadDocument(finalVersion, processedDocumentBytes);
 
 			// Create a new document version for the final signed PDF (after signing with
-			// the sender's key) with certificate along with the audit trail (if signing
+			// the owner's key) with certificate along with the audit trail (if signing
 			// is enabled)
-			if (finalDocumentPath != null) {
-				String newHashWithAuditTrail = hashDocument(new ByteArrayInputStream(processedDocumentBytes));
-
-				String signatureWithAuditTrail = signDocument(Base64.getDecoder().decode(newHashWithAuditTrail),
-						keyPairSender.getPrivate());
-
-				DocumentVersion auditTrailAppendedVersion = buildNewDocumentVersion(finalVersion, finalDocumentPath,
-						newHashWithAuditTrail, signatureWithAuditTrail, envelope.getOwner());
-
-				DocumentVersion auditTrailAppendedDocumentVersion = documentVersionDao.save(auditTrailAppendedVersion);
-
-				document.setCurrentVersion(auditTrailAppendedDocumentVersion.getVersionNumber());
-				documentRepository.save(document);
-			}
+			saveAuditTrailAppendedVersion(document, finalVersion, uploadedFinalDocument, keyPairOwner.getPrivate());
 
 			// Update all recipients
 			List<Recipient> recipients = envelope.getRecipients();
@@ -726,7 +708,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 			documentCompleteResponseDto.setStatus(envelope.getStatus());
 			documentCompleteResponseDto.setAccessLink(EpCommonConstants.HTTPS_PROTOCOL + cloudFrontDomain + "/"
-					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, finalVersion.getFilePath()));
+					+ EsignUtil.removeBucketAndEsignPrefix(bucketName, uploadedFinalDocument.path()));
 
 			Long parallelEnvelopeId = envelope.getId();
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -755,34 +737,37 @@ public class DocumentServiceImpl implements DocumentService {
 		return new ResponseEntityDto(false, documentCompleteResponseDto);
 	}
 
-	/**
-	 * Signs the document bytes (if signing is enabled) and uploads to S3. This method is
-	 * designed to work with certificate-appended bytes when that feature is merged.
-	 * @param documentVersion The document version to update with signature metadata
-	 * @param documentBytes The document bytes to sign (can be original or with appended
-	 * certificate)
-	 * @return The S3 path of the uploaded document, or null if upload failed
-	 */
-	private String signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
+	private void saveAuditTrailAppendedVersion(Document document, DocumentVersion baseVersion,
+			UploadedDocument uploadedDocument, PrivateKey signerPrivateKey) {
+		String newHash = hashDocument(new ByteArrayInputStream(uploadedDocument.uploadedBytes()));
+		String signature = signDocument(Base64.getDecoder().decode(newHash), signerPrivateKey);
+		DocumentVersion auditTrailVersion = buildNewDocumentVersion(baseVersion, uploadedDocument.path(), newHash,
+				signature, document.getEnvelope().getOwner());
+
+		if (uploadedDocument.isPdfSigned()) {
+			auditTrailVersion.setIsPdfSigned(true);
+			auditTrailVersion.setPdfSignedAt(uploadedDocument.pdfSignedAt());
+			auditTrailVersion.setCertificateSerialNumber(uploadedDocument.certificateSerialNumber());
+			auditTrailVersion.setSignatureAlgorithm(uploadedDocument.signatureAlgorithm());
+		}
+
+		DocumentVersion saved = documentVersionDao.save(auditTrailVersion);
+		document.setCurrentVersion(saved.getVersionNumber());
+		documentRepository.save(document);
+	}
+
+	private UploadedDocument signAndUploadDocument(DocumentVersion documentVersion, byte[] documentBytes) {
 		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
 
 		return signedResult.map(result -> {
-			// Upload signed PDF to S3
 			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
-
-			// Update document version with signature metadata
-			documentVersion.setIsPdfSigned(true);
-			documentVersion.setPdfSignedAt(getCurrentUtcDateTime());
-			documentVersion.setCertificateSerialNumber(result.getCertificateSerialNumber());
-			documentVersion.setSignatureAlgorithm(result.getSignatureAlgorithm());
-
 			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return path;
+			return UploadedDocument.signed(path, result.getSignedPdfBytes(), result.getCertificateSerialNumber(),
+					result.getSignatureAlgorithm());
 		}).orElseGet(() -> {
-			// Signing disabled or failed - upload unsigned document
 			String path = uploadProcessedDocumentVersion(documentBytes);
 			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
-			return path;
+			return UploadedDocument.unsigned(path, documentBytes);
 		});
 	}
 
@@ -951,10 +936,10 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	private DocumentVersion signFinalDocumentVersionBySender(Document document, byte[] documentBytes, String filePath,
-			KeyPair keyPairSender) {
+			KeyPair keyPairOwner) {
 
 		String finalHash = hashDocument(new ByteArrayInputStream(documentBytes));
-		String finalSignature = signDocument(Base64.getDecoder().decode(finalHash), keyPairSender.getPrivate());
+		String finalSignature = signDocument(Base64.getDecoder().decode(finalHash), keyPairOwner.getPrivate());
 
 		DocumentVersion finalVersion = new DocumentVersion();
 		finalVersion.setDocument(document);
@@ -1740,6 +1725,18 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionField.setHeightPercentage(dto.getHeightPercentage());
 		documentVersionField.setValue(dto.getFieldValue());
 		documentVersionField.setDocumentVersion(version);
+	}
+
+	private record UploadedDocument(String path, byte[] uploadedBytes, boolean isPdfSigned, LocalDateTime pdfSignedAt,
+			String certificateSerialNumber, String signatureAlgorithm) {
+
+		static UploadedDocument signed(String path, byte[] bytes, String certSerial, String sigAlgorithm) {
+			return new UploadedDocument(path, bytes, true, getCurrentUtcDateTime(), certSerial, sigAlgorithm);
+		}
+
+		static UploadedDocument unsigned(String path, byte[] bytes) {
+			return new UploadedDocument(path, bytes, false, null, null, null);
+		}
 	}
 
 	private record DocumentVersionFieldBulk(List<DocumentVersionField> documentVersionFields, List<Field> fields) {
