@@ -762,20 +762,19 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
-			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-			float adjustedX = field.getXPosition();
-
 			// Use the original pixel width from the frontend for HTML rendering.
 			float renderWidth = field.getWidth();
 
-			// The renderer's useDefaultPageSize overrides the @page CSS 'auto' height,
-			// so we must ensure the render page is tall enough to contain the text.
-			// Without this, font sizes like 16/18pt with line-height and padding
-			// overflow the tiny page height (e.g. 27/30pt) and get clipped invisible.
-			// The scaleY matrix will map the rendered content back to the target height.
+			// The render page must be tall enough so the HTML content (text with
+			// line-height, padding, and fallback-font metrics) never overflows onto
+			// a second page — toFormXObject only imports page 0, so any overflow
+			// content would be invisible. We add a generous buffer of one full
+			// fontSize on top of the required minimum content height.
 			float minContentHeight = fontSize * lineHeight + verticalPadding;
-			float renderHeight = Math.max(field.getHeight(), minContentHeight);
+			float renderHeight = Math.max(field.getHeight(), minContentHeight) + fontSize;
+			// PDF Y-axis starts from bottom-left; convert from top-left origin
+			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
+			float adjustedX = field.getXPosition();
 
 			// Build font-style CSS using original pixel values
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
@@ -795,19 +794,35 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
 			// Render HTML → PDF bytes at original pixel dimensions
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, renderWidth, renderHeight, folderName,
-					fontFamilyCss);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, renderWidth, renderHeight, folderName, fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
-			// Scale the rendered form from pixel space to the target PDF point rectangle
+			// Scale the rendered form from rendered pixel space → target PDF point
+			// rectangle.
+			// Use a uniform scale factor based on the width ratio so that text is not
+			// distorted. The render page may be taller than the target field (to avoid
+			// content clipping during HTML rendering), so we clip to the target
+			// rectangle.
 			PDRectangle bbox = formXObject.getBBox();
-			float scaleX = adjustedWidth / bbox.getWidth();
-			float scaleY = adjustedHeight / bbox.getHeight();
+			float scale = adjustedWidth / bbox.getWidth();
 
-			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
+			// The form's top-left in PDF coords after scaling:
+			// top = adjustedY + scale * bbox.height
+			// We want the top of the form to align with the top of the target field:
+			// targetTop = adjustedY + adjustedHeight
+			// So translate Y = targetTop - scale * bbox.height
+			float formTopY = adjustedY + adjustedHeight;
+			float translateY = formTopY - scale * bbox.getHeight();
 
 			contentStream.saveGraphicsState();
+
+			// Clip to the target field rectangle so any extra rendered height is hidden.
+			// PDFBox 3's clip() emits 'W n' (clip + end-path) internally.
+			contentStream.addRect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+			contentStream.clip();
+
+			Matrix matrix = new Matrix(scale, 0, 0, scale, adjustedX, translateY);
 			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();
