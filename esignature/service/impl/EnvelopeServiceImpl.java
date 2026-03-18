@@ -268,7 +268,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		// setup envelop settings
 		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
 		envelopeSetting.setEnvelope(savedEnvelope);
-
 		savedEnvelope.setSetting(envelopeSetting);
 
 		List<AuditTrail> auditTrails = new ArrayList<>();
@@ -335,7 +334,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.allMatch(recipient -> recipient.getStatus() == RecipientStatus.COMPLETED);
 		if (isDocumentComplete) {
 			savedEnvelope.getRecipients().forEach(recipient -> recipient.setInboxStatus(InboxStatus.COMPLETED));
-
 			savedEnvelope.setStatus(EnvelopeStatus.COMPLETED);
 		}
 
@@ -501,7 +499,6 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		validateSigningOrder(recipientDtos);
 
 		List<Tier> tierList = epUserService.getCurrentUserTiers();
-
 		TenantStatus tenantStatus = epUserService.getCurrentUserTenantStatus();
 
 		// Actual Pro Tier Validation

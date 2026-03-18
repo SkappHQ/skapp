@@ -261,7 +261,7 @@ public class StripeServiceImpl implements StripeService {
 		com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams
 			.builder()
 			.setCustomer(customerId)
-			.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings/account")
+			.setReturnUrl("https://" + tenantId + "." + parentDomain + "/settings?tab=billing")
 			.build();
 
 		com.stripe.model.billingportal.Session portalSession = com.stripe.model.billingportal.Session.create(params);
