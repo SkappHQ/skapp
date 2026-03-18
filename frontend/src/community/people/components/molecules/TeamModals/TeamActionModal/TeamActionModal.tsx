@@ -13,7 +13,6 @@ import { TeamModelTypes } from "~community/people/types/TeamTypes";
 interface Props {
   onClose: () => void;
   teamId?: number | string;
-  teamName?: string;
 }
 
 const TeamActionModal: React.FC<Props> = ({ onClose, teamId }) => {
