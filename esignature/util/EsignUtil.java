@@ -261,13 +261,6 @@ public class EsignUtil {
 
 	}
 
-	public static String truncateDocumentName(String documentName) {
-		if (documentName != null && documentName.length() > EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) {
-			return documentName.substring(0, EsignConstants.DOCUMENT_NAME_TRUNCATE_LENGTH) + "...";
-		}
-		return documentName;
-	}
-
 	/**
 	 * Normalizes a {@link Color}'s RGB channels from the [0, 255] integer range into the
 	 * [0.0, 1.0] float range expected by PDFBox content-stream color setters.
