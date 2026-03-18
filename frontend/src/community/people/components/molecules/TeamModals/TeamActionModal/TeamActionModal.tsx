@@ -3,11 +3,6 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-<<<<<<< fix/context-field-job-title-not-displaying-in-recruitment-template
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
-=======
-import Modal from "~community/common/components/organisms/Modal/Modal";
->>>>>>> develop
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -81,61 +76,28 @@ const TeamActionModal: React.FC<Props> = ({ onClose, teamId }) => {
   };
 
   return (
-<<<<<<< fix/context-field-job-title-not-displaying-in-recruitment-template
     <Box>
       <Typography>{translateText(["teamActionModalDes"])}</Typography>
       <Stack spacing={2} mt={4}>
-        <Button
-          label={translateText(["teamActionModalBtnText"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        <ButtonV2
+          variant={"primary"}
           onClick={handleAddNewTeam}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["teamActionModalBtnText"])}
+        </ButtonV2>
 
-        <Button
-          label={translateText(["teamDeleteConfirmBtnText"])}
-          buttonStyle={ButtonStyle.ERROR}
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+        <ButtonV2
+          variant={"error"}
           onClick={handleDeleteTeam}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["teamDeleteConfirmBtnText"])}
+        </ButtonV2>
       </Stack>
     </Box>
-=======
-    <Modal
-      isModalOpen={isOpen}
-      onCloseModal={onClose}
-      title={translateText(["teamActionModalTitle"])}
-    >
-      <Box>
-        <Typography>{translateText(["teamActionModalDes"])}</Typography>
-        <Stack spacing={2} mt={4}>
-          <ButtonV2
-            variant={"primary"}
-            onClick={handleAddNewTeam}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["teamActionModalBtnText"])}
-          </ButtonV2>
-
-          <ButtonV2
-            variant={"error"}
-            onClick={handleDeleteTeam}
-            icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["teamDeleteConfirmBtnText"])}
-          </ButtonV2>
-        </Stack>
-      </Box>
-    </Modal>
->>>>>>> develop
   );
 };
 
