@@ -103,7 +103,7 @@ const SystemPermissionFormSection = ({
     isInvoiceModuleEnabled
   } = useSessionData();
 
-  const isSuperAdminWithMultiple = isSuperAdmin && superAdminCount > 1;
+  const hasOtherSuperAdmins = isSuperAdmin && superAdminCount > 1;
 
   const { handleNext } = useStepper();
 
@@ -112,17 +112,15 @@ const SystemPermissionFormSection = ({
 
   const isDropdownDisabled =
     isProfileView ||
-    (permissions.isSuperAdmin && !isSuperAdminWithMultiple) ||
+    (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
     isInputsDisabled ||
-    (isReadOnly && !isSuperAdminWithMultiple);
+    (isReadOnly && !hasOtherSuperAdmins);
 
   const isPeopleDropdownDisabled =
     isProfileView ||
-    (permissions.isSuperAdmin && !isSuperAdminWithMultiple) ||
+    (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
     isInputsDisabled ||
-    (isReadOnly &&
-      !isPeopleAdminViewingOwnProfile &&
-      !isSuperAdminWithMultiple);
+    (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
 
   const onSave = () => {
     if (
