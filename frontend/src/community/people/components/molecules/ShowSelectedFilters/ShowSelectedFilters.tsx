@@ -4,7 +4,7 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
+import { pascalCaseFormatterExcludeUnderscore } from "~community/common/utils/commonUtil";
 
 interface Props {
   filterOptions: string[];
@@ -17,6 +17,7 @@ const ShowSelectedFilters = ({ filterOptions, onDeleteIcon }: Props) => {
     "components",
     "filterButton"
   );
+
   const theme: Theme = useTheme();
   const isMiniTabScreen = useMediaQuery(theme.breakpoints.down("lg"));
   const isTabScreen = useMediaQuery(theme.breakpoints.down("xl"));
@@ -31,7 +32,7 @@ const ShowSelectedFilters = ({ filterOptions, onDeleteIcon }: Props) => {
               key={index}
               tabIndex={0}
               role="button"
-              label={pascalCaseFormatter(option)}
+              label={pascalCaseFormatterExcludeUnderscore(option)}
               sx={{
                 flexDirection: "row",
                 border: "0.0625rem solid",
@@ -42,7 +43,7 @@ const ShowSelectedFilters = ({ filterOptions, onDeleteIcon }: Props) => {
               }}
               onDelete={() => onDeleteIcon && onDeleteIcon(option)}
               aria-label={translateAria(["appliedFilter"], {
-                filterLabel: pascalCaseFormatter(option)
+                filterLabel: pascalCaseFormatterExcludeUnderscore(option)
               })}
               deleteIcon={
                 <Icon name={IconName.CLOSE_ICON} height="1rem" width="1rem" />

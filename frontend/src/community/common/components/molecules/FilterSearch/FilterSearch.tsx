@@ -244,6 +244,12 @@ const FilterSearch: FC<Props> = ({
                       ? () => onSelectOption(suggestion)
                       : undefined
                   }
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
                   <Typography
                     sx={{

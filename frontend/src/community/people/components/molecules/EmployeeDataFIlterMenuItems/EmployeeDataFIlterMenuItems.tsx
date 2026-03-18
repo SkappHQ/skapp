@@ -36,8 +36,12 @@ const EmployeeDataFIlterMenuItems = ({
 
   const translateText = useTranslator("peopleModule", "peoples.filters");
 
-  const { employeeDataFilter, setEmployeeDataParams, resetEmployeeDataParams } =
-    usePeopleStore((state) => state);
+  const {
+    employeeDataFilter,
+    setEmployeeDataParams,
+    resetEmployeeDataParams,
+    setAppliedEmployeeDataFilter
+  } = usePeopleStore((state) => state);
 
   const filterOptions = useMemo(
     () => [
@@ -77,6 +81,7 @@ const EmployeeDataFIlterMenuItems = ({
 
   const handleSubmit = () => {
     handleApplyFilterPrams(setEmployeeDataParams, employeeDataFilter);
+    setAppliedEmployeeDataFilter(employeeDataFilter);
     handleClose();
   };
 
