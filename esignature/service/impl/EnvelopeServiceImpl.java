@@ -236,6 +236,13 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		}
 
 		Envelope envelope = initializeEnvelope(envelopeDetailDto);
+		envelope.setOwner(addressBook);
+
+		// Persist envelope first so it becomes a managed entity before associating
+		// existing (persistent) Document entities with it. This avoids
+		// TransientPropertyValueException. Safe because @Transactional will roll back
+		// the entire transaction if anything below fails.
+		Envelope savedEnvelope = envelopeDao.save(envelope);
 
 		List<Long> ids = envelopeDetailDto.getDocumentIds().stream().filter(Objects::nonNull).distinct().toList();
 
@@ -243,9 +250,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ENVELOPE_WITH_NO_DOCUMENT);
 		}
 
-		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), envelope);
+		List<Document> documents = assignDocumentsToEnvelope(envelopeDetailDto.getDocumentIds(), savedEnvelope);
 
-		envelope.setDocuments(documents);
+		savedEnvelope.setDocuments(documents);
 
 		boolean hasInvalidDocumentId = envelopeDetailDto.getRecipients()
 			.stream()
@@ -256,24 +263,25 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_INVALID_DOCUMENT_ID);
 		}
 
-		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), envelope);
-		envelope.setRecipients(recipients);
+		List<Recipient> recipients = buildRecipientsForEnvelope(envelopeDetailDto.getRecipients(), savedEnvelope);
+		savedEnvelope.setRecipients(recipients);
 		// setup envelop settings
 		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
-		envelopeSetting.setEnvelope(envelope);
+		envelopeSetting.setEnvelope(savedEnvelope);
+
+		savedEnvelope.setSetting(envelopeSetting);
 
 		envelope.setSetting(envelopeSetting);
 		envelope.setOwner(addressBook);
 
 		List<AuditTrail> auditTrails = new ArrayList<>();
-		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(envelope, null,
-				AuditAction.ENVELOPE_CREATED, envelope.getOwner(), null, null);
+		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(savedEnvelope, null,
+				AuditAction.ENVELOPE_CREATED, savedEnvelope.getOwner(), null, null);
 
 		auditTrails.add(auditTrailCreate);
 
-		Envelope savedEnvelope = envelopeDao.save(envelope);
-
-		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto, envelope);
+		List<SignedDocumentResponse> signedDocumentResponseList = getDocumentsFirstVersion(envelopeDetailDto,
+				savedEnvelope);
 
 		List<DocumentVersion> documentVersionList = signedDocumentResponseList.stream()
 			.map(SignedDocumentResponse::getDocumentVersion)
@@ -329,9 +337,9 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			.stream()
 			.allMatch(recipient -> recipient.getStatus() == RecipientStatus.COMPLETED);
 		if (isDocumentComplete) {
-			envelope.getRecipients().forEach(recipient -> recipient.setInboxStatus(InboxStatus.COMPLETED));
+			savedEnvelope.getRecipients().forEach(recipient -> recipient.setInboxStatus(InboxStatus.COMPLETED));
 
-			envelope.setStatus(EnvelopeStatus.COMPLETED);
+			savedEnvelope.setStatus(EnvelopeStatus.COMPLETED);
 		}
 
 		documentDao.saveAll(updatedDocuments);
@@ -348,7 +356,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			@Override
 			public void afterCommit() {
 				String tenantId = TenantContext.getCurrentTenant();
-				if (!envelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
+				if (!savedEnvelope.getStatus().equals(EnvelopeStatus.COMPLETED)) {
 					scheduleEnvelopeExpirationJobs(savedEnvelopeId, tenantId,
 							envelopeDetailDto.getEnvelopeSettingDto().getExpirationDate(), sentAtTime);
 				}
