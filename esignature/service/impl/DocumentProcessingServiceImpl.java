@@ -796,15 +796,16 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// content clipping during HTML rendering), so we clip to the target
 			// rectangle.
 			PDRectangle bbox = formXObject.getBBox();
-			float scale = adjustedWidth / bbox.getWidth();
+			float scaleX = adjustedWidth / bbox.getWidth();
+			float scaleY = adjustedHeight / bbox.getHeight();
 
 			// The form's top-left in PDF coords after scaling:
-			// top = adjustedY + scale * bbox.height
+			// top = adjustedY + scaleX * bbox.height
 			// We want the top of the form to align with the top of the target field:
 			// targetTop = adjustedY + adjustedHeight
 			// So translate Y = targetTop - scale * bbox.height
 			float formTopY = adjustedY + adjustedHeight;
-			float translateY = formTopY - scale * bbox.getHeight();
+			float translateY = formTopY - scaleX * bbox.getHeight();
 
 			contentStream.saveGraphicsState();
 
@@ -813,7 +814,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			contentStream.addRect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 			contentStream.clip();
 
-			Matrix matrix = new Matrix(scale, 0, 0, scale, adjustedX, translateY);
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, translateY);
 			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();
