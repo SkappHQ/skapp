@@ -35,6 +35,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -154,11 +155,14 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		List<String> rawTiers = jwtService.extractClaim(accessToken,
-				claims -> claims.get(EpAuthConstants.TIERS, List.class));
-
-		List<Tier> tiers = rawTiers != null
-				? rawTiers.stream().filter(Tier.class::isInstance).map(Tier.class::cast).toList() : List.of();
+		List<Tier> tiers = Optional
+			.ofNullable(jwtService.extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TIERS)))
+			.map(list -> ((List<?>) list).stream()
+				.filter(String.class::isInstance)
+				.map(String.class::cast)
+				.map(Tier::valueOf)
+				.toList())
+			.orElse(List.of());
 
 		String tenantStatus = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));
