@@ -144,7 +144,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		if (value == null) {
 			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_ENVELOPE_UUID_CANNOT_BE_NULL));
 		}
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);

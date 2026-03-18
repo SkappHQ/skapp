@@ -44,6 +44,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
 	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
 	ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY("validation.my-signature-method.empty"),
+	ESIGN_VALIDATION_ENVELOPE_UUID_CANNOT_BE_NULL("validation.envelope-uuid.null"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
