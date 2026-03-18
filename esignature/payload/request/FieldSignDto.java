@@ -31,11 +31,11 @@ public class FieldSignDto {
 
 	@NotNull(message = "{validation.field.xPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.xPosition.min}")
-	private float xPosition;
+	private float xposition;
 
 	@NotNull(message = "{validation.field.yPosition.notnull}")
 	@Min(value = 0, message = "{validation.field.yPosition.min}")
-	private float yPosition;
+	private float yposition;
 
 	@NotNull(message = "{validation.field.width.notnull}")
 	private float width;
