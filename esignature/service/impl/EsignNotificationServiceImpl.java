@@ -11,7 +11,6 @@ import com.skapp.enterprise.esignature.service.EsignNotificationService;
 import com.skapp.enterprise.esignature.type.MemberRole;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.SignType;
-import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 			return;
 		}
 
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		String documentName = envelope.getDocuments().getFirst().getName();
 
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
@@ -54,8 +53,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 			return;
 		}
 
-		String documentName = EsignUtil
-			.truncateDocumentName(recipient.getEnvelope().getDocuments().getFirst().getName());
+		String documentName = recipient.getEnvelope().getDocuments().getFirst().getName();
 
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
@@ -78,8 +76,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 			return;
 		}
 
-		String documentName = EsignUtil
-			.truncateDocumentName(recipient.getEnvelope().getDocuments().getFirst().getName());
+		String documentName = recipient.getEnvelope().getDocuments().getFirst().getName();
 
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
@@ -103,7 +100,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 			return;
 		}
 
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		String documentName = envelope.getDocuments().getFirst().getName();
 
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
@@ -137,7 +134,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 			return;
 		}
 
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		String documentName = envelope.getDocuments().getFirst().getName();
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
 		esignEmailDynamicFields.setRecipientName(decliningRecipient.getAddressBook().getName());
@@ -172,7 +169,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 	public void notifyOnEnvelopeVoided(Envelope envelope) {
 		log.info("Sending void notifications for envelope ID: {}", envelope.getId());
 
-		String documentName = EsignUtil.truncateDocumentName(envelope.getDocuments().getFirst().getName());
+		String documentName = envelope.getDocuments().getFirst().getName();
 		EsignEmailDynamicFields esignEmailDynamicFields = new EsignEmailDynamicFields();
 		esignEmailDynamicFields.setDocumentName(documentName);
 
