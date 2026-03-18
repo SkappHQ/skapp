@@ -793,7 +793,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			// Render HTML → PDF bytes at original pixel dimensions
+			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
 					fontFamilyCss);
 
