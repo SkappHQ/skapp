@@ -136,7 +136,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     user,
     signIn,
-    signUp
+    signUp,
+    checkAuth
   };
 
   // Show loading state during initial authentication check
