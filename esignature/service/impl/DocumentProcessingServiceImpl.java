@@ -762,24 +762,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
-			// Use the original pixel width from the frontend for HTML rendering.
-			float renderWidth = field.getWidth();
-
-			// The render page must be tall enough so the HTML content (text with
-			// line-height, padding, and fallback-font metrics) never overflows onto
-			// a second page — toFormXObject only imports page 0, so any overflow
-			// content would be invisible. We add a generous buffer of one full
-			// fontSize on top of the required minimum content height.
-			float minContentHeight = fontSize * lineHeight + verticalPadding;
-			float renderHeight = Math.max(field.getHeight(), minContentHeight) + fontSize;
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
 			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
 			float adjustedX = field.getXPosition();
 
 			// Build font-style CSS using original pixel values
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
-			cssDto.setAdjustedWidth(String.valueOf(renderWidth));
-			cssDto.setAdjustedHeight(String.valueOf(renderHeight));
+			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
+			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
 			cssDto.setFontFamilyCss(fontFamilyCss);
 			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
@@ -794,7 +784,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
 			// Render HTML → PDF bytes at original pixel dimensions
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, renderWidth, renderHeight, folderName, fontFamilyCss);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
+					fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
