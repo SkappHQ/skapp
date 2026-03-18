@@ -1,13 +1,11 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveCarryForwardModalController from "~community/leave/components/organisms/LeaveCarryForwardModalController/LeaveCarryForwardModalController";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveCarryForwardModalTypes } from "~community/leave/types/LeaveCarryForwardTypes";
-
-import Button from "../../atoms/Button/Button";
 
 const LeaveCarryForward = () => {
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
@@ -67,20 +65,15 @@ const LeaveCarryForward = () => {
           justifyContent: "center"
         }}
       >
-        <Button
-          label={translateTexts(["leaveCarryForwardSectionBtn"]) ?? ""}
-          buttonStyle={ButtonStyle.SECONDARY}
-          endIcon={<SyncIcon />}
+        <ButtonV2
+          variant={"secondary"}
           isFullWidth={false}
-          styles={{
-            paddingX: "1.75rem",
-            paddingY: "1.25rem"
-          }}
           onClick={handleLeaveSync}
-          accessibility={{
-            ariaDescribedBy: "leave-carry-forward-section-description"
-          }}
-        />
+          icon={<SyncIcon />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardSectionBtn"]) ?? ""}
+        </ButtonV2>
       </Box>
       <LeaveCarryForwardModalController />
     </Box>

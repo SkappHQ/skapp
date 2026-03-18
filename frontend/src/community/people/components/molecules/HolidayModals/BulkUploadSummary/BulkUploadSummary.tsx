@@ -1,8 +1,8 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -53,16 +53,14 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
               })
             : ""}
       </Typography>
-      <Button
-        label={translateText(["addBulkUploadSummaryButton"])}
-        endIcon={IconName.DOWNLOAD_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "1rem" }}
+      <ButtonV2
+        variant={"primary"}
         onClick={handleDownloadErrorLogCSV}
-        accessibility={{
-          ariaDescribedBy: "status-summary-description"
-        }}
-      />
+        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["addBulkUploadSummaryButton"])}
+      </ButtonV2>
     </Box>
   );
 };

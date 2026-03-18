@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { useEffect } from "react";
 
@@ -8,13 +9,11 @@ import {
 } from "~community/common/api/ResetPasswordApi";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { RequestPasswordChangeValidationSchema } from "~community/common/utils/validation";
 
-import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
 import Modal from "../../organisms/Modal/Modal";
 
@@ -136,13 +135,15 @@ const RequestPasswordChangeModal: React.FC<Props> = ({ isOpen, onClose }) => {
               isDisabled={formik.isSubmitting}
               labelStyles={{ fontWeight: 500 }}
             />
-            <Button
-              label={translateText(["sendRequestButtonText"])}
-              buttonStyle={ButtonStyle.PRIMARY}
-              endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            <ButtonV2
+              variant={"primary"}
               disabled={formik.isSubmitting}
               onClick={formik.submitForm}
-            />
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["sendRequestButtonText"])}
+            </ButtonV2>
           </Stack>
         </Form>
       </>

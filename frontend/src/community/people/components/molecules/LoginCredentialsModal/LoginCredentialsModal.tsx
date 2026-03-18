@@ -1,6 +1,7 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -77,11 +78,13 @@ const LoginCredentialsModal = () => {
 
       <Typography>{translateText(["sectionFive"])}</Typography>
 
-      <Button
-        label={translateText(["copy"])}
+      <ButtonV2
         onClick={handleCopyText}
-        endIcon={IconName.COPY_ICON}
-      />
+        icon={<Icon name={IconName.COPY_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["copy"])}
+      </ButtonV2>
     </Stack>
   );
 };
