@@ -268,11 +268,7 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		// setup envelop settings
 		EnvelopeSetting envelopeSetting = getEnvelopeSetting(envelopeDetailDto);
 		envelopeSetting.setEnvelope(savedEnvelope);
-
 		savedEnvelope.setSetting(envelopeSetting);
-
-		envelope.setSetting(envelopeSetting);
-		envelope.setOwner(addressBook);
 
 		List<AuditTrail> auditTrails = new ArrayList<>();
 		AuditTrail auditTrailCreate = auditTrailService.processAuditTrailInfo(savedEnvelope, null,
