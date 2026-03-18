@@ -1,19 +1,16 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { appModes } from "~community/common/constants/configs";
 import { systemPermissionFormTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -355,44 +352,51 @@ const SystemPermissionForm = ({
 
         {!isInputsDisabled && (
           <Stack sx={classes.btnWrapper}>
-            <Button
-              isFullWidth={false}
+            <ButtonV2
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-              buttonStyle={ButtonStyle.TERTIARY}
-              size={ButtonSizes.LARGE}
-              label={isUpdate ? commonText(["cancel"]) : commonText(["back"])}
-              startIcon={isUpdate ? <></> : IconName.LEFT_ARROW_ICON}
-              endIcon={isUpdate ? IconName.CLOSE_ICON : <></>}
+              variant={"tertiary"}
+              size={"lg"}
               onClick={onBack}
-              dataTestId={
+              data-testid={
                 isUpdate
                   ? systemPermissionFormTestId.buttons.cancelBtn
                   : systemPermissionFormTestId.buttons.backBtn
               }
-            />
-            <Button
+              icon={
+                isUpdate ? (
+                  <Icon name={IconName.CLOSE_ICON} />
+                ) : (
+                  <Icon name={IconName.LEFT_ARROW_ICON} />
+                )
+              }
+              iconPosition={isUpdate ? "end" : "start"}
+            >
+              {isUpdate ? commonText(["cancel"]) : commonText(["back"])}
+            </ButtonV2>
+            <ButtonV2
               isLoading={isLoading}
-              isFullWidth={false}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-              buttonStyle={ButtonStyle.PRIMARY}
-              size={ButtonSizes.LARGE}
-              label={
-                !isLeaveModuleEnabled || isUpdate
-                  ? commonText(["saveDetails"])
-                  : commonText(["next"])
-              }
-              endIcon={
-                !isLeaveModuleEnabled || isUpdate
-                  ? IconName.SAVE_ICON
-                  : IconName.RIGHT_ARROW_ICON
-              }
+              variant={"primary"}
+              size={"lg"}
               onClick={handlePrimaryBtnClick}
-              dataTestId={
+              data-testid={
                 !isLeaveModuleEnabled || isUpdate
                   ? systemPermissionFormTestId.buttons.saveDetailsBtn
                   : systemPermissionFormTestId.buttons.nextBtn
               }
-            />
+              icon={
+                !isLeaveModuleEnabled || isUpdate ? (
+                  <Icon name={IconName.SAVE_ICON} />
+                ) : (
+                  <Icon name={IconName.RIGHT_ARROW_ICON} />
+                )
+              }
+              iconPosition="end"
+            >
+              {!isLeaveModuleEnabled || isUpdate
+                ? commonText(["saveDetails"])
+                : commonText(["next"])}
+            </ButtonV2>
           </Stack>
         )}
 
@@ -406,9 +410,8 @@ const SystemPermissionForm = ({
         >
           <Stack sx={classes.modalContainer}>
             <Typography>{modalDescription}</Typography>
-            <Button
-              buttonStyle={ButtonStyle.PRIMARY}
-              label={commonText(["okay"])}
+            <ButtonV2
+              variant={"primary"}
               onClick={() =>
                 handleModalClose({
                   employee,
@@ -418,7 +421,9 @@ const SystemPermissionForm = ({
                   setOpenModal
                 })
               }
-            />
+            >
+              {commonText(["okay"])}
+            </ButtonV2>
           </Stack>
         </Modal>
       </>

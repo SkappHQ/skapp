@@ -1,12 +1,9 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { flatListValues } from "~community/common/utils/commonUtil";
@@ -54,20 +51,20 @@ const EmployeeTableFilterButton: FC<Props> = ({
           filterOptions={flatListValues(appliedEmployeeDataFilter)}
           onDeleteIcon={removeFilters}
         />
-        <Button
-          label={
-            flatListValues(appliedEmployeeDataFilter).length === 0
-              ? translateText(["filter"])
-              : ""
-          }
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          size={ButtonSizes.MEDIUM}
-          endIcon={IconName.FILTER_ICON}
+        <ButtonV2
+          variant={"tertiary"}
+          size={"md"}
           onClick={handleFilterClick}
           disabled={disabled}
           aria-describedby={filterId}
           data-testid={peopleDirectoryTestId.buttons.filterBtn}
-        />
+          icon={<Icon name={IconName.FILTER_ICON} />}
+          iconPosition="end"
+        >
+          {flatListValues(employeeDataFilter).length === 0
+            ? translateText(["filter"])
+            : ""}
+        </ButtonV2>
       </Stack>
     </Stack>
   );

@@ -1,13 +1,14 @@
 import { Divider, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
 import DescribedSelection from "~community/common/components/atoms/DescribedSelection/DescribedSelection";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import ColorPalette from "~community/common/components/molecules/ColorPalette/ColorPalette";
@@ -17,15 +18,11 @@ import InputDate from "~community/common/components/molecules/InputDate/InputDat
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { getBlinkClass, getEmoji } from "~community/common/utils/commonUtil";
 import {
   currentYear,
   getLocalDate
@@ -530,22 +527,24 @@ const LeaveTypeForm = () => {
           </Stack>
 
           <Stack sx={classes.buttonWrapper}>
-            <Button
-              label={translateText(["cancelBtn"])}
-              isFullWidth={false}
-              endIcon={IconName.CLOSE_ICON}
-              buttonStyle={ButtonStyle.TERTIARY}
+            <ButtonV2
+              variant={"tertiary"}
               onClick={handleCancelBtnClick}
-            />
-            <Button
-              shouldBlink={ongoingQuickSetup.SETUP_LEAVE_TYPES}
-              type={ButtonTypes.SUBMIT}
-              label={translateText(["saveBtn"])}
-              isFullWidth={false}
-              endIcon={IconName.RIGHT_ARROW_ICON}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancelBtn"])}
+            </ButtonV2>
+            <ButtonV2
+              type={"submit"}
               disabled={!isSaveBtnActive}
               isLoading={isAddingLeaveTypePending || isEditingLeaveTypePending}
-            />
+              className={getBlinkClass(ongoingQuickSetup.SETUP_LEAVE_TYPES)}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["saveBtn"])}
+            </ButtonV2>
           </Stack>
         </Stack>
       </Form>

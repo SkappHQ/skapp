@@ -22,6 +22,9 @@ import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtil
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
 
+export const getBlinkClass = (shouldBlink: boolean): string =>
+  shouldBlink ? "animate-pulse" : "";
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string

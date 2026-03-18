@@ -1,19 +1,14 @@
 import { Box, Stack } from "@mui/material";
 import { Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import React from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/Table/Table";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -162,22 +157,26 @@ const PendingLeaveRequestTable: React.FC<Props> = ({ searchTerm }) => {
         spacing={1.5}
         sx={{ overflowX: "auto", alignItems: "center" }}
       >
-        <Button
-          label={translateText(["declineBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
+        <ButtonV2
+          variant={"tertiary"}
           onClick={() => handleLeaveRequestDecline(request.leaveRequestId)}
-          type={ButtonTypes.RESET}
-          size={ButtonSizes.MEDIUM}
-        />
-        <Button
-          label={translateText(["approveBtn"])}
-          buttonStyle={ButtonStyle.SECONDARY}
-          endIcon={<Icon name={IconName.CHECK_ICON} />}
+          type={"reset"}
+          size={"md"}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["declineBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"secondary"}
           onClick={() => handleLeaveRequestApproval(request.leaveRequestId)}
-          type={ButtonTypes.SUBMIT}
-          size={ButtonSizes.MEDIUM}
-        />
+          type={"submit"}
+          size={"md"}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["approveBtn"])}
+        </ButtonV2>
       </Stack>
     )
   }));
@@ -205,13 +204,15 @@ const PendingLeaveRequestTable: React.FC<Props> = ({ searchTerm }) => {
         }}
       />
       <Stack direction="row" justifyContent="flex-end" sx={stackStyles(theme)}>
-        <Button
-          label={translateText(["viewRequestBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        <ButtonV2
+          variant={"tertiary"}
           onClick={navigateToLeaveRequests}
-          size={ButtonSizes.MEDIUM}
-        />
+          size={"md"}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["viewRequestBtn"])}
+        </ButtonV2>
       </Stack>
     </Box>
   );
