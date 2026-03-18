@@ -329,12 +329,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 			}
 		}
 
-		boolean isDocumentComplete = envelope.getRecipients()
+		boolean isDocumentComplete = savedEnvelope.getRecipients()
 			.stream()
 			.allMatch(recipient -> recipient.getStatus() == RecipientStatus.COMPLETED);
 		if (isDocumentComplete) {
 			savedEnvelope.getRecipients().forEach(recipient -> recipient.setInboxStatus(InboxStatus.COMPLETED));
-
 			savedEnvelope.setStatus(EnvelopeStatus.COMPLETED);
 		}
 
