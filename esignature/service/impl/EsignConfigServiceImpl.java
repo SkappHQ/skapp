@@ -100,10 +100,11 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 
 	@Override
 	public void updateMfaEnabled(boolean enabled) {
-		esignConfigRepository.findFirstBy().ifPresent(esignConfig -> {
+		esignConfigRepository.findFirstBy().ifPresentOrElse(esignConfig -> {
+			log.info("updateMfaEnabled: Setting MFA enabled to {} in esign config", enabled);
 			esignConfig.setIsMfaEnabled(enabled);
 			esignConfigRepository.save(esignConfig);
-		});
+		}, () -> log.warn("updateMfaEnabled: Esign config not found, skipping MFA update to {}", enabled));
 	}
 
 }
