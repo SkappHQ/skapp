@@ -758,6 +758,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
+			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
@@ -770,8 +771,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
 			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
 
-			float adjustedFontSize = (float) (Math.ceil((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
-					/ 100f);
 			float adjustedHorizontalPadding = (float) (Math
 				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
 			float adjustedVerticalPadding = (float) (Math
@@ -781,8 +780,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
-			cssDto.setFontFamilyCss(fontFamily);
-			cssDto.setFontSize(String.valueOf(adjustedFontSize));
+			cssDto.setFontFamilyCss(fontFamilyCss);
+			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
 			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
@@ -794,22 +793,35 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
 					fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
-			// Calculate how much to stretch/shrink the form to fit the target field size
-			// Ensures the rendered HTML content exactly fills the intended field
-			// rectangle on the PDF
 			PDRectangle bbox = formXObject.getBBox();
+
+			// scaleX / scaleY are the ratios that shrink or stretch the form XObject
+			// so it fits exactly into the target field rectangle.
+			// scaleX = target width / original form width (horizontal stretch factor)
+			// scaleY = target height / original form height (vertical stretch factor)
+			// The XObject's internal BBox might not perfectly match the target
+			// dimensions, therefore we need to scale factors normalize it
 			float scaleX = adjustedWidth / bbox.getWidth();
 			float scaleY = adjustedHeight / bbox.getHeight();
 
-			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
-
 			contentStream.saveGraphicsState();
+
+			contentStream.addRect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+			contentStream.clip();
+
+			// The affine transformation matrix maps the form XObject into the target
+			// position and size on the page. The 2×3 matrix parameters are:
+			// (scaleX, 0, 0, scaleY, translateX, translateY)
+			// - scaleX, scaleY: scale the form to the target field dimensions
+			// - translateX (adjustedX): horizontal position on the page
+			// - translateY: vertical position computed above to top-align the form
+			// Without this matrix the form would draw at (0,0) at its original size.
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
 			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();

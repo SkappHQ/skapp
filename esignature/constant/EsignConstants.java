@@ -103,4 +103,6 @@ public class EsignConstants {
 
 	public static final int MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH = 100;
 
+	public static final int ADVANCED_FIELD_TEXT_VALUE_MAX_LENGTH = 255;
+
 }
