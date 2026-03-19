@@ -134,7 +134,7 @@ const Drawer = (): JSX.Element => {
     () =>
       getDrawerRoutes({
         userRoles: user?.roles,
-        tiers: user?.tiers ?? [],
+        tiers: user?.tiers?.length ? user.tiers : user?.tier ? [user.tier] : [],
         isEnterprise,
         globalLoginMethod,
         tenantID: tenantID as string,
