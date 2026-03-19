@@ -311,10 +311,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		FieldType fieldType = field.getType();
 
 		if (FieldType.CHECKBOX.equals(fieldType)) {
-			addCheckbox(field, contentStream, pageHeight, pageWidth, document);
+			addCheckbox(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
+			addRadioButton(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.DROPDOWN.equals(fieldType)) {
 			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -327,11 +327,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			try {
 				// Adjust baseline offset for Y position
 				float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
-				float adjustedY = pageHeight - field.getYPosition() - yOffset;
+				float adjustedY = pageHeight - field.getYposition() - yOffset;
 
 				// Adjust baseline offset for x position
 				float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-				float adjustedX = field.getXPosition() + xOffset;
+				float adjustedX = field.getXposition() + xOffset;
 
 				contentStream.beginText();
 				PDType0Font font = loadFont(document);
@@ -371,7 +371,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
 
-		if (field.getXPosition() < 0 || field.getYPosition() < 0) {
+		if (field.getXposition() < 0 || field.getYposition() < 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
 		}
@@ -381,8 +381,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		Objects.requireNonNull(inputBytes, "Input PDF bytes cannot be null");
 
 		int pageNumber = field.getPageNumber();
-		float x = field.getXPosition();
-		float y = field.getYPosition();
+		float x = field.getXposition();
+		float y = field.getYposition();
 		float width = field.getWidth();
 		float height = field.getHeight();
 
@@ -674,32 +674,32 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			float pageWidth, PDDocument document) {
+			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
 				: EsignImageType.RADIO_BUTTON_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
-			float pageWidth, EsignImageType imageType) {
+			EsignImageType imageType) {
 
 		float adjustedWidth = field.getWidth();
 		float adjustedHeight = field.getHeight();
 
 		// PDF Y-axis starts from bottom-left; convert from top-left origin
-		float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-		float adjustedX = field.getXPosition();
+		float adjustedY = pageHeight - field.getYposition() - adjustedHeight;
+		float adjustedX = field.getXposition();
 
 		// Load SVG bytes from S3
 		try (InputStream svgStream = amazonS3Service.downloadSvgImageAsStream(imageType.getFilename());
@@ -763,8 +763,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-			float adjustedX = field.getXPosition();
+			float adjustedY = pageHeight - field.getYposition() - adjustedHeight;
+			float adjustedX = field.getXposition();
 
 			// Calculate original page dimensions in pixels based on field's percentage
 			// and actual PDF page size

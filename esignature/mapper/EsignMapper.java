@@ -169,6 +169,8 @@ public interface EsignMapper {
 	SignatureCertificateResponseDto envelopeToSignatureCertificateResponseDto(Envelope envelope);
 
 	@Mapping(source = "id", target = "fieldId")
+	@Mapping(source = "XPosition", target = "xposition")
+	@Mapping(source = "YPosition", target = "yposition")
 	FieldSignDto fieldToFieldSignDto(Field field);
 
 	@Named("cleanSubject")
