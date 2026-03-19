@@ -1097,6 +1097,8 @@ public class PeopleServiceImpl implements PeopleService {
 			employeeDetailedResponseDto.setPeriodResponseDto(periodResponseDto);
 		}
 
+		applyRoleBasedRestrictionsToDetailedDto(employeeDetailedResponseDto);
+
 		return new ResponseEntityDto(false, employeeDetailedResponseDto);
 	}
 
@@ -1518,7 +1520,6 @@ public class PeopleServiceImpl implements PeopleService {
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());
 			period.ifPresent(employeePeriod -> responseDto
 				.setPeriodResponseDto(peopleMapper.employeePeriodToEmployeePeriodResponseDto(employeePeriod)));
-			responseDtos.add(responseDto);
 
 			List<EmployeeTeam> teamList = employeeTeamDao.findByEmployee(employee);
 			if (!teamList.isEmpty()) {
@@ -1528,8 +1529,26 @@ public class PeopleServiceImpl implements PeopleService {
 				responseDto.setTeams(teamDtos);
 			}
 
+			stripSensitiveFieldsForDirectoryListing(responseDto);
+			responseDtos.add(responseDto);
+
 		}
 		return responseDtos;
+	}
+
+	private void stripSensitiveFieldsForDirectoryListing(EmployeeDetailedResponseDto dto) {
+		dto.setEmployeeEmergencies(null);
+		dto.setEmployeeFamilies(null);
+		dto.setEmployeeEducations(null);
+		dto.setEmployeeVisas(null);
+		dto.setPersonalInfo(null);
+		dto.setEmployeeCredentials(null);
+		dto.setEmployeeProgressions(null);
+		dto.setPersonalEmail(null);
+		dto.setPhone(null);
+		dto.setEeo(null);
+		dto.setEthnicity(null);
+		applyRoleBasedRestrictionsToDetailedDto(dto);
 	}
 
 	public void validateNIN(String nin, List<String> errors) {
@@ -2350,6 +2369,26 @@ public class PeopleServiceImpl implements PeopleService {
 		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
+	}
+
+	/**
+	 * Applies role-based restrictions to EmployeeDetailedResponseDto. Used by /me
+	 * endpoint and directory list to strip sensitive fields based on the current user's
+	 * role.
+	 */
+	protected void applyRoleBasedRestrictionsToDetailedDto(EmployeeDetailedResponseDto dto) {
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		String roleSuperAdmin = "ROLE_" + Role.SUPER_ADMIN.name();
+		String rolePeopleAdmin = "ROLE_" + Role.PEOPLE_ADMIN.name();
+		String rolePeopleManager = "ROLE_" + Role.PEOPLE_MANAGER.name();
+
+		if (userRoles.contains(roleSuperAdmin) || userRoles.contains(rolePeopleAdmin)
+				|| userRoles.contains(rolePeopleManager)) {
+			return;
+		}
+
+		// Regular employee: hide system permissions
+		dto.setEmployeeRole(null);
 	}
 
 }

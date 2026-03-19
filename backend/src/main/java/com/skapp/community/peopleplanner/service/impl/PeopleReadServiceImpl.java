@@ -365,38 +365,37 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		String employment_employmentDetails_probationEndDateField = employmentField + "_" + employmentDetailsField + "_"
 				+ probationEndDateField;
 
+		// Super Admin: full access
 		if (!doesNotHaveRole(userRoles, Role.SUPER_ADMIN)) {
 			return;
 		}
 
+		// Current user viewing own profile (Account page) without People Admin/Manager
+		// role: hide system permissions only — they can see their own personal data
 		if (isCurrentUser && doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			setNull(dto, systemPermissionsField);
 			return;
 		}
 
-		if (doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
-			setNull(dto, systemPermissionsField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
-			setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
-					employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
-					employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
-					employment_employmentDetails_probationStartDateField,
-					employment_employmentDetails_probationEndDateField);
+		// People Admin or People Manager viewing any profile (Directory Edit): full
+		// access
+		if (!doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			return;
 		}
 
-		if ((doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER))
-				&& (doesNotHaveRole(userRoles, Role.ATTENDANCE_ADMIN) || doesNotHaveRole(userRoles, Role.LEAVE_ADMIN)
-						|| doesNotHaveRole(userRoles, Role.ATTENDANCE_MANAGER)
-						|| doesNotHaveRole(userRoles, Role.LEAVE_MANAGER))) {
-			setNull(dto, systemPermissionsField, emergencyField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
-			setNull(dto, personal_general_maritalStatusField, personal_general_ninField,
-					employment_employmentDetails_primarySupervisorField,
-					employment_employmentDetails_secondarySupervisorField);
-		}
+		// Regular employee viewing another employee (Individual Profile): restricted
+		// access — hide emergency, system permissions, and sensitive personal/employment
+		// details
+		setNull(dto, systemPermissionsField, emergencyField);
+		setNull(dto, personal_contactField, personal_familyField, personal_educationalField, personal_socialMediaField,
+				personal_healthAndOtherField);
+		setNull(dto, personal_general_ninField, personal_general_maritalStatusField);
+		setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
+				employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
+				employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
+				employment_employmentDetails_probationStartDateField,
+				employment_employmentDetails_probationEndDateField, employment_employmentDetails_primarySupervisorField,
+				employment_employmentDetails_secondarySupervisorField);
 	}
 
 	private <T, R> String field(FieldExtractor.SerializableFunction<T, R> getter) {
