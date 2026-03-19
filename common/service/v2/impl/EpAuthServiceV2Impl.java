@@ -47,6 +47,7 @@ import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
+import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
 import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
