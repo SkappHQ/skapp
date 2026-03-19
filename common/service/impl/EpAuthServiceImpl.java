@@ -188,7 +188,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			EpCommonEmailService epCommonEmailService, CacheService cacheService, RecaptchaConfig recaptchaConfig,
 			TenantDao tenantDao, ValidationService validationService, EpGuestUserService epGuestUserService,
 			EpUserEmailService epUserEmailService, CookieUtil cookieUtil,
-			BruteForceDetectionService bruteForceDetectionService,  TenantCookieService tenantCookieService) {
+			BruteForceDetectionService bruteForceDetectionService, TenantCookieService tenantCookieService) {
 		super(userDao, userDetailsService, peopleMapper, employeeDao, jwtService, authenticationManager,
 				passwordEncoder, employeeRoleDao, commonMapper, userService, peopleEmailService,
 				peopleNotificationService, encryptionDecryptionService, profileActivator, transactionManager,
@@ -214,7 +214,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		this.validationService = validationService;
 		this.epGuestUserService = epGuestUserService;
 		this.epUserEmailService = epUserEmailService;
-        this.tenantCookieService = tenantCookieService;
+		this.tenantCookieService = tenantCookieService;
 		this.bruteForceDetectionService = bruteForceDetectionService;
 	}
 
