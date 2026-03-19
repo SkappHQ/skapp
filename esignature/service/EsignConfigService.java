@@ -13,4 +13,6 @@ public interface EsignConfigService {
 
 	ResponseEntityDto getExternalEsignConfig();
 
+	void updateMfaEnabled(boolean enabled);
+
 }

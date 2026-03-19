@@ -28,6 +28,7 @@ import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import com.skapp.enterprise.people.service.EpRolesService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
@@ -69,6 +70,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 	private final DashboardEmailService dashboardEmailService;
 
 	private final EpRolesService epRolesService;
+
+	private final EsignConfigService esignConfigService;
 
 	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
 
@@ -396,6 +399,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 						DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
+				esignConfigService.updateMfaEnabled(false);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantName);
@@ -471,6 +475,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
+			esignConfigService.updateMfaEnabled(false);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			log.info(
@@ -615,6 +620,14 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				: SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, svt);
+
+		if (newTier == Tier.PRO) {
+			esignConfigService.updateMfaEnabled(true);
+		}
+		else if (previousTier == Tier.PRO) {
+			esignConfigService.updateMfaEnabled(false);
+		}
+
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 	}
 
