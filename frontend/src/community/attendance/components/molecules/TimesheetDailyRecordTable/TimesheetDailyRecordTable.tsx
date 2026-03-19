@@ -148,6 +148,7 @@ const TimesheetDailyRecordTable = ({
                 size={"md"}
                 isFullWidth={false}
                 disabled={isFreeTier}
+                className="mt-4 mr-3"
                 onClick={downloadEmployeeDailyLogCsv}
                 icon={<Icon name={IconName.DOWNLOAD_ICON} />}
                 iconPosition="end"
