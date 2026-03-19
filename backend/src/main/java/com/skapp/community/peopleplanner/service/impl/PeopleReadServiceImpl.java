@@ -384,9 +384,9 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		}
 
 		// Regular employee viewing another employee (Individual Profile): restricted
-		// access — hide emergency, system permissions, and sensitive personal/employment
-		// details
-		setNull(dto, systemPermissionsField, emergencyField);
+		// access — hide system permissions and sensitive personal/employment details.
+		// Emergency contacts (primary and secondary) remain visible.
+		setNull(dto, systemPermissionsField);
 		setNull(dto, personal_contactField, personal_familyField, personal_educationalField, personal_socialMediaField,
 				personal_healthAndOtherField);
 		setNull(dto, personal_general_ninField, personal_general_maritalStatusField);
