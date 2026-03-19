@@ -1,24 +1,27 @@
-FROM node:20-alpine3.19 AS builder                                                                                                                                            
-                                                                                                                                                                                
+FROM node:20-alpine3.19 AS deps
+
 WORKDIR /app
+COPY package.json package-lock.json .npmrc* ./
+RUN npm ci --force
 
-# Install system dependencies first (rarely changes)
-RUN apk add --no-cache bash
+FROM node:20-alpine3.19 AS builder
 
-# Copy dependency files first for better layer caching
-COPY package.json package-lock.json .npmrc ./
-
-# Install dependencies (cached unless package files change)
-RUN npm install --force
-
-# Copy the rest of the source code
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Run deploy time script and build
+RUN apk add --no-cache bash
 RUN bash set-deploy-time.sh
 RUN npm run build
 
+FROM node:20-alpine3.19 AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
 EXPOSE 3000
 CMD ["npm", "run", "start"]
-
-
