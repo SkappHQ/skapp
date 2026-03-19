@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
 import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
+import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.EsignImageType;
@@ -134,8 +135,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	@Override
-	public byte[] updateEnvelopeUuidToEachPage(String value, byte[] inputBytes, int numOfPages) {
+	private byte[] updateEnvelopeUuidToEachPage(String value, byte[] inputBytes, int numOfPages) {
 
 		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
@@ -144,7 +144,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		if (value == null) {
 			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_ENVELOPE_UUID_CANNOT_BE_NULL));
 		}
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
@@ -204,6 +204,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Error processing envelop Uuid PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public ProcessedDocumentResult downloadAndUpdateEnvelopeUuid(String value, String bucketName, String filePath) {
+		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, filePath);
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+			inputStream.transferTo(buffer);
+			byte[] inputBytes = buffer.toByteArray();
+
+			int numberOfPages = getNumberOfPages(inputBytes);
+			byte[] updatedBytes = updateEnvelopeUuidToEachPage(value, inputBytes, numberOfPages);
+
+			return new ProcessedDocumentResult(updatedBytes, numberOfPages);
+
+		}
+		catch (IOException e) {
+			log.error("Error in downloadAndUpdateEnvelopeUuid: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
