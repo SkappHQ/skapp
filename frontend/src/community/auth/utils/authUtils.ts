@@ -70,6 +70,7 @@ export interface User {
   isPasswordChangedForTheFirstTime?: boolean;
   employee?: AuthEmployeeType;
   tier?: TierEnum;
+  tiers?: TierEnum[];
   tenantId?: string;
   tenantStatus?: TenantStatusEnums;
 }
@@ -91,7 +92,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       const response = await authAxios.post(
         authenticationEndpoints.REFRESH_TOKEN,
         {},
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       const accessToken = response?.data?.results[0]?.accessToken;
@@ -220,6 +221,7 @@ export const extractUserFromToken = (token: string): User | null => {
         claims?.isPasswordChangedForTheFirstTime ?? true,
       employee: claims?.employee,
       tier: claims?.tier as TierEnum,
+      tiers: claims?.tiers as TierEnum[],
       tenantId: claims?.tenantId,
       tenantStatus: claims?.tenantStatus
     };
@@ -262,10 +264,10 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (redirect === false) return;
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
-    const existingCallback = urlParams.get('callback');
+    const existingCallback = urlParams.get("callback");
 
     const callbackPath = existingCallback || currentPath;
     window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
