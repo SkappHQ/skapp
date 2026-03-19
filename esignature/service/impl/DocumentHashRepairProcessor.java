@@ -110,7 +110,6 @@ public class DocumentHashRepairProcessor {
 			documentVersionDao.saveAndFlush(version);
 
 			log.info("{} Repaired {}", LOG_PREFIX, docLabel);
-			response.addRepairedDocumentId(document.getId());
 			response.setRepaired(response.getRepaired() + 1);
 
 		}
@@ -170,14 +169,12 @@ public class DocumentHashRepairProcessor {
 
 		if (version == null) {
 			log.warn("{} No current version found for {}", LOG_PREFIX, docLabel);
-			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
 
 		if (version.getFilePath() == null || version.getFilePath().isBlank()) {
 			log.warn("{} Blank file path for {}", LOG_PREFIX, docLabel);
-			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
@@ -190,7 +187,6 @@ public class DocumentHashRepairProcessor {
 		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, version.getFilePath())) {
 			if (inputStream == null) {
 				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
-				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -198,7 +194,6 @@ public class DocumentHashRepairProcessor {
 			byte[] fileBytes = inputStream.readAllBytes();
 			if (fileBytes.length == 0) {
 				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
-				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -206,7 +201,6 @@ public class DocumentHashRepairProcessor {
 		}
 		catch (IOException e) {
 			log.error("{} Failed to download S3 file for {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
@@ -217,7 +211,6 @@ public class DocumentHashRepairProcessor {
 		try {
 			if (envelope.getOwner() == null) {
 				log.warn("{} Envelope owner is null for {}", LOG_PREFIX, docLabel);
-				response.addSkippedDocumentId(document.getId());
 				response.setSkipped(response.getSkipped() + 1);
 				return null;
 			}
@@ -226,7 +219,6 @@ public class DocumentHashRepairProcessor {
 		}
 		catch (Exception e) {
 			log.error("{} Failed to load key pair for {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addSkippedDocumentId(document.getId());
 			response.setSkipped(response.getSkipped() + 1);
 			return null;
 		}
@@ -234,7 +226,6 @@ public class DocumentHashRepairProcessor {
 
 	private void recordOk(String docLabel, DocumentHashRepairResponseDto response, Document document) {
 		log.debug("{} Integrity OK for {}", LOG_PREFIX, docLabel);
-		response.addSkippedDocumentId(document.getId());
 		response.setSkipped(response.getSkipped() + 1);
 	}
 
