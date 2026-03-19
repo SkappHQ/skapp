@@ -313,7 +313,7 @@ export const useGetPeriodAvailability = (
         params: {
           date,
           startTime: timestampStartTime,
-          endTime: timestampEndTime
+          endTime: Number.isNaN(timestampEndTime) ? null : timestampEndTime
         }
       });
     },

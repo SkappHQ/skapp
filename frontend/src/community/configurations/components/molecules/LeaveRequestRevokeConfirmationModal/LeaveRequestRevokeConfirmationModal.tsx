@@ -3,7 +3,7 @@ import React from "react";
 
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -39,14 +39,14 @@ const LeaveRequestRevokeConfirmationModal: React.FC<
             label: translateText([
               "leaveRequestRevokeModalConfirmationButtonText"
             ]),
-            buttonStyle: ButtonStyle.PRIMARY,
+            buttonStyle: "primary",
             endIcon: IconName.RIGHT_ARROW_ICON,
             styles: { mt: "1rem" },
             onClick: onConfirm
           }}
           secondaryBtn={{
             label: translateText(["leaveRequestRevokeModalCancelButtonText"]),
-            buttonStyle: ButtonStyle.TERTIARY,
+            buttonStyle: "tertiary",
             endIcon: IconName.CLOSE_ICON,
             styles: { mt: "1rem" },
             onClick: onClose

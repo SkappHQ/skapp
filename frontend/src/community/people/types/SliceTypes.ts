@@ -23,6 +23,7 @@ export interface EmployeeDataFiltersSliceType
   extends Pick<
     Store,
     | "employeeDataFilter"
+    | "appliedEmployeeDataFilter"
     | "employeeDataFilterOrder"
     | "employeeDataParams"
     | "selectedEmployees"
@@ -44,6 +45,7 @@ export interface EmployeeDataFiltersSliceType
     | "isPendingInvitationListOpen"
     | "removeEmployeeFilter"
     | "removeGenderFilter"
+    | "setAppliedEmployeeDataFilter"
   > {}
 
 export interface DirectoryModalSliceType

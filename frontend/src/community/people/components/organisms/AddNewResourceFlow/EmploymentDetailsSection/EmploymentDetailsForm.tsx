@@ -1,11 +1,11 @@
 import { Stack, type Theme, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { employmentDetailsFormTestId } from "~community/common/constants/testIds";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -162,7 +162,7 @@ const EmploymentDetailsForm = ({
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        height: "auto",
+        height: "auto"
       }}
       dividerStyles={{ mt: "0.5rem" }}
       pageHead={translateText(["head"])}
@@ -192,42 +192,49 @@ const EmploymentDetailsForm = ({
             spacing={2}
             sx={{ padding: "1rem 0" }}
           >
-            <Button
-              label={
-                isUpdate ? translateText(["cancel"]) : translateText(["back"])
-              }
-              buttonStyle={ButtonStyle.TERTIARY}
-              startIcon={isUpdate ? <></> : IconName.LEFT_ARROW_ICON}
-              endIcon={isUpdate ? IconName.CLOSE_ICON : <></>}
-              isFullWidth={false}
+            <ButtonV2
+              variant={"tertiary"}
               onClick={onBack}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-              dataTestId={
+              data-testid={
                 isUpdate
                   ? employmentDetailsFormTestId.buttons.cancelBtn
                   : employmentDetailsFormTestId.buttons.backBtn
               }
-            />
-            <Button
-              label={
-                isUpdate
-                  ? translateText(["saveDetails"])
-                  : translateText(["next"])
+              icon={
+                isUpdate ? (
+                  <Icon name={IconName.CLOSE_ICON} />
+                ) : (
+                  <Icon name={IconName.LEFT_ARROW_ICON} />
+                )
               }
-              buttonStyle={ButtonStyle.PRIMARY}
-              endIcon={
-                isUpdate ? IconName.SAVE_ICON : IconName.RIGHT_ARROW_ICON
-              }
-              isFullWidth={false}
+              iconPosition={isUpdate ? "end" : "start"}
+            >
+              {isUpdate ? translateText(["cancel"]) : translateText(["back"])}
+            </ButtonV2>
+            <ButtonV2
+              variant={"primary"}
               onClick={handleNext}
               isLoading={isLoading}
               disabled={isSubmitDisabled || isLoading || isInputsDisabled}
-              dataTestId={
+              data-testid={
                 isUpdate
                   ? employmentDetailsFormTestId.buttons.saveDetailsBtn
                   : employmentDetailsFormTestId.buttons.nextBtn
               }
-            />
+              icon={
+                isUpdate ? (
+                  <Icon name={IconName.SAVE_ICON} />
+                ) : (
+                  <Icon name={IconName.RIGHT_ARROW_ICON} />
+                )
+              }
+              iconPosition="end"
+            >
+              {isUpdate
+                ? translateText(["saveDetails"])
+                : translateText(["next"])}
+            </ButtonV2>
           </Stack>
         )}
       </>

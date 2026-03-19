@@ -1,10 +1,11 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { userBulkTemplate } from "~community/people/utils/getConstants";
@@ -73,31 +74,26 @@ const UserBulkCsvDownload = () => {
             onClick={handleDownloadClick}
             tabIndex={-1}
           >
-            <Button
-              label={translateText(["downloadCsvButton"])}
-              buttonStyle={ButtonStyle.SECONDARY}
-              styles={{
-                mt: "0.75rem",
-                ".MuiButton-endIcon": {
-                  "svg path": {
-                    fill: "none"
-                  }
-                }
-              }}
-              endIcon={IconName.DOWNLOAD_ICON}
-              shouldBlink={isDownloadBlinking}
-            />
+            <ButtonV2
+              variant={"secondary"}
+              className={getBlinkClass(isDownloadBlinking)}
+              icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["downloadCsvButton"])}
+            </ButtonV2>
           </a>
         </Box>
       </Box>
-      <Button
-        label={translateText(["nextButton"])}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mb: "0.5rem" }}
+      <ButtonV2
+        variant={"primary"}
         onClick={() => handleNextBtn()}
-        shouldBlink={isNextBlinking}
-      />
+        className={getBlinkClass(isNextBlinking)}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["nextButton"])}
+      </ButtonV2>
     </Box>
   );
 };

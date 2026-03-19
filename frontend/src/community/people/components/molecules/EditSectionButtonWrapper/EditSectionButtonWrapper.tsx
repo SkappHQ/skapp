@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
@@ -30,22 +30,24 @@ const EditSectionButtonWrapper = ({ onCancelClick, onSaveClick }: Props) => {
       spacing={2}
       sx={{ padding: "1rem 0" }}
     >
-      <Button
-        label={translateText(["cancel"])}
-        buttonStyle={ButtonStyle.TERTIARY}
-        endIcon={IconName.CLOSE_ICON}
-        isFullWidth={false}
+      <ButtonV2
+        variant={"tertiary"}
         onClick={onCancelClick}
         disabled={!hasChanged}
-      />
-      <Button
-        label={translateText(["saveDetails"])}
-        buttonStyle={ButtonStyle.PRIMARY}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        isFullWidth={false}
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancel"])}
+      </ButtonV2>
+      <ButtonV2
+        variant={"primary"}
         onClick={onSaveClick}
         disabled={!hasChanged && profilePic === null}
-      />
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["saveDetails"])}
+      </ButtonV2>
     </Stack>
   );
 };

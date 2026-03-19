@@ -56,7 +56,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -130,9 +129,6 @@ public class AuthServiceImpl implements AuthService {
 
 	protected final CookieUtil cookieUtil;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
-
 	@Override
 	@Transactional
 	public ResponseEntityDto signIn(SignInRequestDto signInRequestDto) {
@@ -164,9 +160,7 @@ public class AuthServiceImpl implements AuthService {
 		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
 
-		Cookie tenantCookie = cookieUtil.clearTenantCookie();
-		response.addCookie(tenantCookie);
-		log.info("signOutWithCookie: Cleared tenant cookie");
+		clearTenantCookie(response);
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -225,13 +219,8 @@ public class AuthServiceImpl implements AuthService {
 			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
 
-			String tenantId = TenantContext.getCurrentTenant();
-			if (tenantId != null && !tenantId.isEmpty()) {
-				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
-				response.addCookie(tenantCookie);
-				log.info("performSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
-						user.getEmail());
-			}
+			addTenantCookie(response, cookieMaxAge, user);
+
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -247,6 +236,14 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	protected void validateTenantStatus(User user) {
+		// This is only for Pro version
+	}
+
+	protected void addTenantCookie(HttpServletResponse response, long cookieMaxAge, User user) {
+		// This is only for Pro version
+	}
+
+	protected void clearTenantCookie(HttpServletResponse response) {
 		// This is only for Pro version
 	}
 
@@ -402,7 +399,7 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("sharePassword: User found for sharePassword: userEmail={}", user.getEmail());
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user,
-				encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
+				encryptionDecryptionService.decrypt(user.getTempPassword()));
 
 		log.info("sharePassword: execution ended for  ={}", user.getEmail());
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
@@ -421,7 +418,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
@@ -608,8 +605,7 @@ public class AuthServiceImpl implements AuthService {
 	protected void createNewPassword(String newPassword, User user) {
 		log.info("createNewPassword: execution started={}", user.getEmail());
 		String tempPassword = user.getTempPassword();
-		if (tempPassword != null
-				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+		if (tempPassword != null && Objects.equals(encryptionDecryptionService.decrypt(tempPassword), newPassword)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
@@ -665,7 +661,7 @@ public class AuthServiceImpl implements AuthService {
 
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
 				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
 			}
 

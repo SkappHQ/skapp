@@ -22,6 +22,9 @@ import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtil
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
 
+export const getBlinkClass = (shouldBlink: boolean): string =>
+  shouldBlink ? "animate-pulse" : "";
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string
@@ -114,6 +117,16 @@ export const pascalCaseFormatter = (wordString: string | null | undefined) => {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+};
+
+export const pascalCaseFormatterExcludeUnderscore = (
+  label: string | null | undefined
+) => {
+  if (!label) {
+    return "";
+  }
+
+  return pascalCaseFormatter(label.replace(/_/g, " "));
 };
 
 export const arraysEqual = (

@@ -1,10 +1,10 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useEffect } from "react";
 
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -140,22 +140,26 @@ const EmployeePendingLeaveStatusPopup: FC<Props> = ({ setPopupType }) => {
           gap: "1rem"
         }}
       >
-        <Button
-          label={translateText(["myLeaveRequests", "nudgeSupervisorBtn"])}
-          endIcon={IconName.NUDGE_BELL_ICON}
-          buttonStyle={ButtonStyle.SECONDARY}
+        <ButtonV2
+          variant={"secondary"}
           onClick={() =>
             handleNudgeButton(employeeLeaveRequestData.leaveRequestId)
           }
           disabled={nudgeLog?.isNudge == false}
-        />
+          icon={<Icon name={IconName.NUDGE_BELL_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["myLeaveRequests", "nudgeSupervisorBtn"])}
+        </ButtonV2>
 
-        <Button
-          label={translateText(["myLeaveRequests", "cancelLeaveRequestBtn"])}
-          endIcon={<Icon name={IconName.REQUEST_CANCEL_CROSS_ICON} />}
-          buttonStyle={ButtonStyle.ERROR}
+        <ButtonV2
+          variant={"error"}
           onClick={handleCancelButton}
-        />
+          icon={<Icon name={IconName.REQUEST_CANCEL_CROSS_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["myLeaveRequests", "cancelLeaveRequestBtn"])}
+        </ButtonV2>
       </Box>
     </Box>
   );

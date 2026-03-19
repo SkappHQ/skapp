@@ -28,7 +28,6 @@ import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -69,9 +68,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final TimeConfigDao timeConfigDao;
 
 	private final OkrConfigService okrConfigService;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	private static void setOrganizationDetails(UpdateOrganizationRequestDto organizationDto,
 			Organization organization) {
@@ -136,7 +132,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.EMAIL_CONFIGS.name());
 
 		emailServerRequestDto
-			.setAppPassword(encryptionDecryptionService.encrypt(emailServerRequestDto.getAppPassword(), encryptSecret));
+			.setAppPassword(encryptionDecryptionService.encrypt(emailServerRequestDto.getAppPassword()));
 
 		String updatedJsonEmailServiceConfigs = objectMapper.writeValueAsString(emailServerRequestDto);
 		OrganizationConfig organizationConfig = existingConfigOptional
@@ -170,8 +166,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		EmailServerConfigResponseDto emailConfigDto = objectMapper.readValue(jsonEmailServiceConfigs,
 				EmailServerConfigResponseDto.class);
 
-		emailConfigDto
-			.setAppPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword(), encryptSecret));
+		emailConfigDto.setAppPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword()));
 
 		log.info("getEmailServiceConfigs: execution ended successfully");
 		return emailConfigDto;
