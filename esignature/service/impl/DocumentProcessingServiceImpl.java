@@ -796,18 +796,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
 					fontFamilyCss);
 
-			// PDFormXObject is PDF's equivalent of an SVG <symbol> — a self-contained,
-			// reusable graphics object. It's the correct mechanism for embedding one
-			// PDF's content stream into another
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
-			// PDRectangle (bounding box) defines the coordinate space of the rendered
-			// HTML form XObject. We need it to know the original dimensions of the
-			// mini-PDF page so we can compute the correct scale factors to map it
-			// into the target field rectangle on the destination page.
-			// retrieves the XObject's own internal dimensions — these may differ from
-			// adjustedWidth/Height due to OpenHTMLToPDF's internal rendering, which is
-			// why explicit scaling is needed next.
 			PDRectangle bbox = formXObject.getBBox();
 
 			// scaleX / scaleY are the ratios that shrink or stretch the form XObject
@@ -819,33 +809,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float scaleX = adjustedWidth / bbox.getWidth();
 			float scaleY = adjustedHeight / bbox.getHeight();
 
-			// formTopY is the top edge of the target field in PDF coordinates
-			// (adjustedY is the bottom edge, so bottom + height = top).
-			float formTopY = adjustedY + adjustedHeight;
-
-			// translateY positions the form so its top edge aligns with formTopY.
-			//
-			// Why scaleX instead of scaleY?
-			// If we used scaleY here, the math would collapse to:
-			// formTopY - scaleY * bbox.getHeight()
-			// = (adjustedY + adjustedHeight) - (adjustedHeight / bbox.getHeight()) *
-			// bbox.getHeight()
-			// = adjustedY
-			// That would place the form exactly filling the field vertically, stretching
-			// the text to match the field height — causing vertical distortion.
-			//
-			// By using scaleX, the form's rendered height stays proportional to the width
-			// scale (scaleX * bbox.getHeight()), preserving the text's natural aspect
-			// ratio.
-			// The form is top-aligned within the field, and the clip rectangle (below)
-			// hides any overflow if the content extends beyond the field's bottom edge.
-			float translateY = formTopY - scaleX * bbox.getHeight();
-
 			contentStream.saveGraphicsState();
 
-			// Clip to the field rectangle so any overflow from the form is hidden
-			// This is essential because if the text overflows (long text, small box), it
-			// won't bleed into adjacent fields or page content.
 			contentStream.addRect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 			contentStream.clip();
 
@@ -856,7 +821,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			// - translateX (adjustedX): horizontal position on the page
 			// - translateY: vertical position computed above to top-align the form
 			// Without this matrix the form would draw at (0,0) at its original size.
-			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, translateY);
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
 			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();
