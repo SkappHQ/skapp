@@ -394,8 +394,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
 				employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
 				employment_employmentDetails_probationStartDateField,
-				employment_employmentDetails_probationEndDateField, employment_employmentDetails_primarySupervisorField,
-				employment_employmentDetails_secondarySupervisorField);
+				employment_employmentDetails_probationEndDateField);
 	}
 
 	private <T, R> String field(FieldExtractor.SerializableFunction<T, R> getter) {
